@@ -237,9 +237,9 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <p>And one operational principle: <strong>contracts are files before they are APIs.</strong> At solo scale, every one of these objects is a file in the repository or an artifact the repository references by digest. Services built later ingest the same objects over new transports. That is precisely why a script and a service are drop-in compatible: both read and write the same shapes.</p>
 <h3 id="31-specification">3.1 Specification<a class="anchor" href="#31-specification" aria-label="link to this section">#</a></h3>
 <p>A Markdown file with structured front matter. The front matter is machine-read; the body carries context for humans and implementing agents.</p>
-<pre><code class="lang-yaml"># specs/active/Veldo-0142-payment-retry-idempotency.md
+<pre><code class="lang-yaml"># specs/active/VELDO-0142-payment-retry-idempotency.md
 schema: veldo.spec/v1
-id: Veldo-0142
+id: VELDO-0142
 title: Payment retry idempotency
 status: ready            # draft | ready | in_progress | review | proven | shipped | blocked
 risk: high               # declared floor; policy may raise it, nothing may lower it
@@ -263,7 +263,7 @@ reversible: true         # policy input; irreversible work routes through prepar
 <p>The machine-readable claim that a change satisfies its specification. Produced by the implementing agent, consumed by review and by the merge policy. Immutable.</p>
 <pre><code class="lang-json">{
   &quot;schema&quot;: &quot;veldo.proof/v1&quot;,
-  &quot;spec_id&quot;: &quot;Veldo-0142&quot;,
+  &quot;spec_id&quot;: &quot;VELDO-0142&quot;,
   &quot;commit&quot;: &quot;7f43e6159aa6&quot;,
   &quot;produced_at&quot;: &quot;2026-07-16T14:12:03Z&quot;,
   &quot;producer&quot;: {
@@ -284,7 +284,7 @@ reversible: true         # policy input; irreversible work routes through prepar
         {
           &quot;type&quot;: &quot;test&quot;,
           &quot;ref&quot;: &quot;tests/payments/retry_test.py::test_no_duplicate_order&quot;,
-          &quot;artifact&quot;: &quot;proof/Veldo-0142/junit.xml&quot;,
+          &quot;artifact&quot;: &quot;proof/VELDO-0142/junit.xml&quot;,
           &quot;digest&quot;: &quot;sha256:7f02...&quot;
         }
       ]
@@ -296,7 +296,7 @@ reversible: true         # policy input; irreversible work routes through prepar
         {
           &quot;type&quot;: &quot;test&quot;,
           &quot;ref&quot;: &quot;tests/payments/retry_test.py::test_returns_original_id&quot;,
-          &quot;artifact&quot;: &quot;proof/Veldo-0142/junit.xml&quot;,
+          &quot;artifact&quot;: &quot;proof/VELDO-0142/junit.xml&quot;,
           &quot;digest&quot;: &quot;sha256:7f02...&quot;
         }
       ]
@@ -304,7 +304,7 @@ reversible: true         # policy input; irreversible work routes through prepar
   ],
   &quot;checks&quot;: [
     {&quot;name&quot;: &quot;verify&quot;, &quot;command&quot;: &quot;./scripts/verify.sh&quot;, &quot;result&quot;: &quot;pass&quot;,
-     &quot;log&quot;: &quot;proof/Veldo-0142/verify.log&quot;, &quot;log_digest&quot;: &quot;sha256:81e1...&quot;}
+     &quot;log&quot;: &quot;proof/VELDO-0142/verify.log&quot;, &quot;log_digest&quot;: &quot;sha256:81e1...&quot;}
   ],
   &quot;rollback&quot;: &quot;revert the merge commit; payment_retry_v2 flag off&quot;,
   &quot;digest&quot;: &quot;sha256:5f73...&quot;
@@ -316,7 +316,7 @@ reversible: true         # policy input; irreversible work routes through prepar
 <p>The independent reviewer&#x27;s structured output. Produced in a fresh context, ideally by a different model. Immutable, and bound to the exact commit and proof it judged.</p>
 <pre><code class="lang-json">{
   &quot;schema&quot;: &quot;veldo.verdict/v1&quot;,
-  &quot;spec_id&quot;: &quot;Veldo-0142&quot;,
+  &quot;spec_id&quot;: &quot;VELDO-0142&quot;,
   &quot;commit&quot;: &quot;7f43e6159aa6&quot;,
   &quot;proof_digest&quot;: &quot;sha256:5f73...&quot;,
   &quot;reviewer&quot;: {
@@ -388,7 +388,7 @@ merge_rule: &gt;
   &quot;schema&quot;: &quot;veldo.event/v1&quot;,
   &quot;id&quot;: &quot;evt_01K0A9G0F4&quot;,
   &quot;type&quot;: &quot;gate.passed&quot;,
-  &quot;spec_id&quot;: &quot;Veldo-0142&quot;,
+  &quot;spec_id&quot;: &quot;VELDO-0142&quot;,
   &quot;commit&quot;: &quot;7f43e6159aa6&quot;,
   &quot;at&quot;: &quot;2026-07-16T14:12:10Z&quot;,
   &quot;producer&quot;: &quot;gate-runner&quot;,
@@ -408,7 +408,7 @@ merge_rule: &gt;
   &quot;decision&quot;: &quot;approved&quot;,
   &quot;approver&quot;: {&quot;id&quot;: &quot;user:47281&quot;, &quot;role&quot;: &quot;security-owner&quot;},
   &quot;scope&quot;: {
-    &quot;spec_id&quot;: &quot;Veldo-0142&quot;,
+    &quot;spec_id&quot;: &quot;VELDO-0142&quot;,
     &quot;commit&quot;: &quot;7f43e6159aa6&quot;,
     &quot;proof_digest&quot;: &quot;sha256:5f73...&quot;,
     &quot;policy_version&quot;: 3
@@ -441,7 +441,7 @@ constraints:
 feature_tree:
   - {id: F1, title: A capability a user can name, outcome_refs: [O1]}
 work:                    # the ordered DAG; each item becomes one spec
-  - {item: W1, spec: Veldo-0501, title: Small and independently provable,
+  - {item: W1, spec: VELDO-0501, title: Small and independently provable,
      feature_refs: [F1], depends_on: [], order: 10}
 regression:
   journeys:
@@ -591,7 +591,7 @@ or gate.failed event when done.</code></pre>
 <p>Fan out only across independent specifications, each in its own worktree with disjoint file scopes. The ceiling on parallelism is not tooling; it is the human&#x27;s review and judgment capacity, which is why work-in-progress stays within what the human can actually judge.</p>
 <h3 id="48-headless-operation-and-the-agent-sdk">4.8 Headless operation and the Agent SDK<a class="anchor" href="#48-headless-operation-and-the-agent-sdk" aria-label="link to this section">#</a></h3>
 <p><code>claude -p &quot;&lt;prompt&gt;&quot;</code> runs non-interactively and is the bridge into CI. The reviewer as a CI step, whole:</p>
-<pre><code class="lang-bash">claude -p &quot;Review the change for spec Veldo-0142 against its proof manifest and final diff.&quot; \
+<pre><code class="lang-bash">claude -p &quot;Review the change for spec VELDO-0142 against its proof manifest and final diff.&quot; \
   --allowedTools &quot;Read,Grep,Glob,Bash&quot; \
   --permission-mode default \
   --output-format json \
@@ -997,8 +997,8 @@ or gate.failed event when done.</code></pre>
 <tr><td>2.8</td><td>2026-07-16</td><td>Cross-vendor review (L3/L4) made an explicitly optional, recorded budget decision; L2 is the working default at every tier</td></tr>
 <tr><td>2.9</td><td>2026-07-16</td><td>The planning layer documented as it shipped: section 3.9 (the Product Plan contract, its validator rules, the lane fields), section 4.10 (operating the layer - the /veldo:plan sub-verbs and the plan.py mechanical verbs, run enforcement, regression at the gate, status and release), /veldo:plan added to the 4.3 skill list, and the Product Plan acknowledged in 2.3 as the contract above the per-change seven</td></tr>
 <tr><td>2.10</td><td>2026-07-19</td><td>The fleet and the two-tier adoption model (W6 of PLAN-0009): the capability-by-scale table (2.4) gains parallel workers, fleet accounts and the governor, and the work CLI and run lens; section 4.9 states the two-tier adoption model (a pack lays the full engine including the fleet; /veldo:init lays the minimal governance substrate by design); new section 4.11 documents the fleet, the veldo CLI, the account model, the token governor, and the in-session, no-detached-process boundary, tied to the capability-by-scale framing</td></tr>
-<tr><td>2.11</td><td>2026-07-22</td><td>The architecture organ (Veldo-1110 of PLAN-0011, plugin 3.7.0): new section 7.8 documents the shape as a per-repo, human-approved contract the gate enforces - the mechanizable-versus-review split (honest that only the module-size budget and the engine invariants are gate-blocking, while dependency boundaries, function-length, duplication, complexity, and prose patterns are review-lane reference implementations), placement before build and shape-fit at review, foundational decision records with adversarial fresh-context review and in-session assumption tripwires, the entropy-to-restoration loop, and the adoption-safe, per-repo, nothing-detached postures; deferring to the capability manifest for what is mechanical, what is a fail-loud reference seam awaiting per-repo reviewer wiring, and what is advisory</td></tr>
-<tr><td>2.12</td><td>2026-08-03</td><td>Security by design (Veldo-1311 of PLAN-0013, plugin 3.10.0): new section 11 documents what ships and what an adopter must turn on - the install-state table for all ten modules, the two that need real wiring (the secret resolver and the security reviewer, with the explicit instruction not to wire a reviewer that returns secure), the five-step migration for an existing repository (inventory, triage the pattern findings, disposition by digest with a reason, rotate what was reachable in history yourself, then declare enforcing with a date), and what to watch afterwards; sections 11 through 13 renumbered to 12 through 14</td></tr>
+<tr><td>2.11</td><td>2026-07-22</td><td>The architecture organ (VELDO-1110 of PLAN-0011, plugin 3.7.0): new section 7.8 documents the shape as a per-repo, human-approved contract the gate enforces - the mechanizable-versus-review split (honest that only the module-size budget and the engine invariants are gate-blocking, while dependency boundaries, function-length, duplication, complexity, and prose patterns are review-lane reference implementations), placement before build and shape-fit at review, foundational decision records with adversarial fresh-context review and in-session assumption tripwires, the entropy-to-restoration loop, and the adoption-safe, per-repo, nothing-detached postures; deferring to the capability manifest for what is mechanical, what is a fail-loud reference seam awaiting per-repo reviewer wiring, and what is advisory</td></tr>
+<tr><td>2.12</td><td>2026-08-03</td><td>Security by design (VELDO-1311 of PLAN-0013, plugin 3.10.0): new section 11 documents what ships and what an adopter must turn on - the install-state table for all ten modules, the two that need real wiring (the secret resolver and the security reviewer, with the explicit instruction not to wire a reviewer that returns secure), the five-step migration for an existing repository (inventory, triage the pattern findings, disposition by digest with a reason, rotate what was reachable in history yourself, then declare enforcing with a date), and what to watch afterwards; sections 11 through 13 renumbered to 12 through 14</td></tr>
 </tbody>
 </table></div></article></div>
 </main>

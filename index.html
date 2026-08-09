@@ -198,7 +198,7 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <h3>3. The first change</h3>
 <ol>
 <li><code>/veldo:spec &lt;what you want&gt;</code> - the spec agent interviews you and drafts the specification; you approve it to <code>ready</code>.</li>
-<li><code>/veldo:run Veldo-0007</code> drives everything that follows: implementation, the gate, the proof manifest, and the fresh-context review (dispatched to the veldo-reviewer subagent), ending with a receipt of what was proven and whether anything awaits a human. The individual steps (<code>/veldo:gate</code>, <code>/veldo:proof</code>, <code>/veldo:review</code>) remain available for inspection and debugging.</li>
+<li><code>/veldo:run VELDO-0007</code> drives everything that follows: implementation, the gate, the proof manifest, and the fresh-context review (dispatched to the veldo-reviewer subagent), ending with a receipt of what was proven and whether anything awaits a human. The individual steps (<code>/veldo:gate</code>, <code>/veldo:proof</code>, <code>/veldo:review</code>) remain available for inspection and debugging.</li>
 <li>Merge. The guard blocks mechanically when the gate is not green for HEAD, proof is missing, no passing verdict is bound to the commit, a protected path lacks a live approval, or an emergency debt is open. Branch protection can enforce the same server-side; the plugin does NOT configure it - the repository owner must, before claiming server-side enforcement.</li>
 </ol>
 <p>A small change runs end to end in minutes rather than days, and every step after the spec is agent work.</p>

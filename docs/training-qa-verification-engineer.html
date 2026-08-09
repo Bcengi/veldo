@@ -165,11 +165,11 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <p>The gate is your product and you read its health like a dashboard: first-pass rate, flake count (target: zero, always), escaped defects. A PM spec is missing its failure cases; you add three criteria in five minutes that would have been three bug reports in the old world. A high-risk change requests the exploratory lane, so you spend an hour trying to break it the way only you can, and your findings land as a verdict file. An escaped defect from last week becomes a permanent check by end of day.</p>
 <h2 id="3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)<a class="anchor" href="#3-your-moments-in-the-loop-exact" aria-label="link to this section">#</a></h2>
 <p><strong>Criteria partnership (before implementation, where you now live):</strong></p>
-<pre><code>Veldo-0231 is missing the ugly paths. Add: AC5, a second rapid submit does not
+<pre><code>VELDO-0231 is missing the ugly paths. Add: AC5, a second rapid submit does not
 double-pause; AC6, a payment succeeding DURING the pause flow un-pauses
 cleanly; AC7, the paused state survives a webhook retry storm.</code></pre>
 <p><strong>The exploratory lane (on request or by policy for risky surfaces):</strong></p>
-<pre><code>Record my exploratory review for Veldo-0240: FAIL. Reproduced: switching
+<pre><code>Record my exploratory review for VELDO-0240: FAIL. Reproduced: switching
 accounts mid-checkout keeps the old account&#x27;s coupon. Steps attached.
 Also two non-blocking oddities in the error copy.</code></pre>
 <p>Your findings are a verdict file bound to the commit; the failure returns the change to implementation with your reproduction as a new criterion.</p>

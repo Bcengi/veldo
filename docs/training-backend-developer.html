@@ -165,7 +165,7 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <p>You run <code>/veldo:status</code>, see three specs in flight, and read the verdict on the one that shipped overnight. A spec needs technical shaping: the PM&#x27;s intent is right but the idempotency criterion is missing, so you add it in a two-line conversation. An implementation failed review twice, so it lands in your lap, and this is the fun part: the actual puzzle, the thing agents still hand to a human. In the afternoon you notice the gate let a slow query through last week, and you spend an hour adding the performance check that makes that permanent knowledge instead of tribal memory.</p>
 <h2 id="3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)<a class="anchor" href="#3-your-moments-in-the-loop-exact" aria-label="link to this section">#</a></h2>
 <p><strong>Shaping a spec technically:</strong></p>
-<pre><code>Add to Veldo-0231: retries must be idempotent by payment intent id; a replayed
+<pre><code>Add to VELDO-0231: retries must be idempotent by payment intent id; a replayed
 webhook must not double-credit. That&#x27;s the criterion that matters here.</code></pre>
 <p><strong>Judging a proof.</strong> Read <code>proof/&lt;id&gt;/manifest.json</code> with one question per criterion: would this evidence convince me if a stranger submitted it? A test named <code>test_no_duplicate_order</code> that mocks away the database convinces no one; say so:</p>
 <pre><code>AC1&#x27;s test mocks the store, so it proves nothing about the race. Require the
