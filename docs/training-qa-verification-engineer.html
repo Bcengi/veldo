@@ -1,0 +1,214 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA in Veldo - the Verification Engineer - Veldo</title>
+<meta name="description" content="The most transformed role - criteria quality, the gate as a product, the exploratory lane.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>QA in Veldo: the Verification Engineer</h1><p class="tagline">Training series. The most transformed role in the building, and the one Veldo cannot run without.</p><p class="meta">Version 1.0, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-your-job-redefined-and-the-honest-part-first">1. Your job, redefined - and the honest part first</a></li><li><a href="#2-your-day">2. Your day</a></li><li><a href="#3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)</a></li><li><a href="#4-the-curriculum">4. The curriculum</a></li><li><a href="#5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to</a></li><li><a href="#6-you-have-arrived-when">6. You have arrived when</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="1-your-job-redefined-and-the-honest-part-first">1. Your job, redefined - and the honest part first<a class="anchor" href="#1-your-job-redefined-and-the-honest-part-first" aria-label="link to this section">#</a></h2>
+<p>Manual test execution is gone. Clicking through regression checklists, writing test plans nobody reads, being the last gate before release and the first person blamed after it: all of that is over, and it is right to say so plainly rather than pretend the role is unchanged.</p>
+<p>Here is what is equally true: Veldo&#x27;s entire premise is that verification is the bottleneck, which makes verification the discipline the whole method runs on. The judgment you built finding what breaks - the instinct for the edge case, the user path nobody designed for, the &quot;what if I do this twice&quot; reflex - is the scarcest skill in the new system. It just stops being spent one manual click at a time and starts being spent three ways: criteria quality (bugs prevented at spec time), verification engineering (the gate as a product), and exploratory judgment (the human review lane machines cannot fill).</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>What stops</th>
+<th>What starts</th>
+</tr></thead>
+<tbody>
+<tr><td>Executing manual test passes</td><td>Owning the gate: the checks, their depth, their speed, their zero-flake standard</td></tr>
+<tr><td>Writing test plans as documents</td><td>Writing acceptance criteria with the PM: every plan is now criteria the machine runs forever</td></tr>
+<tr><td>Being the release bottleneck</td><td>Being the reason the gate can be trusted enough to merge on green</td></tr>
+<tr><td>Finding bugs after implementation</td><td>Preventing them at spec time: your &quot;what breaks&quot; instinct applied to intent</td></tr>
+<tr><td>Regression checklists</td><td>Exploratory testing as a review lane on risky changes: recorded findings, same verdict contract</td></tr>
+</tbody>
+</table></div>
+<h2 id="2-your-day">2. Your day<a class="anchor" href="#2-your-day" aria-label="link to this section">#</a></h2>
+<p>The gate is your product and you read its health like a dashboard: first-pass rate, flake count (target: zero, always), escaped defects. A PM spec is missing its failure cases; you add three criteria in five minutes that would have been three bug reports in the old world. A high-risk change requests the exploratory lane, so you spend an hour trying to break it the way only you can, and your findings land as a verdict file. An escaped defect from last week becomes a permanent check by end of day.</p>
+<h2 id="3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)<a class="anchor" href="#3-your-moments-in-the-loop-exact" aria-label="link to this section">#</a></h2>
+<p><strong>Criteria partnership (before implementation, where you now live):</strong></p>
+<pre><code>Veldo-0231 is missing the ugly paths. Add: AC5, a second rapid submit does not
+double-pause; AC6, a payment succeeding DURING the pause flow un-pauses
+cleanly; AC7, the paused state survives a webhook retry storm.</code></pre>
+<p><strong>The exploratory lane (on request or by policy for risky surfaces):</strong></p>
+<pre><code>Record my exploratory review for Veldo-0240: FAIL. Reproduced: switching
+accounts mid-checkout keeps the old account&#x27;s coupon. Steps attached.
+Also two non-blocking oddities in the error copy.</code></pre>
+<p>Your findings are a verdict file bound to the commit; the failure returns the change to implementation with your reproduction as a new criterion.</p>
+<p><strong>Gate stewardship:</strong></p>
+<pre><code>/veldo:spec Quarantine and rewrite the flaky payment-webhook test: it failed
+3 times this week on timing, not behavior. Flakes are production defects
+of the proof system.</code></pre>
+<p><strong>The escaped-defect ritual:</strong> every bug that reaches production proves a missing check. You own the ritual: reproduce, criterion, check, done - the same bug is now impossible, permanently.</p>
+<h2 id="4-the-curriculum">4. The curriculum<a class="anchor" href="#4-the-curriculum" aria-label="link to this section">#</a></h2>
+<p><strong>Module 1 - From plans to criteria.</strong> Take your best old test plan. Convert every case into an acceptance criterion a machine can decide. What cannot be converted (true exploratory judgment) is your review lane; notice how little of the plan that is, and how much sharper it makes the remainder.</p>
+<p><strong>Module 2 - Gate literacy, then gate ownership.</strong> Learn verify.sh end to end: what each check proves and what it cannot. Exercise: find the gap (a bug class no current check catches), demonstrate it with a planted bug, close it with a new check.</p>
+<p><strong>Module 3 - The zero-flake standard.</strong> A flaky check teaches the team to bypass; it is worse than no check. Exercise: take one intermittent test and make it deterministic or kill it, and write one paragraph on which was right and why.</p>
+<p><strong>Module 4 - Exploratory testing as evidence.</strong> Your instinct, recorded. Exercise: one hour against a sandbox change, findings written as a verdict with reproductions; then the harder half: turn your two best findings into standing criteria so the machine holds them forever.</p>
+<p><strong>Module 5 - Proof skepticism.</strong> Exercise: five proof manifests, one satisfied in letter but not intent. Find it faster than the backend developer does. (You will. This is your muscle.)</p>
+<h2 id="5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to<a class="anchor" href="#5-how-you-break-veldo-without-meaning-to" aria-label="link to this section">#</a></h2>
+<ul>
+<li><strong>Rebuilding the manual gate.</strong> Inserting yourself as a sign-off on ordinary green changes recreates the queue Veldo deleted, and it will be routed around, and then your judgment is absent where it mattered.</li>
+<li><strong>Letting flakes live.</strong> Every tolerated flake is a lesson to the team that red is negotiable.</li>
+<li><strong>Keeping findings verbal.</strong> A bug mentioned in chat evaporates; a criterion holds forever. If it is not in the spec, the gate, or a verdict, it did not happen.</li>
+<li><strong>Testing the implementation instead of the intent.</strong> Your lane judges whether the INTENT survives contact with reality, not whether the code matches the spec (the machine already proved that).</li>
+</ul>
+<h2 id="6-you-have-arrived-when">6. You have arrived when<a class="anchor" href="#6-you-have-arrived-when" aria-label="link to this section">#</a></h2>
+<ul>
+<li>The gate&#x27;s first-pass rate is trusted enough that nobody asks for a manual pass anymore, and that fact is because of you.</li>
+<li>A PM asks for your criteria before writing a spec, not your testing after.</li>
+<li>Your exploratory lane caught something both the implementer and the fresh-context reviewer missed, and its reproduction is now a permanent criterion.</li>
+<li>Zero flaky checks for a full quarter.</li>
+<li>Your title stopped mattering to you: the proof system is yours, and everyone knows it.</li>
+</ul>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial training document</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

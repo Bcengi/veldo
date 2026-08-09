@@ -1,0 +1,214 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Infrastructure Engineer in Veldo - Veldo</title>
+<meta name="description" content="The 0-to-100 lever - everything into the repo, plan judgment, recovery as evidence.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>The Infrastructure Engineer in Veldo</h1><p class="tagline">Training series. Your destination role: Platform Reliability Engineer - the person who makes the proof system fast, the deployments evidenced, and the unrecoverable approachable.</p><p class="meta">Version 1.0, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-your-job-redefined">1. Your job, redefined</a></li><li><a href="#2-your-unique-position-you-hold-the-0-to-100-lever">2. Your unique position: you hold the 0-to-100 lever</a></li><li><a href="#3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)</a></li><li><a href="#4-the-curriculum">4. The curriculum</a></li><li><a href="#5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to</a></li><li><a href="#6-you-have-arrived-when">6. You have arrived when</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="1-your-job-redefined">1. Your job, redefined<a class="anchor" href="#1-your-job-redefined" aria-label="link to this section">#</a></h2>
+<p>You were the person who could SSH in and fix it. That skill saved the company many times, and under Veldo it becomes the emergency lane only: a declared, recorded, backfilled exception, never the normal path. The normal path is that infrastructure is code in the repository, changed through specs, proven by plans and staging evidence, approved against plan digests, and observed after apply. You stop being the human deploy button and start owning three systems: the substrate everything runs on, the gate&#x27;s own runtime (verification speed is your SLO), and the recovery machinery.</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>What stops</th>
+<th>What starts</th>
+</tr></thead>
+<tbody>
+<tr><td>Typing terraform, manifests, pipelines by hand</td><td>Specifying infrastructure intent; agents construct; you judge the plan</td></tr>
+<tr><td>Console changes and undocumented fixes</td><td>Everything in the repo or it does not exist; console access is the emergency lane</td></tr>
+<tr><td>Being paged to run deployments</td><td>Deployments as evidenced, observed, auto-rolled-back changes</td></tr>
+<tr><td>Change-ticket approval rituals</td><td>Plan-digest approvals: you approve an exact plan, once, with expiry</td></tr>
+<tr><td>Tolerating slow or flaky CI</td><td>The gate&#x27;s latency and reliability as your product, with a number on it</td></tr>
+</tbody>
+</table></div>
+<h2 id="2-your-unique-position-you-hold-the-0-to-100-lever">2. Your unique position: you hold the 0-to-100 lever<a class="anchor" href="#2-your-unique-position-you-hold-the-0-to-100-lever" aria-label="link to this section">#</a></h2>
+<p>The founder&#x27;s stated gap: zero percent of infrastructure is done this way today. You own that migration, and its first act is honesty: get every definition into the repository (the terraform that lives in a laptop folder, the config that lives in a console). What cannot be read and diffed cannot be governed. Then the floors go into policy, the plan step goes into the gate, and infrastructure becomes the MOST protected class of change instead of the least.</p>
+<h2 id="3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)<a class="anchor" href="#3-your-moments-in-the-loop-exact" aria-label="link to this section">#</a></h2>
+<p><strong>The migration&#x27;s opening move (per system):</strong></p>
+<pre><code>/veldo:spec Import the production load balancer config into infra/ as code;
+no behavior change; the plan for the import must show zero deltas against
+live state.</code></pre>
+<p><strong>Judging a plan (your daily craft):</strong></p>
+<pre><code>The plan shows 1 update (autoscaling max) and 1 unexpected replace on the
+launch template. The replace is not in the spec. Blocked until explained
+or removed.</code></pre>
+<p><strong>The prepare-and-execute custody (irreversible ops):</strong></p>
+<pre><code>For the key rotation: produce the exact execution plan, dry-run it against
+staging, and bring me the plan digest. My approval binds to that digest with
+a 1-hour expiry, and execution stops on any mismatch.</code></pre>
+<p><strong>Gate runtime engineering:</strong></p>
+<pre><code>/veldo:spec Cut gate latency: cache the dependency layer in the runner image;
+target under 4 minutes for ordinary changes; the full suite stays intact.</code></pre>
+<h2 id="4-the-curriculum">4. The curriculum<a class="anchor" href="#4-the-curriculum" aria-label="link to this section">#</a></h2>
+<p><strong>Module I1 - Everything into the repo.</strong> Exercise: pick one real system managed by hand today; import it as code with a zero-delta plan as the acceptance criterion. This is the migration in miniature.</p>
+<p><strong>Module I2 - Plan literacy as judgment.</strong> Exercise: three plans, one with a planted surprise (a replace hiding behind an update, a wildcard grant, a dependency on the thing being changed). Find it, every time, fast.</p>
+<p><strong>Module I3 - Blast-radius prediction.</strong> Before the agent runs, write down what the change can possibly touch; compare with the plan. Calibration is the skill; the gap is the lesson.</p>
+<p><strong>Module I4 - Recovery as evidence.</strong> A rollback that has never run is a hope. Exercise: for one production system, make &quot;the rollback was exercised on staging&quot; a standing criterion, then exercise it.</p>
+<p><strong>Module I5 - The gate as production.</strong> Flaky infra checks teach bypass. Exercise: find the flakiest check in CI, make it deterministic, and publish the latency number you now own.</p>
+<h2 id="5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to<a class="anchor" href="#5-how-you-break-veldo-without-meaning-to" aria-label="link to this section">#</a></h2>
+<ul>
+<li><strong>The quiet console fix.</strong> One undocumented change and the repo is no longer the truth; every plan after it lies a little. Declared emergency or through the loop; there is no third door.</li>
+<li><strong>Everything critical.</strong> Floor the whole infra tree at critical and you are the new bottleneck; the reversible must flow.</li>
+<li><strong>Approving directions instead of plans.</strong> &quot;Yes, scale it up&quot; is not an approval; the plan digest is what you approve.</li>
+<li><strong>Letting the gate be slow.</strong> Verification speed bounds the whole company&#x27;s delivery speed; a 30-minute gate is a company-wide tax you own.</li>
+</ul>
+<h2 id="6-you-have-arrived-when">6. You have arrived when<a class="anchor" href="#6-you-have-arrived-when" aria-label="link to this section">#</a></h2>
+<ul>
+<li>A month of infrastructure changes, all through the loop, zero console fixes.</li>
+<li>You caught a hidden replace in a plan that would have taken production down.</li>
+<li>The emergency lane got used once, worked, and the backfill closed in six hours.</li>
+<li>The gate is faster than it was when humans typed the code it verifies.</li>
+<li>The founder&#x27;s &quot;0% of infra&quot; line is measurably false in your repos.</li>
+</ul>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial training document</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

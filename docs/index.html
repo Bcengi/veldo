@@ -1,0 +1,150 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documents - Veldo</title>
+<meta name="description" content="The Veldo documents: the method, setup and running, the plugin guide, the runbook, the human transition, the tracker guide, and the role training series.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap narrow"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap narrow">
+<div class="column"><h1>Documents</h1><h2>Read in this order</h2><div class="docrow"><p class="ordinal">1</p><h3><a href="method.html">Veldo Development Method</a></h3><p>The methodology itself - what Veldo is and why it works.</p><dl class="sans"><dt>Audience</dt><dd>Everyone adopting or working under Veldo. Read this first.</dd><dt>Covers</dt><dd>Core model; foundational principles; the change lifecycle from intent to close; risk classification and the emergency lane; repository structure and the index; agent roles and human review lanes; agent operating instructions; definitions of proven and done; what Veldo eliminates and keeps; metrics; failure modes; adoption rules; the manifesto.</dd><dt>Version</dt><dd>2.2, 2026-08-03</dd></dl></div><div class="docrow"><p class="ordinal">2</p><h3><a href="setup.html">Setting Up and Running Veldo</a></h3><p>The operational companion - how to stand Veldo up and run it, from one person to an organization of thousands.</p><dl class="sans"><dt>Audience</dt><dd>Whoever sets up or operates Veldo tooling, process, and platform.</dd><dt>Covers</dt><dd>The invariant architecture and the seven contracts with schemas; Claude Code setup; the scaling stages; the control plane and its build order; governance, safety, and economics; the edges (design, intake, documentation); anti-patterns; the two-week pilot and wave rollout.</dd><dt>Version</dt><dd>2.13, 2026-08-03</dd></dl></div><div class="docrow"><p class="ordinal">3</p><h3><a href="plugin.html">Veldo Plugin Guide</a></h3><p>Install Veldo into any repository in minutes - the plugin, the init command, and the first change.</p><dl class="sans"><dt>Audience</dt><dd>Whoever installs Veldo into a repository or wants the component reference.</dd><dt>Covers</dt><dd>What the plugin carries (agents, skills, guard hook) versus what init lays down (the repository substrate); install commands; the first change end to end; what the guard enforces; the manual no-plugin path; upgrade rules; contents reference.</dd><dt>Version</dt><dd>2.7, 2026-07-22</dd></dl></div><div class="docrow"><p class="ordinal">4</p><h3><a href="runbook.html">The Veldo Runbook</a></h3><p>The complete operational manual - every change type, situation, and role, keystroke-exact; the document that takes a team from 0% to 100%.</p><dl class="sans"><dt>Audience</dt><dd>Everyone operating under Veldo, daily reference.</dd><dt>Covers</dt><dd>Four full runbooks (backend feature, UI through the design lane, bug from a ticket, protected-path change with commit-bound approval); every change type with infrastructure as code first-class; every situation from a red gate to an emergency; every role&#x27;s moments in the loop; administration (next repo, policy, standing specs, the weekly pass, upgrades, metrics); the cheat sheet.</dd><dt>Version</dt><dd>1.7, 2026-07-22</dd></dl></div><div class="docrow"><p class="ordinal">5</p><h3><a href="change-management.html">Changing to Veldo - The Human Transition</a></h3><p>How to move every person to Veldo without firing anyone - resistance mapped role by role, the funded commitment, the phased program, the hard cases with scripts, and the program&#x27;s own failure modes.</p><dl class="sans"><dt>Audience</dt><dd>The founder and anyone leading the transition. Read before announcing anything.</dd><dt>Covers</dt><dd>The truth first (occupational redesign, the three-condition economic fact); the resistance map with counter-moves per role; the research base applied (established frameworks plus the 2024-2026 evidence and the 2026 additions); the program (the public commitment with exact words, the conversion cell, phases 0-4 with exit conditions, the sandbox for safe incompetence, the judgment ladder, pairing redesign, incentives and status protection, measurement without surveillance, the path for those who cannot or will not convert); five hard cases with founder scripts; thirteen program failure modes with tripwires; what never to do.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">6</p><h3><a href="tracker-operator-guide.html">Working with Veldo and Your Tracker</a></h3><p>The operator companion to the tracker integration - the human workflow for filing work from Jira or Confluence and the ticket round-trip that follows.</p><dl class="sans"><dt>Audience</dt><dd>Anyone who files work from a tracker (Jira ticket or Confluence requirements page) and watches its status, working with Veldo.</dd><dt>Covers</dt><dd>Flagging a ticket or requirements page with a routing signal; running intake and what it drafts (a bug&#x27;s reproduction as AC1, a page&#x27;s acceptance criteria); the fail-closed refusal on a missing, unknown, or ambiguous signal; the one-way status mirror through the per-org status_map; epic and child structure for a plan; the one-way, repository-wins, never-poll rules; a full round-trip walked through once. Companion to Plugin Guide section 12.</dd><dt>Version</dt><dd>1.2, 2026-07-23</dd></dl></div><h2>The role training series</h2><div class="docrow"><p class="ordinal">1</p><h3><a href="training-training-guide.html">The Veldo Training Guide</a></h3><p>The map of the series - who transforms, who dissolves, the shared core, the apprenticeship path, the minimum viable team.</p><dl class="sans"><dt>Audience</dt><dd>Everyone; leadership first.</dd><dt>Version</dt><dd>1.2, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">2</p><h3><a href="training-product-manager.html">The Product Manager in Veldo</a></h3><p>The most leveraged human role - intent and acceptance criteria as the product craft.</p><dl class="sans"><dt>Audience</dt><dd>Product managers and product intent owners.</dd><dt>Version</dt><dd>1.1, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">3</p><h3><a href="training-planning-layer.html">The Planning Layer in Veldo</a></h3><p>The product manager&#x27;s other half - driving a whole iteration through Product Plans, the DAG, and the frontier.</p><dl class="sans"><dt>Audience</dt><dd>Product managers and product intent owners; anyone stewarding an iteration.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">4</p><h3><a href="training-architect.html">The Architect in Veldo</a></h3><p>The gate is the architecture - policy, protected paths, decomposition, contracts.</p><dl class="sans"><dt>Audience</dt><dd>Architects and senior technical leaders.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">5</p><h3><a href="training-backend-developer.html">The Backend Developer in Veldo</a></h3><p>From typing to judgment - specs, proof literacy, gate engineering, the escalation seat.</p><dl class="sans"><dt>Audience</dt><dd>Backend engineers.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">6</p><h3><a href="training-web-developer.html">The Web Developer in Veldo</a></h3><p>The browser domain - the design contract, interaction evidence, baseline judgment.</p><dl class="sans"><dt>Audience</dt><dd>Web engineers.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">7</p><h3><a href="training-mobile-developer.html">The Mobile Developer in Veldo</a></h3><p>The runtime you cannot roll back - lifecycle evidence, containment, the upgrade matrix.</p><dl class="sans"><dt>Audience</dt><dd>Mobile engineers.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">8</p><h3><a href="training-infrastructure-engineer.html">The Infrastructure Engineer in Veldo</a></h3><p>The 0-to-100 lever - everything into the repo, plan judgment, recovery as evidence.</p><dl class="sans"><dt>Audience</dt><dd>Infrastructure and platform engineers.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">9</p><h3><a href="training-qa-verification-engineer.html">QA in Veldo - the Verification Engineer</a></h3><p>The most transformed role - criteria quality, the gate as a product, the exploratory lane.</p><dl class="sans"><dt>Audience</dt><dd>QA engineers and SDETs.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">10</p><h3><a href="training-project-manager.html">The Project Manager and Veldo</a></h3><p>The candid document - the role dissolves; the person has three real destinations.</p><dl class="sans"><dt>Audience</dt><dd>Project managers and delivery leads.</dd><dt>Version</dt><dd>1.1, 2026-07-16</dd></dl></div><div class="docrow"><p class="ordinal">11</p><h3><a href="training-designer.html">The Designer in Veldo</a></h3><p>The mock as a contract, the verdict as a file - design judgment with teeth.</p><dl class="sans"><dt>Audience</dt><dd>Designers and design leads.</dd><dt>Version</dt><dd>1.0, 2026-07-16</dd></dl></div></div>
+</main>
+<footer class="wrap narrow"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

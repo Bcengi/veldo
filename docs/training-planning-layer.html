@@ -1,0 +1,226 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Planning Layer in Veldo - Veldo</title>
+<meta name="description" content="The product manager&#x27;s other half - driving a whole iteration through Product Plans, the DAG, and the frontier.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>The Planning Layer in Veldo</h1><p class="tagline">Training series. The product manager&#x27;s other half: driving a whole iteration through the planning layer, above the spec loop.</p><p class="meta">Version 1.0, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-what-this-module-is">1. What this module is</a></li><li><a href="#2-when-you-plan-and-when-you-do-not">2. When you plan, and when you do not</a></li><li><a href="#3-anatomy-of-a-plan-what-you-are-actually-deciding">3. Anatomy of a plan (what you are actually deciding)</a></li><li><a href="#4-driving-the-layer-end-to-end-exact">4. Driving the layer end to end (exact)</a></li><li><a href="#5-the-curriculum">5. The curriculum</a></li><li><a href="#6-how-you-break-the-planning-layer-without-meaning-to">6. How you break the planning layer without meaning to</a></li><li><a href="#7-you-have-arrived-when">7. You have arrived when</a></li><li><a href="#8-where-this-sits">8. Where this sits</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="1-what-this-module-is">1. What this module is<a class="anchor" href="#1-what-this-module-is" aria-label="link to this section">#</a></h2>
+<p>The Product Manager training document teaches the spec loop: one intent, one specification, one proven change. This module teaches the layer above it: how you take a whole product increment (several features, many specs, shared regression) and drive it through Veldo as one coherent thing, without a status board, a standup, or a Gantt chart.</p>
+<p>The skill is planning holistically and then letting the machine decompose in order. You state the outcomes, the feature breakdown, the ordering, the regression, and what &quot;done&quot; means, once, in a <strong>Product Plan</strong>. From then on the plan is the context every spec inherits, the order specs are pulled in, and the board that reports its own state. You never assemble status; you read it.</p>
+<p>One honesty note up front, so you inherit no illusion: the layer carries the mechanical half of project management (ordering, refusing broken order, surfacing drift, computing revision impact). Whether it fully carries the JUDGMENT half is an open Veldo acceptance test, settled only by delivering a real iteration through it. Until that proof lands, a human still watches the whole; this module trains you to be that human well.</p>
+<h2 id="2-when-you-plan-and-when-you-do-not">2. When you plan, and when you do not<a class="anchor" href="#2-when-you-plan-and-when-you-do-not" aria-label="link to this section">#</a></h2>
+<p>Two lanes, and choosing right is the first skill:</p>
+<ul>
+<li><strong>Do not plan</strong> a bug, a copy fix, a config change, one isolated improvement. It is a standalone spec; <code>/veldo:spec</code> and go. Forcing a plan onto a one-liner is the ceremony Veldo deletes.</li>
+<li><strong>Do plan</strong> a product increment: several features, many specs, a regression surface they share. That is where a plan earns its tens of minutes by keeping the whole coherent.</li>
+</ul>
+<p>If a standalone change turns out to belong to an increment, you PROMOTE it into the plan rather than letting it float as a hidden dependency. The binding is enforced both ways, so there is no such thing as a half-promoted change that the gate tolerates.</p>
+<h2 id="3-anatomy-of-a-plan-what-you-are-actually-deciding">3. Anatomy of a plan (what you are actually deciding)<a class="anchor" href="#3-anatomy-of-a-plan-what-you-are-actually-deciding" aria-label="link to this section">#</a></h2>
+<p>A plan is not a schedule. Each part is a product decision only you can make:</p>
+<ul>
+<li><strong>Outcomes.</strong> Observable changes for users, each with a measure. &quot;Returning customers reorder in two taps&quot; - not &quot;build the reorder feature.&quot; State the product, not the work.</li>
+<li><strong>Non-goals.</strong> The exclusions you name on purpose. This is where scope drift dies before it starts.</li>
+<li><strong>Constraints.</strong> The budgets and invariants every spec below inherits, written once.</li>
+<li><strong>The feature tree.</strong> The decomposition into capabilities a user can name, each tracing to an outcome.</li>
+<li><strong>The work DAG.</strong> The ordered items, each becoming one spec, each with an honest <code>depends_on</code>. This is the part people get wrong: an empty dependency list is a decision you made; a missing one is an error. Small items, provable one at a time.</li>
+<li><strong>Regression.</strong> The journeys that must stay green across the whole iteration, chosen up front, not accreted after each bug.</li>
+<li><strong>Release.</strong> The milestone, whether pieces merge continuously as they go green or cut together, and what watching it in production means.</li>
+<li><strong>Open decisions.</strong> Each names exactly what it blocks. A decision that gates nothing does not stop the frontier; a decision that gates work keeps that work off the frontier, loudly, until you answer it.</li>
+</ul>
+<h2 id="4-driving-the-layer-end-to-end-exact">4. Driving the layer end to end (exact)<a class="anchor" href="#4-driving-the-layer-end-to-end-exact" aria-label="link to this section">#</a></h2>
+<p><strong>Create.</strong> You describe the increment; the agent interviews you at the PRODUCT level:</p>
+<pre><code>/veldo:plan create the orders redesign: reorder, saved carts, and the empty state</code></pre>
+<p>Answer in outcomes and features, not tasks. The agent drafts from the template and validates it. It is <code>draft</code> until you approve.</p>
+<p><strong>Approve.</strong> Reading the draft is the signature that makes the ordering real:</p>
+<pre><code>Approve the plan.</code></pre>
+<p>The agent records you as approver with a date and flips it to <code>ready</code>. Approve nothing you have not read; the plan is the context every downstream spec inherits, so a sloppy plan is a sloppy iteration.</p>
+<p><strong>Pull the frontier.</strong> You never pick work by gut; the plan computes what is buildable:</p>
+<pre><code>/veldo:plan status PLAN-0007</code></pre>
+<p>The burn-down shows each item as shipped, waiting on named dependencies, blocked by a decision, or on the frontier. Pull a frontier item into a spec and run it; repeat. Building out of order is refused by the machine (<code>run-check</code>), not left to your memory. Your judgment goes into WHICH frontier item matters most next, not into whether it is allowed.</p>
+<p><strong>Revise under change.</strong> Plans change; do it honestly:</p>
+<pre><code>Split W4 into an API item and a UI item; the UI now depends on the API.</code></pre>
+<p>The agent bumps the revision, records the note, and runs impact analysis so you see the blast radius on anything already shipped. A revision invalidates context built against the old version, mechanically, so nothing ships against a plan that quietly moved.</p>
+<p><strong>Read status and metrics.</strong> This replaces every status meeting you used to run:</p>
+<pre><code>/veldo:status</code></pre>
+<p>The plan burn-down plus the derived numbers (spec-to-ship time, proof latency, human minutes, open blockers) come from the event stream, never a spreadsheet. The one question to ask monthly: is human-minutes-per-shipped-change trending toward stating intent and judging results and nothing else?</p>
+<p><strong>Release.</strong> Only the check lets a plan close:</p>
+<pre><code>/veldo:plan release PLAN-0007</code></pre>
+<p>It verifies all work shipped, regression present, no open decision still blocking, a milestone named. For continuous mode the work already merged as it went green; release is the marker plus the observation window.</p>
+<h2 id="5-the-curriculum">5. The curriculum<a class="anchor" href="#5-the-curriculum" aria-label="link to this section">#</a></h2>
+<p><strong>Module 1 - Outcomes, not tasks.</strong> Take a real upcoming increment and write its outcomes as measurable product states. Exercise: for each outcome, write the one measure that proves it; if you cannot, it is a task in disguise.</p>
+<p><strong>Module 2 - The DAG.</strong> Decompose that increment into work items with honest dependencies. Exercise: draw the graph, then have the validator catch a cycle you plant deliberately, and watch the frontier change as you mark items shipped in the sandbox.</p>
+<p><strong>Module 3 - The frontier as your queue.</strong> Run five pull-and-build cycles in the sandbox. Exercise: try to pull an item whose dependency is unshipped and watch <code>run-check</code> refuse it; that refusal is the ordering enforcing itself.</p>
+<p><strong>Module 4 - Revision impact.</strong> Change an approved sandbox plan three ways (add work, change a dependency, drop scope). Exercise: for each, read the impact output and name what it invalidated before you look at the answer.</p>
+<p><strong>Module 5 - Regression you designed.</strong> Declare the journeys that must stay green across the whole iteration up front. Exercise: set one journey to activate only after a specific item ships, and confirm it appears in the per-spec active set only from that point.</p>
+<h2 id="6-how-you-break-the-planning-layer-without-meaning-to">6. How you break the planning layer without meaning to<a class="anchor" href="#6-how-you-break-the-planning-layer-without-meaning-to" aria-label="link to this section">#</a></h2>
+<ul>
+<li><strong>Planning the unplannable.</strong> A plan around a single bug is ceremony; the direct lane exists for a reason.</li>
+<li><strong>A DAG that is really a list.</strong> Every item depending on the previous one is a schedule wearing a graph&#x27;s clothes; find the real independence and parallelize it.</li>
+<li><strong>Deciding by silence on an open decision.</strong> A blocked frontier is the plan asking you a question loudly, once. Answer it or kill the item; leaving it teaches the team that blocked means dead.</li>
+<li><strong>Editing an approved plan instead of revising it.</strong> Silent scope change under shipped work is exactly what the revision mechanism exists to prevent; use it.</li>
+<li><strong>Rebuilding a tracker on top of the plan.</strong> Owners, dates, and status colors added by hand recreate the board Veldo deleted. The plan reports itself; your job is noticing what it reports.</li>
+</ul>
+<h2 id="7-you-have-arrived-when">7. You have arrived when<a class="anchor" href="#7-you-have-arrived-when" aria-label="link to this section">#</a></h2>
+<ul>
+<li>You can look at an incoming request and place it in the right lane without thinking.</li>
+<li>Your last plan&#x27;s DAG had real parallelism, and the frontier was never a queue of one.</li>
+<li>You revised an approved plan and could name what the revision invalidated before the tool told you.</li>
+<li>You have not run a status meeting in a month, and you can state the current bottleneck from the numbers.</li>
+<li>Someone asked you to &quot;just track it in the plan&quot; and you said no, because that is not what the plan is for.</li>
+</ul>
+<h2 id="8-where-this-sits">8. Where this sits<a class="anchor" href="#8-where-this-sits" aria-label="link to this section">#</a></h2>
+<p>The method&#x27;s Stage 0 is the concept; the setup guide&#x27;s sections 3.9 and 4.10 are the contract and the operating verbs; the runbook&#x27;s planning chapter is the keystroke-exact walkthrough; and the Product Manager document is the spec-loop craft this module sits on top of. Read that one first if you have not.</p>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial planning-layer training module</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

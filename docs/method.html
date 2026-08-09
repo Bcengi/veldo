@@ -1,0 +1,1304 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veldo Development Method - Veldo</title>
+<meta name="description" content="The methodology itself - what Veldo is and why it works.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html" aria-current="page">Method</a><a href="../docs/index.html">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>Veldo Development Method</h1><p class="tagline">Software development at full speed, enabled by AI and governed by proof.</p><p class="meta">Version 2.2, 2026-08-03</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-core-model">1. Core Model</a></li><li><a href="#2-foundational-principles">2. Foundational Principles</a></li><li><a href="#3-the-veldo-change-lifecycle">3. The Veldo Change Lifecycle</a></li><li><a href="#4-risk-classification">4. Risk Classification</a></li><li><a href="#5-repository-structure">5. Repository Structure</a></li><li><a href="#6-the-repository-index">6. The Repository Index</a></li><li><a href="#7-agent-roles">7. Agent Roles</a></li><li><a href="#8-agent-operating-instructions">8. Agent Operating Instructions</a></li><li><a href="#9-definition-of-proven">9. Definition of Proven</a></li><li><a href="#10-definition-of-done">10. Definition of Done</a></li><li><a href="#11-what-veldo-eliminates">11. What Veldo Eliminates</a></li><li><a href="#12-what-veldo-does-not-eliminate">12. What Veldo Does Not Eliminate</a></li><li><a href="#13-production-support">13. Production Support</a></li><li><a href="#14-infrastructure-and-release">14. Infrastructure and Release</a></li><li><a href="#15-speed-without-recklessness">15. Speed Without Recklessness</a></li><li><a href="#16-measuring-veldo-performance">16. Measuring Veldo Performance</a></li><li><a href="#17-failure-modes">17. Failure Modes</a></li><li><a href="#18-adoption-rules">18. Adoption Rules</a></li><li><a href="#19-minimal-veldo-implementation">19. Minimal Veldo Implementation</a></li><li><a href="#20-veldo-manifesto">20. Veldo Manifesto</a></li><li><a href="#21-security-by-design">21. Security by Design</a></li><li><a href="#22-the-veldo-rule">22. The Veldo Rule</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><p>Veldo is a software development methodology designed for teams that build primarily with AI coding agents. It replaces the traditional software development lifecycle with a repository-native, specification-driven, proof-gated system optimized for extreme delivery speed.</p>
+<p>The central premise is simple:</p>
+<blockquote><p>When implementation becomes nearly free, verification becomes the primary engineering bottleneck.</p></blockquote>
+<p>AI coding agents can compress planning and implementation work that once took weeks into hours. A development process designed around human implementation speed becomes unnecessary overhead. Sprints, story points, standups, handoffs, manual status reporting, and separate QA phases no longer improve delivery enough to justify their cost.</p>
+<p>Veldo reorganizes development around the new constraint. Humans define intent and exercise judgment. AI agents build, test, inspect, and review. The repository contains the complete operational truth. Changes move continuously into one trunk as soon as the system can prove that they satisfy their specification.</p>
+<p>Veldo does not optimize the traditional software development lifecycle. It replaces it.</p>
+<h2 id="1-core-model">1. Core Model<a class="anchor" href="#1-core-model" aria-label="link to this section">#</a></h2>
+<p>Every change follows the same fundamental path:</p>
+<pre><code>Intent -&gt; Specification -&gt; Implementation -&gt; Proof -&gt; Independent Review -&gt; Merge</code></pre>
+<p>A human states what should change and how success will be recognized. An AI coding agent implements the change. Automated checks prove that the implementation meets the specification and does not violate repository constraints. A fresh-context agent independently reviews the specification, implementation, and evidence. The change merges automatically when all required gates pass, except when the change affects an area where an incorrect decision would be difficult or impossible to reverse.</p>
+<p>The unit of delivery is therefore not code alone. The unit of delivery is:</p>
+<p><strong>Specification + Implementation + Evidence</strong></p>
+<p>Code without evidence is incomplete.</p>
+<p>That path is the spine of every change. Above it sits one more layer, for product work only. A product increment (several features, many specifications, shared regression) is defined holistically before it is decomposed, so specifications are pulled from a deliberate order rather than arriving as a random stream. A bug or an isolated change skips that layer and enters the path directly. Principle 2.11 states the two lanes; Stage 0 in the lifecycle defines the planning layer and how work flows out of it.</p>
+<h2 id="2-foundational-principles">2. Foundational Principles<a class="anchor" href="#2-foundational-principles" aria-label="link to this section">#</a></h2>
+<h3 id="21-the-repository-is-the-operating-system">2.1 The repository is the operating system<a class="anchor" href="#21-the-repository-is-the-operating-system" aria-label="link to this section">#</a></h3>
+<p>The repository is the single source of truth for the product and the development process. Anything required to understand, build, validate, operate, or modify the system must be available to an authorized agent through the repository or through a machine-readable interface referenced by the repository.</p>
+<p>This includes:</p>
+<ul>
+<li>Source code</li>
+<li>Specifications</li>
+<li>Acceptance criteria</li>
+<li>Tests</li>
+<li>Architecture decisions</li>
+<li>Coding conventions</li>
+<li>Operational procedures</li>
+<li>Development commands</li>
+<li>Environment requirements</li>
+<li>Database schemas</li>
+<li>API contracts</li>
+<li>Deployment configuration</li>
+<li>Current work status</li>
+<li>Known limitations</li>
+<li>Product terminology</li>
+<li>Security requirements</li>
+<li>Agent instructions</li>
+</ul>
+<p>If an agent cannot read it, diff it, or invoke it, it should not be considered reliable operational knowledge.</p>
+<p>External systems may still exist, but they must not become hidden sources of truth. Chat messages, meetings, private notes, and undocumented decisions are temporary communication channels. Any durable decision must be moved into the repository.</p>
+<p>The repository being the source of truth does not mean humans type into it. The repository is the database, not the user interface: humans state intent in their own tools and their own words, agents are the scribes that write truth into the repository, and human-readable views are generated outward from it. What the principle forbids is truth living anywhere else, not humans working where they are comfortable.</p>
+<h3 id="22-the-specification-is-the-unit-of-work">2.2 The specification is the unit of work<a class="anchor" href="#22-the-specification-is-the-unit-of-work" aria-label="link to this section">#</a></h3>
+<p>Veldo does not begin with a Jira ticket, user story, sprint commitment, or engineering estimate. It begins with a short in-repository specification. For a product increment, the specification is still the unit of work; it is simply pulled from a Product Plan in deliberate order rather than authored in isolation (principle 2.11, Stage 0). The plan sets the order and carries the holistic context; the specification remains the contract the machine builds and proves against.</p>
+<p>The specification defines:</p>
+<ul>
+<li>The problem or desired outcome</li>
+<li>The intended behavior</li>
+<li>The relevant constraints</li>
+<li>Acceptance criteria</li>
+<li>Required tests or evidence</li>
+<li>Areas that must not change</li>
+<li>Any required human approval</li>
+</ul>
+<p>The specification describes intent, not implementation details, unless a technical constraint is itself part of the requirement.</p>
+<p>A specification should be small enough that one agent can implement it coherently and one reviewer can evaluate it without reconstructing an entire project history.</p>
+<p>A specification is complete only when success can be evaluated.</p>
+<p>Bad specification:</p>
+<blockquote><p>Improve account creation.</p></blockquote>
+<p>Better specification:</p>
+<blockquote><p>Reduce account creation failures caused by duplicate email formatting.</p></blockquote>
+<p>Acceptance criteria:</p>
+<ul>
+<li>Email addresses are normalized before duplicate-account checks.</li>
+<li>Gmail dot variations are treated according to the existing identity policy.</li>
+<li>Existing accounts are not modified.</li>
+<li>The API returns the current duplicate-account error format.</li>
+<li>Unit tests cover normalization, duplicate detection, and unaffected domains.</li>
+</ul>
+<p>The specification is the contract between human intent and machine execution.</p>
+<p>Recurring, mechanical change classes do not need a fresh specification per instance. Dependency updates, copy corrections, and configuration rotations are high-volume, mostly mechanical, and occasionally catastrophic. Define a <strong>standing specification</strong> once per change class: its acceptance criteria, risk classification, and required evidence. Each instance then runs the normal loop against the standing specification: an ordinary change whose proof manifest references the standing specification&#x27;s id, gated and reviewed as usual, with the index tracking the class rather than each instance. This keeps proof without per-change ceremony.</p>
+<p>Specifications are also how outside signals become work. Bug reports, support tickets, crash alerts, and feature requests arrive in whatever tool their reporters live in; they are input, not work. An intake agent converts them: it deduplicates, attempts to reproduce, and drafts the specification with the reproduction attached as a failing test, because a bug&#x27;s first acceptance criterion is its reproduction. When reproduction is genuinely impossible, intermittent, production-only, or environment-bound, the specification says so and names the closest observable proxy (a log signature, a metric) as the criterion instead. No one needs to write specification files by hand, engineers included: humans state intent in their own words and their own tools, and agents formalize it into the contract.</p>
+<h3 id="23-humans-own-intent-and-judgment">2.3 Humans own intent and judgment<a class="anchor" href="#23-humans-own-intent-and-judgment" aria-label="link to this section">#</a></h3>
+<p>Humans remain accountable for two functions:</p>
+<p><strong>Intent.</strong> Humans decide:</p>
+<ul>
+<li>What outcome matters</li>
+<li>What problem should be solved</li>
+<li>What tradeoffs are acceptable</li>
+<li>What constraints apply</li>
+<li>What should not be changed</li>
+<li>How success should be recognized</li>
+</ul>
+<p><strong>Judgment.</strong> Humans decide:</p>
+<ul>
+<li>Whether the specification reflects the real need</li>
+<li>Whether risks are acceptable</li>
+<li>Whether irreversible changes should proceed</li>
+<li>Whether a result is strategically or operationally appropriate</li>
+<li>Whether an exception to an automated rule is justified</li>
+</ul>
+<p>Humans should not manually perform machine work merely because that work was historically performed by engineers.</p>
+<p>The objective is not to remove humans from development. The objective is to reserve human attention for decisions that require human responsibility.</p>
+<h3 id="24-machines-own-construction-and-proof">2.4 Machines own construction and proof<a class="anchor" href="#24-machines-own-construction-and-proof" aria-label="link to this section">#</a></h3>
+<p>AI agents are responsible for the mechanical execution of development:</p>
+<ul>
+<li>Reading the repository</li>
+<li>Understanding relevant context</li>
+<li>Planning the implementation</li>
+<li>Modifying code</li>
+<li>Creating and updating tests</li>
+<li>Running checks</li>
+<li>Inspecting failures</li>
+<li>Correcting defects</li>
+<li>Updating documentation</li>
+<li>Producing evidence</li>
+<li>Reviewing changes</li>
+<li>Identifying risk</li>
+<li>Verifying acceptance criteria</li>
+</ul>
+<p>The implementing agent must not treat code generation as completion. Its responsibility ends only when it has produced both the change and the evidence required to evaluate the change.</p>
+<h3 id="25-verification-is-the-bottleneck">2.5 Verification is the bottleneck<a class="anchor" href="#25-verification-is-the-bottleneck" aria-label="link to this section">#</a></h3>
+<p>Traditional development optimized the production of code because code was expensive to produce. In AI-native development, code generation is cheap and fast. The scarce resource is confidence.</p>
+<p>The critical engineering question changes from:</p>
+<blockquote><p>How quickly can we write this?</p></blockquote>
+<p>to:</p>
+<blockquote><p>How quickly can we prove this is correct?</p></blockquote>
+<p>Veldo therefore invests heavily in:</p>
+<ul>
+<li>Executable acceptance criteria</li>
+<li>Automated tests</li>
+<li>Static analysis</li>
+<li>Type checking</li>
+<li>Contract tests</li>
+<li>Integration tests</li>
+<li>Security checks</li>
+<li>Migration validation</li>
+<li>Deployment checks</li>
+<li>Independent review</li>
+<li>Observability</li>
+<li>Fast rollback</li>
+</ul>
+<p>A team practicing Veldo should spend more effort improving its proof system than optimizing raw code generation. Faster agents without stronger verification only create defects faster.</p>
+<h3 id="26-every-change-must-carry-evidence">2.6 Every change must carry evidence<a class="anchor" href="#26-every-change-must-carry-evidence" aria-label="link to this section">#</a></h3>
+<p>A change is not complete because the implementation looks plausible. It is complete when evidence demonstrates that the implementation satisfies the specification.</p>
+<p>Evidence may include:</p>
+<ul>
+<li>Passing automated tests</li>
+<li>New tests that fail before the change and pass after it</li>
+<li>Type-checking results</li>
+<li>Linting results</li>
+<li>Build results</li>
+<li>API contract validation</li>
+<li>Database migration checks</li>
+<li>Security scan results</li>
+<li>Performance measurements</li>
+<li>Screenshots</li>
+<li>Recorded UI behavior</li>
+<li>Structured manual verification</li>
+<li>Logs from a test environment</li>
+<li>Reviewer findings</li>
+<li>A design owner&#x27;s review verdict for user-facing changes</li>
+<li>Explicit mapping from acceptance criteria to proof</li>
+</ul>
+<p>The required evidence should be proportional to the risk of the change. A text correction may require a build and visual check. An authentication change may require unit, integration, security, regression, and human review.</p>
+<h3 id="27-independent-review-requires-fresh-context">2.7 Independent review requires fresh context<a class="anchor" href="#27-independent-review-requires-fresh-context" aria-label="link to this section">#</a></h3>
+<p>The agent that created a change should not be the only agent deciding whether the change is correct. Implementation and review are separate roles.</p>
+<p>The review should be performed by a fresh-context agent that receives:</p>
+<ul>
+<li>The specification</li>
+<li>The relevant repository instructions</li>
+<li>The final diff</li>
+<li>The produced evidence</li>
+<li>Access to run necessary checks</li>
+</ul>
+<p>The reviewer should ideally use a different model or independent execution context.</p>
+<p>The reviewer must evaluate the change from first principles rather than trusting the implementing agent&#x27;s summary. Its job is to determine:</p>
+<ul>
+<li>Whether the implementation satisfies every acceptance criterion</li>
+<li>Whether the evidence actually proves the claims being made</li>
+<li>Whether tests are meaningful rather than superficial</li>
+<li>Whether the change introduces regressions</li>
+<li>Whether the implementation violates repository conventions</li>
+<li>Whether security, data integrity, or operational risks were missed</li>
+<li>Whether unnecessary complexity was introduced</li>
+<li>Whether the specification itself contains unresolved ambiguity</li>
+</ul>
+<p>Fresh-context review reduces shared assumptions, confirmation bias, and false confidence.</p>
+<h3 id="271-long-running-loops-keep-the-orchestrator-thin-clean-context-dispatch">2.7.1 Long-running loops keep the orchestrator thin (clean-context dispatch)<a class="anchor" href="#271-long-running-loops-keep-the-orchestrator-thin-clean-context-dispatch" aria-label="link to this section">#</a></h3>
+<p>Fresh-context review (2.7) is one instance of a broader rule that governs any session which drives more than one specification. When a single long-lived session runs many specs in a loop, an autonomous or multi-spec run, it must act as a THIN DISPATCHER, not an inline worker.</p>
+<p>Each spec&#x27;s heavy work, its build and its independent review, must be performed in a DISPATCHED FRESH SUB-CONTEXT (a sub-agent) that returns only a compact receipt: the small summary of what happened (the criteria proven, the gate result, the verdict, the commit, and the one thing awaiting a human), never the sub-context&#x27;s full transcript. The long-lived orchestrator keeps ONLY that receipt per spec. It does not perform per-spec build or review work inline, and it does not read a sub-context&#x27;s transcript into its own context.</p>
+<p>The reason is mechanical, not stylistic. An orchestrator that drives spec after spec inline accumulates every spec&#x27;s build context plus every review sub-context&#x27;s transcript in one process. Its memory then grows without bound, as the sum of all specs rather than the size of one, until the operating system&#x27;s out-of-memory killer terminates it. On 2026-07-19 a single orchestrator session that drove item after item inline reached roughly 17.8 GB and was killed by the kernel, taking its terminal down with it. A thin dispatcher keeps a flat footprint across any number of specs, because it retains a bounded receipt per spec and nothing more.</p>
+<p>This rule has teeth beyond prose. The dispatch boundary projects each outcome to a bounded receipt through a pure function whose allowlist of summary fields fails closed, and a self-test rejects any receipt that smuggles a transcript or a full nested result through it, so the boundary cannot silently regress.</p>
+<h3 id="28-green-means-merge">2.8 Green means merge<a class="anchor" href="#28-green-means-merge" aria-label="link to this section">#</a></h3>
+<p>For ordinary reversible changes, passing all defined gates should result in automatic merge. Ordinary means no required human lane: a change whose specification requires a human review lane (section 7) is not ordinary, however reversible it is. Human approval should not be required merely because human approval was historically part of the process. A human review queue recreates the exact bottleneck that AI-native development is intended to remove.</p>
+<p>The default rule is:</p>
+<blockquote><p>Specification satisfied + gates green + independent review passed = merge</p></blockquote>
+<p>Human sign-off is reserved for changes where being wrong could create severe or irreversible consequences. Examples include:</p>
+<ul>
+<li>Movement of money</li>
+<li>Billing calculations</li>
+<li>Authentication and authorization</li>
+<li>Destructive database migrations</li>
+<li>Encryption or key management</li>
+<li>Core infrastructure</li>
+<li>Production access controls</li>
+<li>Legal or regulatory behavior</li>
+<li>Permanent deletion</li>
+<li>High-impact security changes</li>
+<li>Changes that cannot be rolled back safely</li>
+</ul>
+<p>Human approval is a risk control, not a ritual.</p>
+<h3 id="29-changes-flow-continuously-into-one-trunk">2.9 Changes flow continuously into one trunk<a class="anchor" href="#29-changes-flow-continuously-into-one-trunk" aria-label="link to this section">#</a></h3>
+<p>Veldo uses continuous integration into a shared primary branch. There are no sprint boundaries. There are no release trains for ordinary changes. There is no requirement to batch unrelated work into a scheduled deployment.</p>
+<p>A proven change should merge as soon as it is ready. Branches should be short-lived and limited to the implementation of a single coherent specification. The expected lifetime of a normal change is hours to a few days, not weeks.</p>
+<p>Long-lived branches indicate one of the following problems:</p>
+<ul>
+<li>The specification is too large</li>
+<li>The proof system is too slow</li>
+<li>The architecture makes changes difficult to isolate</li>
+<li>The acceptance criteria are unclear</li>
+<li>Too much work has been bundled together</li>
+<li>A decision is blocked on unavailable human judgment</li>
+</ul>
+<p>The solution is usually to reduce scope or improve the system, not add more project management.</p>
+<h3 id="210-work-should-remain-small-and-reversible">2.10 Work should remain small and reversible<a class="anchor" href="#210-work-should-remain-small-and-reversible" aria-label="link to this section">#</a></h3>
+<p>Veldo favors small, independently provable changes.</p>
+<p>A good change:</p>
+<ul>
+<li>Has one clear objective</li>
+<li>Produces a focused diff</li>
+<li>Can be reviewed in isolation</li>
+<li>Has explicit acceptance criteria</li>
+<li>Can be tested reliably</li>
+<li>Can be rolled back</li>
+<li>Does not depend on a large sequence of unmerged work</li>
+</ul>
+<p>Large changes should be decomposed into independently valid increments. Decomposition must not produce meaningless partial states. Each increment should leave the system correct and operational.</p>
+<p>Feature flags, compatibility layers, expand-and-contract migrations, and parallel interfaces may be used to preserve reversibility.</p>
+<h3 id="211-product-work-is-planned-before-it-is-decomposed">2.11 Product work is planned before it is decomposed<a class="anchor" href="#211-product-work-is-planned-before-it-is-decomposed" aria-label="link to this section">#</a></h3>
+<p>A stream of individual specifications is exactly right for a bug or an isolated change, and exactly wrong for a product increment. Product development is holistic first: outcomes, the feature breakdown, the order, the regression, and what &quot;done&quot; means are decided together, and only then does the work split into pieces. Pulling specifications off a random queue loses that whole; a piece built without the picture it belongs to is built blind.</p>
+<p>Veldo therefore keeps two lanes:</p>
+<ul>
+<li><strong>The direct lane.</strong> A bug, a copy fix, a config change, one isolated improvement: a standalone specification enters the lifecycle at Stage 1. Nothing changes for this lane; it is the common case and it stays light.</li>
+<li><strong>The planned lane.</strong> A product increment (several features, many specifications, shared regression) is defined once as a <strong>Product Plan</strong> before any specification is written, and specifications are pulled from it in dependency order. Stage 0 defines this.</li>
+</ul>
+<p>The plan is not a return to sprints and estimates. It is a single lightweight artifact that holds the holistic view so every part inherits it, and it obeys the same proportionality rule as everything else: defining one takes tens of human minutes, and if the planning apparatus grows past that, it has become the ceremony Veldo exists to remove. The two lanes stay honest through promotion: a change that started standalone and turns out to belong to an increment is promoted into the plan rather than living as a shadow dependency, and the binding is mechanically enforced in both directions.</p>
+<h2 id="3-the-veldo-change-lifecycle">3. The Veldo Change Lifecycle<a class="anchor" href="#3-the-veldo-change-lifecycle" aria-label="link to this section">#</a></h2>
+<h3 id="stage-0-plan-the-iteration">Stage 0: Plan the iteration<a class="anchor" href="#stage-0-plan-the-iteration" aria-label="link to this section">#</a></h3>
+<p>This stage applies only to a product increment: several features, many specifications, shared regression. A bug or an isolated change skips it and starts at Stage 1 (principle 2.11). Skipping it for genuinely isolated work is correct, not a shortcut; forcing a plan onto a one-line fix is the ceremony the proportionality rule forbids.</p>
+<p>A product increment is defined holistically before it is decomposed. The holistic definition is a <strong>Product Plan</strong>: a short, human-approved document that becomes the context every specification pulled from it inherits, so the agent building one part sees the whole it belongs to.</p>
+<p>A Product Plan contains:</p>
+<ul>
+<li><strong>Outcomes.</strong> The observable changes for users the increment must make true, each with a measure. Outcomes are states of the product, not tasks.</li>
+<li><strong>Non-goals.</strong> Named exclusions that kill scope drift before it starts.</li>
+<li><strong>Constraints.</strong> Cross-cutting rules every work item inherits: budgets, invariants, platform rules.</li>
+<li><strong>A feature tree.</strong> The decomposition into capabilities a user can name, each tracing to an outcome.</li>
+<li><strong>The work DAG.</strong> An ordered list of work items, each of which becomes exactly one specification, each declaring its dependencies explicitly. An empty dependency list is a declaration; a missing one is an error.</li>
+<li><strong>Planned regression.</strong> The journeys that must stay green across the whole increment, declared up front with their activation (from the start, or once a named item ships, or manual) and where they run, never accumulated by accident.</li>
+<li><strong>A release definition.</strong> The milestone, the mode (merge continuously as pieces go green, or cut a coordinated release together), and what observing the increment in production means.</li>
+<li><strong>Open decisions.</strong> Each names exactly what it blocks. Work proceeds around anything a decision does not block; nothing waits on a question that does not gate it.</li>
+</ul>
+<p>The plan is a contract, as the specification is a contract. It is approved by a human, on the record, before it leaves draft, and a validator checks it mechanically: every reference resolves, the dependency graph is acyclic, each work item mirrors the specification it becomes and vice versa, and no unresolved decision blocks a work item that is otherwise ready.</p>
+<p>The DAG has a <strong>frontier</strong>: the work items whose dependencies are all shipped and that no open decision blocks. Specifications are pulled from the frontier in deliberate order, one at a time, and each then runs the ordinary lifecycle, Stages 1 through 10. Building out of order is refused by the machine, not by discipline: a planned specification whose dependencies are unshipped, or whose plan has been revised since it was pulled, does not run until it is re-pulled against the current plan. Each change also binds to the exact plan state it was built against, so proof records which version of the whole a part was proven under. The plan&#x27;s status (what has shipped, what waits on what, what the frontier is) is derived from the specification files, never hand-maintained, so it cannot drift from the truth the way a status board does.</p>
+<p><strong>Promotion</strong> keeps the two lanes honest. A change that began as a standalone specification and turns out to belong to an increment is promoted into the plan: it is added to the work DAG with its dependencies, and the specification gains the plan binding. Because mirroring is enforced in both directions, a half-promoted change fails the gate: a specification that claims a plan with no matching work item, or a work item with no specification, is a contradiction the machine refuses.</p>
+<p>When an approved plan changes (new work, changed dependencies, dropped scope), that is a <strong>revision</strong>, not an edit: the revision is recorded, its blast radius on already-shipped work is computed, and dependent context built against the old revision is invalidated, exactly as revising a ready specification invalidates the evidence bound to it. Intent is allowed to change; it is not allowed to change silently underneath work already done.</p>
+<p>The plan is stewarded in the same weekly index pass that grooms specifications (section 6). There is no separate planning meeting, because the plan reports its own state.</p>
+<h3 id="stage-1-state-the-intent">Stage 1: State the intent<a class="anchor" href="#stage-1-state-the-intent" aria-label="link to this section">#</a></h3>
+<p>A human describes the desired outcome. The intent should answer:</p>
+<ul>
+<li>What should become true?</li>
+<li>Why does it matter?</li>
+<li>Who or what is affected?</li>
+<li>What constraints must be respected?</li>
+<li>What would make the result unacceptable?</li>
+</ul>
+<p>The intent should avoid prescribing implementation unless necessary.</p>
+<p>Example:</p>
+<blockquote><p>Customers must be able to retry a failed payment without creating a duplicate order.</p></blockquote>
+<h3 id="stage-2-create-the-specification">Stage 2: Create the specification<a class="anchor" href="#stage-2-create-the-specification" aria-label="link to this section">#</a></h3>
+<p>The intent is converted into a repository-native specification.</p>
+<p>The specification is drafted as a dialogue, not a form. The specification agent interviews the human: what outcome matters, what constraints apply, which edge cases exist, what failure would look like. It drafts the specification from the answers, and the human edits and approves. The human never starts from a blank page, because stating intent well is the scarcest human work in the method and the dialogue is what makes it cheap.</p>
+<p>Recommended location:</p>
+<pre><code>/specs/&lt;status&gt;/&lt;spec-id&gt;-&lt;short-name&gt;.md</code></pre>
+<p>Example:</p>
+<pre><code>/specs/active/Veldo-0142-payment-retry-idempotency.md</code></pre>
+<p>A specification should contain:</p>
+<pre><code class="lang-markdown"># Title
+
+## Status
+
+Draft | Ready | In Progress | Review | Proven | Shipped | Blocked
+
+## Intent
+
+What outcome should be achieved and why.
+
+## Context
+
+Relevant product, technical, or operational background.
+
+## Scope
+
+What is included.
+
+## Out of Scope
+
+What must not be addressed by this change.
+
+## Acceptance Criteria
+
+- Observable, testable requirement
+- Observable, testable requirement
+- Observable, testable requirement
+
+## Constraints
+
+Technical, security, compatibility, performance, or business constraints.
+
+## Required Evidence
+
+Tests, checks, screenshots, measurements, or other proof required before merge.
+
+## Risk Classification
+
+Low | Standard | High | Critical
+
+## Human Approval
+
+Required | Not Required
+
+Reason:
+
+## Notes
+
+Any additional information needed by the implementing or reviewing agent.</code></pre>
+<p>The specification is committed before or with the implementation so its history remains visible.</p>
+<h3 id="stage-3-validate-the-specification">Stage 3: Validate the specification<a class="anchor" href="#stage-3-validate-the-specification" aria-label="link to this section">#</a></h3>
+<p>Before implementation begins, an agent checks whether the specification is executable. The specification validator should identify:</p>
+<ul>
+<li>Ambiguous requirements</li>
+<li>Contradictory acceptance criteria</li>
+<li>Missing edge cases</li>
+<li>Missing rollback requirements</li>
+<li>Unclear ownership</li>
+<li>Requirements that cannot be tested</li>
+<li>Scope that is too large for one coherent change</li>
+<li>Risk classification that appears incorrect</li>
+<li>Missing repository context</li>
+</ul>
+<p>For ordinary low-risk work, the validator may automatically improve formatting and propose clarifications based on repository conventions. Material product decisions must remain human-owned.</p>
+<p>A specification should not enter implementation while its success criteria remain subjective or undefined.</p>
+<h3 id="stage-4-implement-the-change">Stage 4: Implement the change<a class="anchor" href="#stage-4-implement-the-change" aria-label="link to this section">#</a></h3>
+<p>The implementing agent reads:</p>
+<ul>
+<li>The specification</li>
+<li>Repository-level instructions</li>
+<li>Relevant architecture documentation</li>
+<li>Existing tests</li>
+<li>Related source code</li>
+<li>Previous decisions</li>
+<li>Current index of active work</li>
+</ul>
+<p>The implementing agent then:</p>
+<ol>
+<li>Creates a concise implementation plan.</li>
+<li>Identifies affected components.</li>
+<li>Identifies risks and likely regressions.</li>
+<li>Implements the smallest complete change.</li>
+<li>Adds or updates tests.</li>
+<li>Runs the required checks.</li>
+<li>Corrects all failures.</li>
+<li>Updates documentation and operational instructions.</li>
+<li>Produces a structured completion report.</li>
+</ol>
+<p>The implementing agent must not silently weaken tests, bypass checks, or redefine acceptance criteria to make the change pass. If the specification cannot be satisfied safely, the agent must stop and record the blocker.</p>
+<h3 id="stage-5-build-the-proof-package">Stage 5: Build the proof package<a class="anchor" href="#stage-5-build-the-proof-package" aria-label="link to this section">#</a></h3>
+<p>Every implementation must produce a proof package. The proof package should contain:</p>
+<pre><code class="lang-markdown"># Proof Report
+
+## Specification
+
+Path or identifier of the implemented specification.
+
+## Summary
+
+What changed.
+
+## Acceptance Criteria Results
+
+### Criterion 1
+
+Status: Passed | Failed | Not Proven
+
+Evidence:
+- Test name
+- Command result
+- File reference
+- Screenshot
+- Measurement
+
+### Criterion 2
+
+Status: Passed | Failed | Not Proven
+
+Evidence:
+- Relevant proof
+
+## Checks Executed
+
+- Command
+- Result
+- Relevant output or artifact
+
+## Tests Added or Modified
+
+- Test file
+- Behavior covered
+- Why the test is meaningful
+
+## Regression Analysis
+
+Areas that could have been affected and how they were checked.
+
+## Risk Notes
+
+Remaining uncertainty, assumptions, or operational considerations.
+
+## Rollback
+
+How the change can be reverted or disabled.
+
+## Implementation Agent
+
+Model or agent identifier, when available.</code></pre>
+<p>The proof package may be generated as a file, pull request body, CI artifact, or machine-readable manifest. The format matters less than its availability, reproducibility, and connection to the specification.</p>
+<h3 id="stage-6-run-automated-gates">Stage 6: Run automated gates<a class="anchor" href="#stage-6-run-automated-gates" aria-label="link to this section">#</a></h3>
+<p>The repository defines a standard gate command. Examples:</p>
+<pre><code>make verify
+npm run verify
+./scripts/verify.sh
+task verify</code></pre>
+<p>The command should execute every mandatory repository-level check. Depending on the project, this may include:</p>
+<ul>
+<li>Formatting</li>
+<li>Linting</li>
+<li>Type checking</li>
+<li>Unit tests</li>
+<li>Integration tests</li>
+<li>Contract tests</li>
+<li>Build verification</li>
+<li>Dependency checks</li>
+<li>Security scanning</li>
+<li>Secret detection</li>
+<li>Migration validation</li>
+<li>Generated-code consistency</li>
+<li>Documentation validation</li>
+<li>Performance thresholds</li>
+<li>Test coverage requirements</li>
+<li>Packaging checks</li>
+<li>Deployment dry runs</li>
+</ul>
+<p>The command must produce a clear success or failure result. A gate that frequently produces false positives or false negatives should be treated as a production defect. Slow gates should be optimized aggressively because verification speed determines delivery speed.</p>
+<h3 id="stage-7-conduct-independent-agent-review">Stage 7: Conduct independent agent review<a class="anchor" href="#stage-7-conduct-independent-agent-review" aria-label="link to this section">#</a></h3>
+<p>A fresh-context reviewing agent evaluates the final state. The reviewing agent should not rely on the implementing agent&#x27;s conclusions. It should independently inspect:</p>
+<ul>
+<li>The specification</li>
+<li>The diff</li>
+<li>The affected code</li>
+<li>The tests</li>
+<li>The proof report</li>
+<li>The automated gate results</li>
+<li>Relevant architecture and operational constraints</li>
+</ul>
+<p>The review should produce a structured verdict:</p>
+<pre><code class="lang-markdown"># Independent Review
+
+## Verdict
+
+Pass | Pass with Non-Blocking Notes | Fail | Escalate
+
+## Specification Coverage
+
+- Criterion 1: Satisfied | Not Satisfied | Unclear
+- Criterion 2: Satisfied | Not Satisfied | Unclear
+
+## Findings
+
+### Blocking
+
+Issues that prevent merge.
+
+### Non-Blocking
+
+Valid improvements that do not prevent the current change from shipping.
+
+## Test Assessment
+
+Whether the tests meaningfully demonstrate the required behavior.
+
+## Regression Risk
+
+Potential unintended effects.
+
+## Security and Data Risk
+
+Relevant concerns.
+
+## Complexity Assessment
+
+Whether the implementation is appropriately simple.
+
+## Reviewer
+
+Model or agent identifier, when available.</code></pre>
+<p>A failed review returns the change to implementation. The implementing agent addresses findings and regenerates the proof package. The reviewing agent then evaluates the revised change in a fresh or reset context.</p>
+<p>The loop is bounded. After two failed review cycles on the same specification, a human looks before a third attempt is made. At that point the defect is almost always in the specification, ambiguous intent or untestable criteria, not in the implementation, and more machine cycles will not fix a human ambiguity.</p>
+<h3 id="stage-8-apply-the-merge-policy">Stage 8: Apply the merge policy<a class="anchor" href="#stage-8-apply-the-merge-policy" aria-label="link to this section">#</a></h3>
+<p>A change may merge automatically when all of the following are true:</p>
+<ul>
+<li>The specification is valid and was approved as ready before implementation began</li>
+<li>Every acceptance criterion is proven</li>
+<li>All mandatory automated gates pass</li>
+<li>Independent review passes</li>
+<li>No unresolved blocking findings remain</li>
+<li>Required documentation is updated</li>
+<li>The change is classified as reversible</li>
+<li>Human approval is not required</li>
+</ul>
+<p>A change requires human approval when any of the following are true:</p>
+<ul>
+<li>The risk classification requires it</li>
+<li>The change affects an irreversible or high-impact area</li>
+<li>The specification contains an explicit approval requirement</li>
+<li>The reviewer escalates unresolved judgment</li>
+<li>The proof is incomplete but a business exception is being considered</li>
+<li>The implementation creates a strategic, legal, financial, or security tradeoff</li>
+</ul>
+<p>Human approval must be recorded in a durable, diffable, or auditable form.</p>
+<p>One more condition guards the trunk itself: proof is valid only for the state it ran against. If the trunk has moved since the gate ran, the merged result is a state no gate has ever seen. Re-run the mandatory gate on the merge result before the merge completes, serialized so that nothing else lands in between; at low volume that is a rebase, a re-run, and an immediate merge, and at scale a merge queue automates exactly that. Two changes that each pass in isolation can still fail together, and the trunk must never contain a state that was not itself proven.</p>
+<h3 id="stage-9-merge-and-observe">Stage 9: Merge and observe<a class="anchor" href="#stage-9-merge-and-observe" aria-label="link to this section">#</a></h3>
+<p>After merge, automated systems should deploy or prepare the change according to repository policy. The system should collect enough operational evidence to detect incorrect assumptions.</p>
+<p>Post-merge checks may include:</p>
+<ul>
+<li>Deployment health</li>
+<li>Error rates</li>
+<li>Latency</li>
+<li>Conversion behavior</li>
+<li>Data integrity</li>
+<li>Queue depth</li>
+<li>Billing reconciliation</li>
+<li>Security events</li>
+<li>Feature-specific metrics</li>
+<li>User-visible failures</li>
+</ul>
+<p>A change may be technically correct according to tests but wrong in production because the specification or assumptions were incomplete. Veldo therefore treats observability as part of proof, especially for changes whose real behavior depends on production conditions.</p>
+<h3 id="stage-10-close-the-specification">Stage 10: Close the specification<a class="anchor" href="#stage-10-close-the-specification" aria-label="link to this section">#</a></h3>
+<p>Once the change is merged and stable, update the specification status.</p>
+<p>Example:</p>
+<pre><code>Ready -&gt; In Progress -&gt; Review -&gt; Proven -&gt; Shipped</code></pre>
+<p>The specification, implementation, proof, review, and resulting commit should remain linked. This creates a permanent record of:</p>
+<ul>
+<li>What was intended</li>
+<li>What changed</li>
+<li>Why it changed</li>
+<li>How it was tested</li>
+<li>Who or what reviewed it</li>
+<li>What evidence justified shipping it</li>
+</ul>
+<p>No separate handover document is required because the development record is already present in the repository.</p>
+<h2 id="4-risk-classification">4. Risk Classification<a class="anchor" href="#4-risk-classification" aria-label="link to this section">#</a></h2>
+<p>Veldo uses risk to determine the strength of the gate, not organizational hierarchy or arbitrary process.</p>
+<p>One law governs classification: anything may raise a change&#x27;s risk, and nothing may lower it. A protected-path rule, a static check, the independent reviewer, even a production observation can each push a change into a higher tier. A live change is never lowered; lowering happens only by revising the specification, a new classification decision made by the accountable human, which invalidates the evidence bound to the old revision.</p>
+<h3 id="low-risk">Low Risk<a class="anchor" href="#low-risk" aria-label="link to this section">#</a></h3>
+<p>Examples:</p>
+<ul>
+<li>Copy changes</li>
+<li>Internal developer tooling</li>
+<li>Non-functional refactoring with strong test coverage</li>
+<li>Documentation</li>
+<li>Isolated visual corrections</li>
+<li>Logging improvements without sensitive data</li>
+</ul>
+<p>Typical requirements:</p>
+<ul>
+<li>Standard automated gate</li>
+<li>Relevant tests or build</li>
+<li>Independent agent review</li>
+<li>Automatic merge</li>
+</ul>
+<h3 id="standard-risk">Standard Risk<a class="anchor" href="#standard-risk" aria-label="link to this section">#</a></h3>
+<p>Examples:</p>
+<ul>
+<li>Ordinary product behavior</li>
+<li>API changes with backward compatibility</li>
+<li>New UI functionality</li>
+<li>Non-destructive data processing</li>
+<li>Business logic with reversible outcomes</li>
+</ul>
+<p>Typical requirements:</p>
+<ul>
+<li>Full standard gate</li>
+<li>Acceptance tests</li>
+<li>Regression checks</li>
+<li>Independent agent review</li>
+<li>Automatic merge when green</li>
+</ul>
+<h3 id="high-risk">High Risk<a class="anchor" href="#high-risk" aria-label="link to this section">#</a></h3>
+<p>Examples:</p>
+<ul>
+<li>Billing calculations</li>
+<li>Permission behavior</li>
+<li>Sensitive data handling</li>
+<li>Infrastructure configuration</li>
+<li>External system integrations</li>
+<li>Changes affecting major customer workflows</li>
+<li>Large-scale data transformations</li>
+</ul>
+<p>Typical requirements:</p>
+<ul>
+<li>Expanded test matrix</li>
+<li>Security or data review</li>
+<li>Staging validation</li>
+<li>Rollback plan</li>
+<li>Independent review by a strong model</li>
+<li>Human approval</li>
+</ul>
+<h3 id="critical-risk">Critical Risk<a class="anchor" href="#critical-risk" aria-label="link to this section">#</a></h3>
+<p>Examples:</p>
+<ul>
+<li>Money movement</li>
+<li>Authentication architecture</li>
+<li>Authorization boundaries</li>
+<li>Destructive migrations</li>
+<li>Encryption or key management</li>
+<li>Permanent deletion</li>
+<li>Core production infrastructure</li>
+<li>Regulatory behavior</li>
+<li>Changes with no reliable rollback</li>
+</ul>
+<p>Typical requirements:</p>
+<ul>
+<li>Explicit human-owned specification</li>
+<li>Threat or failure analysis</li>
+<li>Multiple independent reviews</li>
+<li>Production simulation where possible</li>
+<li>Tested rollback or recovery procedure</li>
+<li>Human approval before execution</li>
+<li>Human observation during rollout when appropriate</li>
+</ul>
+<h3 id="the-emergency-lane">The Emergency Lane<a class="anchor" href="#the-emergency-lane" aria-label="link to this section">#</a></h3>
+<p>When production is failing and waiting would cause real harm, Veldo does not require a specification before acting. Restore service by the fastest safe means, rolling back, disabling, diverting, or fixing forward, with a human engaged throughout. Then backfill within 24 hours: the specification describing what was intended, the proof that the shipped fix satisfies it, and an independent review of what actually went out. The emergency is recorded like any other change; only the order of the steps bends.</p>
+<p>The lane is defined precisely because pressure is when methods break. A method with no answer at 2am teaches people to bypass it at 2am, and bypass becomes culture. And an emergency that recurs is not an emergency; it is a missing specification.</p>
+<h2 id="5-repository-structure">5. Repository Structure<a class="anchor" href="#5-repository-structure" aria-label="link to this section">#</a></h2>
+<p>A repository using Veldo should make the methodology visible and executable.</p>
+<p>Example:</p>
+<pre><code>/
+├── Veldo.md
+├── README.md
+├── Makefile
+├── specs/
+│   ├── index.md
+│   ├── draft/
+│   ├── ready/
+│   ├── active/
+│   ├── review/
+│   ├── shipped/
+│   └── blocked/
+├── docs/
+│   ├── architecture/
+│   ├── decisions/
+│   ├── operations/
+│   ├── product/
+│   └── security/
+├── scripts/
+│   ├── verify.sh
+│   ├── review.sh
+│   └── update-spec-index.sh
+├── proof/
+│   └── &lt;spec-id&gt;/
+├── src/
+└── tests/</code></pre>
+<p>The exact structure may vary, but every repository should provide obvious answers to these questions:</p>
+<ul>
+<li>Where are active specifications?</li>
+<li>How does an agent know what work is ready?</li>
+<li>How does an agent run the complete gate?</li>
+<li>Where are architecture constraints documented?</li>
+<li>Where are proof artifacts stored?</li>
+<li>How is independent review recorded?</li>
+<li>Which changes require human approval?</li>
+<li>How can a change be rolled back?</li>
+<li>What is currently blocked?</li>
+</ul>
+<h2 id="6-the-repository-index">6. The Repository Index<a class="anchor" href="#6-the-repository-index" aria-label="link to this section">#</a></h2>
+<p>Veldo replaces heavy project tracking with a simple diffable index.</p>
+<p>Example:</p>
+<pre><code class="lang-markdown"># Specification Index
+
+| ID | Title | Status | Risk | Owner | Human Approval | Updated |
+|---|---|---|---|---|---|---|
+| Veldo-0142 | Add payment retry idempotency | Review | High | Agent | Required | 2026-07-15 |
+| Veldo-0141 | Correct referral card copy | Active | Low | Agent | No | 2026-07-15 |
+| Veldo-0143 | Add usage alert threshold | Ready | Standard | Unassigned | No | 2026-07-15 |</code></pre>
+<p>The index is not a second source of truth. It is a navigation layer derived from the specifications. The specification file contains the authoritative details.</p>
+<p>The index should remain:</p>
+<ul>
+<li>Small</li>
+<li>Human-readable</li>
+<li>Machine-readable</li>
+<li>Diffable</li>
+<li>Easy for agents to update</li>
+<li>Free of status theater</li>
+</ul>
+<p>Do not recreate Jira inside Markdown.</p>
+<p>One vocabulary rule keeps machines and humans aligned: status names are canonical in lowercase snake form (<code>in_progress</code>); status directories mirror them (<code>active/</code> holds <code>in_progress</code> work); displays may capitalize freely. The specification file&#x27;s status field is always the authority.</p>
+<p>The index is groomed in the one recurring ritual Veldo keeps: a short weekly pass, fifteen to twenty minutes, over the index. Close what shipped, kill what went stale, adjust priorities, confirm the next ready specifications. That pass is the entire planning apparatus. If it regularly needs more than twenty minutes, the specifications are too large or the index has drifted from the truth.</p>
+<h2 id="7-agent-roles">7. Agent Roles<a class="anchor" href="#7-agent-roles" aria-label="link to this section">#</a></h2>
+<p>A single underlying AI system may perform multiple roles, but the execution contexts should remain distinct.</p>
+<p><strong>Specification Agent.</strong> Responsibilities:</p>
+<ul>
+<li>Convert human intent into a structured specification</li>
+<li>Identify ambiguity</li>
+<li>Propose acceptance criteria</li>
+<li>Identify likely risks</li>
+<li>Avoid inventing product decisions</li>
+<li>Mark unresolved questions explicitly</li>
+</ul>
+<p><strong>Implementation Agent.</strong> Responsibilities:</p>
+<ul>
+<li>Understand the specification</li>
+<li>Inspect repository context</li>
+<li>Implement the smallest complete solution</li>
+<li>Add meaningful tests</li>
+<li>Run all required checks</li>
+<li>Produce the proof package</li>
+<li>Avoid changing scope without authorization</li>
+</ul>
+<p><strong>Verification Agent.</strong> Responsibilities:</p>
+<ul>
+<li>Execute or inspect automated evidence</li>
+<li>Confirm that proof maps to acceptance criteria</li>
+<li>Identify weak or misleading tests</li>
+<li>Reproduce results where appropriate</li>
+<li>Refuse to mark unproven claims as passed</li>
+</ul>
+<p><strong>Review Agent.</strong> Responsibilities:</p>
+<ul>
+<li>Review with fresh context</li>
+<li>Search for defects and hidden assumptions</li>
+<li>Evaluate regressions</li>
+<li>Assess security and data risks</li>
+<li>Check architectural consistency</li>
+<li>Produce an independent verdict</li>
+</ul>
+<p><strong>Repository Steward Agent.</strong> Responsibilities:</p>
+<ul>
+<li>Maintain indexes</li>
+<li>Detect stale specifications</li>
+<li>Detect undocumented behavior</li>
+<li>Identify conflicting instructions</li>
+<li>Find obsolete documentation</li>
+<li>Propose improvements to the verification system</li>
+<li>Keep agent-facing repository context concise and accurate</li>
+</ul>
+<p>Review lanes are not only machine lanes. Where judgment is inherently human, the human joins the loop as a reviewer, not as a process step: the design owner reviews changes that alter user-facing look, feel, or flow; a security owner reviews changes on protected security surfaces. A human reviewer produces the same structured verdict a review agent produces, with their identity and role recorded in the reviewer field, and the merge policy consumes it identically. A specification whose surface demands it simply lists the human lane in its required evidence (for example <code>design_review</code>), and the change does not merge without that verdict.</p>
+<h2 id="8-agent-operating-instructions">8. Agent Operating Instructions<a class="anchor" href="#8-agent-operating-instructions" aria-label="link to this section">#</a></h2>
+<p>When operating inside a Veldo repository, a coding agent must follow these rules. They are written for any capable agent harness; the tooling that enforces them is described in the setup guide.</p>
+<p><strong>Before making changes:</strong></p>
+<ol>
+<li>Read Veldo.md, the repository&#x27;s agent instruction entry file (for example CLAUDE.md), and relevant repository instructions.</li>
+<li>Locate the applicable specification.</li>
+<li>Do not implement a draft specification unless explicitly instructed.</li>
+<li>Inspect the affected code, tests, contracts, and architecture decisions.</li>
+<li>Restate the acceptance criteria in operational terms.</li>
+<li>Identify risks, ambiguities, and likely regressions.</li>
+<li>Stop only when a material human decision is missing.</li>
+</ol>
+<p>One exception exists to the specification precondition: the emergency lane (section 4). It applies only when a human declares an emergency, and the backfill debt is tracked until closed.</p>
+<p><strong>During implementation:</strong></p>
+<ul>
+<li>Keep the change limited to the specification.</li>
+<li>Prefer the smallest coherent implementation.</li>
+<li>Preserve backward compatibility unless the specification explicitly removes it.</li>
+<li>Add tests that demonstrate behavior, not merely execute lines.</li>
+<li>Do not weaken existing checks.</li>
+<li>Do not delete failing tests unless the specification makes them obsolete.</li>
+<li>Do not modify acceptance criteria to match the implementation.</li>
+<li>Update documentation when behavior, interfaces, operations, or architecture change.</li>
+<li>Keep intermediate work buildable whenever practical.</li>
+<li>Record unexpected findings that affect future work.</li>
+</ul>
+<p><strong>Before declaring completion:</strong></p>
+<ul>
+<li>Run the repository&#x27;s canonical verification command.</li>
+<li>Confirm every acceptance criterion individually.</li>
+<li>Produce a proof report.</li>
+<li>List all files changed.</li>
+<li>Explain any implementation tradeoffs.</li>
+<li>Identify residual risk.</li>
+<li>Provide rollback instructions.</li>
+<li>Do not claim success when a required check was skipped.</li>
+<li>Mark anything not directly proven as an assumption.</li>
+<li>Prepare the change for independent fresh-context review.</li>
+</ul>
+<p><strong>Prohibited behavior.</strong> The agent must not:</p>
+<ul>
+<li>Treat generated code as inherently correct</li>
+<li>Claim tests passed without running them</li>
+<li>Hide failed checks</li>
+<li>Bypass required gates</li>
+<li>Expand scope for convenience</li>
+<li>Introduce speculative abstractions unrelated to the specification</li>
+<li>Make irreversible decisions without required approval</li>
+<li>Depend on undocumented chat context</li>
+<li>Store essential operational knowledge only in a conversation</li>
+<li>Approve its own implementation as the sole reviewer</li>
+</ul>
+<h2 id="9-definition-of-proven">9. Definition of Proven<a class="anchor" href="#9-definition-of-proven" aria-label="link to this section">#</a></h2>
+<p>A change is proven when all of the following are true:</p>
+<ul>
+<li>The specification is clear and versioned.</li>
+<li>Every acceptance criterion has corresponding evidence.</li>
+<li>The implementation is complete.</li>
+<li>Relevant tests pass.</li>
+<li>Repository-wide mandatory gates pass.</li>
+<li>The evidence is reproducible.</li>
+<li>Independent review passes.</li>
+<li>Risks are documented.</li>
+<li>Rollback or recovery is understood.</li>
+<li>Required human approval has been recorded.</li>
+</ul>
+<p>&quot;Works on my machine&quot; is not proof. &quot;The agent says it is done&quot; is not proof. &quot;A test passed&quot; is not sufficient when the test does not establish the required behavior.</p>
+<p>Proof means that the available evidence justifies shipping the change.</p>
+<h2 id="10-definition-of-done">10. Definition of Done<a class="anchor" href="#10-definition-of-done" aria-label="link to this section">#</a></h2>
+<p>Traditional definitions of done often describe a checklist of activities. Veldo defines done as a verified state:</p>
+<blockquote><p>Done = intent satisfied + evidence produced + independent review passed + merge policy satisfied</p></blockquote>
+<p>A change is not done when:</p>
+<ul>
+<li>Code has been written but not tested</li>
+<li>Tests pass but do not cover the acceptance criteria</li>
+<li>Documentation is stale</li>
+<li>Review identified unresolved defects</li>
+<li>The gate was bypassed</li>
+<li>Required human approval is missing</li>
+<li>The change cannot be operated or rolled back safely</li>
+<li>The specification and implementation no longer agree</li>
+</ul>
+<h2 id="11-what-veldo-eliminates">11. What Veldo Eliminates<a class="anchor" href="#11-what-veldo-eliminates" aria-label="link to this section">#</a></h2>
+<p>Veldo intentionally eliminates process that exists primarily to coordinate slow human implementation. Unless a specific team need justifies them, Veldo does not use:</p>
+<ul>
+<li>Sprints</li>
+<li>Story points</li>
+<li>Velocity estimates</li>
+<li>Daily standups</li>
+<li>Sprint planning</li>
+<li>Sprint reviews</li>
+<li>Sprint retrospectives as mandatory ceremonies</li>
+<li>Separate development and QA phases</li>
+<li>Large handoff documents</li>
+<li>Manual status reporting</li>
+<li>Long-lived feature branches</li>
+<li>Release trains for ordinary changes</li>
+<li>Ticket systems as the authoritative source of work</li>
+<li>Approval chains for reversible low-risk changes</li>
+</ul>
+<p>This does not mean communication, planning, reflection, or testing disappear. It means they occur where they create value rather than as recurring ceremonies.</p>
+<p>Planning happens inside the specification and implementation process. Communication happens through durable repository artifacts. Testing happens continuously. Reflection happens when evidence reveals a systemic problem worth correcting.</p>
+<p>The single recurring ritual that survives is the weekly index pass (section 6).</p>
+<h2 id="12-what-veldo-does-not-eliminate">12. What Veldo Does Not Eliminate<a class="anchor" href="#12-what-veldo-does-not-eliminate" aria-label="link to this section">#</a></h2>
+<p>Veldo does not eliminate:</p>
+<ul>
+<li>Product judgment</li>
+<li>Architecture</li>
+<li>Security engineering</li>
+<li>Testing</li>
+<li>Documentation</li>
+<li>Operational discipline</li>
+<li>Human accountability</li>
+<li>Risk management</li>
+<li>Design</li>
+<li>User research</li>
+<li>Strategic planning</li>
+<li>Incident response</li>
+<li>Regulatory controls</li>
+</ul>
+<p>It eliminates the assumption that these activities require the process structure of twentieth-century software development.</p>
+<h2 id="13-production-support">13. Production Support<a class="anchor" href="#13-production-support" aria-label="link to this section">#</a></h2>
+<p>A method that ends at the merge is only half a method. Software that ships has to be operated, and the same asymmetry that motivates everything above applies after release: machines can read far more evidence far faster than a person can, and a person is the only one who should be allowed to change a running system. Production support is built on that split.</p>
+<p><strong>An incident is intent.</strong> It enters the same way a change does, as a durable record rather than a conversation, and it moves through declared states with the same event trail. This matters because the alternative - an incident that lives in a chat channel and a person&#x27;s memory - cannot be reconciled afterwards, and an organisation that cannot reconcile its incidents cannot learn from them.</p>
+<p><strong>Diagnosis is derived from artifacts, by a reader that cannot write.</strong> The responder is given read-only access to an evidence plane: logs, metrics, traces, the specification corpus, the proof bundles, the event log. It produces a diagnosis in which every claim cites the artifact it rests on, so a human can check the reasoning rather than trust it. The structural property is the important one: the responder has no execution tool at all. It is not trusted not to act; it is unable to act.</p>
+<p><strong>Remediation is a proposal, and a human authorises it.</strong> The responder proposes; it never applies. What it proposes is checked against a whitelist of runbook actions declared in advance, each with its parameters, its blast radius and its reversibility stated. An action nobody wrote down is not available in an incident, which is exactly when the temptation to invent one is strongest.</p>
+<p><strong>Execution is a separate organ.</strong> The thing that can change a running system is not the thing that decided what to change. It re-checks every precondition at the moment of execution, refuses on a tripped kill switch or an exhausted budget or an expired authorisation, and records what it did. Anything irreversible or data-mutating takes two keys, which is the independence rule from review extended to the last mile.</p>
+<p><strong>The numbers come out of the same event trail</strong> as everything else, so time-to-diagnosis and time-to-remediation are measured rather than estimated, and a recurring incident is visible as a recurring incident rather than as a series of unrelated bad nights.</p>
+<p><strong>What this does not do.</strong> It does not remove the human from the loop, and it is not autonomous operations. Every state change to a running system is authorised by a person, and the organ ships inert: an adopting repository gets the contracts and the machinery, not a wired-up connection to anything real. Turning it on against live systems is a deliberate configuration act with its own risk, described in the setup document rather than here, and it is not a step anyone should take on the same day they adopt the method.</p>
+<h2 id="14-infrastructure-and-release">14. Infrastructure and Release<a class="anchor" href="#14-infrastructure-and-release" aria-label="link to this section">#</a></h2>
+<p>The loop stops at the merge unless what runs the software is governed the same way the software is. So the substrate - environments and the resources in them - is declared in the repository, and a change to that declaration is an ordinary change: specified, proven, gated, merged, with a diff a person can read. No console clicks, no drift between what somebody remembers provisioning and what is actually there.</p>
+<p><strong>Infrastructure changes are plan-then-apply, and the plan binds.</strong> Comparing declaration to declaration produces the operations that would reconcile them, and a human reads that before anything happens. The plan carries a digest of both states it was computed from and refuses to apply if either has moved, because a plan computed against a world that no longer exists is a guess with a formatting convention, and applying one anyway is the precise mechanism by which infrastructure tooling destroys things nobody asked it to touch.</p>
+<p><strong>Cost is a proof element, not a surprise.</strong> A change projects its monthly delta against the environment&#x27;s declared budget, so the number is read at review rather than discovered on a bill six weeks later. A resource whose price nobody has declared is refused rather than counted as free, because costing unknowns at zero is how a budget check passes the change that doubles the bill.</p>
+<p><strong>Destruction is classified, and the strict direction is the default.</strong> Deleting a stateless resource is recoverable by re-applying the declaration; deleting a stateful one is not, and carries the highest risk class with two independent human keys bound to that exact plan. A resource kind nobody has classified counts as stateful until somebody says otherwise, so a type added next year gets the careful treatment rather than sliding underneath the rule.</p>
+<p><strong>Release is promotion, one environment at a time.</strong> A proven change moves along the declared order, carrying whatever its risk class demands - a canary, a staged rollout, a recorded approval - and it does not move at all without a written rollback plan. A plan written after something breaks is written by somebody panicking. A failed canary halts the promotion where it is, which is different from failing, because halted has a known position to roll back from.</p>
+<p><strong>Drift is reported in both directions, and only one of them is safe to automate.</strong> Something declared but not running should be created. Something running but not declared is brought to a person, never deleted: it was made by hand for a reason, or the declaration lost it, and a tool that tidies such things away eventually removes what production was standing on.</p>
+<p><strong>Per-change environments are disposable, and disposal is verified.</strong> An environment is created from a declaration and torn down afterwards, and the teardown is checked against what the provider actually still holds rather than against the fact that the destroy call returned success. Deleting a machine commonly leaves its disk. An environment believed gone and actually running is a permanent cost nobody looks for, because nobody inspects a thing that stopped existing.</p>
+<p><strong>None of this reaches real infrastructure on its own.</strong> Every piece above decides; acting is done through an adapter an operator wires deliberately, and the shipped adapters do nothing. Adopting the method does not opt a repository into managing its infrastructure, and turning that on is a separate act with its own risk, described in the setup document.</p>
+<h2 id="15-speed-without-recklessness">15. Speed Without Recklessness<a class="anchor" href="#15-speed-without-recklessness" aria-label="link to this section">#</a></h2>
+<p>Veldo is not a license to generate and merge code indiscriminately. Its speed comes from reducing coordination latency and automating proof. The methodology is intentionally strict about correctness because implementation speed increases the potential rate of both value creation and damage.</p>
+<p>The relationship is:</p>
+<blockquote><p>Delivery speed = implementation speed x verification speed x decision speed</p></blockquote>
+<p>AI dramatically increases implementation speed. Repository-native specifications reduce decision and communication latency. Automated proof and independent review increase verification speed. Weak verification cancels the benefit of fast implementation.</p>
+<p>The objective is not to move fast and break things. The objective is to move at full speed because the system can prove what it is doing.</p>
+<h2 id="16-measuring-veldo-performance">16. Measuring Veldo Performance<a class="anchor" href="#16-measuring-veldo-performance" aria-label="link to this section">#</a></h2>
+<p>Veldo teams should avoid productivity metrics based on human activity. Do not optimize for:</p>
+<ul>
+<li>Lines of code</li>
+<li>Number of commits</li>
+<li>Number of tickets closed</li>
+<li>Story points</li>
+<li>Agent token usage in isolation</li>
+<li>Number of pull requests</li>
+<li>Time spent coding</li>
+</ul>
+<p>Measure the performance of the delivery system. Recommended metrics include:</p>
+<ul>
+<li><strong>Specification-to-production time.</strong> Time from a ready specification to production deployment.</li>
+<li><strong>Proof latency.</strong> Time required to run all mandatory checks and complete independent review.</li>
+<li><strong>First-pass proof rate.</strong> Percentage of changes that pass the full gate without rework.</li>
+<li><strong>Escaped defect rate.</strong> Defects discovered after a change was declared proven.</li>
+<li><strong>Reversion rate.</strong> Percentage of changes that require rollback or urgent correction.</li>
+<li><strong>Specification failure rate.</strong> Percentage of implementation failures caused by ambiguous or incomplete specifications.</li>
+<li><strong>Human intervention rate.</strong> Percentage of changes requiring human involvement after the specification is approved.</li>
+<li><strong>Agent review catch rate.</strong> Defects found by independent review before merge.</li>
+<li><strong>Mean recovery time.</strong> Time required to detect, revert, or correct a faulty production change.</li>
+<li><strong>Verification investment.</strong> Percentage of engineering improvements aimed at tests, gates, observability, and safe automation.</li>
+<li><strong>Human minutes per shipped change.</strong> Total human attention consumed per shipped change: stating intent, clarifying, judging, approving. Every other metric measures the machine side; this one measures the scarce resource. For ordinary changes it should trend toward the irreducible cost of stating intent and judging the result, and no lower; it is the truest measure of whether Veldo is delivering its premise.</li>
+</ul>
+<p>The ideal Veldo system becomes faster primarily by improving proof, decomposition, and repository clarity.</p>
+<h2 id="17-failure-modes">17. Failure Modes<a class="anchor" href="#17-failure-modes" aria-label="link to this section">#</a></h2>
+<p><strong>Vague specifications.</strong> Symptoms:</p>
+<ul>
+<li>Agents repeatedly ask for clarification</li>
+<li>Implementations technically pass but miss the real need</li>
+<li>Reviewers disagree about success</li>
+<li>Scope expands during implementation</li>
+</ul>
+<p>Correction:</p>
+<ul>
+<li>Improve acceptance criteria</li>
+<li>Add examples and counterexamples</li>
+<li>Separate product decisions from technical execution</li>
+<li>Reduce scope</li>
+</ul>
+<p><strong>Superficial tests.</strong> Symptoms:</p>
+<ul>
+<li>Tests mirror implementation details</li>
+<li>Tests pass despite broken user behavior</li>
+<li>Mocks eliminate meaningful system behavior</li>
+<li>Coverage rises while confidence does not</li>
+</ul>
+<p>Correction:</p>
+<ul>
+<li>Test observable outcomes</li>
+<li>Add contract and integration tests</li>
+<li>Require tests that fail before the fix</li>
+<li>Have the reviewer inspect test quality</li>
+</ul>
+<p><strong>Agent self-confirmation.</strong> Symptoms:</p>
+<ul>
+<li>The implementing agent writes the change, evaluates it, and declares success</li>
+<li>Review repeats the implementation summary</li>
+<li>Hidden assumptions survive every stage</li>
+</ul>
+<p>Correction:</p>
+<ul>
+<li>Use fresh-context review</li>
+<li>Use a different model where possible</li>
+<li>Provide the reviewer with the specification and diff, not only the implementation summary</li>
+</ul>
+<p><strong>Human approval bottlenecks.</strong> Symptoms:</p>
+<ul>
+<li>Green changes wait hours or days for routine approval</li>
+<li>Review queues grow</li>
+<li>Humans rubber-stamp changes without deep inspection</li>
+</ul>
+<p>Correction:</p>
+<ul>
+<li>Automate merge for reversible changes</li>
+<li>Reserve human review for defined risk categories</li>
+<li>Improve automated gates instead of adding approvers</li>
+</ul>
+<p><strong>Repository knowledge decay.</strong> Symptoms:</p>
+<ul>
+<li>Agents rely on outdated instructions</li>
+<li>Different documents contradict one another</li>
+<li>Important decisions live only in conversations</li>
+<li>The same mistakes recur</li>
+</ul>
+<p>Correction:</p>
+<ul>
+<li>Assign repository stewardship</li>
+<li>Delete or update stale instructions</li>
+<li>Keep durable decisions close to the affected code</li>
+<li>Validate documentation in CI where possible</li>
+</ul>
+<p><strong>Oversized specifications.</strong> Symptoms:</p>
+<ul>
+<li>Branches remain open for weeks</li>
+<li>Reviews become shallow</li>
+<li>Rollback becomes difficult</li>
+<li>Multiple unrelated failures block the same change</li>
+</ul>
+<p>Correction:</p>
+<ul>
+<li>Decompose by independently valuable behavior</li>
+<li>Introduce compatibility layers</li>
+<li>Use feature flags</li>
+<li>Separate mechanical preparation from behavior changes</li>
+</ul>
+<p><strong>Gate inflation.</strong> Symptoms:</p>
+<ul>
+<li>Verification takes too long</li>
+<li>Unrelated flaky tests block delivery</li>
+<li>Teams begin bypassing checks</li>
+<li>Every change runs every possible test</li>
+</ul>
+<p>Correction:</p>
+<ul>
+<li>Fix flaky tests immediately</li>
+<li>Parallelize checks</li>
+<li>Use risk-aware and change-aware test selection</li>
+<li>Preserve a reliable full gate</li>
+<li>Measure and reduce proof latency</li>
+</ul>
+<p><strong>Letter-not-intent implementation.</strong> Symptoms:</p>
+<ul>
+<li>Every acceptance criterion passes while the result misses what was actually wanted</li>
+<li>Stakeholders reject changes that are technically proven</li>
+<li>Criteria are satisfied in ways that serve the checklist rather than the outcome</li>
+</ul>
+<p>Correction:</p>
+<ul>
+<li>Write criteria as observable outcomes, not implementation behaviors</li>
+<li>Have the reviewer read the Intent section and judge the change against it, not only against the criteria</li>
+<li>Treat a proven-but-wrong change as a specification defect and feed it back into how specifications are written</li>
+</ul>
+<h2 id="18-adoption-rules">18. Adoption Rules<a class="anchor" href="#18-adoption-rules" aria-label="link to this section">#</a></h2>
+<p>A team adopting Veldo should not begin by introducing more agents. It should begin by making the repository operable.</p>
+<p>Recommended adoption sequence:</p>
+<p><strong>Phase 1: Repository clarity</strong></p>
+<ul>
+<li>Create the agent instruction entry file (for example CLAUDE.md)</li>
+<li>Document build and test commands</li>
+<li>Remove contradictory instructions</li>
+<li>Identify authoritative architecture documentation</li>
+<li>Make local setup reproducible</li>
+</ul>
+<p><strong>Phase 2: Specification discipline</strong></p>
+<ul>
+<li>Create the specification template</li>
+<li>Move active work into the repository</li>
+<li>Define acceptance criteria for every change</li>
+<li>Create the diffable specification index</li>
+</ul>
+<p><strong>Phase 3: Canonical verification</strong></p>
+<ul>
+<li>Create one command that runs mandatory checks</li>
+<li>Remove flaky checks</li>
+<li>Add missing tests around high-risk behavior</li>
+<li>Make results easy for agents to interpret</li>
+</ul>
+<p><strong>Phase 4: Independent review</strong></p>
+<ul>
+<li>Separate implementation and review contexts</li>
+<li>Standardize the review report</li>
+<li>Measure what the reviewer catches</li>
+<li>Escalate only genuine judgment calls</li>
+</ul>
+<p><strong>Phase 5: Automatic merge</strong></p>
+<ul>
+<li>Define risk classifications</li>
+<li>Enable automatic merge for reversible green changes</li>
+<li>Require humans only for explicitly protected areas</li>
+</ul>
+<p><strong>Phase 6: Continuous improvement</strong></p>
+<ul>
+<li>Measure specification-to-production time</li>
+<li>Measure proof latency</li>
+<li>Improve the slowest gate</li>
+<li>Automate recurring human work</li>
+<li>Strengthen evidence where defects escape</li>
+</ul>
+<h2 id="19-minimal-veldo-implementation">19. Minimal Veldo Implementation<a class="anchor" href="#19-minimal-veldo-implementation" aria-label="link to this section">#</a></h2>
+<p>A team can begin practicing Veldo with only five repository elements:</p>
+<ul>
+<li><code>Veldo.md</code></li>
+<li>the agent instruction entry file (for example <code>CLAUDE.md</code>)</li>
+<li><code>specs/index.md</code></li>
+<li><code>specs/&lt;spec-id&gt;.md</code></li>
+<li><code>scripts/verify.sh</code></li>
+</ul>
+<p>The minimum viable process is:</p>
+<ol>
+<li>A human states intent and approves the specification with its acceptance criteria (drafted in dialogue with an agent, or by hand where that is simpler).</li>
+<li>An implementation agent changes the code and tests.</li>
+<li>The agent runs <code>scripts/verify.sh</code>.</li>
+<li>A fresh-context agent reviews the specification, diff, and test evidence.</li>
+<li>The change merges automatically if all gates pass and no protected area is affected.</li>
+</ol>
+<p>Everything else should be added only when it increases speed, confidence, or operational safety.</p>
+<h2 id="20-veldo-manifesto">20. Veldo Manifesto<a class="anchor" href="#20-veldo-manifesto" aria-label="link to this section">#</a></h2>
+<p>We value:</p>
+<ul>
+<li>Proven outcomes over completed tasks</li>
+<li>Repository truth over external coordination</li>
+<li>Explicit intent over inferred requirements</li>
+<li>Executable acceptance criteria over subjective completion</li>
+<li>Independent evidence over author confidence</li>
+<li>Small reversible changes over large coordinated releases</li>
+<li>Continuous delivery over artificial iterations</li>
+<li>Automated gates over ritual approval</li>
+<li>Human judgment over human labor</li>
+<li>Verification speed over code-generation volume</li>
+</ul>
+<p>The items on the right may still have value, but the items on the left define the system.</p>
+<h2 id="21-security-by-design">21. Security by Design<a class="anchor" href="#21-security-by-design" aria-label="link to this section">#</a></h2>
+<p>An agent writes code faster than anyone reviews it, and it writes the most common shape of a thing. Both of those are usually fine and occasionally catastrophic, because the most common shape of an IAM policy in the training data is <code>Action: *</code>, the most common shape of an example config is a key pasted inline, and the most common shape of a dependency addition is nobody noticing.</p>
+<p>None of that is a reasoning failure, and none of it is fixed by a better instruction. The next task starts with a fresh context and the same training data. What holds is a check on the artifact.</p>
+<p>So security in this method is not a review checklist. It is a set of floors that hold without anybody&#x27;s attention, plus one lane for the judgment that no floor can reach.</p>
+<h3 id="the-floors">The floors<a class="anchor" href="#the-floors" aria-label="link to this section">#</a></h3>
+<p><strong>Secrets are named, never present.</strong> The repository holds a reference; the value is resolved at the moment of use and never rendered. Anything credential-shaped in a diff, a generated file or an artifact refuses, and there is no allowlist - an allowlist is how a scanner dies, one convenient exception at a time.</p>
+<p><strong>A context that never held a secret cannot leak one.</strong> Everything an agent reads passes through one seam and is redacted there. Not filtered from the transcript afterwards: once a value is in a context it is in the transcript, in whatever the model quotes back, in the summary and in the compaction. There is no recall.</p>
+<p><strong>Credentials are issued for one task, scoped to what that task declared.</strong> Scope is derived from the declaration, never requested by the agent - an agent that hits a permission error, widens its request and succeeds is how least privilege dies, and nobody involved was careless.</p>
+<p><strong>External text enters as data, marked as data.</strong> An issue body, a README, a dependency&#x27;s docs, a log line: all of it is text somebody outside your organisation may have written. Labelling does not make a model impossible to fool and the method says so plainly; what it removes is the ambiguity that makes the easy attack easy.</p>
+<p><strong>A dependency arrives attached to a reason or it does not arrive.</strong> The requirement is visibility, not review quality. A version bump is deliberately not flagged, because a check that fires on ordinary work gets deleted.</p>
+<p><strong>Generated infrastructure is held to least privilege.</strong> Wildcard permissions, over-broad roles and public-exposure defaults refuse, each naming the narrower thing to do. A refusal that says only &quot;least privilege violation&quot; is one somebody adds an exception for.</p>
+<p><strong>Commits are signed and attributable.</strong> The trailer says who; the signature is what makes the who true. And a good signature is not by itself a trust decision: git reports one for any key the local keyring holds, and the keyring is a file in the environment the agent runs in, so the fingerprint is checked against a registry declared in the repository.</p>
+<h3 id="the-lane-above-the-floors">The lane above the floors<a class="anchor" href="#the-lane-above-the-floors" aria-label="link to this section">#</a></h3>
+<p>What no rule settles is whether a change is safe. Whether this endpoint should be reachable by that caller. Whether the new path trusts something it should not. Whether the design hands an attacker a step they did not have yesterday.</p>
+<p>That is judgment, so it stays with the independent reviewer as a graded dimension, exactly as architectural fit does, and <strong>correct-but-insecure is a legitimate rework verdict</strong>. A change can do precisely what its specification says and still be one you should not merge.</p>
+<p>The dimension is designed against a specific failure. A reviewer handed &quot;secrets clean, privilege clean, dependencies clean, signatures valid&quot; has been handed a comfortable green wall, and the natural next move is to write two sentences saying the change looks fine. So the reviewer is told, in as many words, that the floors are already enforced, not to re-grade them, and what lives above them. A clean floor is the starting point, never the finding.</p>
+<p>The machine never lowers. A mechanical finding forces the insecure verdict whatever the reviewer concluded; the reviewer may overrule the machine upward and never downward.</p>
+<h3 id="migration-is-honest-or-it-is-theatre">Migration is honest or it is theatre<a class="anchor" href="#migration-is-honest-or-it-is-theatre" aria-label="link to this section">#</a></h3>
+<p>A repository adopting this does not flip to fail-closed on day one. It inventories itself first - the working tree and all reachable history, because a credential committed and then deleted is still in every clone, every fork, and whatever CI cached the checkout. Findings are reported by reference and never by value: an inventory that quotes what it found is a second copy of every secret, in a file people paste into tickets.</p>
+<p>Anything real that was reachable in history needs rotating, and rotation is a human act. The machine surfaces named work for named people and issues nothing.</p>
+<p>Only then does the repository declare fail-closed, and the declaration is a dated decision somebody made with the inventory in hand - never something inferred from a scan that happened to return zero. A scan can return zero because a path was skipped or a detector broke, and a gate armed by that accident is worse than no gate.</p>
+<h2 id="22-the-veldo-rule">22. The Veldo Rule<a class="anchor" href="#22-the-veldo-rule" aria-label="link to this section">#</a></h2>
+<p>The methodology can be reduced to one rule:</p>
+<blockquote><p>State the intent, let the machine build, require proof, and merge immediately when green.</p></blockquote>
+<p>That rule should govern every ordinary change.</p>
+<p>The repository states what is true. The specification states what should become true. The implementation changes reality. The gate proves the result. The independent reviewer challenges the proof. The trunk records the new truth.</p>
+<p>That is Veldo.</p>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<p>Minor versions add, clarify, or extend the method; major versions restructure it or break compatibility with existing practice.</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial method</td></tr>
+<tr><td>1.1</td><td>2026-07-16</td><td>Review additions: the emergency lane, proof freshness on a moving trunk, standing specifications, the weekly index pass, specification as dialogue, the bounded review loop, the human-minutes metric, agent operating instructions made tool-agnostic, the raise-risk-never-lower law, the letter-not-intent failure mode</td></tr>
+<tr><td>1.2</td><td>2026-07-16</td><td>The edges: human review lanes and design review evidence, intake (reports become specifications), the repository as database rather than interface</td></tr>
+<tr><td>1.3</td><td>2026-07-16</td><td>Revalidation fixes from an independent hostile review: merge-status and human-lane clarifications, serialized proof freshness, emergency lane generalized and recognized by the operating instructions, standing-spec instances defined, non-reproducible-bug path, risk-law tightening, status vocabulary rule, example id and entry-file consistency</td></tr>
+<tr><td>2.0</td><td>2026-07-16</td><td>The planning layer: Stage 0 (Product Plans, the plan contract, the ordered work DAG, the ready frontier, promotion, revision impact) added ahead of Stage 1; principle 2.11 (product work is planned before it is decomposed) and the two lanes (direct and planned) stated; the core model extended with the planning layer above the per-change spine, reconciled with 2.2 (the specification stays the unit of work, now pulled from a plan in order)</td></tr>
+<tr><td>2.1</td><td>2026-08-03</td><td>Security by design as part of the method (Veldo-1311 of PLAN-0013): new section 21 states the floors that hold without attention (secrets named not present, a context that never held a secret, task-derived credential scope, external text as data, a dependency attached to a reason, least privilege on generated infrastructure, signed attributable commits) and the one lane above them where correct-but-insecure is a legitimate rework verdict, with the green-wall failure mode it is designed against and the rule that the machine never lowers; migration stated as inventory-then-declare over reachable history, with rotation as a human act; The Veldo Rule renumbered to 22</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

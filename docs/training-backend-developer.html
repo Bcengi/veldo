@@ -1,0 +1,213 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Backend Developer in Veldo - Veldo</title>
+<meta name="description" content="From typing to judgment - specs, proof literacy, gate engineering, the escalation seat.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>The Backend Developer in Veldo</h1><p class="tagline">Training series. The hard truth first: the destination is that people who really want to type code stop typing code, because their judgment is worth more than their typing.</p><p class="meta">Version 1.0, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-your-job-redefined">1. Your job, redefined</a></li><li><a href="#2-your-day">2. Your day</a></li><li><a href="#3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)</a></li><li><a href="#4-the-curriculum">4. The curriculum</a></li><li><a href="#5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to</a></li><li><a href="#6-you-have-arrived-when">6. You have arrived when</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="1-your-job-redefined">1. Your job, redefined<a class="anchor" href="#1-your-job-redefined" aria-label="link to this section">#</a></h2>
+<p>You did not spend years learning to type. You spent years learning what breaks, what scales, what a race condition smells like, where the edge cases hide, and what a good system feels like. Typing was how that knowledge got into the codebase. It was the transport, not the value. Veldo replaces the transport. The knowledge is now delivered three ways: into specifications (technical intent the agent builds against), into the gate (checks that encode what you know about how things break), and into judgment (reading diffs, proofs, and verdicts with the eye that took years to build).</p>
+<p>This is a real loss and it is fine to say so: the flow state of building by hand was genuinely joyful. It is also finished as a profession&#x27;s core activity, the way hand-assembly was. What remains is the senior half of the job, for everyone.</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>What stops</th>
+<th>What starts</th>
+</tr></thead>
+<tbody>
+<tr><td>Typing implementation code</td><td>Collaborating on specs where the technical intent is subtle (idempotency, ordering, failure modes)</td></tr>
+<tr><td>Writing most tests by hand</td><td>Gate engineering: designing the checks, killing flakes, deepening coverage where risk lives</td></tr>
+<tr><td>Code review as line-by-line reading of teammates&#x27; PRs</td><td>Judging agent output: does this diff match the intent; is this proof real; is this test meaningful</td></tr>
+<tr><td>Standup, estimation, ticket grooming</td><td>The escalation seat: two failed reviews, gnarly production debugging, the problems agents cannot crack</td></tr>
+<tr><td>Being measured by output volume</td><td>Being measured by what you catch, what you specify, and what stops breaking</td></tr>
+</tbody>
+</table></div>
+<h2 id="2-your-day">2. Your day<a class="anchor" href="#2-your-day" aria-label="link to this section">#</a></h2>
+<p>You run <code>/veldo:status</code>, see three specs in flight, and read the verdict on the one that shipped overnight. A spec needs technical shaping: the PM&#x27;s intent is right but the idempotency criterion is missing, so you add it in a two-line conversation. An implementation failed review twice, so it lands in your lap, and this is the fun part: the actual puzzle, the thing agents still hand to a human. In the afternoon you notice the gate let a slow query through last week, and you spend an hour adding the performance check that makes that permanent knowledge instead of tribal memory.</p>
+<h2 id="3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)<a class="anchor" href="#3-your-moments-in-the-loop-exact" aria-label="link to this section">#</a></h2>
+<p><strong>Shaping a spec technically:</strong></p>
+<pre><code>Add to Veldo-0231: retries must be idempotent by payment intent id; a replayed
+webhook must not double-credit. That&#x27;s the criterion that matters here.</code></pre>
+<p><strong>Judging a proof.</strong> Read <code>proof/&lt;id&gt;/manifest.json</code> with one question per criterion: would this evidence convince me if a stranger submitted it? A test named <code>test_no_duplicate_order</code> that mocks away the database convinces no one; say so:</p>
+<pre><code>AC1&#x27;s test mocks the store, so it proves nothing about the race. Require the
+integration variant against real Postgres.</code></pre>
+<p><strong>The escalation seat (after two failed reviews):</strong></p>
+<pre><code>The spec is ambiguous, not the code: &quot;handle concurrent updates&quot; has no
+observable criterion. Rewriting: last-writer-wins per field, with the
+version check returning 409 on conflict. Rerun.</code></pre>
+<p><strong>Gate engineering:</strong></p>
+<pre><code>/veldo:spec Add a gate check: any endpoint responding over 500ms p95 in the
+integration suite fails the build. Standing knowledge, not memory.</code></pre>
+<h2 id="4-the-curriculum">4. The curriculum<a class="anchor" href="#4-the-curriculum" aria-label="link to this section">#</a></h2>
+<p><strong>Module 1 - From typing to specifying.</strong> Take a feature you would normally build by hand. Write only the spec: every failure mode, ordering rule, and boundary you would have handled silently while typing must become a criterion. Run it. Compare the agent&#x27;s implementation to what you would have written; every difference that matters is a criterion you missed.</p>
+<p><strong>Module 2 - Reading diffs you did not write.</strong> Speed and skepticism. Exercise: review five agent diffs; for each, find one thing to reject or one sharpened criterion, in under ten minutes each. (There is always one.)</p>
+<p><strong>Module 3 - Proof literacy.</strong> Exercise: we plant a proof manifest where one criterion is satisfied in letter but not intent. Find it. Then write the criterion phrasing that would have made the gap impossible.</p>
+<p><strong>Module 4 - Gate engineering.</strong> The new &quot;writing code that matters.&quot; Exercise: take the last three production incidents; for each, build the check that would have caught it pre-merge, and prove it by reverting the fix in a branch and watching the gate go red.</p>
+<p><strong>Module 5 - The escalation craft.</strong> Debugging without having written any of it. Exercise: an agent is stuck after two review failures on a sandbox spec; resolve it, and notice that the fix was to the spec more often than to the code.</p>
+<h2 id="5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to<a class="anchor" href="#5-how-you-break-veldo-without-meaning-to" aria-label="link to this section">#</a></h2>
+<ul>
+<li><strong>&quot;Faster to just do it myself.&quot;</strong> The single most corrosive sentence. It is sometimes even true for the one change, and it steals the criterion, the proof, and the gate check from every future change. The typing urge is a signal you have knowledge that belongs in the spec or the gate; put it there.</li>
+<li><strong>Rubber-stamp judgment.</strong> Skimming proofs turns the whole method into theater. Three sharp reviews beat ten shallow ones.</li>
+<li><strong>Hoarding the escalations.</strong> Solving the hard one and not leaving behind the check or the criterion means you fixed a change instead of the system.</li>
+<li><strong>Nostalgia sabotage.</strong> &quot;The old way was faster&quot; demos on cherry-picked examples. The receipts answer this; let them.</li>
+</ul>
+<h2 id="6-you-have-arrived-when">6. You have arrived when<a class="anchor" href="#6-you-have-arrived-when" aria-label="link to this section">#</a></h2>
+<ul>
+<li>Your specs run through implementation with zero clarifying escalations.</li>
+<li>You caught a real defect from a proof manifest alone.</li>
+<li>Something you know about how systems break is now a gate check with your name on the commit.</li>
+<li>You took the escalation seat on a nasty one and enjoyed it more than you would have enjoyed typing the feature.</li>
+<li>A month passed without you writing implementation code, and your fingerprints are on everything that shipped.</li>
+</ul>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial training document</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

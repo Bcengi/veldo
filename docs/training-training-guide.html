@@ -1,0 +1,235 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Veldo Training Guide - Veldo</title>
+<meta name="description" content="The map of the series - who transforms, who dissolves, the shared core, the apprenticeship path, the minimum viable team.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>The Veldo Training Guide</h1><p class="tagline">The map of the training series: who transforms, who dissolves, what everyone learns first, and how people grow when nobody types.</p><p class="meta">Version 1.2, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-what-this-series-is-for">1. What this series is for</a></li><li><a href="#2-the-role-map">2. The role map</a></li><li><a href="#3-the-shared-core-everyone-before-any-specialization">3. The shared core (everyone, before any specialization)</a></li><li><a href="#4-growing-seniors-when-nobody-types-the-apprenticeship-problem">4. Growing seniors when nobody types (the apprenticeship problem)</a></li><li><a href="#5-the-minimum-viable-team-one-product-line">5. The minimum viable team (one product line)</a></li><li><a href="#6-how-to-run-the-training">6. How to run the training</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="1-what-this-series-is-for">1. What this series is for<a class="anchor" href="#1-what-this-series-is-for" aria-label="link to this section">#</a></h2>
+<p>Veldo changes what humans do: agents own construction and proof; humans own intent and judgment. Every role in the building either transforms or dissolves, and pretending otherwise would waste everyone&#x27;s time. This guide is the map; each role has its own training document with the concrete day, the exact loop moments, a curriculum with sandbox exercises, the ways that role accidentally breaks Veldo, and the milestones that say you have arrived.</p>
+<p>The goal, stated the way the founder stated it: get to the point where human engineers who really want to type code stop typing code, because their judgment is worth more than their typing.</p>
+<p>One boundary rule shared by every role: humans do not type implementation code, tests, configuration, or specs during ordinary work; agents do, including the Markdown and YAML (hand-writing a spec file is still mechanical construction). Humans read everything, judge everything, and direct everything. The emergency lane is the one exception, and it backfills.</p>
+<h2 id="2-the-role-map">2. The role map<a class="anchor" href="#2-the-role-map" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Today&#x27;s role</th>
+<th>Verdict</th>
+<th>Becomes</th>
+<th>Training document</th>
+</tr></thead>
+<tbody>
+<tr><td>Product Manager</td><td>Transformed, biggest gain</td><td>Product Intent Owner: the most leveraged human in the building</td><td>product-manager.md</td></tr>
+<tr><td>Architect</td><td>Transformed</td><td>Architecture and Reversibility Owner: the gate is the architecture</td><td>architect.md</td></tr>
+<tr><td>Backend Developer</td><td>Absorbed</td><td>Product Systems Engineer (systems judgment domain)</td><td>backend-developer.md</td></tr>
+<tr><td>Web Developer</td><td>Absorbed</td><td>Product Systems Engineer (browser + design contract domain)</td><td>web-developer.md</td></tr>
+<tr><td>Mobile Developer</td><td>Absorbed</td><td>Product Systems Engineer (lifecycle + irreversibility domain)</td><td>mobile-developer.md</td></tr>
+<tr><td>Infrastructure Engineer</td><td>Transformed</td><td>Platform Reliability Engineer: substrate, gate runtime, recovery</td><td>infrastructure-engineer.md</td></tr>
+<tr><td>QA Engineer</td><td>Dissolved as a separate phase; reborn</td><td>Verification Engineer: the proof system as a product</td><td>qa-verification-engineer.md</td></tr>
+<tr><td>Project Manager</td><td>Coordination machinery dissolved; the judgment half is conditional</td><td>Product Operations (load-bearing until the planning layer proves it can carry project management - an explicit Veldo 1.0 acceptance test), or Product Intent, or outward-facing roles</td><td>project-manager.md</td></tr>
+<tr><td>Designer</td><td>Transformed</td><td>Design Intent and Review Owner: the mock is a contract, the verdict is a file</td><td>designer.md</td></tr>
+</tbody>
+</table></div>
+<p><strong>Roles that dissolve, stated plainly - with one honest condition:</strong> dedicated manual QA does not exist under Veldo, and the project manager&#x27;s coordination MACHINERY (sprints, status collection, handoffs) does not either. But the project-management JUDGMENT - keeping a five-screen, hundred-permutation feature coherent, noticing drift, sequencing under change - dissolves only when the planning layer PROVES it can carry that judgment with receipts. Until that proof exists, the Product Operations hat is load-bearing, not vestigial, and the claim stays conditional. The founder&#x27;s phrasing is the standard: unless AI can prove it can project manage, declaring the role dead is a stretch. The sprint machinery, status collection, handoffs, and manual test phases those roles coordinated are deleted by the method itself, not reassigned. The PEOPLE do not dissolve: their documents name real destinations, and the change-management document owns how the company gets everyone there without casualties.</p>
+<p><strong>Roles that appear:</strong> Verification Engineer (from QA&#x27;s strongest practitioners; the highest-leverage engineering function in a method whose bottleneck is verification) and a fractional Security and Trust Owner (a review lane for auth, secrets, sensitive data, and regulatory surfaces: at our scale a hat worn by a senior engineer, becoming a role only when volume demands).</p>
+<p><strong>The absorption, explained once:</strong> backend, web, and mobile stop being separate job families because implementation throughput stopped being the scarce thing. What remains scarce is domain judgment, so the three converge into Product Systems Engineer with different judgment domains: systems and data, the browser and the design contract, the device and its irreversibility. Specialist knowledge stays; specialist typing ends.</p>
+<p><strong>Companion modules (topic, not role).</strong> Beside the role documents, the series carries topic modules that more than one role draws on. The first is <em>The Planning Layer in Veldo</em> (planning-layer.md): how a whole product increment is driven through Product Plans, the work DAG, and the ready frontier. It is the product-intent owner&#x27;s second half and it is what the Product Operations hat leans on, so it is read by whoever holds either.</p>
+<h2 id="3-the-shared-core-everyone-before-any-specialization">3. The shared core (everyone, before any specialization)<a class="anchor" href="#3-the-shared-core-everyone-before-any-specialization" aria-label="link to this section">#</a></h2>
+<p>Every person, regardless of role, completes the same short core, because Veldo runs on a shared literacy:</p>
+<ol>
+<li><strong>The loop and the boundary.</strong> Intent to spec to implementation to proof to review to merge; what humans own; what agents own; why fluent agent output is not evidence.</li>
+<li><strong>Repository truth.</strong> Where specs, proofs, verdicts, policy, and the index live; why chat and memory are not records.</li>
+<li><strong>Spec literacy.</strong> Reading a specification critically: are these criteria observable, gameable, complete on the ugly paths?</li>
+<li><strong>Evidence judgment.</strong> Reading a proof manifest and a verdict; the difference between a test that proves and a test that executes; letter versus intent.</li>
+<li><strong>Risk and lanes.</strong> The tiers, the protected paths, raise-never-lower, when a human must judge, and why ordinary green merges without anyone.</li>
+<li><strong>The rituals that remain.</strong> The weekly index pass, the emergency lane and its backfill, the receipts.</li>
+</ol>
+<p><strong>The core capstone (one sandbox afternoon, as a team):</strong> an ambiguous bug report, a misleading passing test, a protected path, and a simulated incident. The team takes the bug from intake through reproduction, spec, implementation, catching the planted test, review, merge, and the incident through the emergency lane with backfill, without any human editing a file by hand. Passing the capstone is the adoption gate for a team.</p>
+<h2 id="4-growing-seniors-when-nobody-types-the-apprenticeship-problem">4. Growing seniors when nobody types (the apprenticeship problem)<a class="anchor" href="#4-growing-seniors-when-nobody-types-the-apprenticeship-problem" aria-label="link to this section">#</a></h2>
+<p>Typing was never the teacher; consequences were. Traditional coding bundled prediction, failure, and feedback into the act of construction, and removing construction without replacing the learning loop would stop the company from ever producing another senior. The replacement is explicit:</p>
+<p><strong>Stage 1 - Repository literacy.</strong> The apprentice learns to read everything: specs, diffs, schemas, proofs, verdicts, incidents. No ownership yet. Reading code remains mandatory forever; a company whose humans stop reading code loses its judgment in one generation.</p>
+<p><strong>Stage 2 - Prediction before execution.</strong> Before an agent runs a spec, the apprentice writes down: which components will change, what shape the implementation takes, what the tests will be, what could fail. Then compares against reality and records the miss. This prediction-error loop is the core of the new apprenticeship: consequences without construction.</p>
+<p><strong>Stage 3 - Seeded-defect training.</strong> A battery of planted flaws: implementation defects, superficial proofs, ambiguous specs, incident replays. The apprentice finds them without the implementing agent&#x27;s summary. (Every role document&#x27;s curriculum contains its versions of these.)</p>
+<p><strong>Stage 4 - Low-risk ownership.</strong> Twenty small specs owned end to end: intent through production observation. Promotion runs on measurable judgment: spec failure rate, escaped defects, prediction calibration.</p>
+<p><strong>Stage 5 - Standard-risk ownership, then lanes.</strong> Bigger surfaces, then shadowing a protected lane ten times before holding approval authority anywhere that matters.</p>
+<p>The inversion to internalize: juniors used to produce cheap work and learn; now the machine produces the work, and juniors produce cheap PREDICTIONS and learn faster, because they see ten changes a day instead of one a week.</p>
+<h2 id="5-the-minimum-viable-team-one-product-line">5. The minimum viable team (one product line)<a class="anchor" href="#5-the-minimum-viable-team-one-product-line" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Role</th>
+<th>Count</th>
+</tr></thead>
+<tbody>
+<tr><td>Product Intent Owner</td><td>1</td></tr>
+<tr><td>Design Intent and Review Owner</td><td>1</td></tr>
+<tr><td>Product Systems Engineer</td><td>2 (overlapping domains)</td></tr>
+<tr><td>Platform Reliability + Verification Engineer (combined at this scale)</td><td>1</td></tr>
+<tr><td>Architecture and Reversibility Owner</td><td>fractional (0.25)</td></tr>
+<tr><td>Security and Trust Owner</td><td>fractional (0.25)</td></tr>
+<tr><td>Project Manager</td><td>0</td></tr>
+<tr><td>Manual QA</td><td>0</td></tr>
+</tbody>
+</table></div>
+<p>Five humans run a product line, with two fractional hats shared across lines. The role done badly that breaks Veldo fastest is Product Intent: a bad gate ships a wrong implementation occasionally, but bad intent makes the whole machine prove and ship the wrong product at full speed. That is why the PM document is the deepest in the series and why intent quality is the first thing to train, not the last.</p>
+<h2 id="6-how-to-run-the-training">6. How to run the training<a class="anchor" href="#6-how-to-run-the-training" aria-label="link to this section">#</a></h2>
+<ol>
+<li>Everyone takes the shared core, together, in one afternoon, on the sandbox repository. The capstone is the gate.</li>
+<li>Each person takes their role document and runs its curriculum in the sandbox over the following two weeks, alongside normal work.</li>
+<li>Every exercise is a Veldo change: the training itself runs through the loop, so learning the method and using it are the same act.</li>
+<li>Arrival is measured by each document&#x27;s milestones, not by course completion: the milestones are observable in the receipts, like everything else in Veldo.</li>
+<li>The order of people follows the change-management document: volunteers first, never a forced march.</li>
+</ol>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial training guide: role map with verdicts, shared core, apprenticeship path, minimum viable team</td></tr>
+<tr><td>1.1</td><td>2026-07-16</td><td>Project-manager verdict made honestly conditional: coordination machinery dissolves; the judgment half awaits the planning layer&#x27;s proof</td></tr>
+<tr><td>1.2</td><td>2026-07-16</td><td>Companion (topic) modules introduced, starting with the planning-layer module for product-intent owners and the Product Operations hat</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

@@ -1,0 +1,1093 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changing to Veldo - The Human Transition - Veldo</title>
+<meta name="description" content="How to move every person to Veldo without firing anyone - resistance mapped role by role, the funded commitment, the phased program, the hard cases with scripts, and the program&#x27;s own failure modes.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>Changing to Veldo: The Human Transition</h1><p class="tagline">The change-management companion: how a company moves every person to Veldo without firing anyone, without pretending the change is small, and without breaking the people it depends on.</p><p class="meta">Version 1.0, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#0-read-this-first">0. Read this first</a></li><li><a href="#1-the-truth-first">1. The truth first</a></li><li><a href="#2-the-resistance-map">2. The resistance map</a></li><li><a href="#3-the-research-base-applied-to-veldo">3. The research base, applied to Veldo</a></li><li><a href="#4-the-program">4. The program</a></li><li><a href="#5-the-hard-cases">5. The hard cases</a></li><li><a href="#6-failure-modes-of-the-program-itself">6. Failure modes of the program itself</a></li><li><a href="#7-what-never-to-do">7. What never to do</a></li><li><a href="#8-sources">8. Sources</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="0-read-this-first">0. Read this first<a class="anchor" href="#0-read-this-first" aria-label="link to this section">#</a></h2>
+<p>This document was researched independently by two frontier models and reconciled; the studies it cites are real and named in the sources section. It exists because of three sentences from the founder that are the design constraints for everything below:</p>
+<ol>
+<li><strong>&quot;People do not want to change - this will never change.&quot;</strong> Correct, and the program below never assumes otherwise. It is designed for real humans, not for the compliant employees of management literature.</li>
+<li><strong>&quot;Without firing people in the process.&quot;</strong> Taken as a hard design input, with its economic consequences stated honestly rather than wished away.</li>
+<li><strong>&quot;For many it&#x27;s just hard to do a brand new job - like a muscle that was never used.&quot;</strong> The deepest of the three. Most resistance analysis obsesses over motivation; at least half the problem is capability: judging a spec, reading a proof, and rejecting weak evidence are real skills that nobody on the team has exercised yet, including the best engineer in the building. A person can be fully willing and still flail for months, and a program that cannot tell flailing from refusing will damage both. The competence machinery below (the sandbox, private practice, the judgment ladder, the six-week focused plans) exists for exactly this.</li>
+</ol>
+<p>One advantage this transition has over every transformation in the literature: Veldo produces receipts. A person&#x27;s first proven change is visible, concrete, and theirs within days, not quarters. The muscle that was never used gets feedback on every rep.</p>
+<h2 id="1-the-truth-first">1. The truth first<a class="anchor" href="#1-the-truth-first" aria-label="link to this section">#</a></h2>
+<p>Veldo is not a tool rollout. It is an occupational redesign.</p>
+<p>It removes the activity around which many engineers built competence, status, pleasure, and identity. It substantially dissolves traditional QA and project management. Resistance is not irrational. Some people are protecting status, some are protecting safety, some are grieving a craft, and some correctly see flaws in the new system.</p>
+<p>Three conditions cannot coexist indefinitely:</p>
+<ol>
+<li>Every role must move to Veldo.</li>
+<li>A person may permanently refuse Veldo and every useful adjacent role.</li>
+<li>The company will neither terminate the person nor carry idle payroll.</li>
+</ol>
+<p>With no firing as the design input, the company must fund redeployment, preserve some legitimate non-Veldo work, or carry the person until voluntary departure. There is no change-management technique that eliminates that economic fact.</p>
+<p>The viable endpoint is:</p>
+<ul>
+<li>Agents write ordinary production code.</li>
+<li>Humans still read and understand code, systems, risks, and evidence.</li>
+<li>Humans do not routinely hand-write production changes.</li>
+<li>High-risk surfaces retain human judgment and approval.</li>
+<li>Emergency recovery retains a break-glass path.</li>
+<li>Veldo is promoted based on measured system performance, not faith in AI.</li>
+</ul>
+<p>A blanket rule that no human may ever type code, even during a tool outage or catastrophic recovery, is unsafe. The operational rule should be no hand-written production code in the ordinary lane.</p>
+<h2 id="2-the-resistance-map">2. The resistance map<a class="anchor" href="#2-the-resistance-map" aria-label="link to this section">#</a></h2>
+<h3 id="21-first-rule-do-not-call-every-objection-resistance">2.1 First rule: do not call every objection resistance<a class="anchor" href="#21-first-rule-do-not-call-every-objection-resistance" aria-label="link to this section">#</a></h3>
+<p>A person who exposes a weak test, unsafe agent permission, ambiguous specification, or false proof is doing the new job correctly.</p>
+<p>Judge behavior:</p>
+<ul>
+<li>Valid dissent names a risk, supplies evidence, and proposes a test or control.</li>
+<li>Resistance protects the old method regardless of evidence.</li>
+<li>Sabotage hides work, bypasses controls, manufactures failure, or falsifies evidence.</li>
+</ul>
+<p>Do not diagnose motives publicly. Address observable behavior privately.</p>
+<h3 id="22-senior-engineer">2.2 Senior engineer<a class="anchor" href="#22-senior-engineer" aria-label="link to this section">#</a></h3>
+<p><strong>What they actually fear</strong></p>
+<ul>
+<li>Loss of the identity that made them valuable.</li>
+<li>Loss of the flow-state pleasure of coding.</li>
+<li>Status inversion, especially if a junior appears faster with an agent.</li>
+<li>Exposure that their expertise is partly tacit and difficult to express as constraints or evidence.</li>
+<li>Becoming a reviewer of mediocre machine output instead of a builder.</li>
+<li>Deskilling and future unemployability.</li>
+<li>Accountability for code they did not personally construct.</li>
+<li>Replacement after they train the system to embody their knowledge.</li>
+</ul>
+<p><strong>How it presents</strong></p>
+<ul>
+<li>Quietly hand-writing changes before asking the agent to reproduce them.</li>
+<li>Labeling ordinary work an emergency.</li>
+<li>Choosing pathological tasks for public demonstrations.</li>
+<li>Comparing agent elapsed time with their own typing time while excluding review, testing, and rework.</li>
+<li>Keeping architectural knowledge in their head so the agent predictably fails.</li>
+<li>Overclassifying changes as high or critical risk.</li>
+<li>Producing impossibly detailed specifications that secretly prescribe their own implementation.</li>
+<li>Reviewing agent output so aggressively that nothing can pass.</li>
+<li>Creating a hero incident in which only their manual intervention can save production.</li>
+<li>Saying they support Veldo while continuing to assign manual implementation to others.</li>
+</ul>
+<p><strong>Counter-moves</strong></p>
+<ul>
+<li>Do not make them compete with the agent at typing.</li>
+<li>Protect pay and level during the conversion year.</li>
+<li>Give them a real successor identity: proof architect, protected-surface owner, failure-model owner, or system risk owner.</li>
+<li>Ask them to convert tacit expertise into executable constraints, threat models, architectural decisions, rollback mechanisms, and tests.</li>
+<li>Compare representative work using specification-to-production time, escaped defects, rework, and human attention. Never run a typing race.</li>
+<li>Give them authority over genuine technical risks, but not an unrestricted veto.</li>
+<li>Require every claimed exception to name the exact Veldo limitation and its expiration condition.</li>
+<li>Publicly celebrate the senior who prevents an unsafe merge or makes a class of failures impossible.</li>
+<li>Have them teach failure patterns, not tool buttons.</li>
+</ul>
+<h3 id="23-junior-engineer">2.3 Junior engineer<a class="anchor" href="#23-junior-engineer" aria-label="link to this section">#</a></h3>
+<p><strong>What they actually fear</strong></p>
+<ul>
+<li>The learning ladder has disappeared before they climbed it.</li>
+<li>They cannot judge code they would not have known how to write.</li>
+<li>The agent makes output look senior while their understanding remains junior.</li>
+<li>Asking basic questions will reveal that they do not understand the generated system.</li>
+<li>They will become cheap agent operators with no durable expertise.</li>
+<li>Senior reviewers will blame them for accepting bad evidence.</li>
+</ul>
+<p><strong>How it presents</strong></p>
+<ul>
+<li>Quietly accepting agent output without understanding it.</li>
+<li>Copying generated explanations into proof reports.</li>
+<li>Hiding uncertainty because everyone else appears fluent.</li>
+<li>Asking the agent to make tests pass without investigating why they failed.</li>
+<li>Overproducing specifications and evidence to look diligent.</li>
+<li>Avoiding high-risk work indefinitely.</li>
+<li>Continuing to code privately as a way to learn.</li>
+<li>Becoming dependent on one tool or prompt pattern.</li>
+<li>Freezing when specifications contain ambiguity that a senior would resolve intuitively.</li>
+</ul>
+<p><strong>Counter-moves</strong></p>
+<ul>
+<li>Explicitly say that being a Veldo novice is expected and not a performance defect.</li>
+<li>Use private practice before public demonstrations.</li>
+<li>Teach code reading, system tracing, failure analysis, test quality, and risk classification.</li>
+<li>Require juniors to predict what the agent will change and what could fail before running it.</li>
+<li>Have them explain generated behavior from the repository, not from the agent&#x27;s summary.</li>
+<li>Pair them with seniors around evidence and counterexamples, not around keyboard control.</li>
+<li>Give them small but real judgment rights as competence grows.</li>
+<li>Build a visible progression from intent interpretation to evidence judgment to risk ownership.</li>
+<li>Assess with planted flaws and scenario exercises, not prompt speed.</li>
+</ul>
+<p>No typing does not mean no code literacy. A junior who never learns to read code, trace state, understand data models, or reason about failure cannot become a trustworthy judge.</p>
+<h3 id="24-qa">2.4 QA<a class="anchor" href="#24-qa" aria-label="link to this section">#</a></h3>
+<p><strong>What they actually fear</strong></p>
+<ul>
+<li>Their current role genuinely disappears.</li>
+<li>&quot;Quality is everyone&#x27;s job&quot; means nobody owns quality.</li>
+<li>Agents will generate both the defect and the test that overlooks it.</li>
+<li>Their accumulated product intuition will be dismissed as obsolete manual labor.</li>
+<li>They will be offered a cosmetic title with no durable work.</li>
+<li>Once the proof system is built, their transition role will disappear too.</li>
+</ul>
+<p><strong>How it presents</strong></p>
+<ul>
+<li>Preserving a separate manual QA phase after every gate passes.</li>
+<li>Creating flaky or excessively broad gates that make Veldo look unreliable.</li>
+<li>Waiting until after merge to reveal defects that could have been raised earlier.</li>
+<li>Insisting all behavior needs human testing.</li>
+<li>Rubber-stamping agent evidence because challenging it feels futile.</li>
+<li>Hoarding regression knowledge in private test plans.</li>
+<li>Defining quality as test volume rather than confidence.</li>
+<li>Treating every escaped defect as proof that automation cannot work.</li>
+</ul>
+<p><strong>Counter-moves</strong></p>
+<ul>
+<li>Say plainly that the traditional QA role is ending.</li>
+<li>Offer a paid trial as quality evidence owner, failure-model owner, exploratory risk owner, or proof-system steward.</li>
+<li>Make them responsible for whether evidence actually proves claims, not for manually repeating checks.</li>
+<li>Use their product intuition to design adversarial scenarios, invariants, production observability, and escaped-defect taxonomy.</li>
+<li>Require each gate to identify the failure it detects, its reliability, and its cost.</li>
+<li>Give them authority to escalate weak proof, but not to recreate a universal manual phase.</li>
+<li>Define the durable portion of the new role by month 6. Do not promise permanent work that exists only during migration.</li>
+<li>Cross-train toward security, compliance, customer risk, operations, or domain ownership if one full-time quality role will not remain.</li>
+</ul>
+<h3 id="25-product-manager">2.5 Product manager<a class="anchor" href="#25-product-manager" aria-label="link to this section">#</a></h3>
+<p><strong>What they actually fear</strong></p>
+<ul>
+<li>Specifications will expose that product decisions were previously resolved through implementation conversation.</li>
+<li>Ambiguity that once looked like flexibility will now look like incompetence.</li>
+<li>Engineering will blame product for every failed agent run.</li>
+<li>Repository-native truth will reduce their control over roadmap narratives.</li>
+<li>Continuous flow will remove familiar planning and prioritization rituals.</li>
+<li>Agents may appear capable of drafting product requirements, threatening their role.</li>
+</ul>
+<p><strong>How it presents</strong></p>
+<ul>
+<li>Producing vague intent and expecting the agent to infer the product decision.</li>
+<li>Moving scope after implementation starts.</li>
+<li>Keeping material decisions in Slack, meetings, or a ticketing system.</li>
+<li>Writing excessive detail to avoid accountability.</li>
+<li>Treating acceptance criteria as a contract weapon against engineering.</li>
+<li>Rejecting technically proven outcomes based on unstated expectations.</li>
+<li>Reintroducing batch planning because continuous decisions feel uncomfortable.</li>
+<li>Blaming Veldo when the specification was never executable.</li>
+</ul>
+<p><strong>Counter-moves</strong></p>
+<ul>
+<li>Make specification creation a dialogue with an agent and an engineer, not a blank form.</li>
+<li>Teach examples, counterexamples, constraints, unacceptable outcomes, and reversibility.</li>
+<li>Measure specification failure as a system signal, not a PM shame metric.</li>
+<li>Require scope changes to revise the specification and invalidate stale evidence.</li>
+<li>Preserve product authority over intent and tradeoffs.</li>
+<li>Remove responsibility for implementation detail unless it is a genuine constraint.</li>
+<li>Celebrate killing a bad idea early and exposing ambiguity before construction.</li>
+<li>Train PMs to judge whether a proven result serves the stated intent, not just whether boxes were checked.</li>
+</ul>
+<h3 id="26-project-manager">2.6 Project manager<a class="anchor" href="#26-project-manager" aria-label="link to this section">#</a></h3>
+<p><strong>What they actually fear</strong></p>
+<ul>
+<li>Veldo explicitly removes much of their current job.</li>
+<li>Repository status and continuous flow eliminate manual reporting and coordination.</li>
+<li>Their relationships and process knowledge will be replaced by automation.</li>
+<li>&quot;Change lead&quot; may be a temporary holding role, not a career.</li>
+<li>They may lose authority because work no longer waits for a coordination meeting.</li>
+</ul>
+<p><strong>How it presents</strong></p>
+<ul>
+<li>Recreating Jira in Markdown.</li>
+<li>Keeping both old and new status systems &quot;for safety.&quot;</li>
+<li>Reintroducing sprints, release trains, standups, and dependency meetings.</li>
+<li>Batching work to make it easier to report.</li>
+<li>Turning the weekly index pass into a long planning ceremony.</li>
+<li>Demanding manual updates that can be derived from repository state.</li>
+<li>Defining success as process compliance rather than flow and outcomes.</li>
+<li>Becoming the unofficial gatekeeper for all Veldo work.</li>
+</ul>
+<p><strong>Counter-moves</strong></p>
+<ul>
+<li>State honestly that status collection and sprint administration are ending.</li>
+<li>Give them a time-limited transition role, not a fake permanent one.</li>
+<li>Evaluate durable alternatives early: customer implementation, portfolio decisions, vendor management, compliance programs, operations, change enablement, or cross-company dependencies.</li>
+<li>Retain project management only where external coordination is real and cannot be represented by repository state.</li>
+<li>Automatically generate views from the repository.</li>
+<li>Put an expiration date on every parallel tracking system.</li>
+<li>Do not let the project manager own Veldo approval. That creates the bottleneck Veldo is intended to remove.</li>
+</ul>
+<h3 id="27-designer">2.7 Designer<a class="anchor" href="#27-designer" aria-label="link to this section">#</a></h3>
+<p><strong>What they actually fear</strong></p>
+<ul>
+<li>Design quality cannot be fully reduced to executable criteria.</li>
+<li>Agents will produce technically correct but aesthetically poor interfaces.</li>
+<li>Design will be bypassed because implementation is cheap.</li>
+<li>Figma and design critique will lose authority as repository truth expands.</li>
+<li>Their subjective judgment will be treated as anti-automation.</li>
+<li>Faster iteration will increase review load rather than reduce it.</li>
+</ul>
+<p><strong>How it presents</strong></p>
+<ul>
+<li>Keeping critical decisions only in design files or meetings.</li>
+<li>Issuing late subjective vetoes against already proven changes.</li>
+<li>Refusing to define design constraints because &quot;you know it when you see it.&quot;</li>
+<li>Requiring human review for every minor visual change.</li>
+<li>Using pixel perfection as an all-purpose blocking criterion.</li>
+<li>Avoiding generated interfaces entirely after one poor result.</li>
+<li>Allowing agents to infer interaction behavior from static images.</li>
+</ul>
+<p><strong>Counter-moves</strong></p>
+<ul>
+<li>Preserve a human design-review lane for changes affecting look, feel, accessibility, or user flow.</li>
+<li>Encode design tokens, component rules, accessibility requirements, content standards, screenshots, and interaction examples where machines can use them.</li>
+<li>Separate objective evidence from inherently human judgment.</li>
+<li>Require design review only for named surfaces and change classes.</li>
+<li>Make the designer the owner of user-facing intent and design-system constraints, not a late-stage approver of everything.</li>
+<li>Use agents to generate alternatives, then make human tradeoffs explicit and durable.</li>
+</ul>
+<h3 id="28-infrastructure-engineer">2.8 Infrastructure engineer<a class="anchor" href="#28-infrastructure-engineer" aria-label="link to this section">#</a></h3>
+<p><strong>What they actually fear</strong></p>
+<ul>
+<li>Agents can cause damage at machine speed.</li>
+<li>Repository access may imply dangerous production access.</li>
+<li>Proof in a test environment may not represent production reality.</li>
+<li>Their operational expertise may be ignored by people impressed with agent speed.</li>
+<li>They will remain accountable for incidents while losing control of implementation.</li>
+<li>Veldo will eliminate the hero role that currently establishes their status.</li>
+</ul>
+<p><strong>How it presents</strong></p>
+<ul>
+<li>Classifying nearly all infrastructure work as critical.</li>
+<li>Refusing agents the context needed to operate safely.</li>
+<li>Keeping runbooks and environment knowledge outside the repository.</li>
+<li>Preserving manual production changes because automation is &quot;too risky.&quot;</li>
+<li>Creating emergency exceptions for routine work.</li>
+<li>Demonstrating one catastrophic hypothetical as a reason to block the entire method.</li>
+<li>Allowing weak test environments so production remains the only meaningful test.</li>
+<li>Taking over incidents manually and failing to backfill proof.</li>
+</ul>
+<p><strong>Counter-moves</strong></p>
+<ul>
+<li>Start infrastructure last, after ordinary application changes work reliably.</li>
+<li>Use least-privilege agent identities, short-lived credentials, policy as code, dry runs, canaries, and tested rollback.</li>
+<li>Keep production execution separate from code generation.</li>
+<li>Define protected paths precisely. Do not use &quot;infrastructure&quot; as one blanket category.</li>
+<li>Convert operational knowledge into machine-readable runbooks, invariants, and recovery checks.</li>
+<li>Measure emergency-lane use and require backfill within 24 hours.</li>
+<li>Preserve human approval for destructive, access-control, encryption, core-network, and non-reversible changes.</li>
+<li>Give infrastructure experts real authority over resilience and recovery design.</li>
+</ul>
+<h2 id="3-the-research-base-applied-to-veldo">3. The research base, applied to Veldo<a class="anchor" href="#3-the-research-base-applied-to-veldo" aria-label="link to this section">#</a></h2>
+<h3 id="31-established-change-and-learning-research">3.1 Established change and learning research<a class="anchor" href="#31-established-change-and-learning-research" aria-label="link to this section">#</a></h3>
+<h3 id="kotter">Kotter<a class="anchor" href="#kotter" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> Large changes require a credible case, a guiding coalition, removal of obstacles, visible wins, and reinforcement in the operating system.</p>
+<p><strong>Veldo decision:</strong> The founder does not announce universal adoption and delegate it. The founder forms a three-person conversion cell, removes delivery pressure from the pilot, produces representative wins, and then deletes the old lane. The &quot;win&quot; is not generated code. It is a faster proven change with no quality loss.</p>
+<h3 id="adkar">ADKAR<a class="anchor" href="#adkar" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> Awareness, desire, knowledge, ability, and reinforcement are different conditions. Information does not create ability, and ability does not create desire.</p>
+<p><strong>Veldo decision:</strong> Diagnose the failure before intervening. Someone who does not understand why Veldo is needed gets business context. Someone who fears replacement gets the employment commitment. Someone who lacks evidence judgment gets coached practice. Someone who can do it but bypasses it gets an accountability conversation.</p>
+<h3 id="bridges-transition-model">Bridges&#x27; transition model<a class="anchor" href="#bridges-transition-model" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> People must let go of an old identity, pass through an uncertain neutral zone, and establish a new beginning. The psychological transition lags the formal change.</p>
+<p><strong>Veldo decision:</strong> Publicly acknowledge that hand-coding, traditional QA, and status reporting are ending. Create a protected 6-12 month neutral zone in which awkwardness is not punished. Establish successor identities through real decision rights, not inspirational language.</p>
+<h3 id="rogers-diffusion-of-innovations">Rogers&#x27; diffusion of innovations<a class="anchor" href="#rogers-diffusion-of-innovations" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> Adoption spreads through credible peers when an innovation is observable, trialable, compatible enough to test, and demonstrably useful.</p>
+<p><strong>Veldo decision:</strong> Start with volunteers who are trusted by peers, not only AI enthusiasts. Let others observe real proof packages and delivery results. Bring the late majority in after representative evidence exists, but before a permanent two-tier system forms.</p>
+<h3 id="edmondsons-psychological-safety">Edmondson&#x27;s psychological safety<a class="anchor" href="#edmondsons-psychological-safety" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> Learning requires the ability to admit uncertainty, errors, and lack of knowledge without interpersonal punishment. Safety is not low standards.</p>
+<p><strong>Veldo decision:</strong> Initial practice is private. Failed agent runs are learning material, not performance evidence. People must be able to say &quot;I cannot tell whether this proof is valid.&quot; Falsifying proof, bypassing gates, and attacking colleagues remain accountable behavior.</p>
+<h3 id="dreyfus-skill-acquisition">Dreyfus skill acquisition<a class="anchor" href="#dreyfus-skill-acquisition" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> Experts use contextual pattern recognition and intuition, while novices need explicit rules and examples. Expertise in one practice does not automatically transfer to a redesigned practice.</p>
+<p><strong>Veldo decision:</strong> Treat the best senior coder as a Veldo novice without pretending their old expertise is worthless. Start with checklists and worked examples, then move to ambiguous scenarios, risk tradeoffs, and adversarial evidence review. Do not hand everyone a training document and call them trained.</p>
+<h3 id="self-determination-theory">Self-determination theory<a class="anchor" href="#self-determination-theory" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> Motivation is stronger when people experience autonomy, competence, and relatedness. Pure control produces minimum compliance and concealed resistance.</p>
+<p><strong>Veldo decision:</strong> The destination is mandatory, but people receive bounded choice over pilot timing, learning format, role trials, and areas of specialization. Competence is built privately. Cohorts and pairing preserve social belonging.</p>
+<h3 id="loss-aversion">Loss aversion<a class="anchor" href="#loss-aversion" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> People weigh losses more heavily than comparable gains, especially losses of status, mastery, security, and control.</p>
+<p><strong>Veldo decision:</strong> Do not sell hypothetical future productivity while immediately removing current status. Protect base pay and level during conversion. Name what is being lost. Create the successor source of status before removing the old one.</p>
+<h3 id="identity-theory-and-identity-work">Identity theory and identity work<a class="anchor" href="#identity-theory-and-identity-work" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> Work changes are resisted when they invalidate the story people tell about who they are. People adopt new identities through credible experiments and social recognition.</p>
+<p><strong>Veldo decision:</strong> Give people provisional new identities they can test: proof architect, intent owner, quality evidence owner, protected-surface owner. Public recognition follows real demonstrations of judgment, not title inflation.</p>
+<h3 id="deliberate-practice-and-cognitive-apprenticeship">Deliberate practice and cognitive apprenticeship<a class="anchor" href="#deliberate-practice-and-cognitive-apprenticeship" aria-label="link to this section">#</a></h3>
+<p><strong>What it says:</strong> Expertise grows through repeated work at the edge of ability, rapid feedback, observation of expert reasoning, and progressively reduced scaffolding.</p>
+<p><strong>Veldo decision:</strong> Use short scenarios with planted specification defects, weak evidence, misleading tests, and incorrect risk classifications. Seniors explain their reasoning. Juniors first observe, then perform part of the judgment, then own a complete low-risk decision.</p>
+<h3 id="32-what-2024-2026-ai-adoption-evidence-changes">3.2 What 2024-2026 AI adoption evidence changes<a class="anchor" href="#32-what-2024-2026-ai-adoption-evidence-changes" aria-label="link to this section">#</a></h3>
+<p>The evidence is mixed because &quot;AI coding&quot; covers very different activities.</p>
+<h3 id="controlled-coding-tasks-show-potential-not-organizational-proof">Controlled coding tasks show potential, not organizational proof<a class="anchor" href="#controlled-coding-tasks-show-potential-not-organizational-proof" aria-label="link to this section">#</a></h3>
+<p>The GitHub Copilot controlled study by Peng and colleagues found participants completed a bounded coding task about 56 percent faster. Later field experiments, including work reported by Cui and colleagues in 2024 across several companies, found increased completed tasks after Copilot access, with larger gains for less experienced developers in some settings.</p>
+<p><strong>Veldo decision:</strong> AI can reduce construction time. That does not establish that autonomous implementation plus autonomous proof improves a mature delivery system. Do not use a toy-task speed result to justify whole-company conversion.</p>
+<h3 id="local-speed-can-fail-to-improve-delivery">Local speed can fail to improve delivery<a class="anchor" href="#local-speed-can-fail-to-improve-delivery" aria-label="link to this section">#</a></h3>
+<p>DORA&#x27;s 2024 research reported positive associations between AI use and several individual-level outcomes, but it also warned that increased AI adoption did not automatically improve delivery throughput or stability. The findings were associative, not a causal verdict on every tool.</p>
+<p><strong>Veldo decision:</strong> Measure specification-to-production time, escaped defects, reversions, proof latency, and recovery. Never declare success because developers report feeling faster or generate more changes.</p>
+<h3 id="experienced-developers-can-become-slower">Experienced developers can become slower<a class="anchor" href="#experienced-developers-can-become-slower" aria-label="link to this section">#</a></h3>
+<p>METR&#x27;s 2025 randomized study of experienced open-source developers working in repositories they already knew found that the tested AI tools made them about 19 percent slower. Participants expected a speedup and continued to perceive one even when measurement showed a slowdown. The sample and task setting were limited, but the mismatch between perception and measured performance is important.</p>
+<p><strong>Veldo decision:</strong> Do not accept &quot;this feels faster&quot; or &quot;the old way was faster&quot; as evidence. Predefine representative tasks and measure end-to-end performance. Expect some senior experts to experience a real initial slowdown.</p>
+<h3 id="trust-remains-substantially-lower-than-usage">Trust remains substantially lower than usage<a class="anchor" href="#trust-remains-substantially-lower-than-usage" aria-label="link to this section">#</a></h3>
+<p>Stack Overflow&#x27;s 2024 and 2025 surveys showed broad use or planned use of AI tools alongside persistent distrust of output accuracy. Adoption and confidence are not the same thing.</p>
+<p><strong>Veldo decision:</strong> Treat skepticism as normal. Veldo must earn confidence through reproducible evidence, independent review, and escaped-defect results. Forced enthusiasm is irrelevant.</p>
+<h3 id="more-generated-code-can-create-more-review-and-maintenance-work">More generated code can create more review and maintenance work<a class="anchor" href="#more-generated-code-can-create-more-review-and-maintenance-work" aria-label="link to this section">#</a></h3>
+<p>Observational analyses such as GitClear&#x27;s 2024 reports found patterns consistent with increased code churn and copy-paste behavior during the generative AI period. These studies do not prove AI caused the changes, but they reinforce the possibility that cheap construction increases downstream burden.</p>
+<p><strong>Veldo decision:</strong> Cap change size, require meaningful evidence, and optimize verification. Do not reward code volume, change count, or agent activity.</p>
+<h3 id="agent-benchmarks-are-not-company-performance">Agent benchmarks are not company performance<a class="anchor" href="#agent-benchmarks-are-not-company-performance" aria-label="link to this section">#</a></h3>
+<p>Benchmark progress on repository tasks demonstrates rapidly improving capability, but benchmarks generally provide cleaner objectives, bounded environments, and objective tests. Real organizations contain contradictory intent, undocumented constraints, production-only behavior, security restrictions, and political tradeoffs.</p>
+<p><strong>Veldo decision:</strong> The company repository and proof system are part of the product. Veldo cannot succeed by purchasing a stronger model while leaving the repository ambiguous.</p>
+<h3 id="there-is-no-strong-longitudinal-proof-of-the-complete-veldo-model">There is no strong longitudinal proof of the complete Veldo model<a class="anchor" href="#there-is-no-strong-longitudinal-proof-of-the-complete-veldo-model" aria-label="link to this section">#</a></h3>
+<p>As of the 2024-2026 adoption wave, evidence supports useful AI assistance and rapidly improving agents. It does not yet establish that removing routine human coding across an entire organization is universally superior or safe over multiple years.</p>
+<p><strong>Veldo decision:</strong> Treat Veldo as a falsifiable operating-model hypothesis. Promote it in stages. Keep quality and recovery tripwires. Delay expansion when the proof system is not ready.</p>
+<h3 id="33-the-2026-adoption-wave-additions-second-research-pass">3.3 The 2026 adoption-wave additions (second research pass)<a class="anchor" href="#33-the-2026-adoption-wave-additions-second-research-pass" aria-label="link to this section">#</a></h3>
+<p>Independent current-source research adds five findings that change program decisions:</p>
+<p><strong>The adoption trap is now the documented default.</strong> 2026 industry analyses of agentic-coding rollouts converge on one pattern: teams that adopt agents bottom-up feel faster at the keyboard while the delivery system slows, because the bottleneck moves to reviewing, validating, and safely releasing the larger volume of change. The dominant failure is grassroots tool adoption outpacing operating design. <strong>Veldo decision:</strong> this is the strongest argument for Veldo itself, and the program should say so plainly: Veldo is not the risky new thing bolted onto AI adoption; it is the operating design whose absence is what makes AI adoption fail. The company is not adopting agents. It is adopting the system that makes agents safe.</p>
+<p><strong>Willingness and trust are different axes, and only one should be trained.</strong> The large developer surveys through 2025 show usage climbing while trust in output accuracy stays low and even falls. <strong>Veldo decision:</strong> never argue people into trusting agent output; that is the wrong target. Train them to trust the EVIDENCE instead: the gate, the proof, the independent review. Veldo&#x27;s own premise is that nobody should trust output, which turns the skeptic&#x27;s instinct from an obstacle into the asset, formalized.</p>
+<p><strong>Adoption becomes sticky once crossed.</strong> By early 2026, studies report most developers refusing to work WITHOUT AI on ordinary tasks. The same population that resisted the on-ramp defends the plateau. <strong>Veldo decision:</strong> the Phase 2 plateau is survivable and temporary; design everything around getting each person THROUGH their first twenty changes, because retention after genuine adoption takes care of itself.</p>
+<p><strong>Re-skilling fatigue is a documented clinical pattern.</strong> 2025-2026 organizational research describes exhaustion from perpetual tool churn: people are not tired of one change, they are tired of changing. <strong>Veldo decision:</strong> consolidate the learning into one program with one endpoint, promise no further methodology change for a defined period after stabilization, and never stack a second transformation on top of this one mid-flight.</p>
+<p><strong>Psychological safety has numbers now.</strong> Half of surveyed workers report worry about AI&#x27;s workplace impact; a third feel overwhelmed; programs that skip the explicit safety commitment see their training fail to take. The practice of &quot;ethical offboarding&quot; (visible generosity even toward people who eventually leave) measurably deepens trust among those who stay. <strong>Veldo decision:</strong> the public commitment in 4.1 is not decoration; it is the single intervention with the strongest evidence behind it. And how the company treats its hardest transition case will be read by everyone else as the true policy.</p>
+<h3 id="34-the-resulting-research-backed-decisions">3.4 The resulting research-backed decisions<a class="anchor" href="#34-the-resulting-research-backed-decisions" aria-label="link to this section">#</a></h3>
+<ol>
+<li>Volunteers go first because early coercion creates concealment, not competence.</li>
+<li>The old way remains available only during a defined transition. Permanent parallel systems prevent conversion.</li>
+<li>Repository clarity and verification come before autonomous implementation.</li>
+<li>Training documents are reference material, not skill acquisition.</li>
+<li>Experienced coders need status protection and practice, not lectures about AI.</li>
+<li>Juniors need a redesigned apprenticeship or the company will destroy its future judgment capacity.</li>
+<li>Adoption is measured at the delivery-system level, not by tool usage.</li>
+<li>The founder must remain visibly involved for at least 6 months.</li>
+<li>The transition takes 9-12 months in a prepared small company. It takes longer if the repository and gates are poor.</li>
+<li>The first major incident is the real adoption test.</li>
+</ol>
+<h2 id="4-the-program">4. The program<a class="anchor" href="#4-the-program" aria-label="link to this section">#</a></h2>
+<h3 id="41-make-the-no-firing-commitment-precise">4.1 Make the no-firing commitment precise<a class="anchor" href="#41-make-the-no-firing-commitment-precise" aria-label="link to this section">#</a></h3>
+<h3 id="should-it-be-public">Should it be public?<a class="anchor" href="#should-it-be-public" aria-label="link to this section">#</a></h3>
+<p>Yes. Make it public before the first required training, assessment, or pilot.</p>
+<p>First:</p>
+<ul>
+<li>Confirm the company can fund 9-12 months of reduced capacity and role transition.</li>
+<li>Align every manager on the exact promise.</li>
+<li>Identify the limits around misconduct, sabotage, and dishonesty.</li>
+<li>Decide whether the promise is time-bounded or absolute.</li>
+</ul>
+<p>Then announce it at one company meeting, publish it in writing the same day, and hold individual role-impact conversations during the following week.</p>
+<h3 id="recommended-words">Recommended words<a class="anchor" href="#recommended-words" aria-label="link to this section">#</a></h3>
+<blockquote><p>We are not installing a coding tool. We are changing how work is done, and some current tasks and roles will disappear. I will not insult you by pretending otherwise.</p>
+<p>No current employee will lose employment, base pay, or level during the next 12 months because Veldo removes their old tasks or because they are initially slow or unsuccessful at learning the new work. We will provide private practice, coaching, and at least two serious role trials where needed.</p>
+<p>You do not have to be excited. You do have to participate in good faith, use Veldo on work declared eligible, expose failures honestly, and never bypass or falsify gates. Evidence-backed criticism is part of the new job. Sabotage and dishonesty are not.</p>
+<p>We will judge the method by delivery speed, defects, reversions, recovery, and human attention. If Veldo does not perform safely, we will change the method. We will not change the data to protect the story.</p></blockquote>
+<p>Do not say &quot;AI will not replace anyone.&quot; Some tasks and roles are being replaced. Say exactly who is protected, from what, and for how long.</p>
+<h3 id="if-the-founder-means-literally-no-firing-without-a-time-limit">If the founder means literally no firing, without a time limit<a class="anchor" href="#if-the-founder-means-literally-no-firing-without-a-time-limit" aria-label="link to this section">#</a></h3>
+<p>Add this commitment and budget for it:</p>
+<blockquote><p>Anyone who cannot or does not choose to perform Veldo work will be offered legitimate adjacent or legacy work. They will not retain authority to make a Veldo team use the old method. If suitable work eventually runs out, the company will carry that employment cost until a voluntary transition or natural attrition.</p></blockquote>
+<p>If the company cannot afford that sentence, it cannot honestly promise absolute no firing.</p>
+<h3 id="42-assign-ownership-and-capacity">4.2 Assign ownership and capacity<a class="anchor" href="#42-assign-ownership-and-capacity" aria-label="link to this section">#</a></h3>
+<p>For a company with 5-20 engineers, create a temporary conversion cell:</p>
+<ul>
+<li>Founder: sponsor, final policy owner, two hours per week minimum.</li>
+<li>Veldo lead: owns method implementation and removes obstacles.</li>
+<li>Proof lead: owns gates, evidence quality, and escaped-defect learning.</li>
+<li>People lead: owns role conversations, learning plans, and redeployment.</li>
+</ul>
+<p>These may be three people with overlapping duties. Do not create a large transformation office.</p>
+<p>Capacity rules:</p>
+<ul>
+<li>Reserve 20 percent of engineering capacity for the first 12 weeks.</li>
+<li>Reduce roadmap commitments accordingly.</li>
+<li>Reserve 10 percent through month 6 for gate and repository improvements.</li>
+<li>Give pilot coaches explicit workload relief.</li>
+<li>Do not make people learn Veldo after hours.</li>
+</ul>
+<p>If delivery promises remain unchanged, training will be the first thing sacrificed and hidden manual coding will become the actual operating model.</p>
+<h3 id="43-sequencing-and-timeline">4.3 Sequencing and timeline<a class="anchor" href="#43-sequencing-and-timeline" aria-label="link to this section">#</a></h3>
+<h4 id="phase-0-contract-and-foundation-weeks-0-4">Phase 0: Contract and foundation, weeks 0-4<a class="anchor" href="#phase-0-contract-and-foundation-weeks-0-4" aria-label="link to this section">#</a></h4>
+<p><strong>Actions</strong></p>
+<ul>
+<li>Make the public employment and learning commitment.</li>
+<li>Hold a private role-impact conversation with every affected person.</li>
+<li>Record a four-week baseline where possible.</li>
+<li>Map all protected paths and risk classes.</li>
+<li>Make build, test, deployment, rollback, and environment setup reproducible.</li>
+<li>Create the canonical verification command.</li>
+<li>Measure and fix gate flakiness.</li>
+<li>Create the specification template and repository index.</li>
+<li>Build the private sandbox.</li>
+<li>Select 2-4 volunteer pioneers.</li>
+<li>Declare which work is initially eligible.</li>
+<li>Require every manager to accept the transition contract before their team enters the pilot.</li>
+</ul>
+<p><strong>Initial eligible work</strong></p>
+<ul>
+<li>Reversible low-risk product changes.</li>
+<li>Small standard-risk changes with strong existing tests.</li>
+<li>Documentation and tooling.</li>
+<li>Isolated bug fixes with reproducible failures.</li>
+<li>Test and observability improvements.</li>
+</ul>
+<p><strong>Initially ineligible work</strong></p>
+<ul>
+<li>Money movement.</li>
+<li>Authentication and authorization.</li>
+<li>Destructive migrations.</li>
+<li>Core infrastructure.</li>
+<li>Irreversible data changes.</li>
+<li>Weakly observed production-only behavior.</li>
+</ul>
+<p><strong>Exit conditions</strong></p>
+<ul>
+<li>The canonical gate is reliable enough that bypass is not routine.</li>
+<li>Rollback works.</li>
+<li>At least one complete Veldo change has run in the sandbox.</li>
+<li>The volunteers understand the no-firing and no-falsification contract.</li>
+<li>Managers have stopped assigning new manual implementation for pilot-eligible work.</li>
+</ul>
+<h4 id="phase-1-volunteer-lighthouse-months-2-3">Phase 1: Volunteer lighthouse, months 2-3<a class="anchor" href="#phase-1-volunteer-lighthouse-months-2-3" aria-label="link to this section">#</a></h4>
+<p>Use 2-4 volunteers. Include:</p>
+<ul>
+<li>One respected senior or strong mid-level engineer.</li>
+<li>One product or design partner.</li>
+<li>The QA person if one exists.</li>
+<li>One junior when the environment is safe enough.</li>
+</ul>
+<p>Do not use only AI hobbyists. Do not begin with the loudest opponent. The first cohort must be credible and capable of learning in public after private practice.</p>
+<p><strong>Actions</strong></p>
+<ul>
+<li>Run 15-25 representative changes through Veldo.</li>
+<li>Keep them small and reversible.</li>
+<li>Use the complete proof and fresh-context review loop.</li>
+<li>Record every exception.</li>
+<li>Hold private coaching twice weekly.</li>
+<li>Run one sandbox comparison against the old method using end-to-end measures. Do not duplicate every production task.</li>
+<li>Demonstrate proof packages and reviewer catches, not generated code.</li>
+<li>Fix proof-system defects immediately.</li>
+</ul>
+<p><strong>Promotion conditions</strong></p>
+<ul>
+<li>At least 20 representative changes or four stable weeks.</li>
+<li>Escaped defects and reversions are no worse than baseline.</li>
+<li>No unresolved severe incident attributable to a known gate bypass.</li>
+<li>At least two people other than the Veldo lead can independently run and judge the lifecycle.</li>
+<li>Gate flakiness is below the point where bypass feels rational.</li>
+<li>The team has completed one rollback or recovery drill.</li>
+<li>Participants report that they can admit uncertainty without punishment.</li>
+</ul>
+<p>A productivity gain is not required yet. Safety and repeatability are.</p>
+<h4 id="phase-2-cohort-expansion-months-4-5">Phase 2: Cohort expansion, months 4-5<a class="anchor" href="#phase-2-cohort-expansion-months-4-5" aria-label="link to this section">#</a></h4>
+<p>Bring people in cohorts of 2-3. The next cohort should include:</p>
+<ul>
+<li>A pragmatic peer from the early majority.</li>
+<li>A respectful skeptic.</li>
+<li>A manager whose behavior will influence others.</li>
+<li>People from a second product area.</li>
+</ul>
+<p>This is when laggards begin, not at the final deadline. By then they have peer evidence, a working sandbox, and local coaches.</p>
+<p><strong>Actions</strong></p>
+<ul>
+<li>Move 30-50 percent of eligible ordinary work to Veldo.</li>
+<li>Run high-risk scenarios in the sandbox without production execution.</li>
+<li>Assign one skeptic a formal red-team role.</li>
+<li>Begin individual role trials for QA and project management.</li>
+<li>Remove duplicate status reporting.</li>
+<li>Introduce team-level metrics.</li>
+<li>Rotate pairing so champions do not become permanent operators.</li>
+<li>Require manual exceptions to record reason, owner, and expiration date.</li>
+</ul>
+<p>Expect the honeymoon to end here. Easy tasks have been exhausted, proof gates accumulate, and agents meet ambiguous legacy behavior. This plateau is normal.</p>
+<h4 id="phase-3-veldo-becomes-the-default-months-6-8">Phase 3: Veldo becomes the default, months 6-8<a class="anchor" href="#phase-3-veldo-becomes-the-default-months-6-8" aria-label="link to this section">#</a></h4>
+<p><strong>Actions</strong></p>
+<ul>
+<li>All ordinary reversible production work enters the Veldo lane by default.</li>
+<li>Agents write all ordinary production changes.</li>
+<li>Humans own intent, evidence judgment, exceptions, and protected approvals.</li>
+<li>High-risk changes use stronger evidence and human lanes.</li>
+<li>Manual coding is limited to the declared emergency lane.</li>
+<li>Every emergency receives specification, proof, and independent review within 24 hours.</li>
+<li>Old sprint and status processes become read-only or are removed.</li>
+<li>Every remaining non-Veldo area has a named reason and sunset condition.</li>
+<li>Managers are held accountable for preventing quiet reversion.</li>
+</ul>
+<p>The target date for ending hand-written ordinary production code should be near the end of this phase. If promotion conditions are not met, move the date. Do not fake readiness to protect a date.</p>
+<h4 id="phase-4-stabilization-and-role-settlement-months-9-12">Phase 4: Stabilization and role settlement, months 9-12<a class="anchor" href="#phase-4-stabilization-and-role-settlement-months-9-12" aria-label="link to this section">#</a></h4>
+<p><strong>Actions</strong></p>
+<ul>
+<li>Settle permanent roles and redeployments.</li>
+<li>Remove transition-only duties.</li>
+<li>Enable automatic merge for proven reversible work.</li>
+<li>Audit protected paths and agent permissions.</li>
+<li>Test recovery from agent, model, CI, and vendor outages.</li>
+<li>Review whether junior development is producing real judgment.</li>
+<li>Compare rolling system results with the original baseline.</li>
+<li>Retire individual exceptions that have become permanent without justification.</li>
+<li>Reduce temporary adoption rituals.</li>
+</ul>
+<p>A well-prepared company may reach the ordinary-code endpoint in 6-9 months. A company with weak tests, undocumented architecture, or fragile deployment should expect 12-18 months.</p>
+<h3 id="44-design-the-sandbox-for-safe-incompetence">4.4 Design the sandbox for safe incompetence<a class="anchor" href="#44-design-the-sandbox-for-safe-incompetence" aria-label="link to this section">#</a></h3>
+<p>The sandbox should have:</p>
+<ul>
+<li>A fork or synthetic service with no production credentials.</li>
+<li>No customer data.</li>
+<li>The same specification, proof, and review structure as production.</li>
+<li>Seed tasks based on actual past defects and changes.</li>
+<li>Planted ambiguous specifications.</li>
+<li>Tests that pass while behavior remains wrong.</li>
+<li>Misleading proof packages.</li>
+<li>Incorrect risk classifications.</li>
+<li>Rollback and incident scenarios.</li>
+<li>A reset button.</li>
+<li>No raw practice telemetry in performance reviews.</li>
+</ul>
+<p>Give each person two 60-90 minute practice blocks per week for 8 weeks.</p>
+<h3 id="why-initial-practice-should-be-private">Why initial practice should be private<a class="anchor" href="#why-initial-practice-should-be-private" aria-label="link to this section">#</a></h3>
+<p>Public novice performance creates evaluation anxiety, particularly for high-status experts. People then optimize for appearing competent:</p>
+<ul>
+<li>They conceal failed runs.</li>
+<li>They copy others&#x27; prompts.</li>
+<li>They avoid hard tasks.</li>
+<li>They overprepare a polished demo.</li>
+<li>They decline to ask basic questions.</li>
+</ul>
+<p>Private practice allows genuine error. Public learning begins later with selected artifacts and the learner&#x27;s consent.</p>
+<p>Raw practice activity stays private. Competence is assessed separately through a short, private scenario exercise and real-work observation.</p>
+<h3 id="45-use-a-judgment-competency-ladder">4.5 Use a judgment competency ladder<a class="anchor" href="#45-use-a-judgment-competency-ladder" aria-label="link to this section">#</a></h3>
+<p>Do not certify people based on tool usage.</p>
+<h3 id="level-1-intent-recognition">Level 1: Intent recognition<a class="anchor" href="#level-1-intent-recognition" aria-label="link to this section">#</a></h3>
+<p>The person can distinguish desired outcome, implementation suggestion, constraint, and unstated assumption.</p>
+<h3 id="level-2-specification-judgment">Level 2: Specification judgment<a class="anchor" href="#level-2-specification-judgment" aria-label="link to this section">#</a></h3>
+<p>The person can identify ambiguity, missing edge cases, non-testable criteria, excessive scope, and required human decisions.</p>
+<h3 id="level-3-evidence-judgment">Level 3: Evidence judgment<a class="anchor" href="#level-3-evidence-judgment" aria-label="link to this section">#</a></h3>
+<p>The person can map each criterion to evidence, detect superficial tests, reproduce results, and identify what remains unproven.</p>
+<h3 id="level-4-risk-and-reversibility-judgment">Level 4: Risk and reversibility judgment<a class="anchor" href="#level-4-risk-and-reversibility-judgment" aria-label="link to this section">#</a></h3>
+<p>The person can classify risk, explain blast radius, require an appropriate rollback, and recognize when human approval is needed.</p>
+<h3 id="level-5-proof-system-improvement">Level 5: Proof-system improvement<a class="anchor" href="#level-5-proof-system-improvement" aria-label="link to this section">#</a></h3>
+<p>The person can turn recurring failures into durable repository constraints, improve gate reliability, and coach others.</p>
+<p>A practical assessment should ask the person to:</p>
+<ul>
+<li>Find defects in three specifications.</li>
+<li>Reject a plausible but inadequate proof package.</li>
+<li>Identify a planted regression.</li>
+<li>Classify a change&#x27;s risk.</li>
+<li>Decide whether to merge, fail, or escalate.</li>
+<li>Explain the decision without relying on the agent&#x27;s summary.</li>
+</ul>
+<h3 id="46-redesign-pairing-and-apprenticeship">4.6 Redesign pairing and apprenticeship<a class="anchor" href="#46-redesign-pairing-and-apprenticeship" aria-label="link to this section">#</a></h3>
+<p>Traditional driver-navigator pairing assumes a human is constructing code. Replace it with two forms.</p>
+<h3 id="intent-pairing">Intent pairing<a class="anchor" href="#intent-pairing" aria-label="link to this section">#</a></h3>
+<p>One person owns the desired outcome. The other acts as constraint and ambiguity challenger.</p>
+<p>Typical pairings:</p>
+<ul>
+<li>PM and engineer.</li>
+<li>Designer and engineer.</li>
+<li>Customer expert and domain engineer.</li>
+<li>Infra owner and application engineer.</li>
+</ul>
+<h3 id="evidence-pairing">Evidence pairing<a class="anchor" href="#evidence-pairing" aria-label="link to this section">#</a></h3>
+<p>One person maps criteria to evidence. The other acts as skeptic and tries to falsify the claim.</p>
+<p>Typical pairings:</p>
+<ul>
+<li>Junior prepares the criterion-to-evidence map.</li>
+<li>Senior searches for missing failure modes.</li>
+<li>QA challenges test meaning.</li>
+<li>Infra or security joins for protected surfaces.</li>
+</ul>
+<p>Rotate these roles. A junior must learn to challenge, not only prepare material for senior approval.</p>
+<h3 id="how-juniors-grow-when-nobody-types">How juniors grow when nobody types<a class="anchor" href="#how-juniors-grow-when-nobody-types" aria-label="link to this section">#</a></h3>
+<p>Use this progression:</p>
+<ol>
+<li>Predict the affected components before the agent acts.</li>
+<li>Read the implementation plan and identify missing context.</li>
+<li>Trace one changed behavior through the code and data model.</li>
+<li>Explain why each test is meaningful.</li>
+<li>Create counterexamples and fault injections.</li>
+<li>Compare two agent-generated approaches and judge the tradeoff.</li>
+<li>Investigate one failed gate without asking the agent to fix it immediately.</li>
+<li>Follow production behavior after merge.</li>
+<li>Participate in an incident and convert the lesson into a durable constraint.</li>
+<li>Own low-risk merge judgment under supervision.</li>
+</ol>
+<p>Juniors should read substantial code even if they do not write production code.</p>
+<h3 id="how-seniors-convert-mastery">How seniors convert mastery<a class="anchor" href="#how-seniors-convert-mastery" aria-label="link to this section">#</a></h3>
+<p>A senior&#x27;s new apprenticeship is not &quot;learn prompting.&quot; It is:</p>
+<ul>
+<li>Articulate tacit architectural constraints.</li>
+<li>Define failure models and invariants.</li>
+<li>Judge whether tests establish behavior.</li>
+<li>Design reversibility.</li>
+<li>Separate low-risk automation from protected judgment.</li>
+<li>Improve observability.</li>
+<li>Coach reasoning.</li>
+<li>Diagnose whether a failure came from intent, context, construction, proof, or review.</li>
+</ul>
+<p>This gives the best coder a harder and more consequential mastery path, rather than pretending agent operation is equivalent to their old craft.</p>
+<h3 id="47-change-incentives-and-status">4.7 Change incentives and status<a class="anchor" href="#47-change-incentives-and-status" aria-label="link to this section">#</a></h3>
+<h3 id="protect-during-conversion">Protect during conversion<a class="anchor" href="#protect-during-conversion" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Base pay protected for 12 months.</li>
+<li>Level protected for 12 months.</li>
+<li>No performance penalty for sandbox failures.</li>
+<li>No promotion advantage based on agent volume or tool usage.</li>
+<li>No title downgrade disguised as role modernization.</li>
+</ul>
+<h3 id="celebrate-the-new-scarce-work">Celebrate the new scarce work<a class="anchor" href="#celebrate-the-new-scarce-work" aria-label="link to this section">#</a></h3>
+<p>Celebrate:</p>
+<ul>
+<li>An ambiguity caught before construction.</li>
+<li>A weak proof rejected.</li>
+<li>A dangerous risk escalation.</li>
+<li>A rollback made reliable.</li>
+<li>A flaky gate repaired.</li>
+<li>A production-only assumption made observable.</li>
+<li>Tacit knowledge converted into a repository constraint.</li>
+<li>A junior who correctly challenges a senior or an agent.</li>
+<li>A reviewer catch that prevents an escaped defect.</li>
+<li>A small change that avoids unnecessary complexity.</li>
+</ul>
+<p>Do not celebrate:</p>
+<ul>
+<li>Lines generated.</li>
+<li>Agent sessions.</li>
+<li>Number of specifications.</li>
+<li>Prompt cleverness.</li>
+<li>Raw merge count.</li>
+<li>Heroic emergency bypasses.</li>
+<li>Speed without quality.</li>
+</ul>
+<h3 id="prevent-status-collapse-for-the-best-typist">Prevent status collapse for the best typist<a class="anchor" href="#prevent-status-collapse-for-the-best-typist" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Acknowledge the loss privately and publicly.</li>
+<li>Give them ownership of a real protected surface.</li>
+<li>Make their judgment visible in high-consequence decisions.</li>
+<li>Ask them to create the team&#x27;s failure taxonomy.</li>
+<li>Give them teaching status based on reasoning, not nostalgia.</li>
+<li>Do not force them into a live prompting contest with a junior.</li>
+<li>Do not call reluctance a lack of growth mindset.</li>
+</ul>
+<h3 id="48-measure-without-surveillance">4.8 Measure without surveillance<a class="anchor" href="#48-measure-without-surveillance" aria-label="link to this section">#</a></h3>
+<h3 id="team-level-scorecard">Team-level scorecard<a class="anchor" href="#team-level-scorecard" aria-label="link to this section">#</a></h3>
+<p>Use rolling four-week measures:</p>
+<ul>
+<li>Specification-to-production time.</li>
+<li>Proof latency, including the slowest 10 percent.</li>
+<li>First-pass proof rate.</li>
+<li>Escaped defect rate, severity weighted.</li>
+<li>Reversion or urgent correction rate.</li>
+<li>Mean recovery time.</li>
+<li>Specification failure rate.</li>
+<li>Agent review catch rate.</li>
+<li>Emergency-lane use.</li>
+<li>Human minutes per shipped change.</li>
+<li>Percentage of eligible ordinary changes completed through Veldo.</li>
+<li>Verification investment.</li>
+<li>Three-item anonymous pulse: role clarity, safety admitting uncertainty, and workload sustainability.</li>
+</ul>
+<p>Interpret metrics together. A reduction in human minutes is not success if escaped defects increase.</p>
+<h3 id="rules-against-surveillance">Rules against surveillance<a class="anchor" href="#rules-against-surveillance" aria-label="link to this section">#</a></h3>
+<ul>
+<li>No individual token, prompt, session, or agent-use dashboard.</li>
+<li>No ranking by Veldo adoption.</li>
+<li>No productivity score inferred from commits or changes.</li>
+<li>No use of sandbox telemetry in performance reviews.</li>
+<li>No publication of subgroup results with fewer than five people.</li>
+<li>Audit logs may exist for security and incident reconstruction, but not as adoption scores.</li>
+<li>Individual capability is assessed privately through work samples and coaching.</li>
+</ul>
+<p>Individual accountability still exists. A manager may discuss a person&#x27;s actual specifications, reviews, bypasses, or decisions. What is prohibited is converting machine activity traces into a proxy for value.</p>
+<p>Individual dashboards backfire because people optimize visible activity, conceal uncertainty, and route around the system. Veldo needs honest failure signals more than it needs compliance screenshots.</p>
+<h3 id="49-temporary-transition-rituals">4.9 Temporary transition rituals<a class="anchor" href="#49-temporary-transition-rituals" aria-label="link to this section">#</a></h3>
+<p>Veldo&#x27;s steady state should remain light. During the transition, use fixed-term rituals with explicit sunset dates.</p>
+<h3 id="weekly-index-pass">Weekly index pass<a class="anchor" href="#weekly-index-pass" aria-label="link to this section">#</a></h3>
+<p>Keep the normal 15-20 minute repository index review.</p>
+<h3 id="proof-clinic">Proof clinic<a class="anchor" href="#proof-clinic" aria-label="link to this section">#</a></h3>
+<p>For the first 12 weeks, hold a 30-minute weekly clinic:</p>
+<ul>
+<li>One ambiguous specification.</li>
+<li>One strong or weak proof package.</li>
+<li>One independent-review catch.</li>
+<li>One gate improvement.</li>
+</ul>
+<p>Show reasoning, not agent theatrics. End the recurring clinic after 12 weeks unless the team explicitly renews it for a defined problem.</p>
+<h3 id="conversion-office-hours">Conversion office hours<a class="anchor" href="#conversion-office-hours" aria-label="link to this section">#</a></h3>
+<p>Offer two optional private blocks per week during the first 8-12 weeks.</p>
+<h3 id="incident-to-constraint-review">Incident-to-constraint review<a class="anchor" href="#incident-to-constraint-review" aria-label="link to this section">#</a></h3>
+<p>After an escaped defect or emergency, ask:</p>
+<ul>
+<li>What claim was false?</li>
+<li>Why did the specification, proof, or review miss it?</li>
+<li>What durable constraint will prevent the class of failure?</li>
+<li>Was the emergency lane used correctly?</li>
+</ul>
+<h3 id="what-replaces-the-emotional-value-of-shipping-by-hand">What replaces the emotional value of shipping by hand<a class="anchor" href="#what-replaces-the-emotional-value-of-shipping-by-hand" aria-label="link to this section">#</a></h3>
+<p>Create a lightweight &quot;claim made safe&quot; recognition:</p>
+<ul>
+<li>The intent that became real.</li>
+<li>The strongest evidence.</li>
+<li>The uncertainty that was removed.</li>
+<li>The reviewer catch.</li>
+<li>The repository improvement left behind.</li>
+</ul>
+<p>The identity shifts from &quot;I typed this system into existence&quot; to &quot;I made this change safe enough to become reality.&quot;</p>
+<h3 id="410-the-path-for-someone-who-cannot-or-will-not-convert">4.10 The path for someone who cannot or will not convert<a class="anchor" href="#410-the-path-for-someone-who-cannot-or-will-not-convert" aria-label="link to this section">#</a></h3>
+<p>Treat inability and refusal differently.</p>
+<h3 id="for-someone-trying-but-unable">For someone trying but unable<a class="anchor" href="#for-someone-trying-but-unable" aria-label="link to this section">#</a></h3>
+<ol>
+<li>Identify the missing subskill: domain knowledge, decomposition, specification judgment, evidence literacy, risk judgment, or tool operation.</li>
+<li>Give a focused six-week supported plan.</li>
+<li>Assess privately with scenarios and real low-risk work.</li>
+<li>If progress remains inadequate, offer at least two adjacent role trials of 6-8 weeks each.</li>
+<li>Settle into a useful role without presenting it as failure.</li>
+</ol>
+<p>Potential roles include:</p>
+<ul>
+<li>Customer discovery and domain research.</li>
+<li>Customer implementation.</li>
+<li>Support escalation and incident coordination.</li>
+<li>Security or compliance evidence.</li>
+<li>Repository stewardship.</li>
+<li>Observability and operational risk.</li>
+<li>Design review.</li>
+<li>Protected-surface approval.</li>
+<li>Quality risk and failure modeling.</li>
+<li>Vendor and integration management.</li>
+<li>Legacy-system stewardship with an explicit sunset.</li>
+<li>Change coaching, if the person has genuine teaching ability.</li>
+</ul>
+<h3 id="for-someone-who-will-not-convert">For someone who will not convert<a class="anchor" href="#for-someone-who-will-not-convert" aria-label="link to this section">#</a></h3>
+<p>Give choices, not a veto:</p>
+<ul>
+<li>Participate in a supported Veldo trial.</li>
+<li>Move to a legitimate non-Veldo human-judgment role.</li>
+<li>Own a defined legacy or external coordination area.</li>
+<li>Accept a voluntary paid transition if they want to leave.</li>
+</ul>
+<p>They may not:</p>
+<ul>
+<li>Keep managing a Veldo team while privately reversing the method.</li>
+<li>Maintain a shadow manual coding lane for ordinary work.</li>
+<li>Label all their preferred work an exception.</li>
+<li>Instruct others to bypass gates.</li>
+<li>Falsify proof or adoption results.</li>
+</ul>
+<p>Under an absolute no-firing policy, a persistent refuser is redeployed or carried. Their decision rights move away from Veldo work even if employment continues.</p>
+<h3 id="when-not-converting-is-legitimate">When not converting is legitimate<a class="anchor" href="#when-not-converting-is-legitimate" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Human design judgment.</li>
+<li>User research.</li>
+<li>Product strategy.</li>
+<li>Customer and domain decisions.</li>
+<li>Legal or regulatory approval.</li>
+<li>Security risk acceptance.</li>
+<li>Incident command.</li>
+<li>Protected infrastructure approval.</li>
+<li>Hardware or physical validation.</li>
+<li>Vendor and customer coordination.</li>
+<li>Legacy maintenance that cannot yet enter Veldo.</li>
+<li>Work during a declared emergency.</li>
+</ul>
+<p>Not converting is not legitimate when it means a permanent manual coding exception for ordinary reversible production work.</p>
+<h2 id="5-the-hard-cases">5. The hard cases<a class="anchor" href="#5-the-hard-cases" aria-label="link to this section">#</a></h2>
+<h3 id="51-the-best-senior-engineer-quietly-refuses">5.1 The best senior engineer quietly refuses<a class="anchor" href="#51-the-best-senior-engineer-quietly-refuses" aria-label="link to this section">#</a></h3>
+<h3 id="wrong-move">Wrong move<a class="anchor" href="#wrong-move" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Shame them in front of the team.</li>
+<li>Threaten their title.</li>
+<li>Run a public typing-versus-agent race.</li>
+<li>Let them retain a secret manual exception because they are valuable.</li>
+<li>Accuse them of being afraid of technology.</li>
+<li>Promote a junior over them based on visible agent speed.</li>
+</ul>
+<h3 id="right-move">Right move<a class="anchor" href="#right-move" aria-label="link to this section">#</a></h3>
+<p>Use observable facts. Acknowledge identity loss. Offer status continuity through harder judgment work. Require a bounded trial and remove the secret exception.</p>
+<h3 id="founder-script">Founder script<a class="anchor" href="#founder-script" aria-label="link to this section">#</a></h3>
+<blockquote><p>I want to talk about a pattern, not guess at your motives. The last six eligible changes assigned to you were either done manually first or classified as exceptions. That means the operating model is not actually changing in your area.</p>
+<p>You are our strongest coder. I also understand that I am asking you to stop doing the activity that built your reputation and that you probably enjoy most. I am not going to call that trivial.</p>
+<p>I am not asking you to become a prompt operator. I need your expertise applied to architecture, failure modes, proof quality, and protected decisions. That is at least as important as construction, and I will preserve your pay and level while we test the new role.</p>
+<p>I am asking for a six-week good-faith trial on agreed work. We will measure complete delivery, not agent speed. You may challenge Veldo with evidence. You may not maintain an invisible manual lane. If this role is not a fit after a real trial, we will test adjacent roles without firing you for struggling. Can you agree to the trial and to stop the hidden exception?</p></blockquote>
+<h3 id="52-the-qa-person-whose-role-dissolved">5.2 The QA person whose role dissolved<a class="anchor" href="#52-the-qa-person-whose-role-dissolved" aria-label="link to this section">#</a></h3>
+<h3 id="wrong-move-1">Wrong move<a class="anchor" href="#wrong-move-1" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Say &quot;quality is everyone&#x27;s job&quot; and offer no role.</li>
+<li>Rename them &quot;quality architect&quot; while leaving them with the same manual regression queue.</li>
+<li>Pretend their role did not disappear.</li>
+<li>Ask them to train the system and then eliminate them.</li>
+<li>Make them the human approver for every change.</li>
+</ul>
+<h3 id="right-move-1">Right move<a class="anchor" href="#right-move-1" aria-label="link to this section">#</a></h3>
+<p>Name the ending. Protect employment and pay. Offer a real trial with concrete accountabilities and define the durable destination early.</p>
+<h3 id="founder-script-1">Founder script<a class="anchor" href="#founder-script-1" aria-label="link to this section">#</a></h3>
+<blockquote><p>Your current job as the separate person who manually checks work after engineering is ending. I will not pretend this is only a tool change or tell you that nothing is being lost.</p>
+<p>The company still needs the judgment you built: where systems fail, what users do unexpectedly, which evidence is weak, and which defects matter. I want to offer you a 90-day paid trial as quality evidence owner. Your work would be to challenge proof, design failure models, improve observability, classify escaped defects, and turn recurring failures into durable gates.</p>
+<p>This is not a promise that transition work will remain a full-time job forever. By month 6 we will decide which part is durable and whether it should be combined with security, compliance, operations, or customer risk. Your pay and employment are protected during that process. You do not have to pretend the loss is good news.</p></blockquote>
+<h3 id="53-the-person-who-tries-but-cannot-judge-specifications-or-evidence">5.3 The person who tries but cannot judge specifications or evidence<a class="anchor" href="#53-the-person-who-tries-but-cannot-judge-specifications-or-evidence" aria-label="link to this section">#</a></h3>
+<h3 id="wrong-move-2">Wrong move<a class="anchor" href="#wrong-move-2" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Give them more documentation.</li>
+<li>Tell them to prompt better.</li>
+<li>Fail them in a public demonstration.</li>
+<li>Assume lack of intelligence.</li>
+<li>Leave them approving work they cannot evaluate.</li>
+<li>Manufacture a meaningless role to avoid a hard conversation.</li>
+</ul>
+<h3 id="right-move-2">Right move<a class="anchor" href="#right-move-2" aria-label="link to this section">#</a></h3>
+<p>Recognize effort. Diagnose the missing capability. Reduce decision scope. Try adjacent work that uses their actual strengths.</p>
+<h3 id="founder-script-2">Founder script<a class="anchor" href="#founder-script-2" aria-label="link to this section">#</a></h3>
+<blockquote><p>I can see that you have made a real effort. This is not a conversation about attitude or character.</p>
+<p>The current gap is specific: you can operate the workflow, but you are not yet reliably identifying ambiguous criteria or weak evidence. That means I cannot put you in an independent merge-judgment role today.</p>
+<p>We are going to separate the skills. For six weeks, you will work on criterion-to-evidence mapping with a senior checking the final decision. Then we will reassess privately using real examples.</p>
+<p>If the judgment still does not become reliable, we will not keep forcing the same job until you look incompetent. We will test two adjacent roles that use your strengths. Your employment and pay remain protected during those trials. The objective is useful work and dignity, not making everyone fit the same mold.</p></blockquote>
+<h3 id="54-the-vocal-cynic-infecting-others">5.4 The vocal cynic infecting others<a class="anchor" href="#54-the-vocal-cynic-infecting-others" aria-label="link to this section">#</a></h3>
+<h3 id="wrong-move-3">Wrong move<a class="anchor" href="#wrong-move-3" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Silence them.</li>
+<li>Call all criticism negativity.</li>
+<li>Debate them endlessly in company meetings.</li>
+<li>Let them make unsupported claims without challenge.</li>
+<li>Give them informal permission to ridicule learners.</li>
+<li>Exclude them completely and turn them into a martyr.</li>
+</ul>
+<h3 id="right-move-3">Right move<a class="anchor" href="#right-move-3" aria-label="link to this section">#</a></h3>
+<p>Convert criticism into a bounded red-team charter. Set conduct boundaries. Require evidence and proposed tests.</p>
+<h3 id="founder-script-3">Founder script<a class="anchor" href="#founder-script-3" aria-label="link to this section">#</a></h3>
+<blockquote><p>Some of your concerns may be correct. Veldo can create false confidence, weak tests, and more code than we can safely review. I want those risks exposed.</p>
+<p>From now on, criticism needs to take one of three forms: a reproducible failure, a named risk with a proposed control, or a representative comparison. I am giving you a formal red-team role for the next six weeks to produce that evidence.</p>
+<p>You may attack the method as hard as the evidence supports. You may not ridicule people learning it, spread claims you will not test, or tell others to bypass the agreed process. If you find a real failure, I will stop or change the rollout. If you refuse the red-team structure and continue undermining colleagues, that becomes a conduct problem rather than dissent.</p></blockquote>
+<h3 id="55-the-manager-who-converts-the-team-back-when-the-founder-looks-away">5.5 The manager who converts the team back when the founder looks away<a class="anchor" href="#55-the-manager-who-converts-the-team-back-when-the-founder-looks-away" aria-label="link to this section">#</a></h3>
+<h3 id="wrong-move-4">Wrong move<a class="anchor" href="#wrong-move-4" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Add more activity dashboards.</li>
+<li>Quietly bypass the manager.</li>
+<li>Let the team operate two systems indefinitely.</li>
+<li>Accept &quot;my team is different&quot; without evidence.</li>
+<li>Make the manager a Veldo sponsor in title while rewarding old delivery behavior.</li>
+</ul>
+<h3 id="right-move-4">Right move<a class="anchor" href="#right-move-4" aria-label="link to this section">#</a></h3>
+<p>Treat operating-model sponsorship as a condition of managing the team. Offer redeployment without preserving people-management authority.</p>
+<h3 id="founder-script-4">Founder script<a class="anchor" href="#founder-script-4" aria-label="link to this section">#</a></h3>
+<blockquote><p>We agreed that eligible work in your team would use Veldo. In the last month, you reassigned four changes to manual implementation and restarted the old status process. This is not a training gap. It is a reversal of the company operating model.</p>
+<p>You may challenge the model with evidence and request specific exceptions. You may not quietly convert the team back.</p>
+<p>I need a clear choice. You can manage the team through Veldo with coaching and the agreed safeguards, or you can move into a domain, customer, or risk role with your pay protected during the transition. What you cannot do is keep management authority while running a different development system when I am not present.</p>
+<p>I need your decision by Friday. Until then, no new manual exceptions may be created without written risk justification.</p></blockquote>
+<h2 id="6-failure-modes-of-the-program-itself">6. Failure modes of the program itself<a class="anchor" href="#6-failure-modes-of-the-program-itself" aria-label="link to this section">#</a></h2>
+<h3 id="61-going-too-fast">6.1 Going too fast<a class="anchor" href="#61-going-too-fast" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> The founder declares a company-wide deadline before the repository, gates, and people are ready. Defects rise, then everyone concludes Veldo is reckless.</p>
+<p><strong>Tripwire:</strong> Escaped defects or reversions exceed baseline for two rolling four-week periods, or emergency-lane use exceeds 5 percent of eligible changes for two weeks.</p>
+<p><strong>Response:</strong> Stop expansion. Keep the current cohort. Repair specifications, gates, or observability before resuming.</p>
+<h3 id="62-going-too-slowly">6.2 Going too slowly<a class="anchor" href="#62-going-too-slowly" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> The pilot remains optional for months. The old system continues to receive the important work. Veldo becomes a side project.</p>
+<p><strong>Tripwire:</strong> After month 3, fewer than 20 representative changes have shipped, or more than half of eligible work still enters the old lane without recorded exceptions.</p>
+<p><strong>Response:</strong> Name eligible work as Veldo-default and put expiration dates on exceptions.</p>
+<h3 id="63-champions-burn-out">6.3 Champions burn out<a class="anchor" href="#63-champions-burn-out" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Two enthusiasts become the agent operators, help desk, reviewers, and change therapists for everyone else.</p>
+<p><strong>Tripwire:</strong> A champion spends more than 25 percent of their time supporting others for three consecutive weeks, or the same two people review more than 70 percent of Veldo changes.</p>
+<p><strong>Response:</strong> Reduce delivery load, rotate duties, train the next cohort, and cap office hours.</p>
+<h3 id="64-the-founders-attention-moves-on">6.4 The founder&#x27;s attention moves on<a class="anchor" href="#64-the-founders-attention-moves-on" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Managers learn that the new method is optional once the announcement energy fades.</p>
+<p><strong>Tripwire:</strong> The founder misses two consecutive transition reviews, leaves blockers unresolved for more than seven days, or tolerates a senior exception not available to others.</p>
+<p><strong>Response:</strong> Recommit visibly or pause expansion. A delegated founder mandate without founder attention is not a mandate.</p>
+<h3 id="65-a-converted-and-unconverted-caste-forms">6.5 A converted and unconverted caste forms<a class="anchor" href="#65-a-converted-and-unconverted-caste-forms" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Early adopters receive prestige, access, and promotions. Others are treated as obsolete. People conceal difficulty to avoid joining the lower caste.</p>
+<p><strong>Tripwire:</strong> Jokes about &quot;legacy people,&quot; promotion language tied to AI enthusiasm, or desirable assignments restricted to the pioneer group.</p>
+<p><strong>Response:</strong> Enforce pay protection, rotate visible work, recognize multiple human-judgment roles, and bring the next cohort in promptly.</p>
+<h3 id="66-metrics-theater">6.6 Metrics theater<a class="anchor" href="#66-metrics-theater" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Specification counts, merge counts, first-pass rates, or human minutes improve while quality deteriorates.</p>
+<p><strong>Tripwire:</strong> First-pass proof approaches 100 percent, reviewer catch rate approaches zero, or human minutes fall while reversions and defects rise.</p>
+<p><strong>Response:</strong> Audit a random sample of proof packages. Add adversarial checks. Remove the gamed metric from incentives.</p>
+<h3 id="67-proof-theater">6.7 Proof theater<a class="anchor" href="#67-proof-theater" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Agents produce polished reports that restate claims without establishing them. Humans stop checking because everything looks complete.</p>
+<p><strong>Tripwire:</strong> Reviewers cannot reproduce evidence, tests never fail before fixes, or reviewers cannot explain why the evidence proves the criterion.</p>
+<p><strong>Response:</strong> Require criterion-to-evidence mapping, reproducibility, planted-defect exercises, and periodic independent audits.</p>
+<h3 id="68-the-old-lane-survives-underground">6.8 The old lane survives underground<a class="anchor" href="#68-the-old-lane-survives-underground" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Humans write code first, ask the agent to restate it, or label routine work as emergency work.</p>
+<p><strong>Tripwire:</strong> Emergency use rises, unexplained local changes appear before agent runs, or the same person repeatedly requests exceptions.</p>
+<p><strong>Response:</strong> Discuss the behavior privately, simplify legitimate friction, and enforce expiration dates. Do not create individual activity surveillance.</p>
+<h3 id="69-the-pilot-is-built-from-toy-work">6.9 The pilot is built from toy work<a class="anchor" href="#69-the-pilot-is-built-from-toy-work" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Documentation and copy changes look spectacular, then the method collapses on real product behavior.</p>
+<p><strong>Tripwire:</strong> More than half the pilot consists of low-complexity mechanical work, or no production-relevant standard-risk change has completed by the end of month 3.</p>
+<p><strong>Response:</strong> Add representative legacy, integration, UI, and production-observability work before expansion.</p>
+<h3 id="610-managers-are-exempted">6.10 Managers are exempted<a class="anchor" href="#610-managers-are-exempted" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Individual contributors change while managers continue rewarding old behavior and planning through the old system.</p>
+<p><strong>Tripwire:</strong> Manual status requests, sprint commitments, or typing-based praise continue after the relevant team enters Veldo.</p>
+<p><strong>Response:</strong> Require manager conversion before team conversion. Redeploy managers who will not sponsor the operating model.</p>
+<h3 id="611-junior-development-becomes-passive-observation">6.11 Junior development becomes passive observation<a class="anchor" href="#611-junior-development-becomes-passive-observation" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Juniors watch agents and seniors make every consequential decision. Output rises while human judgment capacity decays.</p>
+<p><strong>Tripwire:</strong> After three months, juniors cannot independently reject a weak proof package, explain a changed data path, or own a low-risk decision.</p>
+<p><strong>Response:</strong> Reduce agent throughput if necessary and restore deliberate apprenticeship, prediction, explanation, and progressively delegated judgment.</p>
+<h3 id="612-the-no-firing-promise-loses-credibility">6.12 The no-firing promise loses credibility<a class="anchor" href="#612-the-no-firing-promise-loses-credibility" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> The first struggling person receives a surprise poor-performance label or quiet pay reduction.</p>
+<p><strong>Tripwire:</strong> Performance documentation begins citing adoption speed, prompt activity, or sandbox failure during the protected period.</p>
+<p><strong>Response:</strong> Stop the action. Separate misconduct from learning difficulty. Honor the written commitment or publicly admit it has been broken.</p>
+<h3 id="613-veldo-becomes-a-religion">6.13 Veldo becomes a religion<a class="anchor" href="#613-veldo-becomes-a-religion" aria-label="link to this section">#</a></h3>
+<p><strong>How it dies:</strong> Evidence against the method is treated as disloyalty. Metrics are reinterpreted to preserve the founder&#x27;s decision.</p>
+<p><strong>Tripwire:</strong> No pilot result is considered capable of delaying expansion, or valid critics are labeled resistant without a test.</p>
+<p><strong>Response:</strong> Predeclare stop conditions and give a skeptic authority to trigger review when they are met.</p>
+<h2 id="7-what-never-to-do">7. What never to do<a class="anchor" href="#7-what-never-to-do" aria-label="link to this section">#</a></h2>
+<ul>
+<li>Never call this merely a tool rollout.</li>
+<li>Never promise that no role will disappear.</li>
+<li>Never promise no firing unless the company can fund the promise.</li>
+<li>Never remove manual implementation before repository context and proof gates work.</li>
+<li>Never use public prompting contests.</li>
+<li>Never compare typing speed with agent generation speed.</li>
+<li>Never rank people by AI activity.</li>
+<li>Never use individual adoption dashboards.</li>
+<li>Never use sandbox failure in performance reviews.</li>
+<li>Never make the best coder feel deliberately humiliated.</li>
+<li>Never tell QA that nothing important is changing.</li>
+<li>Never rename a dissolved role without defining durable work.</li>
+<li>Never let a resistant manager keep people-management authority over a Veldo team.</li>
+<li>Never leave juniors to learn by watching an agent.</li>
+<li>Never reward code volume or merge count.</li>
+<li>Never treat agent-generated tests as independent proof by default.</li>
+<li>Never let implementation and review share the same unchallenged context.</li>
+<li>Never let temporary manual exceptions become permanent through silence.</li>
+<li>Never use production deadlines as the primary training environment.</li>
+<li>Never punish someone for saying, &quot;I cannot tell whether this is proven.&quot;</li>
+<li>Never confuse psychological safety with freedom to sabotage.</li>
+<li>Never confuse skepticism with sabotage.</li>
+<li>Never let the founder disappear after the announcement.</li>
+<li>Never force the adoption date when the safety tripwires say stop.</li>
+<li>Never claim that Veldo has been proven simply because current agents are impressive.</li>
+</ul>
+<p>The founder&#x27;s core job is not persuading everyone to love Veldo. It is creating a system in which people can lose an old professional identity without losing dignity, income, or belonging, while making honest participation and the new operating boundary non-negotiable.</p>
+<h2 id="8-sources">8. Sources<a class="anchor" href="#8-sources" aria-label="link to this section">#</a></h2>
+<p>Established research applied in section 3.1: Kotter (Leading Change); Prosci ADKAR; Bridges (Managing Transitions); Rogers (Diffusion of Innovations); Edmondson (psychological safety, The Fearless Organization); the Dreyfus skill-acquisition model; Deci and Ryan (self-determination theory); Kahneman and Tversky (loss aversion); the identity-work literature.</p>
+<p>Empirical studies applied in section 3.2: Peng et al. (2023), GitHub Copilot controlled experiment (about 56 percent faster on a bounded task); Cui et al. (2024), field experiments across multiple firms; the DORA 2024 report (AI adoption versus delivery throughput and stability); METR (2025), randomized study of experienced developers (a measured slowdown of about 19 percent against a perceived speedup); Stack Overflow Developer Surveys 2024-2025 (the usage-trust gap); GitClear (2024), code-churn analyses.</p>
+<p>Current-source layer in section 3.3 (2026 web research): industry analyses of agentic-coding operating models and the adoption trap (Augment Code, d4b.dev, CodePick, 2026); the Anthropic 2026 Agentic Coding Trends report; the study of Microsoft&#x27;s early-2026 CLI coding-agent rollout (arXiv); Stack Overflow&#x27;s 2025 survey retrospective (&quot;willing but reluctant&quot;); the 2026 METR finding on developers refusing to work without AI (TechCrunch, May 2026); re-skilling-fatigue research (PMC, 2026); KPMG and BCG upskilling-program analyses; Forbes and CIO coverage of AI-upskilling failure modes.</p>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<p>Minor versions add, clarify, or extend; major versions restructure or break compatibility with existing practice.</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial document: two-model research reconciled (the resistance map, the applied research base with the 2026 layer, the funded no-firing program, hard-case scripts, thirteen program failure modes with tripwires)</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

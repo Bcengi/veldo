@@ -1,0 +1,209 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Web Developer in Veldo - Veldo</title>
+<meta name="description" content="The browser domain - the design contract, interaction evidence, baseline judgment.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>The Web Developer in Veldo</h1><p class="tagline">Training series. Your destination role: Product Systems Engineer with the browser as your domain of judgment.</p><p class="meta">Version 1.0, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-your-job-redefined">1. Your job, redefined</a></li><li><a href="#2-your-unique-craft-the-design-contract">2. Your unique craft: the design contract</a></li><li><a href="#3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)</a></li><li><a href="#4-the-curriculum">4. The curriculum</a></li><li><a href="#5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to</a></li><li><a href="#6-you-have-arrived-when">6. You have arrived when</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="1-your-job-redefined">1. Your job, redefined<a class="anchor" href="#1-your-job-redefined" aria-label="link to this section">#</a></h2>
+<p>Everything in the backend developer&#x27;s document applies to you: typing was the transport for your knowledge, not the value, and the destination is that people who really want to type code stop typing code. Read that document first; this one covers what is uniquely yours: the browser is the most hostile runtime in computing, and your judgment about it is now delivered through specs, the design contract, and evidence, not through hand-written components.</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>What stops</th>
+<th>What starts</th>
+</tr></thead>
+<tbody>
+<tr><td>Typing components, CSS, and browser tests</td><td>Specifying interaction behavior: loading, error, focus, responsive, and offline states as criteria</td></tr>
+<tr><td>Translating Figma into code by hand</td><td>Stewarding the design contract: tokens, the component library, the baselines</td></tr>
+<tr><td>Manual browser passes before release</td><td>Requiring browser-level evidence: Playwright journeys, accessibility output, visual diffs</td></tr>
+<tr><td>A screenshot as proof it works</td><td>Judging evidence: does the trace show focus surviving the retry, or just pixels looking right</td></tr>
+<tr><td>Frontend tickets on their own schedule</td><td>The same loop as everyone: spec, run, judge</td></tr>
+</tbody>
+</table></div>
+<h2 id="2-your-unique-craft-the-design-contract">2. Your unique craft: the design contract<a class="anchor" href="#2-your-unique-craft-the-design-contract" aria-label="link to this section">#</a></h2>
+<p>The three-layer design contract (tokens, components, baselines) is your product now. The component library in code that mirrors the design system one to one is the highest-leverage artifact a web person owns: every screen composed from it is on-design by construction, and every fidelity bug you prevent there is prevented everywhere, forever. When the gate&#x27;s token lint fails on a raw hex value, that is your past work catching what used to be your future rework.</p>
+<h2 id="3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)<a class="anchor" href="#3-your-moments-in-the-loop-exact" aria-label="link to this section">#</a></h2>
+<p><strong>Shaping a UI spec&#x27;s ugly states (the value you add that mocks never show):</strong></p>
+<pre><code>Add to Veldo-0214: AC6, the empty state renders correctly while offline;
+AC7, focus lands on &quot;Browse products&quot; when the state appears, and survives
+a failed navigation; AC8, screen-reader announces the heading before the button.</code></pre>
+<p><strong>Judging browser evidence:</strong></p>
+<pre><code>The Playwright trace for AC2 clicks the button but never asserts the route
+changed under a slow network. Require the navigation assertion with
+throttling on.</code></pre>
+<p><strong>Design-system stewardship:</strong></p>
+<pre><code>/veldo:spec Promote the new date-picker into the component library, mirrored
+to the Figma component, tokens only, with baselines at three viewports.
+Product screens stop hand-rolling date inputs from merge onward.</code></pre>
+<h2 id="4-the-curriculum">4. The curriculum<a class="anchor" href="#4-the-curriculum" aria-label="link to this section">#</a></h2>
+<p>Modules 1-3 and 5 of the backend developer&#x27;s curriculum apply verbatim (specifying, reading diffs, proof literacy, escalation). Your additions:</p>
+<p><strong>Module W1 - The design contract.</strong> Exercise: take one screen that drifts from its mock today; fix it the Veldo way: token lint rule, component promotion, locked baseline. Then try to reintroduce the drift and watch the gate refuse.</p>
+<p><strong>Module W2 - Evidence for experience.</strong> Exercise: a change passes all component tests but loses keyboard focus after a retry (planted). Find it from the evidence alone, then write the criterion that makes the class impossible.</p>
+<p><strong>Module W3 - Baseline judgment.</strong> Tolerances are yours to own: too tight and the gate is flaky, too loose and drift walks through. Exercise: set tolerances for a text-heavy screen and an image-heavy screen and defend the difference.</p>
+<h2 id="5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to<a class="anchor" href="#5-how-you-break-veldo-without-meaning-to" aria-label="link to this section">#</a></h2>
+<ul>
+<li>Everything in the backend document, plus:</li>
+<li><strong>Hand-tweaking the last five percent.</strong> Adjusting CSS after the agent finishes invalidates the evidence and teaches you to distrust the loop instead of sharpening the spec.</li>
+<li><strong>Screenshot faith.</strong> A screenshot proves pixels once; a criterion with a trace proves behavior forever.</li>
+<li><strong>Letting the component library rot.</strong> Every screen built around a missing component is fidelity debt the gate cannot see.</li>
+</ul>
+<h2 id="6-you-have-arrived-when">6. You have arrived when<a class="anchor" href="#6-you-have-arrived-when" aria-label="link to this section">#</a></h2>
+<ul>
+<li>A designer&#x27;s mock went to production without you typing a line, and it is exact.</li>
+<li>The token lint caught a violation from an agent, because you built the rule.</li>
+<li>Your ugly-state criteria (offline, focus, screen reader) are copied by other specs as the standard.</li>
+<li>You judged a visual diff in one minute and were right.</li>
+</ul>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial training document</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

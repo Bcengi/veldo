@@ -1,0 +1,1278 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Veldo Runbook - Veldo</title>
+<meta name="description" content="The complete operational manual - every change type, situation, and role, keystroke-exact; the document that takes a team from 0% to 100%.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>The Veldo Runbook</h1><p class="tagline">The complete operational manual: every change type, every situation, every role, every keystroke. This is the document that takes a team from 0% to 100% of work done through Veldo.</p><p class="meta">Version 1.7, 2026-07-22</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#how-to-read-this">How to read this</a></li><li><a href="#part-i-the-loop-operated">Part I - The loop, operated</a></li><li><a href="#runbook-a-your-first-feature-end-to-end">Runbook A - Your first feature, end to end</a></li><li><a href="#runbook-b-a-ui-change-through-the-design-lane">Runbook B - A UI change through the design lane</a></li><li><a href="#runbook-c-a-bug-from-a-support-ticket">Runbook C - A bug from a support ticket</a></li><li><a href="#runbook-d-a-protected-path-change">Runbook D - A protected-path change</a></li><li><a href="#runbook-e-an-iteration-through-the-planning-layer">Runbook E - An iteration through the planning layer</a></li><li><a href="#part-ii-every-change-type">Part II - Every change type</a></li><li><a href="#part-iii-every-situation">Part III - Every situation</a></li><li><a href="#part-iv-every-role">Part IV - Every role</a></li><li><a href="#part-v-running-it">Part V - Running it</a></li><li><a href="#the-cheat-sheet">The cheat sheet</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="how-to-read-this">How to read this<a class="anchor" href="#how-to-read-this" aria-label="link to this section">#</a></h2>
+<p>Part I is five full runbooks, keystroke-exact: what you say, what comes back, what files appear with their contents. The first four operate one change; the fifth (Runbook E) operates a whole iteration through the planning layer. Read them with one rule in mind: steps marked as the agent&#x27;s are shown for transparency, not for you to perform; in every runbook the human&#x27;s actions are a handful of plain sentences (state intent, answer a question, approve, judge a delivered picture, say merge), and if you ever find yourself running git commands or assembling your own comparison, the setup is broken, not you. Transcript conventions: <strong>YOU TYPE</strong> blocks are entered verbatim; <strong>AGENT</strong> lines are what the agent prints; <strong>FILE CREATED</strong> shows the path and content of a file that now exists; <strong>YOU CHECK</strong> gives a command and the output you should see. Runbooks A and B narrate the same conventions inline. Parts II through V are the reference: change types, situations, roles, and administration. The cheat sheet at the end is the whole document in one table.</p>
+<h2 id="part-i-the-loop-operated">Part I - The loop, operated<a class="anchor" href="#part-i-the-loop-operated" aria-label="link to this section">#</a></h2>
+<h2 id="runbook-a-your-first-feature-end-to-end">Runbook A - Your first feature, end to end<a class="anchor" href="#runbook-a-your-first-feature-end-to-end" aria-label="link to this section">#</a></h2>
+<p>The situation: the search endpoint has no rate limiting and a partner just hammered it. This runbook is every keystroke of your first real Veldo change.</p>
+<p><strong>Step 1 - You state intent.</strong> You type:</p>
+<pre><code>/veldo:spec Add rate limiting to the search endpoint</code></pre>
+<p><strong>Step 2 - The agent interviews you.</strong> It asks; you answer in plain words:</p>
+<pre><code>Agent: What outcome matters: per-user limits, per-API-key, or global?
+You:   Per API key. 60 requests a minute, burst of 10.
+Agent: What should a limited caller receive?
+You:   429 with a Retry-After header.
+Agent: Should any callers be exempt?
+You:   The internal service key bypasses it.
+Agent: Rollback if this misbehaves in production?
+You:   Put it behind a flag, rate_limit_search.</code></pre>
+<p><strong>Step 3 - The spec file appears.</strong> <code>specs/Veldo-0207-search-rate-limit.md</code>:</p>
+<pre><code class="lang-yaml">---
+schema: veldo.spec/v1
+id: Veldo-0207
+title: Rate limit the search endpoint
+status: draft
+risk: standard
+owner: dmitry
+human_approval: not_required
+protected_paths: []
+acceptance_criteria:
+  - id: AC1
+    text: A key exceeding 60 requests/minute (burst 10) receives 429 with a
+          Retry-After header.
+  - id: AC2
+    text: Requests under the limit behave exactly as before; the existing
+          search suite passes unchanged.
+  - id: AC3
+    text: The internal service key is exempt.
+required_evidence: [unit, integration]
+rollback: disable the rate_limit_search flag
+reversible: true
+---</code></pre>
+<p>The agent says: <code>Spec drafted as Veldo-0207 (draft). Say &quot;ready&quot; to approve it, or edit anything first.</code></p>
+<p><strong>Step 4 - You approve and run.</strong> You type:</p>
+<pre><code>Ready. /veldo:run Veldo-0207</code></pre>
+<p><strong>Step 5 - You watch the run (or walk away).</strong> The run prints its progress; the parts worth seeing:</p>
+<pre><code>implementer: rate limiter behind rate_limit_search; 9 tests added
+== tests            passed (1,516)
+== secret scan      passed
+== veldo contracts   passed
+GATE: GREEN (7d81c2e)
+proof: proof/Veldo-0207/manifest.json written (3/3 criteria -&gt; evidence)
+review: dispatching veldo-reviewer (fresh context)
+review: PASS, no blocking findings
+         note: consider a metric on 429 rate (non-blocking)</code></pre>
+<p>The proof manifest it wrote, abbreviated:</p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: &quot;veldo.proof/v1&quot;,
+  &quot;spec_id&quot;: &quot;Veldo-0207&quot;,
+  &quot;commit&quot;: &quot;7d81c2e&quot;,
+  &quot;criteria&quot;: [
+    {&quot;id&quot;: &quot;AC1&quot;, &quot;status&quot;: &quot;passed&quot;,
+     &quot;evidence&quot;: [{&quot;type&quot;: &quot;test&quot;, &quot;ref&quot;: &quot;tests/search/test_rate_limit.py::test_429_and_retry_after&quot;}]},
+    {&quot;id&quot;: &quot;AC2&quot;, &quot;status&quot;: &quot;passed&quot;,
+     &quot;evidence&quot;: [{&quot;type&quot;: &quot;test&quot;, &quot;ref&quot;: &quot;existing search suite, 62 tests, unchanged&quot;}]},
+    {&quot;id&quot;: &quot;AC3&quot;, &quot;status&quot;: &quot;passed&quot;,
+     &quot;evidence&quot;: [{&quot;type&quot;: &quot;test&quot;, &quot;ref&quot;: &quot;tests/search/test_rate_limit.py::test_internal_key_exempt&quot;}]}
+  ],
+  &quot;checks&quot;: [{&quot;name&quot;: &quot;verify&quot;, &quot;command&quot;: &quot;./scripts/verify.sh&quot;, &quot;result&quot;: &quot;pass&quot;}],
+  &quot;rollback&quot;: &quot;rate_limit_search flag off&quot;
+}</code></pre>
+<p><strong>Step 6 - See the guard refuse once, on purpose.</strong> Make any edit (add a comment to a file) and ask the agent to push without re-running the gate:</p>
+<pre><code>You:   push it
+Guard: Veldo guard: blocked. The canonical gate is not green for HEAD (91acb03).
+       Run ./scripts/verify.sh on the current state first. Proof is valid only
+       for the state it ran against.</code></pre>
+<p>That message is the method working. Revert the edit (or re-run the gate) and continue.</p>
+<p><strong>Step 7 - Merge and keep the receipt.</strong> You type <code>merge</code>. The evidence commit (proof + verdict + spec status flip, touching only <code>proof/</code>, <code>.veldo/</code>, <code>specs/</code>) inherits the implementation commit&#x27;s proof, the push goes through, and the final receipt reads:</p>
+<pre><code>Veldo-0207 shipped.
+  3/3 criteria proven. Gate green on 7d81c2e (1,516 tests).
+  Review: pass. Rollback: flag off.</code></pre>
+<p><strong>What you actually did:</strong> described a rate limit in four sentences, said &quot;ready&quot;, watched, said &quot;merge&quot;. Elapsed human attention: about three minutes.</p>
+<h2 id="runbook-b-a-ui-change-through-the-design-lane">Runbook B - A UI change through the design lane<a class="anchor" href="#runbook-b-a-ui-change-through-the-design-lane" aria-label="link to this section">#</a></h2>
+<p>The situation: the orders screen shows nothing when a customer has no orders. Design has mocked an empty state in Figma. You want it built exactly to the mock.</p>
+<p><strong>Step 1 - You start, handing the agent the design itself.</strong> You type:</p>
+<pre><code>/veldo:spec Build the empty state for the orders screen from this mock:
+https://www.figma.com/design/aB3xY9/Orders?node-id=214-1187</code></pre>
+<p><strong>Step 2 - The agent reads the mock and interviews you.</strong> It pulls the node through the Figma API and comes back with what it found, then asks only what the mock cannot tell it:</p>
+<pre><code>Agent: I read node 214-1187 (&quot;Orders / Empty state&quot;). Extracted:
+  component: IllustrationCard (library component, exists in code as &lt;IllustrationCard&gt;)
+  illustration: &quot;empty-box&quot; asset, 160x160
+  heading: &quot;No orders yet&quot; - text token heading-m
+  body: &quot;When you place your first order, it will show up here.&quot; - text token body-s, color token text-secondary
+  spacing: 24 above heading (token space-6), 16 between heading and body (token space-4)
+  button: &quot;Browse products&quot; - Button/primary, full width on mobile
+
+Three questions the mock does not answer:
+1. Where does &quot;Browse products&quot; navigate?
+2. Does the empty state also apply to the filtered view (filters active, zero results), or only to truly-no-orders?
+3. Desktop and mobile, or mobile only?</code></pre>
+<p><strong>Step 3 - You answer in plain words.</strong> You type:</p>
+<pre><code>1. To /products.
+2. Only truly-no-orders. Filtered-empty keeps the current &quot;no results&quot; text.
+3. Both, same layout, the card centers in the content area on desktop.</code></pre>
+<p><strong>Step 4 - The spec file appears.</strong> The agent writes <code>specs/Veldo-0214-orders-empty-state.md</code> and tells you so. Its contents:</p>
+<pre><code class="lang-yaml">---
+schema: veldo.spec/v1
+id: Veldo-0214
+title: Orders screen empty state
+status: draft
+risk: standard
+owner: dmitry
+human_approval: not_required
+protected_paths: []
+acceptance_criteria:
+  - id: AC1
+    text: &quot;The journey, driven end to end: a customer with zero orders and no
+          filters lands on the orders screen, sees the empty state, taps
+          Browse products, and arrives at /products with products visible.
+          Runs at desktop and mobile widths.&quot;
+  - id: AC2
+    text: &quot;The failure journey: if navigation to /products fails, the button
+          re-enables, an actionable error shows, and focus stays on the button.&quot;
+  - id: AC3
+    text: With active filters and zero results, the existing &quot;no results&quot; view is
+          unchanged (journey: apply filter, clear results, observe).
+  - id: AC4
+    text: The empty state renders IllustrationCard with the empty-box asset,
+          heading &quot;No orders yet&quot; (heading-m), body copy (body-s /
+          text-secondary), spacing space-6 above the heading, space-4 between.
+  - id: AC5
+    text: No raw color, spacing, radius, or font values are introduced; the token
+          lint stays clean.
+  - id: AC6
+    text: Desktop and mobile captures of every named state match the approved
+          baselines within tolerance.
+required_evidence: [unit, journeys, ui_states, baseline, figma_composite, design_review]
+rollback: revert the commit; the empty state is a pure addition
+reversible: true
+---
+
+## Intent
+
+A customer with no orders should understand what this screen is for and have
+one obvious next step, exactly as designed in Figma node 214-1187.</code></pre>
+<p><strong>Step 5 - You approve it to ready.</strong> You type:</p>
+<pre><code>Looks right. Make it ready and run it.</code></pre>
+<p>The agent flips <code>status: draft</code> to <code>status: ready</code>, regenerates <code>specs/index.md</code>, and starts <code>/veldo:run Veldo-0214</code>.</p>
+<p><strong>Step 6 - The gate catches a fidelity bug so you never see it.</strong> The implementer builds the component and runs the gate. First pass, the token lint fails, and you can see exactly why in the run log:</p>
+<pre><code>== design-token-lint
+src/screens/Orders/EmptyState.tsx:41
+  margin-top: 24px        &lt;- raw value; use space-6
+   design-token-lint: FAIL
+GATE: RED (a41f09c)</code></pre>
+<p>The implementer replaces the raw value with the token and reruns:</p>
+<pre><code>== tests            passed (9 new unit: rendering, tokens, filtered-empty untouched)
+== journeys         passed (3 driven end to end at 2 widths:
+                     empty-&gt;browse-&gt;products arrives with products visible;
+                     failed navigation re-enables button, error shown, focus kept;
+                     filtered-empty view unchanged)
+== ui-states        captured and asserted (empty, navigating, nav-failed)
+== design-token-lint passed
+== build            passed
+== secret scan      passed
+== veldo contracts   passed
+GATE: GREEN (b52e11d)</code></pre>
+<p>The journeys line is the heart of UI proof: the agent DROVE the flows a user would take, both the happy one and the failing one, and asserted behavior at every step - navigation, state transitions, focus. Screenshots come next, but they are the fidelity layer, not the proof of function.</p>
+<p>You did nothing during this step; it is shown so you know what the lint buys you.</p>
+<p><strong>Step 7 - The agent builds the visual comparison and DELIVERS it to you.</strong> You never assemble anything. The agent: exports the exact Figma frame as a PNG through the Figma API, captures the rendered screen with Playwright at both viewports, and composites them side by side with a pixel-diff heat strip between them:</p>
+<pre><code>figma export:  proof/Veldo-0214/visual/figma-214-1187-desktop.png
+render:        proof/Veldo-0214/visual/rendered-desktop.png (1280x800)
+render:        proof/Veldo-0214/visual/rendered-mobile.png  (390x844)
+composites:    proof/Veldo-0214/visual/composite-desktop.png
+               proof/Veldo-0214/visual/composite-mobile.png
+               (mock | rendered | diff strip, mismatched pixels highlighted)</code></pre>
+<p>Then it sends you the two composite IMAGES, in chat, where you live. You look at two pictures and reply in one line:</p>
+<pre><code>Desktop approved. Mobile: the button sits 8px from the bottom edge, the mock
+shows 24. Fix and resend.</code></pre>
+<p>The implementer fixes it (token space-6), recaptures, sends the new composite, and this time you reply <code>Approved</code>. Your approved captures become the locked baselines: from this moment the gate fails on drift beyond tolerance, forever, without you. The composites stay in <code>proof/Veldo-0214/visual/</code> as evidence: the validation is a picture on the record, not a sentence.</p>
+<p><strong>Step 8 - The design owner records their verdict.</strong> This is a human review lane, so the change cannot merge without it. The design owner (say, Maya) receives the same two composites plus the interaction recording (the Playwright video of the flow being driven), compares, and tells the agent in her own session:</p>
+<pre><code>Maya: Record my design review for Veldo-0214: approved. The empty state matches
+      the mock on both breakpoints.</code></pre>
+<p>The agent writes <code>proof/Veldo-0214/design-verdict.json</code>:</p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: &quot;veldo.verdict/v1&quot;,
+  &quot;spec_id&quot;: &quot;Veldo-0214&quot;,
+  &quot;commit&quot;: &quot;b52e11d&quot;,
+  &quot;reviewer&quot;: {&quot;human&quot;: &quot;maya&quot;, &quot;role&quot;: &quot;design-owner&quot;, &quot;context&quot;: &quot;fresh&quot;},
+  &quot;verdict&quot;: &quot;pass&quot;,
+  &quot;criteria&quot;: [{&quot;id&quot;: &quot;AC5&quot;, &quot;assessment&quot;: &quot;satisfied&quot;}],
+  &quot;findings&quot;: {&quot;blocking&quot;: [], &quot;non_blocking&quot;: []}
+}</code></pre>
+<p>Her name is in the file; the file is bound to the exact commit; if the commit changes, her verdict is stale and the merge blocks again.</p>
+<p><strong>Step 9 - Proof, review, receipt.</strong> The run finishes the standard way: the proof manifest lands at <code>proof/Veldo-0214/manifest.json</code> mapping AC1-AC5 to the tests, the lint, and the visual artifacts (the composites ARE evidence, referenced by the manifest); the fresh-context reviewer files its verdict; and you get the receipt, with the final composites attached one more time:</p>
+<pre><code>Veldo-0214 ready to merge.
+  6/6 criteria proven. Gate green on b52e11d.
+  Flows: 3 journeys driven at 2 widths (happy, failure, filtered) - all pass.
+  States: empty / navigating / nav-failed captured and asserted.
+  Fidelity: composites match the mock; baselines locked.
+  Agent review: pass. Design review: pass (maya, from composites + the
+  interaction recording).
+Merge?</code></pre>
+<p>You type <code>Merge</code>, and it lands with all of its evidence.</p>
+<p><strong>What you actually did in this entire runbook:</strong> pasted a Figma link, answered three questions, corrected one spacing bug by eye, said &quot;approved&quot; twice, and said &quot;merge&quot;. Everything else is on the record without you.</p>
+<h2 id="runbook-c-a-bug-from-a-support-ticket">Runbook C - A bug from a support ticket<a class="anchor" href="#runbook-c-a-bug-from-a-support-ticket" aria-label="link to this section">#</a></h2>
+<p>The situation: support forwards ticket 184: &quot;CSV exports show the previous calendar day for customers west of UTC. Account 4821 selected March 10, the export says March 9.&quot;</p>
+<p>Count your actions in this runbook: you type three sentences. Everything else is shown so you can see what the machine does on your behalf, not because you do it.</p>
+<p><strong>Step 1 - YOU (sentence one):</strong></p>
+<pre><code>Turn ticket 184 into work. Don&#x27;t implement until the timezone expectation is explicit.</code></pre>
+<p><strong>Step 2 - AGENT (automatic).</strong> It reads the ticket, reproduces in a scratch workspace, and comes back with the reproduction and the one question that is genuinely a product decision:</p>
+<pre><code>Agent: Reproduced. A date-only value parsed as UTC midnight and formatted in
+       America/Los_Angeles renders as the previous day. The existing export
+       tests all pass; none applies a timezone west of UTC.
+       One decision: should date-only report fields preserve the customer&#x27;s
+       selected calendar date regardless of timezone?</code></pre>
+<p><strong>Step 3 - YOU (sentence two):</strong></p>
+<pre><code>Yes. Date-only fields are calendar dates, not timestamps. Timestamp fields
+keep their current conversion.</code></pre>
+<p><strong>Step 4 - AGENT (automatic).</strong> It writes the reproduction as a failing test, runs it to prove it fails on the current code, and drafts the spec with that test as the first criterion:</p>
+<pre><code>Agent: tests/export/test_date_only_timezone.py written and run against the
+       current code: FAILED as expected (expected 2026-03-10, got 2026-03-09).
+       Spec drafted: Veldo-0307, three criteria (reproduction passes after the
+       change; UTC and Asia/Tokyo render the same date; timestamp fields and
+       CSV shape unchanged). Risk standard, no protected paths. Ready?</code></pre>
+<p><strong>Step 5 - YOU (sentence three):</strong></p>
+<pre><code>Ready.</code></pre>
+<p><strong>Step 6 - AGENT (the whole run, one transcript).</strong> <code>/veldo:run Veldo-0307</code> executes without you:</p>
+<pre><code>implementer: date-only values routed through a calendar-date serializer;
+             timestamp path untouched; 4 tests added
+== tests            passed (previously-failing reproduction now passes)
+== secret scan      passed
+== veldo contracts   passed
+GATE: GREEN (71bc81e)
+proof: proof/Veldo-0307/manifest.json (reproduction evidence records BOTH runs:
+       failed-before at the parent commit, passed-after at 71bc81e)
+review: fresh-context reviewer PASS - confirmed the test genuinely fails on
+        the parent commit and the timestamp path is untouched
+evidence commit + push: guard satisfied (gate green, proof for HEAD)
+merged.
+ticket 184: closing comment posted -
+  &quot;Fixed and merged. Root cause: address updates rebuilt pricing input...
+   date-only fields now serialize as calendar dates. Evidence: spec Veldo-0307,
+   gate green on 71bc81e, reproduction test attached, independent review pass.&quot;</code></pre>
+<p><strong>Step 7 - The receipt you see:</strong></p>
+<pre><code>Veldo-0307 shipped. 3/3 criteria proven (reproduction fail-&gt;pass recorded).
+Review: pass. Ticket 184 closed with evidence links. Rollback: revert.</code></pre>
+<p><strong>What this teaches:</strong> a bug&#x27;s first acceptance criterion is its reproduction, recorded failing BEFORE the fix and passing after, and the reporter never leaves their tool. And the human count was three sentences: hand it over, decide the one product question, approve.</p>
+<h2 id="runbook-d-a-protected-path-change">Runbook D - A protected-path change<a class="anchor" href="#runbook-d-a-protected-path-change" aria-label="link to this section">#</a></h2>
+<ol>
+<li><strong>YOU TYPE</strong></li>
+</ol>
+<pre><code class="lang-text">/veldo:spec Increase the production billing provider request timeout from 2 seconds to 3 seconds in billing/config/production.yaml. This is needed because provider requests are timing out during peak settlement.</code></pre>
+<ol start="2">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">The requested file matches protected path billing/**.
+
+Policy result:
+- Requested risk: standard
+- Protected-path floor: high
+- Effective risk: high
+- Human approval: required
+- Minimum review independence: L2
+
+Risk cannot be lowered below high.
+
+I need:
+1. The observable success criterion.
+2. The rollback condition.
+3. The production owner authorized to approve this change.
+4. The expiry period for that approval.</code></pre>
+<ol start="3">
+<li><strong>YOU ANSWER</strong></li>
+</ol>
+<pre><code class="lang-text">Success means the production billing provider timeout is exactly 3 seconds and staging remains 2 seconds. Roll back if provider error rate or p95 billing latency increases after deployment. Elena Garcia is the billing owner. Approval should expire after one hour.</code></pre>
+<ol start="4">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">What must not change, and how will configuration parsing be tested?</code></pre>
+<ol start="5">
+<li><strong>YOU ANSWER</strong></li>
+</ol>
+<pre><code class="lang-text">Do not change retry counts, provider URLs, credentials, staging config, or request code. Add a configuration test that loads production and staging and asserts their timeout values. Owner is Sam Patel.</code></pre>
+<ol start="6">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/specs/Veldo-0401-production-provider-timeout.md</code></p>
+<pre><code class="lang-markdown">---
+schema: veldo.spec/v1
+id: Veldo-0401
+title: Increase production billing provider timeout
+status: draft
+risk: high
+owner: Sam Patel
+human_approval: required
+protected_paths:
+  - billing/config/production.yaml
+acceptance_criteria:
+  - id: AC1
+    text: Loading billing/config/production.yaml returns a billing provider request timeout of exactly 3 seconds.
+  - id: AC2
+    text: Loading billing/config/staging.yaml continues to return a billing provider request timeout of exactly 2 seconds.
+  - id: AC3
+    text: Retry counts, provider URLs, credentials, and billing request code are unchanged.
+required_evidence: [unit]
+rollback: Revert the configuration commit if provider error rate or p95 billing latency increases after deployment.
+---
+
+## Intent
+
+Reduce peak-settlement billing provider timeouts by increasing only the production provider request timeout from 2 seconds to 3 seconds.
+
+## Context
+
+The target file billing/config/production.yaml matches protected path billing/**. Policy floors the effective risk to high and requires approval from the billing owner.
+
+Elena Garcia is the billing owner. Approval must be bound to the final commit and expires one hour after recording.
+
+## Out of scope
+
+Retry counts, provider URLs, credentials, staging configuration, and billing request code are not changed.
+
+## Notes
+
+The production timeout must be exactly 3 seconds. Staging must remain exactly 2 seconds. Add a configuration-loading test for both environments.</code></pre>
+<ol start="7">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">The draft validates at effective risk high. The protected path and required human approval are recorded.
+
+Reply with approval to mark the specification ready. This approves the intent only. It does not replace the commit-bound billing-owner approval required after implementation and proof.</code></pre>
+<ol start="8">
+<li><strong>YOU ANSWER</strong></li>
+</ol>
+<pre><code class="lang-text">I approve Veldo-0401 as ready.</code></pre>
+<ol start="9">
+<li><strong>FILE UPDATED</strong></li>
+</ol>
+<p><code>specs/Veldo-0401-production-provider-timeout.md</code>: same file, <code>status: ready</code>. The agent reminds you: this approves the intent only; the commit-bound billing-owner approval still comes after implementation and proof.</p>
+<ol start="10">
+<li><strong>YOU TYPE</strong></li>
+</ol>
+<pre><code class="lang-text">/veldo:run Veldo-0401</code></pre>
+<ol start="11">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/billing/config/production.yaml</code></p>
+<pre><code class="lang-yaml">schema: billing.config/v1
+provider:
+  url_env: BILLING_PROVIDER_URL
+  request_timeout_seconds: 3
+  retry_count: 2</code></pre>
+<ol start="12">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/tests/test_billing_config.py</code></p>
+<pre><code class="lang-python">from billing.config import load_config
+
+
+def test_production_provider_timeout_is_three_seconds():
+    config = load_config(&quot;production&quot;)
+
+    assert config.provider.request_timeout_seconds == 3
+    assert config.provider.retry_count == 2
+
+
+def test_staging_provider_timeout_remains_two_seconds():
+    config = load_config(&quot;staging&quot;)
+
+    assert config.provider.request_timeout_seconds == 2</code></pre>
+<ol start="13">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">Implementation commit:
+d1fb1b70db9f06cf055ff3eec78a925ed9935f92
+
+Running the expanded high-risk gate.</code></pre>
+<ol start="14">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">== format
+61 files already formatted
+   format: pass
+== lint
+All checks passed
+   lint: pass
+== types
+Success: no issues found in 29 source files
+   types: pass
+== tests
+....................................................                     [100%]
+52 passed in 2.47s
+   tests: pass
+== build
+Billing configuration build passed
+   build: pass
+== extra
+Production configuration policy checks passed
+   extra: pass
+== secret scan
+   secret scan: pass
+== veldo contracts
+OK: 1 specification, 0 proofs, 0 verdicts
+   contracts: pass
+
+GATE: GREEN (d1fb1b70db9f06cf055ff3eec78a925ed9935f92)</code></pre>
+<ol start="15">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/proof/Veldo-0401/manifest.json</code></p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: &quot;veldo.proof/v1&quot;,
+  &quot;spec_id&quot;: &quot;Veldo-0401&quot;,
+  &quot;commit&quot;: &quot;d1fb1b70db9f06cf055ff3eec78a925ed9935f92&quot;,
+  &quot;produced_at&quot;: &quot;2026-08-07T16:05:12Z&quot;,
+  &quot;producer&quot;: {
+    &quot;role&quot;: &quot;implementation&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-4-5-20250929&quot;,
+    &quot;runtime&quot;: &quot;claude-code&quot;
+  },
+  &quot;criteria&quot;: [
+    {
+      &quot;id&quot;: &quot;AC1&quot;,
+      &quot;status&quot;: &quot;passed&quot;,
+      &quot;evidence&quot;: [
+        {
+          &quot;type&quot;: &quot;test&quot;,
+          &quot;ref&quot;: &quot;tests/test_billing_config.py::test_production_provider_timeout_is_three_seconds&quot;
+        }
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;AC2&quot;,
+      &quot;status&quot;: &quot;passed&quot;,
+      &quot;evidence&quot;: [
+        {
+          &quot;type&quot;: &quot;test&quot;,
+          &quot;ref&quot;: &quot;tests/test_billing_config.py::test_staging_provider_timeout_remains_two_seconds&quot;
+        }
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;AC3&quot;,
+      &quot;status&quot;: &quot;passed&quot;,
+      &quot;evidence&quot;: [
+        {
+          &quot;type&quot;: &quot;diff&quot;,
+          &quot;ref&quot;: &quot;billing/config/production.yaml&quot;
+        }
+      ]
+    }
+  ],
+  &quot;checks&quot;: [
+    {
+      &quot;name&quot;: &quot;verify&quot;,
+      &quot;command&quot;: &quot;./scripts/verify.sh&quot;,
+      &quot;result&quot;: &quot;pass&quot;
+    }
+  ],
+  &quot;rollback&quot;: &quot;Revert commit d1fb1b70db9f06cf055ff3eec78a925ed9935f92 if provider error rate or p95 billing latency increases.&quot;
+}</code></pre>
+<ol start="16">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/proof/Veldo-0401/verdict.json</code></p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: &quot;veldo.verdict/v1&quot;,
+  &quot;spec_id&quot;: &quot;Veldo-0401&quot;,
+  &quot;commit&quot;: &quot;d1fb1b70db9f06cf055ff3eec78a925ed9935f92&quot;,
+  &quot;reviewer&quot;: {
+    &quot;model&quot;: &quot;claude-opus-4-1-20250805&quot;,
+    &quot;context&quot;: &quot;fresh&quot;
+  },
+  &quot;verdict&quot;: &quot;pass&quot;,
+  &quot;criteria&quot;: [
+    {
+      &quot;id&quot;: &quot;AC1&quot;,
+      &quot;assessment&quot;: &quot;satisfied&quot;
+    },
+    {
+      &quot;id&quot;: &quot;AC2&quot;,
+      &quot;assessment&quot;: &quot;satisfied&quot;
+    },
+    {
+      &quot;id&quot;: &quot;AC3&quot;,
+      &quot;assessment&quot;: &quot;satisfied&quot;
+    }
+  ],
+  &quot;findings&quot;: {
+    &quot;blocking&quot;: [],
+    &quot;non_blocking&quot;: []
+  },
+  &quot;test_assessment&quot;: &quot;Configuration tests load both production and staging. The final diff changes only the production timeout and adds tests and Veldo artifacts.&quot;
+}</code></pre>
+<ol start="17">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">The implementation, proof, and independent review pass.
+
+Merge is blocked by one required human action:
+
+Required approver:
+- Elena Garcia
+- Role: billing-owner
+
+Approval scope:
+- Spec: Veldo-0401
+- Commit: d1fb1b70db9f06cf055ff3eec78a925ed9935f92
+- Proof: proof/Veldo-0401/manifest.json
+- Expiry: one hour after recording
+
+Elena must state her identity, decision, and reason. Approval of a different commit will not satisfy policy.</code></pre>
+<ol start="18">
+<li><strong>YOU ANSWER</strong></li>
+</ol>
+<pre><code class="lang-text">I am Elena Garcia, billing owner. I approve Veldo-0401 for commit d1fb1b70db9f06cf055ff3eec78a925ed9935f92. I reviewed the production-only timeout change, the staging assertion, the unchanged retry count, the green expanded gate, and proof/Veldo-0401/manifest.json. The change is reversible and approved for deployment. Record this approval with a one hour expiry.</code></pre>
+<ol start="19">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">Recording approval apr-0401.
+
+Recorded at: 2026-08-07T16:12:00Z
+Expires at: 2026-08-07T17:12:00Z
+Bound commit: d1fb1b70db9f06cf055ff3eec78a925ed9935f92</code></pre>
+<ol start="20">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/proof/Veldo-0401/approval-apr-0401.json</code></p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: &quot;veldo.approval/v1&quot;,
+  &quot;id&quot;: &quot;apr-0401&quot;,
+  &quot;decision&quot;: &quot;approved&quot;,
+  &quot;approver&quot;: {
+    &quot;id&quot;: &quot;elena-garcia&quot;,
+    &quot;role&quot;: &quot;billing-owner&quot;
+  },
+  &quot;scope&quot;: {
+    &quot;spec_id&quot;: &quot;Veldo-0401&quot;,
+    &quot;commit&quot;: &quot;d1fb1b70db9f06cf055ff3eec78a925ed9935f92&quot;,
+    &quot;proof&quot;: &quot;proof/Veldo-0401/manifest.json&quot;
+  },
+  &quot;reason&quot;: &quot;Reviewed the production-only timeout change, staging assertion, unchanged retry count, green expanded gate, and proof. The change is reversible and approved for deployment.&quot;,
+  &quot;recorded_at&quot;: &quot;2026-08-07T16:12:00Z&quot;,
+  &quot;expires_at&quot;: &quot;2026-08-07T17:12:00Z&quot;
+}</code></pre>
+<ol start="21">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">Veldo receipt for Veldo-0401
+
+Gate:
+- Green for d1fb1b70db9f06cf055ff3eec78a925ed9935f92
+
+Proof:
+- Valid for d1fb1b70db9f06cf055ff3eec78a925ed9935f92
+
+Review:
+- Pass
+- Blocking findings 0
+
+Protected-path approval:
+- Approved by Elena Garcia
+- Bound to d1fb1b70db9f06cf055ff3eec78a925ed9935f92
+- Expires at 2026-08-07T17:12:00Z
+
+The change is ready to merge until the approval expires or the implementation commit changes.</code></pre>
+<ol start="22">
+<li><strong>YOU ASK FOR ONE MORE THING</strong> (this is the interesting part: watch what it does to the approval)</li>
+</ol>
+<pre><code>Also tag the change with ticket SETTLE-882 in the config comment.</code></pre>
+<ol start="23">
+<li><strong>AGENT</strong> (automatic): amends the implementation commit with the tag.</li>
+</ol>
+<pre><code>Amended: 0a98ce4 &quot;Veldo-0401 increase provider timeout for SETTLE-882&quot;</code></pre>
+<ol start="24">
+<li><p><strong>AGENT</strong> (automatic): attempts the push.</p></li>
+<li><p><strong>AGENT ASKS/REPLIES</strong></p></li>
+</ol>
+<pre><code class="lang-text">Veldo guard: blocked. git push was not executed.
+
+HEAD:
+0a98ce4e283eea07118bb4a5f967743fb385a336
+
+Gate:
+STALE
+The green gate is bound to d1fb1b70db9f06cf055ff3eec78a925ed9935f92.
+
+Proof:
+STALE
+proof/Veldo-0401/manifest.json is bound to d1fb1b70db9f06cf055ff3eec78a925ed9935f92.
+
+Run ./scripts/verify.sh (or /veldo:run Veldo-0401) on the current state first.
+
+Agent: The recorded approval apr-0401 is also stale for the same reason: it names
+the previous commit. After re-proving, Elena must approve the new commit.</code></pre>
+<ol start="27">
+<li><strong>YOU TYPE</strong></li>
+</ol>
+<pre><code class="lang-text">/veldo:run Veldo-0401</code></pre>
+<ol start="28">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">The implementation already satisfies the ready specification. The commit changed after the previous gate, proof, review, and approval.
+
+I will rerun the expanded gate and regenerate proof and review for commit 0a98ce4e283eea07118bb4a5f967743fb385a336.</code></pre>
+<ol start="29">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">== format
+61 files already formatted
+   format: pass
+== lint
+All checks passed
+   lint: pass
+== types
+Success: no issues found in 29 source files
+   types: pass
+== tests
+....................................................                     [100%]
+52 passed in 2.43s
+   tests: pass
+== build
+Billing configuration build passed
+   build: pass
+== extra
+Production configuration policy checks passed
+   extra: pass
+== secret scan
+   secret scan: pass
+== veldo contracts
+OK: 1 specification, 1 proof, 1 verdict
+   contracts: pass
+
+GATE: GREEN (0a98ce4e283eea07118bb4a5f967743fb385a336)</code></pre>
+<ol start="30">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/proof/Veldo-0401/manifest.json</code></p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: &quot;veldo.proof/v1&quot;,
+  &quot;spec_id&quot;: &quot;Veldo-0401&quot;,
+  &quot;commit&quot;: &quot;0a98ce4e283eea07118bb4a5f967743fb385a336&quot;,
+  &quot;produced_at&quot;: &quot;2026-08-07T16:19:31Z&quot;,
+  &quot;producer&quot;: {
+    &quot;role&quot;: &quot;implementation&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-4-5-20250929&quot;,
+    &quot;runtime&quot;: &quot;claude-code&quot;
+  },
+  &quot;criteria&quot;: [
+    {
+      &quot;id&quot;: &quot;AC1&quot;,
+      &quot;status&quot;: &quot;passed&quot;,
+      &quot;evidence&quot;: [
+        {
+          &quot;type&quot;: &quot;test&quot;,
+          &quot;ref&quot;: &quot;tests/test_billing_config.py::test_production_provider_timeout_is_three_seconds&quot;
+        }
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;AC2&quot;,
+      &quot;status&quot;: &quot;passed&quot;,
+      &quot;evidence&quot;: [
+        {
+          &quot;type&quot;: &quot;test&quot;,
+          &quot;ref&quot;: &quot;tests/test_billing_config.py::test_staging_provider_timeout_remains_two_seconds&quot;
+        }
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;AC3&quot;,
+      &quot;status&quot;: &quot;passed&quot;,
+      &quot;evidence&quot;: [
+        {
+          &quot;type&quot;: &quot;diff&quot;,
+          &quot;ref&quot;: &quot;billing/config/production.yaml&quot;
+        }
+      ]
+    }
+  ],
+  &quot;checks&quot;: [
+    {
+      &quot;name&quot;: &quot;verify&quot;,
+      &quot;command&quot;: &quot;./scripts/verify.sh&quot;,
+      &quot;result&quot;: &quot;pass&quot;
+    }
+  ],
+  &quot;rollback&quot;: &quot;Revert commit 0a98ce4e283eea07118bb4a5f967743fb385a336 if provider error rate or p95 billing latency increases.&quot;
+}</code></pre>
+<ol start="31">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/proof/Veldo-0401/verdict.json</code></p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: &quot;veldo.verdict/v1&quot;,
+  &quot;spec_id&quot;: &quot;Veldo-0401&quot;,
+  &quot;commit&quot;: &quot;0a98ce4e283eea07118bb4a5f967743fb385a336&quot;,
+  &quot;reviewer&quot;: {
+    &quot;model&quot;: &quot;claude-opus-4-1-20250805&quot;,
+    &quot;context&quot;: &quot;fresh&quot;
+  },
+  &quot;verdict&quot;: &quot;pass&quot;,
+  &quot;criteria&quot;: [
+    {
+      &quot;id&quot;: &quot;AC1&quot;,
+      &quot;assessment&quot;: &quot;satisfied&quot;
+    },
+    {
+      &quot;id&quot;: &quot;AC2&quot;,
+      &quot;assessment&quot;: &quot;satisfied&quot;
+    },
+    {
+      &quot;id&quot;: &quot;AC3&quot;,
+      &quot;assessment&quot;: &quot;satisfied&quot;
+    }
+  ],
+  &quot;findings&quot;: {
+    &quot;blocking&quot;: [],
+    &quot;non_blocking&quot;: []
+  },
+  &quot;test_assessment&quot;: &quot;The expanded gate and configuration tests pass for the amended commit. The added change ticket metadata does not alter runtime timeout or retry behavior.&quot;
+}</code></pre>
+<ol start="32">
+<li><strong>AGENT ASKS/REPLIES</strong></li>
+</ol>
+<pre><code class="lang-text">The amended commit now has a green gate, valid proof, and a passing independent review.
+
+The previous approval remains STALE because it names the previous commit.
+
+Elena Garcia must approve:
+0a98ce4e283eea07118bb4a5f967743fb385a336</code></pre>
+<ol start="33">
+<li><strong>YOU ANSWER</strong></li>
+</ol>
+<pre><code class="lang-text">I am Elena Garcia, billing owner. I reapprove Veldo-0401 for commit 0a98ce4e283eea07118bb4a5f967743fb385a336. I reviewed the added SETTLE-882 change-ticket metadata, the unchanged 3 second production timeout, the unchanged 2 second staging timeout, the green expanded gate, and the regenerated proof. Record a new one hour approval.</code></pre>
+<ol start="34">
+<li><strong>FILE CREATED</strong></li>
+</ol>
+<p><code>/workspace/payments/billing/proof/Veldo-0401/approval-apr-0402.json</code></p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: &quot;veldo.approval/v1&quot;,
+  &quot;id&quot;: &quot;apr-0402&quot;,
+  &quot;decision&quot;: &quot;approved&quot;,
+  &quot;approver&quot;: {
+    &quot;id&quot;: &quot;elena-garcia&quot;,
+    &quot;role&quot;: &quot;billing-owner&quot;
+  },
+  &quot;scope&quot;: {
+    &quot;spec_id&quot;: &quot;Veldo-0401&quot;,
+    &quot;commit&quot;: &quot;0a98ce4e283eea07118bb4a5f967743fb385a336&quot;,
+    &quot;proof&quot;: &quot;proof/Veldo-0401/manifest.json&quot;
+  },
+  &quot;reason&quot;: &quot;Reviewed the SETTLE-882 metadata, unchanged production and staging timeout values, green expanded gate, and regenerated proof.&quot;,
+  &quot;recorded_at&quot;: &quot;2026-08-07T16:23:00Z&quot;,
+  &quot;expires_at&quot;: &quot;2026-08-07T17:23:00Z&quot;
+}</code></pre>
+<ol start="35">
+<li><strong>YOU CHECK</strong></li>
+</ol>
+<pre><code class="lang-text">Command:
+python3 .veldo/validate.py approval proof/Veldo-0401/approval-apr-0402.json
+
+Expected output:
+OK: valid veldo.approval/v1 apr-0402</code></pre>
+<ol start="36">
+<li><p><strong>AGENT</strong> (automatic): commits the evidence and pushes.</p></li>
+<li><p><strong>AGENT ASKS/REPLIES</strong></p></li>
+</ol>
+<pre><code class="lang-text">[feature/veldo-0401 c6ef2a1] Veldo-0401 record final evidence and approval
+ 8 files changed, 137 insertions(+), 3 deletions(-)
+ create mode 100644 proof/Veldo-0401/approval-apr-0401.json
+ create mode 100644 proof/Veldo-0401/approval-apr-0402.json
+ create mode 100644 proof/Veldo-0401/manifest.json
+ create mode 100644 proof/Veldo-0401/verdict.json
+
+Pre-push check: evidence-only commit; inherits proof from the parent.
+
+HEAD c6ef2a18269faf14cf01e86ba6be3e4246ada911 inherits proof from parent 0a98ce4e283eea07118bb4a5f967743fb385a336.
+
+Gate: green
+Proof: valid
+Verdict: pass
+Approval apr-0401: stale
+Approval apr-0402: approved and unexpired
+
+To github.com:acme/payments.git
+ * [new branch]      HEAD -&gt; feature/veldo-0401</code></pre>
+<ol start="38">
+<li><p><strong>YOU SAY:</strong> <code>merge</code></p></li>
+<li><p><strong>AGENT</strong> (automatic) - merges and shows the policy receipt:</p></li>
+</ol>
+<pre><code class="lang-text">Merge policy evaluated: satisfied.
+
+Spec: Veldo-0401 ready
+Protected path: billing/config/production.yaml
+Effective risk: high
+Gate: green
+Proof: valid
+Independent verdict: pass
+Blocking findings: 0
+Required approval: approved by Elena Garcia
+Approval commit: 0a98ce4e283eea07118bb4a5f967743fb385a336
+Approval expiry: 2026-08-07T17:23:00Z
+Rollback: present
+
+✓ Merged pull request acme/payments#503 (Veldo-0401 Increase production billing provider timeout)</code></pre>
+<h2 id="runbook-e-an-iteration-through-the-planning-layer">Runbook E - An iteration through the planning layer<a class="anchor" href="#runbook-e-an-iteration-through-the-planning-layer" aria-label="link to this section">#</a></h2>
+<p>The situation: the orders area needs a real redesign - reorder, saved carts, and an empty state - not one change but several, with a regression surface they share. This is the planned lane. A single bug never comes here; this runbook is for a product increment.</p>
+<p><strong>Step 1 - You state the increment at the product level.</strong> You type:</p>
+<pre><code>/veldo:plan create the orders redesign: reorder, saved carts, and the empty state</code></pre>
+<p><strong>Step 2 - The agent interviews you about the WHOLE, not a change.</strong> Answer in outcomes and features:</p>
+<pre><code>Agent: What user outcomes must become true?
+You:   Returning customers reorder in two taps; a cart survives a session; a
+       customer with no orders knows what the screen is for.
+Agent: What is explicitly out?
+You:   Payment changes. Wishlists. Not this iteration.
+Agent: What must stay green across the whole thing?
+You:   Checkout must keep working end to end after every piece.
+Agent: What does done mean?
+You:   All three shipped, checkout journey green, then a week of watching reorder rate.</code></pre>
+<p><strong>Step 3 - The plan file appears.</strong> <code>plans/PLAN-0007-orders-redesign.md</code> (abbreviated):</p>
+<pre><code class="lang-yaml">---
+schema: veldo.plan/v1
+id: PLAN-0007
+title: Orders redesign - reorder, saved carts, empty state
+kind: iteration
+status: draft
+revision: 1
+owner: dmitry
+outcomes:
+  - {id: O1, becomes_true: Returning customers reorder in two taps, measure: reorder rate}
+  - {id: O2, becomes_true: A cart survives a session, measure: cart-restore success}
+  - {id: O3, becomes_true: A customer with no orders understands the screen, measure: empty-state click-through}
+work:
+  - {item: W1, spec: Veldo-0501, title: Reorder API, feature_refs: [F1], depends_on: [], order: 10}
+  - {item: W2, spec: Veldo-0502, title: Reorder UI, feature_refs: [F1], depends_on: [Veldo-0501], order: 20}
+  - {item: W3, spec: Veldo-0503, title: Saved carts, feature_refs: [F2], depends_on: [], order: 30}
+  - {item: W4, spec: Veldo-0504, title: Empty state, feature_refs: [F3], depends_on: [], order: 40}
+regression:
+  journeys:
+    - {id: RJ1, title: Checkout works end to end, activation: {when: start}, profiles: [per_spec, release], suite: e2e/checkout}
+release:
+  milestone: Orders redesign live
+  mode: continuous
+  require_all_work_shipped: true
+  require_full_regression: true
+open_decisions: []
+---</code></pre>
+<p>The agent says: <code>Plan drafted as PLAN-0007 (draft). It validates. Say &quot;approve&quot; to make the ordering real, or refine anything first.</code></p>
+<p><strong>Step 4 - You approve it.</strong> You type:</p>
+<pre><code>Approve the plan.</code></pre>
+<p>The agent sets <code>status: ready</code>, records you as <code>approved_by</code> with <code>approved_at</code>, re-validates, and regenerates the index. The Product Plans section now tracks it.</p>
+<p><strong>Step 5 - You read the frontier and pull in order.</strong> You type:</p>
+<pre><code>/veldo:plan status PLAN-0007</code></pre>
+<pre><code>PLAN-0007 - Orders redesign - reorder, saved carts, empty state
+status ready, revision 1, 0/4 shipped
+  W1   Veldo-0501    unstarted (frontier)
+  W2   Veldo-0502    waiting: Veldo-0501
+  W3   Veldo-0503    unstarted (frontier)
+  W4   Veldo-0504    unstarted (frontier)
+frontier: Veldo-0501 (W1), Veldo-0503 (W3), Veldo-0504 (W4)</code></pre>
+<p>Three items are buildable in parallel; W2 waits on W1. You pull one:</p>
+<pre><code>Pull Veldo-0501.</code></pre>
+<p>The agent creates its spec with <code>/veldo:spec</code>, setting <code>lane: planned</code>, <code>plan: PLAN-0007</code>, <code>work: W1</code>, <code>plan_revision: 1</code>, interviews you on that one piece, and you approve and run it exactly as in Runbook A. Repeat for the other frontier items; run parallel work in separate worktrees only up to what you can actually judge.</p>
+<p><strong>Step 6 - The machine refuses broken order, so you never have to police it.</strong> Suppose you try to jump ahead to the Reorder UI before its API has shipped:</p>
+<pre><code>You:   Pull and run Veldo-0502.
+Agent: run-check Veldo-0502: REFUSED
+         - dependency Veldo-0501 is ready, not shipped
+       Not building out of order. Ship Veldo-0501 first, or change the plan.</code></pre>
+<p>That refusal is the DAG enforcing itself. Ship W1, and W2 moves onto the frontier on its own.</p>
+<p><strong>Step 7 - You change your mind, honestly.</strong> Saved carts turns out to need the reorder API too:</p>
+<pre><code>Make W3 depend on W1.</code></pre>
+<p>The agent revises the plan (not edits it): bumps <code>revision</code> to 2, adds a <code>## Revisions</code> note, and shows the impact:</p>
+<pre><code>impact of Veldo-0501 in PLAN-0007:
+  Veldo-0502 (shipped)
+  Veldo-0503 (ready)
+  WARNING: 1 already-shipped dependent(s) may need re-proof: Veldo-0502</code></pre>
+<p>Any spec pulled against revision 1 is now stale; <code>run-check</code> will refuse it until it is re-pulled against revision 2. Intent changed, and nothing ships against a plan that moved underneath it.</p>
+<p><strong>Step 8 - You ask for the release, and the check answers.</strong> When the work is done you type:</p>
+<pre><code>/veldo:plan release PLAN-0007</code></pre>
+<p>If anything is unfinished, the check says exactly what:</p>
+<pre><code>PLAN-0007: NOT releasable
+  - work not shipped: Veldo-0504</code></pre>
+<p>You ship the last piece, ask again, and get:</p>
+<pre><code>PLAN-0007: releasable (Orders redesign live)</code></pre>
+<p>The agent sets <code>status: released</code> and records the milestone. In continuous mode the pieces already merged as they went green, so release is the marker plus the week of watching reorder rate you named in Step 2.</p>
+<p><strong>What you actually did across the whole iteration:</strong> described three outcomes, approved the plan, pulled frontier items in order (the machine refused the one out-of-order attempt), answered one dependency change, and asked to release. No standup, no board, no status report. The plan reported itself the entire time.</p>
+<h2 id="part-ii-every-change-type">Part II - Every change type<a class="anchor" href="#part-ii-every-change-type" aria-label="link to this section">#</a></h2>
+<p>The loop never changes; what changes per type is the evidence the spec demands and who must judge. This part gives the exact recipe per type: the criteria pattern, the evidence list, the human moments.</p>
+<h3 id="ii1-infrastructure-as-code-the-chapter-that-takes-you-from-0">II.1 Infrastructure as code (the chapter that takes you from 0%)<a class="anchor" href="#ii1-infrastructure-as-code-the-chapter-that-takes-you-from-0" aria-label="link to this section">#</a></h3>
+<p>Infrastructure is where teams quietly bypass their own process, because &quot;it&#x27;s just a config value.&quot; Under Veldo it is the opposite: infrastructure is the most protected class in the repository.</p>
+<p><strong>One-time setup for an infra-bearing repository (exact steps):</strong></p>
+<ol>
+<li>Put every infrastructure definition in the repository if it is not already there: terraform under <code>infra/</code>, compose files, deploy configs, CI definitions. If it cannot be read and diffed, it cannot be governed; this is non-negotiable and is usually the real migration work.</li>
+<li>Floor the paths in <code>.veldo/policy.yaml</code>:</li>
+</ol>
+<pre><code class="lang-yaml">protected_paths:
+  - {path: &quot;infra/**&quot;,            floor: high}
+  - {path: &quot;infra/production/**&quot;, floor: critical}
+  - {path: &quot;docker-compose*.yml&quot;, floor: high}
+  - {path: &quot;.github/workflows/**&quot;, floor: high}</code></pre>
+<ol start="3">
+<li>Add the plan step to the gate. In <code>scripts/verify.sh</code>, the EXTRA_CMD slot runs the normalized plan when infra paths changed, and the plan text becomes evidence:</li>
+</ol>
+<pre><code class="lang-bash">EXTRA_CMD=&quot;./scripts/infra-plan.sh&quot;   # terraform plan -no-color &gt; proof/&lt;spec&gt;/plan.txt when infra/ changed&quot;</code></pre>
+<p><strong>The recipe per infra change:</strong></p>
+<div class="scroll"><table>
+<thead><tr>
+<th>Element</th>
+<th>Pattern</th>
+</tr></thead>
+<tbody>
+<tr><td>Criteria</td><td>The exact intended delta (&quot;autoscaling max 20 to 40&quot;), &quot;the normalized plan contains only the expected change&quot;, the observation criterion (&quot;queue depth and error rate observed post-apply&quot;)</td></tr>
+<tr><td>Evidence</td><td>plan text as an artifact, staging validation where one exists, a tested rollback command</td></tr>
+<tr><td>Human moment</td><td>approval bound to the exact commit AND the plan digest; expires; any new plan invalidates it</td></tr>
+<tr><td>Irreversible ops</td><td>destructive migrations, deletions, key rotations: prepare-and-execute (setup 7.2): approve the exact plan artifact, execute before expiry, stop on any mismatch</td></tr>
+</tbody>
+</table></div>
+<p><strong>What you type</strong> (the whole flow is Runbook D in Part I; the short form):</p>
+<pre><code>/veldo:spec Raise production worker autoscaling max from 20 to 40. Minimum unchanged.
+ready
+/veldo:run Veldo-0311
+approve          (when shown the plan: 1 update, 0 create, 0 destroy, cost within ceiling)
+merge</code></pre>
+<p>The plan-digest binding is the whole trick: you approved that exact plan, not &quot;the idea of scaling up.&quot; If the plan regenerates differently, your approval is stale and the merge blocks.</p>
+<h3 id="ii2-database-changes">II.2 Database changes<a class="anchor" href="#ii2-database-changes" aria-label="link to this section">#</a></h3>
+<p>Never one change. The agent proposes the expand-and-contract decomposition and refuses to bundle (the refusal is in the method, not your memory):</p>
+<ol>
+<li>Additive migration, dual-write, nullable. Rollback = stop writing.</li>
+<li>Backfill (resumable, batched) + switch reads behind a fallback. Data-owner approval. Rollback = read old path.</li>
+<li>After observation: enforce constraints, remove fallback.</li>
+</ol>
+<p>Each is its own spec with its own gate, proof, review, merge. The criteria pattern for any migration: &quot;the migration applies and reverts cleanly on a copy of production data&quot; is evidence, not hope: the gate runs it.</p>
+<h3 id="ii3-dependencies">II.3 Dependencies<a class="anchor" href="#ii3-dependencies" aria-label="link to this section">#</a></h3>
+<p>One standing spec per class (<code>specs/Veldo-STANDING-*.md</code>) defines criteria, risk, and evidence once. Each bump: <code>Apply the next safe update under Veldo-S001</code> and the ordinary loop runs; the proof manifest references the standing id. Majors, license changes, auth/payment/infra libraries: excluded by the standing spec&#x27;s constraints, each needs its own spec.</p>
+<h3 id="ii4-pure-documentation-and-copy">II.4 Pure documentation and copy<a class="anchor" href="#ii4-pure-documentation-and-copy" aria-label="link to this section">#</a></h3>
+<p>Proportionate proof at its floor: one criterion (the corrected text, asserted or built), the gate, a fast review pass. Minutes. Never skipped, because &quot;small&quot; is where regressions hide from memory.</p>
+<h3 id="ii5-configuration-and-feature-flags">II.5 Configuration and feature flags<a class="anchor" href="#ii5-configuration-and-feature-flags" aria-label="link to this section">#</a></h3>
+<p>Config that changes behavior is code: same loop. The one addition: the spec&#x27;s rollback field must name the flag or the previous value explicitly, so the receipt contains its own undo.</p>
+<h3 id="ii6-testing-itself-agents-test-humans-judge-pictures">II.6 Testing itself: agents test, humans judge pictures<a class="anchor" href="#ii6-testing-itself-agents-test-humans-judge-pictures" aria-label="link to this section">#</a></h3>
+<p>The rule that governs all testing under Veldo: <strong>if a test can be executed by an agent, a human executing it is a defect in the setup.</strong> Agents write the tests, run them, and interpret the failures. Humans see evidence delivered to them; humans never assemble their own validation.</p>
+<p><strong>UI proof is four layers, in this order of importance</strong> (the method&#x27;s design edge already says it: flows are specifiable; feel is human):</p>
+<ol>
+<li><strong>Flows.</strong> The primary proof. Every journey the spec names is DRIVEN end to end by the agent - the happy path, the failure path, the recovery path - with behavior asserted at each step: navigation happened, state transitioned, data persisted, focus went where it should. A UI whose screenshots are perfect and whose flows are unproven is unproven.</li>
+<li><strong>States.</strong> Every named state (empty, loading, error, offline, permission-denied) is REACHED by driving, captured, and asserted on content and accessibility, not just photographed.</li>
+<li><strong>Interaction detail.</strong> Keyboard order, gestures, animation timing where specified: asserted where assertable, recorded for the human lane where not.</li>
+<li><strong>Visual fidelity.</strong> The token lint, the Figma composites, the locked baselines. This is the layer humans judge as pictures, and it is the LAST layer, not the proof.</li>
+</ol>
+<p>Plus the fifth thing that is not a layer: <strong>feel</strong>, which stays human, as the design review lane, judging the interaction recordings and composites.</p>
+<p><strong>Web.</strong> The agent drives Playwright end to end across the spec&#x27;s widths: journeys first, then state captures, traces and videos recorded for the lanes. The gate runs it all; the human sees composites and recordings, not test logs.</p>
+<p><strong>Mobile, treated as first-class because it is historically the weakest AI-tested surface.</strong> The agent drives the emulator end to end:</p>
+<ol>
+<li>Boots the device profile the spec declares (OS version, form factor); the matrix is spec-declared, not assumed.</li>
+<li>Installs the build and drives the spec&#x27;s JOURNEYS itself - taps, text entry, the full flow to its asserted outcome - then re-drives them through the lifecycle events where mobile actually breaks: backgrounding mid-flow, process death mid-sync, rotation, network loss.</li>
+<li>Captures every state the spec names as a screenshot, and records the whole interaction as video.</li>
+<li>Compares user-facing screens against the Figma exports and builds the composites.</li>
+<li>Writes it all to <code>proof/&lt;spec-id&gt;/visual/</code> and delivers the composites and the video link to the judging human.</li>
+</ol>
+<p><strong>The visual pipeline (any design-lane change, web or mobile).</strong> Figma frame exported via the API (the exact node, not a screenshot of a screenshot) -&gt; rendered captures from Playwright or the emulator -&gt; side-by-side composite with a pixel-diff strip -&gt; delivered to the human in chat -&gt; the one-line reply becomes the baseline approval or the design verdict. The composite is evidence: it lives next to the manifest and the reviewer checks it too.</p>
+<p><strong>The evidence contract for UI and mobile specs.</strong> <code>required_evidence</code> for user-facing work names what must exist, and the proof fails without it:</p>
+<pre><code class="lang-yaml">required_evidence: [unit, journeys, ui_states, interaction_recording, figma_composite]
+# mobile adds: device_matrix (the spec declares which OS versions and form factors)
+# journeys is the load-bearing entry: named flows, driven end to end, behavior asserted</code></pre>
+<p><strong>Honesty clause.</strong> An emulator is not a device fleet; where risk demands physical devices (payments flows, camera, biometrics), the spec says so and a human lane covers exactly that residue - the point is that the residue is small, named, and shrinking, never the default.</p>
+<h3 id="ii7-emergencies">II.7 Emergencies<a class="anchor" href="#ii7-emergencies" aria-label="link to this section">#</a></h3>
+<p>The full transcript is in Part III.7. The short form: a human declares it, <code>Veldo_EMERGENCY=1</code> on the push, service restored by the fastest safe means, and the debt (spec + proof + review of what actually shipped) closes within 24 hours or the next ordinary merge blocks.</p>
+<h2 id="part-iii-every-situation">Part III - Every situation<a class="anchor" href="#part-iii-every-situation" aria-label="link to this section">#</a></h2>
+<p>What you will actually see, and exactly what to do. Each entry: the signal, the cause, the action.</p>
+<h3 id="iii1-the-gate-is-red">III.1 The gate is red<a class="anchor" href="#iii1-the-gate-is-red" aria-label="link to this section">#</a></h3>
+<p>Signal: <code>GATE: RED (&lt;commit&gt;)</code> and the failing check named above it. Action: nothing, usually; the implementer fixes defects and reruns. You only get pulled in if the same spec fails repeatedly, which is a spec problem, not a code problem.</p>
+<p><strong>The inner loop while you are fixing it, and what it is not.</strong> Paying the whole unit suite for a one-line fix is where red-gate debugging time actually goes, so the suite can be run in part: <code>python3 scripts/selftest.py --suite &lt;name&gt;</code> runs one named suite plus the prerequisites it was measured to need, and <code>--upto &lt;name&gt;</code> runs everything through one suite. Use them to iterate. That is the entire purpose, and it is worth being blunt about the limit: <strong>a partial run is not evidence that anything works.</strong> No proof manifest, no evidence claim and no landing decision may cite one. This is not a matter of discipline, because a partial run cannot write the gate stamp, cannot satisfy the required-evidence check and cannot emit the summary line the gate reads: each of those raises <code>PARTIAL_RUN_CANNOT_VERIFY</code>, its exit status is never zero, and it prints a banner saying so. <strong>Which of those is doing the work today, so you know what you are relying on:</strong> the mechanism is the NON-ZERO EXIT STATUS, because the gate decides green from the exit status of its unit slot and a partial run never returns zero. The summary line has one production caller. Refusing the stamp and refusing the evidence record are forward guards with no caller yet, since the stamp is written by the gate script in shell and proof artifacts are written by hand; they are what the first generated one will hit. A green canonical gate remains the only thing that means done. Three practical notes: selecting a name that does not exist is a refusal listing the real ones, never a silent pass over nothing; a flag takes its value as the next WORD, so <code>--suite=&lt;name&gt;</code> is refused as an unrecognised flag rather than quietly ignored, which used to run the whole suite while you waited for a subset; and the saving is uneven, because a suite&#x27;s cost is not evenly spread. Check what a selection actually costs before assuming it is fast.</p>
+<h3 id="iii2-the-guard-blocked-a-push">III.2 The guard blocked a push<a class="anchor" href="#iii2-the-guard-blocked-a-push" aria-label="link to this section">#</a></h3>
+<p>Signal:</p>
+<pre><code>Veldo guard: blocked. The canonical gate is not green for HEAD (91acb03).</code></pre>
+<p>Cause: something changed after the last gate run; proof is valid only for the state it ran against. Action: <code>/veldo:gate</code>, let it go green, push again. If you see this often, changes are being pushed mid-thought; finish the loop first.</p>
+<h3 id="iii3-a-review-failed">III.3 A review failed<a class="anchor" href="#iii3-a-review-failed" aria-label="link to this section">#</a></h3>
+<p>Signal: <code>review: FAIL</code> with blocking findings listed. Action: none the first time; the implementer addresses findings and a fresh review runs. The SECOND failure on the same spec stops the machine and pulls you in, and the defect is almost always in the specification: ambiguous intent or untestable criteria. Fix the spec, not the code.</p>
+<h3 id="iii4-a-spec-is-blocked">III.4 A spec is blocked<a class="anchor" href="#iii4-a-spec-is-blocked" aria-label="link to this section">#</a></h3>
+<p>Signal: status <code>blocked</code> in the index, with the blocker recorded in the spec. Cause: the agent hit a material product decision it refuses to guess. Action: answer the question in the spec (or in chat and let the agent record it), flip back to <code>ready</code>.</p>
+<h3 id="iii5-you-need-to-change-a-ready-spec">III.5 You need to change a ready spec<a class="anchor" href="#iii5-you-need-to-change-a-ready-spec" aria-label="link to this section">#</a></h3>
+<p>Action: just say what changed. The agent revises the spec; the revision invalidates any proof or approval bound to the old version, mechanically. Never edit acceptance criteria to match an implementation; that direction is prohibited.</p>
+<h3 id="iii6-an-approval-went-stale">III.6 An approval went stale<a class="anchor" href="#iii6-an-approval-went-stale" aria-label="link to this section">#</a></h3>
+<p>Signal:</p>
+<pre><code>Veldo guard: blocked. No proof manifest found for HEAD (...)</code></pre>
+<p>after an amend, or a re-request for approval you already gave. Cause: approval binds to the exact commit and proof; anything changed = stale, by design. Action: look once more (it is a new thing now), approve again. If this annoys you, it is working: you were about to approve something you had not seen.</p>
+<h3 id="iii7-production-is-down-the-emergency-verbatim">III.7 Production is down (the emergency, verbatim)<a class="anchor" href="#iii7-production-is-down-the-emergency-verbatim" aria-label="link to this section">#</a></h3>
+<pre><code>You:    Production checkout is failing after the 14:10 deploy. Emergency. Revert it.
+Agent:  Reverting deploy 42da901; smoke test on checkout passing locally.
+        Pushing with the emergency lane.
+System: Veldo guard: emergency lane used; backfill the specification, proof,
+        and review within the policy window.
+Agent:  Reverted. Checkout error rate back to baseline. Backfill debt is open,
+        due 2026-07-17 17:55 UTC.</code></pre>
+<p>Within 24 hours (you or the agent, one line): <code>Backfill the emergency from last night.</code> The spec describing intent, proof against what actually shipped, and an independent review land as normal artifacts; the debt closes. An unclosed backfill blocks the next ordinary merge.</p>
+<h3 id="iii8-the-trunk-moved-under-a-proven-change">III.8 The trunk moved under a proven change<a class="anchor" href="#iii8-the-trunk-moved-under-a-proven-change" aria-label="link to this section">#</a></h3>
+<p>Signal: the run reports re-proving on the merged result before completing the merge. Action: none; this is automatic. Two changes that each pass alone can fail together; the trunk only ever contains states a gate has seen.</p>
+<h3 id="iii9-a-bug-will-not-reproduce">III.9 A bug will not reproduce<a class="anchor" href="#iii9-a-bug-will-not-reproduce" aria-label="link to this section">#</a></h3>
+<p>Action: the spec says so explicitly and names the closest observable proxy as the criterion: a log signature stops appearing, a metric returns to baseline. Never a pretend failing test; never a criterion nobody can check.</p>
+<h2 id="part-iv-every-role">Part IV - Every role<a class="anchor" href="#part-iv-every-role" aria-label="link to this section">#</a></h2>
+<h3 id="iv1-the-founder-from-chat">IV.1 The founder, from chat<a class="anchor" href="#iv1-the-founder-from-chat" aria-label="link to this section">#</a></h3>
+<p>You never open a terminal. Your whole interface, in five sentences you already know how to say:</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>You want</th>
+<th>You say (to your assistant)</th>
+</tr></thead>
+<tbody>
+<tr><td>New work</td><td>&quot;Add X to &lt;repo&gt;.&quot; (the interview follows; answer in plain words)</td></tr>
+<tr><td>Approve a spec</td><td>&quot;Ready.&quot;</td></tr>
+<tr><td>Status</td><td>&quot;Where are we on &lt;repo&gt;?&quot; or &quot;/veldo:status&quot;</td></tr>
+<tr><td>Judgment</td><td>You get pinged: an approval with the exact delta, a design baseline to eyeball, a blocked question. Answer in one line.</td></tr>
+<tr><td>Receipts</td><td>Arrive on ship: criteria proven, gate, verdict, rollback.</td></tr>
+</tbody>
+</table></div>
+<p>Protected-path approvals: for now these are confirmed on the pull request page (identity), one tap deeper; the ping still reaches you in chat with the link.</p>
+<h3 id="iv2-the-engineer-in-terminal-or-ide">IV.2 The engineer, in terminal or IDE<a class="anchor" href="#iv2-the-engineer-in-terminal-or-ide" aria-label="link to this section">#</a></h3>
+<p><code>/veldo:spec</code> when starting something, <code>/veldo:run</code> to execute it, <code>/veldo:status</code> when returning from lunch. The six step-skills for debugging. The only rules that bite: no implementation without a ready spec, green is the only done, and the reviewer is never you.</p>
+<h3 id="iv3-the-design-owner">IV.3 The design owner<a class="anchor" href="#iv3-the-design-owner" aria-label="link to this section">#</a></h3>
+<p>You are a reviewer lane, not a meeting. When a change touches look, feel, or flow you get: the mock link, the rendered baselines, the exact commit. You compare, then say one of two sentences to the agent: &quot;Record my design review for Veldo-NNNN: approved.&quot; or &quot;: rejected, &lt;what is off&gt;.&quot; Your verdict is a file with your name in it, bound to that commit; nothing user-facing merges without it.</p>
+<h3 id="iv4-the-reviewers-obligations-agent-or-human">IV.4 The reviewer&#x27;s obligations (agent or human)<a class="anchor" href="#iv4-the-reviewers-obligations-agent-or-human" aria-label="link to this section">#</a></h3>
+<p>Fresh context, always. Inputs: spec, final diff, proof, instructions; never the implementer&#x27;s narrative. Rerun what you doubt. Judge against Intent, not just criteria. Two verdicts only matter: blocking findings, or pass; style opinions are non-blocking notes.</p>
+<h2 id="part-v-running-it">Part V - Running it<a class="anchor" href="#part-v-running-it" aria-label="link to this section">#</a></h2>
+<h3 id="v1-bringing-the-next-repository-in-the-0-to-100-path">V.1 Bringing the next repository in (the 0-to-100 path)<a class="anchor" href="#v1-bringing-the-next-repository-in-the-0-to-100-path" aria-label="link to this section">#</a></h3>
+<p>Per repository, in order, about an hour of human attention:</p>
+<ol>
+<li><code>/plugin install veldo@veldo</code> if not already; <code>/veldo:init</code> in the repo.</li>
+<li>Answer the three init questions honestly: authoritative commands, unrecoverable paths, whether the design lane applies.</li>
+<li>Let init run the gate once; fix what is genuinely broken (init will surface real rot: flaky tests, undocumented build steps; this is the migration&#x27;s actual work).</li>
+<li>Approve the adoption spec; it merges as the repo&#x27;s first Veldo change.</li>
+<li>From then on: all new work through the loop. Do NOT stop to retrofit old work; Veldo governs changes, not history.</li>
+</ol>
+<p>Repository order for the migration: most-active first (highest change volume = highest protection value), infrastructure repositories second (the 0% that matters), quiet repositories last or never.</p>
+<h3 id="v2-adding-or-changing-a-protected-path">V.2 Adding or changing a protected path<a class="anchor" href="#v2-adding-or-changing-a-protected-path" aria-label="link to this section">#</a></h3>
+<p>Policy is code: say &quot;protect &lt;path&gt; at &lt;tier&gt; in &lt;repo&gt;&quot;; the agent edits <code>.veldo/policy.yaml</code> through the ordinary loop (a spec, a review); it is itself a protected-class change. Effective immediately for every subsequent change.</p>
+<h3 id="v3-creating-a-standing-specification">V.3 Creating a standing specification<a class="anchor" href="#v3-creating-a-standing-specification" aria-label="link to this section">#</a></h3>
+<p>&quot;Make a standing spec for &lt;recurring class&gt;: criteria are &lt;...&gt;, excluded are &lt;...&gt;.&quot; One file in <code>specs/</code>, reviewed once, then instances flow without ceremony.</p>
+<h3 id="v4-the-weekly-pass-the-one-ritual">V.4 The weekly pass (the one ritual)<a class="anchor" href="#v4-the-weekly-pass-the-one-ritual" aria-label="link to this section">#</a></h3>
+<p>Fifteen to twenty minutes, in chat or terminal: <code>/veldo:index</code>, then walk the list: close what shipped, kill what went stale, re-answer what is blocked, confirm what is ready next. If it takes longer than twenty minutes regularly, specs are too big.</p>
+<p>If the repository carries an architecture contract (<code>.veldo/architecture.yaml</code>), the weekly pass is also where its living tripwires and entropy get their in-session read - both are ordinary functions, nothing detached, nothing running between passes. Update the small recorded-readings file (<code>.veldo/readings/*.yaml</code>) with this week&#x27;s assumption signals, then run the tripwire pass; a breached assumption is a named finding (and it already surfaces in the gate and in <code>veldo status</code>), and it drafts exactly one re-decision unit for you to promote - a wrong foundation caught by assumption breach, not by outage. Then glance at the per-area cost-to-change (the entropy CLI or the metrics dashboard): a trusted threshold crossing drafts one restoration spec you promote through the normal loop, and once a restoration ships the pass reports the cost delta so you can see whether it paid off. Nothing here auto-gates and nothing auto-promotes; the human decides, the same way the human decides everything foundational. A repository with no contract sees none of this (the checks stand down).</p>
+<h3 id="v5-upgrading-the-plugin">V.5 Upgrading the plugin<a class="anchor" href="#v5-upgrading-the-plugin" aria-label="link to this section">#</a></h3>
+<p><code>/plugin update veldo@veldo</code> (or reinstall). Upgrades never rewrite your repository substrate; when a template you already have changes, apply it as an ordinary reviewed change. Announce upgrades to the team; version drift degrades politely.</p>
+<h3 id="v6-reading-the-numbers">V.6 Reading the numbers<a class="anchor" href="#v6-reading-the-numbers" aria-label="link to this section">#</a></h3>
+<p>Everything is derivable from <code>.veldo/events.jsonl</code>: spec-to-ship time (spec.ready to spec.shipped), gate latency (gate events), first-pass rate (gate.failed density), emergency debt (unclosed emergency.push), human minutes (the human_minutes fields). One question to ask monthly: is human-minutes-per-shipped-change trending toward stating-intent-plus-judging and nothing else? That number is the whole promise.</p>
+<h3 id="v7-the-planning-layer-day-to-day">V.7 The planning layer, day to day<a class="anchor" href="#v7-the-planning-layer-day-to-day" aria-label="link to this section">#</a></h3>
+<p>For a product increment (never for a single bug), a Product Plan runs above the spec loop. Runbook E is the full walkthrough; the recurring rhythm is short:</p>
+<ul>
+<li><strong>Start one:</strong> <code>/veldo:plan create &lt;the increment&gt;</code>, answer the product-level interview, <code>approve</code> once you have read the draft. Tens of minutes, not a planning phase.</li>
+<li><strong>Work it:</strong> <code>/veldo:plan status &lt;plan&gt;</code> shows the burn-down and the frontier; pull a frontier item, run it, repeat. You choose which frontier item matters next; the machine decides which are allowed (<code>run-check</code> refuses unshipped deps and stale context, so you never police order).</li>
+<li><strong>Change it:</strong> say what changed; the agent revises (bumps the revision, shows impact), never silently edits. Anything pulled against the old revision goes stale until re-pulled.</li>
+<li><strong>Release it:</strong> <code>/veldo:plan release &lt;plan&gt;</code> runs the release check and only then marks it released; continuous mode already merged the pieces, so this is the milestone plus the observation window.</li>
+</ul>
+<p>It folds into the one ritual: the weekly pass (V.4) walks open plans the same way it walks specs - confirm each plan&#x27;s frontier is moving, surface any decision that has blocked an item too long, and kill a plan that reality has overtaken. The plan is the board; do not build a second one on top of it (that failure mode is III-style status theater, in V.4 and the anti-patterns). Everything the plan reports is derived from the spec files, so it is always current without anyone maintaining it.</p>
+<h3 id="v8-running-the-fleet">V.8 Running the fleet<a class="anchor" href="#v8-running-the-fleet" aria-label="link to this section">#</a></h3>
+<p>When a repository has several independent ready specs, run them in parallel with the fleet instead of one at a time. Everything runs in-session; the fleet spawns nothing detached.</p>
+<p><strong>One-time, per account.</strong> Register each account once:</p>
+<pre><code>veldo account add alpha</code></pre>
+<p>This is a login into that account&#x27;s own persisted profile (its own <code>CLAUDE_CONFIG_DIR</code>). You log in once; a worker driven under that account reuses the saved login from then on, with no re-login. <code>veldo account list</code> shows the registered accounts.</p>
+<p><strong>Run workers.</strong> One worker in the current terminal:</p>
+<pre><code>veldo work --account alpha</code></pre>
+<p>Or up to N workers paced by the governor:</p>
+<pre><code>veldo fleet 4 --account alpha</code></pre>
+<p>Each worker claims the next ready unit from anywhere in the repository, builds it, and lands it through the serialized lander, then claims the next, until the frontier is drained. Two workers never take the same unit, and a build routes only to a worker whose machine can run it.</p>
+<p><strong>How a worker is started (the coordinator drive).</strong> A worker is a vanilla in-session worker, git-worktree-isolated: the coordinator provisions a fresh git worktree for it (an in-line <code>git worktree</code> call that isolates its source tree, never a detached process) and starts it through the SAME in-session parallel mechanism a human session uses to run parallel work, so the worker dies with the session. The multi-account pool stays one account per worker: each worker carries its own account&#x27;s <code>CLAUDE_CONFIG_DIR</code>, and one account is never run as two workers. The whole pool is opt-in and in-session, it spawns nothing detached, and it grows and shrinks only while the coordinating session is alive. On Claude Code the actual worker launch is agent-mediated: the coordinator dispatches the in-session worker itself (a reference the coordinator provides at runtime), because a program cannot start an in-session worker without detaching, which is forbidden. Where no in-session mechanism is available the start fails loud by name rather than fabricate a worker or fall back to a detached process, so a bare <code>veldo fleet</code> with no in-session start wired stops at the first spawn instead of going rogue.</p>
+<p><strong>Monitor.</strong> Watch the live run state without touching it:</p>
+<pre><code>veldo status          # a one-shot read: the runs, their phase, and any blocked question
+veldo watch           # the same, refreshing, interruptible</code></pre>
+<p><code>veldo answer</code>, <code>veldo steer</code>, and <code>veldo abort</code> speak to a specific run through its inbox when you need to unblock, redirect, or stop it.</p>
+<p><strong>When an account hits its budget (the default: in-session resume).</strong> The governor measures burn from the event stream and paces the pool. When an account spends its window&#x27;s budget, its workers back off, and the pool resumes IN-SESSION when that account&#x27;s window rolls off, re-checking the budget before spawning again so it never resumes straight back into the limit. This is the wired default of <code>veldo fleet</code>: you do nothing, the wait is a bounded in-session wait, not a detached timer. Add accounts for more parallelism, and the governor sums each account&#x27;s own budget into the pool, so one spent-out account never stalls the others.</p>
+<p><strong>The one gap: a fully killed session.</strong> The in-session resume carries a LIVING session through a reset. The single case it cannot cover is a session the OS fully KILLED at a hard token cap, because a dead process cannot resume itself. For that, and only if you want it, there is an opt-in external supervisor. It is OFF by default: unless you run the install command below, nothing is scheduled and no artifact exists on your system, and the fleet behaves exactly as the in-session default above.</p>
+<p><strong>The opt-in external supervisor.</strong> It is a standard systemd user timer that you own and can inspect and remove. Turn it on with:</p>
+<pre><code>veldo supervisor install --on-calendar &#x27;2026-07-19 16:30:00 UTC&#x27;</code></pre>
+<p>That generates a user timer plus a oneshot service unit under your own <code>~/.config/systemd/user</code>, prints exactly what it created, and enables the timer. Give it the resume time as an <code>--on-calendar</code> expression (or <code>--resume-at &lt;epoch&gt;</code>, typically the governor&#x27;s resume time). Inspect it the way you inspect any user unit, and remove it cleanly when you no longer want it:</p>
+<pre><code>veldo supervisor status              # the timer state (enabled, active)
+systemctl --user list-timers        # the same, in systemd&#x27;s own view
+veldo supervisor uninstall           # disable and remove it, cleanly and idempotently</code></pre>
+<p>The unit&#x27;s launch command is a documented, fail-loud reference until you wire your own fresh-session launcher (pass it with <code>--launch-command</code>); Veldo generates the timer and the command but never spawns the session itself. Install is idempotent, so re-running it is safe.</p>
+<p><strong>The boundary.</strong> A worker is a real in-session worker, never a headless or detached background process, and the in-session resume is a bounded in-session wait, not a background timer. The only persistent mechanism Veldo will ever create is the external supervisor above, and only when you explicitly install it: a visible, inspectable, removable user systemd timer, never a hidden daemon, a system crontab, a lock-refresher, or a headless polling loop. If you ever find a fleet process running outside a session or a scheduler you did not install, that is a defect, not the design. The build, the fresh-context review, the worker-start primitive, and the supervisor&#x27;s session launch are delegated seams that fail loud rather than fake a result.</p>
+<h2 id="the-cheat-sheet">The cheat sheet<a class="anchor" href="#the-cheat-sheet" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Situation</th>
+<th>What you type</th>
+<th>What you get back</th>
+</tr></thead>
+<tbody>
+<tr><td>Plan a product increment (several features, many specs)</td><td><code>/veldo:plan create &lt;the increment&gt;</code></td><td>A product-level interview (outcomes, feature tree, ordering, regression, release), then a draft <code>plans/PLAN-NNNN-*.md</code></td></tr>
+<tr><td>Approve a plan</td><td><code>Approve the plan.</code></td><td>Status <code>ready</code>, <code>approved_by</code> and <code>approved_at</code> recorded, index regenerated with the Product Plans section</td></tr>
+<tr><td>See the plan burn-down and frontier</td><td><code>/veldo:plan status PLAN-NNNN</code></td><td>Each item shipped / waiting on named deps / blocked / frontier, and the ready frontier - derived from spec files</td></tr>
+<tr><td>Pull the next work item into a spec</td><td><code>Pull Veldo-NNNN.</code></td><td>A <code>lane: planned</code> spec bound to the plan and work item; then the ordinary spec loop</td></tr>
+<tr><td>Revise an approved plan</td><td><code>Make W3 depend on W1.</code> (or any scope change)</td><td>A revision (bumped, noted) plus impact analysis; specs pulled against the old revision go stale</td></tr>
+<tr><td>Release the increment</td><td><code>/veldo:plan release PLAN-NNNN</code></td><td>The release check; on pass, status <code>released</code> and the milestone recorded; on fail, exactly what is missing</td></tr>
+<tr><td>Start a backend feature</td><td><code>/veldo:spec Rate limit POST /api/exports</code></td><td>An interview covering outcome, constraints, edge cases, failure, risk, and ownership</td></tr>
+<tr><td>Approve a drafted specification</td><td><code>I approve Veldo-0101 as ready.</code></td><td>Spec status changes to <code>ready</code>, validation runs, the index updates, and a <code>spec.ready</code> event is appended</td></tr>
+<tr><td>Run the complete implementation pipeline</td><td><code>/veldo:run Veldo-0101</code></td><td>Implementation, tests, canonical gate, proof manifest, independent verdict, and merge-policy receipt</td></tr>
+<tr><td>Inspect the canonical gate yourself</td><td><code>./scripts/verify.sh</code></td><td>Configured checks followed by <code>GATE: GREEN (&lt;commit&gt;)</code> or <code>GATE: RED (&lt;commit&gt;)</code></td></tr>
+<tr><td>Inspect proof (optional)</td><td><code>python3 -m json.tool proof/Veldo-0101/manifest.json</code></td><td>Criteria mapped to evidence, exact commit, checks, producer, and rollback</td></tr>
+<tr><td>Start a Figma-backed UI change</td><td><code>/veldo:spec Add the Orders empty state. Figma: &lt;link with node-id&gt;</code></td><td>Figma node, component names, tokens, text, spacing, dimensions, and design-owner questions</td></tr>
+<tr><td>UI validation</td><td>nothing - the agent exports the Figma frame, captures the render, composites them with a diff strip, and sends you the image</td><td>Two pictures in chat; you reply in one line</td></tr>
+<tr><td>Approve a baseline</td><td><code>Approved.</code> (or name what is off, e.g. &quot;button 8px from bottom, mock shows 24&quot;)</td><td>Locked baselines the gate defends forever; composites stored as evidence</td></tr>
+<tr><td>Record a design-owner verdict</td><td><code>I am &lt;name&gt;, design owner. I compared &lt;Figma node&gt; with &lt;baseline&gt;. My verdict is approved.</code></td><td><code>proof/&lt;spec-id&gt;/design-verdict.json</code> bound to the implementation commit</td></tr>
+<tr><td>Hand a support ticket to Veldo</td><td><code>Turn ticket 184 into work.</code></td><td>Reproduction, failing test, one product question, a spec to approve - then everything else automatically</td></tr>
+<tr><td>Close the support ticket</td><td>nothing - the agent posts the closing comment with evidence links when the fix ships</td><td>Ticket updated, reporter notified</td></tr>
+<tr><td>Change a protected path</td><td><code>/veldo:spec Change billing/config/production.yaml ...</code></td><td>Risk is floored by policy, required approver is identified, and human approval becomes mandatory</td></tr>
+<tr><td>Record protected-path approval</td><td><code>I am &lt;name&gt;, &lt;owner role&gt;. I approve &lt;spec&gt; for commit &lt;hash&gt; because &lt;reason&gt;.</code></td><td>A commit-bound <code>veldo.approval/v1</code> JSON file with recorded and expiry times</td></tr>
+<tr><td>Change anything after an approval</td><td>just ask for the change</td><td>The agent amends; the guard blocks its own push; re-proof runs; you re-approve the new exact thing</td></tr>
+<tr><td>Reprove an amended commit</td><td>nothing - /veldo:run does it as part of the flow</td><td>Gate, manifest, and verdict regenerated for the new commit</td></tr>
+<tr><td>Merge</td><td><code>merge</code></td><td>The agent merges; policy is checked mechanically (gate, proof, verdict, evidence, unexpired commit-bound approvals)</td></tr>
+<tr><td>Run several ready specs in parallel</td><td><code>veldo fleet N --account &lt;name&gt;</code> (once: <code>veldo account add &lt;name&gt;</code>)</td><td>N in-session workers claim, build, and land ready work; <code>veldo status</code> / <code>veldo watch</code> show progress</td></tr>
+<tr><td>Opt in to external resume after a killed session (off by default)</td><td><code>veldo supervisor install --on-calendar &#x27;&lt;time&gt;&#x27;</code> (remove: <code>veldo supervisor uninstall</code>)</td><td>An inspectable user systemd timer that launches a fresh fleet at the reset time; nothing runs until you install it</td></tr>
+<tr><td>Declare the repository&#x27;s intended shape</td><td>author <code>.veldo/architecture.yaml</code> (areas, dependencies, patterns, invariants, budgets), then approve it</td><td>The shape gate enforces the mechanizable rules (module-size budget, engine invariants) and specs must declare their placement; a repository with no contract is unaffected</td></tr>
+<tr><td>Check foundation assumptions and area entropy (weekly, in-session)</td><td>update <code>.veldo/readings/*.yaml</code>, run the tripwire pass, glance at the entropy CLI</td><td>A breached assumption named in the gate and <code>veldo status</code> plus one re-decision draft; a trusted entropy crossing drafts one restoration spec you promote - nothing auto-gates or auto-promotes</td></tr>
+</tbody>
+</table></div>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<p>Minor versions add, clarify, or extend; major versions restructure or break compatibility with existing practice.</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial runbook: four keystroke-exact runbooks (feature, UI design lane, bug intake, protected path), every change type with infrastructure first-class, every situation, every role, administration, cheat sheet</td></tr>
+<tr><td>1.1</td><td>2026-07-16</td><td>Human steps re-attributed honestly (a handful of sentences; agents run all commands); Runbook C rewritten chat-first; UI validation now ends with a delivered Figma-vs-render composite stored as evidence; new II.6: agents test, humans judge pictures - first-class AI-driven testing including agent-driven mobile emulators, the visual pipeline, and the UI/mobile evidence contract</td></tr>
+<tr><td>1.2</td><td>2026-07-16</td><td>UI proof restructured as four layers led by FLOWS (journeys driven end to end with behavior asserted), then states, interaction detail, and visual fidelity; Runbook B criteria, gate transcript, and receipt now flow-led; journeys added to the evidence contract</td></tr>
+<tr><td>1.3</td><td>2026-07-16</td><td>Protected-path runbook independence aligned to the optional-escalation ladder (L2 default)</td></tr>
+<tr><td>1.4</td><td>2026-07-16</td><td>The planning layer: Runbook E (an iteration end to end through /veldo:plan - create, approve, pull the frontier, out-of-order refusal, revise with impact, release check), Part V.7 (the planning layer day to day, folded into the weekly pass), and cheat-sheet rows for the plan verbs</td></tr>
+<tr><td>1.5</td><td>2026-07-19</td><td>Running the fleet (W6 of PLAN-0009): Part V.8 covers the one-time <code>veldo account add</code> per account (a persisted <code>CLAUDE_CONFIG_DIR</code> login, no relogin), <code>veldo fleet N</code> / <code>veldo work --account</code>, monitoring with <code>veldo status</code> / <code>veldo watch</code>, the in-session resume when an account hits its budget, and the no-detached-process boundary; a cheat-sheet row for running specs in parallel</td></tr>
+<tr><td>1.6</td><td>2026-07-19</td><td>The fleet supervisor (W7 of PLAN-0009): Part V.8 now states the in-session resume is the wired default of <code>veldo fleet</code>, and documents the opt-in, off-by-default external supervisor (<code>veldo supervisor install</code> / <code>status</code> / <code>uninstall</code>) as a visible, inspectable, removable user systemd timer for the one gap the in-session resume cannot cover (a fully killed session), with the no-detached-process boundary restated (no hidden daemon, no system crontab, no lock-refresher, no polling loop; the session launch is a fail-loud reference seam); a cheat-sheet row for the opt-in external resume</td></tr>
+<tr><td>1.7</td><td>2026-07-22</td><td>The architecture organ in the weekly pass (Veldo-1110 of PLAN-0011, plugin 3.7.0): Part V.4 now covers the in-session tripwire and entropy read for a repository that carries an architecture contract - updating the recorded-readings file and running the tripwire pass (a breached assumption named in the gate and <code>veldo status</code>, drafting one re-decision unit), and glancing at per-area cost-to-change (a trusted crossing drafts one restoration spec, and the delta is reported once it ships), with nothing auto-gating, nothing auto-promoting, and nothing running between passes; two cheat-sheet rows for declaring the contract and running the weekly foundation-and-entropy check</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>

@@ -1,0 +1,211 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Architect in Veldo - Veldo</title>
+<meta name="description" content="The gate is the architecture - policy, protected paths, decomposition, contracts.">
+<meta name="author" content="Dmitry Grinberg">
+<style>
+:root{
+  --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
+  --wash:#f2f0e8; --measure:41rem;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#14140f; --ink:#ecebe3; --muted:#98948a; --rule:#33322b; --wash:#1d1c16; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; text-rendering:optimizeLegibility;
+}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+/* Two frame widths, one per page type. A document page is 56rem because it
+   carries a contents rail beside the prose (40 + 4 gap + 12); every other page
+   is exactly the measure plus its gutters, so its single column fills the frame
+   and sits centred instead of hugging the left edge of a wider one. */
+.wrap{max-width:57rem;margin:0 auto;padding:0 1.5rem}
+.wrap.narrow{max-width:44rem}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--rule);margin-bottom:3.5rem}
+.masthead .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 2rem;padding-top:1.4rem;padding-bottom:1.4rem}
+.wordmark{font-size:1.15rem;letter-spacing:.02em;font-weight:600;text-decoration:none;color:inherit}
+.masthead nav{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-left:auto;
+  display:flex;flex-wrap:wrap;gap:1.4rem}
+.masthead nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+.masthead nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.masthead nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* prose */
+main{padding-bottom:5rem}
+article,.column{max-width:var(--measure)}
+h1{font-size:2.35rem;line-height:1.14;font-weight:600;letter-spacing:-.012em;margin:0 0 .6rem}
+h2{font-size:1.4rem;line-height:1.25;font-weight:600;margin:3.2rem 0 .9rem;letter-spacing:-.005em}
+h3{font-size:1.08rem;line-height:1.3;font-weight:600;margin:2.2rem 0 .7rem}
+h4{font-size:1rem;font-weight:600;margin:1.7rem 0 .5rem}
+h2+h3,h3+h4{margin-top:1.2rem}
+p{margin:0 0 1.15rem}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em}
+a:hover{text-decoration-thickness:2px}
+.anchor{float:right;margin-left:1rem;color:var(--rule);text-decoration:none;font-weight:400;opacity:0}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+strong{font-weight:600}
+ul,ol{margin:0 0 1.15rem;padding-left:1.4rem}
+li{margin:.28rem 0}
+li>ul,li>ol{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+blockquote{
+  margin:1.6rem 0;padding:.1rem 0 .1rem 1.4rem;border-left:2px solid var(--ink);
+  font-size:1.14rem;line-height:1.5;font-style:italic;color:var(--ink);
+}
+blockquote p:last-child{margin-bottom:0}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.855em;background:var(--wash);padding:.08em .2em;border-radius:2px;
+  font-style:normal;
+}
+pre{
+  background:var(--wash);border:1px solid var(--rule);border-radius:2px;
+  padding:.95rem 1.1rem;overflow-x:auto;margin:0 0 1.35rem;line-height:1.5;
+}
+/* Sized so the loop diagram, the longest line the front page has to show
+   without scrolling, fits the measure. */
+pre code{background:none;padding:0;font-size:.78rem}
+.unlinked{border-bottom:1px dotted var(--rule)}
+.scroll{overflow-x:auto;margin:0 0 1.4rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;line-height:1.45}
+th,td{border-bottom:1px solid var(--rule);padding:.5rem .8rem .5rem 0;text-align:left;vertical-align:top}
+th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--ink);font-weight:600;white-space:nowrap}
+
+/* eyebrow labels */
+.eyebrow{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .55rem;display:block}
+
+/* landing */
+.hero{max-width:var(--measure);margin:0 0 3rem}
+.hero h1{font-size:3.6rem;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero .tagline{font-size:1.3rem;line-height:1.42;font-style:italic;color:var(--muted);margin:0}
+.band{max-width:var(--measure);padding-top:2.6rem;margin-top:2.6rem;border-top:1px solid var(--rule)}
+.band>h2:first-child{margin-top:0}
+.band.first{padding-top:0;margin-top:0;border-top:0}
+.band>ol>li{margin:.75rem 0}
+.source{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;color:var(--muted);margin:1.5rem 0 0}
+.source a{color:var(--muted)}
+
+/* document index */
+.docrow{padding:1.5rem 0;border-top:1px solid var(--rule)}
+.docrow:first-of-type{border-top:0;padding-top:.5rem}
+.docrow h3{margin:0 0 .4rem;font-size:1.15rem}
+.docrow h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.docrow h3 a:hover{border-bottom-color:var(--ink)}
+.docrow p{margin:0 0 .5rem}
+.docrow dl{margin:.55rem 0 0;font-size:.87rem;color:var(--muted)}
+.docrow dt{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;margin:.6rem 0 .1rem}
+.docrow dd{margin:0}
+.ordinal{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* document page */
+.dochead{max-width:var(--measure);margin-bottom:0}
+.dochead .tagline{font-size:1.14rem;line-height:1.45;font-style:italic;color:var(--muted);margin:0 0 .8rem}
+.meta{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.75rem;letter-spacing:.05em;color:var(--muted)}
+.doc{display:grid;grid-template-columns:minmax(0,1fr);gap:2.5rem}
+.toc{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.45}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:.42rem 0}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink);text-decoration:underline}
+/* Below the two-column breakpoint the contents sit above the prose, where a
+   long stacked list would push the document itself off the first screen. They
+   run in as one flowing line instead, the way a book's contents note does. */
+@media (max-width:62rem){
+  .toc ol{line-height:1.95}
+  .toc li{display:inline;margin:0}
+  .toc li:not(:last-child)::after{content:" / ";color:var(--rule)}
+}
+@media (min-width:62rem){
+  .doc{grid-template-columns:minmax(0,var(--measure)) 12rem;gap:2.5rem 4rem}
+  .doc>.dochead{grid-column:1 / -1}
+  .doc>article{grid-column:1;grid-row:2}
+  .doc>.toc{grid-column:2;grid-row:2;position:sticky;top:2rem;align-self:start;
+    max-height:calc(100vh - 4rem);overflow-y:auto}
+}
+
+/* footer */
+footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:.78rem;color:var(--muted)}
+footer p{margin:0 0 .4rem;max-width:var(--measure)}
+</style>
+<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
+<main class="wrap">
+<div class="doc"><div class="dochead"><h1>The Architect in Veldo</h1><p class="tagline">Training series. The gate is the architecture now: you own the system that decides what is true.</p><p class="meta">Version 1.0, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-your-job-redefined">1. Your job, redefined</a></li><li><a href="#2-your-day">2. Your day</a></li><li><a href="#3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)</a></li><li><a href="#4-the-curriculum">4. The curriculum</a></li><li><a href="#5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to</a></li><li><a href="#6-you-have-arrived-when">6. You have arrived when</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="1-your-job-redefined">1. Your job, redefined<a class="anchor" href="#1-your-job-redefined" aria-label="link to this section">#</a></h2>
+<p>Architecture used to be advisory: diagrams, review meetings, guidelines that engineers followed when they remembered to. In Veldo, architecture is enforced or it is fiction. Your decisions live in three places that machines obey: the policy file (risk tiers, protected paths), the gate (what proof means here), and the contracts (what a spec, a proof, a verdict must contain). You stop being the person who draws boxes and start being the person who designs the proof system.</p>
+<div class="scroll"><table>
+<thead><tr>
+<th>What stops</th>
+<th>What starts</th>
+</tr></thead>
+<tbody>
+<tr><td>Architecture review meetings</td><td>Architecture constraints as policy and gate checks that block violations mechanically</td></tr>
+<tr><td>Slideware and wiki diagrams that drift</td><td>Architecture decisions in the repo, agent-readable, enforced where enforceable</td></tr>
+<tr><td>Being consulted after the design is done</td><td>Decomposition judgment before implementation: the DB-evolution refusal is your standard</td></tr>
+<tr><td>Guarding quality by reviewing everything</td><td>Designing the reviews: independence levels, human lanes, what evidence each risk tier demands</td></tr>
+<tr><td>Approving technology choices in the hallway</td><td>Owning the protected-path taxonomy and the risk floors, as reviewed changes to policy</td></tr>
+</tbody>
+</table></div>
+<h2 id="2-your-day">2. Your day<a class="anchor" href="#2-your-day" aria-label="link to this section">#</a></h2>
+<p>You read verdicts and escaped-defect reports the way you used to read code: they tell you where the proof system is thin. You spend your time on the highest-leverage artifacts in the company: the policy file, the gate&#x27;s check suite, the contract shapes, the standing ADRs. When a spec smells too big, you decompose it or teach the agent&#x27;s refusal to stick. When the same defect class escapes twice, you add the check that makes a third time impossible.</p>
+<h2 id="3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)<a class="anchor" href="#3-your-moments-in-the-loop-exact" aria-label="link to this section">#</a></h2>
+<p><strong>Flooring a new risk area:</strong></p>
+<pre><code>Protect payments/reconciliation/** at critical in the billing repo. Reason:
+mis-reconciliation is unrecoverable money movement.</code></pre>
+<p>The agent drafts the policy change; it goes through the loop like any change (policy is itself protected), and from merge onward every touch of that path is floored, mechanically, forever.</p>
+<p><strong>Judging a decomposition.</strong> A spec arrives with ten criteria across three subsystems:</p>
+<pre><code>Split Veldo-0310: the schema change ships first (additive, dual-write), the
+read-path switch second behind a fallback, the cleanup third after a week
+of observation. Each independently reversible.</code></pre>
+<p><strong>Raising the reviewer bar:</strong></p>
+<pre><code>Changes under core/routing/** review at L3 minimum. Update policy.</code></pre>
+<p><strong>The escaped defect ritual.</strong> Something shipped proven and broke anyway:</p>
+<pre><code>Add to the gate: a contract test that fails when the API returns amounts
+without currency. That class of escape is now impossible. Spec it.</code></pre>
+<h2 id="4-the-curriculum">4. The curriculum<a class="anchor" href="#4-the-curriculum" aria-label="link to this section">#</a></h2>
+<p><strong>Module 1 - Policy as your medium.</strong> Learn <code>.veldo/policy.yaml</code> cold: tiers, floors, independence ladder, merge rule. Exercise: take three real past incidents and write the policy lines that would have forced a human gate in front of each.</p>
+<p><strong>Module 2 - Gate design.</strong> The gate is a portfolio: fast checks for every change, expensive checks for risky ones, zero flaky checks ever. Exercise: audit the pilot repo&#x27;s verify.sh; find the check that is missing (what shipped bug would it have caught?) and the check that is theater (what does it actually prove?).</p>
+<p><strong>Module 3 - Decomposition judgment.</strong> The skill of splitting work so every merge leaves the system correct. Exercise: take the gnarliest pending migration and write the three-spec expand-and-contract plan with rollback per stage.</p>
+<p><strong>Module 4 - Contracts and ADRs for machine readers.</strong> Your decisions are read by agents thousands of times. Exercise: rewrite one existing ADR so an agent implementing against it cannot misread it; then have an agent implement a small spec in that area and see what it does.</p>
+<p><strong>Module 5 - Reading the system&#x27;s health.</strong> Proof latency, first-pass rate, escaped defects, reversion rate: these are architecture metrics now. Exercise: from the events log, find the slowest gate stage and cut it 30% without losing evidence.</p>
+<h2 id="5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to<a class="anchor" href="#5-how-you-break-veldo-without-meaning-to" aria-label="link to this section">#</a></h2>
+<ul>
+<li><strong>Guidelines in prose instead of checks.</strong> If it matters and is checkable, it goes in the gate. A guideline the agent can talk itself around is a suggestion (stance 3).</li>
+<li><strong>Protecting everything.</strong> Floor half the repo at critical and you have rebuilt the approval queue Veldo deleted. Protect the unrecoverable; let the reversible flow.</li>
+<li><strong>Reviewing everything yourself.</strong> You are the bar-setter, not the bar. Design the review; do not become its bottleneck.</li>
+<li><strong>Big-bang designs.</strong> Your own designs must arrive as decomposed spec sequences, or nobody else&#x27;s will.</li>
+</ul>
+<h2 id="6-you-have-arrived-when">6. You have arrived when<a class="anchor" href="#6-you-have-arrived-when" aria-label="link to this section">#</a></h2>
+<ul>
+<li>A violation of your architecture cannot merge, and you did not have to be present.</li>
+<li>The policy file reads like your architectural philosophy, executable.</li>
+<li>An escaped defect leads to a new check within a day, every time.</li>
+<li>Your decomposition of a scary migration shipped in three boring merges.</li>
+</ul>
+<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Version</th>
+<th>Date</th>
+<th>Changes</th>
+</tr></thead>
+<tbody>
+<tr><td>1.0</td><td>2026-07-16</td><td>Initial training document</td></tr>
+</tbody>
+</table></div></article></div>
+</main>
+<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>
