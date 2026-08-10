@@ -470,14 +470,14 @@ open_decisions:
 <h3 id="41-instruction-files">4.1 Instruction files<a class="anchor" href="#41-instruction-files" aria-label="link to this section">#</a></h3>
 <p>Claude Code auto-loads <code>CLAUDE.md</code>: the repository root file, nested <code>CLAUDE.md</code> files in subdirectories (closest to the work wins), and a user-level <code>~/.claude/CLAUDE.md</code>. It does not auto-load any other instruction file by convention, so <code>CLAUDE.md</code> is the entry point, always.</p>
 <ul>
-<li><strong><code>CLAUDE.md</code></strong> carries the always-true facts: the canonical verify command, the specs directory, the protected paths, coding conventions, product terminology, and a required-reading pointer to <code>Veldo.md</code>.</li>
-<li><strong><code>Veldo.md</code></strong> carries the agent operating rules from method section 8: how a change opens, what done means, the prohibited behaviors, the role definitions.</li>
+<li><strong><code>CLAUDE.md</code></strong> carries the always-true facts: the canonical verify command, the specs directory, the protected paths, coding conventions, product terminology, and a required-reading pointer to <code>VELDO.md</code>.</li>
+<li><strong><code>VELDO.md</code></strong> carries the agent operating rules from method section 8: how a change opens, what done means, the prohibited behaviors, the role definitions.</li>
 </ul>
 <p>Keep both lean. Context is the scarce resource, and the division of labor is strict: always-true facts live in <code>CLAUDE.md</code>; this-task intent lives in the specification; repeatable procedures live in skills. An instruction file that grows past what an agent needs on every single task is hiding either a skill or a document.</p>
 <p>A minimal root <code>CLAUDE.md</code> is short enough to quote whole:</p>
 <pre><code class="lang-markdown"># Repository instructions
 
-1. Read Veldo.md before changing anything.
+1. Read VELDO.md before changing anything.
 2. The unit of work is a specification in specs/. Do not implement without a ready spec.
 3. The canonical gate is ./scripts/verify.sh. Green is the only done.
 4. Protected paths and merge policy: .veldo/policy.yaml.
@@ -485,7 +485,7 @@ open_decisions:
 <p>And the repository shape it points into:</p>
 <pre><code>/
 ├── CLAUDE.md              # entry point (auto-loaded)
-├── Veldo.md                # operating rules
+├── VELDO.md                # operating rules
 ├── .claude/
 │   ├── agents/            # the five role subagents
 │   └── skills/            # the pipeline skills
@@ -961,7 +961,7 @@ or gate.failed event when done.</code></pre>
 <h3 id="101-choose-the-pilot-repository">10.1 Choose the pilot repository<a class="anchor" href="#101-choose-the-pilot-repository" aria-label="link to this section">#</a></h3>
 <p>One repository, two weeks. Pick a representative production service: active delivery, a build that can be made deterministic, mostly reversible changes, at least one protected path to exercise the approval flow, and an observable deploy. Not the easiest docs repository, and not the most critical system you run.</p>
 <h3 id="102-the-two-week-pilot">10.2 The two-week pilot<a class="anchor" href="#102-the-two-week-pilot" aria-label="link to this section">#</a></h3>
-<p><strong>Days 1-2: repository clarity.</strong> Write <code>CLAUDE.md</code> and <code>Veldo.md</code>. Document build, test, verify, deploy, and rollback commands. Delete contradictory instructions. Record the baseline: current merge latency, defect rate, rollback time. Exit when a fresh Claude Code session can build, test, and describe the repository&#x27;s constraints with no human explanation.</p>
+<p><strong>Days 1-2: repository clarity.</strong> Write <code>CLAUDE.md</code> and <code>VELDO.md</code>. Document build, test, verify, deploy, and rollback commands. Delete contradictory instructions. Record the baseline: current merge latency, defect rate, rollback time. Exit when a fresh Claude Code session can build, test, and describe the repository&#x27;s constraints with no human explanation.</p>
 <p><strong>Days 3-4: contracts and specifications.</strong> Commit the seven schemas, validators, and golden fixtures. Convert the next three real changes into specifications with testable acceptance criteria and declared risk. Generate the index. Exit when every active change has a valid specification and the validator rejects a deliberately bad one.</p>
 <p><strong>Days 5-6: the canonical gate.</strong> Create or repair <code>./scripts/verify.sh</code> covering format, lint, types, tests, build, and secret scan. Quarantine flaky tests as defects. Produce the first proof manifests; store evidence with digests; start appending lifecycle events. Exit when the same command passes locally and in clean CI and a manifest validates.</p>
 <p><strong>Days 7-8: first full Veldo changes.</strong> Run two or three specifications end to end: implement with the subagent roles, gate, proof, and the standing hooks active. Exit when the unit of delivery is visibly spec plus implementation plus evidence, and a hook has actually blocked at least one premature completion.</p>
@@ -1002,4 +1002,4 @@ or gate.failed event when done.</code></pre>
 </tbody>
 </table></div></article></div>
 </main>
-<footer class="wrap"><p>The public repository is not open yet. This site is the front door, and it stands up first.</p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>
+<footer class="wrap"><p><a href="https://github.com/Bcengi/veldo" rel="noreferrer">Bcengi/veldo</a></p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>
