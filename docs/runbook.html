@@ -910,7 +910,7 @@ OK: valid veldo.approval/v1 apr-0402</code></pre>
 <li><p><strong>AGENT</strong> (automatic): commits the evidence and pushes.</p></li>
 <li><p><strong>AGENT ASKS/REPLIES</strong></p></li>
 </ol>
-<pre><code class="lang-text">[feature/VELDO-0401 c6ef2a1] VELDO-0401 record final evidence and approval
+<pre><code class="lang-text">[feature/veldo-0401 c6ef2a1] VELDO-0401 record final evidence and approval
  8 files changed, 137 insertions(+), 3 deletions(-)
  create mode 100644 proof/VELDO-0401/approval-apr-0401.json
  create mode 100644 proof/VELDO-0401/approval-apr-0402.json
@@ -928,7 +928,7 @@ Approval apr-0401: stale
 Approval apr-0402: approved and unexpired
 
 To github.com:acme/payments.git
- * [new branch]      HEAD -&gt; feature/VELDO-0401</code></pre>
+ * [new branch]      HEAD -&gt; feature/veldo-0401</code></pre>
 <ol start="38">
 <li><p><strong>YOU SAY:</strong> <code>merge</code></p></li>
 <li><p><strong>AGENT</strong> (automatic) - merges and shows the policy receipt:</p></li>
@@ -1076,7 +1076,7 @@ merge</code></pre>
 </ol>
 <p>Each is its own spec with its own gate, proof, review, merge. The criteria pattern for any migration: &quot;the migration applies and reverts cleanly on a copy of production data&quot; is evidence, not hope: the gate runs it.</p>
 <h3 id="ii3-dependencies">II.3 Dependencies<a class="anchor" href="#ii3-dependencies" aria-label="link to this section">#</a></h3>
-<p>One standing spec per class (<code>specs/Veldo-STANDING-*.md</code>) defines criteria, risk, and evidence once. Each bump: <code>Apply the next safe update under Veldo-S001</code> and the ordinary loop runs; the proof manifest references the standing id. Majors, license changes, auth/payment/infra libraries: excluded by the standing spec&#x27;s constraints, each needs its own spec.</p>
+<p>One standing spec per class (<code>specs/VELDO-STANDING-*.md</code>) defines criteria, risk, and evidence once. Each bump: <code>Apply the next safe update under VELDO-S001</code> and the ordinary loop runs; the proof manifest references the standing id. Majors, license changes, auth/payment/infra libraries: excluded by the standing spec&#x27;s constraints, each needs its own spec.</p>
 <h3 id="ii4-pure-documentation-and-copy">II.4 Pure documentation and copy<a class="anchor" href="#ii4-pure-documentation-and-copy" aria-label="link to this section">#</a></h3>
 <p>Proportionate proof at its floor: one criterion (the corrected text, asserted or built), the gate, a fast review pass. Minutes. Never skipped, because &quot;small&quot; is where regressions hide from memory.</p>
 <h3 id="ii5-configuration-and-feature-flags">II.5 Configuration and feature flags<a class="anchor" href="#ii5-configuration-and-feature-flags" aria-label="link to this section">#</a></h3>
@@ -1160,7 +1160,7 @@ Agent:  Reverted. Checkout error rate back to baseline. Backfill debt is open,
 <h3 id="iv2-the-engineer-in-terminal-or-ide">IV.2 The engineer, in terminal or IDE<a class="anchor" href="#iv2-the-engineer-in-terminal-or-ide" aria-label="link to this section">#</a></h3>
 <p><code>/veldo:spec</code> when starting something, <code>/veldo:run</code> to execute it, <code>/veldo:status</code> when returning from lunch. The six step-skills for debugging. The only rules that bite: no implementation without a ready spec, green is the only done, and the reviewer is never you.</p>
 <h3 id="iv3-the-design-owner">IV.3 The design owner<a class="anchor" href="#iv3-the-design-owner" aria-label="link to this section">#</a></h3>
-<p>You are a reviewer lane, not a meeting. When a change touches look, feel, or flow you get: the mock link, the rendered baselines, the exact commit. You compare, then say one of two sentences to the agent: &quot;Record my design review for Veldo-NNNN: approved.&quot; or &quot;: rejected, &lt;what is off&gt;.&quot; Your verdict is a file with your name in it, bound to that commit; nothing user-facing merges without it.</p>
+<p>You are a reviewer lane, not a meeting. When a change touches look, feel, or flow you get: the mock link, the rendered baselines, the exact commit. You compare, then say one of two sentences to the agent: &quot;Record my design review for VELDO-NNNN: approved.&quot; or &quot;: rejected, &lt;what is off&gt;.&quot; Your verdict is a file with your name in it, bound to that commit; nothing user-facing merges without it.</p>
 <h3 id="iv4-the-reviewers-obligations-agent-or-human">IV.4 The reviewer&#x27;s obligations (agent or human)<a class="anchor" href="#iv4-the-reviewers-obligations-agent-or-human" aria-label="link to this section">#</a></h3>
 <p>Fresh context, always. Inputs: spec, final diff, proof, instructions; never the implementer&#x27;s narrative. Rerun what you doubt. Judge against Intent, not just criteria. Two verdicts only matter: blocking findings, or pass; style opinions are non-blocking notes.</p>
 <h2 id="part-v-running-it">Part V - Running it<a class="anchor" href="#part-v-running-it" aria-label="link to this section">#</a></h2>
@@ -1230,7 +1230,7 @@ veldo supervisor uninstall           # disable and remove it, cleanly and idempo
 <tr><td>Plan a product increment (several features, many specs)</td><td><code>/veldo:plan create &lt;the increment&gt;</code></td><td>A product-level interview (outcomes, feature tree, ordering, regression, release), then a draft <code>plans/PLAN-NNNN-*.md</code></td></tr>
 <tr><td>Approve a plan</td><td><code>Approve the plan.</code></td><td>Status <code>ready</code>, <code>approved_by</code> and <code>approved_at</code> recorded, index regenerated with the Product Plans section</td></tr>
 <tr><td>See the plan burn-down and frontier</td><td><code>/veldo:plan status PLAN-NNNN</code></td><td>Each item shipped / waiting on named deps / blocked / frontier, and the ready frontier - derived from spec files</td></tr>
-<tr><td>Pull the next work item into a spec</td><td><code>Pull Veldo-NNNN.</code></td><td>A <code>lane: planned</code> spec bound to the plan and work item; then the ordinary spec loop</td></tr>
+<tr><td>Pull the next work item into a spec</td><td><code>Pull VELDO-NNNN.</code></td><td>A <code>lane: planned</code> spec bound to the plan and work item; then the ordinary spec loop</td></tr>
 <tr><td>Revise an approved plan</td><td><code>Make W3 depend on W1.</code> (or any scope change)</td><td>A revision (bumped, noted) plus impact analysis; specs pulled against the old revision go stale</td></tr>
 <tr><td>Release the increment</td><td><code>/veldo:plan release PLAN-NNNN</code></td><td>The release check; on pass, status <code>released</code> and the milestone recorded; on fail, exactly what is missing</td></tr>
 <tr><td>Start a backend feature</td><td><code>/veldo:spec Rate limit POST /api/exports</code></td><td>An interview covering outcome, constraints, edge cases, failure, risk, and ownership</td></tr>
