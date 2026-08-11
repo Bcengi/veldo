@@ -1,0 +1,9 @@
+{
+  "name": "deliberately failing (asserts a screen that is not there)",
+  "package": "com.android.settings",
+  "activity": ".Settings",
+  "steps": [
+    {"action": "launch", "package": "com.android.settings", "activity": ".Settings", "settle": 2},
+    {"action": "expect_focus", "value": "com.example.nonexistent.app"}
+  ]
+}

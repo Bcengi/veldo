@@ -1,0 +1,97 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1005",
+  "commit": "e6859e71879845f1d5402ea7b7d066445ba997c2",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0010 W5, the live mirror runner)",
+  "plan_hash": "sha256:f6a5cc8e425f566b",
+  "produced_at": "2026-07-20T18:20:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The non-LLM mirror RUNNER (.warp/tracker_mirror_runner.py) DRIVES the shipped one-way mirror onto a tracker and adds NO mirror logic of its own. reconcile(events, config, spec_index, plan_index, adapter) is the pure core: it materializes the stream once (a generator is single-pass) and feeds BOTH mirror_events (the spec lifecycle: status, comments, artifact links, and the ready-to-test reassignment) and mirror_plan_events (the plan structure: epic + children) from tracker_mirror.py (WARP-0605/0606 + the WARP-1004 reassign/links). run_from_repo(adapter, read_events=..., config=..., spec_index=..., plan_index=...) is the thin production wrapper that reads the stream through an INJECTED event-stream reader (the durable .warp/events.jsonl via _default_event_reader in production, a fixture list in the gate) and loads the tracker config and the spec/plan indices from the REPOSITORY (load_tracker_config, build_spec_index, build_plan_index, the source of truth). It is a RECONCILER (recompute the desired tracker state each pass and apply it), idempotent under replay with NO processed-offset ledger and NO second store, and it writes ONLY through the injected adapter (the tracker); no path mutates a spec or plan definition."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (scripts/selftest.py, the WARP-1005 block) drives the runner over the FakeTracker with a fixture stream: reconcile over a growing stream walks child:PLAN-0010:W5 through the mapped statuses (To Do, In Review, Done) and reassigns at ready-to-test; and run_from_repo, given an INJECTED reader (asserted called exactly once with the fixture path, so the stream is parsed exactly one way) and injected spec/plan indices, drives BOTH mirrors from ONE stream (the spec's child reaches Done AND the plan's epic:PLAN-0010 is created with warp_repo repo-a), proving the wrapper feeds both and adds no logic."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The runner is OPT-IN and OFF BY DEFAULT. It is invoked explicitly as a warp CLI subcommand over the runner: bin/warp gains `mirror` in KNOWN_SUBCOMMANDS and a route that calls tracker_mirror_runner._cli (byte-identical across plugin/templates and all six packs). Installing WARP creates NO timer, daemon, or auto-start, and nothing runs the runner on its own; each invocation is ONE reconcile pass (poll-when-run) and a cadence, if wanted, is the operator's own poll interval when they run it again, never a hidden background mechanism. It spawns NO detached or headless process (feedback_no_rogue_processes / PLAN-0007 NG1): the module imports no process-spawning module and has no scheduler, the same structural posture as the fleet supervisor (WARP-0907). The boundary is documented in the module docstring, the CLI help, and the capability note. Because the runner is repo-only build machinery (like the other tracker_*.py modules), bin/warp checks for its presence and fails loud and honestly in a pack that did not lay it rather than import a missing module."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts: bin/warp routes `mirror` to the runner (warp mirror --dry-run returns 0 and prints the runner's output, one reconcile pass, no network); the runner is repo-only (.warp/tracker_mirror_runner.py is NOT in the shipped engine set an adopter's pack lays, yet present in the repo); and the runner source imports no process-spawning module (no 'import subprocess', no 'os.fork', no 'os.system'), so the no-rogue-processes boundary is structural, not a promise."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The live JiraCloud adapter is completed for the writes the mirror needs to drive a real Jira: JiraCloudAdapter._assign (.warp/tracker_intake.py) now PUTs the issue assignee via /rest/api/3/issue/{key}/assignee with {\"accountId\": assignee} (the WARP-1004 deferral, completed), beside the already-live _comment (POST comment) and _set_status (POST transition). The token is resolved from a secret reference (token_ref) at construction and the adapter FAILS CLOSED (TrackerAdapterError) when none resolves, so the assign write is never reached without a credential; a raw credential never appears in a file, prompt, proof, or log. build_live_adapter(config) constructs this reference adapter from the tracker connection block (base_url + token_ref, optional email) and surfaces the fail-closed by name (MirrorRunnerError). This live path needs a real Jira, so it is a REFERENCE implementation wired per repo and is NOT run in the gate (the FakeTracker path is what the gate runs), matching the honesty of the other live adapters. Epic/child creation against live Jira stays deferred (its raise now names WARP-1006)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest teeth: build_live_adapter FAILS CLOSED by name when the token_ref resolves no secret (env var unset), and CONSTRUCTS the reference JiraCloudAdapter (class JiraCloudAdapter, with an assign method) when the secret resolves, with no network at construction. The source is asserted honest: the WARP-1005 assign deferral string is gone and the PUT /rest/api/3/issue/{key}/assignee remains, while the epic/child deferral to WARP-1006 remains (out of scope here). The live REST assign/comment/transition path is reference-wired and not exercised by the gate."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "Idempotency is proven offline over the FakeTracker with TEETH (scripts/selftest.py, WARP-1005 block, no network): a GROWING event stream advances the ticket (pass 1 ready-only -> mapped ready with no reassign; pass 2 ready+verdict -> in_review, reassigned to the reviewer once, artifact links posted once; pass 3 ready+verdict+shipped -> mapped shipped); and a full REPLAY plus a DOUBLED event records NO new transition, comment, or reassignment (transitions == 0, comments == 0, reassignments == 0) and leaves the tracker state byte-identical (state_digest unchanged). NON-TAUTOLOGY: on a fresh tracker the ready-only stream stays at the mapped ready status with NO assignee, and only the grown stream (with the verdict) advances and reassigns, so the advance is caused by the growing stream, not by the runner always writing. There is no processed-offset ledger and no second store; the events are the truth and the tracker converges to them."
+        },
+        {
+          "type": "operational",
+          "ref": "The runner drives only the FakeTracker in the gate (an in-memory tracker with no network and no credentials); the assertions above compute the desired projection from the stream each pass and apply it, exactly matching the reconciler contract the runner inherits from mirror_events / mirror_plan_events. The live JiraCloud path is reference-only and never runs here."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml gains one honest MECHANICAL entry tracker_mirror_runner (home .warp/tracker_mirror_runner.py, scope: repo-only, its control logic mechanical) and updates jira_cloud_intake_adapter (status stays reference) to record the now-live assign write (PUT assignee, WARP-1005) with epic/child creation deferred to WARP-1006; the two edited engine files that ship (.warp/capabilities.yaml and bin/warp) are re-synced BYTE-IDENTICAL across .warp, plugin/templates, and all six packs (a single md5 for each across the eight copies). The new .warp/tracker_mirror_runner.py and the edited .warp/tracker_intake.py are repo-only build machinery (not engine globs under plugin/templates), consistent with their shipped siblings. No protected path is touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins are unmodified). The change lands in the canonical shape: one reviewed commit R plus this uncommitted proof and the orchestrator's later evidence step."
+        },
+        {
+          "type": "unit",
+          "ref": "bash scripts/verify.sh -> GATE: GREEN at R (e6859e71879845f1d5402ea7b7d066445ba997c2): catalog 5 run, 18 na, 0 waived, 0 undeclared. selftest 1450 passed / 0 failed (was 1433 at WARP-1004; +17 WARP-1005 checks). check_template_sync.sh: pass (bin/warp instance byte-identical to the template). check_pack_drift.py: pass (7 packs, engine byte-identical to source; the updated bin/warp and capabilities.yaml byte-identical across plugin/templates and all six packs). check_docs.sh: pass (em/en dash sweep, non-ASCII sweep, genericity sweep clean). python3 .warp/validate.py all exit 0 (WARP-1005 valid at status shipped, required_evidence [operational]; PLAN-0010 mirroring intact). specs/index.md regenerated (WARP-1005 now shipped). RULE #1 clean (no em-dash, no en-dash, no prose double-hyphen in any edited or new file; the only '--' occurrences are CLI flag references like --dry-run and the selftest '# ---' section dividers)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "python3 scripts/selftest.py -> 1450 passed, 0 failed at R, including the WARP-1005 block: the runner drives the shipped mirror over the FakeTracker (growing stream advances status/links/reassign; replay + a doubled event byte-identical, non-tautological); run_from_repo threads an injected reader (parsed once) + injected indices and feeds both the spec and plan mirrors; build_live_adapter fails closed on an unresolved token and constructs when it resolves; the completed live assign and the still-deferred epic/child are source-honest; and the runner spawns nothing by construction. bin/warp routes `mirror` to the runner (one reconcile pass, no network)."},
+    {"name": "operational", "status": "passed", "detail": "The runner is a non-LLM reconciler driving the one-way mirror onto an injected adapter + injected event-stream reader, opt-in and off by default (a warp CLI subcommand, no timer/daemon/auto-start, spawns nothing, poll-when-run). The live JiraCloud assign write is completed and reference-wired (fail closed on no token), not gate-run; the FakeTracker path is what the gate runs."},
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated via python3 scripts/update_index.py (WARP-1005 now shipped); regeneration is a no-op afterward."},
+    {"name": "docs", "status": "passed", "detail": "check_docs.sh pass: em/en dash sweep over all tracked text files, non-ASCII sweep, and genericity sweep all clean; the runner, the completed assign, the selftest block, the capability entries, and the spec carry no company/product reference and no em/en dash."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh: pass (bin/warp is a template-sync pair and is byte-identical to plugin/templates/bin/warp; capabilities.yaml is intentionally not a template-sync pair but is drift-checked across the packs)."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs, engine byte-identical to source; the updated bin/warp and .warp/capabilities.yaml are byte-identical across plugin/templates and all six packs)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all exit 0; the WARP-1005 spec is valid at status shipped with required_evidence [operational]; PLAN-0010 mirroring intact (W1-W4 shipped, W5 now shipped, W6/W7/W8 pending)."}
+  ],
+  "assumptions": [
+    "WARP-1005 depends on WARP-1004 (shipped); plan.py run-check PLAN-0010 WARP-1005 = clear to build. The runner is a driver that FEEDS the shipped mirror (mirror_events / mirror_plan_events); it adds no new mirror logic and no new event type, store, or offset ledger. It is off by default and creates no artifact on install, so removing it leaves the mirror as callable-but-not-run logic exactly as before, with nothing to unwind on any instance.",
+    "The live JiraCloud assign write (PUT the issue assignee) is a REFERENCE implementation wired per repo, authed by token_ref and failing closed on no token; it is NOT run in the gate (the FakeTracker path is). Live epic/child creation stays deferred to WARP-1006, so a fully-live run over a plan's child issues waits on that increment and fails loud by name until then. The whole mechanical control logic (reconcile, run_from_repo, the injected reader/adapter seams, build_live_adapter's fail-closed) is gate-tested offline over the FakeTracker.",
+    "The runner and the edited intake adapter are repo-only build machinery (present only in the repo-root .warp, not in plugin/templates or the packs), consistent with the shipped tracker_*.py siblings (scope: repo-only). The two edited engine files that ship (bin/warp, .warp/capabilities.yaml) are re-synced byte-identical across plugin/templates and the six packs. bin/warp routes `mirror` by a repo-relative path and checks the module's presence, so a pack fails loud honestly rather than importing a missing file.",
+    "required_evidence is [operational]; this manifest carries operational evidence on every criterion plus an operational check, and the unit check (selftest) is the executable gate proof. It is bound to R and left uncommitted for the orchestrator's evidence step; no verdict is written here and nothing is pushed. .warp/last_verify (commit=R, green) and .warp/events.jsonl are left uncommitted."
+  ],
+  "rollback": "git revert the reviewed commit R. The change adds the repo-only runner (.warp/tracker_mirror_runner.py: reconcile, run_from_repo, build_live_adapter, the injected reader, the opt-in CLI, selfcheck), completes the live JiraCloud assign write (.warp/tracker_intake.py _assign, epic/child raise renamed to WARP-1006), adds the `mirror` subcommand to bin/warp (synced to plugin/templates and the six packs), one mechanical capabilities.yaml entry plus the jira adapter note update (both copies + six pack re-syncs), a selftest block, and flips the WARP-1005 spec to shipped with a regenerated index. The runner is off by default and the live writes are reference (never gate-run), so removing it leaves the mirror as callable-but-not-run logic with no migration and nothing to unwind."
+}

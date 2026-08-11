@@ -1,0 +1,48 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0404",
+  "commit": "1517a69fd2f76c04243d290d251c3badd5ea082d",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T14:48:12Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:3fc00f23d25510ea",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "The first review found one uncaught mutation (hardcoding current_gate='green' survived a narrow fixture gap; shipped code correct). Closed before ship and self-verified non-tautological: added a red-standing selftest case (latest gate event failed -> current_gate red, for both the reader and the dashboard), confirmed it FAILS when current_gate is hardcoded green. Mutation coverage now complete for the rendered figures."
+    }
+  ],
+  "summary": "X4 (WARP-0404, metrics dashboard) is correct and honest. Independent adversarial review: pass_with_notes, gate GREEN, no-drift confirmed independently (the reviewer reimplemented gate_pass_rate, regression_health, and verdict_counts and they equalled the dashboard/compute output on the real events.jsonl and synthetic streams), HTML self-contained (no external asset/script/link/network), stdlib only. Seven of eight mutations caught on first review; the one gap (hardcoded current_gate) was closed pre-ship with a red-standing selftest case, self-verified to fail under the mutation, so the rendered figures are now fully non-tautological. Proportionate (a rendering layer over the single-source reader, no bespoke service); both metrics.py/dashboard.py copies byte-identical; generic; ASCII. proof_digest recomputed via validate.py."
+}

@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1001",
+  "commit": "e7de9342446513e3bd200d2b57e522b94c3ac98e",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0010 W1, eligibility model and the Agent user)",
+  "plan_hash": "sha256:f6a5cc8e425f566b",
+  "produced_at": "2026-07-20T21:26:30Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The warp.tracker/v1 config schema is extended in .warp/tracker.py _validate with two OPTIONAL fields carrying the eligibility model: 'agent' (the single shared Agent account the whole fleet acts as) and 'ready_statuses' (the ready-for-dev status set, module default DEFAULT_READY_STATUSES = ('Approved for dev',) when omitted); the repo routing field is the EXISTING 'field' routing mechanism (C7's validated 'WARP Repo' custom field), reused not reinvented. Validation is added INSIDE the existing _validate (no second parser): a present 'agent' must be a non-empty string and a present 'ready_statuses' must be a non-empty list of non-empty strings, else TrackerConfigError by name (fail closed by name). Both fields are optional so a routing-only PLAN-0006 config stays valid. The shipped template plugin/templates/.warp/trackers.json documents all three with example values (agent, ready_statuses, and a _routing_field_comment showing the field mechanism for 'WARP Repo')."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (scripts/selftest.py, eligibility triple block ~4043-4098) asserts the loader rejects a blank agent and a non-list ready_statuses by name (fail closed), that a routing-only config with neither field stays valid (backward compatible), and that the omitted ready_statuses defaults to include 'Approved for dev'. The template is validated by _validate in-build (json.load + TR._validate passes)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "is_eligible(ticket, config) is a pure, side-effect-free function in .warp/tracker.py alongside resolve_repo. It returns Eligibility(True, <repo id>) ONLY when all three legs hold: assignee == the single configured Agent user AND status in the ready set (config 'ready_statuses' or DEFAULT_READY_STATUSES) AND resolve_repo (the reused WARP-0601 resolver) returns exactly one known repo, reporting that repo so the caller resolves once. It FAILS CLOSED to Eligibility(False, None) on every leg - a non-dict ticket, an empty config, an unconfigured Agent, an unassigned/non-string/non-Agent assignee, a missing/non-ready status, and a missing/unknown/ambiguous repo signal (resolve_repo's TrackerRoutingError is caught, never propagated). It reads the vendor-neutral item shape (scalar assignee, scalar status, and the routing signal resolve_repo reads), not a Jira-specific one, and never guesses a repo."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (~4043-4098) drives is_eligible over fake tickets: the good triple returns eligible with repo 'repo-a'; wrong-assignee, absent-assignee, non-ready-status, unresolvable-repo, and absent-routing-signal each return ineligible; a non-dict ticket (None and a str) fails closed without raising; and an unconfigured Agent fails closed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "selftest enforces the triple with teeth: a fully eligible fake ticket is eligible AND reports its repo; three negatives each flip EXACTLY ONE leg (wrong/absent assignee, a non-ready status, an unresolvable repo tag) and assert ineligible; a purity assertion snapshots the config and ticket as sorted JSON before and after a call and asserts both unchanged; and an explicit non-tautology assertion shows the full triple accepts while dropping any one leg refuses, so no leg can pass vacuously. All in scripts/selftest.py (~4043-4098), matching the file's expect() naming/registration convention; run count 1388 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml gains an honest entry tracker_eligibility (status mechanical, home .warp/tracker.py, not scope: repo-only because its home ships in the engine), present byte-identical in both copies (.warp/capabilities.yaml and plugin/templates/.warp/capabilities.yaml). Every edited ENGINE_GLOBS file (.warp/tracker.py, .warp/capabilities.yaml) is re-synced byte-identical into plugin/templates/.warp and all six pack dirs (cursor, codex, copilot, antigravity, opencode, aider); scripts/selftest.py is repo-root-only (not in the shipped engine under plugin/templates) so it is not synced. The trackers.json template is updated in its shipped location plugin/templates/.warp/trackers.json (the only copy; it is not an engine glob)."
+        },
+        {
+          "type": "unit",
+          "ref": "check_template_sync.sh: pass (root .warp/tracker.py byte-identical to plugin/templates). check_pack_drift.py: pass (7 packs, engine byte-identical to source). selftest capabilities-honesty check passes: the tracker_eligibility home resolves in the shipped engine and both capabilities.yaml copies are byte-identical."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "bash scripts/verify.sh -> GATE: GREEN at R (e7de934): 5 checks run, 18 na, 0 waived, 0 undeclared. selftest 1388 passed / 0 failed; lint (py_compile all tracked .py incl. every pack copy) pass; contracts (python3 .warp/validate.py all) exit 0 with the WARP-1001 spec now status shipped; generated (specs/index.md regenerated, a no-op) pass; docs hygiene pass (dash sweep, non-ASCII sweep, genericity sweep over docs/ and plugin/). No protected path touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins are unmodified)."
+        },
+        {
+          "type": "operational",
+          "ref": "The change lands in the canonical two-commit shape: this reviewed commit R carries the code + config + selftest + capabilities entry + template + the WARP-1001 spec flipped to shipped + the regenerated specs/index.md; the gate stamp (.warp/last_verify commit=R) and .warp/events.jsonl are left uncommitted for the evidence commit. RULE #1 is clean (no em-dash, no en-dash, no prose double-hyphen; the only '--' occurrences are the selftest file's own '# ---' section dividers and YAML front-matter fences)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "python3 scripts/selftest.py -> 1388 passed, 0 failed at R, including the WARP-1001 eligibility block (eligible triple resolves + reports repo; three single-leg negatives refuse; non-dict and unconfigured-Agent fail closed; purity; non-tautology; config-field validation)."},
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated via python3 scripts/update_index.py; check_generated.sh reports the regeneration is a no-op."},
+    {"name": "docs", "status": "passed", "detail": "check_docs.sh pass: dash sweep, non-ASCII sweep, and genericity sweep (docs/ and plugin/) all clean; the new tracker/template/capability text carries no company or product reference and no em/en dash."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh: pass."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs, engine byte-identical to source)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all exit 0; WARP-1001 spec valid at status shipped with required_evidence [unit]; PLAN-0010 mirroring intact (W1 now shipped)."}
+  ],
+  "assumptions": [
+    "W1 of PLAN-0010 has no dependencies (plan.py run-check PLAN-0010 WARP-1001 = clear to build). is_eligible has no consumer yet (its first caller is WARP-1002), so this is additive and its rollback has no downstream effect.",
+    "The Agent user is a SINGLE shared account for the whole fleet (founder decision 2026-07-20, C1); the claim ledger, not the tracker, selects which worker runs a unit. The repo tag is the validated 'WARP Repo' custom field via the existing 'field' routing mechanism (C7); the label mechanism remains the template default for stock-Jira routing-only use and the field mechanism is documented for the fleet.",
+    "agent and ready_statuses are OPTIONAL config fields so every existing PLAN-0006 tracker config stays valid; when absent, is_eligible fails closed on the assignee leg (no Agent configured) while ready_statuses falls back to the documented default ('Approved for dev').",
+    "scripts/selftest.py is repo-root-only build machinery (no plugin/templates/scripts/selftest.py exists, so it is not an ENGINE_GLOBS-matched shipped file) and is therefore not re-synced into plugin/templates or the packs; only .warp/tracker.py and .warp/capabilities.yaml are engine files here and are re-synced byte-identical.",
+    "Proof sequencing: this manifest is the canonical evidence artifact (required_evidence [unit] satisfied by the unit check and per-criterion unit evidence). It is bound to R and left uncommitted for the orchestrator's evidence commit; no verdict is written here and nothing is pushed."
+  ],
+  "rollback": "git revert the reviewed commit R. The change adds two optional config fields, one pure function (is_eligible) plus a namedtuple and a default constant, a selftest block, one honest capabilities.yaml entry (both copies + six pack re-syncs), and template documentation, and flips the WARP-1001 spec to shipped with a regenerated index. Nothing consumes is_eligible yet (its first caller is WARP-1002), so removing it has no downstream effect; the drift and template-sync checks prove no pack forked."
+}

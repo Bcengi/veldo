@@ -1,0 +1,32 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0304",
+  "commit": "8ca8d4f84ec4bc17def66a4127d61fff267bfad9",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B6)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T04:46:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/perf/warp_perf_runner.py exists: reads a load journey (name, workload + workload_args, requests, concurrency, budgets of latency percentiles/throughput/error rate), drives the workload requests times across concurrency worker threads (ThreadPoolExecutor), measures each request's latency and whether it raised, computes p50/p95/p99/max, throughput (successful req per wall-clock second) and error rate, checks them against the budgets, exits 0 when every budget holds and 1 with each breached budget named. The workload is a seam: run() takes workload=callable; the reference ships deterministic built-ins (noop, sleep, flaky) selected by name. proof/WARP-0304/runner-evidence.txt: pass fixture exit 0, fail fixture exit 1"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py perf block: check_budgets() exercised for a p95 over budget (measured value named), a throughput below min_throughput_rps (measured rate named), and an error rate over max_error_rate (measured rate + failed count named), plus each budget met; summarize() confirms a raising request increments errors and its latency is excluded from the success percentiles so fast failures cannot flatter the latency"},
+      {"type": "operational", "ref": "proof/WARP-0304/negative-tests.txt: p95-over-budget, throughput-below-min, and error-rate-over-budget each fail with the measured value; a flaky workload's raising requests are counted as errors (not silent success) and excluded from the success percentiles; an unknown workload fails loud rather than passing silently"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0304/runner-evidence.txt: pass.journey.json (fast sleep workload under concurrency 8, generous latency + throughput budgets, zero error budget) exits 0; fail.journey.json (flaky workload, error fraction chosen by request index i % every_n so the outcome is timing-independent, zero error budget) exits 1 with 'max_error_rate: 0.250 exceeds budget 0.0 (10/40 requests failed)'. Both fixtures ship under plugin/templates/scripts/runners/perf/fixtures/"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py perf block: percentile() over known arrays (empty->0, single value, p50 of 1..9 is 5, p100 is max), summarize() over known latencies + errors (error_rate, throughput excludes errors, ok/errors counts), check_budgets() met and exceeded for each budget kind, the runner driven over both shipped fixtures (pass -> passed True no failures; fail -> passed False with max_error_rate named), a concurrency check that every request index is executed (25 requests / 5 workers -> all 0..24 ran), and an unknown workload fails loud. Part of selftest 236 passed / 0 failed (was 220); all prior cases still pass and the gate is GREEN at 8ca8d4f"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, wrapper, and README carry zero company/product names (docs-hygiene genericity sweep passes); .warp/capabilities.yaml marks perf_load_runner status: reference (a shipped artifact an adopting repo wires to its performance gate slot with its own workload; the warp repo ships no performance-sensitive surface and does not run it), kept byte-identical with the plugin template copy (template-sync gate passes); verify.sh prints GATE: GREEN (8ca8d4f...)"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 236 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference runner: generic, stdlib only (concurrent.futures.ThreadPoolExecutor). No real network target and no external load-generation tooling; the workload is a provider seam, a callable workload(request_index) that raises to signal a failed request. The reference ships deterministic built-in workloads (noop, sleep, flaky) so the concurrency orchestration, the percentile math, and the budget assertions are gate-tested with no external target, and an adopting repo passes its own workload unchanged. The fixtures keep the gate deterministic by construction: generous latency + throughput budgets that hold on any machine, and a zero error budget breached by an index-chosen failure fraction, so pass/fail never depend on wall-clock timing. Shipped under plugin/templates/scripts/runners/perf/; not wired into the warp repo's own gate (capabilities: reference)."],
+  "rollback": "git revert the impl; the runner is additive under plugin/templates/scripts/runners/perf/, touches no protected path, and its selftest cases sit within the 236."
+}

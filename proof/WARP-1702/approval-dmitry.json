@@ -1,0 +1,24 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-1702-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-1702",
+    "commit": "fabbbf299befa70779b4fa70ace37d137307b262",
+    "paths": [
+      ".veldo/policy.yaml",
+      ".veldo/policy_check.py",
+      ".veldo/secret_inventory.json",
+      "plugin/templates/.veldo/policy_check.py",
+      "plugin/templates/scripts/veldo-guard.sh",
+      "plugin/templates/scripts/verify.sh",
+      "scripts/veldo-guard.sh",
+      "scripts/verify.sh"
+    ]
+  },
+  "basis": "Dmitry authorized the rename cutover over Telegram on 2026-08-09, in two messages: '1. Approve restamp. 2. What is needed?' and then 'Approved' in answer to a brief naming this exact record, its eight protected paths, and why it can only be recorded against the cutover commit itself. The eight paths were computed as the intersection of this repository's declared protected_paths with the cutover's changed set, NOT read off the policy check's output, which returns on the FIRST unapproved path and would have reported one file at a time. The change they carry is the WARP to Veldo rename and nothing else. Agent-recorded under that authorization, with provenance, exactly as the earlier approvals in this corpus were recorded.",
+  "recorded_at": "2026-08-09T20:05:00Z",
+  "recorded_by": "claude-opus-5[1m] (recording Dmitry's Telegram authorization of 2026-08-09)",
+  "expires_at": "2026-09-30T00:00:00Z"
+}

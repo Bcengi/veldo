@@ -1,0 +1,41 @@
+WARP-0904 runner evidence - the warp CLI (W4 of PLAN-0009)
+Impl commit:  a3fec2e978f617cc8450ead9af4a5a0fe6937933 (amended from 58b042c: one-line umask fix in selftest, bin/warp unchanged)
+plan_hash:    sha256:6b03ff568d65cd2f
+proof_digest: sha256:cff819e2437c9e41
+
+--- AC5: gate green, no agent / no process / no real fleet in the gate ---
+$ bash scripts/verify.sh
+selftest: 1345 passed, 0 failed        (+23 for the WARP-0904 block)
+GATE: GREEN (a3fec2e978f617cc8450ead9af4a5a0fe6937933)
+reviewer re-ran on a umask-002 machine (where 58b042c had gone RED): now GATE: GREEN, exit 0
+
+--- bin/warp: thin dispatcher, committed executable ---
+$ git ls-files -s bin/warp
+100755 ... bin/warp        (executable in the git index -> a fresh clone gets it executable)
+routing (route(), bin/warp:286): status/watch->runstatus.py ; account add|list->accounts.py ; answer/steer/abort->runcmd.py ; work->work.py+dispatch.py ; fleet->fleet.py+W2 spawner+W3 governor
+GovernorController (bin/warp:113): desired()/resume_at() ARE the governor's, work_remains() IS the frontier's - no reimplemented mechanics
+
+--- AC3 (no-rogue-processes) ---
+grep bin/warp for subprocess/Popen/os.fork/os.system/nohup/setsid/disown/Thread/multiprocessing -> only docstring prose, ZERO code: the CLI spawns nothing detached
+warp work: fails loud (exit 1) with no agent wired, spec stays 'ready' (no fabrication)
+warp fleet: fails loud at the fail-loud in_session_start seam (spawns nothing); refuses a fabricated token budget (RULE #2/#6)
+unknown --account 'ghost': fails BY NAME on both work and fleet via _account_error_bases() catching accounts.AccountError AND fleet.ACCT.AccountError (the W2 double-load is real and load-bearing)
+
+--- teeth (reviewer confirmed) ---
+swallow-unknown-subcommand mutant -> "unknown subcommand fails loud" RED
+fabricate-build cmd_work mutant -> "warp work fails loud" RED ; fabricate-spawn fleet mutant -> records a spawn / does not raise (RED)
+exec-bit assertion: chmod -x bin/warp (0664) -> "bin/warp exists and is executable" RED (restored after) - not vacuous
+
+--- the umask fix (why the first review returned fail) ---
+first review at 58b042c: gate RED on umask-002 - the builder's assertion `(st_mode & 0o777) == 0o755` fails at 0775 (git checks an executable file out per the local umask)
+fix (selftest.py, sole delta 58b042c->a3fec2e): relax to `(st_mode & 0o111) != 0` (umask-independent; git preserves the exec bit, not the exact permission bits)
+proof of independence: mode 0o755 -> OLD True/NEW True ; mode 0o775 -> OLD False/NEW True
+bin/warp byte-identical across the amend; still committed 100755
+
+--- scope hygiene ---
+impl commit touches: bin/warp, scripts/selftest.py, specs/WARP-0904, specs/index.md (amend added only scripts/selftest.py on top)
+NO protected path; NO plugin/templates/**; NO evidence files; NO plan file; spec status ready
+
+--- independent review ---
+Agent aa09586b19c195a2e (fresh-context Opus, distinct from builder a2ee21c5), isolated worktrees (/tmp/warp-w4-rev, /tmp/warp-w4-rev2, both removed --force).
+Review 1 (58b042c): all 5 AC behaviors confirmed, verdict fail on the umask gate-RED. Re-verify (a3fec2e): verdict pass, gate GREEN 1345/0 on the previously-red umask-002 machine, fix is the sole delta, assertion retains teeth. Main repo untouched.

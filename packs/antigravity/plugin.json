@@ -1,0 +1,9 @@
+{
+  "name": "veldo",
+  "version": "3.10.1",
+  "description": "Veldo for the Antigravity CLI (agy): the governed SDLC where no change reaches the trunk without a passing, commit-bound verdict. Method and operating contract in AGENTS.md; the guard blocks an unproven push.",
+  "hooks": "hooks.json",
+  "rules": "rules",
+  "skills": "skills",
+  "agents": "agents"
+}

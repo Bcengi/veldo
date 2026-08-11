@@ -1,0 +1,39 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0614",
+  "commit": "268ee4d8b53fb9395e230e5152452b04e5738aaa",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder; adversarial on the fence's anti-self-approval correctness - central question: can the fenced agent reach a terminal state by any path)",
+  "reviewed_at": "2026-07-23T21:20:00Z",
+  "verdict": "pass_with_notes",
+  "summary": "The fence is correct and non-tautological for a correctly-configured board; all four anti-vacuity teeth reproduced independently (module sha256 unchanged each time), gate GREEN (selftest 2409 passed, 0 failed), proof validates. No path lets a correctly-fenced agent reach a terminal state (direct transition blocked by the approver-group workflow restriction; mirror/snapshot maps nothing to a terminal status; self-unfence triple-locked by the admin-only guard, the agent adapter not implementing fence writes, and the withheld live scopes; pre-seed removed by explicit member=False). But it is not fail-closed against two misconfigurations, and the real enforcement lives entirely in a reference-wired live edge the gate never runs. Two hardening items must land before it fences a LIVE board.",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "The service-account OAuth client-credentials auth mode is sound: the fail-closed on no credential is relocated to OAuthTokenManager.__init__, the grandparent __init__ correctly skips the parent's static-token requirement, there is no leaky repr, and basic auth remains the unchanged default. cloudId/gateway logic is unit-tested offline; the network is reference-wired and never gate-run."},
+    {"id": "AC2", "status": "confirmed", "note": "Group/membership fencing is config-driven and byte-safe: agent_group/approver_group/agent_account_id are read by reference, agent_group must differ from approver_group, and the agent accountId is placed IN the agent group and OUT of the approver group (member=False), so no pre-seed leaves the agent an approver."},
+    {"id": "AC3", "status": "confirmed", "note": "The terminal-transition restriction is non-tautological: can_fire_transition returns True for everyone with no restriction, and tooth T1 proves the agent-False result depends on the restriction actually being written. A terminal transition the workflow lacks fails loud by name. NOTE: see finding F1 - the restriction loop is not atomic against a missing configured terminal state."},
+    {"id": "AC4", "status": "confirmed_with_note", "note": "The three fence writes are admin-only and refused by name for a non-human/agent credential, so a principal cannot fence or unfence itself (tooth T4). NOTE: see finding F2 - the fence is opt-in with no linkage to the agent-identity auth mode, so an agent-writer board can be provisioned UNFENCED by omission."},
+    {"id": "AC5", "status": "confirmed", "note": "No secret and no company/board/account literal in the three modules, docs, or proof; docs are placeholders-only and document the withheld admin scopes as the structural enforcement; the tracker_agent_identity capabilities entry is byte-identical across all eight copies."},
+    {"id": "AC6", "status": "confirmed_with_note", "note": "The selftest block drives the whole fence + membership + auth-mode behavior over the FakeTracker offline and is non-tautological: four teeth (T1 restrict, T2 membership exclusion, T3 token-expiry, T4 admin-only guard) each flip their assertion RED with the on-disk module sha256 unchanged. The 1000-line compression of tracker_jira_init.py dropped no behavior. NOTE: see finding F1 - the no-partial (all-or-nothing) guarantee was not asserted."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "F1 (must-fix-before-live): provision_fence is not atomic. A misconfigured board (a configured terminal_state that is not a provisioned status) raises TrackerItemNotFound mid-loop AFTER restricting earlier terminal states, leaving later ones unrestricted while the agent is already in the agent group, so a failed setup can leave a terminal transition OPEN to the agent rather than closed. REPRO: statuses=[Approved,Rejected], terminal_states=[Approved,Decided,Rejected] -> Approved restricted, run dies on Decided, Rejected left unrestricted, agent can_fire('Rejected')=True. FIX: make the fence all-or-nothing - verify every configured terminal transition exists BEFORE applying any restriction (verify-all-then-apply), or cross-check terminal_states is a subset of provisioned statuses at config resolution so it fails with ZERO writes. Add a selftest asserting the leftover (no-partial) state, not just the fail-loud message."},
+    {"severity": "note", "text": "F2 (fail-closed-hardening): the fence is opt-in with no linkage to the auth mode. auth 'oauth-client-credentials' (a live agent writer) plus an omitted fence block coexist happily - warp jira init provisions a fully working UNFENCED board and reports fenced:false without erroring. For a security boundary this should fail closed. FIX: when an agent identity (oauth-client-credentials auth) is configured, REQUIRE a fence block; error by name otherwise, so an agent-writer board is never left unfenced by omission."},
+    {"severity": "note", "text": "F3 (live-run-gate): the actual enforcement is entirely reference-wired and never gate-run (the inherent honesty boundary of every WARP live edge). The live _restrict_transition/_transition_restriction/_ensure_group REST shapes are acknowledged placeholders (POST /rest/api/3/workflows/update with a 'restrict' key is not a real Jira API). The gate proves only the CONFIGURATION logic over the FakeTracker. FIX: before fencing a live board, the live run MUST confirm (a) the restriction covers EVERY transition whose destination is a terminal status (real workflows can have multiple/differently-named transitions to one status plus global/create transitions, not just a transition named after the state) and (b) the service account's group/workflow-admin scopes are genuinely withheld (the whole fence collapses if granted). This is the Sol-required real-sandbox verification before activation."}
+  ],
+  "cleared": [
+    "OAuth grandparent __init__ is sound: fail-closed relocated to OAuthTokenManager.__init__; no leaky repr; basic auth is the unchanged default.",
+    "No secret and no company/board/account literal in the three modules, docs, or proof; docs are placeholders-only and document the withheld admin scopes as the structural enforcement; capabilities entry byte-identical across all 8 copies.",
+    "The 1000-line compression of tracker_jira_init.py dropped no behavior (only docstring prose + two additive return-value lines); full WARP-0612/0613 regression passes.",
+    "Config-driven: terminal_states, group names, agent_account_id all read by reference; malformed/missing fence sub-block fails closed by name; agent_group must differ from approver_group.",
+    "can_fire_transition is not a tautology: with no restriction it returns True for everyone; T1 proves the agent-False result depends on the restriction actually being written."
+  ],
+  "must_fix_before_live": ["F1", "F3"],
+  "recommended": ["F2"],
+  "checks": [
+    "./scripts/verify.sh -> GATE GREEN at 268ee4d8; catalog 5 run / 18 na / 0 waived.",
+    "python3 scripts/selftest.py -> 2409 passed, 0 failed (+35 WARP-0614).",
+    "python3 .warp/validate.py proof proof/WARP-0614/manifest.json -> exit 0.",
+    "Four teeth reproduced independently (T1 restrict_transition, T2 membership exclusion, T3 token-expiry, T4 admin-only guard), each flipped RED with the on-disk module sha256 unchanged; all non-vacuous.",
+    "No protected path touched (verify.sh / warp-guard.sh / policy.yaml / policy_check.py / bin/warp untouched).",
+    "RULE #1: no em-dash, en-dash, or double-hyphen prose separator in the reviewed modules or this verdict."
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0112",
+  "commit": "6791075810fedac039adb3a085ac9d6366bf3c42",
+  "producer": "claude-opus-4-8[1m] (Ava, dogfood author)",
+  "plan_hash": "sha256:f1bea3833572c104",
+  "produced_at": "2026-07-17T00:55:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "PLAN-0002 (plans/PLAN-0002-companion-home.md) passes the plan contract: python3 .warp/validate.py all exits 0; it declares 4 outcomes with measures, a feature tree, an ordered acyclic work DAG (CH1 then CH2/CH3/CH4 depend on WARP-0201), and 4 regression journeys. It decomposes into specs WARP-0201..0204 with two-way mirroring intact (each spec declares plan: PLAN-0002 / work: CHn and each work item names its spec)"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0112/journey-results.txt: 5/5 live journeys pass against the running tripdesk backend (GET /api/v1/home/) via proof/WARP-0112/run_companion_journeys.py + companion_home_journeys.json. CJ1 200 all 14 sections in 0.029s (under 0.5s budget); CJ2 missing user 401; CJ3a foreign itinerary_id 404; CJ3b zero-trip user 200 phase none; CJ4 auto-selected active_trip.user_id == the caller (owner-scoped) with next_action.title present. Re-runnable by the reviewer with no setup (stdlib only)"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "python3 .warp/plan.py status PLAN-0002 shows 4/4 shipped; python3 .warp/plan.py release-check PLAN-0002 reports releasable; ./scripts/verify.sh GATE GREEN at 6791075 (5 run / 18 na / 0 undeclared). ZERO product changes: git shows no tripdesk or mobile-android files touched - only warp-repo artifacts (plans/, specs/, proof/) and the PLAN-0001 D1 resolution"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "PLAN-0001 revision 4 with open_decisions empty (D1 resolved: the companion home chosen as the dogfood); python3 .warp/plan.py run-check PLAN-0001 WARP-0112 = clear to build (deps shipped, plan context current); burn-down shows 11/12 shipped with W12 the only frontier item. Shipping W12 makes all 12 work items shipped and PLAN-0001 releasable = WARP 1.0 delivered through its own layer"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 121 passed, 0 failed"},
+    {"name": "docs", "status": "passed", "detail": "dash/non-ASCII/genericity sweeps clean; company references appear only in plans/specs/proof (working content), never in docs/ or plugin/"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "This is a RETROSPECTIVE dogfood: the companion home iteration was already delivered in the tripdesk product; the layer expresses and verifies it now, driving the LIVE backend (localhost:8002) as the system under test. No product code in tripdesk or mobile-android is changed - by explicit founder constraint (mobile-android is at release). The live journeys are API-level (HTTP against the running backend); a general HTTP/API journey runner as shipped machinery is a noted follow-up, not built here (the driver ships as dogfood evidence under proof/, not as a plugin template, to keep the generic template surface company-free). PLAN-0002's WARP-0201..0204 are retrospective specs of delivered behavior; their proof-of-delivery is the shared live journey suite, not per-spec verdicts."
+  ],
+  "rollback": "git revert 6791075 (impl) and the evidence commit; the dogfood adds only warp-repo artifacts plus the PLAN-0001 D1 resolution. No product code is involved. PLAN-0001 open_decisions restores to D1 open, re-blocking W12."
+}

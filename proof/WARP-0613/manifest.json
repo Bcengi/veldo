@@ -1,0 +1,164 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0613",
+  "commit": "96513429a0f153e240dfdc999f3cbbdc93607e0c",
+  "producer": "claude-opus-4-8[1m] (build, WARP-0613, fresh-context single writer, in-session; the snapshot half of snapshot-then-subscribe on the WARP-0612 board bootstrap)",
+  "produced_at": "2026-07-23T19:00:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "snapshot_from_repo in .warp/tracker_jira_init.py is GENERIC and reads every input BY REFERENCE: it REUSES the shipped mirror's readers build_spec_index / build_plan_index (the repository is the single source of truth), resolve_status_map (the per-org WARP-status -> tracker-status map), and the WARP-0601 tracker_for_repo routing check; the tracker connection is read from .warp/trackers.json via load_tracker_config. Default specs/ and plans/ dirs are resolved from repo_root exactly the way tracker_mirror_runner.run_from_repo resolves them (root/specs, root/plans), not hardcoded. There is no company- or board-specific literal in the module."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0613 block: a repo with no tracker config is a clean no-op (snapshot_from_repo(config={}) returns reconciled False), never an error; and a regex over the module source finds no bcengi/dejitech/atlassian-host literal (grep-clean) covering the WARP-0613 additions. Part of selftest 2374 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "snapshot_from_repo projects the DECLARED current state: for every plan (excluding the reserved PLAN-0000 scaffold, filtered by _is_scaffold_id, never by a company/board value) it upserts the epic keyed by plan id (create_or_update_epic) and sets its status from the plan's declared file status through FILE_STATUS_TO_WARP and the status_map; for every spec it upserts the child and sets its status the same way. FILE_STATUS_TO_WARP has no entry for draft/in_progress/proven/closed, so a plan or spec with such a declared status is left UNSET via the _project_status helper (counted, never transitioned) - the NG4 guarantee the event mirror also upholds."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0613 block: over the FakeTracker offline, an in_progress spec (WARP-9703) leaves child:PLAN-0006:W3 status None and an in_progress plan (PLAN-0007) leaves epic:PLAN-0007 status None (report unset == 2, no invented transition); the reserved scaffold ids PLAN-0000 / WARP-0000 are never projected (find_epic('PLAN-0000') and find_child(None,'WARP-0000') both None). Part of selftest 2374 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "FILE_STATUS_TO_WARP is BUILT FROM the mirror's shipped SPEC_STATUS_TO_WARP (dict(SPEC_STATUS_TO_WARP) - agreeing byte-for-byte on shipped/blocked/ready and copying, never mutating, the shared constant so the event mirror's own projection is unchanged) and EXTENDS it with the two current-state statuses no lifecycle event carries: review -> in_review and released -> shipped. So the snapshot reflects a spec currently in review and a released plan even when the event stream holds no event that would move them, which the event mirror (driven only by spec.ready/blocked/shipped and a recorded verdict, and deriving an epic from the burn-down) cannot do from the stream alone."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0613 block: a spec declared 'review' (WARP-9701) projects child:PLAN-0006:W1 to the mapped In Review, and a plan declared 'released' (PLAN-0006) projects epic:PLAN-0006 to the mapped Shipped. TEETH T1/T2 (see checks): neutralizing the review->in_review extension leaves the in-review spec UNSET, and neutralizing the released->shipped extension leaves the released epic UNSET, while the real module sets both and the module on disk stays byte-unchanged. Part of selftest 2374 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A spec that declares no plan is projected as a TOP-LEVEL item of the child issue type via create_or_update_child with epic_key None (the FakeTracker keys it task:{sid}, an id with no epic segment, so it cannot collide with an under-epic child:{epic}:{key}) - never forced under a spurious epic, never mapped to a wrong type. find_epic and find_child are SIDE-EFFECT-FREE reads (the base seam's write audit is byte-unchanged after they run), keyed the SAME way as the upserts, so the snapshot records created-vs-reused for its report (epics_created/reused, children_created/reused, standalone) WITHOUT a second write."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0613 block: a standalone spec (WARP-9702, no plan) becomes find_child(None,'WARP-9702') not None with find_epic('WARP-9702') None and report standalone == 1; a re-run reports every epic/child REUSED (epics_reused 2, children_reused 3, created 0); the finds are side-effect-free (the write audit does not grow after find_epic/find_child). TOOTH T3: neutralizing the epic_key-None top-level branch (passing a spurious epic key) makes find_child(None,'WARP-9702') None in the mutant (the standalone spec is forced under an epic) while the real module keeps it top-level, module byte-unchanged. Part of selftest 2374 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "snapshot_from_repo is IDEMPOTENT and ONE-WAY: the upserts are keyed (never fork) and set_status is a no-op when unchanged, so a re-run records no duplicate transition and leaves the board byte-identical; it writes ONLY through the provisioner seam and NEVER mutates a spec, a plan, or the in-memory spec_index/plan_index it reads (there is no write-back code path), so the repository stays the single source of truth (C1). Because it projects the DECLARED file status, running it after the event mirror makes the board agree with the file, the source-of-truth invariant, not a conflict."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0613 block: a second snapshot run leaves state_digest byte-identical (re-run transitions 0), and json.dumps of the injected spec_index and plan_index is byte-unchanged after both runs (one-way). TOOTH T4: neutralizing the FakeTracker set_status no-op-when-unchanged guard (the keyed-upsert idempotency the byte-identical re-run relies on, since the snapshot upserts the shell without a status then transitions it) makes a re-run record a DUPLICATE transition so the board is no longer byte-identical, while the real re-run is byte-identical and tracker_adapter.py on disk stays byte-unchanged. Part of selftest 2374 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Wired as ONE command, warp jira snapshot: a snapshot sub-parser in main() dispatches _snapshot_cli in the repo-only .warp/tracker_jira_init.py that bin/warp already routes 'jira' to, behind the SAME existence guard as warp jira init and warp mirror; bin/warp is UNCHANGED and stays byte-identical across its copies (no bin/warp edit in the WARP-0613 diff). A dry-run of warp jira snapshot previews the whole reconcile over an in-memory FakeTracker with no network and no token; without it it builds the SAME reference live provisioner warp jira init builds (build_live_provisioner -> JiraCompanyManagedProvisioner) and FAILS CLOSED when no token resolves, reference-wired and never run in the gate. bootstrap() now runs the snapshot as the FINAL step (provision, then event-mirror run_from_repo, then snapshot_from_repo), so warp jira init yields a board that reflects the current declared state; both stay idempotent. It creates no timer, daemon, or auto-start and spawns nothing detached (NG1)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0613 block: JI.main(['snapshot','--dry-run','--repo-root', <temp repo with trackers.json>]) returns 0 and runs the whole reconcile over a fake; a repo with no tracker config is a clean no-op (return 0); bin/warp still routes 'jira' to tracker_jira_init.py; and bootstrap() returns a 'snapshot' report block with reconciled True after provision + mirror (the final reconcile step). Part of selftest 2374 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The selftest drives the WHOLE snapshot over the deterministic FakeTracker offline (no network) and is NON-TAUTOLOGICAL: the assertions track the fixture (2 epics + 3 children incl. 1 standalone created, 3 transitions, 2 unset), not a constant. Each load-bearing behavior carries an in-memory source-mutation TOOTH that turns its assertion red while the on-disk module stays byte-unchanged: T1 neutralizes review->in_review (in-review spec loses its status), T2 neutralizes released->shipped (released epic loses its status), T3 neutralizes the epic_key-None top-level branch (standalone spec forced under a spurious epic, no longer a top-level task), T4 neutralizes the set_status idempotency that makes the re-run byte-identical (a re-run duplicates a transition). None of the four teeth is vacuous - each mutant flips exactly its target assertion and the real module refuses/differs."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0613 block: all four teeth reproduced in-memory via the _ji_mut exec pattern (tracker_jira_init.py for T1-T3) and an exec of the mutated tracker_adapter.py source (T4); each mutant turns its assertion RED (the in-review spec unset; the released epic unset; find_child(None,'WARP-9702') None; the re-run state_digest differs) while the real path holds and the on-disk module read_text() is byte-unchanged after each. Plus the WARP-0613 dogfood front-matter checks (standalone lane, standard risk + human_approval not_required + no protected path, placement [tracker] with a footprint, behavior_bearing with observability, both touched modules declared in the tracker area of the architecture contract). Part of selftest 2374 passed, 0 failed (+28 for the WARP-0613 block over the 2346 baseline)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 2374 passed, 0 failed (+28 for the WARP-0613 snapshot block, incl. the six positive controls and the four anti-vacuity teeth T1-T4)"
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated by scripts/update_index.py with WARP-0613 (status review); check_generated green"
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "no em/en dash, no non-ASCII; genericity sweep clean (the tracker_board_snapshot note in plugin/templates carries no company/product reference)"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "capabilities.yaml root == plugin/templates (byte-identity guard); bin/warp untouched"
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "capabilities.yaml byte-identical across root + plugin/templates + 6 packs (the tracker_board_snapshot entry propagated to all eight, sha256 identical)"
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "mechanizable rules green (module_lines budget respected); review-lane non-blocking notes: tracker_adapter.py duplication 14% (the parallel find/upsert and status/issue-type seams) and snapshot_from_repo cyclomatic complexity 24 (a cohesive reconcile with two loops plus skip/route and status-projection helpers), consistent with the WARP-0612 precedent that accepted complexity 24 for resolve_bootstrap_config"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all exit 0; the WARP-0613 spec validates (status review), and this proof passes check_required_evidence (unit) and check_criteria_coverage (AC1-AC7 exactly)"
+    },
+    {
+      "name": "teeth_reproduced",
+      "status": "passed",
+      "detail": "T1 review->in_review neutralized: in-review spec status != In Review (real == In Review). T2 released->shipped neutralized: released epic status != Shipped (real == Shipped). T3 epic_key-None branch neutralized: find_child(None,'WARP-9702') None (real not None). T4 set_status idempotency neutralized: re-run state_digest differs (real byte-identical). Each mutant flips only its target; tracker_jira_init.py (T1-T3) and tracker_adapter.py (T4) sha256 byte-unchanged on disk after each"
+    }
+  ],
+  "assumptions": [
+    "COMMIT BINDING: the gate ran GREEN at 96513429a0f153e240dfdc999f3cbbdc93607e0c (the WARP-0613 code commit this proof binds to), exactly as scripts/verify.sh stamped .warp/last_verify (green@9651342, 5 run / 18 not-applicable). This proof is committed in a second evidence commit on top, so the manifest binds to the commit it proves (the WARP-1212 pattern, not the in-commit-proof deviation). STOPPED AT REVIEW: no push, no self-review; an independent fresh-context reviewer records the verdict.",
+    "WARP-0613 is a STANDALONE tracker-lineage spec composing on the RELEASED tracker foundation (PLAN-0006 seam/mirror + PLAN-0010 live edges) and the just-landed WARP-0612 board bootstrap, so no plan work item is available; this matches the standalone precedent (WARP-0113, WARP-0411, WARP-1212, WARP-0612). Like every tracker_*.py module it is REPO-ONLY build machinery (only .warp/tracker.py is engine-synced), so the two repo-only modules it touches ship no template twin; the capability entry (documentation) is synced with its siblings across all eight capabilities.yaml copies.",
+    "The LIVE provisioner path (build_live_provisioner -> JiraCompanyManagedProvisioner) that warp jira snapshot without a dry-run would use is REFERENCE-WIRED and NEVER run in the gate, exactly like the WARP-0612 bootstrap and the WARP-1004..1006 live mirror runner: it needs a live Jira and a scoped token, fails closed when none resolves, and is applied live only by an explicit human act. The whole snapshot LOGIC (the by-reference reads, the FILE_STATUS_TO_WARP projection, the standalone top-level placement, the created-vs-reused finds, the NG4 unset, the one-way idempotency) is what the gate proves over the deterministic FakeTracker, offline.",
+    "RISK STANDARD: the change touches no protected path (verify.sh, warp-guard.sh, policy.yaml, policy_check.py and their template twins untouched) and nothing in the production-support safety core (executor, whitelist, two-key rule, kill switch, ladder), so per policy.yaml the floor is standard; the mechanical footprint stays inside the single tracker architecture area (the same two repo-only modules the bootstrap lives in), so the footprint tier floor does not elevate it. bin/warp is byte-identical across its copies and was not edited. WARP-1212 committed artifacts (proof/WARP-1212/) are untracked and were not staged."
+  ],
+  "rollback": "git revert; additive - a new snapshot_from_repo projection plus a warp jira snapshot subcommand and a _snapshot_cli in the repo-only .warp/tracker_jira_init.py, two side-effect-free find primitives plus top-level-task support already present on the repo-only .warp/tracker_adapter.py seam and its FakeTracker, one extra reconcile step appended to bootstrap() (init still provisions and mirrors exactly as before, then reconciles), one new tracker_board_snapshot capability entry (all eight capabilities.yaml copies, byte-identical), a selftest block with four anti-vacuity teeth, and this spec; no protected path; pure stdlib; the live provisioner is reference-wired and never run in the gate. bin/warp is untouched."
+}

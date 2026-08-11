@@ -1,0 +1,132 @@
+# Veldo architecture contract (veldo.arch/v1): the intended shape of this
+# repository as a versioned, human-approved artifact. This is the first instance
+# of the organ PLAN-0011 grows - the shape of the system is a contract, not a
+# memory. Changing the shape means changing this file first, on the record.
+#
+# Each rule is marked mechanizable (a gate check can refuse it) or review (a
+# reviewer judges it). Gate ENFORCEMENT of the mechanizable rules against the
+# source lands in WARP-1102 (W2); this file and its structural validator are W1.
+# The contract leaves draft only by a recorded human approval.
+schema: veldo.arch/v1
+id: veldo
+title: The Veldo engine intended shape
+version: 1
+status: approved
+approved_by: <the human accountable for this contract; replace before relying on it>
+approved_at: 2026-07-22
+
+areas:
+  - id: contracts
+    title: Contracts and structural validation, the truth layer of schemas and validators
+    includes: [".veldo/validate.py", ".veldo/arch.py", ".veldo/plan.py", ".veldo/request.py"]
+  - id: engine
+    title: The safety-core decision engine, the pure functions that decide whether a human decision is authorized
+    includes: [".veldo/authorization.py"]
+  - id: enforcement
+    title: The gate and the push guard, the one command that decides done
+    includes: ["scripts/verify.sh", "scripts/veldo-guard.sh", ".veldo/policy_check.py"]
+  - id: loop
+    title: The executor and run observability, driving one spec through the pipeline
+    includes: [".veldo/executor.py", ".veldo/runlog.py", ".veldo/runstatus.py", ".veldo/runcmd.py", ".veldo/status_server.py"]
+  - id: fleet
+    title: Elastic parallel workers, claiming and dispatching and landing under a pacer
+    includes: [".veldo/fleet.py", ".veldo/fleet_env.py", ".veldo/claim.py", ".veldo/frontier.py", ".veldo/work.py", ".veldo/lander.py", ".veldo/governor.py", ".veldo/accounts.py", ".veldo/env_provision.py", ".veldo/supervisor.py", ".veldo/dispatch.py"]
+  - id: metrics
+    title: Event-derived measures, the numbers the loop keeps about itself
+    includes: [".veldo/events.py", ".veldo/metrics.py", ".veldo/dashboard.py", ".veldo/budget.py"]
+  - id: tracker
+    title: External tracker integration, one-way intake and mirror
+    includes: [".veldo/tracker.py", ".veldo/tracker_adapter.py", ".veldo/tracker_bridge.py", ".veldo/tracker_intake.py", ".veldo/tracker_mirror.py", ".veldo/tracker_mirror_runner.py", ".veldo/tracker_conformance.py", ".veldo/tracker_jira_init.py", ".veldo/tracker_jira_live.py", ".veldo/request_projection.py", ".veldo/request_doorbell.py", ".veldo/request_reconcile.py"]
+  - id: distribution
+    title: Pack assembly and cross-pack conformance, one engine assembled for many tools
+    includes: [".veldo/pack.py", ".veldo/pack_conformance.py"]
+  - id: runners
+    title: The reference runner suite, one runner per common product surface
+    includes: ["engine/scripts/runners/**"]
+
+  # ADDED 2026-08-03 (WARP-0735). A release item's substance is documentation, a version string and
+  # a plan status, and it lands in none of the nine areas above. The contract refuses a footprint
+  # without a placement, so before this existed such items had to declare NO footprint at all - and
+  # then the footprint-versus-diff dogfood, which caught four real mistakes in one night, did not
+  # cover them. Two release items paid that cost before it was worth fixing; this is the fix.
+  - id: docs
+    title: The documents and release manifests, what a reader learns the method from and what an adopter installs
+    includes: ["docs/**", "plans/**", "packs/claude/.claude-plugin/**", ".claude-plugin/**"]
+
+dependencies:
+  enforcement: review
+  # The intended layering: contracts is the foundation every area may build on.
+  # The mechanical boundary check that refuses a violating import lands in
+  # WARP-1102, so at this revision the allow-list is declared intent graded in
+  # the review lane, not yet a gate refusal.
+  allow:
+    - {from: enforcement, to: contracts}
+    - {from: loop, to: contracts}
+    - {from: fleet, to: contracts}
+    - {from: fleet, to: loop}
+    - {from: metrics, to: contracts}
+    - {from: tracker, to: contracts}
+    - {from: tracker, to: loop}
+    - {from: tracker, to: metrics}
+    - {from: distribution, to: contracts}
+    - {from: engine, to: contracts}
+
+patterns:
+  - id: stdlib_only_enforcement
+    text: Enforcement and contract code is Python standard library only; a third-party import in the gate path is a boundary violation.
+    enforcement: review
+  - id: reuse_one_parser
+    text: There is one front-matter parser (validate.parse_yamlish); no module ships a second parser for the contract subset.
+    enforcement: review
+  - id: derived_never_authoritative
+    text: Generated artifacts such as specs/index.md are derived from source and never hand-edited; regeneration is a no-op.
+    # REVIEW LANE IN THE SHIPPED CONTRACT, mechanizable in ours. The enforcer is
+    # scripts/check_generated.sh, which is REPO-ONLY by a decision this repository measures rather
+    # than assumes (WARP-0711 AC3), so an adopter does not have it. A contract that declares an
+    # enforcement its repository cannot perform makes the shape gate refuse on the adopter's first
+    # run, about a script they were never given. The rule still holds and a reviewer still checks
+    # it; what changes is the honest claim about who enforces it.
+    enforcement: review
+
+invariants:
+  - id: no_detached_processes
+    text: No module spawns a detached, headless, or background process for autonomous work; monitoring passes run in-session only.
+    enforcement: review
+  - id: adoption_safe_fail_closed
+    text: A repository without an architecture contract is byte-identically unaffected by the shape checks; the moment a contract exists the checks fail closed.
+    enforcement: mechanizable
+  - id: gate_is_the_only_done
+    text: A green scripts/verify.sh is the only definition of done; a defect is fixed, a check is never weakened to pass.
+    enforcement: review
+
+budgets:
+  - id: module_lines
+    kind: file_lines
+    applies_to: "*"
+    max: 1000
+    # ADVISORY from 2026-08-01, Dmitry's decision. It was mechanizable and it blocked a
+    # correct four-line security fix because events.py sat at 999 of 1000. A module being
+    # long is a judgement for a reviewer, not a fact a gate can settle, and a rule that can
+    # stop an unrelated correctness fix costs more than the sprawl it prevents.
+    enforcement: review
+  - id: function_lines
+    kind: function_lines
+    applies_to: "*"
+    max: 120
+    enforcement: review
+  - id: duplication
+    kind: duplication_ratio
+    applies_to: "*"
+    max: 8
+    enforcement: review
+  - id: complexity
+    kind: cyclomatic_complexity
+    applies_to: "*"
+    max: 20
+    enforcement: review
+
+analyzers:
+  # The stdlib-proportionate reference analyzer slot (D6): a pluggable per-language
+  # entry. The reference implementations for duplication and complexity ship with
+  # WARP-1102, so no external analyzer config is referenced yet.
+  - {language: python, kind: reference}

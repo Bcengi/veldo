@@ -1,0 +1,28 @@
+{
+  "name": "users schema v2 (clean round trip)",
+  "check_reversibility": true,
+  "migrations": [
+    {
+      "id": "0001_create_users",
+      "up": ["CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT NOT NULL)"],
+      "down": ["DROP TABLE users"]
+    },
+    {
+      "id": "0002_unique_email",
+      "up": ["CREATE UNIQUE INDEX ux_users_email ON users(email)"],
+      "down": ["DROP INDEX ux_users_email"]
+    }
+  ],
+  "seed": [
+    "INSERT INTO users (id, email) VALUES (1, 'a@example.test')",
+    "INSERT INTO users (id, email) VALUES (2, 'b@example.test')"
+  ],
+  "invariants": [
+    {"name": "two users seeded", "query": "SELECT count(*) FROM users", "expect_rows": [[2]]},
+    {"name": "emails are distinct", "query": "SELECT count(DISTINCT email) FROM users", "expect_rows": [[2]]},
+    {"name": "lookup returns the seeded email", "query": "SELECT email FROM users WHERE id = 1", "expect_rows": [["a@example.test"]]}
+  ],
+  "budgets": [
+    {"name": "primary-key lookup within budget", "query": "SELECT email FROM users WHERE id = 1", "max_seconds": 0.5}
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0113",
+  "commit": "ea259df",
+  "implementation_commit": "f67336ebd7461b5535914531fb589a7fec813982",
+  "reviewer": "claude-opus-4-8[1m]",
+  "reviewed_at": "2026-07-16T20:51:36Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Imported the real .warp/policy_check.py and ran blocking_findings on the two live WARP-0100 verdicts: verdict.json (list shape) returns 0, verdict-l2.json (list shape) returns 2, neither raises. Adversarial junk all failed closed (returned non-empty blocking): findings as a string, dict with non-list blocking, list entry with no severity, list entry with unknown severity. dict {blocking, non_blocking} and list [{severity, text}] both normalize correctly. Selftest carries the 7 policy_check cases and reports 49 passed, 0 failed."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Ran V.check_json with VERDICT_REQ over crafted shapes: dict {blocking, non_blocking} accepted (0), list [{severity, text}] accepted (0), string findings red, int findings red, list of bare strings red (each entry), unknown severity red, unknown dict key ('blockers') red, non-list blocking red. python3 .warp/validate.py all exits 0 with the array-shaped verdict-l2.json present in proof/. The 6 contract cases are in the selftest."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "git ls-files shows no tracked .pyc or __pycache__. .gitignore contains __pycache__/ and *.pyc. Ran ./scripts/verify.sh (exit 0) then git status --porcelain: 0 pyc/__pycache__ entries. The implementation commit deletes exactly 6 tracked .pyc files (counted in git show --stat)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "check_docs.sh TEXT_FILES is now git ls-files minus ^pdf/ and .(png|pdf|pyc|jpg|jpeg|webp|ico); confirmed the swept set now includes CLAUDE.md, WARP.md, scripts/, and .warp/ that the old narrow sweep missed. Reproduced the hermetic path override independently: DOCS_CHECK_PATHS pointed at a planted file with a U+2014 em-dash plus 'Bcengi' failed all three sweeps (exit 1); a clean ASCII file passed (exit 0)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Appended a junk line to specs/index.md: bash scripts/check_generated.sh exited 1 (regeneration removed the junk, diff shown); rerun exited 0 (self-healed); git diff on the file clean afterward. Verified the stronger independence claim: edited a spec title, regenerated the index so it was generator-consistent but dirty vs HEAD (git diff rc=1 on both spec and index); check_generated.sh still exited 0 GREEN, where the old 'git diff --exit-code' check would have false-red. Restored both files clean."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Grepped scripts/render_pdfs.py: it imports markdown, websockets, and yaml (plus stdlib). CHECK_build na names 'render_pdfs.py + Chrome CDP'; CHECK_dependency_audit na names 'markdown, websockets, yaml' and states enforcement scripts are stdlib-only. The prior imprecise reasons (dependency_audit named only python-markdown, build said 'nothing to build') are corrected."
+    },
+    {
+      "id": "AC7",
+      "status": "confirmed",
+      "note": ".warp/policy.yaml risk_tiers: high and critical are min_independence L2 (was L3/L4), critical keeps reviews: 2, low L1 / standard L2 unchanged; the generic ladder's L3/L4 tiers are gone from this repository's policy. The founder-instruction comment is recorded verbatim (fresh-context different Claude model, Opus family, L2; two L2 verdicts at critical; cross-vendor only on explicit per-case instruction). Minor: the comment says 'at every tier' L2 while low remains an L1 floor; immaterial, since min_independence is a floor and this repo's changes are standard or above."
+    },
+    {
+      "id": "AC8",
+      "status": "confirmed",
+      "note": "docs/setup.md is v2.8 and docs/runbook.md is v1.3, each with a matching history row. grep of both docs: runbook.md has zero L3/L4 mentions remaining (its protected-path walkthrough now reads L2); every L3/L4 mention in setup.md is framed as optional escalation or a recorded budget decision, never a requirement (independence table, the 'deliberately optional' paragraph, section 4.4, the control-plane principle rewrite). 'L2 is the working default at every tier above low' is stated."
+    },
+    {
+      "id": "AC9",
+      "status": "confirmed",
+      "note": "Built four fixtures OUTSIDE the repo from a green base plan and ran python3 .warp/validate.py plan on each: (1) a cycle hidden behind a duplicated depends_on key is RED with 'duplicate key depends_on in list item' (the demonstrated green-cycle exploit is closed); (2) tab indentation is RED with a line-number hint; (3) a work item with no feature_refs is RED; (4) an integer spec id is RED with 'spec id 9101 must be a string like PREFIX-0000' and NO traceback. A feature with no outcome_refs is also rejected (selftest). specs/index.md renders 'Open decision D1 blocks: WARP-0112.' regardless of dependency state."
+    },
+    {
+      "id": "AC10",
+      "status": "confirmed",
+      "note": "Imported the real policy_check.py: valid_approval_for('0de75f3...') now returns proof/WARP-0100/approval-dmitry.json (was None while inert). validate.py rejects a near-miss approval decision 'approve' with an explanatory message and accepts 'approved' (selftest 2 cases; reproduced). protected_patterns() returns .warp/policy_check.py and plugin/templates/.warp/policy_check.py and both fnmatch as protected; instance and template policy_check.py are byte-identical. The enforcer that blocks protected-path pushes is itself protected."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "WARP-0100 note N7 is only half-closed. AC4 gives check_docs.sh a hermetic, repeatable negative test via DOCS_CHECK_PATHS, but the second half of N7, an automated negative for check_template_sync.sh, is still absent: grep of scripts/selftest.py finds no template_sync case, so a future weakening of the template-sync check would not be caught by the suite. Within WARP-0113's own AC scope this is fine (AC4 only promises the docs check), so it does not refute an AC."
+    },
+    {
+      "severity": "note",
+      "text": "WARP-0101 note WN2 is half-closed. Tab indentation is now a hard parse error with a line hint (verified), but the other input WN2 named, list-item siblings over-indented past dash+2, still folds silently into the previous scalar without a line hint; it nets RED via downstream required-field checks (gate stays safe) but is not the promised parse-time line hint. AC9 only claimed tab and duplicate-key hard errors, so this is outside its stated scope."
+    },
+    {
+      "severity": "note",
+      "text": "WARP-0101 note WN3 is closed in the forward direction only. Work must now reference a feature and a feature must reference an outcome (both verified RED when absent), but an orphan outcome referenced by nothing still validates GREEN (reproduced: a second outcome O2 with no feature pointing at it, errs=0). AC9's text scopes traceability to work->feature and feature->outcome, so orphan outcomes are out of its stated scope."
+    },
+    {
+      "severity": "note",
+      "text": "The WARP-0100 L2 'enforcement core partially protected' note is closed only for the file AC10 named. .warp/policy_check.py and its template joined protected_paths (verified), but .warp/validate.py (the contract validator) and the check-body scripts (check_docs.sh, check_generated.sh, check_template_sync.sh, selftest.py) remain unprotected, so editing them still escapes the high/human-approval floor via the ordinary lane. AC10 only claims to protect the push-blocking enforcer, so this does not refute it; the untracked proof/WARP-0100/verdict-l2-resolution.json independently records the same residual."
+    },
+    {
+      "severity": "note",
+      "text": "Weakening audit, step 7. The findings-shape widening in policy_check is bounded and fail-closed: the only inputs that normalize to zero blocking are absent findings, a dict with an absent or empty blocking list, or a list whose entries are all note/non_blocking dicts; every malformed shape I threw at it counted as blocking. validate.py changes are strictly tightening. policy.yaml lowering high/critical min_independence from L3/L4 to L2 is a genuine reduction of the independence requirement, but it is the explicit, recorded founder decision AC7 mandates, applied to a protected (approval-gated) file, with critical still requiring two verdicts. No unintended weakening found."
+    },
+    {
+      "severity": "note",
+      "text": "Two minor gate/evidence hygiene observations, neither affecting an AC. (1) check_generated.sh mutates the working tree by regenerating specs/index.md, so a stale COMMITTED index passes on a second gate run if the regenerated file is left uncommitted (the working tree would then be dirty); this is inherent to the AC5-specified snapshot self-healing design and a single RED run still blocks. (2) DOCS_CHECK_PATHS narrows the docs sweep when set, but verify.sh never sets it and it defaults to the full sweep when unset, so normal gate runs are unaffected."
+    },
+    {
+      "severity": "note",
+      "text": "Manifest audit, step 8: every claim maps to observed evidence. Counts verified (7 policy_check cases, 6 contract cases, 6 removed .pyc, 2 docs cases, 6 WARP-0101 cases, 2 approval cases), all seven gate checks pass, selftest 49 passed 0 failed matches the manifest and the live rerun, commit binding ea259df is GREEN. Two cosmetic discrepancies only: the implementation commit MESSAGE body says 'Selftest 41' while the manifest and actual are 49 (message-only, not the manifest); and tracked proof/WARP-0113/negative-tests.txt carries uncommitted working-tree edits (the f67336e version is an earlier draft) whose content matches the manifest's evidence descriptions."
+    }
+  ],
+  "summary": "Independently reviewed at the validated state ea259df (implementation f67336e; the intervening ea259df plan-revision commit changes no code, confirmed by git show --stat). Reran the gate: selftest 49 passed 0 failed, python3 .warp/validate.py all exit 0, ./scripts/verify.sh GREEN with 5 run / 0 undeclared. All 10 acceptance criteria are confirmed by rerun, not merely by claim. I reproduced the sharpest prior exploit from scratch in fixtures outside the repo: a cycle hidden behind a duplicated depends_on key is now RED at parse time, as are tab indentation (with a line hint), a work item with no feature_refs, and an integer spec id (a clean error, no traceback). Both WARP-0100 L2 blocking findings are closed and verified against the real modules: valid_approval_for('0de75f3...') returns the approval path (was None) with the approval vocabulary pinned, and blocking_findings normalizes both verdict shapes (0 for verdict.json, 2 for verdict-l2.json) and fails closed on junk, with policy_check.py now itself a protected path. The eleven code findings are substantively closed; four note-level residuals remain where WARP-0113's AC scope was deliberately narrower than the original finding (unautomated template-sync negative, over-indent parse edge, orphan outcomes, validate.py and check bodies still unprotected), none of which refutes an acceptance criterion. No unintended enforcement weakening was found; the policy.yaml independence reduction is the explicit founder decision AC7 mandates on an approval-gated file. Verdict: pass_with_notes, zero blocking findings."
+}

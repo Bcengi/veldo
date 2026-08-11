@@ -1,0 +1,25 @@
+{
+  "name": "city open-hours lookup (passing)",
+  "prompt": "What time does the museum open in the trip city?",
+  "max_turns": 6,
+  "tools": {
+    "get_city": {"returns": "Paris"},
+    "open_hours": {"echo": "place"}
+  },
+  "fake": [
+    {"tool_calls": [{"tool": "get_city", "args": {}}]},
+    {"tool_calls": [{"tool": "open_hours", "args": {"place": "museum"}}]},
+    {"final": "The museum in Paris opens at 9 in the morning."}
+  ],
+  "assert": {
+    "expected_tool_calls": [
+      {"tool": "get_city", "result_equals": "Paris"},
+      {"tool": "open_hours", "args_contains": {"place": "museum"}, "result_equals": "museum"}
+    ],
+    "forbidden_tools": ["delete_trip"],
+    "final": [
+      {"type": "contains", "value": "Paris"},
+      {"type": "regex", "value": "opens at [0-9]"}
+    ]
+  }
+}

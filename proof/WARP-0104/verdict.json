@@ -1,0 +1,37 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0104",
+  "commit": "72167322877cd78692e66a17ac24b9227929d65b",
+  "reviewer": "claude-opus-4-8[1m] (independent WARP reviewer, fresh context)",
+  "reviewed_at": "2026-07-16T21:39:34Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Re-attacked check_plan's regression contract with 19 fixtures written OUTSIDE the repo (scratchpad), calling check_plan with no specs_dir so file location is irrelevant. All hold with zero mismatches. RED: when 'someday' (unknown), after:WARP-9999 (not a work spec), owner_spec WARP-9999 (not a work item), profiles [gremlins] (bad value), profiles [] (empty), activation map without when. GREEN: when start, after:WARP-9101 (a real work spec), when manual, owner_spec WARP-9101, profiles [per_spec], [release], [per_spec, release]. Adversarial shapes all correctly RED: activation as a bare string (caught as 'activation needs a when'), profiles as a string not a list (caught as 'must be a list'), after: with empty spec (caught as not-a-work-item), when as an integer (caught as bad when), empty activation map (caught by the id/title/activation guard). No silent acceptance of any malformed regression journey. The 8 selftest AC1 cases exist and pass within 77/0."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Imported _journey_active and independently verified the full truth table (13 assertions, all as expected): start active in per_spec and release; manual inactive in both auto contexts; profiles [release] inactive per_spec, active release; profiles [per_spec] the mirror; after:X inactive while X unshipped, active once X shipped and X != the spec being built, inactive when X == the built spec; default (absent) profiles active in both. Ran plan.py regression live against PLAN-0001: per_spec:WARP-0105 -> RJ1 only; release -> RJ1 plus RJ2 surfaced separately under 'manual (run on their own trigger, not auto at release)'. RJ2 (manual) is never auto-active but is surfaced at release, never silently skipped. Invalid context 'bogus_ctx' errors cleanly (exit 1, no traceback); missing context arg exits 2 with usage. The 6 selftest _journey_active cases pass within 77/0."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "plugin/skills/plan/SKILL.md has a regression section stating a repo wires its gate journeys slot to run the active per-spec suite, and that a UI-less repo leaves the slot na. capabilities.yaml marks plan_regression_mechanics status mechanical for the contract + computation, and explicitly marks the per-repo gate-slot EXECUTION wiring as reference (not overclaimed as shipped). Confirmed the warp gate itself does NOT run a false journeys check: scripts/verify.sh declares CHECK_journeys='na:no user interface in this repository' and the run reports journeys among the 18 not-applicable, catalog 5 run / 0 undeclared / GATE GREEN. Honest."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "PLAN-0001 is revision 3. RJ1 gained owner_spec WARP-0101 and profiles [per_spec, release]; RJ2 is activation manual with profiles [release] and a note explaining the modeling matches its intent. A 'Revision 3 (2026-07-16, W4)' entry records the no-scope-change upgrade. validate.py plan plans/PLAN-0001-warp-one-point-zero.md exits 0, and validate.py all exits 0. Also reproduced the AC1 negative directly in PLAN-0001: planting activation when 'someday' into RJ1 makes check_plan report exactly 'regression RJ1: bad activation when ...' (exit 1); git checkout restored the file and validate.py all returned to exit 0; tree left clean apart from gate churn and untracked proof/WARP-0104/."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "cmd_regression surfaces every manual journey at release regardless of its profiles field, so profiles on a manual journey is effectively inert (manual is never auto-active in any context anyway). This is spec-compliant (the AC requires manual journeys be surfaced at release and never silently skipped; surfacing more errs toward visibility, not less) and does not affect PLAN-0001's RJ2 (profiles [release]). Recorded only as a modeling nuance, not a defect. Non-blocking."
+    }
+  ],
+  "summary": "Independently reran and confirmed all four acceptance criteria: selftest 77 passed / 0 failed, validate.py all exit 0, verify.sh GREEN 5 run / 0 undeclared. Attacked the regression contract validator with 19 out-of-repo fixtures (6 required RED, 7 required GREEN, 5 adversarial shapes) and the _journey_active computation with a 13-row truth table - zero mismatches, no silent acceptance of any malformed journey. Live plan.py regression against PLAN-0001 gives RJ1 active in per_spec and release and RJ2 surfaced (never auto-run) only at release; invalid context errors cleanly. Reproduced the AC1 negative in PLAN-0001 and restored to a clean tree. capabilities.yaml and the plan skill honestly mark gate-slot execution as per-repo reference and the warp gate declares journeys na rather than faking a check. PLAN-0001 revision 3 validates and carries its Revisions entry. The proof manifest is accurate claim by claim and validates against warp.proof/v1. One non-blocking modeling note; no blocking findings."
+}

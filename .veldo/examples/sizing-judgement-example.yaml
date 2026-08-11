@@ -1,0 +1,10 @@
+schema: veldo.sizing_judgement/v1
+spec: WARP-9403
+brief_digest: 50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c
+model: example-model-id
+low: 260000
+high: 900000
+reasoning: two new modules and one new suite fragment, over a 3k-line existing surface with no protected path; the schema is most of the work and the twin is free
+self_cost_tokens: 8400
+self_cost_basis: agent_estimate
+note: EXAMPLE JUDGEMENT for a fictional spec, showing the shape an in-session agent writes and this module only ever reads. THE DIGEST IS THE SHA256 OF THE ASCII STRING example AND OF NO BRIEF IN THIS REPOSITORY, stated rather than dressed up: checked against any real brief this record is REFUSED, which is the binding working as intended rather than a flaw in the example. The range is the agent's own prediction on basis agent_judgement, so a record carrying it still reads calibration uncalibrated

@@ -1,0 +1,37 @@
+WARP-0804 runner evidence - Codex CLI pack (W4 of PLAN-0008)
+Impl commit under proof: 807d21b1b5abd7fdd757d8681c3045b158e7c072
+
+== gate (clean detached worktree at 807d21b) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (807d21b1b5abd7fdd757d8681c3045b158e7c072)
+selftest: 1231 passed, 0 failed (+4 for the WARP-0804 codex-pack block)
+
+== self-contained pack ==
+packs/codex: 139-file engine copied byte-identical (engine_drift == []), real files (no symlinks),
+canonical AGENTS.md, Codex driver (.codex/config.toml, .codex/hooks.json, .codex/warp-guard-hook.sh,
+hooks/pre-push, skills, .codex/agents). check_pack_drift.py: 3 packs (claude, cursor, codex) all pass.
+
+== AC2 enforcement (W3 fix applied from the start, behaviorally proven by review) ==
+synthetic unproven WARP repo, CLAUDE_PROJECT_DIR unset:
+  hooks/pre-push, unproven                         -> EXIT 2 (blocks)
+  hooks/pre-push, green gate + proof for HEAD      -> EXIT 0 (allows)
+  .codex before-shell hook, "git push" (env/stdin) -> EXIT 2 (blocks)
+  .codex before-shell hook, non-push (ls -la)      -> EXIT 0 (passthrough)
+  injection command (rm -rf ...)                   -> EXIT 2, zero side-effect (json.dumps safe)
+  env CMD set + empty stdin (the W3 fail-open)      -> EXIT 0 (proves the stdin-JSON feed is load-bearing)
+W4 did NOT repeat the W3 fail-open.
+
+== reuse ==
+diff -rq plugin/skills vs packs/codex/skills: identical
+diff -rq plugin/agents vs packs/codex/.codex/agents: identical
+AGENTS.md identical to canonical; exactly 4 net-new authored driver files.
+
+== review ==
+Independent adversarial review at 807d21b: pass_with_notes, 0 blocking (push gate genuinely blocks;
+faithful copy; drift teeth; no pollution; caps byte-identical; dash-clean). Notes all informational
+(Codex hook format fast-moving [git+CI guaranteed]; drift-check ignores EXTRA files by design;
+enforcement via the selftest unit slot).
+
+== proof binding ==
+plan_hash: sha256:837b26cb7db25a47 (PLAN-0008, revision 1)
+proof_digest: sha256:072c0174b6b210b8 (validate.py over {spec_id, commit, criteria, checks})

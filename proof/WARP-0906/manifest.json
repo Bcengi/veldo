@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0906",
+  "commit": "97c4ac27d9515d650a3660b31243318512213ad1",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0009 W6, orchestrator + builder agent a369b3f)",
+  "plan_hash": "sha256:6b03ff568d65cd2f",
+  "produced_at": "2026-07-19T20:01:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "README.md: the WARP Fleet bullet now leads with the true claim (the fleet ships in the engine, installing a pack lays it, the warp CLI drives it, warp fleet N / warp work); the stale 'Current plugin version: 3.2.0 (WARP Fleet v1)' line is corrected to 'Current plugin version: 3.4.0.' (README.md:69) with no claim of a release that has not happened (3.5.0 is W8). No operating metric appears."
+        },
+        {
+          "type": "unit",
+          "ref": "Independent review (agent a63b4dec, fresh context, distinct from builder a369b3f, bound to 97c4ac2): confirmed the README fleet wording maps to shipped modules and the version line is 3.4.0 with no false Fleet-v1/3.5.0 release tag; audited README/docs for over-claim and found NONE, and confirmed no Bcengi operating metric on the adopter surface."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "docs/plugin.md gained section 11 'The fleet: elastic parallel workers' (v2.1 -> 2.3): what the fleet is, that installing a pack lays the full engine including the fleet and the warp CLI, warp fleet N / warp work entry points, per-repo capability, the per-account CLAUDE_CONFIG_DIR model, governor pacing, and the in-session no-detached-process boundary with fail-loud delegated seams; claims scoped to W1-W5."
+        },
+        {
+          "type": "unit",
+          "ref": "Independent review confirmed every plugin.md fleet claim maps to a shipped module and cited CLI flags (--account, account/status/watch) exist in bin/warp."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "docs/setup.md (v2.9 -> 2.10): section 2.4 capability-by-scale table gained three fleet rows (parallel workers, fleet accounts and governor, work CLI and run lens) across Solo/Small/Scaling/Org; section 4.9 documents the two-tier adoption model explicitly (a pack lays the FULL engine incl. the fleet; /warp:init lays the MINIMAL governance substrate by design); new section 4.11 covers the warp CLI, account model, governor, and the in-session boundary."
+        },
+        {
+          "type": "unit",
+          "ref": "Independent review confirmed the two-tier model is documented and the scaling additions are consistent with setup.md's capability-by-scale framing, no over-claim."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "docs/runbook.md (v1.4 -> 1.5) gained Part V.8 'Running the fleet': one-time warp account add NAME (a persisted CLAUDE_CONFIG_DIR login, no relogin thereafter), warp fleet N / warp work --account NAME, monitoring via warp status / warp watch (plus answer/steer/abort), in-session budget backoff and resume, and the no-detached-process boundary."
+        },
+        {
+          "type": "unit",
+          "ref": "Independent review confirmed the runbook covers account add, --account, status/watch, in-session resume, and the no-detached boundary, and that the CLI surface it cites exists in bin/warp."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The capabilities manifest is honest end to end: the 17 non-fleet dogfood/build-machinery entries whose homes do NOT ship to an adopter are tagged scope: repo-only in BOTH byte-identical copies (the set COMPUTED from pack.py engine_files(plugin/templates) + the plugin wrapper, not a hand list - it caught 4 the W5 review's short list missed: tracker_epic_mirror, jira_cloud_intake_adapter, confluence_requirements_intake, confluence_cloud_intake_adapter). A new selftest check (_caps_honesty_findings, scripts/selftest.py ~4738) enforces with teeth that every UNMARKED entry's home resolves in the SHIPPED engine (ship-truth from engine_files, not file existence) and every repo-only entry still exists in the repo; procedure-status entries with a documentation home are exempt from the shipped-code requirement (adopter-facing docs), and a mechanical/reference entry may not hide behind a docs home. tracker_routing (.warp/tracker.py) and tracker_routing_enforcement (.warp/validate.py) are correctly left unmarked (they ship)."
+        },
+        {
+          "type": "unit",
+          "ref": "Independent review PROVED the teeth (baseline 1350/0): un-marking budget_governance -> 1338/12 RED; pointing shipped fleet_dispatcher home at a missing file -> 1339/11 RED; pointing unmarked metrics_dashboard at .warp/budget.py (exists but does not ship) -> 1338/12 RED (proves ship-truth not mere existence); demoting branch_protection_recipe procedure->mechanical with a docs home -> 1339/11 RED. The reviewer independently recomputed the repo-only set and it matches the builder's 17 exactly - 0 shipped capability wrongly marked, 0 do-not-ship entry left unmarked."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Gate GREEN at 97c4ac2 (selftest 1350 passed, 0 failed) including the new honesty check; docs sweeps (dash, non-ASCII, genericity) pass; all 8 capabilities.yaml copies share one sha256 (repo + plugin/templates + 6 packs re-synced, drift empty for all 7); no protected path edited (verify.sh, warp-guard.sh, policy.yaml, policy_check.py or their plugin/templates twins - selftest.py is not protected); index regenerated; warp name unchanged."
+        },
+        {
+          "type": "unit",
+          "ref": "Independent review confirmed on an isolated umask-002 worktree: gate GREEN, 8 copies one hash, pack drift empty for all 7, impl commit (15 files) carries no proof/ or .warp/last_verify or .warp/events.jsonl, no protected path, RULE #1 clean."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 1350 passed, 0 failed (adds the _caps_honesty_findings check); GATE GREEN at 97c4ac2, independently re-run by the reviewer (agent a63b4dec) on an isolated umask-002 worktree; the honesty check's teeth bite four ways (un-mark, missing home, ship-truth-not-existence, docs-home-exemption-abuse); pack_drift_report empty for all 7 packs and cross-pack conformance passes."
+    },
+    {"name": "generated", "status": "passed"},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass; RULE #1 hand-check of the new doc prose and capability markers clean (no em/en dash; every -- is a real --flag, a --- fence, a # --- comment, or a backtick reference)"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "W6 of PLAN-0009, depends on W5. W6 is docs plus the manifest-honesty marker and its gate check - no new fleet code. The current plugin version is 3.4.0 (PLAN-0008); the plugin 3.5.0 release and the PLAN-0009 released status are W8/WARP-0908, so W6 does not bump the version or claim a release. The external supervisor is W7/decision D1, not referenced as shipped.",
+    "Two-tier adoption is the documented frame: installing a pack lays the FULL engine (fleet included); /warp:init lays the MINIMAL governance substrate by design and is not expanded. The 17 repo-only capabilities are dogfood/build-machinery that an adopter legitimately does not receive; the byte-identical adopter manifest still enumerates them but each carries the explicit scope: repo-only marker, so it is honest about what an adopter has (independent review note, non-blocking).",
+    "Doc-procedure exemption (independent review judged SOUND, non-blocking): only a status: procedure entry may use a documentation home and be exempt from the shipped-code requirement (the recipe is adopter-facing); a mechanical/reference entry with a docs home is a finding (proven RED). Residual awareness: the check trusts the status label, mitigated because known dogfood statuses are separately pinned.",
+    "Proof sequencing (transparency, the W5 lesson applied): the independent verdict (agent a63b4dec) was written with proof_digest='RECONCILE' before this manifest existed; this manifest is the canonical evidence artifact (required_evidence: [unit] satisfied by the 'unit' check), and the verdict's proof_digest was then set to proof_digest(this manifest) with the reviewer's judgment preserved. plan_hash sha256:6b03ff568d65cd2f is the canonical hash via plan.py."
+  ],
+  "rollback": "git revert the impl and evidence commits; additive - doc prose added to README/plugin.md/setup.md/runbook.md, a scope: repo-only marker on the 17 dogfood capability entries in both byte-identical copies (and the 6 re-synced pack copies), and a new selftest honesty check. Removing them returns to the pre-W6 docs and manifest. No protected path; the drift-check and cross-pack conformance prove no pack forked."
+}

@@ -1,0 +1,16 @@
+{
+  "name": "save a search (happy path)",
+  "file": "app.html",
+  "viewport": {"width": 1024, "height": 768},
+  "a11y": true,
+  "a11y_fail_on": true,
+  "steps": [
+    {"action": "state", "name": "landing"},
+    {"action": "expect_hidden", "selector": "#status"},
+    {"action": "fill", "selector": "#q", "value": "lisbon rail"},
+    {"action": "click", "selector": "#save"},
+    {"action": "expect_visible", "selector": "#status"},
+    {"action": "expect_text", "selector": "#status", "text": "Saved"},
+    {"action": "state", "name": "after-save"}
+  ]
+}

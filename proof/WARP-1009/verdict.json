@@ -1,0 +1,58 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1009",
+  "commit": "5e58a5b62a3cd8c9a45ad598d75d765098cd137d",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder)",
+  "reviewed_at": "2026-07-21T11:45:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:f2430dad936a91f1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "specs/WARP-0909-clean-context-dispatch-loop.md front matter is flipped status: ready -> shipped (the only line changed in that file), and specs/index.md moves the WARP-0909 row into the shipped block. The correction is TRUE: origin/main carries WARP-0909's implementation commit (a2423c7) plus proof/WARP-0909/manifest.json, verdict.json, and runner-evidence.txt, so ready was stale. python3 .warp/frontier.py reports 'nothing claimable' - WARP-0909 is no longer offered as a BUILD unit. No proof was invalidated: the status flip touches neither the WARP-0909 spec body nor its bound proof, and WARP-0909 declares no revision (manifest spec_revision null), so its already-shipped proof stands."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "The capabilities.yaml tracker_assign_op note is corrected to state the live JiraCloud assign is WIRED (WARP-1005) and matches the shipped code: .warp/tracker_intake.py JiraCloudAdapter._assign (lines 533-542) does self._request('PUT', '/rest/api/3/issue/%s/assignee' % obj_id, {'accountId': assignee}) with the token resolved by token_ref at construction - exactly the 'reference live edge, token-authed, not gate-run' the note now claims. It is not an over-claim: the note keeps 'REFERENCE live edge that is NOT gate-run' and 'the gate exercises only the fake path'. ConfluenceCloudAdapter._assign (lines 723-724) still raises TrackerAdapterError('a wiki page has no assignee...') and the note still says it RAISES by name. No other capability claim is changed. All eight capabilities.yaml copies (root, plugin/templates, aider, antigravity, codex, copilot, cursor, opencode) are byte-identical (sha256 ffc429c7...)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "plugin/templates/.warp/trackers.json token_ref example is corrected secrets:jira_token -> env:JIRA_TOKEN and is now true to the shipped default resolver. .warp/tracker_intake.py _default_secret_resolver (lines 733-738) strips an env: prefix and reads os.environ; verified empirically: with JIRA_TOKEN set, env:JIRA_TOKEN -> 'tok123' resolves, while secrets:jira_token -> None (the old example the resolver cannot read). No stale tracker_intake.py header comment naming an undone increment remains."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "No shipped spec's revision was bumped and no acceptance_criteria were edited: the diff touches only WARP-0909's status line, specs/index.md, the capabilities note, the trackers.json example, and the new WARP-1009 spec; WARP-0908's AC6 prose is untouched. policy_check.ready_boundary_violations() returns [] and spec_revision_stale() returns []. No proof invalidated (accuracy-only edits)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "bash scripts/verify.sh at 5e58a5b -> GATE: GREEN (5e58a5b62a3c); selftest 1476 passed, 0 failed; unit, generated, docs hygiene (incl. dash sweep), template sync, secret scan, and contracts all pass; catalog 5 run / 18 not-applicable / 0 waived / 0 undeclared. .warp/last_verify records green@5e58a5b. capabilities.yaml is byte-identical across plugin/templates and all six packs (template sync pass). No protected path is touched: the twelve changed files are none of scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py, or their plugin/templates twins (per .warp/policy.yaml protected_paths). RULE #1 clean: no em/en dash and no double-hyphen prose separator in the diff. The change lands in the canonical two-commit shape (impl R plus orchestrator evidence commit)."
+    }
+  ],
+  "checks": [
+    "bash scripts/verify.sh -> GATE: GREEN at 5e58a5b; selftest 1476 passed, 0 failed; unit, generated, docs, template_sync, secret_scan, contracts all pass; catalog 5 run / 18 n/a / 0 waived / 0 undeclared; .warp/last_verify = green@5e58a5b.",
+    "python3 .warp/frontier.py -> 'nothing claimable': WARP-0909 is no longer offered as a BUILD unit after its ready -> shipped flip.",
+    "WARP-0909 shipped on origin/main: git ls-tree origin/main shows proof/WARP-0909/{manifest.json,verdict.json,runner-evidence.txt} and the spec; impl commit a2423c7 is contained in origin/main. The status flip invalidates no proof (spec body + bound proof unchanged; WARP-0909 declares no revision).",
+    "AC2 verified against code: .warp/tracker_intake.py JiraCloudAdapter._assign PUTs /rest/api/3/issue/{id}/assignee with {'accountId': assignee}, token-authed at construction (WIRED, reference, not gate-run); ConfluenceCloudAdapter._assign still raises by name. Not over-claimed. capabilities.yaml byte-identical across all eight copies (sha256 ffc429c7...).",
+    "AC3 verified empirically: _default_secret_resolver('env:JIRA_TOKEN') resolves the JIRA_TOKEN env var; _default_secret_resolver('secrets:jira_token') returns None. The corrected template example is true to the shipped resolver.",
+    "AC4 policy functions clean at R: ready_boundary_violations() == [] and spec_revision_stale() == []. No shipped spec revision bumped; WARP-0908 AC6 prose untouched.",
+    "proof/WARP-1009/manifest.json binds to R (commit 5e58a5b), is standalone (no plan_hash, matching proof/WARP-0909 shape), and recompute of validate.proof_digest(manifest) == sha256:f2430dad936a91f1, matching this verdict's proof_digest.",
+    "protected paths: none of the 12 changed files match .warp/policy.yaml protected_paths (verify.sh, warp-guard.sh, policy.yaml, policy_check.py, and their plugin/templates twins).",
+    "RULE #1: no em-dash (U+2014) or en-dash (U+2013) and no double-hyphen prose separator anywhere in the diff."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Non-blocking. AC2 and the tracker_assign_op / tracker_ready_to_test_handoff / tracker_mirror_runner notes correctly disclose that the live JiraCloud edges (assign PUT, live epic/child, mirror) are REFERENCE, token-authed, and NOT gate-run - the deterministic FakeTracker path is what the selftest exercises. Live enablement against a real Jira is the adopter step (parked pending the mobile release per the spec), not a defect in this accuracy-only change."
+    },
+    {
+      "severity": "note",
+      "text": "Non-blocking. Per AC4 the WARP-0908 AC6 descriptive prose is intentionally left as-is (a historical shipped spec whose bound proof would stale on a body edit for no functional gain). This deferral is by design and correctly scoped out; recorded as a note, not a defect."
+    }
+  ],
+  "summary": "WARP-1009 (documentation and repo state made true, a standalone cleanup) passes with notes at 5e58a5b, zero blocking findings. AC1: WARP-0909 is flipped ready -> shipped in its front matter and specs/index.md, a TRUE correction (its impl a2423c7, manifest, and verdict are on origin/main) that removes it from the frontier (frontier.py reports nothing claimable) and invalidates no proof. AC2: the tracker_assign_op capability note now says the live JiraCloud assign is WIRED, and this matches JiraCloudAdapter._assign which PUTs the accountId to /rest/api/3/issue/{id}/assignee token-authed as a reference edge that is not gate-run, while ConfluenceCloudAdapter._assign still raises by name - not an over-claim, byte-identical across all eight copies. AC3: the trackers.json template example is corrected to env:JIRA_TOKEN, which the shipped env-only resolver actually resolves (verified live) where the old secrets:jira_token returned None. AC4: no shipped spec revision was bumped and no acceptance_criteria edited (WARP-0908 prose untouched); ready_boundary_violations and spec_revision_stale are both empty. AC5: the gate is GREEN at R (selftest 1476/0, template sync + docs + secret scan + contracts pass), capabilities.yaml is byte-identical across plugin/templates and six packs, no protected path is touched, and RULE #1 is clean. The manifest binds to R, is standalone, and its proof_digest recomputes to sha256:f2430dad936a91f1, matching this verdict. Two non-blocking notes (live edges are reference/not-gate-run; WARP-0908 prose intentionally deferred), both by design. Verdict: pass_with_notes."
+}

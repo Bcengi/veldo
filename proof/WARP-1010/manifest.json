@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1010",
+  "commit": "67731d299d1c0ab837039fabfd48950b6360be69",
+  "producer": "claude-opus-4-8[1m] (WARP-1010 implementer agent, standalone; fills the last fleet seam, in-session only)",
+  "produced_at": "2026-07-21T13:20:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet.py fills the WorkerSpawner start seam with a REAL worktree-isolated in-session start. WorktreeInSessionStart.__call__(worker_id, env) provisions a git-worktree-isolated workspace per worker via WorktreeProvisioner.add (an in-line `git worktree add --detach`, _git_worktree running `git worktree` only), dispatches the worker through the injected in-session callback dispatch(worker_id, env, worktree), and returns a retireable handle {worker_id, worktree, worker}. Its .stop(handle) is the InSessionSpawner stop: it stops the worker cooperatively (dispatch_stop) and removes the worktree (WorktreeProvisioner.remove), and InSessionSpawner.retire releases the account. The account's CLAUDE_CONFIG_DIR is threaded into env by InSessionSpawner._assemble_env, so the worker reuses that account's login. make_worktree_in_session_spawner reuses make_in_session_spawner / AccountSpreader (one account per worker), adding no second account or handle implementation. A worker is an in-session worker that dies with the session; nothing detached is started."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1010 block passes with a fake provisioner (_FakeWorktree) and a fake dispatch over a throwaway accounts root: 'worktree-isolated start provisions a worktree per worker and dispatches in-session', 'the dispatch carries the worker's account CLAUDE_CONFIG_DIR, scope, and worktree', 'retire stops the in-session worker and removes its worktree (retireable handle)', and 'a worktree fleet run scales to the account count, one account per worker, and drains' (every worker dispatched under its own account, every worktree added then removed). The live worktree/dispatch start is a REFERENCE path, not gate-run."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet.py spawns NO detached, headless, or background process for the worker. grep of the shipped module finds none of Popen, os.fork, os.exec, os.spawn, os.posix_spawn, os.system, setsid, nohup, start_new_session, creationflags, multiprocessing, pty.spawn, or 'claude -p'. The ONLY external program is an in-line synchronous `git worktree` call (subprocess.run([\"git\", \"worktree\"] ...) in _git_worktree), and subprocess is imported LAZILY inside that helper (never at module top), exactly the supervisor.py posture (RealSystemctl only ever runs systemctl). The worker launch itself is the injected dispatch(worker_id, env, worktree) seam, not a process this module starts; with no dispatch wired the module honors the same fail-loud boundary it held as a reference before (feedback_no_rogue_processes, PLAN-0007 NG1)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts 'fleet.py spawns no detached/background worker (no Popen/fork/exec/spawn/setsid/nohup/claude -p)', 'fleet.py does not import subprocess at module top (the git worktree helper imports it lazily)', and 'fleet.py's only external program is an in-line `git worktree` (git, never a worker)' (checks subprocess.run([\"git\", \"worktree\"] present, Popen absent, and the self._dispatch(worker_id, env, worktree) seam present)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The no-detach boundary has TEETH in the supervisor spawn-on-install style: a selftest predicate _no_detached_worker_spawn(src) over the shipped fleet.py source returns True (no detached/background primitive), and two MUTATIONS turn it RED - appending subprocess.Popen([\"claude\", \"-p\", prompt], start_new_session=True) and appending os.system(\"claude -p work &\"). Both mutations make _no_detached_worker_spawn return False, so a future change that slips a detached spawn or a background claude -p into fleet.py fails the gate. The launcher control logic (elastic scaling, one-account-per-worker via AccountSpreader, retire releasing the account) stays gate-tested via the fake spawner (WARP-0707/0902 blocks unchanged); the live in-session start is a reference path not run in the gate."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest 'WARP-1010 AC3 TEETH: a detached subprocess.Popen(claude -p) mutation fails the no-detach check' and 'WARP-1010 AC3 TEETH: a background `claude -p` (os.system) mutation fails the no-detach check' both pass (the predicate is non-vacuous). Fail-loud teeth also pass: an unwired dispatch and a dispatch that returns no worker each raise SpawnPrimitiveError and a dispatch that raises re-raises, each with no leaked worktree."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Where no in-session mechanism is available the primitive FAILS LOUD by name rather than fabricate a handle or detach. WorktreeInSessionStart with dispatch None delegates to in_session_start which raises SpawnPrimitiveError (and provisions no worktree); a dispatch returning None raises SpawnPrimitiveError after removing the worktree it provisioned (no leak, no faked worker); a dispatch that raises removes the worktree and re-raises. cmd_fleet keeps the fail-loud in_session_start as the DEFAULT, so a bare `warp fleet` with no in-session start wired stops at the first spawn (the existing WARP-0904/0907 behavior is preserved). The coordinator drive is documented in docs/runbook.md V.8: workers are in-session, git-worktree-isolated, opt-in, one account per worker (never one account as two workers), the launch is agent-mediated in-session, they die with the session, and the start fails loud where no in-session mechanism exists."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest 'with no in-session dispatch wired the start FAILS LOUD (no worktree, no fabricated handle)', 'a dispatch that starts no worker fails loud and leaks no worktree', and 'a dispatch that raises removes the worktree and re-raises (no leaked worktree)' all pass. The pre-existing 'reference spawn primitive fails loud' and 'warp fleet fails loud at the spawn primitive with no in-session start wired' assertions remain green."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/capabilities.yaml is updated honestly: worker_spawner stays status mechanical (the orchestration + worktree provisioning + retire teardown + one-account-per-worker + fail-loud control logic is gate-tested via a fake provisioner and fake dispatch), and a new worker_in_session_start entry is status reference (the live agent-mediated in-session start is a reference edge, NOT gate-run), matching the fleet_supervisor_session_launch shape. The capabilities-honesty and status-bound-regex selftests pass (both homes are .warp/fleet.py which ships in the engine). bash scripts/verify.sh at R -> GATE: GREEN; template sync pass and pack drift pass (7 packs); every edited ENGINE_GLOBS file (.warp/fleet.py, .warp/capabilities.yaml) re-synced byte-identical across plugin/templates and all six packs; bin/warp untouched. RULE #1 clean (no em/en dash, no prose double-hyphen; git worktree flags --detach/--force are CLI code, not prose). No protected path touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins unchanged)."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py at R: 1488 passed, 0 failed (12 new WARP-1010 assertions). specs/WARP-1010 status set to shipped and specs/index.md regenerated (105 specifications, WARP-1010 row shipped); check_generated.sh reports no drift. The change lands in ONE reviewed commit R (67731d2) carrying the fleet.py fill + worktree/spawn helper + runbook doc + selftest + both capabilities entries (all eight byte-identical copies) + the shipped spec + regenerated index; .warp/last_verify, .warp/events.jsonl, and proof/WARP-1010 are left uncommitted, no verdict is written, and nothing is pushed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "operational",
+      "status": "passed",
+      "detail": "The WorkerSpawner start seam is filled by a REAL worktree-isolated in-session start (WorktreeInSessionStart + WorktreeProvisioner + make_worktree_in_session_spawner in .warp/fleet.py) that provisions a git worktree per worker (in-line git only), dispatches an in-session worker through an injected agent-mediated callback, returns a retireable handle, and retires by removing the worktree and releasing the account. It starts NO detached/headless/background process: the only external program is `git worktree` (subprocess imported lazily, git-only), the worker launch is the injected dispatch seam, and the no-detach boundary is enforced with teeth (two detached-spawn mutations turn a source check red). Fail-loud is preserved where no in-session mechanism is wired. The live start is a reference path, not gate-run."
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py at R: 1488 passed, 0 failed. The WARP-1010 block adds 12 assertions (AC1 worktree provision + in-session dispatch + retireable handle + full fleet run one-account-per-worker; AC2/AC3 no-detach source check plus lazy-git-only subprocess and dispatch seam; AC3 two detached-spawn mutation teeth; AC4 three fail-loud teeth). The WARP-0707/0902/0903/0904/0907 fleet blocks stay green."
+    },
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated (scripts/update_index.py, 105 specs); WARP-1010 row reads shipped; check_generated.sh reports no drift."},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, and genericity sweep all pass; the runbook V.8 coordinator-drive paragraph and both capabilities entries are RULE #1 clean (no em/en dash, no prose double-hyphen; only CLI flags --detach/--force/--account carry a double hyphen and are code)."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh 'template sync: pass'; the edited engine files match the plugin/templates canon (bin/warp untouched)."},
+    {"name": "pack_drift", "status": "passed", "detail": "python3 scripts/check_pack_drift.py: pack drift: pass (7 pack(s)); .warp/fleet.py and .warp/capabilities.yaml are byte-identical across all eight copies (root .warp, plugin/templates, and the six packs cursor/codex/copilot/antigravity/opencode/aider)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all passes, including the WARP-1010 spec (status shipped, lane standalone, required_evidence operational) and this manifest (criteria AC1-AC5 cover the spec exactly, required_evidence operational satisfied by the operational evidence and the operational check)."}
+  ],
+  "assumptions": [
+    "WARP-1010 is a standalone spec (lane: standalone), not a numbered PLAN work item, so this manifest carries no plan_hash (matching proof/WARP-1009 and proof/WARP-0909). required_evidence: [operational] is satisfied by the operational evidence on every criterion and by the operational check.",
+    "The live worktree-isolated in-session start is a REFERENCE path, agent-mediated at runtime (the coordinator injects dispatch(worker_id, env, worktree)), and is NOT run in the gate - the gate drives a fake provisioner and a fake dispatch, exactly as the live tracker adapters and the supervisor session launch are reference. A pure-Python spawn could only launch an in-session worker by detaching, which is forbidden, so keeping the launch behind the injected in-session-start callback plus a documented coordinator procedure is the correct fill, not a shortcut.",
+    "Single reviewed commit R (67731d2). This is the canonical evidence artifact (required_evidence [operational]); it is left UNCOMMITTED alongside .warp/last_verify and .warp/events.jsonl. No independent verdict is written and nothing is pushed."
+  ],
+  "rollback": "git revert R (67731d2). The change fills a seam whose reference was fail-loud and adds no gate-run behavior (the live spawn is reference, off the gate); reverting returns in_session_start to its fail-loud reference and the documented one-session-per-account procedure, with no migration and nothing running to unwind."
+}

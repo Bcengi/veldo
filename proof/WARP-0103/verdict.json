@@ -1,0 +1,53 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0103",
+  "commit": "7f9bed8cfc7fe3f7d96c4bee3f75cde5c68e5116",
+  "reviewer": "claude-opus-4-8[1m]",
+  "reviewed_at": "2026-07-16T22:09:36Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Reran run-check on PLAN-0001. WARP-0103 clears (dep WARP-0102 shipped, exit 0). WARP-0111 REFUSED naming WARP-0103 (status ready, not shipped) while WARP-0104 (shipped) is correctly not named, exit 1. WARP-0112 (five deps) REFUSED naming BOTH unshipped deps WARP-0103 and WARP-0107, confirming 'each unshipped dependency' is named. WARP-0107 (dep WARP-0105 shipped) and WARP-0109 (dep WARP-0108 shipped) both clear. The clear condition is exact string equality to 'shipped' (status.get(d) != 'shipped'), so ready/draft/in_progress/unknown all count as unshipped and it fails closed on a dep with no spec file."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Edited WARP-0103 plan_revision to 2 (< plan revision 3): run-check REFUSED with 'stale plan context: spec built against revision 2, plan is now revision 3 - re-pull it', exit 1. Set to 3 (equal): clears, exit 0. Set to non-integer 'three': REFUSED cleanly with 'spec plan_revision 'three' is not an integer', exit 1, no traceback. Spec restored via git checkout. A spec with no plan_revision (e.g. WARP-0101) is not subjected to the revision check and clears."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "bundle emits all four required sections: iteration outcomes (O1-O4), this work item's feature ref (F1) and per-dependency status (WARP-0102: shipped for WARP-0103; WARP-0103: ready + WARP-0104: shipped for WARP-0111), inherited constraints C1-C3, and the active regression (RJ1). bundle errors cleanly for a spec not in the plan (exit 1, no traceback). Active regression is computed by the same _journey_active W4 uses; cross-checked bundle's RJ1 against 'plan.py regression per_spec:WARP-0103' (RJ1) and 'release' (RJ1 + manual RJ2 surfaced) - consistent."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "plan.py hash is stable across two runs (sha256:f1bea3833572c104) and matches the manifest's recorded plan_hash exactly. Imported plan_hash directly: identical dicts hash equal, content change (revision 1 vs 2) changes the hash, and approved_at/recorded_at are excluded (A vs B hash equal) while a non-volatile key churns. The /warp:run SKILL.md step 1a instructs run-check enforcement (STOP on refusal), bundle load, and hash recording before building a planned spec. capabilities.yaml plan_run_integration flipped from absent to mechanical (home .warp/plan.py, note credits the /warp:run skill for enforcement). Enforcement is skill-instructed (procedure), the verbs are code (mechanical); the manifest assumption and the spec's Out-of-scope both disclose there is no pre-build hook, so the mechanical claim is honest by the repo's own capability convention (plan_ops mechanical, plan_dialogue procedure)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Botched duplicated comment introduced in scripts/selftest.py line 388: the 'regression mechanics (W4)' comment header was pasted onto itself so the dash-prefixed marker and label appear twice concatenated on one line. Cosmetic only, it is a comment; all 97 assertions run and pass. Worth cleaning up."
+    },
+    {
+      "severity": "note",
+      "text": "Stale docstring in .warp/plan.py: 'All three read spec status from specs/*.md' now understates the module, which exposes status, release-check, impact, regression, bundle, run-check, and hash. Doc drift, not a behavior issue."
+    },
+    {
+      "severity": "note",
+      "text": "run-check's stale-revision and unshipped-dependency logic has no dedicated unit test; only plan_hash got selftest cases. The refusal/clear behavior is demonstrated (and I reproduced it) purely operationally. The manifest's AC2 'unit' evidence cites the plan_hash cases as 'underpinning the revision check', which is a generous framing - those cases do not exercise the int(sr) < int(revision) comparison. Operational evidence is solid, so this is precision-of-claim only, not a gap in what was proven."
+    },
+    {
+      "severity": "note",
+      "text": "The revision check is one-sided: run-check refuses only when plan_revision is strictly less than the plan revision. A spec whose plan_revision is AHEAD of the plan (an impossible/corrupt state) would clear. Within the AC's wording ('older than the plan's current revision'), so not a defect against spec. Also: the try/except attributes any int() failure - including a non-integer plan revision - to 'spec plan_revision is not an integer', a theoretical misattribution the plan validator makes unreachable here (plan revision is validated integer)."
+    },
+    {
+      "severity": "note",
+      "text": "plan_hash truncates the sha256 digest to 16 hex chars (64 bits). Adequate for detecting plan drift / binding a proof to plan state, but a reduced collision space for something named a content hash. Design choice, called out for the record."
+    }
+  ],
+  "summary": "WARP-0103 satisfies all four acceptance criteria. Independently reran the gate (selftest 97 passed / 0 failed, validate.py all exit 0, verify.sh GREEN 5 run / 0 undeclared) and reproduced every behavioral claim: run-check refuses unshipped deps (naming each, incl. two at once on WARP-0112) and stale/non-integer plan_revision while clearing shipped deps and matching revisions; bundle emits outcomes + feature/dep status + constraints + active regression and errors cleanly off-plan; plan.py hash is stable, content-sensitive, volatility-excluding, and matches the manifest's recorded plan_hash; the /warp:run skill wires run-check + bundle + hash and capabilities honestly marks plan_run_integration mechanical (enforcement is skill-instructed, no hook, and that is disclosed). Findings are all non-blocking: a duplicated selftest comment, a stale plan.py docstring, operational-only coverage of the refusal logic with a generous AC2 unit-evidence framing, a one-sided revision check, and a 64-bit hash truncation. Temporary spec edits restored; tree clean save gate churn and untracked proof."
+}

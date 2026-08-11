@@ -1,0 +1,160 @@
+{
+ "schema": "veldo.suites/v1",
+ "entry": "selftest.py",
+ "shared": "shared.py",
+ "note": "THESE ARE FRAGMENTS, NOT INDEPENDENT MODULES. scripts/selftest.py compiles each file listed here and executes it into shared.py's ONE namespace, in the order given, so every fragment sees exactly the state the monolith gave it. None of them runs standalone: a name one fragment rebinds is visible to every later one, and scripts/suite_equiv.py over this manifest returns DEFECTIVE, reporting every fragment PASSES_IN_AGGREGATE_FAILS_ALONE and the reversed order ORDER_DEPENDENT, which is why the order in this file is the contract. Standalone independence is a separate item, and nothing in the gate runs suite_equiv over these files. A file present in this directory and absent from this list turns the gate RED as SUITE_NOT_ENUMERATED rather than silently not running. VELDO_SUITE_ORDER reorders the run as a diagnostic and accepts the same name twice, which RUNS that suite twice and inflates the printed count; it can never SHRINK the run, so it cannot hide a skipped suite or fabricate a pass.",
+ "ordering_dependencies": [],
+ "suites": [
+  {
+   "name": "01_warp_0101_reviewer_notes",
+   "file": "01_warp_0101_reviewer_notes.py",
+   "regions": "1-22"
+  },
+  {
+   "name": "02_mobile_ios_runner_b8",
+   "file": "02_mobile_ios_runner_b8.py",
+   "regions": "23-32"
+  },
+  {
+   "name": "03_plugin_extension_loading_runner",
+   "file": "03_plugin_extension_loading_runner.py",
+   "regions": "33-43"
+  },
+  {
+   "name": "04_run_status_reader_veldo",
+   "file": "04_run_status_reader_veldo.py",
+   "regions": "44-54"
+  },
+  {
+   "name": "05_tracker_routing_resolver_veldo",
+   "file": "05_tracker_routing_resolver_veldo.py",
+   "regions": "55-70"
+  },
+  {
+   "name": "06_capabilities_manifest_honesty_veldo",
+   "file": "06_capabilities_manifest_honesty_veldo.py",
+   "regions": "71-89"
+  },
+  {
+   "name": "07_warp_1103_completion_mandatory",
+   "file": "07_warp_1103_completion_mandatory.py",
+   "regions": "90-96"
+  },
+  {
+   "name": "08_restoration_spec_generation_veldo",
+   "file": "08_restoration_spec_generation_veldo.py",
+   "regions": "97-103"
+  },
+  {
+   "name": "09_action_whitelist_warp_1205",
+   "file": "09_action_whitelist_warp_1205.py",
+   "regions": "104-109"
+  },
+  {
+   "name": "10_warp_0613_anti_vacuity",
+   "file": "10_warp_0613_anti_vacuity.py",
+   "regions": "110-121"
+  },
+  {
+   "name": "11_inbound_command_receipt_reconcile",
+   "file": "11_inbound_command_receipt_reconcile.py",
+   "regions": "122-126"
+  },
+  {
+   "name": "12_warp_1210_hardening_four",
+   "file": "12_warp_1210_hardening_four.py",
+   "regions": "127-142"
+  },
+  {
+   "name": "13_warp_0623_codified_live",
+   "file": "13_warp_0623_codified_live.py",
+   "regions": "143-214"
+  },
+  {
+   "name": "14_warp_0717_subset_runner",
+   "file": "14_warp_0717_subset_runner.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "14_warp_0717_subset_runner"
+   ],
+   "requires_note": "A fragment written after the cut has NO region range in proof/WARP-0712/order-dependence.json, so its prerequisite closure cannot be derived and it must DECLARE one here; a fragment with neither is refused as CLOSURE_UNAVAILABLE rather than handed an empty closure. This one declares ITSELF ALONE, and that is MEASURED, not assumed: every name it uses (expect, ROOT, V, tmpfile, GOOD_SPEC, json, os, re, subprocess, sys, tempfile, importlib, Path) is bound by shared.py, which always runs, and `python3 scripts/selftest.py --suite 14_warp_0717_subset_runner` reproduces its full-run labels exactly."
+  },
+  {
+   "name": "15_warp_1402_estimate_record",
+   "file": "15_warp_1402_estimate_record.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "15_warp_1402_estimate_record"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived. It declares ITSELF ALONE, and that is MEASURED, not assumed: every name it uses beyond its own (expect, ROOT, V, tmpfile, subprocess, sys, tempfile, importlib, Path) is bound by shared.py, which always runs, and it imports re and shutil under its own prefixed names because shared.py binds neither; `python3 scripts/selftest.py --suite 15_warp_1402_estimate_record` reproduces its full-run labels exactly."
+  },
+  {
+   "name": "15_warp_1404_historical_analogy",
+   "file": "15_warp_1404_historical_analogy.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "15_warp_1404_historical_analogy"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, subprocess, sys, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs, so the set difference against shared.py's bindings is empty; its one extra import (shutil) is local and prefixed. Driven 2026-08-10: `python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy` reports this fragment at 37 passed, 0 failed, and 37 is exactly the delta of the full aggregate line with and without it (3979 passed 0 failed with, against 3940 passed 2 failed without - the two being this very closure table disagreeing with the manifest, which is that check doing its job)."
+  },
+  {
+   "name": "15_warp_1405_reconciliation",
+   "file": "15_warp_1405_reconciliation.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "15_warp_1405_reconciliation"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, subprocess, sys, tempfile, tmpfile - and every one is bound by shared.py, which always runs; it imports re and shutil under its own prefixed names because shared.py binds neither. Driven: `python3 scripts/selftest.py --suite 15_warp_1405_reconciliation` produces 49 passed, 0 failed, which is exactly the contribution it makes to a full run (measured 2026-08-10 as the delta of the aggregate line with and without this fragment: 3942 assertions without it, and the without-run also reports 2 failures because pulling the fragment out leaves its closure entry in the derived requires.json, which is an artifact of the measurement and not of the suite). It costs about 2.8s, of which 2.7s is one subprocess rendering the report over this repository's real corpus."
+  },
+  {
+   "name": "15_warp_1406_normalization",
+   "file": "15_warp_1406_normalization.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "15_warp_1406_normalization"
+   ],
+   "requires_note": "Declares ITSELF ALONE, and that is MEASURED rather than assumed. Its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs; the set difference against shared.py's own bindings is empty. Driven: `python3 scripts/selftest.py --suite 15_warp_1406_normalization` produces 28 passed, 0 failed, which is exactly the contribution it makes to a full run (measured 2026-08-10 as the delta of the aggregate line with and without this fragment)."
+  },
+  {
+   "name": "15_warp_1407_judgment_load",
+   "file": "15_warp_1407_judgment_load.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "15_warp_1407_judgment_load"
+   ],
+   "requires_note": "Written after the cut, so it has no region range to derive a closure from and DECLARES one here rather than being handed an empty one. It declares ITSELF ALONE, and that is MEASURED: every name it uses from the shared namespace (expect, ROOT, V, importlib, json, tempfile, Path) is bound by shared.py, which always runs, its own two imports are local and prefixed, and `python3 scripts/selftest.py --suite 15_warp_1407_judgment_load` reproduces its full-run labels exactly."
+  },
+  {
+   "name": "15_warp_1408_budget_rollup",
+   "file": "15_warp_1408_budget_rollup.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "15_warp_1408_budget_rollup"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, subprocess, sys, tempfile - and every one is bound by shared.py, which always runs, so the set difference against shared.py's bindings is empty; its own two imports (re, shutil) are prefixed and deleted at the end because shared.py binds neither. Driven: `python3 scripts/selftest.py --suite 15_warp_1408_budget_rollup` produces 42 passed, 0 failed, which is exactly the contribution it makes to a full run: measured 2026-08-10 as the delta of the aggregate line, 3942 passed with this fragment and its requires entry removed against 3984 with them present, both at 0 failed."
+  },
+  {
+   "name": "15_warp_1409_cost_to_change_per_area",
+   "file": "15_warp_1409_cost_to_change_per_area.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "15_warp_1409_cost_to_change_per_area"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than inheriting a measured one, and the declaration is ITSELF ALONE. MEASURED, not assumed: every name it uses (expect, ROOT, V, tmpfile, json, tempfile, importlib, Path) is bound by shared.py, which always runs, and `python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area` reproduces its full-run labels exactly."
+  },
+  {
+   "name": "16_warp_1403_sizing_pass",
+   "file": "16_warp_1403_sizing_pass.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "16_warp_1403_sizing_pass"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, subprocess, sys, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs, while its own three imports (hashlib, re, shutil) are local, prefixed and deleted at the end. Driven: `python3 scripts/selftest.py --suite 16_warp_1403_sizing_pass` produces 37 passed, 0 failed, which is exactly the contribution it makes to a full run (measured 2026-08-10 as the delta of the aggregate line with and without this fragment: 3979 against 3942)."
+  },
+  {
+   "name": "shared",
+   "file": "shared.py",
+   "regions": "preamble and every crossing binding"
+  }
+ ]
+}

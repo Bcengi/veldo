@@ -1,0 +1,93 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1208",
+  "commit": "ad65e2a946e0bf8f648eafc613210a0331e4028b",
+  "reviewer": "claude-opus-5[1m] (independent adversarial fresh-context reviewer, distinct from the WARP-1208 build worker and from the orchestrating session; instructed to default to REFUTED when uncertain, to attack each guard with CRAFTED INPUT rather than by mutating the module, and to treat a passing test suite written by the implementer as weak evidence)",
+  "reviewed_at": "2026-07-24T19:38:00Z",
+  "verdict": "fail",
+  "proof_digest": "sha256:f037eafaac948806",
+  "must_fix_before_live": [
+    {
+      "id": "F1",
+      "criterion": "AC3",
+      "summary": "The draft path guard does not normalize its target. forbidden_draft_target scans Path(path).parts for an adjacent ('.warp','actions') run with no normpath or resolve, so a '..' traversal (drafts_dir = <root>/.warp/incident_drafts/../actions) and a symlinked drafts directory both WRITE DRAFTS INSIDE THE ACTION WHITELIST STORE and settle with no refusal. Demonstrated end to end on disk. The match is also case-sensitive only, so 'Specs/x.md' and '.WARP/Actions/x.yaml' return None and both forbidden roots are reachable by case variation on the macOS and Windows adopters the plugin ships to. AC3 promises refusal of any target inside the action whitelist store, and the shipped adopter-facing capabilities.yaml entry repeats that promise.",
+      "severity": "blocking, mitigated in depth but not closed: the second layer holds, so a draft written into the store is still unreviewed and build_whitelist over the real store returns empty"
+    },
+    {
+      "id": "F2",
+      "criterion": "AC2",
+      "summary": "The bound digest binds no diagnosis. DIAGNOSIS_MATERIAL_FIELDS includes 'diagnosis', but warp.incident/v1 has no diagnosis field: the diagnosis and its cited evidence live on warp.remedy/v1, which validate_remedy requires precisely so a diagnosis is derived from cited artifacts. For a canonical incident record the recomputed material is {id, signal, affected_behavior, diagnosed_at}, which is the failure identity plus a timestamp. The comparison is therefore honest but nearly empty: with one validation left untouched, the ENTIRE REMEDY can be swapped (proposed_action rollback_deploy replaced by drop_customer_table) and the reconciliation still settles, rendering the runbook draft for the destructive action. The receipt's diagnosis_validation block reads to a stranger as 'a human validated this diagnosis' when no diagnosis was bound.",
+      "severity": "blocking: the load-bearing human-validation property of outcome O5 is materially weaker than the spec, the manifest, and the receipt all state"
+    },
+    {
+      "id": "F3",
+      "criterion": "AC4",
+      "summary": "The append-only compare-and-swap store overwrites an unreadable receipt and double-emits incident.closed. FilesystemReconciliationStore._get swallows OSError and ValueError and returns None, so a crash-truncated receipt is treated as ABSENT rather than as a conflict. Demonstrated: truncate a settled receipt, re-run, the result is 'settled', the file is overwritten, and events.jsonl then carries TWO incident.closed lines for one incident. This is the exact corruption the spec's own Notes name ('a duplicated incident.closed silently corrupts every W10 measure') and a fail-open against plan constraint C3.",
+      "severity": "blocking: fail-open in the one place the spec singles out as unacceptable"
+    },
+    {
+      "id": "F4",
+      "criterion": "AC3",
+      "summary": "AC3's claim that the runbook draft passes the shipped action.py validate_action is exhibited for one fixture, not enforced. A contract-valid remedy (validate_remedy errors zero) whose proposed_action.parameters carries an empty or whitespace-only key renders a draft that FAILS the shipped validator with 'parameter 0 has no name', because _draft_parameter_specs passes keys through _one_line with no guard and nothing validates the rendered draft before writing it.",
+      "severity": "blocking on the promise, lowest severity of the four in practice: an invalid draft is still unpromotable"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "The failure signature and recurrence detection are as specified. The reviewer confirmed determinism across processes, sensitivity to exactly the four identity fields, insensitivity to title, severity, id and timeline, self-exclusion, the malformed-record skip, and detection of a second same-identity incident. The recurrence is named a missing specification on the receipt."
+    },
+    {
+      "id": "AC2",
+      "status": "refuted",
+      "note": "Four of the five close-gate refusals are real and were confirmed against crafted input: the status gate (open and closed-with-no-receipt both refuse with zero writes), the missing-validation refusal (None, a non-mapping string, and a mapping with a digest but no validated_by all refuse), the machine-actor refusal (27 spellings attacked; case, whitespace, tab, newline and non-breaking space all caught), and the emergency-debt refusal (truthy reader refuses, a raising reader fails closed, an absent reader stands down). The digest-mismatch refusal fires correctly for a forged digest, a stale-record digest and a digest of a different signal. BUT the material it binds contains no diagnosis, so the property the criterion claims is not the property enforced: 13 post-validation record mutations were tried and title, severity, timeline.opened_at, an added field and added evidence all settle with the digest unchanged, and the whole remedy can be replaced. See must-fix F2. The reviewer also noted, as pre-existing safety-core behavior rather than a regression, that the machine-actor normalizer reused from authorization.py and two_key.py misses zero-width space, soft hyphen, fullwidth forms and the non-breaking hyphen."
+    },
+    {
+      "id": "AC3",
+      "status": "refuted",
+      "note": "THE CENTRAL CLAIM SURVIVED EVERY ATTACK: the reviewer could not make a reviewed or promoted draft exist by any path the module offers. Newline and structure injection through the action name, the rollback text and the execution receipt's system field are neutralized into single-line scalars; every rendered draft parses to review status proposed; the shipped action_reviewed() is False; build_whitelist over the draft's own directory is empty; the draft_review seam refuses exactly as documented; a hand-promotion needs a human to set status, verdict and a matching reviewed_digest. Two defects sit around that intact core: the path guard is bypassable by traversal, symlink and case (F1), and the structural-validity promise is exhibited rather than enforced (F4). The reviewer additionally found that a non-dict review block (a bare string, True, or a list) and verdict-adjacent keys are silently ignored rather than refused: fail-safe in outcome, but the guard is bypassed rather than fired."
+    },
+    {
+      "id": "AC4",
+      "status": "refuted",
+      "note": "The honest-receipt and idempotency machinery is largely real and resisted direct attack: the reviewer could not collide two different settlements onto one receipt id, and could not get a changed settlement accepted as a benign replay through the normal path (a changed validator and a changed recurrence set both conflict-refuse). Both execution-claim refusals fire. The vocabulary drift binding and the AC4 recognition tooth hold. BUT the append-only claim is refuted for an existing-but-unreadable record, which is overwritten and double-emits the event (F3). Four further integrity gaps were found and recorded as notes rather than blockers: an incident.closed event is permanently LOST if the event append fails after the receipt lands; the closed-status replay path returns recomputed fields that contradict the receipt it returns; put_draft adopts whatever is on disk without comparing it to what it would render; and the draft-path token collapses distinct incident ids onto one path."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "The teeth are genuinely non-vacuous, and the reviewer proved it harder than the manifest did: all nine in-memory mutations were re-run against all nine refusing fixtures plus two extras, and the resulting matrix is PERFECTLY DIAGONAL. Each mutation flips exactly its own fixture and no other; every other cell still refuses by its own name; each mutation target appears exactly once in the source; the module's sha256 on disk is unchanged after all mutations. The manifest's admission about the missing-validation tooth was verified as real and necessary: with validation=None, neutralizing that guard raises AttributeError rather than turning green, which is why the fixture is a mapping without validated_by, and the None path is separately proven as its own named refusal."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified independently. Imports by AST: standard library only, exactly five sibling modules loaded by path (incident, action, action_executor, authorization, events), no second parser, no second machine-actor list, no second proposal-digest, no literal event-type string, no enforcement reference outside the docstring, no process, thread, timer or socket token. The safety-core and protected-path diff is empty. The eight engine copies reduce to one md5 each. The only caller is the capability entry and the spec. Gate GREEN at 9d57471, selftest 2769 passed 0 failed against a 2658 baseline measured in a throwaway clone, so the manifest's arithmetic is exact. Dogfood check_ready exits 0. One contract-staleness observation, not a violation: the module takes contracts-to-engine and contracts-to-metrics edges that architecture.yaml does not list in dependencies.allow, but that rule's enforcement is review-lane and the shipped request_reconcile.py takes the same edge."
+    }
+  ],
+  "manifest_overstatements": [
+    "AC3 unit evidence says 'the forbidden roots are read from the SHIPPED store location rather than hardcoded' - only one of the two is; SPEC_CORPUS_SEGMENT is a hardcoded literal, so the plural is wrong.",
+    "AC3 operational says 'the writer REFUSES BY NAME any target inside the action whitelist store' - refuted by F1, and the same sentence is repeated in the adopter-facing capabilities.yaml entry.",
+    "AC4 operational says 'the store is APPEND-ONLY WITH COMPARE-AND-SWAP ... a conflicting write under an existing id refuses rather than overwriting' - refuted by F3 for an unreadable record.",
+    "AC3 operational states structural validity against warp.action/v1 unconditionally - proven for one fixture and false for a reachable contract-valid remedy (F4).",
+    "AC2 operational invokes the WARP-0619 lesson for the recomputed digest - the mechanism is real but the invocation overstates what it buys, because the recomputed material contains no diagnosis (F2).",
+    "AC6 operational says a repository-wide grep for incident_reconcile returns only capabilities.yaml - it also returns the spec file. Trivial, but stated as exhaustive.",
+    "The shape_gate check detail says 'the declared footprint matches the diff exactly' - true only under the shape gate's own definition of the diff, which excludes specs/index.md, .warp/last_verify, .warp/events.jsonl and proof/. The commit does change specs/index.md, which this footprint does not declare although sibling WARP-0619 declared its equivalent."
+  ],
+  "notes": [
+    "Ranked by how much they will matter in six months. 1. The gate now accepts incident lifecycle events that no reconciliation produced: any writer can append incident.closed and pass, with no binding between an event and a receipt, and WARP-1210 derives recurrence rate, time-to-restore and the diagnosability score from that stream. Design W10 to join events to receipts or the numbers are unauthenticated. 2. The receipt and the runbook draft can disagree about what ran with no refusal: an execution receipt with a correct proposal_digest but a different action field is recorded verbatim as what_was_done while the draft beside it names the original action. The digest binds the receipt to the remedy, never the receipt's own action field to the proposal's. This is where a stranger diagnosing a production failure is most likely to be misled. 3. A lost incident.closed under partial failure: the receipt and the events are written non-atomically with no rollback and no re-emit on the replay path, so a settled incident can exist with no event, which W10 reads as never closed. 4. put_draft adopts on-disk content without comparing it to the re-render, so a receipt can point at a draft describing a different incident. 5. The closed-replay result contradicts the receipt it returns. 6. The pass emits incident.closed but never transitions the incident record, so the stream says closed while the record still says diagnosed; W11 has to own the transition. 7. A non-mapping execution_receipt is silently dropped although the ReconcileError docstring claims it is raised by name. 8. The path guard and the compare-and-swap live in the base class only, so a subclass overriding put_draft or settle silently loses both. 9. _lifecycle_event selects the event type by suffix match over a sorted vocabulary; correct today, order-dependent if a remedy.closed type is ever added. 10. .warp/incident_drafts/ is validated by nothing and is not git-ignored, and warp.regression_criteria/v1 has no validator. 11. The local _norm duplicates authorization._norm, now the fourth copy of that normalizer, which is the practical cause of the unicode gaps above."
+  ],
+  "assumption_rulings": [
+    "The definition of 'diagnosis material': REJECTED. It contains no diagnosis for a contract-valid incident, the cited evidence that warp.remedy/v1 requires is entirely unbound, and binding id plus diagnosed_at means the material mostly repeats what the failure signature already covers, adding little beyond a timestamp.",
+    "The downward degradations for runbook-draft fields: ACCEPTED. Every degradation the reviewer could produce was downward: no usable reversibility yields irreversible, data_mutating and a critical risk class; a partial reversibility block degrades the same way; the risk class is the max of the remedy's class and the shipped floor. Caveat recorded: a remedy that MISCLASSIFIES itself has its claim carried verbatim into the draft, and the only control is the human review at promotion, which the spec does label review-lane.",
+    "Excluding the per-run draft outcome from the settlement identity: ACCEPTED BUT INCOMPLETE. The exclusion is right and the replay is a byte-identical no-op, but recurrence_of, missing_specification and the draft digests also vary per run and are in the compared content while absent from the id, so the conflict the exclusion was meant to avoid still fires after a second occurrence of the same signature or after a human edits a draft. Either put them in the identity or take them out of the compared content.",
+    "The 995-line squeeze against the 1000-line budget: the legibility cost is real but small and not blocking. Longest function 86 of 120, no line over 130 characters, 27 undocumented functions mostly store primitives and one-line helpers. Density genuinely hurts in one place, the guard chain of reconcile_incident, where the ordering of five refusals is carried by comment prose rather than structure. The reviewer's judgment: a module sitting at its budget with four real defects in it argues for splitting the store out rather than squeezing the fixes in."
+  ],
+  "gate_observed": {
+    "verify": "GATE: GREEN (9d57471)",
+    "selftest": "2769 passed, 0 failed",
+    "baseline": "2658 passed, 0 failed at 668dbb3 in a throwaway clone, delta +111 across 95 WARP-1208 expect call-sites",
+    "engine_sync": "8 copies of incident_reconcile.py reduce to 1 distinct md5; validate.py and capabilities.yaml likewise across root, plugin/templates and 6 packs",
+    "character_rules": "0 em dashes, 0 en dashes, 0 non-ASCII, 0 prose double-hyphens in the module, spec, manifest and capability entry"
+  },
+  "disposition": "NOT LANDED. The implementation and evidence commits stay local and unpushed; nothing false reached origin. The four must-fix defects are being fixed in a hardening pass, after which the proof manifest is corrected for the seven recorded overstatements and a SECOND independent adversarial review runs in a fresh context. The eleven notes and the three accepted-with-caveat assumption rulings are recorded for a follow-up hardening specification in the pattern of WARP-1212, which hardened PLAN-0012 W7 after its review."
+}

@@ -1,0 +1,49 @@
+WARP-0809 runner evidence - cross-pack conformance harness, the join point (W9 of PLAN-0008)
+Impl commit under proof: 3195da69bb24c0eeda4adaa04b32574a8bae9c7c
+
+== gate (clean detached worktree at 3195da6, builder + independent reviewer) ==
+GATE: GREEN (3195da69bb24c0eeda4adaa04b32574a8bae9c7c)
+selftest: 1270 passed, 0 failed  (+8 for the WARP-0809 block)
+no pollution: main repo HEAD unchanged; only the transient gate outputs (.warp/last_verify, .warp/events.jsonl) churn
+
+== the harness (.warp/pack_conformance.py, build machinery, NOT shipped engine) ==
+Table-driven from .warp/packs.json. For EACH declared pack it proves, by construction:
+  drift    - engine byte-identical (content AND mode) to plugin/templates
+  exec-bit - committed hooks/pre-push + scripts/warp-guard.sh executable in the git INDEX (git ls-files -s)
+  gate     - push BLOCKED at an unproven HEAD, ALLOWED at a proven HEAD (committed hook, or guard direct for claude)
+  policy   - policy_check.py standalone (as CI runs it) agrees (blocks unproven, passes proven)
+Not in ENGINE_GLOBS (globs plugin/templates/.warp/*.py = 7 shipped modules); engine_files == 139, module unmatched -> not copied to packs, no re-assembly. Pure stdlib, no network.
+
+== per-pack gate, both directions (all 7 packs) ==
+                    UNPROVEN        PROVEN         policy_check (unproven / proven)
+each pack        -> exit 2 BLOCK    exit 0 ALLOW    1 (block) / 0 (pass)
+claude (option B, guard-direct, no committed hook) -> exit 2 / exit 0 (enforces, not a no-op)
+
+== proven-state honesty (corrupt one element -> ALLOW flips to BLOCK) ==
+no last_verify -> block; last_verify=red -> block; no manifest -> block; no verdict -> block;
+WRONG proof_digest -> block (via policy); blocking finding -> block; verdict=fail -> block.
+The guard's 3 checks + policy's commit-bound verdict + proof_digest match are all load-bearing, not stubbed.
+
+== exec-bit load-bearing (independently reproduced by the reviewer, real git push, no harness) ==
+git archive HEAD:packs/copilot | tar -x; git config core.hooksPath hooks; real git push to a local bare remote:
+  644 committed hook -> ref LANDED (fail-open reproduced)
+  755 committed hook -> push BLOCKED (nothing landed)
+harness real_push_exec_bit(aider) -> {nonexec_landed: True, exec_blocked: True}
+committed_hook_modes: 12 entries (6 hook-shipping packs x hook+guard), all 100755.
+teeth: git update-index --chmod=-x -> 'pack codex: committed .../hooks/pre-push not executable in the index (mode 100644)'.
+
+== CLAUDE_PROJECT_DIR pinning (safe by counterfactual) ==
+An unproven fixture with CLAUDE_PROJECT_DIR aimed at a proven repo would false-pass; _git_env pins
+CLAUDE_PROJECT_DIR=<fixture> every invocation, so the unproven fixture correctly blocks. No inherited
+session value can redirect the guard at the wrong repo.
+
+== reviews ==
+Independent adversarial review (agent aa2bcd8f7e615db5e) bound to 3195da6: pass_with_notes, 0 blocking.
+Verified the gate GREEN in its own worktree/clone, all 5 ACs by concrete probes, no shortcut (no protected
+path touched), pure stdlib/no network, dash-clean, main repo untouched. Three non-blocking notes (single-
+commit fixture doesn't exercise evidence-inheritance; claude drift empty by construction; per-tool committed-
+hook mandate belongs to W2-W8).
+
+== proof binding ==
+plan_hash:    sha256:b86504755d842c46 (canonical, via plan.py / parse_yamlish, capturing the work DAG)
+proof_digest: sha256:be3f521496f23071 (validate.py over {spec_id, commit, criteria, checks})

@@ -1,0 +1,3 @@
+pass journey: exit 0 (correct)
+fail journey: exit 1 (correct - failure caught)
+api runner self-test: pass

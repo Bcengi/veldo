@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0309",
+  "commit": "964c261a02349cd0d708d5ce0efbfa05cd2fc3d7",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 wave 5)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T13:58:17Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the runner catalog ships in docs/plugin.md section 10 (Runner catalog and gate-slot wiring) covering every runner directory with surface, home path, capabilities status (deferring to .warp/capabilities.yaml), what it asserts, its fixture pair, and the adopting-repo CHECK_ gate slot; BJ2 (the home gate runs no surface) is documented in 10.2 and asserted"
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/check_runner_catalog.py enumerates every runner directory and fails closed unless each has a passing fixture, a deliberately-failing fixture, an honest vocabulary-valid capabilities entry, and a gate wiring; wired into the unit slot via a selftest block that runs it against the real tree AND synthetic missing-property trees (missing pass/fail fixture, missing or out-of-vocabulary capabilities status, missing selftest reference) plus a BJ2 assertion that no required gate command shells a runner; part of selftest 578 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the runner catalog ships in docs/plugin.md section 10 (Runner catalog and gate-slot wiring) covering every runner directory with surface, home path, capabilities status (deferring to .warp/capabilities.yaml), what it asserts, its fixture pair, and the adopting-repo CHECK_ gate slot; BJ2 (the home gate runs no surface) is documented in 10.2 and asserted"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the runner catalog ships in docs/plugin.md section 10 (Runner catalog and gate-slot wiring) covering every runner directory with surface, home path, capabilities status (deferring to .warp/capabilities.yaml), what it asserts, its fixture pair, and the adopting-repo CHECK_ gate slot; BJ2 (the home gate runs no surface) is documented in 10.2 and asserted"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the runner catalog ships in docs/plugin.md section 10 (Runner catalog and gate-slot wiring) covering every runner directory with surface, home path, capabilities status (deferring to .warp/capabilities.yaml), what it asserts, its fixture pair, and the adopting-repo CHECK_ gate slot; BJ2 (the home gate runs no surface) is documented in 10.2 and asserted"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the runner catalog ships in docs/plugin.md section 10 (Runner catalog and gate-slot wiring) covering every runner directory with surface, home path, capabilities status (deferring to .warp/capabilities.yaml), what it asserts, its fixture pair, and the adopting-repo CHECK_ gate slot; BJ2 (the home gate runs no surface) is documented in 10.2 and asserted"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the runner catalog ships in docs/plugin.md section 10 (Runner catalog and gate-slot wiring) covering every runner directory with surface, home path, capabilities status (deferring to .warp/capabilities.yaml), what it asserts, its fixture pair, and the adopting-repo CHECK_ gate slot; BJ2 (the home gate runs no surface) is documented in 10.2 and asserted"
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/check_runner_catalog.py enumerates every runner directory and fails closed unless each has a passing fixture, a deliberately-failing fixture, an honest vocabulary-valid capabilities entry, and a gate wiring; wired into the unit slot via a selftest block that runs it against the real tree AND synthetic missing-property trees (missing pass/fail fixture, missing or out-of-vocabulary capabilities status, missing selftest reference) plus a BJ2 assertion that no required gate command shells a runner; part of selftest 578 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 578 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "B9 is the suite capstone: a docs catalog + a mechanical catalog-completeness check + gate-slot wiring guidance, depending on all 19 shipped runners. It adds no new runner surface; its BJ1 check and BJ2 assertion run in the unit slot with stdlib only. Closing this item completes PLAN-0003 at 20/20."
+  ],
+  "rollback": "git revert; additive - docs/plugin.md section 10, scripts/check_runner_catalog.py, a selftest block, and the spec; no protected path."
+}

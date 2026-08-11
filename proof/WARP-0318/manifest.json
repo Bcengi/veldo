@@ -1,0 +1,123 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0318",
+  "commit": "985d1ecc729b5976b5d5269aa8b8c38ee3b5cfb3",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 wave 5)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T13:10:17Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MCP server/client runner ships at plugin/templates/scripts/runners/mcp/ (runner + bundled stdlib fake MCP server with echo/add and a relay proxy tool + pass/fail fixtures + README + stdio test wrapper); performs the JSON-RPC 2.0 initialize handshake then asserts tools/list, tools/call results including a proxied tool, and JSON-RPC errors for unknown/bad calls, with full envelope framing checks"
+        },
+        {
+          "type": "unit",
+          "ref": "control logic (envelope validation, tools/list and tools/call grading, no-rubber-stamp guard) plus BOTH shipped fixtures driven over the REAL stdio JSON-RPC subprocess transport AND an in-process handler seam in scripts/selftest.py; part of selftest 536 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MCP server/client runner ships at plugin/templates/scripts/runners/mcp/ (runner + bundled stdlib fake MCP server with echo/add and a relay proxy tool + pass/fail fixtures + README + stdio test wrapper); performs the JSON-RPC 2.0 initialize handshake then asserts tools/list, tools/call results including a proxied tool, and JSON-RPC errors for unknown/bad calls, with full envelope framing checks"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MCP server/client runner ships at plugin/templates/scripts/runners/mcp/ (runner + bundled stdlib fake MCP server with echo/add and a relay proxy tool + pass/fail fixtures + README + stdio test wrapper); performs the JSON-RPC 2.0 initialize handshake then asserts tools/list, tools/call results including a proxied tool, and JSON-RPC errors for unknown/bad calls, with full envelope framing checks"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MCP server/client runner ships at plugin/templates/scripts/runners/mcp/ (runner + bundled stdlib fake MCP server with echo/add and a relay proxy tool + pass/fail fixtures + README + stdio test wrapper); performs the JSON-RPC 2.0 initialize handshake then asserts tools/list, tools/call results including a proxied tool, and JSON-RPC errors for unknown/bad calls, with full envelope framing checks"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MCP server/client runner ships at plugin/templates/scripts/runners/mcp/ (runner + bundled stdlib fake MCP server with echo/add and a relay proxy tool + pass/fail fixtures + README + stdio test wrapper); performs the JSON-RPC 2.0 initialize handshake then asserts tools/list, tools/call results including a proxied tool, and JSON-RPC errors for unknown/bad calls, with full envelope framing checks"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MCP server/client runner ships at plugin/templates/scripts/runners/mcp/ (runner + bundled stdlib fake MCP server with echo/add and a relay proxy tool + pass/fail fixtures + README + stdio test wrapper); performs the JSON-RPC 2.0 initialize handshake then asserts tools/list, tools/call results including a proxied tool, and JSON-RPC errors for unknown/bad calls, with full envelope framing checks"
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MCP server/client runner ships at plugin/templates/scripts/runners/mcp/ (runner + bundled stdlib fake MCP server with echo/add and a relay proxy tool + pass/fail fixtures + README + stdio test wrapper); performs the JSON-RPC 2.0 initialize handshake then asserts tools/list, tools/call results including a proxied tool, and JSON-RPC errors for unknown/bad calls, with full envelope framing checks"
+        },
+        {
+          "type": "unit",
+          "ref": "control logic (envelope validation, tools/list and tools/call grading, no-rubber-stamp guard) plus BOTH shipped fixtures driven over the REAL stdio JSON-RPC subprocess transport AND an in-process handler seam in scripts/selftest.py; part of selftest 536 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 536 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: the MCP stdio transport is a child process speaking newline-delimited JSON-RPC 2.0 over pipes and needs only the standard library, so the real transport runs in the gate on this box; an adopting repo points the runner at its own MCP server launch argv and the contract or integration gate slot."
+  ],
+  "rollback": "git revert the impl; additive under plugin/templates/scripts/runners/mcp/, no protected path, selftest cases within the suite."
+}

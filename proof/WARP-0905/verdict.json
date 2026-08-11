@@ -1,0 +1,66 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0905",
+  "commit": "2fb397f595010ae731380b2c0e543b0c762d8f87",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent a5393ab7438a3bcb3)",
+  "reviewed_at": "2026-07-19T19:20:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:5ebd97e5c22c1d8e",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "14 fleet modules shipped into plugin/templates/.warp/ (accounts, claim, dispatch, executor, fleet, fleet_env, frontier, governor, lander, runcmd, runlog, runstatus, status_server, work); the transitive load closure from bin/warp is 19 modules, all present in plugin/templates (closure CLOSED); no shipped module imports/_loads any of the 11 repo-only dogfood modules (pack.py, pack_conformance.py, tracker_adapter/intake/mirror/conformance.py, release.py, budget.py, env_provision.py, init_scaffold.py, lessons.py) - all correctly absent from plugin/templates/.warp/. All 14 modules import standalone in an adopter-only tree with no repo-only dogfood present. status_server is genuinely reached (runstatus.py:303 lazy-loads it for 'warp watch')."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "plugin/templates/bin/warp byte-identical to repo-root bin/warp (same git blob 2508a67ba9dcb95aed0dff168a47830417dd8559); both committed 100755; ENGINE_GLOBS in .warp/pack.py includes 'bin/warp' (pack.py:33); check_template_sync.sh enforces the [bin/warp]=plugin/templates/bin/warp pair."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "plugin/templates/.warp/events.py byte-identical to repo-root .warp/events.py; the W3 account field is present (account=None param + per-account attribution logic for governor.py)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "pack_drift_report empty for ALL 7 declared packs (claude, cursor, codex, copilot, antigravity, opencode, aider); bin/warp is 100755 with a single blob 2508a67 across template + all packs; dispatch.py has a single blob 52e2d68 across all 7. TEETH: appending a byte to packs/aider/.warp/dispatch.py yields ('.warp/dispatch.py','differs') and chmod -x packs/cursor/bin/warp yields ('bin/warp','mode'); the gate assertion all(not drift) goes False (RED); restored clean. Cross-pack conformance (WARP-0809) selftest passes."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "capabilities.yaml byte-identical in both copies; all 13 fleet capability entries' homes resolve in plugin/templates (7 PLAN-0007: claim_ledger, frontier_resolver, work_loop, serialized_lander, fleet_env_provisioning, token_governor, fleet_launcher; 6 PLAN-0009: fleet_dispatcher, account_registry, worker_spawner, per_account_governor, in_session_waiter, warp_cli). See finding: pre-existing non-fleet dogfood entries name repo-only homes (orthogonal to the fleet-scoped AC5, deferred to W6)."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Gate GREEN at 2fb397f on the isolated umask-002 checkout (selftest 1345 passed / 0 failed); GATE line prints the reviewed commit. No protected path touched (scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py, their plugin/templates twins, or any pack copy). The impl commit contains no proof/, .warp/last_verify, or .warp/events.jsonl. .warp/pack.py change is only the ENGINE_GLOBS bin/warp entry (pack.py is not protected). warp name unchanged."
+    }
+  ],
+  "checks": [
+    "bash scripts/verify.sh -> GATE: GREEN (2fb397f...), selftest 1345 passed 0 failed, on isolated worktree",
+    "pack_drift_report(repo_root) empty for all 7 packs; bin/warp+14 fleet modules in engine_files set",
+    "drift teeth: content mutation -> ('.warp/dispatch.py','differs'); exec-bit strip -> ('bin/warp','mode'); gate assertion RED; restored",
+    "closure scan: transitive closure from bin/warp = 19 modules, all shipped; 0 repo-only dogfood reached; 11 dogfood modules absent from plugin/templates/.warp",
+    "runtime teeth: all 14 fleet modules import standalone from adopter-only tree; bin/warp routes with no ImportError",
+    "AC2 byte-identity: git blob 2508a67 for bin/warp repo-root==template==all 7 packs, mode 100755",
+    "AC3 byte-identity: events.py repo-root==template; account field present",
+    "AC4 byte-identity: dispatch.py single blob 52e2d68 across template + 7 packs",
+    "AC5 home-resolution: 13/13 fleet capability homes resolve in plugin/templates; capabilities.yaml byte-identical both copies",
+    "AC6 protected-path: no verify.sh/warp-guard.sh/policy.yaml/policy_check.py (or twins/pack copies) changed; no proof/last_verify/events.jsonl in impl commit",
+    "exec-bit umask-independence: engine_drift uses & 0o111, exec checks use X_OK / git-index 100755; GREEN on umask-002",
+    "RULE #1: no em/en dash and no bare -- in the 6 new capability entries or spec prose (spec --- fences and backtick `--` reference excepted)"
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Pre-existing manifest-honesty gap (orthogonal to the fleet-scoped AC5, which is satisfied): the byte-identical capabilities.yaml lists ~17 NON-fleet dogfood/build-machinery capabilities whose homes do NOT ship in plugin/templates - several marked 'mechanical': budget_governance (.warp/budget.py), lessons_store (.warp/lessons.py), warp_init_scaffold (.warp/init_scaffold.py), the tracker_* family (.warp/tracker_adapter.py, .warp/tracker_mirror.py, .warp/tracker_intake.py, .warp/tracker_conformance.py), pack_engine (.warp/pack.py), pack_conformance (.warp/pack_conformance.py), pack_drift_check (scripts/check_pack_drift.py), multitool_packs (.warp/packs.json), ephemeral_env_provisioning (.warp/env_provision.py), release_rollback_automation (.warp/release.py). A pack adopter gets a manifest naming modules they do not have. W5 did NOT introduce these (its capabilities.yaml diff added only the 6 fleet entries, all resolving); the spec's own AC5 phrasing 'no capability entry claims a module an adopter will not have' is met for the fleet but not manifest-wide. Recommend W6 tag dogfood/build-machinery entries distinctly (e.g. a dogfood/repo-only marker) so the SHIPPED manifest is honest end to end."
+    },
+    {
+      "severity": "note",
+      "text": "Same root cause via the /warp:init path: init_scaffold lays the byte-identical capabilities.yaml but deliberately omits ALL runtime engine (executor, metrics, events, plan, the runners, and now the fleet), so a scaffolded minimal repo's manifest over-claims capabilities whose homes it does not have. This pre-dates W5 (the engine/runner entries were already in this position) and is exactly the two-tier adoption tension the spec defers to W6 documentation. Two-tier init decision judged SOUND: keeping init_scaffold minimal and delivering the fleet via the full-engine pack path is the correct architecture (RULE #6 - expanding the proportionate scaffolder to dump the full engine would be the shortcut); the corrected AC1 ('fleet via packs, init stays minimal') honestly matches what shipped."
+    }
+  ],
+  "summary": "WARP-0905 (ship the fleet in the engine, W5 of PLAN-0009) passes with notes at 2fb397f. All 6 ACs confirmed by concrete probes in an isolated umask-002 worktree: the 14-module fleet closure and bin/warp are shipped into plugin/templates and re-synced byte-identical across all 7 packs (drift empty; bin/warp blob 2508a67 100755 and dispatch.py blob 52e2d68 identical everywhere), events.py's account field is synced, capabilities.yaml is honest for all 13 fleet entries in both byte-identical copies, and the gate is GREEN (selftest 1345/0). The closure was proven CLOSED not just statically (transitive closure from bin/warp = 19 shipped modules, zero of the 11 repo-only dogfood modules reached, all 11 absent from plugin/templates) but at RUNTIME (all 14 fleet modules import standalone from an adopter-only tree; bin/warp routes with no ImportError). The drift-check teeth BITE: a mutated pack fleet module reports 'differs' and a stripped bin/warp exec bit reports 'mode', turning the gate assertion RED; the exec-bit checks are umask-independent (& 0o111 / X_OK / git-index 100755) and stayed GREEN on the umask-002 machine that broke WARP-0904. No protected path was edited and the impl commit carries no evidence files. RULE #1 clean. Two non-blocking notes flag a pre-existing manifest-honesty gap (the shipped/byte-identical capabilities.yaml lists non-fleet dogfood/build-machinery capabilities whose homes an adopter will not have) that is orthogonal to the fleet-scoped AC5 and explicitly deferred to W6. Verdict: pass_with_notes."
+}

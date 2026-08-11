@@ -1,0 +1,31 @@
+{
+  "name": "health and echo (happy path)",
+  "base_url": "http://127.0.0.1:8080",
+  "timeout": 5,
+  "steps": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "headers": {"Accept": "application/json"},
+      "expect": {
+        "status": 200,
+        "max_seconds": 5,
+        "json_keys": ["status", "version", "data"],
+        "json_equals": {"status": "ok", "version": "1.0.0"},
+        "json_path_present": ["data.items.0.id", "data.items.1.name"],
+        "json_path_equals": {"data.count": 2, "data.items.1.name": "beta"}
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/echo",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"ping": "hello"},
+      "expect": {
+        "status": 200,
+        "json_path_present": ["received"],
+        "json_path_equals": {"method": "POST", "received.ping": "hello"}
+      }
+    }
+  ]
+}

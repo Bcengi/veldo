@@ -1,0 +1,20 @@
+=== AC4: planted em-dash + company reference in docs/plugin.md (working tree) ===
+-- dash sweep (em/en dashes forbidden)
+docs/plugin.md
+   FAIL: em/en dash found in files above
+-- non-ASCII sweep (box-drawing U+2500-257F and the U+2713 checkmark are the only intentional exceptions)
+docs/plugin.md
+   FAIL: non-ASCII characters in files above
+-- genericity sweep (docs/ and plugin/; design/ and research/ are internal provenance)
+   FAIL: company/product reference in generic docs:
+      docs/plugin.md
+docs hygiene: FAIL
+exit with plant: 1
+exit after restore: 0
+
+=== AC5: drifted .warp/validate.py from template canon (working tree) ===
+   FAIL: .warp/validate.py drifted from plugin/templates/.warp/validate.py
+template sync: FAIL
+exit with drift: 1
+template sync: pass
+exit after resync: 0

@@ -1,0 +1,31 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0617",
+  "commit": "9cf58f1",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder; adversarial on redaction completeness, one-way, idempotency, and live-readiness)",
+  "reviewed_at": "2026-07-24T09:50:00Z",
+  "verdict": "pass_with_notes",
+  "summary": "The OFFLINE, gate-proven projection is correct: one-way (records byte-identical after a run, no write-back), idempotent over the FakeTracker (re-run state_digest unchanged), NG4-safe (unmapped status -> keyed comment, never an invented transition; resolve_request_status_map mirrors resolve_status_map and validates against REQUEST_STATUSES so it cannot drift), displays bound_artifact.digest never request_hash, set_watchers seam op sound, 3 teeth reproduced RED and non-vacuous, gate GREEN (selftest 2515), 8 capabilities.yaml byte-identical, process-incident clean (each capability appears once, no leftover dup). Two findings must be resolved BEFORE this projects a LIVE board; they are latent, not active, because the live edge is currently non-functional (Finding 1) so nothing can reach a real board in the committed state.",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "One-way id-keyed upsert through the seam; records byte-identical after a run; idempotent offline (re-run created=0, state_digest unchanged). NOTE: live _comment always POSTs (no dedup), so a LIVE re-run would duplicate the brief/NG4 comments - inherited mirror posture (Finding 3), relevant only once live."},
+    {"id": "AC2", "status": "confirmed", "note": "Brief carries summary + RISK (tier/why/reversibility/impact flags/fake-vs-live/residual trust) + vouches-for + options/dead-ends + DISPLAYED bound_artifact.digest; assignee + watchers set; request_hash never rendered."},
+    {"id": "AC3", "status": "confirmed_with_note", "note": "Redaction is DECLARED-SCOPE (env:/keychain: refs + operator-declared projection.sensitive_terms + _safe drop), applied to brief/RISK/vouches/options/title/comment/digest. NOTE (Finding 2, central): it is NOT a backstop - raw secret LITERALS (AKIA.../hunter2) and UNDECLARED operating data ($72k MRR / 9000 customers) in the human-authored free text LEAK through; protection equals the completeness of sensitive_terms. Disclosed by design; must be hardened before live projection."},
+    {"id": "AC4", "status": "confirmed_with_note", "note": "Dry-run over FakeTracker offline works; no-token live path fails closed. NOTE (Finding 1): build_live_adapter returns JiraCloudAdapter/OAuthJiraCloudAdapter, NEITHER of which implements _find_child (called first) or _set_watchers - both only on base (NotImplementedError) + FakeTracker. So a live run raises NotImplementedError before any write; it CANNOT write to a real board today. AC4's live-readiness is overstated; the offline gate is genuine."},
+    {"id": "AC5", "status": "confirmed", "note": "Non-tautological selftest; 3 teeth (redactor, keyed-comment reuse, NG4 guard) reproduced independently RED with the module sha256 byte-unchanged. gate GREEN, selftest 2515, validate.py all exit 0."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Finding 1 (must-fix-before-live): the live edge is non-functional as wired - build_live_adapter's adapters do not implement _find_child or _set_watchers (base NotImplementedError only), so a live projection raises before any write. No active leak in the committed state. Fix at the live-activation step: implement find_child/find_epic/set_watchers on the live provisioner (like the WARP-0614 codified live methods)."},
+    {"severity": "note", "text": "Finding 2 (must-fix-before-live, central RULE #3 risk): declared-scope redaction is not a backstop. Raw secret literals and undeclared operating data in the bound decision's free text (summary, dead_end) reach the brief unredacted. Before live projection: constrain/allow-list the rendered free text, or make redaction fail-closed on undeclared secret-shaped tokens, not only declared terms."},
+    {"severity": "note", "text": "Finding 3 (relevant once live): the live _comment never dedups by key, so live re-runs accumulate the brief/NG4 comments (inherited mirror posture). Address when the live projection is wired (key-based dedup or a bounded projection cadence)."},
+    {"severity": "note", "text": "Finding 4 (minor, defense-in-depth): the create_or_update_child fields (warp_request, warp_touchpoint) and the live comment-key marker bypass redact() - structural/controlled values (rid + closed-vocab status), low residual, worth closing for symmetry with the redacted title/brief."}
+  ],
+  "must_fix_before_live": ["Finding 1", "Finding 2"],
+  "checks": [
+    "./scripts/verify.sh -> GATE GREEN at cf309ce (deterministic). python3 scripts/selftest.py -> 2515 passed, 0 failed. validate.py all -> exit 0.",
+    "One-way verified independently (records JSON byte-identical after a run). Idempotency verified offline (re-run byte-identical). NG4 verified fail-closed.",
+    "3 teeth reproduced in an independent harness RED with request_projection.py sha256 unchanged; non-vacuous.",
+    "8 capabilities.yaml byte-identical (sha256 042b5bae); tracker_request_projection + tracker_board_snapshot each appear exactly once (process-incident clean); template_sync/pack_drift green.",
+    "request_projection.py repo-only (absent from plugin/templates + all 6 packs); no company/board/secret literal outside the selfcheck fixture/docstrings.",
+    "RULE #1 clean in the reviewed module and this verdict."
+  ]
+}

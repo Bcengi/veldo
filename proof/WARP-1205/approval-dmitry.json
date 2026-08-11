@@ -1,0 +1,15 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-1205-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-1205",
+    "commit": "45534ba39b334d62ce3a32037b4fe700e3a4795c",
+    "proof": "proof/WARP-1205/manifest.json"
+  },
+  "basis": "PLAN-0012 C2 requires a recorded founder approval to land the action whitelist (the enforcement core on the execution side). This is a fresh per-change approval given in-session on 2026-07-23 after a full disclosure of exactly what it vouches for: the MECHANISM proven offline against fake systems - no free-form execution path can exist (resolve_action is a pure whitelist lookup with no eval, exec, subprocess, or shell on the resolution path, confirmed by the independent L2 review), a reviewed action is digest-bound so it cannot be silently edited after review, the risk floor (high for the whitelist, critical for data-mutating or irreversible) cannot be lowered, and a bad or unknown parameter is refused by name. Explicitly NOT vouched for: nothing executes (the executor WARP-1206 and the two-key rule WARP-1207 are honestly unbuilt), and the reviewed stamp is self-declared on the artifact today (tamper-evident via digest, but a live review-and-promotion pipeline is WARP-1211 and real enablement). Independent L2 verdict pass_with_notes, zero blocking findings, bound to 45534ba.",
+  "recorded_at": "2026-07-23T11:48:50Z",
+  "recorded_by": "claude-opus-4-8[1m] (Ava, recording the founder's fresh in-session approval captured this session; distinct from the proof producer, satisfying self-separation)",
+  "expires_at": "2026-08-22T11:48:50Z"
+}

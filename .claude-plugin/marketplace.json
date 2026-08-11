@@ -1,0 +1,17 @@
+{
+  "name": "veldo",
+  "owner": {
+    "name": "Dmitry Grinberg"
+  },
+  "plugins": [
+    {
+      "name": "veldo",
+      "source": "./packs/claude",
+      "description": "The Veldo Development Method as a plugin: five role agents, the pipeline skills, the guard hook, and an init command that makes any repository Veldo-ready in minutes.",
+      "version": "3.10.1",
+      "author": {
+        "name": "Dmitry Grinberg"
+      }
+    }
+  ]
+}

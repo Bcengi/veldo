@@ -1,0 +1,30 @@
+schema: veldo.policy/v1
+version: 1
+risk_tiers:
+  low:      {gate: standard, reviews: 1, min_independence: L1, human_approval: false}
+  standard: {gate: full,     reviews: 1, min_independence: L2, human_approval: false}
+  high:     {gate: expanded, reviews: 1, min_independence: L3, human_approval: true}
+  critical: {gate: expanded, reviews: 2, min_independence: L4, human_approval: true,
+             prepare_and_execute: true}
+protected_paths:
+  # Adjust for this repository. Anything touching these floors the risk tier.
+  - {path: "auth/**",       floor: critical}
+  - {path: "billing/**",    floor: high}
+  - {path: "migrations/**", floor: high}
+merge_rule: >
+  Auto-merge if and only if: the specification is ready and valid; every
+  acceptance criterion is passed in a valid proof manifest for this exact
+  commit; all mandatory checks pass; the effective risk tier permits
+  auto-merge; every required approval is recorded, unexpired, and bound to
+  this commit; and the change is classified reversible. If the trunk moved
+  since the gate ran, the gate re-runs on the merged result before the merge
+  completes.
+  NO VERDICT CLAUSE (WARP-0730). The rule used to also require a pass verdict
+  with zero blocking findings. A verdict is an artifact the agent can write,
+  so that clause asked an agent to certify itself and cost nine build rounds
+  of forgery guards. The gate is the authority for ordinary work and the owner
+  is the authority for anything touching a protected path; reviews still run
+  and report, they no longer certify.
+emergency:
+  lane: fix forward with a human engaged
+  backfill_hours: 24   # spec + proof + review must land within this window

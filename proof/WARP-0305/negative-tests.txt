@@ -1,0 +1,21 @@
+Negative demonstrations - the LLM/eval runner is not a rubber stamp.
+
+[1] Failing fixture verbose output (the prompt-change regression is named):
+PASS case greeting
+FAIL case refund
+     - regex: 'refund|reimburse' did not match output
+PASS case escalation
+pass_rate 0.667  cost 0.033  seconds 1.05
+FAIL budget - min_pass_rate: pass rate 0.667 is below 1.0
+FAIL regression: case 'refund' passed under prompt 'v1' but fails under prompt 'v2'
+llm eval FAILED: support assistant eval (deliberately failing: new prompt regresses refund)
+  exit: 1
+
+[2] Direct tamper tests of the pure logic:
+  grader contains false -> True (expect True=failed)
+  case with no graders is an error -> True (expect True)
+  cost budget breach -> True (expect True)
+  pass_rate below min -> True (expect True)
+  regression when baseline case now fails -> True (expect True)
+  NO regression when all baseline cases still pass -> True (expect True)
+  NO regression when prompt unchanged -> True (expect True)

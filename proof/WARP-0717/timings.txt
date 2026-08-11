@@ -1,0 +1,48 @@
+WARP-0717 real wall-clock timings of the SHIPPED commands
+=========================================================
+
+RE-MEASURED AFTER REVIEW 1'S CORRECTIONS, because those corrections add two assertions to
+fragment 14 and every count below would otherwise be a stale number presented as a
+measurement. Same box, same method, all nine commands driven again in one pass.
+
+Measured through the clock around the subprocess, so every number includes interpreter
+startup the way a person actually pays it. The trailing `in N.NNs` is the run's own reported
+elapsed time, which excludes startup; both are shown on purpose. THIS IS THE ONLY ARTIFACT
+IN THIS PROOF WHOSE NUMBERS ARE TIMINGS OF SHIPPED COMMANDS. The per-fragment "against the
+prefix" figures in the AC1 amendment and in inner-loop-measurement.json are MODELLED sums of
+per-fragment times, labelled prefix_modelled_s and closure_modelled_s there, and review 1's
+C7 is the reason both artifacts now say so.
+
+--suite 05 (closure = itself alone)                            0.07s  exit=2  selftest (PARTIAL, 1 of 14 suites): 277 passed, 0 failed in 0.03s
+--upto  05 (the prefix, for comparison)                       21.84s  exit=2  selftest (PARTIAL, 5 of 14 suites): 1305 passed, 0 failed in 21.80s
+--suite 09 (mid list, closure 8 of 9)                         12.73s  exit=2  selftest (PARTIAL, 8 of 14 suites): 2101 passed, 0 failed in 12.67s
+--upto  09 (the prefix, for comparison)                       27.49s  exit=2  selftest (PARTIAL, 9 of 14 suites): 2362 passed, 0 failed in 27.43s
+--suite 14 (this item's own fragment)                          1.95s  exit=2  selftest (PARTIAL, 1 of 14 suites): 53 passed, 0 failed in 1.91s
+--suite 12 (the expensive one, honestly)                      59.80s  exit=2  selftest (PARTIAL, 11 of 14 suites): 2880 passed, 0 failed in 59.62s
+--suite 05,09 (union of two)                                  12.49s  exit=2  selftest (PARTIAL, 8 of 14 suites): 2101 passed, 0 failed in 12.42s
+--upto  13 (every fragment except this item's own)            94.43s  exit=2  selftest (PARTIAL, 13 of 14 suites): 3362 passed, 0 failed in 94.07s
+FULL RUN (no selector; the only green)                        96.12s  exit=0  selftest: 3389 passed, 0 failed
+
+THE FULL RUN IS ALSO THE POSITIVE CONTROL FOR THE FLAG REFUSAL REVIEW 1's C3 ADDS. It carries
+no argument at all, so it is the shape a new argument check could most easily have broken:
+exit 0 and the aggregate summary line, unchanged. The other two recognised shapes are proven
+unchanged in proof/WARP-0717/flag-shapes.txt, where `--list` is byte-identical and both
+space-form selectors are identical with elapsed times masked.
+
+WHAT THESE NUMBERS SAY, INCLUDING THE PART THAT IS NOT GOOD NEWS.
+The saving is real but it is NOT uniform, because the suite's cost is concentrated rather
+than spread. Fragment 02 is 15.02s and fragment 12 is 46.57s of the 94.07s the 13 pre-existing
+fragments take together. The closure excludes 02 for 11 of the 13 and excludes 12 for all but
+12 itself, and that is the entire source of every second saved. So an engineer iterating on a
+small fragment gets a genuine inner loop (0.07s for fragment 05 against 21.84s for the
+equivalent --upto). An engineer iterating on fragment 12 still pays 59.80s, because half the
+suite's cost is inside the thing being edited. Making THAT fast is a separate item about what
+fragment 12 spends its time on.
+
+Note the union case: `--suite 05,09` costs the same as `--suite 09` alone, because 09's
+closure already contains 05. The union is a set union of closures, not a concatenation.
+
+Note the `--upto 13` case, which is new this round and does a job beyond timing: it runs every
+fragment EXCEPT this item's own and reports 3362 passed, the exact figure the base commit's
+full run reported. With the full run at 3389 that pins this item's entire assertion delta
+inside fragment 14, using the shipped selector rather than a second instrument.

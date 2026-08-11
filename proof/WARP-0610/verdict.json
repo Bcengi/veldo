@@ -1,0 +1,57 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0610",
+  "commit": "a8b088c8aa654d2624e7b97e395eceb865b84265",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder)",
+  "reviewed_at": "2026-07-20T12:06:23Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:1d047c37b850349d",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "README.md documents the tracker integration as a first-class shipped capability: a new bullet in 'What the plugin ships' next to the fleet bullet, describing both directions truthfully. The MIRROR is stated one-way and event-driven (a spec's status plus a closing comment on its child issue, a plan's work graph onto an epic and child issues, reconciled from the event stream, never polled, repository the single source of truth). INTAKE is the other direction (a Jira ticket or a structured Confluence requirements page becomes a routing-resolved WARP spec draft, source linked, content treated as data). No operating metric and no credential appear in the README bullet; it defers 'how to turn it on' to docs/plugin.md."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "docs/plugin.md new section 12.2 tells an adopter how to turn it on with four pieces, all real: the per-org .warp/trackers.json config (warp.tracker/v1, routing by label/component/field plus the WARP-status to tracker-status status_map, template at plugin/templates/.warp/trackers.json which exists); the OPTIONAL tracker_repo front-matter field on specs and plans (check_tracker_repo in .warp/validate.py, enforced parallel to the lane fields, fails closed on an unknown repo when a config is wired); auth by reference not secret (token_ref e.g. env:JIRA_TOKEN, fails closed, raw credential never in a file/prompt/proof/log); and the Confluence requirements template at plugin/templates/confluence-requirements-template.md which exists."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Every named thing exists in the shipped engine: modules .warp/tracker.py, .warp/validate.py, .warp/tracker_adapter.py, .warp/tracker_mirror.py, .warp/tracker_intake.py, .warp/tracker_conformance.py; classes JiraCloudAdapter (tracker_intake.py:297) and ConfluenceCloudAdapter (tracker_intake.py:408); the FakeTracker (tracker_adapter.py:205); the five spec events (spec.ready, spec.blocked, verdict.recorded, spec.shipped, merge.completed) and four plan events (plan.created, plan.approved, plan.revised, work.pulled) all present in tracker_mirror.py; the intake_source field and the /warp:intake skill (plugin/skills/intake). The mechanical-versus-reference split matches capabilities.yaml exactly: routing, seam, spec mirror, epic mirror, intake logic, conformance are mechanical (gate-tested offline against the FakeTracker); the live JiraCloudAdapter and ConfluenceCloudAdapter are reference (wired per repo, need a live instance, not run in the gate). The not-yet-live edges are stated as such rather than implied complete: epic/child creation against live Jira is 'wired in a later increment' (matches jira_cloud_intake_adapter) and the Confluence adapter reads pages and posts comments only, no status workflow (matches confluence_cloud_intake_adapter). No over-claim of turnkey live integration."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "docs/plugin.md section 12.4 states both governing principles: the mirror is one-way and the repository wins if the index and the tracker disagree, consistent with the standing 'do not recreate a tracker in Markdown' rule (an answer that changes a requirement is committed to the spec, not left in a ticket comment); and tracker content is untrusted input, never instructions (a ticket or page is data, sanitized against front-matter injection via _fm_safe, linked as a source, never executed). Both directions are also restated as one-way and never-polling in the section intro."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Gate GREEN at a8b088c8 (.warp/last_verify green; rerun of scripts/verify.sh emits GATE: GREEN, selftest 1374 passed 0 failed, docs hygiene pass with the dash and genericity sweeps, secret scan pass). No protected path touched: the four changed files (README.md, docs/plugin.md, specs/WARP-0610-tracker-docs-made-true.md, specs/index.md) are none of verify.sh, warp-guard.sh, policy.yaml, policy_check.py, or their plugin/templates twins. Docs-only plus the spec and the regenerated index: none matches ENGINE_GLOBS (specs/TEMPLATE.md and plans/TEMPLATE.md are the only spec/plan engine files, not specs/index.md or the new spec), so no pack re-sync is owed; pack drift is empty across all seven packs. RULE #1 clean: no em or en dash and no prose double-hyphen in the added README and docs/plugin.md lines."
+    }
+  ],
+  "checks": [
+    "DOCS TRUE: every module, config file, front-matter field, secret reference, and template named in the README bullet and docs/plugin.md section 12 was verified against shipped code. Modules exist (tracker.py, validate.py, tracker_adapter.py, tracker_mirror.py, tracker_intake.py, tracker_conformance.py); JiraCloudAdapter and ConfluenceCloudAdapter classes exist in tracker_intake.py; FakeTracker exists in tracker_adapter.py; the .warp/trackers.json (warp.tracker/v1) template and confluence-requirements-template.md ship under plugin/templates; the nine spec/plan event names match tracker_mirror.py; tracker_repo is enforced in validate.py; the intake skill ships at plugin/skills/intake. Nothing named-but-absent.",
+    "REFERENCE HONESTY: the docs mark the live JiraCloudAdapter and ConfluenceCloudAdapter as reference (wired per repo, need a live instance, NOT gate-run) and the routing/seam/mirror/epic-mirror/intake/conformance as mechanical (gate-tested offline against the FakeTracker), matching capabilities.yaml statuses one-for-one. The not-yet-live edge (epic/child creation against live Jira) is stated explicitly, and the Confluence adapter is stated comments-only with no status workflow. No implication that the live integration is turnkey.",
+    "TOKEN_REF NUANCE: the docs say token_ref e.g. env:JIRA_TOKEN and 'the default resolver reads the named environment variable', which is true to _default_secret_resolver in tracker_intake.py (it strips an env: prefix and reads os.environ, else fails closed). The docs never tell the reader the template's secrets:jira_token example will resolve; that template value would not resolve via the default resolver and is a pre-existing, out-of-scope nit, correctly not relied on by the docs.",
+    "GATE: bash scripts/verify.sh -> GATE: GREEN at a8b088c8; selftest 1374 passed, 0 failed; docs hygiene pass (em/en dash sweep + genericity sweep on the changed docs); secret scan pass. .warp/last_verify is green and bound to a8b088c8.",
+    "PACK DRIFT: docs-only change (README.md and docs/plugin.md are not engine files; specs/index.md and the new spec are not in ENGINE_GLOBS), so no pack re-sync owed; scripts/check_pack_drift.py reports pack drift pass across all seven packs byte-identical.",
+    "PROTECTED PATHS: the commit touches README.md, docs/plugin.md, specs/WARP-0610-tracker-docs-made-true.md, specs/index.md; none is in .warp/policy.yaml protected_paths (verify.sh, warp-guard.sh, policy.yaml, policy_check.py and their plugin/templates twins). Clean.",
+    "RULE #1: no em dash or en dash anywhere in README.md or docs/plugin.md; no prose double-hyphen in the added lines.",
+    "PROOF SEQUENCING: this verdict binds to a8b088c8 and its proof_digest is set to proof_digest(proof/WARP-0610/manifest.json) recomputed as sha256:1d047c37b850349d (matches the expected value); required_evidence [operational] is the manifest's declared kind."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Non-blocking, out of scope. The shipped plugin/templates/.warp/trackers.json uses token_ref 'secrets:jira_token' as its example, but the default resolver in tracker_intake.py only strips an 'env:' prefix and otherwise reads os.environ.get(<literal>), so 'secrets:jira_token' would not resolve and fails closed. The WARP-0610 docs are true here: they use env:JIRA_TOKEN and state the default resolver reads the named environment variable, and never claim the secrets: template example works. The template value is a pre-existing nit separate from this docs spec; noted for the record only."
+    },
+    {
+      "severity": "note",
+      "text": "Non-blocking, out of scope. The module-header comment in .warp/tracker_intake.py summarizes the Jira adapter signature as 'JiraCloudAdapter(base_url, token_ref)' while the real constructor is __init__(self, base_url, email, token_ref, ...). This is an internal code comment, not part of the WARP-0610 docs, and does not affect any WARP-0610 claim."
+    }
+  ],
+  "summary": "WARP-0610 (tracker integration docs made true) passes with notes at a8b088c8, zero blocking findings. The change is documentation only: a new 'What the plugin ships' bullet in README.md and a new section 12 in docs/plugin.md (version 2.4), plus the spec and a regenerated index. Every module, config file, front-matter field, secret reference, class, event name, and template the docs name was verified to exist in the shipped engine (AC3): the six tracker modules, the JiraCloudAdapter and ConfluenceCloudAdapter classes, the FakeTracker, the .warp/trackers.json warp.tracker/v1 template, the confluence-requirements-template.md, the nine spec/plan events in tracker_mirror.py, the tracker_repo enforcement in validate.py, and the /warp:intake skill. The reference-versus-mechanical honesty matches capabilities.yaml exactly: routing, seam, spec and epic mirror, intake logic, and conformance are mechanical and gate-tested offline against the FakeTracker, while the live Jira Cloud and Confluence Cloud adapters are reference implementations wired per repo and not run in the gate, and the not-yet-live edge (epic/child creation against live Jira, plus the Confluence adapter being comments-only with no status workflow) is stated rather than implied complete. Both directions are documented truthfully as one-way and never-polling with the repository as the single source of truth (AC1), the operational how-to-turn-it-on section covers the config, the optional tracker_repo field, token_ref auth by reference, and the Confluence template (AC2), and the one-way/repository-wins and untrusted-input principles are stated (AC4). The token_ref nuance is handled correctly: the docs say env:JIRA_TOKEN and describe the env-reading default resolver truthfully, never endorsing the template's secrets: example. The gate is GREEN at a8b088c8 (selftest 1374/0, docs hygiene with the dash and genericity sweeps pass, secret scan pass); it is a docs-only change so no ENGINE_GLOBS file is edited and no pack re-sync is owed, with pack drift empty across all seven packs; no protected path is touched; RULE #1 is clean. Two non-blocking, out-of-scope notes recorded (the template's secrets:jira_token example and an internal header-comment signature), neither affecting a WARP-0610 claim. Verdict: pass_with_notes."
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "veldo.verdict/v1",
+  "spec_id": "WARP-0001",
+  "commit": "7f43e6159aa6",
+  "reviewer": {
+    "model": "<exact model identifier, different from the producer>",
+    "context": "fresh"
+  },
+  "verdict": "pass",
+  "criteria": [
+    {
+      "id": "AC1",
+      "assessment": "satisfied"
+    },
+    {
+      "id": "AC2",
+      "assessment": "satisfied"
+    }
+  ],
+  "findings": {
+    "blocking": [],
+    "non_blocking": []
+  },
+  "test_assessment": "Both tests fail before the change and pass after; they exercise the public API.",
+  "proof_digest": "sha256:0000000000000000",
+  "_note": "proof_digest binds this verdict to the exact proof manifest it reviewed (W9)"
+}

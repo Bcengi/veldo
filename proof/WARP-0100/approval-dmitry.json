@@ -1,0 +1,18 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-0100-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-0100",
+    "commit": "0de75f3ee243249a6161a5a606d713c4eeb8456e",
+    "paths": [
+      "scripts/verify.sh"
+    ]
+  },
+  "basis": "Founder approval of running PLAN-0001 on the WARP repository itself, recorded verbatim from Telegram on 2026-07-16: message 20485 'is it the plan that needs to be run on WARP itself, if so - yes please run it' and message 20488 'go', plus the terminal instruction 'run PLAN-0001'. Laying the substrate (including the protected gate script this approval covers) is the stated first act of that run and was announced before execution in the reply he answered 'go' to.",
+  "recorded_at": "2026-07-16T19:45:00Z",
+  "recorded_by": "claude-fable-5 (implementing agent, recording the human's decision with provenance)",
+  "expires_at": "2026-08-15T00:00:00Z",
+  "correction_note": "decision value corrected from 'approve' to the canonical 'approved' per the L2 review's blocking finding 1: the record as first written was inert (valid_approval_for returned None). Fail-closed enforcement worked as designed."
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0704",
+  "commit": "696a3a265489d4c55a08c52bc87a2ac38f87a157",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T12:17:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:89d88a956edc2066",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Refuted at 3a4dd90 (the land lock granted two landers at once via the WARP-0701 claim race), now CONFIRMED at 696a3a2 after the WARP-0710 fix: the land lock is a claim on __land_lock__ and inherits the single-per-unit-lock arbiter. The reviewer's prior repro is dead - 0 double-grants across ~260 threaded trials (max concurrent landers == 1) and a 40-process / 20,044-granted-critical-section hammer (MAX CONCURRENT HOLDERS: 1; pre-fix hit max==2 every run)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Land by git merge (not cherry-pick) preserves the build's implementation commit sha; verified over real temp repos on both a diverged merge and a fast-forward land."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Diverged trunk union-merges the append-only files (both sides, no markers) and regenerates the index; a binary union-listed file is rejected (union_unsafe), not truncated. Verified over real temp repos."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "A real (non-additive) conflict is rejected (ok False, paths reported) and the merge aborted (clean tree, no dangling MERGE_HEAD). Verified over a real temp repo."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Ordered stages with abort-and-release (a later land acquires the freed lock), fast-forward-only push (no-clobber over a real bare remote), and a heartbeat keep-alive thread (tolerant of a transient error). Verified."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Two-pass independent adversarial review plus a blocking-finding closure re-verification. Pass 1 (3a4dd90) was pass_with_notes but found a BLOCKING defect: AC1's serialization was refuted because the land lock rested on a pre-existing WARP-0701 claim race (a lock-free fresh os.link clobbered by a takeover os.replace granted the lock to two landers, 13-17 of 30 units double-dispatched). The reviewer correctly located the fix in claim.py, not the lander. That fix shipped as WARP-0710 (every claim-ledger write path now serializes on one per-unit arbiter), Y4 was re-based onto the fixed foundation (lander.py byte-identical to the reviewed 3a4dd90), and this re-verification confirms AC1 now holds: 0 double-grants across ~260 threaded trials and a 40-process / 20k-grant hammer, max concurrent landers == 1. Pass 1 also drove a done-ness concern into the earlier Y3 work loop; here the fix was in the primitive."
+    },
+    {
+      "severity": "note",
+      "text": "Three standing non-blocking notes, all gate-backstopped or intentional and unchanged across the re-base: (1) union auto-combines a genuine same-region non-additive conflict on a union-listed TEXT file (both sides kept) - the union set is append-only by convention and a corrupted result fails the gate stage before finalize (a broken selftest.py fails python3 selftest.py; a diverged capabilities.yaml fails check_template_sync); (2) reconcile does not return-check update_index.py before git add/commit - a broken generator is caught by the gate's check_generated; (3) git merge --no-ff forces a uniform merge commit even on a fast-forwardable land - intentional, impl sha preserved as a parent. Also from the pass-1 exchange, two fixes were folded in pre-ship: a binary/unsafe-union guard (reject rather than truncate to empty) and a heartbeat try/except."
+    }
+  ],
+  "summary": "Y4 (WARP-0704, the serialized lander) is correct and honest. Two-pass independent adversarial review plus a blocking-finding closure re-verification; final verdict pass_with_notes, 0 blocking; gate GREEN (selftest 1027). The lander serializes landing fleet-wide through a single land lock (a claim on __land_lock__, resting on the WARP-0710-hardened ledger), lands by MERGE not cherry-pick (preserving the build's impl commit sha and its digest-bound proof), union-resolves the shared append-only files while rejecting a real conflict or an unsafe binary union, and pushes fast-forward-only as a git-level backstop independent of the lock. The pass-1 blocking finding (AC1 refuted via the WARP-0701 claim race) is closed: the primitive was fixed (WARP-0710), Y4 re-based on top, and AC1 re-verified at 0 double-grants across threads and real processes. proof_digest via validate.py."
+}

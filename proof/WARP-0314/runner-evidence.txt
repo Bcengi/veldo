@@ -1,0 +1,3 @@
+pass fixture: exit 0 (correct - every verdict matched its label)
+fail fixture: exit 1 (correct - mislabeled sample caught)
+config runner self-test: pass

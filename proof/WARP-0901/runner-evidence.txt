@@ -1,0 +1,30 @@
+WARP-0901 runner evidence - real fleet dispatcher (W1 of PLAN-0009)
+Impl commit:  f473a3443c3f59841065a614a26f59c78b347c0b (amended from 843fac1: comment-divider fix only)
+plan_hash:    sha256:6b03ff568d65cd2f
+proof_digest: sha256:5ac0ba9cd7083ca4
+
+--- AC5: gate green with the WARP-0901 selftest block (fakes, no live agent) ---
+$ bash scripts/verify.sh
+selftest: 1287 passed, 0 failed        (+17 for the WARP-0901 block: 1270 -> 1287)
+GATE: GREEN (f473a3443c3f59841065a614a26f59c78b347c0b)
+(generated, docs hygiene [dash/non-ASCII/genericity], template sync, secret scan, contracts all pass)
+
+--- teeth (proven by the independent reviewer via LIVE-SOURCE mutation, not just in-test mutants) ---
+verdict-gate mutation (_verdict_passes -> always pass): "dispatch failing verdict does NOT ship" turned RED (1286/1)
+self-review mutation (build path also reviews):          "build reviews nothing" + 2 related turned RED (1284/3)
+
+--- build/review split (AC2/AC3/AC4) ---
+build unit  -> Executor.run(stop_after='proof') -> state 'built' -> flip spec ready->review, reviewer .calls == 0
+review unit -> fresh reviewer verdict -> _verdict_passes (PASSING_VERDICTS + zero blocking, fails closed) -> land -> flip review->shipped
+failing build / red gate / invalid proof -> ok False, no flip
+failing verdict -> spec back to ready, never shipped/landed; failed land -> stays review for retry
+'built' state occurs ONLY in the stop_after=='proof' branch (executor.py:475); default stop_after=None path byte-for-byte identical
+
+--- scope hygiene ---
+impl commit touches: .warp/dispatch.py, .warp/executor.py, plans/PLAN-0009, scripts/selftest.py, specs/WARP-0901, specs/index.md
+NO protected path (verify.sh, warp-guard.sh, policy.yaml, policy_check.py or twins); NO plugin/templates/**; NO evidence files in the impl commit
+fleet kept as repo-root dogfood (.warp/dispatch.py), not the shipped engine; intelligent build/review delegated (no detached process)
+
+--- independent review ---
+Agent aa33cda682a843696 (fresh-context Opus, distinct from builder ab8981e1), isolated worktree (/tmp/warp-w1-rev, removed --force).
+Reviewed 843fac1 (pass, all 5 ACs, mutants proven), then re-verified the comment-only amend at f473a344 (delta = 4 divider comments only, gate 1287/0). Verdict: pass, 1 non-blocking note. Main repo untouched.

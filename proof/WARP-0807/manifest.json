@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0807",
+  "commit": "2e76cd0ca1c76b946b55f7197528007bdae8fe1e",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0008 W7, in-session single writer)",
+  "plan_hash": "sha256:b86504755d842c46",
+  "produced_at": "2026-07-19T05:46:53Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "packs/opencode is a committed self-contained pack: the full canonical engine (139 files) copied byte-identical + the canonical AGENTS.md + a thin OpenCode driver (opencode.json + command + reused skills/agents)."},
+        {"type": "unit", "ref": "independent review (both passes): engine_drift(plugin/templates, packs/opencode) == [] over 139 files, no symlinks, AGENTS.md identical to canonical; part of selftest 1256 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WARP push gate holds for OpenCode with no honor-system path: the OpenCode tool.execute.before hook and the git pre-push hook both feed scripts/warp-guard.sh the JSON payload it parses (tool_input.command on stdin), backed by the CI required status check. A blocking finding from the first review (the committed hooks were non-executable, mode 644, so git SILENTLY SKIPPED the pre-push hook and an unproven push landed) was FIXED: the assembler now copies mode, engine_drift is mode-aware, and all committed pack hooks + scripts are executable."},
+        {"type": "unit", "ref": "the mode-fix re-review behaviorally proved via the REAL git-invoked path (git config core.hooksPath hooks, no chmod, committed mode): opencode AND cursor both BLOCK an unproven push (exit 1, 0 refs landed) with the guard's 'gate not green for HEAD' message, and ALLOW a proven push (exit 0, 1 ref landed); a chmod-644 control reproduces the prior fail-open (push lands, git reports the hook 'was ignored because it's not set as executable'). The tool.execute.before hook blocks unproven via env and stdin, passes a non-push through, and is injection-safe (json.dumps). Part of selftest 1256 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the opencode pack is declared in .warp/packs.json and the drift-check (now MODE-AWARE) holds its engine copy byte-identical to source (the sixth pack)."},
+        {"type": "unit", "ref": "independent review: check_pack_drift reports all 6 packs byte-identical; teeth on the committed copy (append -> differs; remove -> missing) and NEW mode teeth (chmod 644 a copied engine script -> ('scripts/warp-guard.sh','mode')); part of selftest 1256 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "reuse not reinvention: the engine, AGENTS.md, skills, and agents are copied from the one canonical source (identical content); only the thin OpenCode driver is authored."},
+        {"type": "unit", "ref": "independent review: diff -rq plugin/skills vs packs/opencode/skills identical, plugin/agents vs packs/opencode/.opencode/agent identical, AGENTS.md identical; the mode fix changed only file MODE (219 pack files flipped 100644->100755 with byte-identical blob hashes, content unchanged); part of selftest 1256 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest asserts the opencode pack conforms (drift-free, len>=6) and carries its OpenCode wrapper and both hooks feed the JSON payload; PLUS new assertions that every pack's git pre-push hook and warp-guard.sh are executable and that a stripped exec bit is caught as mode drift. This commit also reconciles the PLAN-0008 pack-item depends_on (W3-W8 from WARP-0801 to WARP-0802, W2 stays WARP-0801) per the WARP-0806 review note."},
+        {"type": "unit", "ref": "independent review: the plan reconciliation is exactly the six intended depends_on lines with zero collateral, plan validates; the mode assertions and mode-drift teeth are non-tautological; part of selftest 1256 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1256 passed, 0 failed (+ the WARP-0807 opencode block and the systemic mode-fix assertions)"}
+  ],
+  "assumptions": [
+    "W7 of PLAN-0008, built in-session by a single writer. Same committed-self-contained model. A REVIEW-DRIVEN SECURITY FIX was applied and re-reviewed: the first independent review returned pass_with_notes but named an important finding - the committed git pre-push hooks and copied engine scripts were non-executable (mode 644), so git SILENTLY SKIPS a non-executable hook and following the documented `git config core.hooksPath hooks` left the local push gate INERT (an unproven push lands). Root cause: assemble_pack used shutil.copyfile (drops the exec bit) and the authored hooks were committed 644, SYSTEMICALLY across all 5 packs, and engine_drift ignored file mode so it went undetected (a `bash hook` test passes because it bypasses the exec-bit requirement; only the git-invoked path exposes it). Fixed comprehensively: assemble_pack now uses shutil.copy (copies mode), engine_drift is MODE-AWARE (a content-identical non-executable engine-script copy is reported as 'mode' drift), all committed pack git pre-push hooks + guard scripts + copied engine scripts are executable (100755), and the selftest asserts every pack's hook + warp-guard.sh is executable and that a stripped exec bit is caught as drift. This RETROACTIVELY corrected the already-shipped Cursor/Codex/Copilot/Antigravity packs (the fix commit flips 219 pack files 100644->100755 with byte-identical content). Two independent reviews: the first (pass_with_notes, named the finding, on a19806e); a scoped re-review bound to this commit 2e76cd0 (PASS, 0 blocking) that behaviorally proved via the REAL git-invoked path that the local push gate now fires (blocks unproven, allows proven) for opencode and cursor, the mode-drift teeth work, and the executable set matches canonical. The server-side CI required status check was always the unaffected backstop.",
+    "The commit also bundles the WARP-0806 review's plan reconciliation (PLAN-0008 pack-item depends_on for W3-W8 from WARP-0801 to WARP-0802, W2 correctly stays WARP-0801) - exactly six lines, plan validates. NOTE: plan_hash here (sha256:b86504755d842c46) is the CANONICAL hash via plan.py (parse_yamlish, capturing the work DAG); the earlier PLAN-0008 proofs (W2-W6) recorded a shallow front_matter-derived hash by a computation-method slip - harmless because plan_hash is informational and never re-checked by validate. A pre-existing latent note: specs/index.md embeds a 'Generated <date>' line, so a verify run on a later calendar day can go red on the first run and green on the second (a date-sensitivity of update_index.py, not a WARP-0807 defect)."
+  ],
+  "rollback": "git revert; additive - a new packs/opencode tree, an opencode manifest entry, the systemic mode fix (assemble_pack copy + mode-aware engine_drift + executable pack hooks/scripts), a selftest block, this spec, and the bundled PLAN-0008 depends_on reconciliation; no protected path; pure stdlib, no network."
+}

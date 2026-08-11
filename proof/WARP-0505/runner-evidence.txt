@@ -1,0 +1,1 @@
+R5 (WARP-0505, answer/steer/abort) is correct and honest. Gate GREEN, selftest 840 passed, 0 failed.

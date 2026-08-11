@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0403",
+  "commit": "f2cf149e13b09ab44bb6700f13625768252acc3d",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0004 wave A)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T14:48:12Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the lessons store ships as .warp/lessons.py (append-only .warp/lessons.jsonl) with add() validating a warp.lesson/v1 envelope and relevant(context) returning only scope-matched lessons most-recent-first; surfacing is wired into plugin/skills/review/SKILL.md so the reviewer includes relevant(context) output and records a review.failed finding as a new lesson"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives add() and relevant()/scope_matches() over a crafted temp store: a matching lesson surfaces, unrelated path and tag lessons are excluded, an empty store and a no-match both return [], and eleven malformed shapes (unknown category, empty text, malformed/two-key scope) each raise a named LessonError storing nothing; part of selftest 667 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the lessons store ships as .warp/lessons.py (append-only .warp/lessons.jsonl) with add() validating a warp.lesson/v1 envelope and relevant(context) returning only scope-matched lessons most-recent-first; surfacing is wired into plugin/skills/review/SKILL.md so the reviewer includes relevant(context) output and records a review.failed finding as a new lesson"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the lessons store ships as .warp/lessons.py (append-only .warp/lessons.jsonl) with add() validating a warp.lesson/v1 envelope and relevant(context) returning only scope-matched lessons most-recent-first; surfacing is wired into plugin/skills/review/SKILL.md so the reviewer includes relevant(context) output and records a review.failed finding as a new lesson"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the lessons store ships as .warp/lessons.py (append-only .warp/lessons.jsonl) with add() validating a warp.lesson/v1 envelope and relevant(context) returning only scope-matched lessons most-recent-first; surfacing is wired into plugin/skills/review/SKILL.md so the reviewer includes relevant(context) output and records a review.failed finding as a new lesson"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the lessons store ships as .warp/lessons.py (append-only .warp/lessons.jsonl) with add() validating a warp.lesson/v1 envelope and relevant(context) returning only scope-matched lessons most-recent-first; surfacing is wired into plugin/skills/review/SKILL.md so the reviewer includes relevant(context) output and records a review.failed finding as a new lesson"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the lessons store ships as .warp/lessons.py (append-only .warp/lessons.jsonl) with add() validating a warp.lesson/v1 envelope and relevant(context) returning only scope-matched lessons most-recent-first; surfacing is wired into plugin/skills/review/SKILL.md so the reviewer includes relevant(context) output and records a review.failed finding as a new lesson"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives add() and relevant()/scope_matches() over a crafted temp store: a matching lesson surfaces, unrelated path and tag lessons are excluded, an empty store and a no-match both return [], and eleven malformed shapes (unknown category, empty text, malformed/two-key scope) each raise a named LessonError storing nothing; part of selftest 667 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 667 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "lessons_store is mechanical (stdlib add + relevant, gate-tested with no external surface); lessons_surfacing is procedure (skill-instructed agent judgment in skills/review, like fresh_context_review). A core capability under .warp/, not a runner and not a template-synced pair."
+  ],
+  "rollback": "git revert; additive - .warp/lessons.py, seed .warp/lessons.jsonl, a selftest block, a skills/review instruction, and the spec; no protected path."
+}

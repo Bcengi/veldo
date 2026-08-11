@@ -1,0 +1,27 @@
+{
+  "name": "mcp stdio contract (passing)",
+  "interactions": [
+    {"name": "lists exactly add, echo, relay", "method": "tools/list",
+     "expect": {"tools": ["add", "echo", "relay"]}},
+    {"name": "echo is offered (subset)", "method": "tools/list",
+     "expect": {"tools_include": ["echo"]}},
+    {"name": "echo returns its text", "method": "tools/call",
+     "params": {"name": "echo", "arguments": {"text": "hi"}},
+     "expect": {"result_text": "hi"}},
+    {"name": "add sums its arguments", "method": "tools/call",
+     "params": {"name": "add", "arguments": {"a": 2, "b": 3}},
+     "expect": {"result_text": "5"}},
+    {"name": "relay proxies to echo and returns its result", "method": "tools/call",
+     "params": {"name": "relay", "arguments": {"text": "via relay"}},
+     "expect": {"result_text": "via relay", "result_contains": "relay"}},
+    {"name": "add on a non-number is a tool-level error", "method": "tools/call",
+     "params": {"name": "add", "arguments": {"a": "x", "b": 3}},
+     "expect": {"is_error": true, "result_contains": "two numbers"}},
+    {"name": "unknown tool is a JSON-RPC invalid-params error", "method": "tools/call",
+     "params": {"name": "nope", "arguments": {}},
+     "expect": {"error_code": -32602, "error_contains": "unknown tool"}},
+    {"name": "missing tool name is a JSON-RPC invalid-params error", "method": "tools/call",
+     "params": {"arguments": {}},
+     "expect": {"error_code": -32602}}
+  ]
+}

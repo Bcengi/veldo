@@ -1,0 +1,51 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1001",
+  "commit": "e7de9342446513e3bd200d2b57e522b94c3ac98e",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder)",
+  "reviewed_at": "2026-07-20T21:40:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:1d8edbcb6fcc2eaa",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "The warp.tracker/v1 config gains two OPTIONAL eligibility fields validated INSIDE the existing _validate (no second parser): a present 'agent' must be a non-empty string and a present 'ready_statuses' a non-empty list of non-empty strings, else TrackerConfigError by name (fail closed by name). The repo routing field is the EXISTING 'field' mechanism (C7's validated 'WARP Repo'), reused not reinvented. Both optional, so a routing-only PLAN-0006 config stays valid (selftest asserts it). The shipped template plugin/templates/.warp/trackers.json documents all three with example values (agent, ready_statuses, a _routing_field_comment for the field mechanism). Verified: _tr_val_bad rejects a blank agent and a non-list ready_statuses; routing-only stays valid."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "is_eligible(ticket, config) in .warp/tracker.py is pure and fail-closed. It returns Eligibility(True, <repo>) ONLY when all three legs hold: assignee == config 'agent' AND status in ('ready_statuses' or DEFAULT_READY_STATUSES) AND resolve_repo (the reused WARP-0601 resolver) returns exactly one known repo, reporting that repo so the caller resolves once. Each leg fails closed to Eligibility(False, None) independently: non-dict ticket or empty config; unconfigured/blank agent; unassigned/non-string/non-Agent assignee; missing/non-ready status; and resolve_repo's TrackerRoutingError (missing/unknown/ambiguous signal) is caught, never propagated. It never guesses a repo and does not mutate ticket or config. Reads the vendor-neutral shape (scalar assignee, scalar status, the routing signal resolve_repo reads)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "The selftest (scripts/selftest.py, WARP-1001 block) has real teeth: a fully eligible fake ticket is eligible AND reports repo-a; three negatives each flip EXACTLY ONE leg (wrong or absent assignee, non-ready status, unresolvable repo) and refuse; plus non-dict and unconfigured-Agent fail-closed cases, a purity assertion (config and ticket byte-unchanged via sorted-JSON snapshots), and an explicit non-tautology assertion. Proven non-vacuous by mutation: disabling the assignee leg in is_eligible turned the wrong-assignee, absent-assignee, and non-tautology cases RED (1385 passed, 3 failed); reverting with git checkout left the tree diff empty and restored 1388 passed, 0 failed."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "capabilities.yaml gains an honest tracker_eligibility entry (status mechanical, home .warp/tracker.py, correctly not scope: repo-only because its home ships in the engine), byte-identical in both copies. Both edited ENGINE_GLOBS files are byte-identical across .warp, plugin/templates/.warp, and all six packs: tracker.py sha256 a230dec...5f0a and capabilities.yaml sha256 4f21d5d...436a7 each collapse to a single hash across root + templates + cursor/aider (and codex/opencode). The trackers.json template is updated in its shipped location. check_template_sync.sh: pass; check_pack_drift.py: pass (7 packs). scripts/selftest.py is repo-root-only (no plugin/templates twin), correctly not synced."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "bash scripts/verify.sh -> GATE: GREEN at e7de934 (5 run, 18 na, 0 waived, 0 undeclared); selftest 1388 passed / 0 failed. .warp/last_verify records green at e7de934. No protected path touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins unmodified; the diff is tracker.py x8, capabilities.yaml x8, trackers.json template, selftest.py, the WARP-1001 spec, and regenerated specs/index.md). RULE #1 clean in the additions: zero non-ASCII, em-dash, or en-dash; the only double-hyphen occurrences are the triple-hyphen YAML front-matter fences and one markdown table separator in specs/index.md, none in the code. Canonical two-commit shape: this reviewed commit R carries code plus spec; the evidence-only commit is added by the orchestrator."
+    }
+  ],
+  "checks": [
+    "THE TRIPLE, FAIL-CLOSED (AC2 crux): PASS. is_eligible ANDs three independent legs and returns Eligibility(True, repo) only when all hold. Each leg fails closed on its own: non-dict ticket / empty config -> _INELIGIBLE; blank or absent agent -> _INELIGIBLE (assignee leg unconfirmable); unassigned / non-string / non-Agent assignee -> _INELIGIBLE; missing / non-ready status -> _INELIGIBLE; resolve_repo TrackerRoutingError (missing/unknown/ambiguous) caught -> _INELIGIBLE, never guessed. Pure (no mutation; purity selftest confirms), never raises into the caller within its contract.",
+    "TEETH (AC3): REAL. Mutated is_eligible in place (assignee leg guarded by `if False:`); python3 scripts/selftest.py went to 1385 passed, 3 failed (wrong-assignee, absent-assignee, non-tautology all RED). Reverted via git checkout of .warp/tracker.py; the tracked tree diff is empty; selftest back to 1388 passed, 0 failed.",
+    "CONFIG VALIDATION (AC1): PASS. New fields validated inside the reused _validate, fail closed by name (TrackerConfigError) on a blank agent or a non-list/empty ready_statuses; routing-only config still valid. No second parser.",
+    "ENGINE SYNC (AC4): CLEAN. tracker.py and capabilities.yaml byte-identical across root + plugin/templates + all packs (single sha256 each across the spot-checked set); check_template_sync.sh pass, check_pack_drift.py pass (7 packs); trackers.json template updated.",
+    "GATE: GREEN at e7de934 (verify.sh: 5 run, 18 na, 0 waived, 0 undeclared; selftest 1388/0). last_verify green at R. No protected path touched. RULE #1 clean.",
+    "proof binding: manifest.json binds to e7de934; plan_hash sha256:f6a5cc8e425f566b matches python3 .warp/plan.py hash PLAN-0010; recomputed proof_digest(manifest) = sha256:1d8edbcb6fcc2eaa, matching this verdict's proof_digest."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Non-blocking. is_eligible catches only TrackerRoutingError from resolve_repo. A structurally malformed config passed straight to is_eligible (e.g. mechanism 'label' with no 'label_prefix') could make _routing_candidates raise KeyError, which would propagate rather than fail closed. This is out of contract: config always arrives from load_tracker_config, which _validate rejects such a shape on load (AC1), and resolve_repo shares the same validated-config precondition. Under the documented contract (a loaded, validated config) is_eligible never raises. Recorded only as an adversarial edge; the shipped path is clean. A future hardening could catch (TrackerRoutingError, TrackerConfigError, KeyError, TypeError) at the resolve_repo call so is_eligible is total even on an unvalidated config."
+    }
+  ],
+  "summary": "WARP-1001 (the eligibility model and the Agent user, W1 of PLAN-0010) passes with notes at e7de934, zero blocking findings. The crux (AC2) holds: is_eligible(ticket, config) is a pure, fail-closed AND of three independent legs (assignee == the single configured Agent user, status in the configured ready-for-dev set, repo tag resolving to exactly one known repo via the reused WARP-0601 resolver), returning the resolved repo when eligible and Eligibility(False, None) on every failing leg, never raising into the caller and never guessing a repo. The teeth are real, proven by mutation: disabling the assignee leg turned three WARP-1001 selftest cases RED (1385/3), and a clean git checkout restored 1388/0. Config validation (AC1) reuses the existing _validate and fails closed by name on a malformed agent or ready_statuses while keeping routing-only configs valid; the template documents all three fields. Engine sync (AC4) is byte-identical across root, plugin/templates, and all six packs for both edited engine files, with template-sync and pack-drift green. The full gate is GREEN at R (verify.sh 5 run / 18 na / 0 waived / 0 undeclared, selftest 1388/0), no protected path is touched, RULE #1 is clean in the additions, and the change lands in the canonical two-commit shape. manifest.json binds to R with a matching plan_hash and a proof_digest that recomputes to sha256:1d8edbcb6fcc2eaa. One non-blocking note: is_eligible narrows its except to TrackerRoutingError, so a hand-constructed unvalidated malformed config could raise a KeyError out of it, an out-of-contract edge since config always comes validated from load_tracker_config; the shipped path is clean. Verdict: pass_with_notes."
+}

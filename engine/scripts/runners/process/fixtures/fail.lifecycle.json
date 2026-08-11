@@ -1,0 +1,18 @@
+{
+  "name": "misbehaving target (ignores SIGTERM, leaks a setsid-escaped child)",
+  "spawn": [
+    "python3",
+    "-c",
+    "import os,signal,time\nsignal.signal(signal.SIGTERM,signal.SIG_IGN)\npf=os.environ.get('VELDO_PIDFILE')\npid=os.fork()\nif pid==0:\n    os.setsid()\n    signal.signal(signal.SIGTERM,signal.SIG_IGN)\n    time.sleep(30)\n    os._exit(0)\nif pf:\n    open(pf,'a').write(str(pid)+chr(10))\nwhile True:\n    time.sleep(30)\n"
+  ],
+  "assertions": [
+    "spawn",
+    "graceful_signal",
+    "respawn",
+    "kill_tree"
+  ],
+  "grace_seconds": 3.0,
+  "spawn_settle_seconds": 0.3,
+  "descendant_timeout_seconds": 2.0,
+  "kill_tree_window_seconds": 4.0
+}

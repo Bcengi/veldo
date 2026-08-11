@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0705",
+  "commit": "ad5bb86072f8e375e562e3d287af24e904a83ee6",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T12:45:00Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:8db1e95a48cf4e9e",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "resolve_plan honors ephemeral / shared-read / mutating-write-layer; the reviewer enumerated every mode x mutates combination and confirmed the only actions emitted are ephemeral, attach_shared_ro, write_layer - no wholesale-copy path exists."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "The fleet-wide ref count (SharedDepRegistry, atomic under the hardened claim-ledger per-unit lock) brings a shared dep up exactly once and tears it down last-out. Verified under 24 threads and 20 REAL PROCESSES plus 10-process/300-round churn (bring-up minus teardown always in {0,1}, refs never negative, never two live)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "The capability gate (reusing CL.capability_ok) refuses a capability-gated dep on a worker without the tag and grants with it, non-tautologically; the reviewer confirmed it cannot be bypassed for read or mutating uses."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Injected FleetEnvBackend seam; provision() validates before any side effect (no backend call on an invalid plan) and returns a lease whose teardown reverses provisioning. A mid-provision backend failure is caught, the partial lease torn down, and the exception re-raised - verified leak-free for attach_ro, make_write_layer, and provision_ephemeral failures and multi-handle partial cleanup (the pre-fix leak bring_up=1/teardown=0/refs=1 is closed; refs==0 in every case)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "The selftest over the fake backend proves mode resolution, capability refuse-vs-grant, mutate-without-write-layer refusal, undeclared-dep refusal, the mid-provision leak-free teardown, the barrier exactly-once ref-count, and a full provision+teardown - non-tautological (mutating acquire to bring up on every call reddens exactly-once; reverting the provision try/except reddens leaks-no-ref); gate GREEN, selftest 1038."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Two-pass independent adversarial review plus a re-confirm. Pass 1 (bb90c66) was pass_with_notes, 0 blocking: all 5 ACs confirmed, and the ref count (the stated risk) verified correct under 24-thread AND 20-real-process stress plus churn, with no wholesale-copy path. Its one note - a mid-provision backend exception leaked the fleet ref count (a phantom holder would keep a heavy shared dep up forever, the count file having no TTL) - was fixed pre-ship: provision() now tears down the partial lease and re-raises on any backend failure. Pass 2 (ad5bb86) re-verified the fix (leak-free for all three side-effect methods and multi-handle cleanup; no regression to exactly-once; non-tautological selftest) and upgraded to a clean PASS."
+    },
+    {
+      "severity": "note",
+      "text": "Accepted optional-hardening note (compound-failure edge, not blocking, no wedge): EnvLease.teardown() is not itself wrapped, so if a BACKEND'S OWN teardown method throws during cleanup, that exception propagates and skips the remaining cleanup steps in the same lease. This requires a backend whose teardown fails (beyond the mid-provision note, which is closed). It does not deadlock or loop. Best-effort per-step teardown (swallow-and-continue, raise an aggregate at the end) would fully close it - a candidate follow-up, left as documented rather than expanded here. Also accepted: the ref-count file has no heartbeat/TTL, so a worker that CRASHES mid-hold (as opposed to an in-process exception, which provision now cleans up) would leave a ref; a cross-crash reclaim like the claim ledger's staleness is a possible follow-up."
+    }
+  ],
+  "summary": "Y5 (WARP-0705, fleet environment provisioning) is correct and honest. Two-pass independent adversarial review plus a re-confirm; final verdict PASS, 0 blocking; gate GREEN (selftest 1038). A repo declares each dependency's sharing mode; resolve_plan honors them with NO wholesale-copy action (a mutating use of a shared dep gets an isolated write layer, a read use attaches read-only), and a capability-gated heavy dep only resolves on a capable worker. A shared_ro dep is ref-counted fleet-wide (atomic via the hardened claim-ledger lock) so it is brought up exactly once and torn down last-out - verified under thread and real-process stress - meaning two workers never deploy two copies of a 75M-row dataset. Real infra ops are an injected FleetEnvBackend seam; provision validates before any side effect and tears down a partial lease on a mid-provision failure, leaking no ref. proof_digest via validate.py."
+}

@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0606",
+  "commit": "4d932723818e0298f46cdcf00cfc4d356a66be72",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0006 W6, in-session single writer)",
+  "plan_hash": "sha256:6dd3f98b5a0c1f68",
+  "produced_at": "2026-07-18T20:01:44Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_mirror.py mirror_plan_events consumes planning-layer events and projects a plan's work DAG onto its tracker epic (upserted keyed by the plan id, never forked, routing target recorded) and one child per work item (keyed by the work item), through the WARP-0603 seam only; it has no file-write path and never mutates its input plan_index. build_plan_index is the one-way repo READ that feeds it."},
+        {"type": "unit", "ref": "independent review drove two planning events -> exactly one epic (count(kind='epic')==1), one child per work item, fields.warp_repo recorded; a deep before/after compare showed plan_index unchanged; the write audit is a subset of {create_or_update_epic, create_or_update_child, set_status, comment}; part of selftest 1157 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "per-repo routing is enforced on the epic: the plan's tracker_repo must resolve via the reused WARP-0601 tracker_for_repo before any write; a plan with no tracker_repo, no config, or an unroutable repo is SKIPPED by name (result['skipped'][plan_id]) and writes nothing."},
+        {"type": "unit", "ref": "independent review proved reuse by monkeypatch spy (tracker_for_repo called with the repo id, not reimplemented); the three skip cases each land in result['skipped'] by name with an empty tracker; part of selftest 1157 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the epic status is a burn-down rollup (shipped only when every work item's spec is shipped, else open/ready) mapped through the per-org status_map; each child's status is its spec's current status through the SAME status_map; transitions stay inside the mapped set (NG4) - an unmapped epic status is a keyed comment never an invented transition, and an early-lifecycle spec (draft/unstarted/None) leaves its child untransitioned."},
+        {"type": "unit", "ref": "independent review: mixed plan -> epic open, all-shipped -> epic shipped; shipped/ready children mapped; None/draft child left untouched; empty status_map -> epic annotated not transitioned; every set_status value is inside status_map.values(); NG4 could not be broken; part of selftest 1157 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a RECONCILER (rebuild the epic + children from the plan's current definition each run) with no processed-offset ledger and no second store, so replay records no duplicate epic or child transition, never forks an epic, and leaves state byte-identical; reuses the WARP-0603 seam with no reimplementation."},
+        {"type": "unit", "ref": "independent review: replay of same events, a doubled event, out-of-order events, replay after all-shipped, and reusing the same plan_index object twice all yield epic_transitions==0, child_transitions==0, one epic, and state_digest byte-identical; part of selftest 1157 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest drives the epic mirror over the deterministic FakeTracker offline - a plan event creates the epic (keyed, routing recorded) and one child per work item, sets mapped burn-down statuses, an all-shipped plan makes the epic shipped, replay is idempotent, an unroutable plan is skipped by name, the plan index is never mutated (fresh-index one-way guard), and build_plan_index is exercised over a REAL plan fixture with a nested work DAG - non-tautologically (a non-planning event builds no structure)."},
+        {"type": "unit", "ref": "independent review mutation matrix (baseline 19 assertions, now 24 with the build_plan_index block): _epic_warp_status->always shipped RED, child loop never set_status RED, skip routing check RED, invent-transition-when-unmapped RED; and reverting the build_plan_index parser to front_matter turns 4 build_plan_index assertions RED (childless-epic regression caught); part of selftest 1157 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1157 passed, 0 failed (+24 for the WARP-0606 epic-mirror + build_plan_index blocks; the WARP-0605 spec-mirror block still passes)"}
+  ],
+  "assumptions": [
+    "W6 of PLAN-0006: the plan-creates-structure epic mirror, built in-session by a single writer, added to .warp/tracker_mirror.py (the same module as the WARP-0605 spec mirror - same feature F3, reusing resolve_status_map, tracker_for_repo, WARP_STATUSES, and the reconciler/NG4 discipline; no parallel machinery per C3). No template twin (not a validate/policy_check load dependency, same as tracker_adapter.py and the spec mirror). A REVIEW-DRIVEN FIX was applied to the reviewed code and re-reviewed: the first review found build_plan_index used the shallow front_matter parser, which collapses a plan's nested work DAG and would yield childless epics against real plans (green-but-hollow: the read path had no test); fixed to parse with parse_yamlish (the parser plan.py uses) and covered with 5 selftest assertions over a real plan fixture, mutation-proven (reverting the parser turns 4 assertions red). Two smaller notes also addressed: the one-way selftest now uses a fresh never-mirrored plan_index (mutation-proven teeth), and the W5/W6 child-status co-ownership is documented as a reconcile+overlay design. Two independent adversarial reviews (the full pass on fc722fb and a scoped re-review bound to this commit 4d93272) both PASS with 0 blocking; neither could break one-way, idempotency, or NG4.",
+    "The epic and children are UPSERTS keyed by stable identities (plan id, work item), so a re-run reconciles rather than forks. The epic records its routing target in the vendor-neutral seam fields (warp_repo); a real adapter maps it onto the config's routing mechanism when writing the live tracker. Child status is co-owned with the spec mirror (W6 reconcile-to-truth from front matter, W5 live overlay from events); they converge at every persistent state, and only event-only statuses (in_review, merged) differ transiently, which a stock status_map leaves unmapped so there is no visible flap."
+  ],
+  "rollback": "git revert; additive - new functions in .warp/tracker_mirror.py (mirror_plan_events, build_plan_index, _epic_warp_status, _spec_status_map, PLAN_EVENT_TYPES, SPEC_STATUS_TO_WARP), one capability entry (both capabilities.yaml copies), a selftest block, and the WARP-0606 spec; no protected path; pure stdlib, read-only over the repo, no network."
+}

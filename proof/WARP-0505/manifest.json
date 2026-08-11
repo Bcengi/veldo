@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0505",
+  "commit": "c97e50c692ffd64c1dc5847f12fbb99ca5a52dad",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0005)",
+  "plan_hash": "sha256:48ebdb0410a49b25",
+  "produced_at": "2026-07-18T00:17:45Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "answer/steer/abort a running build cooperatively through the run inbox: .warp/runlog.py gained inbox primitives (post_command writes an atomic ordinal-named command file to commands/inbox/, read_inbox returns pending oldest-first, ack_command moves it to commands/acked/ via os.replace and returns False on an already-acked or unknown id so each command is processed exactly once), and the R2 warp_run driver polls the inbox at SAFE CHECKPOINTS (between loop steps and while blocked): an answer to a blocked run records the answer and RESUMES it, an abort finishes the run aborted at the next checkpoint and stops the loop, a steer is recorded to surface to the agent next turn. Cooperative only - no signals or preemption; the run process that owns the build is the sole caller of finish. The requirement-change-must-commit rule (an answer that changes a requirement is committed to the spec, never hidden chat truth) is a documented procedure in the run SKILL.md."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block over a temp runs root: post an answer to a blocked run and drive a fake checkpoint loop, asserting the run resumes, the answer is recorded, and the command is ack'd exactly once (inbox empty, a second ack returns False, a re-drive does not reprocess); post an abort, asserting the loop finishes the run aborted at the next checkpoint and stops (not mid-step); post a steer, asserting it is recorded and surfaced, not treated as an answer; part of selftest 840 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "answer/steer/abort a running build cooperatively through the run inbox: .warp/runlog.py gained inbox primitives (post_command writes an atomic ordinal-named command file to commands/inbox/, read_inbox returns pending oldest-first, ack_command moves it to commands/acked/ via os.replace and returns False on an already-acked or unknown id so each command is processed exactly once), and the R2 warp_run driver polls the inbox at SAFE CHECKPOINTS (between loop steps and while blocked): an answer to a blocked run records the answer and RESUMES it, an abort finishes the run aborted at the next checkpoint and stops the loop, a steer is recorded to surface to the agent next turn. Cooperative only - no signals or preemption; the run process that owns the build is the sole caller of finish. The requirement-change-must-commit rule (an answer that changes a requirement is committed to the spec, never hidden chat truth) is a documented procedure in the run SKILL.md."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "answer/steer/abort a running build cooperatively through the run inbox: .warp/runlog.py gained inbox primitives (post_command writes an atomic ordinal-named command file to commands/inbox/, read_inbox returns pending oldest-first, ack_command moves it to commands/acked/ via os.replace and returns False on an already-acked or unknown id so each command is processed exactly once), and the R2 warp_run driver polls the inbox at SAFE CHECKPOINTS (between loop steps and while blocked): an answer to a blocked run records the answer and RESUMES it, an abort finishes the run aborted at the next checkpoint and stops the loop, a steer is recorded to surface to the agent next turn. Cooperative only - no signals or preemption; the run process that owns the build is the sole caller of finish. The requirement-change-must-commit rule (an answer that changes a requirement is committed to the spec, never hidden chat truth) is a documented procedure in the run SKILL.md."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "answer/steer/abort a running build cooperatively through the run inbox: .warp/runlog.py gained inbox primitives (post_command writes an atomic ordinal-named command file to commands/inbox/, read_inbox returns pending oldest-first, ack_command moves it to commands/acked/ via os.replace and returns False on an already-acked or unknown id so each command is processed exactly once), and the R2 warp_run driver polls the inbox at SAFE CHECKPOINTS (between loop steps and while blocked): an answer to a blocked run records the answer and RESUMES it, an abort finishes the run aborted at the next checkpoint and stops the loop, a steer is recorded to surface to the agent next turn. Cooperative only - no signals or preemption; the run process that owns the build is the sole caller of finish. The requirement-change-must-commit rule (an answer that changes a requirement is committed to the spec, never hidden chat truth) is a documented procedure in the run SKILL.md."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "answer/steer/abort a running build cooperatively through the run inbox: .warp/runlog.py gained inbox primitives (post_command writes an atomic ordinal-named command file to commands/inbox/, read_inbox returns pending oldest-first, ack_command moves it to commands/acked/ via os.replace and returns False on an already-acked or unknown id so each command is processed exactly once), and the R2 warp_run driver polls the inbox at SAFE CHECKPOINTS (between loop steps and while blocked): an answer to a blocked run records the answer and RESUMES it, an abort finishes the run aborted at the next checkpoint and stops the loop, a steer is recorded to surface to the agent next turn. Cooperative only - no signals or preemption; the run process that owns the build is the sole caller of finish. The requirement-change-must-commit rule (an answer that changes a requirement is committed to the spec, never hidden chat truth) is a documented procedure in the run SKILL.md."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "answer/steer/abort a running build cooperatively through the run inbox: .warp/runlog.py gained inbox primitives (post_command writes an atomic ordinal-named command file to commands/inbox/, read_inbox returns pending oldest-first, ack_command moves it to commands/acked/ via os.replace and returns False on an already-acked or unknown id so each command is processed exactly once), and the R2 warp_run driver polls the inbox at SAFE CHECKPOINTS (between loop steps and while blocked): an answer to a blocked run records the answer and RESUMES it, an abort finishes the run aborted at the next checkpoint and stops the loop, a steer is recorded to surface to the agent next turn. Cooperative only - no signals or preemption; the run process that owns the build is the sole caller of finish. The requirement-change-must-commit rule (an answer that changes a requirement is committed to the spec, never hidden chat truth) is a documented procedure in the run SKILL.md."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block over a temp runs root: post an answer to a blocked run and drive a fake checkpoint loop, asserting the run resumes, the answer is recorded, and the command is ack'd exactly once (inbox empty, a second ack returns False, a re-drive does not reprocess); post an abort, asserting the loop finishes the run aborted at the next checkpoint and stops (not mid-step); post a steer, asserting it is recorded and surfaced, not treated as an answer; part of selftest 840 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 840 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: the inbox read/write and the cooperative safe-point handling are stdlib control logic driven in the gate with a fake checkpoint loop over a temp runs root. The requirement-change-must-commit rule is a documented procedure (agent-instructed in the run skill), not code-enforced. run.command records are live-only; the durable milestones ride the existing run.* vocabulary."
+  ],
+  "rollback": "git revert; additive - inbox primitives in .warp/runlog.py, inbox polling in the .warp/executor.py warp_run driver, a run SKILL.md procedure note, a selftest block, one capability (both copies), the spec; no protected path."
+}

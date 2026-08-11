@@ -1,0 +1,145 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1104",
+  "commit": "b64616ed1db3e769449dfc0fe6aa1a8b66857164",
+  "producer": "claude-opus-4-8[1m] (WARP-1104 build worker, planned lane; W4 of PLAN-0011, the shape-fit review dimension - the mechanizable shape-fit findings, the delegated fail-loud ShapeReviewer seam, build_shape_fit, validate_shape_fit and the verdict shape_fit dimension, and the merge-gate read; intelligent builder, did not review its own work)",
+  "produced_at": "2026-07-22T00:00:00Z",
+  "plan": "PLAN-0011",
+  "work": "W4",
+  "plan_revision": 2,
+  "plan_hash": "sha256:5f6e8c623065cda0",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The mechanizable half lives in .warp/shape_review.py: mechanical_shape_findings decides, from the architecture contract plus the spec's placement/footprint plus the diff's paths alone, the shape-fit rules that need no judgment and FAILS CLOSED by name on each of: a placement area that does not resolve to a declared area (referenced but absent); a diff path outside the declared footprint (a change may not silently touch a path it did not declare); a diff path resolving to a declared area outside the declared placement (the footprint does not stay within the declared areas); and a diff that couples two declared areas with no allow-listed dependency edge between them in either direction (an unmodeled boundary crossing). It reuses arch.area_for_path, arch.area_ids, and the dependency-graph helpers (_allowed_edges, _areas_connected, _glob_re), so there is no second placement or boundary implementation. python3 .warp/validate.py shape-review specs/WARP-1104-shape-fit-review-dimension.md .warp/policy_check.py returns rc 1 (a path outside the declared footprint and placement refuses); with the spec's own footprint paths it returns rc 0; adoption safe (no contract stands the check down)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1104 AC1 block: a within-placement, within-footprint change yields no findings (positive control); and negative-first, isolated so exactly one rule bites, a non-resolving placement, a diff path outside the footprint, a diff path in a declared area outside the placement, and a diff coupling two areas with no allow-listed edge each refuse (>0), while cohesive breadth across an allow-listed edge (edge -> core) is not a misfit (==[]). Real-artifact teeth over the REAL WARP-1104 spec and contract: a path outside its footprint turns check_shape_review RED, its own footprint paths fit, and the real spec on disk is byte-unchanged."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The pattern-fit judgment is a DELEGATED fresh-context reviewer seam that FAILS LOUD, mirroring the executor's LiveLoop.review and the dispatcher's LiveReviewer. ShapeReviewer.review(spec, context) is the seam; shape_review_context assembles what the reviewer receives alongside the spec, the final diff, and the proof (the contract's declared areas, the spec's placement and footprint, the areas the final diff touched, and the mechanical findings); the reference LiveShapeReviewer is wired to nothing and RAISES ShapeReviewError, refusing to fabricate a judgment. No shape-fit judgment is synthesized in code, and a fake injected reviewer is the only path a judgment enters."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1104 AC2 block: shape_review_context carries the contract areas, the placement, the diff areas, and the mechanical findings; the reference LiveShapeReviewer raises ShapeReviewError (fails loud, refuses to fabricate); ShapeReviewError is a ValueError (raised by name); and a fake injected ShapeReviewer subclass is the only path a judgment enters."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "build_shape_fit assembles the shape_fit block a warp.verdict/v1 verdict carries, from the mechanical findings and the delegated judgment, and the MACHINE NEVER LOWERS: any mechanical misfit forces verdict does_not_fit regardless of the judgment, a judgment of does_not_fit is honored, and only a clean mechanical result AND a reviewer verdict of fits yields fits. A malformed or fabricated judgment (a missing or out-of-vocabulary verdict) is refused by name (ShapeReviewError, the delegated seam fails loud)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1104 AC3 block: a mechanical misfit with a reviewer verdict of fits still yields does_not_fit (the machine-never-lowers tooth); a clean mechanical result with a fits judgment yields fits; a does_not_fit judgment over a clean result is honored; and a malformed judgment (out-of-vocabulary verdict) raises ShapeReviewError. A standalone run confirmed a reviewer that says fits over a mechanical misfit yields does_not_fit with the 2 mechanical findings carried."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The verdict contract (warp.verdict/v1) carries the shape_fit finding and validate.py validates it FAIL CLOSED. validate_shape_fit (in .warp/shape_review.py, invoked from validate.py check_json for a verdict) refuses by name: a non-mapping block, an out-of-vocabulary shape_fit.verdict, a non-list mechanical findings list, a malformed review sub-block or an out-of-vocabulary review verdict, and a does_not_fit dimension that records no finding (a misfit must name what does not fit). A verdict with no shape_fit dimension is byte-identically unaffected (adoption safe). python3 .warp/validate.py all validates every proof verdict including this dimension (rc 0)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1104 AC4 block over temporary verdict JSON files (through V.check_json with VERDICT_REQ): a well-formed fits block validates (0); a does_not_fit block naming a mechanical finding validates (0); an out-of-vocabulary shape_fit.verdict, a non-list mechanical list, a malformed review sub-block, and a does_not_fit with no finding each refuse (>0); a verdict with no shape_fit dimension validates unaffected (0)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The shape-fit dimension BLOCKS the merge (D4, RJ3): shape_fit_blocks(verdict) returns True for a does_not_fit dimension and (fail closed) for a malformed one, and False for a fits dimension or a verdict with no shape_fit (adoption safe). The dispatcher's verdict gate dispatch._verdict_passes consults it alongside the passing-verdict word and policy_check.blocking_findings, over the allow-listed fleet -> contracts edge, so a CORRECT-BUT-MISFIT verdict (verdict pass, shape_fit does_not_fit) is REFUSED at the merge choke point (the spec returns to fail_status for rework) while a fitting verdict ships. No protected path is touched: the gate wiring lives in the non-protected fleet dispatcher."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1104 AC5 block: shape_fit_blocks is True for does_not_fit, False for fits, False for a verdict with no shape_fit dimension, and True (fail closed) for a malformed block or an out-of-vocabulary shape verdict. The RJ3 conformance drives the REAL dispatcher gate (DSP14.Dispatcher(repo_root=ROOT)._verdict_passes): a correct-but-misfit verdict is refused (False), a fitting verdict passes (True), a verdict with no shape_fit dimension passes unchanged (True), and the base gate is preserved (a blocking finding still refuses)."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/shape_review.py ships in the engine byte-identical across root, plugin/templates, and all 6 packs (pack drift pass: 7 packs byte-identical); the edits to .warp/validate.py and .warp/dispatch.py re-sync byte-identical (template sync pass for validate.py; pack drift pass for both). The init scaffold lays .warp/shape_review.py beside .warp/decision_review.py (in _FILES and REQUIRED_SUBSTRATE). capabilities.yaml gains one honest entry (shape_fit_review, status mechanical, home .warp/shape_review.py) naming the delegated pattern-fit reviewer as a fail-loud seam (NG5). This spec declares placement [contracts, fleet] and its footprint; the tier computes to standard because contracts and fleet are joined by the allow-listed fleet -> contracts edge (cohesive breadth under the WARP-1011 refined rule, not a boundary crossing); python3 .warp/plan.py run-check PLAN-0011 WARP-1104 returns clear to build. No protected path (verify.sh, warp-guard.sh, policy.yaml, policy_check.py or twins) is touched. RULE #1 clean (no em or en dash; the only double-hyphens are the YAML front-matter fence and CLI flags)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1104 AC6 block: .warp/shape_review.py, .warp/validate.py, and .warp/dispatch.py are byte-identical root vs plugin/templates; the shape_fit_review capability is declared mechanical; the init scaffold required_substrate includes .warp/shape_review.py. The pack-drift (7 packs), template-sync, pack-conformance, and runner-catalog harnesses run inside the unit slot and pass."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1745 passed, 0 failed (was 1708 at the WARP-1107 baseline plus the WARP-1011 additions; this item adds the WARP-1104 block covering the mechanical shape-fit rules and their isolated negatives, cohesive-breadth non-elevation, the delegated fail-loud ShapeReviewer seam, build_shape_fit machine-never-lowers, the verdict shape_fit validation negatives, shape_fit_blocks, the real dispatcher verdict-gate RJ3 conformance, and real-artifact teeth over the WARP-1104 spec). Mutation teeth confirmed load-bearing: neutering mechanical_shape_findings to return [] turned 7 WARP-1104 assertions RED, then git checkout reverted .warp/shape_review.py byte-identical (md5 8a12597b...). The pack-drift, pack-conformance, and runner-catalog harnesses run inside this slot and pass."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all returns rc 0: check_arch, check_decisions, check_decision_reviews, check_tripwires, check_spec over all specs including WARP-1104 (its placement resolves and validates), the plan/spec binding, every proof manifest and verdict (the shape_fit dimension of any verdict is validated fail closed via check_json), and the examples block. This repository carries no real verdict for its own head, so its shape-fit surface is exercised over selftest fixtures (adoption-safe)."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "bash scripts/check_generated.sh: python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1104 as draft, risk standard, approval not_required (derived from front matter, status NOT flipped to shipped), and the PLAN-0011 burndown shows W4 on the ready frontier."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "bash scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (plugin/ files carry no company or product reference) all pass. RULE #1 hand-checked for prose double-hyphen across every changed file; the only double-hyphen occurrences are the YAML front-matter fence regex (^---) and CLI flags (--draft, --json), never prose."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: pass (.warp/validate.py root vs plugin/templates byte-identical, among the checked pairs)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: every pack's engine (including the new .warp/shape_review.py and the edited .warp/validate.py, .warp/dispatch.py, and .warp/capabilities.yaml) byte-identical to the canonical source plugin/templates; drift empty across all 7 packs."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py: pass (21 runners each complete; the shape_fit_review capability is mechanical with home .warp/shape_review.py, not a runner, so it is not subject to the runner completeness checks)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    },
+    {
+      "name": "gate",
+      "status": "passed",
+      "detail": "./scripts/verify.sh -> GATE: GREEN (b64616ed1db3e769449dfc0fe6aa1a8b66857164). catalog: 5 run, 18 not-applicable, 0 waived, 0 undeclared. Re-run post-commit (files tracked) stays green."
+    }
+  ],
+  "rollback": "git revert b64616e. The commit adds one module (.warp/shape_review.py: the mechanical shape-fit findings, the delegated fail-loud ShapeReviewer seam, build_shape_fit, validate_shape_fit, and shape_fit_blocks), a call to it from .warp/validate.py (the verdict shape_fit validation in check_json, check_shape_review, and the shape-review CLI mode), a shape-fit read in .warp/dispatch.py's _verdict_passes, an init-scaffold substrate entry, and one capabilities entry, all re-synced byte-identical across plugin/templates and the 6 packs. A verdict with no shape_fit dimension is unaffected either way (adoption safe): shape_fit_blocks returns False, so the merge gate behaves exactly as before, and nothing else consumes the dimension. Reverting returns the review gate to its prior behavior with no migration and nothing to unwind."
+}

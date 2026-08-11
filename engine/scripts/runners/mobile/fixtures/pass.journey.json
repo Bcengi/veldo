@@ -1,0 +1,12 @@
+{
+  "name": "settings survives the lifecycle (happy path + re-drives)",
+  "package": "com.android.settings",
+  "activity": ".Settings",
+  "recovery_assertion": {"action": "expect_focus", "value": "com.android.settings"},
+  "steps": [
+    {"action": "launch", "package": "com.android.settings", "activity": ".Settings", "settle": 2},
+    {"action": "expect_focus", "value": "com.android.settings"},
+    {"action": "state", "name": "settings-home"}
+  ],
+  "lifecycle_redrives": ["rotation", "process_death", "background_foreground", "network_loss"]
+}

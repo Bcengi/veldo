@@ -1,0 +1,106 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0909",
+  "commit": "a2423c7552862a58ee9a75b30bd635b94fa0f8e1",
+  "producer": "claude-opus-4-8[1m] (WARP-0909 implementer agent, standalone spec)",
+  "produced_at": "2026-07-19T21:30:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "docs/method.md gained section 2.7.1 'Long-running loops keep the orchestrator thin (clean-context dispatch)': a single long-lived session running many specs in a loop MUST be a thin dispatcher; each spec's build and independent review run in a dispatched fresh sub-context that returns only a compact receipt, never the transcript; the orchestrator keeps only that receipt per spec, does not do per-spec heavy work inline, and does not ingest a sub-context's transcript. Names the rationale explicitly: the 2026-07-19 OOM where one inline orchestrator reached roughly 17.8 GB and was killed by the kernel."
+        },
+        {
+          "type": "unit",
+          "ref": "check_docs.sh dash + non-ASCII + genericity sweeps pass over the new method.md prose (docs hygiene: pass in verify.sh at a2423c7); the section is generic (no company/product reference)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/skills/run/SKILL.md step 5 is now an explicit fresh-context sub-agent dispatch of the warp-reviewer with parity to the build in step 2 (both name their dispatched sub-agent, neither shares the other's context), and retains only the review receipt (verdict + findings), not the reviewer's transcript. A new CLEAN-CONTEXT DISPATCH paragraph states the orchestrator retains only each step's receipt and points to the method's loop rule (docs/method.md section 2.7.1) for chaining many specs."
+        },
+        {
+          "type": "unit",
+          "ref": "check_docs.sh sweeps pass over the updated SKILL.md (docs hygiene: pass at a2423c7); plugin/ genericity clean."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "A pure receipt projection exists at the dispatch boundary: .warp/work.py RECEIPT_FIELDS = (spec, kind, ok, status, verdict, commit, proof_digest, gate, halted_at, reason) plus dispatch_receipt(outcome), which returns a new dict of ONLY the allowlisted summary fields present in the outcome and drops everything else (a full nested result, a transcript, a fat land record, file contents). It fails closed (allowlist, not denylist) and is the value the loop retains per spec. selftest check 'WARP-0909 receipt keeps only allowlisted keys (no result/transcript leak)' and 'WARP-0909 receipt carries the summary fields present (spec/kind/ok/status/commit/proof_digest)' prove the projection over a realistic bulky outcome (scripts/selftest.py)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "The selftest enforces the receipt contract with teeth: 'WARP-0909 receipt is bounded (serialized well under the small byte cap)' asserts json size under _RCPT_MAX_BYTES (2048), and the keys-within-allowlist assertion covers the allowlist bound; the mutant 'WARP-0909 TEETH: a passthrough mutant receipt leaks the bulky result/transcript (allowlist breached)' and 'WARP-0909 TEETH: a passthrough mutant receipt blows the size bound the real projection respects' take the SAME bulky outcome (nested executor result + 20 KB transcript) through a passthrough projection and are REJECTED, so the assertions are not vacuous. selftest at a2423c7: 1374 passed, 0 failed (scripts/selftest.py, the WARP-0909 block)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py LoopSteps.build and LoopSteps.review docstrings now state the clean-context/receipt contract explicitly (the step runs in a FRESH sub-context and the orchestrator retains only a compact receipt via work.py dispatch_receipt / RECEIPT_FIELDS, never the transcript); .warp/dispatch.py module docstring gained a CLEAN-CONTEXT / RECEIPT CONTRACT paragraph stating the delegated build and review return a compact outcome not a transcript, that a thin loop keeps only the bounded receipt (dispatch_receipt over RECEIPT_FIELDS, failing closed), and naming the 2026-07-19 OOM this cures."
+        },
+        {
+          "type": "unit",
+          "ref": "check_lint.sh py_compile passes for the edited modules and their synced copies (lint: pass at a2423c7); the dispatch selftest block (WARP-0901) still passes unchanged, so the docstring edits did not alter behavior."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Every edited ENGINE_GLOBS file (.warp/work.py, .warp/executor.py, .warp/dispatch.py) was re-synced byte-identical into plugin/templates/.warp and all 6 packs (cursor, codex, copilot, antigravity, opencode, aider). scripts/selftest.py is repo-home-only (not in plugin/templates/scripts, not in the engine set) so it needs no pack sync. No protected path (scripts/verify.sh, .warp/policy.yaml, .warp/policy_check.py) was touched."
+        },
+        {
+          "type": "unit",
+          "ref": "At a2423c7: verify.sh GATE GREEN (selftest 1374 passed / 0 failed, lint, generated, docs, template_sync, secret_scan, contracts all pass); check_template_sync.sh 'template sync: pass'; check_pack_drift.py 'pack drift: pass (7 pack(s))' with every pack engine byte-identical to source; specs/index.md regenerated (generated: pass)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py at a2423c7: 1374 passed, 0 failed. The WARP-0909 block adds 6 checks: 4 over the real dispatch_receipt projection (allowlist-only keys, summary fields carried, size bound, bulky-land dropped) and 2 teeth over a passthrough mutant that leaks the bulky result/transcript and blows the size cap. verify.sh GATE GREEN."
+    },
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated by scripts/update_index.py; check_generated.sh reports no drift."},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass; RULE #1 hand-check of the new prose clean (no em/en dash; the only double-hyphen sequence in the additions is the standard selftest section-comment separator that already appears throughout the file, not a prose separator)."},
+    {"name": "lint", "status": "passed", "detail": "py_compile over every tracked .py including the synced engine copies; bash -n over shell files."},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: 7 packs, engine byte-identical to source."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "WARP-0909 is a standalone spec (lane: standalone), not a numbered PLAN-0009 W item, so the manifest carries no plan_hash. required_evidence: [unit] is satisfied by the 'unit' check and the unit evidence entries.",
+    "The receipt projection is additive: dispatch.py's _dispatch_build / _dispatch_review still return their existing outcome dicts (with a possible full nested result / land) for a single call and their WARP-0901 selftest assertions are unchanged; dispatch_receipt is the bounded loop-facing projection a thin orchestrator applies, so the change adds no behavior to the mechanical dispatch and can be reverted with no migration.",
+    "scripts/selftest.py is repo-home-only (absent from plugin/templates/scripts and from the engine glob set), so it is intentionally not pack-synced; only the three edited .warp/*.py engine files were synced. method.md and plugin/skills/*.md are tool-specific wrappers outside ENGINE_GLOBS and are not pack-synced either.",
+    "capabilities.yaml was not modified: this spec adds no new adopter capability, only a documented rule, a pure projection function, docstrings, and a teeth-test, so no capability entry or its sync was warranted."
+  ],
+  "rollback": "git revert the implementation and evidence commits. The change is documentation (method.md 2.7.1, SKILL.md), one additive pure function (work.py dispatch_receipt + RECEIPT_FIELDS), one additive selftest block, and seam docstrings; it adds no behavior to the mechanical dispatch and needs no migration. The pack-drift and template-sync checks prove no pack forked."
+}

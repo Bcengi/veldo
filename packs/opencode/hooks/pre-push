@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# VELDO git pre-push hook for the OpenCode pack - the guaranteed local push gate.
+#
+# Enforces the VELDO invariant alongside the CI required status check. Enable once per clone:
+#   git config core.hooksPath hooks
+#
+# It invokes the shared engine guard (scripts/veldo-guard.sh). The guard reads the command from a
+# JSON payload on STDIN (tool_input.command), NOT from an env var, so this feeds it that payload.
+set -u
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+GUARD="$ROOT/scripts/veldo-guard.sh"
+if [ -f "$GUARD" ]; then
+  printf '%s' '{"tool_input":{"command":"git push"}}' | bash "$GUARD"
+  exit $?
+fi
+echo "VELDO pre-push: scripts/veldo-guard.sh not found; refusing to push without the gate." >&2
+exit 1

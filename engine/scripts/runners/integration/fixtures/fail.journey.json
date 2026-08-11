@@ -1,0 +1,21 @@
+{
+  "name": "order service contract (deliberately failing against the broken resource)",
+  "base_url": "http://127.0.0.1:8080",
+  "timeout": 5,
+  "interactions": [
+    {
+      "name": "broken order payload must still satisfy the contract",
+      "request": {"method": "GET", "path": "/order/broken"},
+      "expect_status": [200],
+      "contract": {
+        "required": {
+          "id": "string",
+          "amount": "number",
+          "currency": "string",
+          "status": "string"
+        },
+        "forbidden": ["internal_debug"]
+      }
+    }
+  ]
+}

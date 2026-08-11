@@ -1,0 +1,175 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1012",
+  "commit": "4aa44817aa22e986b45287e19c6afd6e6d5c72c1",
+  "producer": "claude-opus-4-8[1m] (WARP-1012 build worker, standalone lane; restore validate.py under the module_lines budget - the entropy loop's restoration remedy for a real over-budget governed file that blocked all gate-wiring; intelligent builder, did not review its own work)",
+  "produced_at": "2026-07-23T05:40:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The cohesive family of sibling-delegating validators (lines 718-1041 of the pre-split validate.py) was extracted verbatim, bringing .warp/validate.py from 1207 lines to 925 lines, under the contract's module_lines budget (file_lines, max 1000) with 75 lines of margin. It was the last governed file over the budget (arch.py=494, plan.py=369; no other governed file exceeds 1000), which since WARP-1102 the shape gate refused to let any change touch."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1012 AC1: len(.warp/validate.py) <= module_lines max, read from the real contract (925 <= 1000). RED-observed-then-reverted: the pre-split file at HEAD was 1207 lines (1207 <= 1000 is False)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The extraction lands in ONE new sibling module, .warp/validate_checks.py (360 lines, under budget with wide margin), holding the validators that delegate to arch.py, the placement/ready gates, decision.py, decision_review.py, tripwire.py, shape_review.py, and the tripwire-status projection, plus their sibling-loaders (_arch_module, _decision_module, _decision_review_module, _tripwire_module, _shape_review_module) and _count_fail."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1012 AC2: len(.warp/validate_checks.py) <= module_lines max (360 <= 1000)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "validate.py loads validate_checks.py by path via importlib.util.spec_from_file_location (the same idiom it uses for arch.py/decision.py and that shape_gate.py/entropy.py/incident.py use for validate.py), assigns _VC.parse_yamlish and _VC.fail (the one parser and one reporter), and re-exports all 20 moved names (_arch_module, check_arch, check_placement, load_repo_contract, placement_gate_problems, placement_gate_ok, check_ready, _decision_module, check_decision, check_decisions, _decision_review_module, check_decision_review, check_decision_reviews, _tripwire_module, check_readings, check_tripwires, _shape_review_module, check_shape_review, _count_fail, tripwire_status) into its own namespace. The dependency is one-way; validate_checks.py loads its siblings but never validate.py (no import cycle, no second parser)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1012 AC3: all 20 moved names resolve and are callable on V; the re-exported objects ARE the sub-module's (V.check_arch is V._VC.check_arch, moved not duplicated); the injection is wired (V._VC.parse_yamlish is V.parse_yamlish, V._VC.fail is V.fail). AC5 adds SG._referenced_warp_modules(validate_checks source) contains .warp/arch.py but NOT .warp/validate.py. RED-observed-then-reverted: dropping one re-export line from a temp copy makes hasattr(MV, 'tripwire_status') False."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Zero behavior change, verified by byte-for-byte diff: python3 .warp/validate.py all output is IDENTICAL before and after the split, and every CLI mode (spec, plan, arch, placement, ready, decisions, tripwires, no-arg usage, unknown-mode) produces IDENTICAL stdout and return code. No validation logic, message, or check changed; nothing deferred was wired in. proof_digest (which stays defined in validate.py) is unchanged."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1012 AC4: V.check_arch()==0 over the real contract; V.load_repo_contract returns the parsed contract; V.check_decisions()==0 and V.check_tripwires()==0 stand down clean; V.tripwire_status returns the {fired,warnings,malformed} projection dict; V.check_decision and V.check_placement over the shipped examples return 0 - all through the re-exported path."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1012 AC5 source guards: check_arch/check_shape_review/tripwire_status are DEFINED in validate_checks.py and NO LONGER defined in validate.py (moved, not duplicated); the stayers (parse_yamlish, fail, check_spec, check_json, check_plan) remain defined in validate.py; validate_checks.py loads its siblings but never validate.py (SG._referenced_warp_modules has .warp/arch.py, not .warp/validate.py)."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Gate unblocked. Before the split, a change touching the 1207-line validate.py was refused by the shape gate's file_lines budget (module_lines). After the split, the full shape gate is GREEN (verify.sh), reporting NO module_lines problem for validate.py; the mechanizable file_lines budget passes on the change set that touches it. The change re-points the two WARP-1102 AC3 selftest assertions that had encoded validate.py as the grandfathered over-budget module (one asserted len > max, one asserted a module_lines finding on it); coverage is preserved, not deleted - the budget's teeth on a real governed path stay proven by WARP-1102's seeded 1001-line fixture, the empty-change-set-flags-nothing demonstration is unchanged, and the re-pointed assertions now confirm the restored validate.py is under budget."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1012 AC6: SG.file_lines_findings({validate.py}, ROOT, module_lines, contract, ARCH) == [] (unblocked); SG.run(ROOT, {validate.py})[1] == [] (full gate, no problems). TEETH: an over-budget copy of validate.py in a temp tree IS refused naming module_lines (the pre-split state), while the real file on disk stays under budget (never mutated)."
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Byte-identical engine sync: .warp/validate.py and .warp/validate_checks.py ship byte-identical across root, plugin/templates, and all 6 packs (aider, antigravity, codex, copilot, cursor, opencode). scripts/check_pack_drift.py: pack drift pass (7 packs, engine byte-identical to source); pack conformance and template sync pass (in the selftest slot and standalone). The scaffolder .warp/init_scaffold.py (root-only) registers .warp/validate_checks.py in its lay-down _FILES and its REQUIRED_SUBSTRATE, so a freshly scaffolded repository's validate.py resolves its sibling and is not left broken."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1012 AC7: validate.py and validate_checks.py are byte-identical root vs plugin/templates and across all 6 packs; .warp/validate_checks.py is in ISC.required_substrate() and ISC._FILES. The init-scaffold selftest (which lays a fresh tree and runs its gate) is green with the new module laid down."
+        }
+      ]
+    },
+    {
+      "id": "AC8",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Clean dogfood, no protected path. WARP-1012 declares placement [contracts] and a footprint that resolves to the contracts area only (only .warp/validate.py maps to contracts; validate_checks.py, init_scaffold.py, selftest.py, the twins, the packs/*/ globs, and the spec file resolve to no declared area), so its footprint touches a single area, does NOT raise the tier, and it passes the mandatory placement gate at risk standard with no approval. No protected path (scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py and their twins) is touched. RULE #1 hand-checked clean across every changed file (ASCII hyphen only, no em or en dash, no prose double-hyphen)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1012 AC8 dogfood: arch.placement_gate(WARP-1012 fm, contract) == [] and arch.footprint_tier_floor == '' (tier standard); protected_paths == [] and human_approval == not_required. python3 .warp/validate.py ready over the real spec returns 0."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1935 passed, 0 failed (was 1908 before; +27 net: the WARP-1012 block of API-resolves, under-budget line-count, behaves-identically, real-extraction, gate-unblock, byte-identity, scaffold-registration, and own-tier dogfood assertions, and the two re-pointed WARP-1102 AC3 assertions still counted and now green). The pack-drift, pack-conformance, and runner-catalog harnesses run inside this slot and pass."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes over the whole corpus (118 specs incl WARP-1012); its stdout is byte-identical to the pre-split output. WARP-1012 validates via check_spec, check_placement, and check_ready (own tier standard). No behavior changed; the re-exported delegating validators produce identical results."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1012 as draft, risk standard, approval not_required (derived from front matter, status not flipped)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep all pass (plugin/templates/.warp/validate_checks.py carries no company/product reference). RULE #1 hand-checked for prose double-hyphen across every changed file; the only -- occurrences are the ---front-matter fence regex, the real --draft CLI flag (moved verbatim), YAML fences, and # --- comment section dividers matching the file's house style."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "scripts/check_template_sync.sh: pass (the checked root vs plugin/templates pairs, including validate.py, are byte-identical). validate_checks.py byte-identity root vs canon vs packs is additionally asserted by the selftest and by pack drift."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "scripts/check_pack_drift.py: every pack's engine (including validate.py and the new validate_checks.py, matched by the .warp/*.py engine glob) is byte-identical to the canonical source plugin/templates; drift empty across all 7 packs."
+    },
+    {
+      "name": "pack_conformance",
+      "status": "passed",
+      "detail": "The pack-conformance harness (in the selftest unit slot) assembles each declared pack and drives its constructed WARP; the assembled packs carry validate_checks.py (via the engine glob) so their validate.py resolves its sibling. Pass."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py runs in the selftest slot; validate_checks.py is a contracts-lane engine module, not a runner, so it is not subject to runner completeness checks. No capabilities.yaml entry was added (a pure code-move introduces no new capability)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. The mechanizable module_lines budget no longer reports a problem for validate.py (925 <= 1000), unblocking edits to it. Footprint-versus-diff passes: WARP-1012's footprint covers every changed path. The review-lane function_lines and cyclomatic_complexity notes on check_plan/check_spec/check_json/_parse_list/run_all/main are PRE-EXISTING non-blocking findings on functions that stayed in validate.py (unchanged by this refactor), never gate refusals."
+    }
+  ],
+  "assumptions": [
+    "This is a PURE, behavior-preserving, API-stable refactor: no validation logic, message, check, or output changed, and nothing deferred was wired in. Behavior preservation is proven by a byte-for-byte diff of validate.py all and every CLI mode before and after.",
+    "The new module .warp/validate_checks.py deliberately resolves to no declared contract area (the contracts-area includes are exact paths, and editing the human-approved architecture contract to add it is a separate governance act, not this refactor). It is under the module_lines budget regardless; adding it to the contract's contracts area is left as an optional future governance change.",
+    "The two WARP-1102 AC3 selftest assertions that encoded validate.py as the grandfathered over-budget module were re-pointed to the restored reality (validate.py now under budget), exactly as WARP-1011 re-pointed WARP-1103's assertions. Coverage is preserved, not deleted: the budget's teeth on a real governed path stay proven by WARP-1102's seeded 1001-line fixture and by this spec's own over-budget-copy teeth."
+  ],
+  "rollback": "git revert 4aa4481. The commit splits the sibling-module delegating validators out of .warp/validate.py into a new .warp/validate_checks.py, re-exports them back onto validate.py (a one-way load, no import cycle), registers the new module in the scaffolder (.warp/init_scaffold.py), adds a WARP-1012 selftest block, re-points the two WARP-1102 AC3 assertions, and re-syncs validate.py and validate_checks.py byte-identical across plugin/templates and the 6 packs. It is a pure, behavior-preserving, API-stable refactor: reverting restores the single-file validate.py with no migration and nothing to unwind, since no validation logic, message, or output changed. A repository with no architecture contract is unaffected."
+}

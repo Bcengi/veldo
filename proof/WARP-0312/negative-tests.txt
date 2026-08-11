@@ -1,0 +1,22 @@
+WARP-0312 negative demonstrations (stream defects a produced-output check misses)
+==============================================================================
+
+[1] a dropped chunk (sequence gap 0 -> 2):
+    passed: False | ["sequence 'i': frame 1 expected index 1, got 2"]
+
+[2] a reordered chunk (1 before 0):
+    passed: False | ["sequence 'i': frame 0 expected index 0, got 1"]
+
+[3] a malformed frame (no field separator):
+    passed: False | error: frame 1: framing error: line has no field separator: 'no colon here'
+
+[4] a stream that never terminated:
+    passed: False | ['stream did not terminate: no frame matched the terminal']
+
+[5] a frame after the terminal:
+    passed: False | ['frame arrived after the terminal (terminal at frame 0, 1 frame(s) followed)']
+
+[6] a journey that asserts nothing:
+    passed: False | error: journey asserts nothing: declares no sequence_field, expected_events, terminal, or final
+
+Each stream defect fails loud and names the cause; none pass vacuously.

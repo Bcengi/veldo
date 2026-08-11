@@ -1,0 +1,32 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0305",
+  "commit": "e8acad05e015341ff8458faa327216841a0eb67a",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B3)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T04:20:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/llm/warp_llm_runner.py exists: reads an eval journey (prompt_id, cases of id/input/graders/fake, budgets, baseline), drives each case through a provider callable (default deterministic fake_provider returning the case's canned output/cost/latency), grades, aggregates pass_rate/total_cost/total_seconds, checks budgets and regressions, exits 0 all-hold-no-regression else 1 with the failing case/budget/regression named. An adopting repo passes provider=its own callable"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py llm block: grade() exercised for contains/not_contains/equals/regex true and false, unknown grader fails loud, a case with no graders is a journey error, multiple graders all-must-hold; check_budgets() for cost/latency/pass-rate met and exceeded"},
+      {"type": "operational", "ref": "proof/WARP-0305/negative-tests.txt: a false grader, an empty-graders case, a cost-budget breach, and a pass-rate-below-min are all reported as failures"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0305/runner-evidence.txt and negative-tests.txt: find_regressions detects a baseline-passed case that now fails only when prompt_id differs from baseline.prompt_id; pass.journey.json (all cases pass under new prompt v2, no regression, budgets met) exits 0; fail.journey.json (new prompt v2 regresses the refund case that passed under baseline v1) exits 1 naming 'regression: case refund passed under prompt v1 but fails under prompt v2'"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py llm block drives the runner over both shipped fixtures with the deterministic fake provider (pass -> passed True, pass_rate 1.0, no regressions; fail -> passed False with the refund regression named), plus find_regressions present/absent/prompt-unchanged. Part of selftest 220 passed / 0 failed (was 198); all prior cases still pass and the gate is green"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, wrapper, and README carry zero company/product names (docs-hygiene genericity sweep passes); .warp/capabilities.yaml marks llm_eval_runner status: reference (a shipped artifact an adopting repo wires to its eval gate slot with its own model provider; the warp repo ships no model-driven behavior and does not run it), kept byte-identical with the plugin template copy (template-sync gate passes)"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 220 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference runner: generic, stdlib only. A live model is nondeterministic and costs money, so the model is a provider seam - a callable returning output/cost/latency. The reference ships a deterministic fake provider that returns each case's canned block, so grading, budgets, and regression detection are gate-tested with no live model. An adopting repo passes its own provider. Shipped under plugin/templates/scripts/runners/llm/; not wired into the warp repo's own gate (capabilities: reference)."],
+  "rollback": "git revert the impl; the runner is additive under plugin/templates/scripts/runners/llm/, touches no protected path, and its selftest cases sit within the 220."
+}

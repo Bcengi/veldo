@@ -1,0 +1,154 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1103",
+  "commit": "84fc55da679213e256473b95695377cabcde347e",
+  "producer": "claude-opus-4-8[1m] (WARP-1103 completion agent, planned lane; W3 of PLAN-0011, placement and footprint at elaboration - closing the mandatory-gate gap a prior build left open)",
+  "produced_at": "2026-07-22T18:21:40Z",
+  "plan": "PLAN-0011",
+  "work": "W3",
+  "plan_revision": 2,
+  "plan_hash": "sha256:5f6e8c623065cda0",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A spec declares placement (architecture-contract area ids the change lands in) and footprint (path globs it touches) in its front matter. The FIELDS are optional at the schema level (a draft not yet elaborated, and every spec in a contract-free repository, is byte-identically unaffected via check_placement standing down); once a contract exists the placement is MANDATORY at the ready transition and the claim (AC6). specs/TEMPLATE.md documents both fields and the mandatory-at-ready rule. This repository's own WARP-1103 declares placement [contracts]. python3 .warp/validate.py placement specs/WARP-1103-placement-and-footprint.md returns rc 0."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1103 block: 'the real WARP-1103 spec validates via check_placement' (V.check_placement == 0), 'validates via check_spec (integrated)' (V.check_spec == 0), 'declares placement contracts (the first dogfood instance)'; AC1 positive controls (a resolving placement + footprint validates; a spec declaring neither field stands down)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "validate_placement in .warp/arch.py, invoked from validate.py check_placement at spec-validation time, checks a declared placement structurally against the contract's areas and fails closed by name on: a placement area id that does not resolve to a declared area (referenced but absent), a placement that is not a non-empty list, a footprint missing or empty when a placement is present, a footprint entry that is not a non-empty path-glob string, a footprint declared without a placement, and a duplicate placement area id. Reuses validate.parse_yamlish (no second parser) and validate.fail (no import cycle); reads areas through arch.area_ids."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1103 AC2 negatives each refuse (>0): undeclared area, non-list placement, missing footprint, empty footprint, non-string footprint entry, footprint-without-placement, duplicate placement area; positives (single-area and multi-area placements) validate clean."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Adoption safe on two axes, fail closed once declared. When no architecture contract exists in the repository the whole placement check stands down (a contract-free repository is byte-identically unaffected, the C2 posture); and when a contract exists a spec that declares neither field stands down too. The moment a placement is declared against a present contract it is validated fail closed."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1103 AC3 over a temporary tree: no-contract stand-down, present-contract fail-closed on an undeclared area, present-contract validates a resolving placement, and present-contract stand-down for a spec that declares neither field."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The checks have teeth proven by mutation over this repository's REAL WARP-1103 spec (anti-vacuity C1). Structural (validate_placement): repointing the placement to an undeclared area, and removing the placement while keeping the footprint, each turn the check red. Mandatory (placement_gate): removing the placement, and lowering the risk below the tier the boundary-crossing footprint implies, each turn the gate red. Each mutation is applied to a copy of the real front matter and reverts byte-identical; the elaboration-time gate makes no assertion about the source or the diff (NG5)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1103 TEETH: structural mutations (undeclared area red, placement removed red, unmutated green) plus 'removing the real spec's placement turns the mandatory gate RED', 'lowering the real spec's risk below its footprint tier floor turns the gate RED', and the unmutated real spec passes the gate (positive control)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The extended engine ships byte-identical across all 8 copies (root, plugin/templates, 6 packs): validate_placement, placement_gate, footprint_tier_floor, area_for_path in .warp/arch.py; check_ready, placement_gate_problems, placement_gate_ok, load_repo_contract and the ready CLI mode in .warp/validate.py; the run-check gate in .warp/plan.py; the claimable filter in .warp/frontier.py. specs/TEMPLATE.md gains the mandatory-at-ready documentation, the /warp:spec skill asks for placement and footprint (synced across skill copies), and capabilities.yaml carries one honest mechanical entry updated to the mandatory gate in every copy. The contract ARTIFACT stays per-repo (not shipped), so a fresh init stays contract-free and the gate stands down. No protected path is touched (the gate lives in the non-protected engine, not verify.sh, warp-guard.sh, policy.yaml, or policy_check.py)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1103 AC5: arch.py, validate.py, plan.py, frontier.py byte-identical root vs plugin/templates; the spec_placement_footprint capability declared mechanical. The gate's template-sync and pack-drift checks cover all packs (both pass)."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MANDATORY at the ready transition and the claim, without a corpus sweep. When a contract exists a spec may not REACH ready and is never CLAIMED for build unless its placement resolves to a contract area. placement_gate (a pure predicate in .warp/arch.py) is the one implementation, enforced at the transition/claim code paths (never as a static check_spec rule over every spec): validate.check_ready (the ready CLI mode, run by /warp:spec) refuses the ready transition, frontier.claimable filters a placeless build unit out of the claimable set, plan.py run-check refuses the build. The already-shipped corpus is past ready and claim, so it is never re-evaluated and needs no migration."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1103 AC6: gate refuses a placeless spec and an undeclared-area placement, passes a resolving placement; over a temporary tree check_ready stands down with no contract, refuses a placeless ready spec once a contract exists, and passes a placed one; the frontier filters a placeless ready build unit out of the claimable set while a placed one is claimable and a review unit is not gated; run-check clears the real WARP-1103. NO-CORPUS-SWEEP guard: a shipped placeless spec (and a ready placeless spec) still validates via check_spec, while check_ready on it refuses - proving the mandatory rule lives at the transition, not in a check_spec sweep. Verified live: the real shipped WARP-0100 passes check_spec (rc 0) yet check_ready refuses (rc 1)."
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A footprint that crosses a declared area boundary raises the risk tier and nothing lowers it. footprint_tier_floor (in .warp/arch.py) maps a footprint's globs to the contract's areas via area_for_path; when a spec's placement and footprint together span two or more declared areas the tier floor is at least high, and placement_gate refuses a spec whose declared risk is below that floor. Honest boundary: the multi-area span is the signal well defined from the declaration alone; detecting that a change creates a genuinely new module needs the actual diff and is deferred to WARP-1102 (W2). WARP-1103 dogfoods the rule - its footprint spans contracts and fleet (it edits frontier.py), so it is high risk by its own rule and is declared high."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1103 AC7: area_for_path maps a path to its area and to none outside all globs; a two-area footprint floors the tier at high, a single-area footprint does not raise it; a boundary-crossing footprint at risk standard is refused (red) and passes at risk high (revert teeth); the real spec's footprint spans {contracts, fleet}, floors at high, and passes the gate at risk high."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1583 passed, 0 failed (was 1558 before this completion; +25 assertions for the mandatory gate, check_ready over a temporary tree, the frontier claim gate, the footprint->tier rule, the no-corpus-sweep guard, run-check dogfood, and the byte-identity of plan.py and frontier.py)."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes: check_arch over this repository's approved contract, check_spec over all 108 specs (the 107 shipped + WARP-1103), the plan/spec binding, and this manifest (criteria AC1-AC7 cover the WARP-1103 spec exactly; unit evidence and a unit check satisfy required_evidence [unit]). The mandatory gate is NOT part of run_all, so the shipped corpus is not re-evaluated."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1103 as draft, risk high, approval required (derived from front matter, status not flipped)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep all pass. RULE #1 hand-checked for prose double-hyphen across every changed file (the only '--' in the tree is a pre-existing 'systemd --user' CLI reference not touched here)."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "scripts/check_template_sync.sh: pass (validate.py root vs plugin/templates byte-identical, among the checked pairs)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "scripts/check_pack_drift.py: every pack's engine (including arch.py, validate.py, plan.py, frontier.py, capabilities.yaml, specs/TEMPLATE.md) byte-identical to the canonical source plugin/templates; drift empty across all 6 packs."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py: pass; the spec_placement_footprint capability is mechanical with home .warp/arch.py (not a runner) and its home file ships."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    }
+  ],
+  "rollback": "git revert 84fc55d (or reset to 30fe5c4). The commit extends .warp/arch.py (area_ids, validate_placement, and the mandatory gate placement_gate with footprint_tier_floor and area_for_path), wires it from .warp/validate.py (check_placement plus check_ready and the silent gate predicates, with placement and ready CLI modes), gates the claim in .warp/frontier.py and the build in .warp/plan.py run-check, asks for placement in the /warp:spec skill, updates specs/TEMPLATE.md and one capabilities entry, and adds selftest teeth. The gate is scoped to the ready transition and the claim, so no already-shipped spec is evaluated; reverting returns spec validation and claiming to their prior behavior with no migration. A spec that declares no placement, and a repository with no architecture contract, are unaffected either way."
+}

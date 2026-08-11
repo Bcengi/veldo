@@ -1,0 +1,12 @@
+{
+  "name": "save a search (deliberately failing)",
+  "file": "broken.html",
+  "a11y": true,
+  "a11y_fail_on": true,
+  "steps": [
+    {"action": "state", "name": "landing"},
+    {"action": "click", "selector": "#save"},
+    {"action": "expect_visible", "selector": "#status", "timeout": 1500},
+    {"action": "expect_text", "selector": "#status", "text": "Saved"}
+  ]
+}

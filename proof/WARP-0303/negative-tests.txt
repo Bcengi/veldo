@@ -1,0 +1,17 @@
+Negative demonstrations - the DB/migration runner is not a rubber stamp.
+
+[1] Failing fixture verbose output (the asymmetric down is named):
+PASS up 0001_create_users_and_audit
+PASS invariant one user seeded
+PASS down 0001_create_users_and_audit
+FAIL reversibility
+     - down did not restore the baseline schema: residual table 'audit_log' remains after down
+db migration journey FAILED: asymmetric down (deliberately failing: the down forgets a table)
+  exit: 1
+
+[2] Invariant mismatch is caught with the observed rows, and a latency budget
+    of 0s is caught, and a SQL error is a named failure (driven directly):
+  invariant mismatch: ["invariant 'count': expected rows [[5]], got [[2]]"]
+  budget exceeded: ["budget 'b': 0.0000s exceeds budget 0.0s"]
+  SQL error named: ["invariant 'bad': SQL error (no such table: missing)"]
+  symmetric down reverses cleanly (passed): True (expect True)

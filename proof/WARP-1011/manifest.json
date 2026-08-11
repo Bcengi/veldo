@@ -1,0 +1,137 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1011",
+  "commit": "aa114fbe9c1ef4d37e2470a1cab65e7e63285bda",
+  "producer": "claude-opus-4-8[1m] (WARP-1011 build worker, standalone lane; refine the footprint tier rule to a boundary crossing, not mere breadth - a founder decision, 2026-07-22; intelligent builder, did not review its own work)",
+  "produced_at": "2026-07-22T21:10:42Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "footprint_tier_floor in .warp/arch.py is refined: it maps the placement plus footprint to the declared areas they touch (footprint_areas/area_for_path, unchanged) and raises the required tier to high ONLY when some pair of touched areas has NO allow-listed dependency edge between them in either direction. A new pure helper _allowed_edges(contract) reads the contract's dependencies.allow as (from, to) pairs (the one place the tier rule consults the dependency graph, so it and validate_contract agree on what an edge is), and _areas_connected(a, b, edges) tests the pair in either direction; a single (or zero) touched area returns \"\" (no elevation). Verified against this repository's REAL contract (.warp/architecture.yaml dependencies.allow, enumerated): {contracts, loop} (loop-to-contracts) and {contracts, fleet} (fleet-to-contracts) each stay standard; the unmodeled pair {enforcement, fleet} (no edge either direction) elevates to high; {contracts} alone stays standard; a three-area all-connected footprint {contracts, loop, fleet} stays standard while a three-area footprint with one unmodeled pair {contracts, fleet, metrics} (fleet-metrics has no edge) elevates."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1011 AC1 (6 assertions over the real contract via _p11_floor): connected {contracts, loop} does NOT elevate; connected {contracts, fleet} does NOT elevate; unmodeled {enforcement, fleet} elevates to high; a single declared area does not elevate; a three-area all-connected footprint does NOT elevate; a three-area footprint with one unmodeled pair elevates. All pass in the gate's unit slot (python3 scripts/selftest.py: 1701 passed, 0 failed)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The existing WARP-1103 selftest assertions are re-pointed to the refined semantics, not deleted. The AC7 tier block now builds _BC_CONTRACT (the WARP-1101 fixture core, edge with edge-to-core, extended with an unconnected island area) and asserts a CONNECTED two-area pair {core, edge} stays standard, an UNMODELED two-area pair {core, island} elevates to high, a single area stays standard, the unmodeled pair at risk standard is refused by the gate and passes at risk high, and a connected pair at risk standard passes (the core fix). The old coarse assertion (two-area span elevates) is removed. Confirmed no OTHER shipped test encodes the old coarse rule: scripts/selftest.py is the only selftest (root-only, not synced into packs), and a source guard asserts the retired coarse label is absent from it."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1011 AC2: over the fixture a connected two-area pair stays standard (the old coarse rule would have elevated it) and an unmodeled two-area pair elevates; a source guard (a split-string literal so it does not match itself) asserts the retired coarse label is gone from scripts/selftest.py; and the refined boundary-aware labels are present. The updated WARP-1103 AC7 block itself (connected does NOT elevate, unmodeled floors at high, revert teeth) runs green in the same slot."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1011 AC3 MUTATION teeth (anti-vacuity C1). Connectivity is load-bearing: removing the only edge (edge-to-core) from the fixture flips the previously-connected {core, edge} pair from standard to high (observed RED), and restoring the edge reverts it to standard (byte-identical revert), with the real .warp/arch.py on disk byte-unchanged (asserted equal to plugin/templates). The core fix proven directly: a connected-pair footprint at risk standard PASSES the mandatory placement gate (RED if it wrongly elevated), and an unmodeled-pair footprint at risk standard is REFUSED (a genuine crossing still elevates). The mutations are in-memory over parsed contract text; no file on disk is altered."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Forward-only by construction: footprint_tier_floor is reached only through arch.placement_gate, which validate.py invokes at the ready transition (check_ready), the claimable frontier (frontier.claimable), and run-check (plan.cmd_run_check) - never in validate.py run_all, the corpus pass verify.sh runs. So the already-shipped corpus is never re-tiered. The shipped WARP-1103 (recorded risk high) and its frozen proof (proof/WARP-1103/manifest.json, bound to impl commit 84fc55d) are untouched; under the refined rule WARP-1103's own {contracts, fleet} footprint is cohesive breadth (connected by fleet-to-contracts) so it no longer trips a tier floor, and it still passes the gate at its recorded risk high (nothing lowers a declared tier). python3 .warp/validate.py all stays green over the whole corpus."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1011 AC4: a source guard over the extracted run_all body asserts placement_gate, footprint_tier_floor, and check_ready are all absent from the corpus pass (forward-only); check_spec over the shipped WARP-1103 spec still returns 0 (never re-tiered); its recorded risk word is still high; and WARP-1103's frozen proof manifest still binds to commit 84fc55d. The updated WARP-1103 dogfood block additionally asserts the real spec's {contracts, fleet} footprint does NOT elevate under the refined rule and that lowering its risk to standard no longer trips a tier floor, while removing its placement still turns the gate RED."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "New-module detection stays DEFERRED to WARP-1102 (W2), stated honestly. footprint_tier_floor reads only the declared areas and the contract's dependency edges and inspects no diff, so it makes no new-module claim: a footprint glob cannot by itself tell a genuinely new path from one the contract simply does not enumerate, which needs the gate-time footprint-versus-diff machinery of WARP-1102. The docstring of footprint_tier_floor names the deferral and disclaims adding new-module detection, and the spec_placement_footprint capability note keeps the WARP-1102 (W2) deferral for both footprint-versus-diff enforcement and new-module detection."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1011 AC5: a source guard asserts footprint_tier_floor's docstring in .warp/arch.py contains WARP-1102, new-module detection, and the disclaimer; and the .warp/capabilities.yaml note references WARP-1102."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Byte-identical pack sync and no protected path. The refined .warp/arch.py and the honestly-updated .warp/capabilities.yaml spec_placement_footprint note ship byte-identical across root, plugin/templates, and all 6 packs (aider, antigravity, codex, copilot, cursor, opencode): pack drift empty across 7 packs, pack conformance pass, template sync pass. This spec (WARP-1011) declares placement [contracts] and a footprint that resolves to the contracts area only (arch.py maps to contracts; selftest.py, capabilities.yaml, the twins, the packs globs, and the spec file resolve to no declared area), so its own footprint touches a single area, does NOT elevate its tier, and it passes the mandatory placement gate at risk standard - a clean dogfood, standard risk, no approval. No protected path (scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py and their twins) is touched. The full gate is GREEN and RULE #1 is clean (ASCII hyphen only, no em or en dash, no prose double-hyphen; hand-checked across every changed file)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1011 AC6: .warp/arch.py and .warp/capabilities.yaml are byte-identical root vs plugin/templates and across all 6 packs; WARP-1011's own footprint resolves to exactly {contracts}, its footprint_tier_floor is \"\" (no elevation), it passes the mandatory placement gate at risk standard, and it declares no protected path. python3 .warp/validate.py ready over the real spec returns 0 (its own tier is standard)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1701 passed, 0 failed (was 1670 before this item; +31 assertions: the WARP-1011 block over the refined boundary-aware semantics with the real contract's genuine connected and no-edge pairs, the connectivity mutation teeth with a byte-identical revert, the core-fix proof that a connected-pair footprint at risk standard passes, the forward-only source and corpus guards, the new-module deferral guard, and the pack-sync and own-tier dogfood; plus the net +2 from re-pointing the WARP-1103 AC7 assertions to the refined semantics). The pack-drift, pack-conformance, and runner-catalog harnesses run inside this slot and pass."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes: check_arch, check_decisions, check_decision_reviews, check_tripwires (stands down, no .warp/decisions/), check_spec over all 111 specs (the 110 prior plus WARP-1011), the plan/spec binding, and the proof/verdict/approval JSON. run_all invokes no tier gate, so no shipped spec is re-tiered; the refinement is forward-only. WARP-1011 validates clean via check_spec, check_placement, and check_ready (its own tier is standard)."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1011 as draft, risk standard, approval not_required (derived from front matter, status not flipped)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep all pass. RULE #1 hand-checked for prose double-hyphen across every changed file (.warp/arch.py, .warp/capabilities.yaml, scripts/selftest.py, specs/WARP-1011-*.md and the pack twins); the new content carries no prose double-hyphen and no em or en dash."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "scripts/check_template_sync.sh: pass (the checked root vs plugin/templates pairs are byte-identical; arch.py and capabilities.yaml sync is additionally covered by pack drift and the selftest byte-identity assertions)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "scripts/check_pack_drift.py: every pack's engine (including the refined .warp/arch.py and the edited .warp/capabilities.yaml) is byte-identical to the canonical source plugin/templates; drift empty across all 7 packs."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py: pass (21 runners); the spec_placement_footprint capability has home .warp/arch.py (not a runner), so it is not subject to the runner completeness checks."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    }
+  ],
+  "assumptions": [
+    "This refinement sharpens the boundary-crossing signal only. It does not add new-module detection, which stays deferred to WARP-1102 (W2) where the diff is in hand.",
+    "Connectivity is the DIRECT allow-listed edge between a pair (either direction), not transitive reachability; whether transitive cohesion should count is a separate contract-semantics question left open.",
+    "The shipped WARP-1103 spec's prose (its AC7 text and its front-matter risk justification) still describes the old coarse rule as historical record; it is deliberately not edited (already-shipped, frozen), so a human eye may wish to note that WARP-1103's recorded risk high remains correct-as-shipped though its footprint is cohesive breadth under the refined rule."
+  ],
+  "rollback": "git revert aa114fb. The commit refines footprint_tier_floor in .warp/arch.py (adding _allowed_edges and _areas_connected, two small pure helpers that read the contract's dependencies.allow), re-points the WARP-1103 selftest AC7 and dogfood assertions to the refined semantics, adds a WARP-1011 selftest block, and honestly updates the spec_placement_footprint capability note, all re-synced byte-identical across plugin/templates and the 6 packs. The tier floor is computed only at the ready transition, the claim, and run-check, never as a corpus sweep, so reverting returns the tier computation to its prior coarse form with no migration and nothing to unwind; the already-shipped corpus was never re-tiered either way. A repository with no architecture contract is unaffected (the adoption-safe posture)."
+}

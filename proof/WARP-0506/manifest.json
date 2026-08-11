@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0506",
+  "commit": "b88cb420a874bdc846cac572abe6b79e96d284d2",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0005 R6)",
+  "plan_hash": "sha256:48ebdb0410a49b25",
+  "produced_at": "2026-07-18T00:36:55Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runcmd.py is a thin stdlib CLI over runlog.post_command (R5): warp answer/steer/abort <run-id> [text] post the matching command (answer, steer, abort) with the human's plain text as the payload to the target run's inbox, print the command id, and fail loud with a nonzero exit on an unknown run or empty required text (abort reason optional); it reimplements no inbox logic - it calls post_command, the same commands the R5 run loop drains at a safe checkpoint - and writes only through runlog. plugin/skills/run/SKILL.md documents the chat-surface procedure (an assistant, e.g. on Telegram, watches with warp status --json and issues these) and restates the requirement-change-must-commit rule so a chat answer never becomes hidden engineering truth."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the CLI over a temporary runs root: answer, steer, and abort each land the correct kind and the exact supplied text as payload in the target run's inbox (three commands, no more), an empty answer/steer text is rejected, an unknown run exits nonzero and posts nothing, and main() happy path returns 0; non-tautological - a wrong-kind or fixed-empty-payload mutation turns the kind/payload assertions red; part of selftest 848 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runcmd.py is a thin stdlib CLI over runlog.post_command (R5): warp answer/steer/abort <run-id> [text] post the matching command (answer, steer, abort) with the human's plain text as the payload to the target run's inbox, print the command id, and fail loud with a nonzero exit on an unknown run or empty required text (abort reason optional); it reimplements no inbox logic - it calls post_command, the same commands the R5 run loop drains at a safe checkpoint - and writes only through runlog. plugin/skills/run/SKILL.md documents the chat-surface procedure (an assistant, e.g. on Telegram, watches with warp status --json and issues these) and restates the requirement-change-must-commit rule so a chat answer never becomes hidden engineering truth."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runcmd.py is a thin stdlib CLI over runlog.post_command (R5): warp answer/steer/abort <run-id> [text] post the matching command (answer, steer, abort) with the human's plain text as the payload to the target run's inbox, print the command id, and fail loud with a nonzero exit on an unknown run or empty required text (abort reason optional); it reimplements no inbox logic - it calls post_command, the same commands the R5 run loop drains at a safe checkpoint - and writes only through runlog. plugin/skills/run/SKILL.md documents the chat-surface procedure (an assistant, e.g. on Telegram, watches with warp status --json and issues these) and restates the requirement-change-must-commit rule so a chat answer never becomes hidden engineering truth."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runcmd.py is a thin stdlib CLI over runlog.post_command (R5): warp answer/steer/abort <run-id> [text] post the matching command (answer, steer, abort) with the human's plain text as the payload to the target run's inbox, print the command id, and fail loud with a nonzero exit on an unknown run or empty required text (abort reason optional); it reimplements no inbox logic - it calls post_command, the same commands the R5 run loop drains at a safe checkpoint - and writes only through runlog. plugin/skills/run/SKILL.md documents the chat-surface procedure (an assistant, e.g. on Telegram, watches with warp status --json and issues these) and restates the requirement-change-must-commit rule so a chat answer never becomes hidden engineering truth."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the CLI over a temporary runs root: answer, steer, and abort each land the correct kind and the exact supplied text as payload in the target run's inbox (three commands, no more), an empty answer/steer text is rejected, an unknown run exits nonzero and posts nothing, and main() happy path returns 0; non-tautological - a wrong-kind or fixed-empty-payload mutation turns the kind/payload assertions red; part of selftest 848 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 848 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: the CLI control logic (posting the right kind+payload, the reject paths) runs in the gate over a temp runs root via runlog, stdlib argparse only. It is a front door - it calls runlog.post_command, the same inbox handle_run_commands drains - not a second path. The assistant deciding WHEN to answer/steer/abort is agent judgment (procedure). warp answer/steer/abort run as python3 .warp/runcmd.py subcommands, matching the repo's per-script CLI convention (runstatus/executor/status_server)."
+  ],
+  "rollback": "git revert; additive - .warp/runcmd.py, a chat-surface procedure note in the run skill, a selftest block, one capability (both copies), the spec; no protected path."
+}

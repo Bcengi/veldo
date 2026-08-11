@@ -1,0 +1,44 @@
+WARP-0807 runner evidence - OpenCode pack + systemic executable-mode fix (W7 of PLAN-0008)
+Impl commit under proof: 2e76cd0ca1c76b946b55f7197528007bdae8fe1e
+
+== gate (clean detached worktree at 2e76cd0) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (2e76cd0ca1c76b946b55f7197528007bdae8fe1e)
+selftest: 1256 passed, 0 failed
+
+== self-contained pack ==
+packs/opencode: 139-file engine copied byte-identical (engine_drift == []), canonical AGENTS.md,
+OpenCode driver (opencode.json, .opencode/warp-guard-hook.sh, .opencode/command/warp.md, .opencode/agent,
+hooks/pre-push). check_pack_drift.py (now mode-aware): pass (6 packs).
+
+== THE FINDING (first review) + FIX ==
+Finding: committed git pre-push hooks + copied engine scripts were mode 644 (non-executable). git
+SILENTLY SKIPS a non-executable hook, so `git config core.hooksPath hooks` left the local push gate
+INERT - an unproven push LANDED. Systemic across all 5 packs. (A `bash hook` test masked it.)
+Root cause: assemble_pack shutil.copyfile drops the exec bit; authored hooks committed 644;
+engine_drift ignored mode.
+Fix: assemble_pack -> shutil.copy (copies mode); engine_drift MODE-AWARE (mode drift reported);
+all pack hooks + scripts executable (100755); selftest asserts executable + mode-drift teeth.
+Retroactively fixes Cursor/Codex/Copilot/Antigravity (219 pack files 100644->100755, byte-identical).
+
+== behavioral proof (re-review, REAL git-invoked path, no chmod) ==
+                 UNPROVEN HEAD          PROVEN HEAD        644 CONTROL (unproven)
+opencode 755  -> BLOCKED exit 1, 0 refs  ALLOWED exit 0     push LANDED (hook ignored, not executable)
+cursor   755  -> BLOCKED exit 1, 0 refs  ALLOWED exit 0     push LANDED (fail-open reproduced)
+tool hook: blocks unproven (env+stdin), passes non-push, injection-safe (json.dumps).
+The local push gate now genuinely fires under git; no longer fails open.
+
+== mode-drift teeth ==
+faithful clone -> engine_drift []; chmod 644 scripts/warp-guard.sh -> [('scripts/warp-guard.sh','mode')].
+
+== plan reconciliation (bundled, WARP-0806 note) ==
+PLAN-0008 pack-item depends_on W3-W8: WARP-0801 -> WARP-0802 (W2 stays WARP-0801); exactly six lines; validates.
+
+== reviews ==
+First review at a19806e: pass_with_notes, named the mode finding (all else pass). Fixed -> 2e76cd0.
+Scoped re-review at 2e76cd0: PASS, 0 blocking (git-invoked gate fires for opencode + cursor; mode teeth;
+exec set matches canonical; gate GREEN 1256/0; no regression; caps byte-identical).
+
+== proof binding ==
+plan_hash: sha256:b86504755d842c46 (canonical, via plan.py / parse_yamlish, capturing the work DAG)
+proof_digest: sha256:ce9080277c4876f8 (validate.py over {spec_id, commit, criteria, checks})

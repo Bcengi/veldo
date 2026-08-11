@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0804",
+  "commit": "807d21b1b5abd7fdd757d8681c3045b158e7c072",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-19T02:30:08Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:072c0174b6b210b8",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "packs/codex is a byte-identical, symlink-free copy of the 139-file engine + canonical AGENTS.md + thin Codex driver; engine_drift == []."},
+    {"id": "AC2", "status": "confirmed", "note": "Push gate genuinely blocks - both hooks feed the guard the JSON stdin payload (WARP-0803 fix applied upfront); behaviorally proven exit 2 unproven / exit 0 proven / passthrough on non-push / injection-safe. W4 did NOT repeat the W3 fail-open."},
+    {"id": "AC3", "status": "confirmed", "note": "Declared in the manifest; drift-check spans 3 packs all drift-free; teeth proven on the committed codex copy (differs/missing)."},
+    {"id": "AC4", "status": "confirmed", "note": "Engine/AGENTS.md/skills/agents identical to canonical; exactly 4 net-new authored driver files."},
+    {"id": "AC5", "status": "confirmed", "note": "Selftest asserts conformance + wrapper + enforcement, non-tautologically (bound to real file content: True unmutated, False on a mutated engine file)."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review at 807d21b: pass_with_notes, 0 blocking. The highest-risk check (did W4 repeat the W3 fail-open) was behaviorally cleared: in a synthetic unproven WARP repo, both the git pre-push hook and the Codex before-shell hook feed the guard the JSON stdin payload and EXIT 2 (block) unproven, EXIT 0 (allow) once a green commit-bound verdict + a proof manifest for HEAD exist; a non-push command passes through (exit 0); an injection command (rm -rf ...) is blocked with zero side-effect (json.dumps). The empty-stdin env-CMD path reproduced the W3 fail-open, proving the stdin-JSON feed is load-bearing."},
+    {"severity": "note", "text": "Three informational notes, none blocking: (1) the Codex editor-hook format is expressed as config.toml [hooks] before_shell and hooks.json beforeShellExecution - a fast-moving surface where at most one spelling is canonical, but the guaranteed enforcement is the git pre-push hook + CI regardless of the editor-hook format, and the hook reads the command from CODEX_COMMAND/CODEX_SHELL_COMMAND or stdin so it works however Codex delivers it; (2) the drift-check flags MISSING/DIFFERS engine files but not EXTRA files (by design - the wrapper is exactly such extra files - not exploitable to hide engine drift); (3) pack-drift enforcement flows through the selftest unit slot of verify.sh, with check_pack_drift.py a convenience CLI over the same mechanism (real either way)."},
+    {"severity": "note", "text": "Operational: faithful engine copy (139 files, real, no symlinks); gate GREEN, selftest 1231/0, no pollution of any gate check (packs/codex/specs + plans carry only TEMPLATE.md so the index is not polluted; the dash/genericity sweep covers docs/+plugin/ not packs/); caps byte-identical; authored wrapper + spec dash-clean. Verified GREEN in a clean detached worktree."}
+  ],
+  "summary": "W4 of PLAN-0008 (the Codex CLI pack, first CLI-cluster pack) is correct. Independent adversarial review pass_with_notes, 0 blocking. packs/codex is a committed self-contained directory: the 139-file canonical engine copied in byte-identical (held by the now-three-pack drift-check) + the canonical AGENTS.md + a thin Codex driver (config.toml, hooks.json, the guard hook, the git pre-push hook, reused skills/agents). Critically, W4 applied the WARP-0803 enforcement fix from the start - both hooks feed scripts/warp-guard.sh the JSON payload it parses, and the review behaviorally proved the push gate blocks the unproven (exit 2) and allows the proven (exit 0), injection-safe, so it does NOT repeat the W3 fail-open. Reuse is faithful (only the thin driver is authored). Gate GREEN (selftest 1231 passed, 0 failed), no pollution, no regression, caps byte-identical, no protected path. proof_digest via validate.py."
+}

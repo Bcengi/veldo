@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0805",
+  "commit": "7544b142380bf4c0b8cc650e7de3e6768d7e3f50",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0008 W5, in-session single writer)",
+  "plan_hash": "sha256:837b26cb7db25a47",
+  "produced_at": "2026-07-19T02:46:17Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "packs/copilot is a committed self-contained pack: the full canonical engine (139 files) copied in byte-identical + the canonical AGENTS.md + a thin Copilot driver, including the CI workflow (from the engine)."},
+        {"type": "unit", "ref": "independent review: engine_files=139 (matches spec), engine_drift(plugin/templates, packs/copilot)==[], no symlinks, AGENTS.md and .github/workflows/warp-gate.yml identical to canonical; part of selftest 1236 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "HOOK-LESS enforcement with no honor-system path (NG2): Copilot has no local editor pre-push hook, so the WARP invariant is enforced by the git pre-push hook (hooks/pre-push, feeding scripts/warp-guard.sh the JSON payload it parses on stdin) PLUS the CI required status check (.github/workflows/warp-gate.yml runs verify.sh + policy_check server-side); copilot-instructions.md documents enabling both."},
+        {"type": "unit", "ref": "independent review behaviorally proved: pre-push exit 2 (blocks) unproven, exit 0 (allows) proven (green last_verify commit==HEAD + proof for HEAD), exit 2 on wrong commit (commit-bound), exit 1 (fail-closed) if the guard is missing; env CMD + empty stdin reproduces the W3 fail-open (exit 0) confirming stdin is the only live channel; warp-gate.yml actually runs the canonical gate; enforcement is NOT weaker than a local-hook tool. Part of selftest 1236 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the copilot pack is declared in .warp/packs.json and the drift-check holds its engine copy byte-identical to source (the fourth pack)."},
+        {"type": "unit", "ref": "independent review: check_pack_drift 'pass (4 packs)', claude/cursor/codex/copilot all byte-identical; teeth on the committed copilot copy (mutate scripts/warp-guard.sh -> differs; rm .warp/validate.py -> missing); part of selftest 1236 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "reuse not reinvention: the engine, AGENTS.md, skills, and agents are copied from the one canonical source (identical); only the thin Copilot driver is authored."},
+        {"type": "unit", "ref": "independent review: diff -rq packs/copilot/skills vs plugin/skills identical, packs/copilot/.github/agents vs plugin/agents identical, AGENTS.md identical; only net-new authored files are .github/copilot-instructions.md, the prompt, hooks/pre-push; part of selftest 1236 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest asserts the copilot pack conforms (drift-free, len>=4) and carries its Copilot wrapper (copilot-instructions.md, the prompt, the git pre-push hook feeding the JSON payload, skills, agents, AGENTS.md, the CI workflow) and that the instructions document the hook-less gate (core.hooksPath + warp-gate.yml + required status check), non-tautologically."},
+        {"type": "unit", "ref": "independent review: the WARP-0805 block's 5 assertions are bound to real file content + the drift machinery with mutate/remove teeth (re-proven on the copilot copy directly); part of selftest 1236 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1236 passed, 0 failed (+5 for the WARP-0805 copilot-pack block)"}
+  ],
+  "assumptions": [
+    "W5 of PLAN-0008, built in-session by a single writer, the hook-less-enforcement case. Same committed-self-contained model: the full engine copied into packs/copilot byte-identical + a thin Copilot driver, held identical by the drift-check. Copilot has NO local editor pre-push hook, so enforcement is the git pre-push hook (feeding the guard the JSON stdin payload, the WARP-0803 fix applied from the start) PLUS the CI required status check (.github/workflows/warp-gate.yml). Independent adversarial review pass_with_notes, 0 blocking: it behaviorally proved the git pre-push hook blocks the unproven (exit 2), allows the proven (exit 0), fails closed if the guard is missing (exit 1), and does not fail open; and that enforcement is NOT weaker than a local-hook tool (the CI required check is a server-side backstop). Three non-blocking notes: the Copilot instruction/prompt/agent format is a fast-moving surface (guaranteed enforcement does not depend on it); both mechanisms require one-time human enablement (inherent to the git/hook-less model, documented honestly, true of every pack); the copilot selftest reuses the shared drift machinery rather than a copilot-specific temp-clone mutation (teeth still real, a stylistic asymmetry).",
+    "The pack copy does not pollute the gate (packs/copilot/specs + plans carry only TEMPLATE.md so the index is not polluted; the dash/genericity sweep covers docs/+plugin/ not packs/). check_pack_drift.py + .warp/packs.json are warp-repo tooling (no template twin)."
+  ],
+  "rollback": "git revert; additive - a new packs/copilot tree (engine copy + Copilot wrapper), a copilot entry in .warp/packs.json, a selftest block, and this spec; no protected path; pure stdlib, no network."
+}

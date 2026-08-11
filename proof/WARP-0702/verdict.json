@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0702",
+  "commit": "1efc63630c623352c984242d95c6ef44d6a0fcfb",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T04:41:06Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:369d066db9870558",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (reproduced over its own temp trees; capability and claimed mutations caught; read-only confirmed)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (reproduced over its own temp trees; capability and claimed mutations caught; read-only confirmed)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (reproduced over its own temp trees; capability and claimed mutations caught; read-only confirmed)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (reproduced over its own temp trees; capability and claimed mutations caught; read-only confirmed)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (reproduced over its own temp trees; capability and claimed mutations caught; read-only confirmed)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Independent Opus review pass_with_notes, 0 blocking: all 5 ACs reproduced over the reviewer's own temp repo+claims trees (cross-plan build frontier, dependency/decision gating, standalone + review surfacing, claimed exclusion, capability-subset + plan/label scoping); both non-tautology teeth (ignore capability_ok, ignore claimed_units) turn the selftest red; genuinely reuses plan.py + claim.py; stdlib, read-only (byte-identical repo+claims snapshots)."
+    },
+    {
+      "severity": "note",
+      "text": "Closed the review's one flagged gap pre-ship: BUILD work now comes only from ACTIVE plans (ready/in_progress), so a draft (unapproved) plan's ready spec is no longer claimable (added a selftest for it). Non-blocking notes left as-is: a contract-violating bare-string requires degrades but fails CLOSED (validate.py rejects it); a spec listed in two plans is deduped first-plan-wins; a REVIEW unit's claim keys on spec id (Y3 integration)."
+    }
+  ],
+  "summary": "Y2 (WARP-0702, the global claimable frontier) is correct and honest. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 1001). claimable() computes build work across every active plan (draft plans excluded, closed pre-ship) plus standalone ready specs plus pending reviews, and filters out already-claimed, capability-mismatched, and out-of-scope work; it reuses the pure plan logic and the claim ledger rather than reimplementing, is read-only, and both non-tautology teeth are caught. proof_digest via validate.py."
+}

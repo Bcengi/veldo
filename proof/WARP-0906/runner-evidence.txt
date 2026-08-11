@@ -1,0 +1,178 @@
+WARP-0906 independent-reviewer evidence
+commit 97c4ac27d9515d650a3660b31243318512213ad1
+reviewer claude-opus-4-8[1m] (independent reviewer, agent a63b4decb5a5afbc4)
+isolated worktree /tmp/warp-w6-rev (git worktree add <commit>), umask 002
+
+=====================================================================
+1. GATE GREEN on the isolated checkout (AC6)
+=====================================================================
+$ cd /tmp/warp-w6-rev && umask 002 && bash scripts/verify.sh | tail
+selftest: 1350 passed, 0 failed
+   unit: pass
+== docs
+-- dash sweep (em/en dashes forbidden)
+-- non-ASCII sweep
+-- genericity sweep (docs/ and plugin/; design/ and research/ are internal provenance)
+docs hygiene: pass
+   docs: pass
+template sync: pass
+contracts: pass
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (97c4ac27d9515d650a3660b31243318512213ad1)
+(GATE line prints the reviewed commit -> run is on my checkout)
+
+$ python3 scripts/selftest.py  ->  selftest: 1350 passed, 0 failed  (baseline)
+
+Pack drift, independently computed via PK.engine_drift over .warp/packs.json:
+  Claude Code   plugin/templates   EMPTY
+  Cursor        packs/cursor       EMPTY
+  Codex CLI     packs/codex        EMPTY
+  GitHub Copilot packs/copilot     EMPTY
+  Antigravity   packs/antigravity  EMPTY
+  OpenCode      packs/opencode     EMPTY
+  Aider         packs/aider        EMPTY
+  TOTAL DRIFT: 0   (cross-pack conformance also passes inside selftest)
+
+=====================================================================
+2. AC5 HONESTY-CHECK TEETH (mutate file, run full selftest)
+=====================================================================
+baseline: 1350 passed / 0 failed
+
+--- TEETH (a): un-mark a dogfood entry (remove `scope: repo-only` from
+    budget_governance in BOTH copies) ---
+result: selftest: 1338 passed, 12 failed   (was 1350/0)
+  SELFTEST FAIL: capabilities manifest is honest end to end (every unmarked home ships, every home exists)
+  SELFTEST FAIL: TEETH: un-marking a dogfood entry turns the honesty check RED
+  (+10 cascaded pack-drift/conformance fails because plugin/templates copy edited)
+=> RED. The core honesty assertion flips to FAIL.
+
+--- TEETH (b): point a SHIPPED entry's home at a MISSING file
+    (fleet_dispatcher home .warp/dispatch.py -> .warp/dispatch_MISSING_0906.py, both copies) ---
+result: selftest: 1339 passed, 11 failed
+  SELFTEST FAIL: capabilities manifest is honest end to end (every unmarked home ships, every home exists)
+=> RED.
+
+--- EXTRA teeth (ship-truth, not just existence): point a shipped, unmarked
+    entry (metrics_dashboard) at .warp/budget.py -- a file that EXISTS in the
+    repo but does NOT ship to the engine ---
+    (verified: '.warp/budget.py' in shipped engine? False ; exists in repo-root? True)
+result: selftest: 1338 passed, 12 failed
+  SELFTEST FAIL: capabilities manifest is honest end to end (every unmarked home ships, every home exists)
+=> RED. Proves the check enforces SHIP-truth, not merely file existence.
+
+--- DOC-EXEMPTION teeth: a mechanical entry may NOT hide behind a docs home
+    (branch_protection_recipe status procedure -> mechanical, docs/plugin.md home kept) ---
+result: selftest: 1339 passed, 11 failed
+  SELFTEST FAIL: capabilities manifest is honest end to end (every unmarked home ships, every home exists)
+=> RED. Only status==procedure is exempted; mechanical/reference with a docs home is rejected.
+
+All mutations discarded via `git checkout -- .warp/capabilities.yaml plugin/templates/.warp/capabilities.yaml`.
+
+Ship-truth source: scripts/selftest.py:4711-4713 dynamically imports .warp/pack.py and
+computes _CH_ENGINE = engine_files("plugin/templates") -- the ONE engine source, not a
+hardcoded glob. Stays honest as ENGINE_GLOBS changes.
+
+=====================================================================
+3. AC5 MARKED SET -- independent recomputation
+=====================================================================
+Replicated _ch_part_ships (engine_files + plugin skills/agents + plugin/ paths).
+
+MARKED scope: repo-only (17), all genuinely do-not-ship:
+  budget_governance .warp/budget.py
+  lessons_store .warp/lessons.py
+  warp_init_scaffold .warp/init_scaffold.py
+  ephemeral_env_provisioning .warp/env_provision.py
+  release_rollback_automation .warp/release.py
+  tracker_adapter_seam .warp/tracker_adapter.py
+  tracker_status_mirror .warp/tracker_mirror.py
+  tracker_epic_mirror .warp/tracker_mirror.py
+  tracker_intake .warp/tracker_intake.py
+  jira_cloud_intake_adapter .warp/tracker_intake.py
+  confluence_requirements_intake .warp/tracker_intake.py
+  confluence_cloud_intake_adapter .warp/tracker_intake.py
+  tracker_conformance .warp/tracker_conformance.py
+  pack_engine .warp/pack.py
+  pack_drift_check scripts/check_pack_drift.py
+  pack_conformance .warp/pack_conformance.py
+  multitool_packs .warp/packs.json
+
+UNMARKED that SHIP: 84 (all resolve in plugin/templates engine or plugin skills/agents)
+UNMARKED, non-doc, that DO NOT SHIP: 0  (EMPTY -- no genuine gap left unmarked)
+procedure+docs exempted (unmarked): 2  -> branch_protection_recipe (docs/plugin.md), rollback_drills (docs)
+no-home / status-only: 4 -> figma_api_connector(absent), full_contract_schemas_digests(absent),
+                            merge_result_reproof(absent), post_merge_observation(control-plane)
+
+Spot checks (task #3):
+  tracker_routing (.warp/tracker.py)            ships=True  marked=False  -> correctly LEFT unmarked
+  tracker_routing_enforcement (.warp/validate.py) ships=True marked=False -> correctly LEFT unmarked
+  MARKED entries that actually SHIP: []  (none wrongly marked -> no real capability hidden)
+
+My recomputed repo-only set == the builder's 17, exactly.
+
+Resolution not trivially true:
+  skills/BOGUS_XYZ ships? False ; .warp/budget.py ships? False ; skills/run ships? True
+  plugin/skills/{run,review,spec,plan,intake} all EXIST
+  plugin/templates/{bin/warp,.warp/dispatch.py,.warp/fleet.py,.warp/governor.py,.warp/accounts.py, runners...} all SHIP
+
+=====================================================================
+4. AC1-AC4 docs -- over-claim scan
+=====================================================================
+README version line: "Current plugin version: 3.4.0."  (stale "3.2.0 (WARP Fleet v1)" corrected;
+  no 3.5.0 / release claim -- 3.5.0 is W8)
+grep 3.5.0 / "Fleet v1" / released-as-plugin in README+docs: none (only pre-existing plan-lifecycle
+  "released" status text, unrelated to a plugin release)
+grep supervisor / external supervisor in the 4 target docs: none (W7 not claimed)
+grep operating metrics (MRR/ARR/revenue/customers/$) in README: none. Hits exist only in
+  docs/research + docs/training + pre-existing fictional runbook examples (not W6-added, not
+  Bcengi's own metrics; genericity sweep excludes design/ + research/ as internal provenance)
+bin/warp confirms --account on both `warp work` and `warp fleet N` (bin/warp:14-15,193-202),
+  and account add|list, status/watch, answer|steer|abort -> every CLI claim in the docs is real.
+
+=====================================================================
+5. AC6 -- protected paths, byte-identity, evidence hygiene, name
+=====================================================================
+Impl commit file list (git show --name-only 97c4ac2), 15 files:
+  README.md, docs/plugin.md, docs/setup.md, docs/runbook.md,
+  .warp/capabilities.yaml, plugin/templates/.warp/capabilities.yaml,
+  packs/{aider,antigravity,codex,copilot,cursor,opencode}/.warp/capabilities.yaml,
+  scripts/selftest.py, specs/WARP-0906-docs-made-true.md, specs/index.md
+
+protected paths touched (verify.sh / warp-guard.sh / policy.yaml / policy_check.py + plugin twins):
+  NONE  (policy.yaml protected_paths: scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml,
+         plugin/templates/scripts/{verify.sh,warp-guard.sh}, .warp/policy_check.py,
+         plugin/templates/.warp/policy_check.py)  -- scripts/selftest.py is NOT protected.
+evidence files in impl commit (proof/ , .warp/last_verify , .warp/events.jsonl): NONE
+warp name unchanged: only VELDO reference is the spec's own "No rename (warp stays warp; VELDO parked)"
+index regenerated: specs/index.md in commit; gate "generated: pass"
+
+all 8 capabilities.yaml copies share ONE sha256 (89f245de7ec2578c...):
+  .warp/, plugin/templates/.warp/, packs/{aider,antigravity,codex,copilot,cursor,opencode}/.warp/
+  unique hash count: 1
+
+=====================================================================
+6. RULE #1 -- em/en dash + bare double-hyphen
+=====================================================================
+em/en dash (U+2013/U+2014) in added lines: NONE
+every added line with '--': all legitimate ->
+  `warp work --account alpha`, `warp fleet 4 --account alpha`, cheat-sheet + history --account rows
+  (CLI flags); `# ---` selftest section comment; `---` spec front-matter fences; backtick `--`
+  reference inside the spec Notes ("hand-check ... for `--`"). No bare `--` used as a dash in prose.
+
+=== orchestrator ship-record (W6 of PLAN-0009) ===
+impl commit:  97c4ac27d9515d650a3660b31243318512213ad1 (WARP-0906: docs made true + honest manifest)
+plan_hash:    sha256:6b03ff568d65cd2f
+proof_digest: sha256:781b3a60439c89ab (over manifest {spec_id, commit, criteria, checks})
+
+shipped: README version 3.2.0->3.4.0 + true fleet wording; fleet sections in plugin.md (s11),
+  setup.md (s2.4 rows + s4.9 two-tier + s4.11), runbook.md (V.8); capabilities honesty = 17 dogfood
+  entries tagged scope:repo-only in both byte-identical copies (computed from pack.py engine_files) +
+  new selftest _caps_honesty_findings check with teeth; all 7 packs re-synced (all 8 caps copies one hash).
+independent review (agent a63b4dec, distinct from builder a369b3f): pass_with_notes, 0 blocking; teeth
+  proven 4 ways; repo-only set independently recomputed = builder's 17 exactly; no doc over-claim.
+
+proof sequencing (W5 lesson applied): the reviewer wrote verdict.json with proof_digest="RECONCILE";
+  the orchestrator authored this canonical manifest (required_evidence:[unit] satisfied by the unit
+  check) and set the verdict's proof_digest to proof_digest(manifest)=sha256:781b3a60439c89ab, reviewer
+  judgment preserved. policy_check valid_verdict_for(97c4ac2) resolves to this verdict.
+
+gate at ship: GATE GREEN, selftest 1350 passed / 0 failed, drift empty across all 7 packs.

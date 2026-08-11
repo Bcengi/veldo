@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0808",
+  "commit": "dfa593413a13f109261992b04359d28de257f34e",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0008 W8, in-session single writer)",
+  "plan_hash": "sha256:b86504755d842c46",
+  "produced_at": "2026-07-19T06:08:21Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "packs/aider is a committed self-contained pack: the full canonical engine (139 files) copied byte-identical + the canonical AGENTS.md + a thin Aider driver (CONVENTIONS.md, .aider.conf.yml, the reused skills/agents as reference) - a complete grab-and-go directory (the seventh and final pack)."},
+        {"type": "unit", "ref": "independent review (agent a2c640529718e7c2d, bound to dfa5934): engine_drift(plugin/templates, packs/aider) == [] over exactly 139 files, no symlinks (find -type l empty), AGENTS.md diff -q identical to canonical; part of selftest 1262 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WARP invariant is enforced with no honor-system path even though Aider is the thinnest tool (no agent-hook framework; defaults to --no-verify, skipping git hooks): .aider.conf.yml sets git-commit-verify true so Aider stops bypassing hooks, and the load-bearing gate is the git pre-push hook (packs/aider/hooks/pre-push, committed EXECUTABLE at mode 100755, feeding scripts/warp-guard.sh the JSON payload on stdin - not env CMD) plus the CI required status check."},
+        {"type": "unit", "ref": "independent review behaviorally proved via the REAL git-invoked path (git archive HEAD:packs/aider preserving committed mode, git config core.hooksPath hooks, NO manual chmod, real bare remote): an unproven HEAD push is BLOCKED (PUSH_EXIT=1, remote show-ref empty, 0 refs landed, guard message 'canonical gate is not green for HEAD'); a green gate + proof manifest + verdict (single evidence-only commit over the proven parent) is ALLOWED (PUSH_EXIT=0, ref landed); a chmod-644 negative control reproduces the prior fail-open (git reports the hook 'was ignored because it is not set as executable', the unproven push lands), restoring 755 blocks again - proving the exec bit is load-bearing and the committed 100755 is the fix. The review also found the real gate is STRONGER than described: policy_check additionally requires an independent verdict.json bound to HEAD/parent, so a green last_verify + proof manifest alone is not sufficient. git-commit-verify: true confirmed in the conf. Part of selftest 1262 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the aider pack is declared in .warp/packs.json and the drift-check (MODE-AWARE) holds its engine copy byte-identical to source (the seventh and final pack); check_pack_drift and the selftest report it drift-free and a drifted or non-executable copy fails by name."},
+        {"type": "unit", "ref": "independent review: pack_drift_report returns all 7 packs (claude/cursor/codex/copilot/antigravity/opencode/aider), all drift-free; check_pack_drift.py prints 'pack drift: pass (7 pack(s))' exit 0; teeth on the committed aider copy (content mutate -> ('scripts/verify.sh','differs'); chmod 644 an engine script -> ('scripts/warp-guard.sh','mode'); remove -> ('.warp/validate.py','missing')); part of selftest 1262 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "reuse not reinvention: the engine, AGENTS.md, skills, and agents are copied from the one canonical source (identical content); only the thin Aider driver (CONVENTIONS.md, .aider.conf.yml, hooks/pre-push) is authored per tool."},
+        {"type": "unit", "ref": "independent review: diff -rq skills identical, agents identical, AGENTS.md identical; full classification of git ls-files packs/aider shows exactly three net-new authored files (.aider.conf.yml, CONVENTIONS.md, hooks/pre-push); all three dash-clean (zero em/en-dashes, every -- a real flag or YAML frontmatter); part of selftest 1262 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest asserts the aider pack conforms (engine drift-free, len(report)>=7) and carries its Aider wrapper (CONVENTIONS.md, .aider.conf.yml with git-commit-verify true, the EXECUTABLE git pre-push hook feeding the JSON payload, the reused skills/agents, AGENTS.md), non-tautologically."},
+        {"type": "unit", "ref": "independent review confirmed non-tautological: the WARP-0808 block asserts aider in the drift report AND == [] AND len>=7; engine+AGENTS present; wrapper (CONVENTIONS.md + .aider.conf.yml) + reused skill/agent files present; 'git-commit-verify: true' in the actual conf text; 'tool_input' and 'warp-guard.sh' in the actual hook text; os.access(hook, X_OK). Reads real file contents, not constants; part of selftest 1262 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1262 passed, 0 failed (+ the WARP-0808 aider block); GATE GREEN at dfa5934 on the first run (no date-sensitivity hit this run)"}
+  ],
+  "assumptions": [
+    "W8 of PLAN-0008, the seventh and final pack, built in-session by a single writer. Same committed-self-contained model: the full canonical engine + AGENTS.md copied into packs/aider byte-identical (content AND mode, held by the mode-aware drift-check), the skills and agents reused as reference (Aider has no agent runtime), and a thin Aider driver authored (CONVENTIONS.md, .aider.conf.yml, hooks/pre-push). Aider is the sharpest NG2 test because it has no agent-hook framework and defaults to --no-verify (skips git hooks); the pack answers it with two moves both enabled: git-commit-verify true (so Aider stops bypassing commit-time hooks) and the git pre-push hook + CI required check as the load-bearing gate. The WARP-0807 exec-mode fix is in force from the start: the committed hook is mode 100755 and the assembler preserves mode. One independent adversarial review (agent a2c640529718e7c2d) bound to this commit dfa5934 returned pass_with_notes (0 blocking) and behaviorally proved via the REAL git-invoked path that the local push gate blocks the unproven (exit 1, 0 refs) and allows the proven (exit 0), with the 644 control reproducing the fail-open.",
+    "Non-blocking review notes carried forward (not defects at this commit): (1) ROBUSTNESS, W7-adjacent, SYSTEMIC across all 7 packs: the selftest asserts working-tree executability (os.access X_OK) of the wrapper hooks but not the COMMITTED git-index mode, and the mode-aware drift-check covers only ENGINE_GLOBS (the wrapper hooks/pre-push is a per-pack authored file, not engine), so a future commit landing a wrapper hook at 644 while the local tree is 755 would pass selftest and reintroduce the W7 fail-open. The committed modes are all correct (100755) at dfa5934. This committed-mode check is scheduled for W9 (WARP-0809, cross-pack conformance) as its natural home. (2) FORMAT: the exact .aider.conf.yml keys (read list, git-commit-verify) are plausible documented Aider idiom on a fast-moving surface; the guaranteed gate (git pre-push + CI) does not depend on the tool config, so the uncertainty is immaterial. (3) The AC2 ALLOW condition in the review brief was incomplete versus the real gate (which also requires an independent verdict.json) - the enforcement is STRONGER than described, not weaker. Pre-existing advisory: specs/index.md embeds a 'Generated <date>' line, so a verify run on a later calendar day can go red on the first run and green on the second (a date-sensitivity of update_index.py, not a WARP-0808 defect); it did not trigger this run. plan_hash here (sha256:b86504755d842c46) is the CANONICAL hash via plan.py (parse_yamlish, capturing the work DAG)."
+  ],
+  "rollback": "git revert; additive - a new packs/aider tree (engine copy + Aider wrapper), an aider entry in .warp/packs.json, a selftest block, and this spec; no protected path; pure stdlib, no network."
+}

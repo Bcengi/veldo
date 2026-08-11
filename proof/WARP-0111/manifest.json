@@ -1,0 +1,36 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0111",
+  "commit": "d90ef1d309108a537d99d2209df733416c0b5ca9",
+  "producer": "claude-opus-4-8[1m] (implementing agent, W11 build)",
+  "plan_hash": "sha256:f1bea3833572c104",
+  "produced_at": "2026-07-16T23:30:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "docs/method.md header reads 'Version 2.0, 2026-07-16'; 'Stage 0' appears (5 occurrences) placed ahead of Stage 1, describing Product Plans, the warp.plan/v1 contract, the ordered work DAG, the ready frontier, promotion, and the two lanes (standalone|planned) reconciled with the 'specification is the unit of work' principle"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "docs/setup.md gains a Product Plan contract subsection (warp.plan/v1 + lane fields) and an operating-the-layer subsection (create/refine/approve/revise-with-impact/status/regression/release); '/warp:plan' appears in the doc (4 occurrences incl the 4.3 skill list)"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "docs/training/planning-layer.md exists (new PM module), registered in docs/manifest.yaml (1 entry, parseable version line), and cross-linked from docs/training/product-manager.md (2 references)"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "docs/runbook.md gains a planning chapter (Runbook E + Part V.7), 5 planning-layer references; operates the layer day to day with keystroke-exact transcripts matching plan.py output formats"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "consistency check: all 7 documented .warp/plan.py commands (status, release-check, impact, regression, bundle, run-check, hash) and all 8 /warp:plan sub-verbs (create, refine, approve, pull, revise, status, regression, release) exist in .warp/plan.py / plugin/skills/plan/SKILL.md. Docs describe planning dialogue as procedure, run-check + plan hash as mechanical, gate regression slot as per-repo reference - matching .warp/capabilities.yaml (nothing overclaimed)"}]},
+    {"id": "AC6", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest 121 passed, 0 failed (docs-only change adds no new rule)"},
+      {"type": "operational", "ref": "verify.sh GATE GREEN at d90ef1d, 5 run / 18 na / 0 undeclared; docs hygiene passes (ASCII only, no em/en/double-hyphen, zero company/product references in docs/ and plugin/); specs/index.md regenerates as a no-op (git diff clean) with the plan burn-down reflecting W11 as pulled"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 121 passed, 0 failed"},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep clean"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "W11 is additive documentation only: method 1.3 -> 2.0 (Stage 0), setup 2.8 -> 2.9 (plan contract + operating sections), a new PM training module, runbook 1.3 -> 1.4 (planning chapter), plugin 2.9.0 -> 2.10.0 (minor, past W9's 2.9.0), and re-rendered PDFs. No code, contract, or policy change, so no protected path is touched and no approval is required. Only the 7 source-changed PDFs are committed; the other 10 re-render only with new Chrome timestamps (unchanged source) and were restored to their committed bytes to avoid timestamp noise. The O4 project-management-judgment conditional is preserved as open pending the W12 dogfood, stated honestly rather than resolved."
+  ],
+  "rollback": "git revert d90ef1d; all changes are additive documentation + a plugin minor bump + re-rendered PDFs, no machinery impact; selftest and gate unaffected."
+}

@@ -1,0 +1,6 @@
+=== AC4 negative: this spec mis-declares work: W2 (working tree) ===
+  /path/to/repo/plans/PLAN-0001-warp-one-point-zero.md: mirroring: WARP-0101-plan-contract.md exists but does not declare plan: PLAN-0001 / work: W1 (declares plan: PLAN-0001 / work: W2)
+  /path/to/repo/specs/WARP-0101-plan-contract.md: plan PLAN-0001 work W2 is spec WARP-0102, not WARP-0101
+warp contracts: 2 problem(s)
+exit with mis-binding: 1
+exit after restore: 0

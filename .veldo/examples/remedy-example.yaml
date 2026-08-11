@@ -1,0 +1,42 @@
+# VELDO remediation proposal (veldo.remedy/v1): a remedy is a PROPOSAL, never an
+# execution. This is an ILLUSTRATIVE EXAMPLE of the artifact format, not a real
+# VELDO remedy: it shows the shape a proposal takes when it remediates the example
+# incident (INC-0000, the checkout latency regression). It carries a diagnosis
+# derived from artifacts with each piece of evidence cited, the proposed whitelist
+# action and its parameters, the risk class and the autonomy level the action
+# needs, a reversibility analysis, a rollback plan, a canary shape, and the human
+# authorization its execution will require. The artifact has NO execution
+# capability: nothing here runs anything. Execution is a separate organ on
+# separate credentials (WARP-1206, W6), and the two-key rule that gates an
+# irreversible or data-mutating action is WARP-1207 (W7). Because this action is
+# reversible and does not mutate data, its required_authorization is a single
+# human confirmation; an irreversible or data-mutating action would require
+# two_key. Only a human authorizes a proposal, on the record.
+schema: veldo.remedy/v1
+id: REM-0000
+incident: INC-0000
+status: proposed
+diagnosis: The latency regression coincides exactly with the deploy that shipped the change governed by WARP-0000; the change's proof covered correctness but declared no latency observability criterion, and the implicated service instance is holding a saturated connection pool. Rolling the deploy back to the prior release restores the pool sizing the regression removed.
+evidence:
+  - citation: latency metric series, payment confirmation endpoint, p99 240ms to 3.1s at the deploy boundary
+    note: the regression starts at the deploy timestamp and nowhere else.
+  - citation: change record and proof for WARP-0000 (the deploy that crossed the boundary)
+    note: proof covered functional correctness; no observability criterion for latency was declared.
+  - citation: connection-pool saturation gauge on the implicated instance, read-only replica view
+    note: pool utilization pinned at 100 percent from the deploy boundary forward.
+proposed_action:
+  action: rollback_deploy
+  parameters:
+    service: payment-confirmation
+    to_release: prior-known-good
+risk_class: standard
+autonomy_level: L2
+reversibility:
+  class: reversible
+  analysis: A deploy rollback restores the immediately-prior release and can itself be rolled forward; it changes no persistent data, so it is fully reversible.
+  data_mutating: false
+rollback: Roll forward to the current release (re-deploy the release being rolled back from); no data migration is involved, so the forward and backward paths are symmetric.
+canary:
+  supported: true
+  shape: route one percent of confirmation traffic to the rolled-back release for five minutes and compare p99 against the budget before shifting the remainder.
+required_authorization: human_confirmation

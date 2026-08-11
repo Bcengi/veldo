@@ -1,0 +1,35 @@
+WARP-0605 runner evidence - event-driven one-way spec mirror (W5 of PLAN-0006)
+Impl commit under proof: 9bbfc5a163d4e19a2d36d354bd6a7d28b0754cda
+
+== gate (clean detached worktree at 9bbfc5a) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (9bbfc5a163d4e19a2d36d354bd6a7d28b0754cda)
+
+== unit (selftest.py) ==
+selftest: 1133 passed, 0 failed
+(+22 assertions for the WARP-0605 tracker mirror block; baseline was 1111)
+
+== module smoke check (.warp/tracker_mirror.py selfcheck) ==
+passed: true (12/12 checks) - growing-stream move-through (ready -> To Do; unmapped
+verdict annotated, no transition; shipped -> Done + closing comment), replay idempotency
+(no new transition/comment, duplicated event id collapsed, state byte-identical), unwired
+spec skipped, and the spec index never mutated (one-way).
+
+== review-driven teeth verification (mutation) ==
+Injected a stable-value writeback (meta["status"] = "POLLUTED") into mirror_events:
+  SELFTEST FAIL: mirror never mutates the spec index (one-way, repo stays source of truth)
+  selftest: 1132 passed, 1 failed
+Restored clean code:
+  selftest: 1133 passed, 0 failed
+Confirms the strengthened one-way guard (fresh, never-mirrored index) has real teeth.
+
+== reviews ==
+Full independent adversarial review at faa579c: pass_with_notes, 0 blocking (all 5 ACs
+confirmed by spies + mutation matrix + idempotency battery; three non-blocking notes).
+Two actionable notes fixed -> commit 9bbfc5a.
+Scoped independent re-review bound to 9bbfc5a: PASS, 0 findings (delta is exactly the two
+fixes, mirror logic byte-unchanged, gate GREEN 1133/0, capabilities.yaml copies byte-identical).
+
+== proof binding ==
+plan_hash: sha256:6dd3f98b5a0c1f68 (PLAN-0006, revision 1)
+proof_digest: sha256:aa155fb486d9827c (validate.py over {spec_id, commit, criteria, checks})

@@ -1,0 +1,11 @@
+{
+  "name": "mcp stdio contract (deliberately failing)",
+  "interactions": [
+    {"name": "echo is offered (subset) - holds", "method": "tools/list",
+     "expect": {"tools_include": ["echo"]}},
+    {"name": "expects a result from delete_everything, a tool the server does not expose",
+     "method": "tools/call",
+     "params": {"name": "delete_everything", "arguments": {"path": "/"}},
+     "expect": {"result_text": "done"}}
+  ]
+}

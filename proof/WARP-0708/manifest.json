@@ -1,0 +1,52 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0708",
+  "commit": "ac4b6e031066963b5fddb767c4c9afadfaa6388d",
+  "producer": "claude-opus-4-8[1m] (implementing agent)",
+  "produced_at": "2026-07-18T13:37:23Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plan.py status PLAN-0007 reports status released, revision 2, 7/7 shipped (Y1-Y7 = WARP-0701..0707 all shipped, frontier none); plan.py release-check PLAN-0007 reports releasable. Each of WARP-0701..0707 has proof/<id>/verdict.json (pass or pass_with_notes, 0 blocking) and manifest.json with manifest.commit == verdict.commit; the independent reviewer recomputed proof_digest via validate.proof_digest on all seven manifests and confirmed each matches its verdict's stored digest (incl. WARP-0704 sha256:89d88a956edc2066 and WARP-0707 sha256:54eab99c2a6db640)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/.claude-plugin/plugin.json version bumped 3.1.0 -> 3.2.0 (the only line changed there); the PLAN-0007 release.version field reads plugin 3.2.0. The method document docs/method.md is NOT in this commit's file list (git show ac4b6e0 --stat) - unchanged, since the fleet is tooling that runs the same WARP loop in parallel, not a method change."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "./scripts/verify.sh reports GATE GREEN at ac4b6e0 with selftest 1054 passed, 0 failed and contracts / docs hygiene (dash + genericity sweeps) / template sync / secret scan all passing. git show ac4b6e0 --stat touches exactly six allowed files (the new WARP-0708 spec, plugin.json, plans/PLAN-0007, specs/index.md, .warp/events.jsonl, .warp/last_verify) - no protected path, no product or method doc, no unrelated file. Both capabilities.yaml copies are byte-identical and untouched by the commit."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1054 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "A plan release plus a version bump, reviewed independently like any change. The release commit touches plugin.json and the plan (status -> released), so it is not evidence-only and carries this proof and an independent verdict bound to ac4b6e0. WARP-0710 (the claim-ledger hardening found while building Y4) is a standalone spec, not a PLAN-0007 work item, so it does not gate the plan release; it is recorded in its own proof with a passing verdict. The method document docs/method.md is deliberately unchanged - the fleet is tooling that runs the generic WARP loop in parallel."
+  ],
+  "rollback": "git revert the release commit and this evidence; set PLAN-0007 back to in_progress if the release must be withdrawn (the work items stay shipped)."
+}

@@ -1,0 +1,20 @@
+=== W9 (WARP-0109) operational demonstrations - each closure check fires live ===
+
+AC3 digest no drift (validate==policy_check): True sha256:6c6bfb47807616b3
+AC3 digest changes with content: True
+AC4 covers named path: True
+AC4 covers glob: True
+AC4 does NOT cover unnamed path: True
+AC4 empty scope.paths covers NOTHING: True
+AC4 path-scoped ACCEPTS covered path: True
+AC4 path-scoped REJECTS uncovered path: True
+AC4 self-approval REJECTED (approver==producer): True
+AC4 non-self approval ACCEPTED: True
+AC1 draft spec WITH proof is a ready-boundary VIOLATION: True
+AC1 shipped spec with proof is NOT a violation: True
+AC2 spec revised PAST its proof revision is STALE: True
+AC2 spec AT proof revision is NOT stale: True
+AC3 verdict with MATCHING proof_digest is VALID: True
+AC3 verdict with MISMATCHED proof_digest is INVALID (cannot reuse a verdict): True
+
+ALL DEMOS ABOVE MUST READ True.

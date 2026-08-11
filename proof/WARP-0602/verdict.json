@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0602",
+  "commit": "7762684979184f6bed481fac8150a598f46bc7d5",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T17:38:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:c805f00c3114a166",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "check_tracker_repo invoked by both check_spec and check_plan; absent field leaves all existing specs/plans valid."},
+    {"id": "AC2", "status": "confirmed", "note": "Present -> non-empty string else fail by name on both contracts; one accepted non-blocking spec-parser edge (inline-bracket value with no config = literal string, allowed-not-enforced per AC4, fails closed once a config exists)."},
+    {"id": "AC3", "status": "confirmed", "note": "Config wired -> must be a known repo, fails closed by name; reuses tracker.py load_tracker_config + _known_repo_ids (proven by call-spy, no reimplementation); no path accepts an unknown repo when a config is present."},
+    {"id": "AC4", "status": "confirmed", "note": "No config -> allowed-not-enforced; absent -> unconstrained; parallel to the lane checks."},
+    {"id": "AC5", "status": "confirmed", "note": "Non-tautological: neutering check_tracker_repo to return 0 turns exactly the 6 tracker_repo assertions RED including both teeth. Gate GREEN, selftest 1111."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review, pass_with_notes, 0 blocking, bound to 7762684. All 5 ACs confirmed against the code with a 21/21 enforcement matrix, reuse of the WARP-0601 resolver proven by call-spy (no second config parser), non-tautology proven by mutation (6 red), no regression over 69 specs / 8 plans, and a clean derived index verified in an isolated worktree (the prior-commit stale-index problem is not present here)."},
+    {"severity": "note", "text": "SCOPE SCRUTINY - the worker went beyond the minimal design and the reviewer judged every addition justified: (a) it added plugin/templates/.warp/tracker.py, the template twin WARP-0601 omitted - validate.py now imports tracker.py at load, a hard runtime dependency, so without the twin an adopting repo's validate crashes on FileNotFoundError (proven by the reviewer); (b) it STRENGTHENED scripts/check_template_sync.sh to cover that pair (proven teeth, not a weakening); (c) it completed .warp/init_scaffold.py to lay the file down (substrate complete); (d) both capabilities.yaml copies byte-identical. This retroactively closed a latent WARP-0601 gap. One accepted non-blocking note: a spec-parser inline-list edge in AC2's non-string clause, harmless (fails closed once routing is wired)."},
+    {"severity": "note", "text": "Operational: this item was built by a worker whose worktree isolation did not hold (it wrote to the main tree, commingling with the concurrent WARP-0603 evidence). The coordinator stopped the worker, separated its complete gate-green build from the WARP-0603 evidence, committed it as this self-consistent impl commit, and verified the commit passes the gate in a clean worktree. Going forward, build workers are serialized."}
+  ],
+  "summary": "W2 of PLAN-0006 (per-repo routing enforcement in planning and spec creation) is correct. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 1111). validate.py enforces, on both the spec and plan contracts and parallel to the lane-field checks, that a declared optional tracker_repo resolves to a known repo via the reused WARP-0601 resolver when a tracker config exists (fails closed by name), is allowed-not-enforced with no config, and unconstrained when absent - reusing the resolver with no second config parser, proven non-tautological by mutation, no regression across 69 specs and 8 plans. The worker's beyond-design changes are all justified and retroactively closed a latent WARP-0601 template-twin gap. proof_digest via validate.py."
+}

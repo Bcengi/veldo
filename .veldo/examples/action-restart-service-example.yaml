@@ -1,0 +1,37 @@
+# VELDO runbook action (veldo.action/v1): a pre-vetted, parameterized action the executor
+# may run ONLY by whitelist reference, never as command text. This is an ILLUSTRATIVE
+# EXAMPLE of the action format against a FAKE system (no live access, NG1); it describes
+# no real service controller. It is one of the reference trio per D3 (restart a service,
+# roll back a deploy, scale a pool). The action carries NO execution capability: nothing
+# here runs anything. The executor that would run it is a separate organ on separate
+# credentials (WARP-1206, W6). The strategy parameter is an enum, so a value outside its
+# declared set is refused by name.
+schema: veldo.action/v1
+id: restart_service
+title: Restart a service
+description: Restart the instances of a service on the fake service controller.
+system: fake-service-controller
+risk_class: high
+reversibility:
+  class: reversible
+  analysis: A restart returns the service to its running state and makes no durable change; it cannot be literally undone but leaves nothing persistent behind, so it is reversible in effect and mutates no data.
+  data_mutating: false
+parameters:
+  - name: service
+    type: string
+    required: true
+    pattern: "^[a-z][a-z0-9-]{1,62}$"
+  - name: strategy
+    type: enum
+    required: false
+    values: [rolling, immediate]
+rollback: A restart leaves no durable change to undo; if the service does not return healthy, roll back to the last known-good release (rollback_deploy).
+canary:
+  supported: true
+  shape: restart a single instance first and confirm it returns healthy before restarting the remainder.
+review:
+  status: reviewed
+  reviewer: illustrative fresh-context review (example only; a real action is vetted through the normal VELDO loop and promoted by a human)
+  verdict: approved
+  reviewed_at: 2026-07-23T00:00:00Z
+  reviewed_digest: sha256:d1c2e01b4fa79ce8

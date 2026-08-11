@@ -1,0 +1,44 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0712",
+  "commit": "b5a1af65c2af0210ed7a182c33d4fefde5a33926",
+  "reviewer": "ORCHESTRATOR CLOSEOUT, NOT AN INDEPENDENT REVIEW. This records that review 1's three blocking findings are closed and that the delta since review 1 is provably text-only. It is weaker evidence than a fresh reviewer and is labelled so on purpose, because this repository has been burned by orchestrator verification presented as review (see WARP-0716).",
+  "verdict": "pass_with_notes",
+  "round": 2,
+  "criteria": [
+    {
+      "id": "B1",
+      "status": "closed",
+      "note": "The proof manifest now states THREE changed labels, names all three verbatim, marks two as this item's own round-1 assertions, and the stale 'exactly ONE label missing' is gone. Checked by me directly against the committed JSON. The manifest commit field was advanced from 0aeab03 to eb9cd1be3380."
+    },
+    {
+      "id": "B2",
+      "status": "closed",
+      "note": "scripts/suites/manifest.json no longer claims standalone equivalence. Its note now opens 'THESE ARE FRAGMENTS, NOT INDEPENDENT MODULES', states the one-namespace manifest-order mechanism, and names the measured result: suite_equiv returns DEFECTIVE with every fragment PASSES_IN_AGGREGATE_FAILS_ALONE and the reversed order ORDER_DEPENDENT. The SUITE_NOT_ENUMERATED sentence is kept verbatim. Read in full by me; an earlier grep of mine matched the phrase inside its own negation ('None of them runs standalone'), so the full sentence was read rather than pattern-matched."
+    },
+    {
+      "id": "B3",
+      "status": "closed",
+      "note": "The 'from shared import *' per-suite-namespace paragraph has ZERO occurrences in scripts/suites/shared.py, and the same correction was applied to SHARED_HEADER in scripts/suite_extract.py so a fresh cut reproduces it. Dead EXPORT_ALL deleted."
+    }
+  ],
+  "delta_since_review_1": {
+    "code": "scripts/verify.sh and scripts/selftest.py are BYTE-IDENTICAL between the reviewed commit 24ff8cb and the merged 4557f9f, verified by git diff --quiet on each. 12 of 13 fragments byte-identical; fragment 13 differs in two comment lines with identical ast.dump.",
+    "scope": "12 files, +151/-48, all docstrings, comments, JSON prose, one dead constant, and two regenerated derived documents.",
+    "why_this_permits_landing": "Review 1's own stated condition was 'Fix those three sentences and this lands', it ruled the machinery sound under five attacks, and the delta since is provably text-only. Landing on that conditional is legitimate; landing on an orchestrator's opinion about CODE would not be."
+  },
+  "additional_corrections_found_in_round_3": "A second sweep found three more wrong numbers the reviewer had not named: 12 fixture variants reported as 11, 10 Matrix B decisions reported as 9, and 6 logical re-points reported as 4. The three drifting dispatcher line counts were DELETED rather than reset, on the reasoning that resetting a drifting number restarts the clock.",
+  "confirmed_by_orchestrator": {
+    "gate_on_branch": "GATE: GREEN (4557f9f), my own run",
+    "gate_on_main_after_merge": "GATE: GREEN (b5a1af6), my own run, catalog 5 run / 18 not-applicable / 0 waived / 0 undeclared",
+    "suite_on_main": "selftest: 3352 passed, 0 failed, my own run",
+    "review_events": "165 verdict artifacts tracked, 0 derivable but not appended",
+    "pushed": "f64821c..2795eaf to Bcengi/warp, local equals origin, tree clean"
+  },
+  "notes": [
+    "AC4 remains PARTIAL as declared: the 13 fragments do NOT run standalone and the whole gate still costs about 90 seconds. Parallel execution is NOT delivered by this item and was reported to the owner as not delivered.",
+    "AC6 remains PARTIAL, and its stated reason was corrected against the item's own interest: there is exactly ONE selftest.py in the tree, plugin/templates ships none, and every pack declares CHECK_unit empty deliberately, so nothing can drift.",
+    "OPEN FOLLOW-UP, declined with sound reasoning rather than skipped: proof-manifest figures should be EMITTED, not typed. B1's fix requires the manifest itself to state and name the three labels, so a generated sidecar would delete the sentence the reviewer demanded; templating is a repo-wide change across roughly 100 manifests, half the quantities are not gate-derivable, and suite 13 asserts check_generated.sh mentions the measurement path exactly twice. Written up as its own item.",
+    "FOUR hand-typed counts failed a recount across this item and its neighbour today (8 commits reported as 6, 3 labels as 1, 12 variants as 11, and 158 false refusals as 218 on WARP-0626). That is the motivation for the emitter item."
+  ]
+}

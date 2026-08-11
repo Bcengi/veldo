@@ -1,0 +1,30 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0618",
+  "commit": "dbdfc91",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder; adversarial on signal-only, redaction leak to a real channel, idempotency-marker durability, and fail-safe)",
+  "reviewed_at": "2026-07-24T10:15:00Z",
+  "verdict": "pass_with_notes",
+  "summary": "A correctly-built, signal-only, fail-safe doorbell. All four ACs hold; gate GREEN (selftest 2544); 3 teeth reproduced independently non-vacuous; 8 capabilities.yaml byte-identical; repo-only placement confirmed. Signal-only is STRUCTURAL: no inbound/reply-reading path exists (grep-confirmed), TelegramSink discards the send response, the notice points at the tracker and carries no approve/decide action - nothing advances a request through this module. Fail-safe confirmed (send wrapped in try/except, never raises; urllib imported inside TelegramSink.send so never on the gate path). The notes are PRE-LIVE-WIRING gates, not defects in the shipped review-stage module, which cannot send to a live channel today (main runs only selfcheck; TelegramSink is never constructed; no ring_from_repo).",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "build_notice returns (notice_text, jira_link) from read-only record fields; no inbound path (grep for getUpdates/webhook/poll/answerCallback/thread/subprocess = none); notice says 'Decide in the tracker'; records byte-unchanged after a run."},
+    {"id": "AC2", "status": "confirmed", "note": "SEND is an injected sink; gate drives FakeSink/FailingSink (no network); real TelegramSink resolves a secret-reference token, fails closed, urllib imported inside send so never gate-run. try/except Exception returns outcome:failed, never raises."},
+    {"id": "AC3", "status": "confirmed_with_note", "note": "Idempotent per (request_id,status) via notice_key; status change re-notifies; proven in-gate. NOTE (must-fix-before-live): the marker is FakeSink's in-memory set; TelegramSink keeps NO durable marker and always sends, so a fresh sink per live run would re-notify (spam) - a durable keyed store (or reconciler-only drive) is required before live use. Redaction runs on the whole body via the reused W3 redactor."},
+    {"id": "AC4", "status": "confirmed", "note": "Non-tautological selftest over FakeSink; 3 teeth reproduced independently from a standalone script, each RED with the module sha256 byte-unchanged."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Finding 1 (must-fix-before-live, RULE #3): declared operating-term redaction is exercised only in the test fixture - the module has NO wiring to pull projection.sensitive_terms, and every in-module call passes terms=(). Confirmed: build_notice with no terms emits 'MRR 45000, LTV 312, CAC 40' in the clear. The live caller MUST pass projection.get('sensitive_terms') exactly as W3's _project_one does, or a live send leaks operating data to Telegram."},
+    {"severity": "note", "text": "Finding 2 (must-fix-before-live): durable idempotency marker. TelegramSink always attempts a send and the module ships no durable store; a naive fresh-sink-per-run live deployment spams. A durable keyed store, or driving only via the reconciler, must exist before live use."},
+    {"severity": "note", "text": "Finding 3 (inherited W3 declared-scope limit): the redactor is not a secret backstop - a raw credential literal or a URL query-token in bound_artifact.ref / tracker.url bypasses it (confirmed: sk-live-.../JWT and ?auth=SECRET123 pass through). Given the destination is a real external channel, consider an undeclared-secret heuristic before the live edge."},
+    {"severity": "note", "text": "Finding 4 (minor): ring's try covers only sink.send; build_notice/notice_key run before it, so a malformed record passed directly to ring (bypassing ring_all's dict-guard + W2 validation) could raise. Low severity (records are W2-validated upstream). Broaden the try or document ring requires a W2-validated dict."}
+  ],
+  "must_fix_before_live": ["Finding 1", "Finding 2"],
+  "checks": [
+    "./scripts/verify.sh -> GATE GREEN (543c05e), 5 run / 18 na. python3 scripts/selftest.py -> 2544 passed, 0 failed. validate.py all + validate.py proof -> exit 0.",
+    "Signal-only structural: no inbound/reply path; TelegramSink discards the response; no path advances a request.",
+    "Fail-safe: send wrapped, never raises; FailingSink proves attempts==1 + record byte-unchanged; urllib imported inside send (never gate-run).",
+    "3 teeth (idempotency key, fail-safe except, redactor) reproduced independently RED with request_doorbell.py sha256 unchanged; non-vacuous.",
+    "8 capabilities.yaml byte-identical (sha256 24e28048); module repo-only (root only, not plugin/templates or packs); NG1 clean (no timer/daemon/detached).",
+    "Genericity/RULE#1 clean (env:TELEGRAM_BOT_TOKEN is a var-name example; no secret literal; no em/en-dash or prose double-hyphen)."
+  ]
+}

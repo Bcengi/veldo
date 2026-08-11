@@ -1,0 +1,88 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1210",
+  "commit": "dabec0d0f6dceb27c2ce505c50715f8018218bdf",
+  "reviewer": "claude-opus-5[1m] (ROUND-4 independent adversarial reviewer, a fourth distinct fresh context; instructed that the single highest-value thing it could do was test whether the CLASS SWEEP was real or whether a third instance survived)",
+  "reviewed_at": "2026-07-25T12:45:00Z",
+  "verdict": "fail",
+  "round": 4,
+  "supersedes": "proof/WARP-1210/verdict-2-fail.json",
+  "proof_digest": "sha256:4298a22dfd61b00f",
+  "headline": "THE SWEEP IS NOT REAL, and it is the same failure mode one level deeper. Round 2 said: you fixed the reported input, not the class. Round 3 fixed THE REPORTED INPUT'S REPORTED SHAPES, not the class. A present-but-unreadable state that Python's Path predicates or glob simply swallow is still reported as an ABSENCE, with no problem name, no exclusion and no stand-down, on four of the eight DECLARED sources. It needs no exotic filesystem state: records in a subdirectory, records with an uppercase .YAML suffix, or records with a .yml suffix each turn 100.0 percent into 0.0 percent in silence.",
+  "must_fix_before_live": [
+    {
+      "id": "R3-B1",
+      "criterion": "AC3/AC1/AC4",
+      "severity": "blocking",
+      "summary": "CLASS ONE IS NOT SWEPT. On incident_record_store: a mode-000 directory, a symlink loop, records moved into a subdirectory, an uppercase .YAML suffix or a .yml suffix each yield records_read 0, excluded_count 0, source_problems EMPTY, diagnosability 0.0 percent (0 of 2) where the control is 100.0 percent, the map reporting the FALSE reason EMPTY_DENOMINATOR, and the dependence card affirmatively stating both halves are available. That is round 2's blocker text verbatim, one source over. The same silence holds on receipt_store (every incident then reported UNBACKED_EVENT, which load_receipts's own docstring calls a different fact), on spec_corpus, and on architecture_contract where a symlink loop or dangling symlink defeats the round-3 exists() fix and reports NO_ARCHITECTURE_CONTRACT."
+    },
+    {
+      "id": "R3-B2",
+      "criterion": "AC3",
+      "severity": "blocking",
+      "summary": "R2-B1 is closed only on its six REPORTED SHAPES. Verbatim re-run at HEAD: tab-in-front-matter, empty file, binary file, mode-000 FILE, specs-not-a-directory and directory-named-.md are all fixed and named. A mode-000 DIRECTORY, a symlink loop and a dangling symlink each give index 0, corpus_problem False, the corpus reported as NO_SPEC_CORPUS (absent) when it is unreadable, and EMPTY_DENOMINATOR back in the map."
+    },
+    {
+      "id": "R3-B3",
+      "criterion": "AC3",
+      "severity": "blocking",
+      "summary": "The cost cell reports a FALSE ABSENCE on the shape round 3 declared fixed. load_area_cost returns empty whenever spec_areas is empty, so it never consults the series: with real cost data in the stream and an unreadable corpus, the surviving row says NO_AREA_COST_DATA. The function's own docstring claims it names which fact it is and is the one place that decision is made; it names the wrong fact."
+    },
+    {
+      "id": "R3-B4",
+      "criterion": "AC2",
+      "severity": "blocking",
+      "summary": "The NEW recurrence cross-reference resolves against an UNAUTHENTICATED population: known = closed ids union records union conflicted, which includes ids the pass itself excluded. One forged unbacked incident.closed event moves recurrence from 0.0 percent (with the phantom correctly named) to 100.0 percent with nothing named, while the forged id is itself reported UNBACKED_EVENT and counted in nothing. So round 3's fix for round-2 note 2 made the missing-specification signal movable by exactly the writer AC2 exists to defeat. Fix: resolve against backing keys union records read, never against closed."
+    },
+    {
+      "id": "R3-B5",
+      "criterion": "AC6",
+      "severity": "blocking on honesty",
+      "summary": "The manifest's central correction is untrue on the shipped surface. CORRECTION 4 states the false one-renderer sentence is gone from the manifest, both module docstrings, the dashboard docstring AND the capability note. capabilities.yaml, edited by this very commit and shipped in eight copies, still says 'the PURE derivation and the ONE renderer' and 'the SHARED metrics_support.support_lines renderer so the CLI and the dashboard can never disagree' - now false twice, because support_lines is no longer in metrics_support.py at all."
+    }
+  ],
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "refuted",
+      "note": "Refuted through R3-B1: an unreadable record store silently produces a wrong number rather than a stand-down."
+    },
+    {
+      "id": "AC2",
+      "status": "refuted",
+      "note": "Refuted by R3-B4. The receipt-side authentication otherwise held against every probe, and the right-schema hand-written forgery remains as declared."
+    },
+    {
+      "id": "AC3",
+      "status": "refuted",
+      "note": "Refuted by R3-B1, R3-B2 and R3-B3. The three-attempt split, the ninth name, the EMPTY_DENOMINATOR suppression and the de-aggravated dependence card are all real for the shapes previous reviewers named, and absent for every shape they did not."
+    },
+    {
+      "id": "AC4",
+      "status": "refuted",
+      "note": "Honest denominators hold in the ordinary cases, but R3-B1 produces a value-shaped 0.0 percent where the truth is that the input could not be read."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Reproduced INDEPENDENTLY and extended: 27 guards by 27 fixtures, 729 cells, exactly diagonal, off-diagonal empty, all five modules sha256-unchanged, with 18 of 27 sites different from the shipped ones. No guard is decorative. Two findings worth keeping: the reviewer's own 27th guard (the naming half of UNRESOLVED_RECURRENCE) is a real decision NO shipped tooth covers, and it verified rather than accepted the claim that reader guards are judged on the reader's output - judging them on the rendered surface instead lights all seven reader rows from one derivation mutation, so diagonality on those rows is a property of the chosen OBSERVATION POINT as much as the chosen sites."
+    },
+    {
+      "id": "AC6",
+      "status": "refuted",
+      "note": "Refuted by R3-B5 and six further manifest problems, including the manifest contradicting ITSELF on the assertion-integrity figures (an assumption says 1003/147 and eleven rewritten while checks.unit says 1014/148 and twelve; git says 1014/148 and twelve), and a capability entry that names three modules when there are four and claims content it does not contain. Verified true: the line counts, the 1330 gate-ungoverned lines, the one-load-at-import claim, every per-module bound unchanged with one added and NO BOUND RELAXED, and the engine sync."
+    }
+  ],
+  "sweep_ruling": "CLASS ONE: NOT REAL, and the reason is structural rather than accidental. The completeness assertions bind the declared table to the NAMING CALL SITES (a regex over _problem(\"...\") and \"source\": \"...\" literals), so they prove the table agrees with the places that name a problem. They say NOTHING about reads that reach no naming call site, which is precisely how every probe escapes. And the swept-sources register is filled BY the assertions themselves, so it proves each declared NAME was reached once, not that each source's unreadable STATE is always named. The reviewer also found an undeclared source FAMILY: the sibling owners the readers exec (validate.py, intent_corpus.py, entropy.py) are in no row, and a failure in one is charged to a different source with a false detail - with validate.py unloadable and architecture.yaml untouched and valid, the contract is blamed with a detail claiming it is truncated, malformed, a directory or declares no area, every clause of which is untrue. And the events stream's out-of-scope reasoning is unsound as written: load_support_inputs and load_area_cost both fall back to load(), and that read IGNORES the root argument, so a temp tree's receipts authenticate against the real repository's events. CLASS TWO: SWEPT AND UNBROKEN. Every keyed-collection site was enumerated independently, all four immunity claims hold mechanically, and R2-B2 resisted nine shapes including three records with one id, a case-differing pair (correctly not a conflict) and a trailing-space pair (correctly a conflict). The declared residual is genuine and out of reach, and it does move a real number: an area row appears or disappears by filename order.",
+  "notes": [
+    "Ranked by six-month impact. 1. THE COMPLETENESS ASSERTIONS CANNOT DETECT THEIR OWN CLASS: they bind the table to naming call sites rather than to reads, so until a read WITHOUT a name can fail the suite, the next review finds instance four. The mechanizable form the reviewer proposes: for every declared source, assert that a present-but-unreadable fixture in at least three shapes (a permission-denied directory, a symlink loop, and a wrong-suffix or subdirectory placement) yields a NAMED problem. 2. support_source_problems DROPS any problem whose detail is empty, and the suite ASSERTS that drop - dropping for want of a detail is the very defect class. 3. Cross-source misattribution has no name at all. 4. The receipt and record rows carry ONE unreadable name for TWO facts (the store not being a directory versus a file inside it failing). 5. HTML still omits ATTRIBUTION INCOMPLETE and the unattributed ids, so a row count reads as complete on the surface a human looks at. 6. The 26 shipped teeth do not cover the UNRESOLVED_RECURRENCE naming decision. 7. load_support_inputs(root=...) reads events and the vocabulary from the engine ROOT rather than root - an adopter and W11 footgun. 8. metrics.py executes four times per CLI run and five times per dashboard import, the second figure undeclared. 9. metrics_support.py sits at 799 against an unchanged 800 bound, so the next change must split again. 10. Carried and honestly declared: no-record scores zero, latest is the last close event, two-area rows sum above the population, support_share returns 300 percent.",
+    "CARRIED NOTES: note 5's declaration is OVERSTATED - one torn record file is named, but an unreadable STORE is still indistinguishable from an unwritten one, which is the mechanism R3-B1 exploits. Note 13 is worse as admitted and understated by one for the dashboard. Notes 1, 2, 3 and 15 are genuinely FIXED and each was verified."
+  ],
+  "gate_observed": {
+    "verify": "GATE: GREEN (dabec0d)",
+    "selftest": "3055 passed, 0 failed",
+    "baseline": "2988 measured by the reviewer at ef75e96 in a throwaway clone; delta +67 exactly as claimed",
+    "assertion_integrity": "1014 insertions and 148 deletions, 55 expect lines added and 12 removed; the reviewer audited all twelve pairs and confirmed NO assertion deleted and NO BOUND RELAXED. One nuance recorded: one removed clause asserted that an unreadable timestamp is NOT named, which was a correction of a false assertion rather than a strengthening."
+  },
+  "disposition": "NOT LANDED, and the orchestrating session is NOT dispatching a fifth hardening pass without a decision from the owner. Three consecutive reviews have failed this item on the same class at successively deeper levels, and the reviewer's note 1 explains why the current APPROACH cannot converge: the item tries to NAME every failure shape of every source, and the enumeration is bound to naming call sites rather than to reads. The design question that follows is whether the pass should instead REFUSE TO RENDER AT ALL unless every declared source proves it read completely, which collapses the whole class into one decision point. That is a material change of approach on an item that has consumed roughly fourteen hours, so it goes to the owner as a decision rather than being taken unilaterally."
+}

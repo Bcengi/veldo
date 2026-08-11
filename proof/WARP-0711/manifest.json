@@ -1,0 +1,143 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0711",
+  "commit": "0738961b07e2762fb6dbaa28ea09478ccb8a0255",
+  "producer": "claude-opus-5[1m] (WARP-0711 builder, ROUND 5, working from proof/WARP-0711/verdict-4-pass_with_notes.json, which returned PASS_WITH_NOTES with ZERO blocking items. THIS MANIFEST REPLACES THE ROUND-4 MANIFEST. THE ROUND EXISTS FOR ONE THING: round 4 newly wrote a sentence that is measurably FALSE. It claimed the stage can neither read the environment directly nor shell out to something that will, and `git ls-files` IS an environment-reading subprocess - the reviewer demonstrated it on the SHIPPED TEXT with no mutation at all. The sentence is replaced by the measurement and the hole is closed at a boundary. THREE RECORD CORRECTIONS travel with it, all of the same class the last three reviews have each caught once: a span that excluded a measurer it claimed to cover, a note count carried from the wrong verdict, and an over-declared limit. Every count in this manifest is now DERIVED FROM A COMMAND rather than written from memory, which is the actual fix for that class. Nothing else was re-opened, and the guard-strengthening work the review specified (AST alias tracking) is deliberately NOT attempted here.)",
+  "produced_at": "2026-07-27T01:20:00Z",
+  "round": 5,
+  "supersedes_verdict": "proof/WARP-0711/verdict-4-pass_with_notes.json",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "UNCHANGED BY THIS ROUND AND PASSED AT EVERY ROUND. proof/WARP-0711/baseline.md is committed at the path AC1 names, landed at 7df08a1 before this build (`git log --oneline -1 -- proof/WARP-0711/baseline.md`), and no commit of this item touches it. The corpus figure is DATED rather than renumbered on the round-1 reviewer's ruling: 662 python and 172 shell on 2026-07-25 as the artifact records, 694 and 172 on 2026-07-26 (`git ls-files '*.py' | wc -l` at 0738961). The two substrings the AC1 assertion reads out of the baseline are read out of a FROZEN historical record."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE FALSE SENTENCE, REPRODUCED BEFORE BEING REPLACED, AND A THIRD VARIABLE FOUND WHILE REPRODUCING IT. Round 4's header claimed the stage `can neither read the environment directly nor shell out to something that will'. `git ls-files` IS an environment-reading subprocess and the whitelisted ('git', 'ls-files') argv shape does nothing about it. MEASURED BY THIS BUILDER on the round-4 text with NO mutation, over a throwaway repository carrying eight planted defects: `GIT_DIR=<an empty repository>/.git` gives `lint: pass (0 python, 0 shell, 0.00s)` and exit 0; `GIT_INDEX_FILE=<that repository>/.git/index` gives the same; AND A THIRD THE REVIEW DID NOT NAME, found by attacking the class rather than the two names, `GIT_LITERAL_PATHSPECS=1`, gives the same by turning the `*.py` pattern into a literal path that matches nothing. THE HOLE IS PRE-EXISTING: the round-4 reviewer measured the per-file loop at 0de75f3 failing identically under GIT_DIR, so landing does not introduce it. What was wrong was the SENTENCE, and the installed claim - `no environment variable THE STAGE READS can make it report success' - was true as written even while the header overstated it."
+        },
+        {
+          "type": "unit",
+          "ref": "CLOSED AT ONE BOUNDARY RATHER THAN BY A LIST OF NAMES, WHICH IS THE WHOLE POINT. The stage now execs `env -i PATH=\"$PATH\" python3 ...`, so the interpreter AND EVERY CHILD IT SPAWNS start from an environment holding ONE variable, passed BY NAME. That variable is PATH, which round 2 conceded is outside the threat model because it decides which `python3` and which `git` run at all. The alternative the review suggested, an explicit `env=` on the git call, would have closed GIT_DIR and GIT_INDEX_FILE and left GIT_LITERAL_PATHSPECS, GIT_WORK_TREE, GIT_COMMON_DIR, GIT_OBJECT_DIRECTORY, GIT_ICASE_PATHSPECS and PYTHONPATH open, and would have required reading os.environ in the python half - which the guard forbids and which is the enumeration this stage has already been corrected for twice. MEASURED AFTER, over the same eight-defect tree: GIT_DIR, GIT_INDEX_FILE, GIT_LITERAL_PATHSPECS, the three-variable combination GIT_WORK_TREE with GIT_COMMON_DIR and GIT_OBJECT_DIRECTORY, PYTHONPATH pointing at a directory holding a hostile subprocess.py, and PYTHONHOME pointing at a non-existent prefix ALL give `lint: FAIL` naming every planted defect with exit 1, identical to a run in a clean environment. ASSERTED by attempting the three single-variable cases against the same text WITHOUT the boundary: each gives a pass with an EMPTY failing set and exit 0 there, and names every defect here. The boundary line is INSIDE the shell pin, so it cannot be removed silently, and `git ls-files` on the real corpus is unchanged at 694 python and 172 shell."
+        },
+        {
+          "type": "unit",
+          "ref": "TWO INTERACTIONS THE BOUNDARY CAUSED, BOTH FOUND BY THE DIAGNOSTIC THIS ROUND ADDED RATHER THAN BY A REVIEWER, which is the honest argument for having added it. (1) `_l07_halves` located the heredoc opener with startswith(\"exec python3\"), so the moment the opener became `exec env -i ... python3` it classified THE WHOLE FILE as the shell half and the python half as empty; it now matches by SHAPE, a line that starts `exec ` and ends `<<'PY'`. (2) `env -i` strips PYTHONPYCACHEPREFIX, so the real-corpus bytecode probe could no longer observe anything - AND IT FAILED RATHER THAN PASSING VACUOUSLY, because the round-1 non-vacuity conjunct requires the interpreter's own imports to land in the prefix. It now injects the prefix into the BOUNDARY LINE of a copy differing from the shipped text by exactly TWO asserted substitutions (the prefix, and an absolute `cd` because the copy lives outside the repository and the stage finds its root from `dirname \"$0\"`), with the reversal of both asserted EQUAL to the shipped text. Measured: 28 stdlib cache entries land in the prefix, ZERO mirroring this repository."
+        },
+        {
+          "type": "unit",
+          "ref": "WHAT EARLIER ROUNDS BUILT IS UNCHANGED AND RE-RUN. The handler is `Exception`, the width py_compile uses at /usr/lib/python3.12/py_compile.py:146 on python 3.12.3; the round-3 reviewer confirmed :146 on fourteen of the fifteen py_compile.py on this machine, :126 only on a python3.6 snap. The file set is EQUAL at 866 paths with both differences asserted as EMPTY LISTS. The `   FAIL: <path>` line is verbatim. Continuation past both poison shapes holds with the after-poison list asserted EQUAL to the must-fail set minus the poison. The both-halves environment guard holds with its four teeth, each still rejected on its own rule. CDPATH stays closed and proven closed. The listing exits 2 with no verdict line. No bytecode, hermetically and over the real corpus."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "STILL FASTER, AND THE SPAN NOW COVERS EVERY MEASURER IT CLAIMS TO. This is record correction 1 of 3: round 4's sentence read `THE BEFORE FIGURES SPAN 13.96 TO 14.55 SECONDS ... ACROSS FOUR ROUNDS' while enumerating THREE measurers, and it excluded the round-3 reviewer's 13.89. THE FULL SET, FIVE MEASURERS, all with `/usr/bin/time -f %e bash scripts/check_lint.sh` at 7df08a1: this builder 14.37 / 14.55 / 14.33; the round-1 reviewer 14.26 / 14.41 / 14.36; the round-2 reviewer 14.11 / 14.08 / 13.96; the round-3 reviewer 13.89 / 14.13 / 14.06; the round-4 reviewer 13.99 / 14.07 / 13.96. SO THE BEFORE SPAN IS 13.89 TO 14.55. AFTER, at 0738961 in a detached worktree: 0.84 / 0.82 / 0.83 external, the stage's own printed elapsed 0.82 / 0.81 / 0.82, and the after span across all five rounds is 0.81 to 0.85 EXTERNAL. THE RATIO IS THEREFORE 16.3x TO 18.0x with BOTH ENDS MEASURED BY THE SAME COMMAND - round 4's 18.4x ceiling mixed an internally printed figure into the numerator's denominator, so it is corrected downward here. The three published means are 16.9x, 17.1x and 17.3x, one result seen through machine noise. CONDITIONS: Linux 6.17.0-35-generic, python 3.12.3, 20 cores, single runs and not best-of, a workstation with other agents idle but not an isolated machine, and a COLD first run costs about 0.13s more (one measured 0.96 at round 3, disclosed rather than dropped). AC3's bar is under 2 seconds and every measurement since round 1 is under one. The baseline's 14.07 to 0.82 reproduces on five independent clocks and on a corpus 32 files larger."
+        },
+        {
+          "type": "operational",
+          "ref": "THE GATE AT EVERY REVISION THIS ITEM HAS, WITH THE COMMAND. `/usr/bin/time -v ./scripts/verify.sh` run to completion. BEFORE, detached worktree at 7df08a1: GREEN, exit 0, 3:21.13, 41 percent CPU on 20 cores, 301400 KB peak RSS, 3173 passed / 0 failed. cf20743: GREEN 3:08.85, 3192 / 0. a1b16aa: GREEN 3:10.22, 3195 / 0. 301dbd6: GREEN 3:09.51, 3198 / 0. cfae9b2: GREEN 3:09.68, 3200 / 0. ROUND 5 at 0738961, detached worktree: GREEN, exit 0, 3:09.70 wall clock, 37 percent CPU, 304484 KB peak RSS, 3201 passed / 0 failed, catalog 5 run / 18 not-applicable / 0 waived / 0 undeclared; and on the working tree before committing, GREEN at 3:09.31 with the same counts. THE TEN POST-CHANGE GATE RUNS BY THIS BUILDER SPAN 3:08.56 TO 3:10.22, so per-round differences are inside the spread and are not reported as costs. THE ONE NEW ASSERTION COSTS NOTHING MEASURABLE: `/usr/bin/time python3 scripts/selftest.py` in a detached worktree is 188.10s with 3201 passed at 0738961 against 188.17s with 3200 at cfae9b2, and the WARP-0711 block measured standalone went 1.90s to 2.07s. AGAINST THE BEFORE FIGURE the gate is 11.43 seconds faster by this builder's pair. THE GATE REMAINS ABOUT 9.5x ABOVE the 20-second objective, with the selftest holding 188 of the 190 seconds: WARP-0713, WARP-0714, WARP-0715."
+        },
+        {
+          "type": "operational",
+          "ref": "THE NUMSTAT, RULE #1 AND THE UNTOUCHED SURFACES, all DERIVED FROM A COMMAND. `git show --numstat --format='' 0738961` names TWO files: scripts/check_lint.sh 25 added and 13 removed, scripts/selftest.py 65 added and 9 removed, for 90 insertions and 22 deletions. RULE #1 over those 90 added lines (`git show --format='' -U0 0738961 | grep '^+' | grep -v '^+++'`): 0 em dashes, 0 en dashes, 0 non-ASCII bytes and ZERO lines carrying a double hyphen. THE ITEM'S FOOTPRINT, derived rather than remembered because three straight reviews caught this count: `git log --format='' --name-only cf20743~1..0738961 | sort -u` is EXACTLY TEN distinct paths across `git rev-list --count cf20743~1..0738961` = NINE commits, and this round's evidence commit adds one new path (verdict-4-pass_with_notes.json) for eleven across ten. Not one is protected or frozen. scripts/verify.sh is byte-unchanged and still declares `CHECK_lint=\"required:bash scripts/check_lint.sh\"`. .warp/metrics.py is untouched at 399 lines (`wc -l`) and absent from every numstat of this item."
+        },
+        {
+          "type": "operational",
+          "ref": "ENGINE CANON AND THE THREE SPEC DEFECTS, unchanged and NOT re-opened, as instructed at every round since the first. The engine-canon substitute was ruled LEGITIMATE by the round-1 reviewer on all four load-bearing facts and left standing by rounds 2 through 4; the AC3 clause remains UNBUILDABLE as written with its two dead footprint globs. `placement: [engine]` remains wrong and is recorded as a RELATIONSHIP rather than pinned, which the round-2 reviewer verified by correcting the spec and measuring the gate still GREEN. The corpus counts are dated rather than renumbered. All three are the owner's."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate",
+      "status": "passed",
+      "detail": "./scripts/verify.sh run to completion by this builder twice this round: on the working tree (GREEN, 3:09.31) and in a DETACHED WORKTREE AT THE FIX COMMIT 0738961 (GREEN, exit 0, 3:09.70, 37 percent CPU on 20 cores, 304484 KB peak RSS). Both 3201 passed / 0 failed, catalog 5 run / 18 not-applicable / 0 waived / 0 undeclared, every stage passing and the shape gate reporting only its four pre-existing review-lane notes. Against 3:21.13 with 3173 / 0 at 7df08a1."
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "scripts/selftest.py: 3201 passed, 0 failed, inside the green gate and again standalone at 188.10s in a detached worktree at 0738961. ONE assertion is new (3200 to 3201): the git-environment differential. Two existing assertions were repaired for the boundary (the heredoc-halves detector and the bytecode probe's prefix injection) and the environment guard's diagnostic is now printed. The WARP-0711 block was exercised in isolation at 28 passed / 0 failed in 2.07s against 27 in 1.90s at round 4."
+    },
+    {
+      "name": "environment_boundary",
+      "status": "passed",
+      "detail": "THE CLAIM, NARROWED TO WHAT IS TRUE AND ASSERTED: no environment variable THE STAGE READS can make it report success, it reads none, and the environment its interpreter and children start from holds exactly ONE variable, PATH, passed by name at `env -i PATH=\"$PATH\"`. PROVEN BY ATTEMPTING: GIT_DIR, GIT_INDEX_FILE and GIT_LITERAL_PATHSPECS each turn the same text WITHOUT the boundary into a pass with an EMPTY failing set and exit 0 over a tree carrying every planted defect, and each names every defect with exit non-zero WITH it. Measured but not asserted, because three variables are enough for a tooth and the boundary is a class closure rather than a list: GIT_WORK_TREE with GIT_COMMON_DIR and GIT_OBJECT_DIRECTORY together, PYTHONPATH with a hostile subprocess.py, and PYTHONHOME all also fail closed now. WHAT REMAINS, DECLARED: BASH_ENV and anything else acting on bash before or while it reads this file, which no text inside the file can close, and PATH itself."
+    },
+    {
+      "name": "declared_limits_accurate",
+      "status": "passed",
+      "detail": "Record correction 3 of 3, and it is an OVER-declaration rather than an over-claim. Round 4 listed PYTHONHOME among variables producing a false pass. MEASURED by the round-4 reviewer and reproduced here: PYTHONHOME pointing at a non-existent prefix gives exit 1 with no summary line, so it FAILS CLOSED and never belonged in that list; declaring it claimed a weakness that does not exist, which gets the same treatment as claiming a strength that does not. PYTHONPATH did belong there at round 4 and is now CLOSED by the boundary, measured. The declared set is therefore BASH_ENV and the bash-startup class, plus PATH."
+    },
+    {
+      "name": "env_guard_teeth",
+      "status": "passed",
+      "detail": "Unchanged and re-run: four mutants, each target asserted to occur EXACTLY ONCE, each rejected by the rule it was built for - a shell-half branch by the shell pin (whose pinned third line is now the boundary), `sh -c` and `bash -c` reads by the argv shape, `import os` by the closed import set. The guard returns an EMPTY findings list for the shipped stage and NON-EMPTY for the round-2 revision that read an ambient variable. ITS DIAGNOSTIC IS NOW SURFACED: `_l07_env_findings` computes a precise cause and `expect()` reported only its label, so one sentence about environment variables covered six causes; the findings print before the assertion and are silent while it is satisfied. That paid for itself immediately - both boundary interactions above were diagnosed from that output rather than by bisection."
+    },
+    {
+      "name": "handler_width",
+      "status": "passed",
+      "detail": "Unchanged since round 2 and re-run: `except Exception`, the width py_compile uses. The narrowing is a fixture; the mutated stage names no path and prints no summary over the same fixtures, mutation target asserted unique. The round-2 reviewer proved 49 pathological shapes produce zero segfaults and the declared hard-crash limit TRUE and failing closed on all four forced deaths."
+    },
+    {
+      "name": "file_set_equality",
+      "status": "passed",
+      "detail": "Unchanged and re-run: the loop resolved from git BY CONTENT at 0de75f3, adapted by exactly one asserted line, EXECUTED over this repository under recording shims, 866 paths on both sides and BOTH differences asserted as EMPTY LISTS, the language partition compared against `git ls-files` run independently, and the listing call asserting its own non-zero exit."
+    },
+    {
+      "name": "continuation",
+      "status": "passed",
+      "detail": "Unchanged: the poison fixtures sort first, the after-poison list asserted EQUAL to the must-fail set minus the poison and separately non-empty, every member asserted named, the summary line asserted printed. The round-3 reviewer reproduced the vacuity probe at exactly 23 passed / 2 failed, both deaths failing closed."
+    },
+    {
+      "name": "cdpath_closed",
+      "status": "passed",
+      "detail": "Unchanged and re-run: with a decoy repository named in CDPATH the same text without the `CDPATH=` prefix reports a PASS and exits 0 over a tree carrying every planted defect, while the shipped text names every defect and exits non-zero. That `cd` runs BEFORE the new boundary, which is why it needs its own closure and keeps it."
+    },
+    {
+      "name": "sigpipe",
+      "status": "passed",
+      "detail": "Unchanged and re-run: stdout wired to a pipe with no reader, the stage dies by the signal with returncode -13 and no BrokenPipeError; with the restoration neutralized the same run exits 120 with BrokenPipeError. The restoration is at scripts/check_lint.sh:80 at cfae9b2 and :92 at 0738961, resolved per revision rather than carried."
+    },
+    {
+      "name": "no_bytecode",
+      "status": "passed",
+      "detail": "Re-run, with its probe repaired for the boundary: hermetic differential (the new stage's bytecode list asserted EMPTY over the fixture repository, the loop's non-empty) plus the real-corpus claim against a private PYTHONPYCACHEPREFIX injected into the boundary line of a copy differing by exactly two asserted substitutions. Measured: 28 stdlib entries land in the prefix, ZERO mirror this repository. The loop wrote 694 .pyc files in 227 __pycache__ directories from one run at 7df08a1."
+    },
+    {
+      "name": "protected_surface",
+      "status": "passed",
+      "detail": "Round 5 touches TWO files, scripts/check_lint.sh and scripts/selftest.py. DERIVED FROM A COMMAND: `git log --format='' --name-only cf20743~1..0738961 | sort -u` is exactly TEN distinct paths over NINE commits, none protected and none frozen, and the evidence commit adds one new path for eleven over ten. No footprint glob of this spec can match scripts/verify.sh, plugin/templates/scripts/verify.sh, any of the 7 paths .warp/policy.yaml protects, or the four frozen safety-core modules, while at least one glob does match scripts/check_lint.sh so the check is not vacuous. .warp/metrics.py untouched at 399."
+    },
+    {
+      "name": "assertion_integrity",
+      "status": "passed",
+      "detail": "Every figure here was measured by THIS builder on 2026-07-26 with its command and revision, except figures explicitly attributed to a reviewer. THE ROUND-4 SENTENCE `Three classes do' IS CORRECTED: at round 4 FOUR classes could defeat the stage - the bash-startup class, PATH, PYTHONPATH, and the git-variable class the review found - and after this round the environment reaching the interpreter is exactly PATH, so what remains is the bash-startup class and PATH itself, with the git class and PYTHONPATH closed and PYTHONHOME never having belonged. Every count in this manifest is derived from a stated command, which is the fix for the class of slip the last three reviews each caught once. THE ONE CLAIM THIS MANIFEST DELIBERATELY DOES NOT MAKE: that the text guard is complete. It is not, and the four routes that defeat it are declared below."
+    }
+  ],
+  "assumptions": [
+    "ROUND 5 EXISTS FOR ONE FALSE SENTENCE THIS ITEM NEWLY WROTE, and the lesson is the one it has now been taught four times in different clothes. Round 4 pinned the argv SHAPE of every subprocess call and concluded from that the stage could not shell out to something that reads the environment. The conclusion does not follow: a whitelisted command can itself be an environment reader, and `git` is a spectacular one. The rule that keeps holding is that a guard keyed on the ROUTES someone thought of is blind to the rest, and the closure has to be over the DOMAIN - here the environment crossing a process boundary, closed by passing one variable by name instead of by removing the hostile ones.",
+    "WHAT THE TEXT GUARD DOES NOT CLOSE, DECLARED BECAUSE THE ROUND-4 REVIEW MEASURED IT AND BECAUSE STRENGTHENING IT IS EXPLICITLY ANOTHER ITEM'S WORK. Four routes defeat the guard's four rules, two of them carrying a GREEN gate at 3200 / 0. The serious one is ALIASING: `_r = subprocess.run` then `_r([...])`, because the argv rule inspects only Calls whose func is an Attribute on the Name `subprocess`, so an alias sits outside rule 4 entirely - and an alias is an ORDINARY REFACTOR, not an obfuscation. The others are split-literal spellings (`open(\"/proc/self/envi\" \"ron\")`, `vars(subprocess)[\"o\" \"s\"]`, `sys.modules[\"o\" \"s\"]`, where the unsplit forms ARE caught) and free ARGUMENT CONTENT, since the shape is the tuple of string constants only. Closing this properly needs AST alias tracking, which is real engineering rather than a patch, and it was NOT attempted here on instruction. RECORDED FOR THAT ITEM: `[\"git\", \"ls-files\", _NARROW]` gives `lint: pass (0 python, 0 shell)` and is caught only by the file-set-equality assertions, not by the guard. NOTE WHAT THE BOUNDARY DOES FOR ALL OF THESE: an aliased or split-literal environment read now finds an environment holding only PATH, so the guard's gap costs less than it did before this round, which is why the boundary was the right thing to build first.",
+    "WHAT IS STILL NOT PROVEN. (1) BASH_ENV names a file bash sources before line 1 of this script, measured by the round-4 reviewer as a false pass, and nothing inside the file can close it; the same holds for anything acting on bash while it reads the file. PATH is conceded, round 2. (2) The guard is over the stage's TEXT, so it catches an EDIT and not a hostile interpreter. (3) A failure that kills the process outright is named by nothing; the round-2 reviewer verified this declared limit TRUE and failing closed on all four forced deaths. (4) The shell half is unchanged in mechanism, so nothing here proves anything new about `bash -n`. (5) Round-1 note N4 stands unfixed and out of scope: neither stage handles a tracked path containing a space, faithfully preserved bug for bug, and no such path is tracked.",
+    "TWO RECORD CORRECTIONS BESIDE THE SENTENCE, both counts, both of a class the last three reviews each caught once. THE SPAN: round 4 wrote `13.96 TO 14.55 ... ACROSS FOUR ROUNDS' while enumerating three measurers and excluding the round-3 reviewer's 13.89; it now reads 13.89 to 14.55 over FIVE enumerated measurers, and the ratio ceiling is corrected DOWNWARD from 18.4x to 18.0x because 18.4x mixed an internally printed after-figure with an externally measured before-figure. THE NOTE COUNT: round 4 said it existed for `TWO OF ITS TEN NOTES' of verdict-3, which carries EIGHT (ten is verdict-2's). DERIVED, not remembered: verdict-fail 7 notes and 2 blocking, verdict-2 10 and 0, verdict-3 8 and 0, verdict-4 10 and 0, each from `len(json.load(...)['notes'])`. Round 5 answers ONE of verdict-4's TEN. THE FIX FOR THE CLASS is not a better memory: every count in this manifest is now derived from a stated command.",
+    "NOTHING RULED IN THE BUILDER'S FAVOUR WAS RE-OPENED AND NO SCOPE WAS ADDED. The AC3 engine-canon substitute, the placement diagnosis, the dated corpus counts, the timing spread, the shell pin (which the round-4 review examined and ruled NOT a maintenance trap, since it reads only this stage's own four non-comment lines out of a 68-line half), round-1 notes N3 and N5, and the round-3 citation audit all stand. The sibling fail-open in scripts/check_docs.sh, which reads DOCS_CHECK_PATHS and which the round-3 reviewer measured turning a planted em dash from RED to GREEN, is deliberately NOT touched: outside this item's footprint, and it gets its own spec.",
+    "HOUSEKEEPING. This round's one detached worktree is removed with `git worktree remove --force` and `git worktree prune`; `git worktree list` shows only the main tree plus two PRE-EXISTING trees that are not this item's. /tmp/gateprof remains the 2026-07-25 baseline session's clone, named in proof/WARP-0711/baseline.md:4 as the provenance of the committed figures.",
+    "NOT PUSHED, NO STATUS FLIP TO SHIPPED, AND NO VERDICT WRITTEN BY THIS BUILDER: the next review is a confirmation pass. HEAD is 10 commits ahead of origin/main, which is still 7df08a1; nothing was pushed and no history was rewritten this round. The spec is at status `ready`. All four reviewers' verdict files are committed UNCHANGED as the record these rounds answer."
+  ],
+  "rollback": "Revert the round-5 commits to return to cfae9b2, a stage that is fast and correct and whose `git ls-files` call can be redirected by the environment: GIT_DIR, GIT_INDEX_FILE or GIT_LITERAL_PATHSPECS each make it report a pass over a tree carrying every planted defect, measured. The hole is PRE-EXISTING - the per-file loop at 0de75f3 fails identically under GIT_DIR - so a revert restores a weakness this item did not introduce, together with a header sentence asserting the weakness is absent. Reverting all nine commits restores the per-file loop: correct, about 17x slower, and writing 694 .pyc files into the tree on every gate run. Nothing reads this stage's output beyond its exit status at any revision, so there is no migration in either direction; a caller wanting the file set uses `--list` and tolerates exit 2.",
+  "proof_digest": "sha256:1afc1d90cc9e5579"
+}

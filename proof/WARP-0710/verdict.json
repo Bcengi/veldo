@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0710",
+  "commit": "6e5c390740c49079e258e9f25e9d7ca4ca4ce99b",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T11:57:00Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:6484b469193f617f",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Single per-unit lock arbitrates the whole claim decision; the split lock-free fresh os.link + flock takeover os.replace is gone (no os.link remains). Independent review reproduced the old claim-vs-claim race and confirmed the fix."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Mutual exclusion holds under claim/release churn: 0 clobbers / 0 simultaneous-holder events on the fix vs 40-54 on the old code, across thread and real-process (no GIL) stress; the specific takeover-clobbers-fresh-link defect no longer occurs."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Lock-free readers correct (atomic os.replace rename, 0 torn reads under an 8-writer probe); .lock excluded from readers; capability, live-claim refusal, stale reclaim, heartbeat, release, claimed_units behaviorally unchanged; barrier fresh-unit and stale-takeover races still pass."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "The churn clobber detector is non-tautological: RED on the split-claim mutant (23-43 clobbers), GREEN and not flaky on the fix; gate GREEN, selftest 1013 over multiple runs; caps byte-identical."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "heartbeat() and release() now run under the same _unit_lock, so they cannot clobber a concurrent takeover: reproduced 0 on the fix vs 106 (heartbeat) and 7 (release) on the pre-broadening code; the added heartbeat-vs-takeover selftest is non-tautological (RED when heartbeat is reverted to lock-free)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Two independent adversarial review passes plus a re-confirm. The defect was FOUND by the independent reviews of WARP-0704 (the serialized lander): under heavy stress (12+ threads and 12 real processes) the claim ledger could grant the same unit to two workers - a lock-free fresh os.link clobbered by a takeover os.replace. Reproduced at 368 clobbers (churn detector, 16 workers). The fix (single per-unit arbiter for claim) was verified, then BROADENED after the reviewer found the same defect class in heartbeat()/release() (each a lock-free read-modify-write; reproduced ~46% heartbeat-vs-takeover clobbers). Final review PASS, 0 blocking: every ledger write path now serializes on one per-unit _unit_lock and publishes via one atomic _publish (os.replace); no unlocked write path remains; 0 clobbers across ~1.2M+ operations (threads and real processes); both new selftests (churn clobber, heartbeat-vs-takeover) non-tautological; the refactor introduces no fd or tmp leak and frees the lock on exceptions."
+    },
+    {
+      "severity": "note",
+      "text": "One non-blocking note from the pass-with-notes stage was RESOLVED pre-ship at the reviewer's explicit recommendation: a cold-claims-root heartbeat/release raised FileNotFoundError (behavior change, unreachable in normal flow since claim creates the directory first); _unit_lock now os.makedirs the root (concurrency-neutral, idempotent, before flock), so they return False as before. Re-confirmed by the reviewer bound to 6e5c390 (0 clobbers unchanged, cold calls return False). One cosmetic pre-existing note remains accepted: per-unit .lock files are created and never unlinked (one 0-byte file per distinct unit; correctly ignored by readers)."
+    }
+  ],
+  "summary": "WARP-0710 (claim ledger race hardening) is correct and complete. Two-pass independent adversarial review plus a re-confirm; final verdict PASS, 0 blocking; gate GREEN (selftest 1013). A foundational mutual-exclusion defect class - a ledger WRITE path (claim, heartbeat, or release) running outside the per-unit lock and clobbering a concurrent takeover, granting the same unit to two workers - is closed by routing every write path through one per-unit arbiter (_unit_lock) and one atomic publish (_publish via os.replace). Reproduced before the fix (368 claim-churn clobbers, ~46% heartbeat-vs-takeover clobbers); zero after, across ~1.2M+ operations under both thread and real-process concurrency. Two non-tautological selftests guard the regression. Readers stay lock-free and safe. The serialized lander (WARP-0704) lands on top of this fix. proof_digest via validate.py."
+}

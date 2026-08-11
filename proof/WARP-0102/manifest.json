@@ -1,0 +1,31 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0102",
+  "commit": "e79a545cd7743ad69b4fd5206fe4dac422b24dc4",
+  "producer": "claude-fable-5 (implementing agent)",
+  "produced_at": "2026-07-16T22:20:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py lane cases: planned+plan+work accepted, planned-without-plan/work rejected, standalone+plan/work rejected, bad lane value rejected, standalone accepted, lane-absent accepted (6 cases within 63 total)"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0102/negative-tests.txt: flipping this spec's work to W3 fails validate.py all with both mirroring errors (spec-side and plan-side), restore is exit 0"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0102/negative-tests.txt: plan.py status/release-check/impact run live against PLAN-0001 - release-check exits 1 naming unshipped work and the D1 block; impact WARP-0105 lists transitive dependents WARP-0107, WARP-0112"},
+      {"type": "unit", "ref": "scripts/selftest.py plan-ops cases: item_state classifies shipped / waiting / frontier / decision-blocked (4 cases)"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/skills/plan/SKILL.md documents create/refine/approve/pull/revise/status/release + two-lane/promotion, defers run-bundle to W3; specs/TEMPLATE.md carries lane; capabilities.yaml: plan_dialogue procedure, plan_lane_fields + plan_ops mechanical"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 63 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "Lane enforcement fires only when lane is declared, so the specs shipped before this change (no lane field) remain valid by inference; this is deliberate back-compat, not an oversight."
+  ],
+  "rollback": "git revert e79a545; lane enforcement is conditional on declaration, plan.py and the skill are additive, TEMPLATE and capabilities are documentation; the 57 prior selftest cases pass unmodified within the 63."
+}

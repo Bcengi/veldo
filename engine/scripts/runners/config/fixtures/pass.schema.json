@@ -1,0 +1,97 @@
+{
+  "name": "service config (every verdict matches its label)",
+  "schema": {
+    "allow_unknown": false,
+    "fields": {
+      "host":      {"type": "string",  "required": true},
+      "port":      {"type": "integer", "required": true, "min": 1, "max": 65535},
+      "mode":      {"type": "string",  "enum": ["dev", "staging", "prod"]},
+      "log_level": {"type": "string",  "pattern": "^(debug|info|warn|error)$"},
+      "timeout":   {"type": "number",  "min": 0},
+      "tags":      {"type": "array",   "min": 1, "max": 5},
+      "verbose":   {"type": "boolean"}
+    }
+  },
+  "samples": [
+    {
+      "name": "fully populated config is accepted",
+      "label": "valid",
+      "config": {"host": "cache.internal", "port": 8080, "mode": "prod", "log_level": "info", "timeout": 1.5, "tags": ["a", "b"], "verbose": true}
+    },
+    {
+      "name": "only the required fields is accepted",
+      "label": "valid",
+      "config": {"host": "cache.internal", "port": 443}
+    },
+    {
+      "name": "an integer where a number is declared is accepted",
+      "label": "valid",
+      "config": {"host": "cache.internal", "port": 443, "timeout": 2}
+    },
+    {
+      "name": "a missing required field is rejected",
+      "label": "invalid",
+      "expect_field": "port",
+      "expect_reason": "required field is missing",
+      "config": {"host": "cache.internal"}
+    },
+    {
+      "name": "a wrong type is rejected",
+      "label": "invalid",
+      "expect_field": "port",
+      "expect_reason": "expected type integer",
+      "config": {"host": "cache.internal", "port": "8080"}
+    },
+    {
+      "name": "a value outside the enum is rejected",
+      "label": "invalid",
+      "expect_field": "mode",
+      "config": {"host": "cache.internal", "port": 8080, "mode": "chaos"}
+    },
+    {
+      "name": "a value not matching the pattern is rejected",
+      "label": "invalid",
+      "expect_field": "log_level",
+      "config": {"host": "cache.internal", "port": 8080, "log_level": "verbose"}
+    },
+    {
+      "name": "a number below the minimum is rejected",
+      "label": "invalid",
+      "expect_field": "port",
+      "expect_reason": "below the minimum",
+      "config": {"host": "cache.internal", "port": 0}
+    },
+    {
+      "name": "a number above the maximum is rejected",
+      "label": "invalid",
+      "expect_field": "port",
+      "expect_reason": "above the maximum",
+      "config": {"host": "cache.internal", "port": 70000}
+    },
+    {
+      "name": "an array shorter than its minimum length is rejected",
+      "label": "invalid",
+      "expect_field": "tags",
+      "config": {"host": "cache.internal", "port": 8080, "tags": []}
+    },
+    {
+      "name": "an array longer than its maximum length is rejected",
+      "label": "invalid",
+      "expect_field": "tags",
+      "config": {"host": "cache.internal", "port": 8080, "tags": ["a", "b", "c", "d", "e", "f"]}
+    },
+    {
+      "name": "an undeclared field is rejected",
+      "label": "invalid",
+      "expect_field": "extra",
+      "expect_reason": "unknown field",
+      "config": {"host": "cache.internal", "port": 8080, "extra": "x"}
+    },
+    {
+      "name": "a boolean field given a string is rejected",
+      "label": "invalid",
+      "expect_field": "verbose",
+      "config": {"host": "cache.internal", "port": 8080, "verbose": "yes"}
+    }
+  ]
+}

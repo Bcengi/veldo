@@ -1,0 +1,20 @@
+=== AC1 run-check: clear vs refuse-unshipped-dep ===
+run-check WARP-0103: clear to build (deps shipped, plan context current)
+WARP-0103 (dep W2 shipped) exit: 0
+WARP-0111 (dep W3 not shipped yet... now W3 landing) exit: 1
+
+=== AC2 stale-revision refusal ===
+run-check WARP-0103: clear to build (deps shipped, plan context current)
+stale rev2 exit: 1 - ['- stale plan context: spec built against revision 2, plan is now revision 3 - re-pull it']
+restored rev3 exit: 0
+
+=== AC3 bundle (head) + AC4 hash ===
+PLAN CONTEXT BUNDLE for WARP-0107 (W7)
+plan: PLAN-0001 - WARP 1.0 - from spec stream to planned product development (revision 3)
+plan_hash: sha256:f1bea3833572c104
+
+outcomes this iteration must make true:
+  O1: A founder/PM defines a product iteration holistically (outcomes, feature tree, ordering, regression, release) in one dialogue, and specs are pulled from it in deliberate order - never as a random stream.
+sha256:f1bea3833572c104
+=== unit ===
+selftest: 97 passed, 0 failed

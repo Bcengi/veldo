@@ -1,0 +1,126 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1107",
+  "commit": "3cd44a7c0fb784c8055ea0ad8ecbd46f8c2f2264",
+  "producer": "claude-opus-4-8[1m] (WARP-1107 completion build worker, planned lane; W7 of PLAN-0011, decision tripwires monitored in-session - this completion restores the plan-required warp-status surface the prior partial build dropped, so a fired tripwire surfaces in the gate output AND warp status AND the weekly pass; intelligent builder, did not review its own work)",
+  "produced_at": "2026-07-22T22:02:53Z",
+  "plan": "PLAN-0011",
+  "work": "W7",
+  "plan_revision": 2,
+  "plan_hash": "sha256:5f6e8c623065cda0",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A versioned recorded-readings artifact format (schema warp.readings/v1) is homed per-repo under .warp/readings/*.yaml, a directory the engine glob (.warp/*.yaml is non-recursive) does not sweep, so readings stay per-repo like the decision records and are never shipped in the engine. A readings file names the decision it measures (decision: <id>) and records, per assumption, the latest in-session measurement in one of the two shapes D3 names: a MEASURED reading (kind: measured, a value plus a machine-comparable breach_when comparator and threshold, optionally an approaching_when early-warning, an at timestamp) or a MANUAL_REVIEW reading (kind: manual_review, a reviewed_at, a valid_days expiry, a holds finding, an at timestamp). The illustrative example ships at .warp/examples/readings-example.yaml recording healthy readings for the shipped decision-example (DEC-0000). python3 .warp/validate.py tripwires .warp/examples/readings-example.yaml returns rc 0."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1107 block: 'a healthy readings set fires no tripwire (a1 ok, a2 ok, a3 valid)' (_tw_states(GOOD_READINGS) all OK); 'the shipped readings example validates and evaluates via check_readings' (V.check_readings(readings-example, decisions_dir=examples) == 0); 'the shipped example is present and names the decision example (DEC-0000)'; and 'the shipped example is well formed and fires no tripwire' (evaluate_readings over the shipped draft decision at a fixed injected date: 0 structural errs and no state in FIRED). Unchanged by this completion (the readings format and example were correct in the prior build)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "evaluate_readings/evaluate_tripwires in .warp/tripwire.py, invoked from validate.py check_readings and check_tripwires, determine for EACH declared assumption whether its breach is met and report the fired tripwires. A measured reading is compared by mechanically parsing breach_when (parse_condition: a comparator from >=, <=, >, <, ==, != and a threshold) via condition_met; a manual-review is judged lapsed against valid_days at the injected date. Fails closed by name on a malformed readings set: a wrong schema, a reading with no assumption id or an assumption the decision does not declare (referenced but absent), an out-of-vocabulary kind, a measured reading missing its value or its breach_when or with an unparseable comparator or a non-numeric value under an ordering comparator, a manual-review missing reviewed_at/valid_days/holds or with a non-positive valid_days or an out-of-vocabulary holds, and a file outside the parser subset. Reuses validate.parse_yamlish (no second parser) and validate.fail (no import cycle). Unchanged by this completion."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1107 AC2 negatives each refuse (>0): wrong schema, an assumption the decision does not declare, an out-of-vocabulary kind, a measured reading missing its value, missing its breach_when, an unparseable comparator, an ordering comparator with a non-numeric value, a manual-review missing reviewed_at, missing valid_days, a non-positive valid_days, missing holds, an out-of-vocabulary holds, and a tab (outside the parser subset); the positive control _tw_errs(GOOD_READINGS) == 0."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "IN-SESSION ONLY, nothing detached (NG1, the contract invariant no_detached_processes, feedback_no_rogue_processes). The evaluation is a PURE function that reads the recorded-readings files and takes the current date as an INJECTED parameter (evaluate_tripwires(decisions_dir, readings_dir, now, ...)); it performs no background polling. .warp/tripwire.py imports only pathlib and datetime and contains no process- or thread-spawning primitive, and is UNTOUCHED by this completion. It runs only where validate.py run_all (the gate), warp status (the loop-area runstatus reader, over the allow-listed loop -> contracts dependency edge, added by this completion), the tripwires CLI mode, and the weekly pass invoke it; every one of those invokers reads recorded files and starts nothing, so nothing outlives the session. The warp-status read path (runstatus._tripwires -> validate.tripwire_status -> tripwire.evaluate_tripwires) writes nothing and spawns nothing; the re-decision draft a breach hands off is written only by the explicit tripwires --draft action, never by the read-only gate or warp-status passes."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1107 AC3: a source string-scan (_tw_no_detached over _TRIP_DETACH_TOKENS = subprocess/Popen/os.fork/os.forkpty/os.exec/os.spawn/os.posix_spawn/os.system/setsid/nohup/start_new_session/creationflags/multiprocessing/threading/asyncio/sched./pty.spawn/signal.alarm/'claude -p') passes over the real tripwire.py module (still green: tripwire.py is untouched); the module imports no subprocess/threading/multiprocessing/asyncio. MUTATION teeth: appending a detached subprocess.Popen(claude -p, start_new_session=True) turns the check RED, and a background daemon thread turns it RED; the mutations are in-memory only (the real module on disk is byte-unchanged). Determinism: the SAME manual-review reads OK at an injected date within validity and STALE at an injected date past expiry. The warp-status surface teeth assert the read is read-only (the temp-tree .warp/decisions and .warp/readings are byte-unchanged after RS.status)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A fired tripwire surfaces the breached assumption as a NAMED finding (naming the decision, the assumption, and the breach) in ALL THREE surfaces PLAN-0011 W7 names: (1) the GATE OUTPUT (check_tripwires in validate.py run_all FAILS CLOSED so a breached foundation refuses - the anti-vacuity C1 teeth); (2) WARP STATUS (the loop-area runstatus reader projects the SAME evaluation through validate.tripwire_status over the allow-listed loop -> contracts edge, so warp status and warp status --serve show a fired tripwire as a named finding in the read model, the terminal render, and the browser card, read-only and starting nothing - the surface RESTORED by this completion); and (3) the WEEKLY PASS (the tripwires CLI run in-session, which also drafts the re-decision). An approaching-breach and an assumption with no reading surface as a warning without failing. Only a DECIDED decision is monitored (a draft has no chosen foundation to watch). draft_redecisions writes exactly ONE warp.redecision/v1 DRAFT per breached decision under .warp/redecisions/<decision-id>.yaml for a HUMAN to promote (NG2 - the machine drafts, never decides, never re-platforms) and is IDEMPOTENT (an existing draft is never overwritten). The ENTROPY restoration-spec generation for the decay class (WARP-1108/WARP-1109, W8/W9) is honestly out of scope and only referenced."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1107 AC4 over temporary trees. Gate output: a healthy set passes (0); a breached measured reading FIRES and refuses (>0); a lapsed manual-review FIRES (stale) at an injected later date (>0); an approaching-breach is a warning (0); a decided record with no readings stands (0); a readings file naming a decision no record declares fails closed (>0); a DRAFT decision is not monitored (0). Warp-status surface: over a temp tree with a decided decision and a breaching reading, RS.status(root=tmp)['tripwires']['fired'] contains (DEC-TW, a1); RS.render_text names 'DEC-TW/a1' and 'FIRED'; the loop surface EQUALS V.tripwire_status(root=tmp) (proving the loop reads the contracts evaluation, not a second model); the read is read-only (decisions + readings byte-unchanged); a healthy set surfaces no fired tripwire (non-vacuity); and an absent .warp/decisions/ directory yields an empty surface (adoption safe). Re-decision drafting: a fired breach drafts exactly ONE unit (created once, single file), re-running drafts NO duplicate (exists), the unit is a warp.redecision/v1 status draft with redecides set and no decider or chosen (NG2), naming the breached assumption. RJ5 tripwire conformance over one temp tree: a seeded breach fires the gate AND surfaces in warp status AND drafts exactly one re-decision unit, idempotently."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Adoption safe and fail closed: an absent .warp/decisions/ directory stands the pass down on every surface (a repository with no decision records is byte-identically unaffected in the gate AND in warp status; this repository carries no .warp/decisions/ so run_all's check_tripwires and warp status's tripwire surface both stand down here). TEETH (anti-vacuity C1): over the shipped readings-example.yaml, flipping a measured value past its breach_when fires a breach and reverts byte-identical; over a temporary tree a seeded breach fires the gate, surfaces in the warp-status model and render, and drafts exactly one re-decision unit while a second run drafts none; removing the runstatus wiring drops the warp-status surface (verified by mutation: the four wiring-dependent teeth go RED while the no-detach teeth stay green). Byte-identical engine sync: .warp/tripwire.py (untouched), .warp/validate.py, .warp/runstatus.py, and .warp/status_server.py (the warp-status surface's loop-area edit) ship byte-identical across root, plugin/templates, and all 6 packs (drift empty), and the capabilities.yaml entry (decision_tripwires, mechanical) is re-synced likewise (template sync and pack drift pass); the init scaffold lays .warp/tripwire.py beside .warp/decision.py. No protected path is touched: the pass lives in the non-protected engine (tripwire.py, validate.py in contracts; runstatus.py, status_server.py in loop). The readings and re-decision drafts are per-repo (.warp/readings/ and .warp/redecisions/, not shipped in the engine)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1107 AC5: an absent .warp/decisions/ directory stands the pass down (0) and yields an empty warp-status surface; the mutation over the real example fires a breach and the real file is byte-unchanged; a temp-tree seeded breach fires the gate while the clean set does not; .warp/tripwire.py and .warp/validate.py byte-identical root vs plugin/templates; the decision_tripwires capability declared mechanical; the init scaffold required_substrate includes .warp/tripwire.py. The completed spec's placement resolves to areas {contracts, loop} joined by the allow-listed loop -> contracts edge, so its footprint tier is standard (ARCH.footprint_tier_floor == '', validate.py ready rc 0). Pack drift (7 packs), template sync, pack conformance, and runner catalog all pass inside the gate."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1708 passed, 0 failed (1701 before this completion; +7 assertions for the warp-status tripwire surface - the fired tripwire in the runstatus read model, the terminal render naming it, the loop-equals-contracts read, the read-only surface, the non-vacuous healthy-set case, the adoption-safe empty surface - and the RJ5 tripwire-conformance journey asserting one seeded breach surfaces in the gate output AND warp status AND drafts exactly one idempotent re-decision unit). A red-if-removed mutation of the runstatus wiring was observed to fail exactly the four wiring-dependent teeth and then reverted byte-identical. The pack-drift, pack-conformance, and runner-catalog harnesses run inside this slot and pass."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes: check_arch, check_decisions, check_decision_reviews, check_tripwires (stands down here, no .warp/decisions/ directory), check_spec over all 111 specs (adds no new spec; WARP-1107 title and placement/footprint updated), the plan/spec binding, this manifest, and the examples block (the readings example validates and evaluates against the decision example). validate.py ready specs/WARP-1107-decision-tripwires.md rc 0: the completed placement [contracts, loop] resolves and its footprint tier is standard (the loop -> contracts edge makes {contracts, loop} cohesive breadth, not a boundary crossing)."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1107 as draft, risk standard, approval not_required (derived from front matter, status not flipped), the updated title (its three surfaces), and the PLAN-0011 burndown shows W7 as 'draft (frontier)'."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep all pass. RULE #1 hand-checked for prose double-hyphen across every changed file; the only '--' occurrences in the new material are genuine CLI flags (tripwires --draft, warp status --serve, --json), never a prose separator."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "scripts/check_template_sync.sh: pass (validate.py root vs plugin/templates byte-identical, among the checked pairs; runstatus.py and status_server.py are held byte-identical root/templates/packs by the pack-drift check and the WARP-1107 selftest sync teeth)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "scripts/check_pack_drift.py: every pack's engine (including .warp/tripwire.py, the edited .warp/validate.py, the new warp-status surface in .warp/runstatus.py and .warp/status_server.py, and .warp/capabilities.yaml) byte-identical to the canonical source plugin/templates; drift empty across all 7 packs (the option-B Claude pack plus 6 committed packs)."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py: pass; the decision_tripwires capability is mechanical with home .warp/tripwire.py (not a runner), so it is not subject to the runner completeness checks."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    }
+  ],
+  "rollback": "git revert 3cd44a7. This completion commit adds one read-only projection (validate.tripwire_status, contracts), the warp-status surface that consumes it (runstatus._tripwires + a render section + a status_server browser card, loop), an honest capabilities note, the spec's acceptance-criteria and placement/footprint update, and a selftest block, all re-synced byte-identical across plugin/templates and the 6 packs. It edits no protected path and adds no new module, schema, or migration; the tripwire evaluator (tripwire.py) and the gate wiring are unchanged. Reverting removes the warp-status surface and returns the item to the prior partial state; the tripwire pass still stands down entirely when no .warp/decisions/ directory exists (this repository included), so a repository with no decision records is byte-identically unaffected either way. Recorded readings and re-decision drafts are inert per-repo data and keep their history."
+}

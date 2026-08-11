@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0804",
+  "commit": "807d21b1b5abd7fdd757d8681c3045b158e7c072",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0008 W4, in-session single writer)",
+  "plan_hash": "sha256:837b26cb7db25a47",
+  "produced_at": "2026-07-19T02:30:08Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "packs/codex is a committed self-contained pack: the full canonical engine (139 files) copied in byte-identical + the canonical AGENTS.md + a thin Codex driver."},
+        {"type": "unit", "ref": "independent review: engine_drift(plugin/templates, packs/codex) == [] over 139 files, no symlinks (real files), AGENTS.md identical to canonical; part of selftest 1231 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WARP push gate holds for Codex with no honor-system path: the git pre-push hook (hooks/pre-push) and the Codex before-shell hook (.codex/warp-guard-hook.sh, wired via .codex/config.toml + .codex/hooks.json) both feed scripts/warp-guard.sh the JSON payload it parses (tool_input.command on stdin, the WARP-0803 fix applied from the start), backed by the CI required status check; commands built with json.dumps so they cannot inject."},
+        {"type": "unit", "ref": "independent review behaviorally proved in a synthetic unproven WARP repo: pre-push exit 2 (blocks) unproven, exit 0 (allows) once green gate + proof for HEAD exist; the before-shell hook exit 2 on a push (env or stdin), exit 0 passthrough on a non-push; an injection command (rm -rf ...) exit 2 with zero side-effect; the empty-stdin env-CMD path reproduces the W3 fail-open (exit 0) proving the stdin-JSON feed is load-bearing. W4 did NOT repeat the W3 fail-open. Part of selftest 1231 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the codex pack is declared in .warp/packs.json and the drift-check holds its engine copy byte-identical to the canonical source (the third pack, cross-pack drift-check now spans three)."},
+        {"type": "unit", "ref": "independent review: pack_drift_report returns claude/cursor/codex all [] (len 3); teeth on the committed codex copy (append to scripts/verify.sh -> differs; rm .warp/validate.py -> missing); part of selftest 1231 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "reuse not reinvention: the engine, AGENTS.md, skills, and agents are copied from the one canonical source (identical); only the thin Codex driver is authored."},
+        {"type": "unit", "ref": "independent review: diff -rq plugin/skills vs packs/codex/skills identical, plugin/agents vs packs/codex/.codex/agents identical, AGENTS.md identical; exactly 4 net-new authored driver files (.codex/config.toml, .codex/hooks.json, .codex/warp-guard-hook.sh, hooks/pre-push); part of selftest 1231 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest asserts the codex pack conforms (drift-free, len>=3) and carries its Codex wrapper (config.toml, hooks.json, the guard hooks feeding the JSON payload, skills, agents, AGENTS.md), non-tautologically."},
+        {"type": "unit", "ref": "independent review evaluated the assertion against a real 3-pack tree: True unmutated, False after mutating a real engine file (bound to file content, not a constant); part of selftest 1231 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1231 passed, 0 failed (+4 for the WARP-0804 codex-pack block)"}
+  ],
+  "assumptions": [
+    "W4 of PLAN-0008, built in-session by a single writer, the first CLI-cluster pack. Same committed-self-contained model as W3: the full engine copied into packs/codex byte-identical + a thin Codex driver, held identical by the drift-check. The WARP-0803 enforcement fix was applied FROM THE START: scripts/warp-guard.sh reads the command from a JSON stdin payload (tool_input.command) and ignores env CMD, so both the git pre-push hook and the Codex before-shell hook feed the guard that JSON payload; the review behaviorally proved the gate blocks the unproven (exit 2) and allows the proven (exit 0) and is injection-safe (json.dumps), and that W4 did NOT repeat the W3 fail-open. Independent adversarial review pass_with_notes, 0 blocking. Notes (all informational): the Codex editor-hook format (config.toml [hooks] and hooks.json beforeShellExecution) is a fast-moving surface and at most one spelling is canonical - the guaranteed enforcement is the git pre-push hook + CI regardless; the drift-check flags MISSING/DIFFERS but not EXTRA files (by design, the wrapper is extra files); pack-drift enforcement flows through the selftest unit slot (real either way).",
+    "check_pack_drift.py + .warp/packs.json are warp-repo tooling (no template twin). The pack copy does not pollute the gate: packs/codex/specs and packs/codex/plans carry only TEMPLATE.md (no real specs duplicated), so update_index does not index them; the dash/genericity sweep covers docs/+plugin/ not packs/."
+  ],
+  "rollback": "git revert; additive - a new packs/codex tree (engine copy + Codex wrapper), a codex entry in .warp/packs.json, a selftest block, and this spec; no protected path; pure stdlib, no network."
+}

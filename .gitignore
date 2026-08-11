@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+
+# per-org tracker/board config (org-specific; token by reference, never committed)
+.veldo/trackers.json

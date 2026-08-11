@@ -1,0 +1,45 @@
+WARP-0308 iOS mobile runner (reference, macOS-gated) - negative demonstrations
+commit 8443c080aa184053ef1a71edb2d811ce7b878676
+
+All control-logic demonstrations run against the FAKE driver with NO simulator
+and NO macOS (this repository is Linux). Each negative case must fail loud and
+name the failure; none may pass vacuously.
+
+1. DELIBERATELY-FAILING FIXTURE (fixtures/ios/fail.journey.ios.json)
+   asserts a label ("ScreenThatIsNotPresent") that the frontmost element never
+   shows.
+   observed: passed=False  failing_step="1:expect_label"  screenshot=["FAILURE-step-1"]
+   -> the false assertion is caught, the failing step is named, and a FAILURE
+      screenshot is captured (exit 1 in the CLI path).
+
+2. NO-OP PROCESS DEATH (a stubborn fake whose terminate does nothing, so the
+   relaunched app returns the SAME launch token) must NOT pass vacuously.
+   observed: passed=False  redrive.ok=False
+             detail="process_death: launch token unchanged (802) - not a real restart"
+   -> the launch-token invariant (AC2) catches a terminate that quietly did
+      nothing; a re-drive that did not actually restart the app is a failure,
+      never a vacuous pass.
+
+3. DEVICE-MATRIX INCOMPLETE (journey declares two profiles, the connected
+   driver covers only one).
+   observed: passed=False  matrix_missing=["iPad-Pro-iOS-17-0"]
+   -> a partial matrix fails, naming the uncovered profile (AC3); it cannot pass
+      silently.
+
+4. BRITTLE RECOVERY ASSERTION (the recovery_assertion no longer holds after the
+   lifecycle event).
+   observed: passed=False  redrive.ok=False
+             detail="after process_death: label 'HomeScreen' does not contain 'WILL-NOT-MATCH'"
+   -> a flow that does not come back correctly after a lifecycle event fails the
+      re-drive naming the mismatch (AC2).
+
+5. LIVE PATH ON A NON-macOS HOST fails loud, it does NOT fake a run.
+   command: python3 plugin/templates/scripts/runners/mobile/warp_ios_runner.py \
+            plugin/templates/scripts/runners/mobile/fixtures/ios/pass.journey.ios.json /tmp/ios_live_try
+   observed: process exit code 1; stderr carries
+             "FileNotFoundError: [Errno 2] No such file or directory: 'xcrun'"
+   -> with no xcrun/simulator present the runner crashes at the first simctl
+      call rather than reporting a false pass. This is the reference-honest
+      behavior the spec documents: the live SimctlDriver ships and is
+      documented, but only the CONTROL LOGIC is gate-tested here (via the fake
+      driver); an adopting repo on macOS drives it against a real simulator.

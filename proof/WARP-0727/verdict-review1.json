@@ -1,0 +1,66 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0727",
+  "commit": "bdb4055bf0d0f45df12eca891a8fcbbe27655941",
+  "reviewer": "independent-reviewer-1, did not build; all work in /tmp scratch clones; item branch untouched, nothing pushed",
+  "verdict": "fail",
+  "disposition": "The class the item set out to close IS closed for the spelling dimension, and the quotePath fix is a real independently confirmed inverse-harm win. It fails on measurements PAST the headline: one behaviour regression against main that also OPENS a forgery-at-green route in a supported deployment shape, one gate check that cannot fire on the residual it names, one guard left aimed at the module the code moved out of, and one sentence telling a contributor that widening is contained when the item itself proved it is not. Every fix is small and local; the one-rule-two-sources architecture is RIGHT.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "partial",
+      "note": "One rule over two sources holds for the verdict pattern, neither source uses a wildcard. PARTIAL: (a) three second spellings remain outside the owner and undeclared: policy_check.py:99 approval glob, policy_check.py:180/211/229 manifest globs, validate.py:186 design-verdict glob, and scripts/warp-guard.sh:73 which is a FOURTH implementation in shell. Measured to compute the same sets today on Linux/CPython 3.12, so a law violation not a live divergence. (b) BLOCKING: two pathspec anchorings still exist, CORPUS_PATHSPEC_FROM_TOP for entitlement and CORPUS_PATHSPEC everywhere else, naming DIFFERENT directories when the WARP root is below the git top (measured 0 vs 426 paths)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Driven independently: depth-2 forgery gives validate.py exit 1, log md5 UNCHANGED at 4dfbb70941b3 (853 lines both sides, read back), path named, absent from verdict_domain. Confirmed the refusal is STRUCTURAL: verify.sh runs validate at line 102 and the reconciler at 123, line 123 is NOT guarded by FAIL and its `|| echo` swallows a non-zero exit, so a red contract stage does NOT stop the append. Extended to 26 spellings (depths 2-3, dot components first and last, proof/proof, a verdict.json.d directory, space, star, bracket, question mark, trailing space, trailing dot, ..hidden, NFC, NFD, Cyrillic, a newline in a directory name, uppercase/prefixed/suffixed): 0 forgery routes, 0 inverse routes."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "The 540-point battery is generated from the module's own constants and is not vacuous: asserts bool(made), bool(shaped_nonmember), bool(logged), misfiled == shaped_nonmember BOTH directions, and a PARTITION on the appender, with no cardinality. The 'exhaustive over this product and over nothing else' sentence is in the suite, the module docstring and the spec, and names what it excludes."
+    },
+    {
+      "id": "AC4",
+      "status": "failed",
+      "note": "At the repo root the inverse-harm leg is CLEAN, verified by joining the 166 index paths against the log: 0 entitled without an event, 0 logged outside the domain, second run md5-identical, 0 derivable but not appended. RED direction works per path: a directory symlink over a committed spec dir gives 1 error naming it, and the appended event still carries the COMMITTED blob. FAILS the withholding clause the spec names as its own failure condition: from a non-repo cwd the reconciler reports 0 tracked where ffaab41 reported 166; and vendored at sub/, log_entitlement is 0 while verdict_domain is 166, withholding ALL 166 genuine verdicts forever with contracts PASS."
+    }
+  ],
+  "blocking_findings": [
+    "B1 REGRESSION vs ffaab41: verdict_corpus.py defaults its git cwd to the PROCESS CWD (lines 172/182/208/225/251, `repo_root or \".\"`) where the events.py code it replaced defaulted to ROOT. Same clone, absolute-path invocation from a non-git cwd: ffaab41 prints 166 tracked, bdb4055 prints 0 tracked. Worse, events.py:835 calls _VC.misfiled(ROOT, repo_root) with the DISK half at ROOT and the GIT half at the process cwd IN ONE CALL: reconciling the real repo from a foreign repo's cwd printed a misfiled warning naming proof/FOREIGN-1/nested/verdict.json, a path that does not exist here, while the contract stage was green. verify.sh escapes only because it cds first.",
+    "B2 THE REGRESSION OPENS A FORGERY ROUTE ffaab41 REFUSED. WARP vendored at sub/ of a git repo (init_scaffold.py supports it, nothing forbids it): forged {schema: nope, verdict: pass} committed at the OUTER proof/WARP-9999/verdict.json, then `cd outer && python3 outer/sub/.warp/events.py reconcile-verdicts` gives 1 appended to the vendored WARP's own append-only log, md5 4dfbb70941b3 -> 990fd4c23d8e, the line carrying verdict pass with a real blob, and sub's validate.py all exits 0 BEFORE AND AFTER. No flags, no --repo-root, no env vars. The identical attack at ffaab41 appends NOTHING (exit 2, 166 unentitled named).",
+    "B3 THE BOTH-DIRECTIONS CHECK CANNOT FIRE ON THE RESIDUAL THAT REMAINS: check_verdict_domain_is_the_validated_set calls divergence(base, base, pattern) with the default CORPUS_PATHSPEC, asking the cwd-anchored question on BOTH sides and never the top-anchored question entitlement uses. Vendored at sub/: :(top)proof returns 0 while proof returns 426, log_entitlement 0 vs verdict_domain 166, validate.py exit 0 and contracts pass while all 166 are withheld. Two shipped sentences are false there: 'that residual difference is the whole of what remains' and 'Both are the SAME directory, named two ways for two cwds'.",
+    "B4 THE WARP-0722 LITERAL-SCOPE GUARD STAYED ON events.py WHILE THE INDEX READING MOVED TO verdict_corpus.py. ADDITIVE negative control, nothing renamed: EXPECTED_CORPUS = 166 and _CORPUS_FLOOR = 165 at module level in the CODE of all 8 declared copies -> selftest 3356 passed, 0 failed, identical to pristine. POSITIVE CONTROL: the same literal into all 8 copies of events.py -> 3355 passed, 1 failed on WARP-0722 AC1. The guard is intact and aimed at the wrong module. The suite comment at :1383 claims the table 'MOVED with it, in the same commit' - measured FALSE: entries were deleted and nothing replaced them.",
+    "B5 LIVE TRAP IN SHIPPED SOURCE: the module docstring argues widening is safe because 'a forged artifact it newly admits becomes one the contract validator VALIDATES, and a {schema: nope} body fails there.' Driven mutant B independently (substitution asserted, count 1, sha changed and restored): under the widened rule the forged artifact is entitled AND validated, validate.py exits 1 naming it, AND reconcile-verdicts APPENDS it (3 tracked, 3 appended). The item's own AC2 measurement is that the append is not gated on the contract stage. A contributor widening on that sentence reopens the appending harm."
+  ],
+  "key_claim_corrections": [
+    "THE COMMIT SUBJECT OVERREADS: 'an ordinary gate run can no longer append a forged verdict' is FALSE for a CORPUS-SHAPED forgery. At bdb4055, {schema: nope, verdict: pass} at proof/WARP-9999/verdict.json gives validate.py exit 1 with 4 named problems AND plain reconcile-verdicts APPENDS it, md5 4dfbb70941b3 -> 304d580fded5. The item changed the GATE COLOUR, not the append, for that case. Pre-existing at ffaab41 and NOT a regression, but NOT in the known-open list, and the headline reads as closing the class. The narrower promise, the UNFLAGGED route at GATE GREEN, does hold.",
+    "core.quotePath RULED REAL and WORSE than reported. At ffaab41 a genuine verdict under an NFC-accented directory gave entitled_not_validated = the C-quoted string and validated_not_entitled = the real path, bidirectional for one file; and it was NOT dropped, it was APPENDED with spec_id 'R-NFC-caf\\\\303\\\\251', a permanently corrupt line in an append-only log. At bdb4055: 0/0 and the correct spec_id. THE BEST THING IN THE ITEM.",
+    "'events.py (997) and validate.py (985) CROSSED the 1000-line budget' is FALSE: NEITHER crossed. ffaab41 events.py 998, validate.py 979; 997 and 985 are POST-change counts. New code went to verdict_corpus.py (368, new) and validate_checks.py (513 -> 584) so neither would cross. Nothing lost: ast top-level diff REMOVED = [] for all three.",
+    "No-git degradation RULED GENUINE CONTAINMENT, not a waiver: the append path is closed by the ABSENCE of a domain, not merely unchecked. With a corpus-shaped forgery added, validate.py exits 1 and 0 is appended; with a depth-2 forgery the stage line still NAMES it, because the disk walk needs no git. ONE GAP: the equality legs skip SILENTLY, so an adopter gets a green contract stage with no notice the check was inert.",
+    "Corpus = 166 confirmed independently: git ls-files -z --full-name -- proof gives 426 tracked, of which exactly-3-component plus fnmatchcase gives verdict 166, approval 9, manifest 141, design-verdict 0. NOTE: the DESIGN_VERDICT_PATTERN leg therefore runs over an EMPTY set here - present but unexercised.",
+    "Timing within budget, sub-figure understated: validate.py all = 364/368/375 ms over three runs; the 4-pattern divergence leg is 146 ms, not 130.",
+    "The fnmatchcase docstring reason is wrong: fnmatch.fnmatch folds through os.path.normcase, the identity on every POSIX platform INCLUDING macOS regardless of filesystem case-sensitivity. Only Windows folds. Say 'on Windows'.",
+    "Teeth SOUND, re-driven with the reviewer's own substitutions: counts 1, sha changes and restores, baseline MEASURED at 1 not assumed 0, mutant A moves 1 -> 5 naming the wildcard-needing path, mutant B keeps the sets equal. No crash; the selftest line always printed.",
+    "No cardinality pinned: 18 new integer comparisons, all structural or fixture-scoped; no 165/166/167/426/141 literal anywhere.",
+    "Scaffold, packs, template sync confirmed: init_scaffold.py created 41 files including verdict_corpus.py and the scaffolded validator exits 0, so an adopter CAN import its own enumeration. 8 declared copies byte-identical. RULE #1 clean. selftest 3356 passed, 0 failed. GATE GREEN."
+  ],
+  "must_fix_before_land": [
+    "B1: default the corpus enumeration's git cwd to the module's own repository AT THE CALL SITES (verdict_corpus.py is deliberately path-agnostic, so the default belongs where ROOT is known), and pass one root to BOTH halves of the events.py:835 misfiled call.",
+    "B2: closed by B1's fix; also anchor entitlement at the WARP root that owns the log rather than at ':(top)'.",
+    "B3: compute the divergence for BOTH anchorings, or resolve the WARP root once via `git -C <warp root> rev-parse --show-prefix` and use ONE anchoring everywhere; correct the two false sentences.",
+    "B4: give verdict_corpus.py its OWN literal-scope table bound in both directions over its declared copies, and correct the suite comment claiming the table moved.",
+    "B5: delete or correct the widening-is-contained sentence in the module docstring AND the mutant B comment; say widening admits an APPENDABLE forgery because the append is not gated on the contract stage.",
+    "Declare the two undeclared routes: the corpus-shaped forgery appended at GATE RED, and the anchoring divergence below the git top.",
+    "This item has NO proof/WARP-0727/ manifest. One is required before landing; this verdict artifact created the directory."
+  ],
+  "what_i_could_not_test": [
+    "Blob substitution: DECLARED UNTESTED per the standing decision, no git internals touched.",
+    "A case-insensitive filesystem (macOS, Windows).",
+    "A normalizing filesystem (APFS, HFS+): NFC and NFD both round-tripped byte-preserved on ext4, so the normalization dimension is untested where it actually bites.",
+    "Windows path semantics including pathlib glob case-insensitivity.",
+    "The log-name symlink or hardlink entitlement transfer: declared out of scope, not attempted.",
+    "Concurrency: two reconcilers racing the fcntl lock."
+  ]
+}

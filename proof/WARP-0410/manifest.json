@@ -1,0 +1,95 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0410",
+  "commit": "7e8a72c2630365d568bb2d19e32f414dcd3980c7",
+  "producer": "claude-opus-4-8[1m] (implementing agent)",
+  "plan_hash": "sha256:3e01fa56868d99d3",
+  "produced_at": "2026-07-17T21:03:38Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The release change is commit 7e8a72c (PLAN-0004 revision 4): it removes work items X8 (WARP-0408) and X9 (WARP-0409), feature F2, and outcome O2 from the plan, sets status released, and bumps plugin to 3.0.0. Operational evidence: python3 .warp/validate.py plan is clean (no orphaned references; the O1/O3/O4 -> F1/F3/F4 -> X1..X7 traceability graph resolves); python3 .warp/plan.py release-check reports releasable; python3 .warp/plan.py status reports released, revision 4, 7 of 7 shipped, frontier none; WARP-0401..0407 are all shipped with proofs; no WARP-0408/0409 spec or proof exists; docs/method.md is unchanged by the commit; the full gate is GREEN with selftest 760 passed, 0 failed and the dash, non-ASCII, and genericity sweeps pass on the changed plan and this spec."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The release change is commit 7e8a72c (PLAN-0004 revision 4): it removes work items X8 (WARP-0408) and X9 (WARP-0409), feature F2, and outcome O2 from the plan, sets status released, and bumps plugin to 3.0.0. Operational evidence: python3 .warp/validate.py plan is clean (no orphaned references; the O1/O3/O4 -> F1/F3/F4 -> X1..X7 traceability graph resolves); python3 .warp/plan.py release-check reports releasable; python3 .warp/plan.py status reports released, revision 4, 7 of 7 shipped, frontier none; WARP-0401..0407 are all shipped with proofs; no WARP-0408/0409 spec or proof exists; docs/method.md is unchanged by the commit; the full gate is GREEN with selftest 760 passed, 0 failed and the dash, non-ASCII, and genericity sweeps pass on the changed plan and this spec."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The release change is commit 7e8a72c (PLAN-0004 revision 4): it removes work items X8 (WARP-0408) and X9 (WARP-0409), feature F2, and outcome O2 from the plan, sets status released, and bumps plugin to 3.0.0. Operational evidence: python3 .warp/validate.py plan is clean (no orphaned references; the O1/O3/O4 -> F1/F3/F4 -> X1..X7 traceability graph resolves); python3 .warp/plan.py release-check reports releasable; python3 .warp/plan.py status reports released, revision 4, 7 of 7 shipped, frontier none; WARP-0401..0407 are all shipped with proofs; no WARP-0408/0409 spec or proof exists; docs/method.md is unchanged by the commit; the full gate is GREEN with selftest 760 passed, 0 failed and the dash, non-ASCII, and genericity sweeps pass on the changed plan and this spec."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The release change is commit 7e8a72c (PLAN-0004 revision 4): it removes work items X8 (WARP-0408) and X9 (WARP-0409), feature F2, and outcome O2 from the plan, sets status released, and bumps plugin to 3.0.0. Operational evidence: python3 .warp/validate.py plan is clean (no orphaned references; the O1/O3/O4 -> F1/F3/F4 -> X1..X7 traceability graph resolves); python3 .warp/plan.py release-check reports releasable; python3 .warp/plan.py status reports released, revision 4, 7 of 7 shipped, frontier none; WARP-0401..0407 are all shipped with proofs; no WARP-0408/0409 spec or proof exists; docs/method.md is unchanged by the commit; the full gate is GREEN with selftest 760 passed, 0 failed and the dash, non-ASCII, and genericity sweeps pass on the changed plan and this spec."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The release change is commit 7e8a72c (PLAN-0004 revision 4): it removes work items X8 (WARP-0408) and X9 (WARP-0409), feature F2, and outcome O2 from the plan, sets status released, and bumps plugin to 3.0.0. Operational evidence: python3 .warp/validate.py plan is clean (no orphaned references; the O1/O3/O4 -> F1/F3/F4 -> X1..X7 traceability graph resolves); python3 .warp/plan.py release-check reports releasable; python3 .warp/plan.py status reports released, revision 4, 7 of 7 shipped, frontier none; WARP-0401..0407 are all shipped with proofs; no WARP-0408/0409 spec or proof exists; docs/method.md is unchanged by the commit; the full gate is GREEN with selftest 760 passed, 0 failed and the dash, non-ASCII, and genericity sweeps pass on the changed plan and this spec."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 760 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "A plan revision plus release plus version bump is a real change to trunk and is reviewed independently like any change (PLAN-0004 constraint C1). The evidence is operational (validator, release-check, and gate all pass; the descope leaves the plan reference graph consistent), not a selftest, because the change is plan bookkeeping and a version bump, not code with a unit-testable surface. X8/X9 were never built, so removing them cannot regress any shipped behavior."
+  ],
+  "rollback": "git revert the release commit and this evidence; reopen PLAN-0004 (status in_progress, restore X8/X9/F2/O2) if the control-plane track is ever wanted."
+}

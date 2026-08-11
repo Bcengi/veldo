@@ -1,0 +1,12 @@
+=== AC1 token lint: good clean, bad violations ===
+token lint: clean
+good exit: 0
+bad exit: 1 (expect 1)
+
+=== AC2 baseline compare (generated images) ===
+  identical: exit 0 (expect 0) - baseline compare: pass (0.000% differ, tolerance 1.000%)
+  changed: exit 1 (expect 1) - baseline compare: FAIL (25.000% differ exceeds tolerance 1.000%)
+  size-mismatch: exit 1 (expect 1) - baseline compare: SIZE MISMATCH baseline (80, 50) vs current (40, 40) - the layout moved
+
+=== AC3 gate-tested (selftest) ===
+selftest: 84 passed, 0 failed

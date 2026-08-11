@@ -1,0 +1,53 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0318",
+  "commit": "985d1ecc729b5976b5d5269aa8b8c38ee3b5cfb3",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T13:10:17Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:c7b5592900936380",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC7",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Recognized assertion keys with vacuous values (tools_include:[] or result_contains:'') pass while still checking envelope framing and result-vs-error presence; this is a fixture-authoring quality concern, not a runner tautology (the no-rubber-stamp guard requires a recognized key, author-controlled)."
+    }
+  ],
+  "summary": "B18 (WARP-0318, MCP server/client runner) is correct and honest. Independent adversarial review: gate GREEN, both fixtures correct over the real stdio subprocess transport (pass exit 0; fail exit 1 naming the delete_everything bad tool call), four assertion-free/typo journeys all rejected as named journey errors (no rubber-stamp), capabilities mechanical honest (real transport runs in the gate), generic, ASCII, stdlib-only, both capabilities.yaml copies byte-identical. The review found one uncaught mutation (5/6): dropping the got-error-when-result-expected guard survived because the covering assertion used result_text. Post-review closure applied before ship and self-verified non-tautological: added two selftest assertions isolating that guard (an is_error:false and an empty result_contains expectation against a JSON-RPC error response), confirmed they FAIL when the guard is dropped and pass with it present, raising mutation coverage to 6/6. proof_digest recomputed via validate.py."
+}

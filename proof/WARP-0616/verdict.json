@@ -1,0 +1,35 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0616",
+  "commit": "50087bd",
+  "review_round": 2,
+  "reviewer": "claude-opus-4-8[1m] (round-2 independent adversarial reviewer, fresh context, distinct from the builder and the round-1 reviewer; reproduced every round-1 fail-open attack against the fixed module with a switched-on fixture policy, then probed the new proposer/impact/id/risk_acceptance/independence logic for regressions and new holes)",
+  "reviewed_at": "2026-07-24T18:10:00Z",
+  "verdict": "pass_with_notes",
+  "supersedes": "verdict-1-fail.json (round 1, fail)",
+  "summary": "All five round-1 fail-OPEN paths now FAIL CLOSED, verified by driving each round-1 attack against the fixed module (commit 50087bd) with a switched-on fixture policy, and no new hole could be opened. (1) Separation rests on a VERIFIED caller-supplied proposer (req.get('producer') is gone, grep-confirmed 0 reads): approver==proposer refuses (separation_of_duties, _norm case/whitespace-insensitive); NO proposer supplied refuses proposer_identity_required rather than skipping; empty/whitespace/None/non-string proposer all refuse. (2) A scalar/dict/int/None (non-list/malformed) impact fails closed to two-key-required; the list form still works; the verified proposer threads to the frozen two_key gate as proposed_by so a KEY-2 by the proposer refuses. (3) An idless request is refused no_request_id before any per-request match, so a blanket attestation cannot match it. (4) risk_acceptance false/FALSE/padded/bool False/0/None all refuse; a genuine affirmative authorizes. (5) Undeclared/non-string independence joins one shared sentinel group and refuses at min_independence>1; declared-distinct authorizes. Module remains INERT (no human_decisions block in any of 8 policy.yaml). Gate GREEN (selftest 2612/0). The 3 notes are for the VEL-3 switch-on authors, not defects in this module.",
+  "criteria": [
+    {"id": "AC1", "status": "pass", "note": "required_roles/quorum/is_authorized pure + read-only; 8 copies byte-identical (sha256 5b78239); declared in the engine area; is_authorized gained an explicit verified proposer arg without changing purity."},
+    {"id": "AC2", "status": "pass", "note": "INERT + fail-closed: load_policy None over real policy.yaml; policy None / empty block / no-quorum-for-tier all return NO_POLICY; all 8 policy.yaml byte-unchanged across the whole spec."},
+    {"id": "AC3", "status": "pass", "note": "Round-1 gaps closed: risk_acceptance normalized via _as_bool (false/FALSE/padded/False/0/None refuse; affirmative authorizes); idless request refused no_request_id (kills None==None per-request match); per-request/stale-digest/structured-attestation refusals intact."},
+    {"id": "AC4", "status": "pass", "note": "Separation on a VERIFIED caller-supplied proposer (never req.producer): approver==proposer refuses; absent proposer refuses (not skipped). Machine-actor (by id or registry kind), distinct-count quorum, faked/undeclared independence, required-role coverage all refuse. Non-list/malformed impact fails closed to two-key-required; irreversible/money/external trigger the frozen two_key gate (reused unchanged), which refuses a KEY-2 by the verified proposer. MACHINE_ACTORS superset of two_key's, bound."},
+    {"id": "AC5", "status": "pass", "note": "Non-tautological selftest with positive controls + 6 in-memory teeth (T1 config, T2 separation, T3 digest, T4 quorum, T5 two-key, T6 NEW proposer-absent). T6/T2/T5 independently reproduced (mutant authorizes, real refuses, on-disk sha256 unchanged)."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "TWO_KEY_IMPACTS = {irreversible, money, external} deliberately EXCLUDES data_mutating, so a well-formed list impact=['data_mutating'] alone requires no second key. Matches spec AC4 (enumerates irreversible/money/external) and is documented, but two_key.py describes itself as gating 'irreversible OR data-mutating'. VEL-3 policy authors should confirm the surface intentionally does not two-key a data_mutating-only action. Not a fail-open vs this module's spec."},
+    {"severity": "note", "text": "risk_acceptance free-text acceptance is permissive: any non-empty string _as_bool does not resolve to False passes (e.g. 'no' passes as free-text). Satisfies the round-1 requirement and the documented contract; tighten the free-text branch if the surface later wants a strictly-affirmative field."},
+    {"severity": "note", "text": "Approver-registry lookup is exact-match (case/whitespace-sensitive) while separation/machine-actor normalize via _norm, so a registry-key mismatch fails closed as unknown_approver rather than reaching separation. Safe (fail-closed), but the W5 edge must supply attestation approver ids that match registry keys exactly, and the verified proposer must key on the same normalized identity."}
+  ],
+  "must_fix_before_live": [],
+  "checks": [
+    "verify.sh GREEN exit 0 (stamped c2c3c75); selftest.py 2612 passed / 0 failed; validate.py all exit 0; validate.py proof exit 0.",
+    "8x authorization.py one sha256 (5b7823947cd9); all 8 copies full engine modules.",
+    "Frozen readers (two_key/policy_check/decision/request) + all 8 policy.yaml byte-UNCHANGED across the whole spec (git diff vs parent 0017e4e clean); protected_paths []; zero 'producer' reads; proposed_by threads the verified proposer into two_key.",
+    "INERT confirmed directly (no human_decisions block in any of 8 policy.yaml; NO_POLICY on None/empty/no-quorum).",
+    "All 5 round-1 defects reproduced FAIL-CLOSED against the fixed module; new-hole probes (None/str/dict request, attestations, registry; proposer==approver drops that approver) all refuse.",
+    "Round-1 passing behaviors intact (machine-actor, short quorum, duplicate-identity, stale digest, bare-yes, not_per_request, unknown_approver, role_not_satisfied; two distinct independent in-role approvers authorize).",
+    "Teeth T6/T2/T5 reproduced independently (mutant authorizes, real refuses, on-disk sha256 unchanged).",
+    "RULE #1 clean across module (8 copies) + spec + proof (only '--' are the YAML '---' fences); genericity clean.",
+    "No tracked source modified during review (only .warp/events.jsonl + .warp/last_verify gate stamps)."
+  ]
+}

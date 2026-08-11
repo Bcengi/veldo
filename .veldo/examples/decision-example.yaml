@@ -1,0 +1,41 @@
+# VELDO decision record (veldo.decision/v1): a foundational choice as a first-class
+# unit of work. This is an ILLUSTRATIVE EXAMPLE of the artifact format, not a
+# decided VELDO choice: it shows the shape a real record takes and is deliberately
+# status: draft with NO recorded decider. The option space is elaborated and each
+# option carries the condition where it dead-ends, the reversal-cost class maps to
+# a risk tier, and every assumption carries a measurable signal and a breach
+# condition so it can become a living tripwire. Only a human moves a record to
+# decided, on the record; the adversarial review that attacks a proposal first is
+# WARP-1106 and the in-session tripwire pass that watches these signals is WARP-1107.
+schema: veldo.decision/v1
+id: DEC-0000
+title: The cross-instance change-notification mechanism
+version: 1
+status: draft
+owner: the-human-accountable-for-this-choice
+problem_class: A change made in one running instance must become visible to every other instance promptly and reliably, for the lifetime of a system whose instance count and whose set of change producers both grow over time. The decision is judged against that class, never against how few instances run today.
+reversal_cost: costly
+risk: high
+options:
+  - id: db_poll
+    summary: Each instance polls a table on a fixed interval to detect a change.
+    dead_end: Detection latency and query load both grow with the instance count, a rare change is paid for on every poll of every instance, and the shape never becomes a real event stream, so it stops working once either the fan-out or the change rate rises past what constant polling can absorb.
+  - id: db_listen_notify
+    summary: Use the database's own LISTEN and NOTIFY to push a change signal to listeners.
+    dead_end: The notification path is coupled to one database engine and its connection limits, so it stops working the moment a second datastore or a non-database producer must emit the same signal, or the listener count exceeds the connections the engine will hold open.
+  - id: pubsub_bus
+    summary: A real publish and subscribe bus, with snapshot-on-start, subscribe, and reconcile-on-reconnect via a version or etag.
+    dead_end: Adds an operational dependency to run and monitor, and is over-built only where there is genuinely one producer and one consumer forever, which a cross-instance change-notification path is not.
+assumptions:
+  - id: a1
+    statement: The number of instances that must observe a change grows over the life of the system.
+    signal: instance count recorded in the deployment inventory
+    breach: instance count exceeds the level at which per-instance polling load is measurable as a cost trend in the loop's own metrics
+  - id: a2
+    statement: More than one kind of producer will eventually emit the same change signal.
+    signal: count of distinct signal-producer types registered
+    breach: a second producer type appears that a single-database mechanism cannot serve without a translation shim
+  - id: a3
+    statement: Consumers can tolerate reconnect gaps by reconciling against a version or etag rather than assuming perfect delivery.
+    signal: presence of a snapshot-and-reconcile path in each consumer
+    breach: a consumer is found that assumes exactly-once delivery and has no reconcile-on-reconnect path

@@ -1,0 +1,49 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0106",
+  "commit": "15be903a6565f3fbfa04a7c358963b9af6109002",
+  "reviewer": "claude-opus-4-8[1m]",
+  "reviewed_at": "2026-07-16T21:56:00Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Reran token_lint.py: good.css exit 0 (clean), bad.css exit 1 with 6 violations printed as file:line (2 raw-color hex, 1 raw-color rgba, 3 raw-space px). My own /tmp files confirm hex, rgb(), rgba(), non-allowlisted px, and uppercase hex are all flagged; a token-only file (var() + 0/1px/100%) is clean; a hex in a single-line comment is correctly ignored. Gate-tested via 3 selftest expect() cases. Confirmed. Two comment-stripping soundness gaps recorded as notes (they do not affect the stated fixture behavior)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Reran baseline_compare.py on generated PIL images: identical -> pass 0.000% exit 0; 16% change -> FAIL exit 1; 0.5% sub-tolerance -> pass exit 0; dimension mismatch -> auto-fail exit 1; a 1.5% change fails the 1% default but passes when the config file plus the baseline name 'home' select its 2% per-baseline tolerance. Differ count is real, not stubbed: a known 137/10000 change yields exactly 0.0137, and a single-channel +1 change is caught (any-channel-differs is sound). Gate-tested via 4 selftest expect() cases and PIL import. Confirmed. Alpha-channel blind spot (convert to RGB drops alpha) recorded as a note."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "selftest.py imports and exercises both tools from plugin/templates/scripts/runners/design/ (7 expect() cases total). selftest = 84 passed / 0 failed; verify.sh GREEN (5 run, 0 undeclared) runs selftest in its unit slot, so both tools run in the every-commit gate. capabilities.yaml (root and template) marks token_lint and baseline_comparator status: mechanical (an established status shared by 19 other entries), with per-repo slot wiring in the notes and README. The mechanical claim is honest, not overclaimed. Confirmed."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Fixtures present: tokens.json, good.css, bad.css, and baselines.config.json (the tolerance config). README.md and both docstrings explain the token layer and the visual-fidelity layer, and explicitly state render-vs-approved-baseline is used, never a machine-diff of a render against a design export. Confirmed."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "token_lint comment stripping is unsound for plain CSS and can miss a real raw value. lint_file does code = line.split('/*',1)[0].split('//',1)[0], treating '//' as a line comment to end-of-line. But '//' occurs legitimately inside URLs. I verified that '.h { background: url(http://cdn.example.com/x.png); color: #ff0000; }' lints CLEAN (exit 0): everything after 'http:' is dropped, so the hardcoded #ff0000 slips past. Any raw value later on a line that also contains a URL (or protocol-relative '//') is invisible to the linter. This is the strongest way to slip a raw color past the token layer. Does not break the stated fixtures or the standard hex/rgb/px cases (all of which I confirmed pass/fail correctly), so AC1's fixture-anchored criterion still holds, but the maintainer should scope '//' stripping to non-URL contexts (or drop it, since CSS has no '//' comment)."
+    },
+    {
+      "severity": "note",
+      "text": "token_lint over-flags across multi-line comments (false positive). Stripping is per-line and only removes text after '/*' on the same line, so a raw value on a continuation line inside a /* ... */ block is treated as code. I verified a hex on the second line of a multi-line comment is flagged as raw-color (exit 1). This errs toward failing (safe direction) but would block a legitimate commit that parks a hex inside a block comment. Not claimed by the spec; recorded for completeness."
+    },
+    {
+      "severity": "note",
+      "text": "baseline_compare converts both images to RGB, dropping alpha. I verified two 20x20 RGBA images with identical RGB but alpha 255 vs 10 compare as 0.000% differ (pass). A render whose only change is transparency/opacity can therefore pass as identical. Baselines of rendered screens are typically opaque, so this is an edge case, but it is a way a genuinely-changed render can pass. Consider comparing in RGBA (or documenting the RGB-only assumption)."
+    },
+    {
+      "severity": "note",
+      "text": "Path-description imprecision in the proof manifest and spec rollback text. Both say the tools are additive 'under scripts/runners/design/', but in this repo they live under plugin/templates/scripts/runners/design/ (scripts/runners/ does not exist at repo root). This matches the established consuming-repo path convention already used for the W5 web runner (capabilities home: scripts/runners/web/... also resolves only inside plugin/templates here), so it is consistent internal shorthand rather than a false claim, but the wording could mislead a reader looking for the files at repo root."
+    }
+  ],
+  "summary": "Reran the full gate at 15be903: selftest 84 passed / 0 failed, validate.py all exit 0, verify.sh GREEN (5 run, 0 undeclared). Both design tools are genuinely exercised inside selftest (7 expect() cases; imports confirmed) and are honestly marked mechanical in capabilities.yaml. All four acceptance criteria are confirmed against reruns: token_lint flags hex/rgb/rgba/non-allowlisted px (incl. uppercase) with file:line and passes token-only files; the good/bad fixtures behave as claimed; baseline_compare enforces default and per-baseline tolerances, auto-fails on size mismatch, and its differ count is real (137/10000 = 0.0137 exact). The proof manifest and runner-evidence reproduce, and the '77 prior cases within 84' claim is verified (parent selftest = 77). No blocking findings. Four notes: two token_lint comment-stripping soundness gaps (a false negative where a raw hex after a same-line url(http://...) is silently skipped, and a false positive on multi-line comments), a baseline_compare alpha-channel blind spot, and a cosmetic path-description imprecision in the manifest. None of these violate the fixture-anchored acceptance criteria, but the same-line-URL false negative is worth fixing."
+}

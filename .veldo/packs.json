@@ -1,0 +1,77 @@
+{
+  "schema": "veldo.packs/v1",
+  "_comment": "The pack manifest. ONE BASE (engine/) and every pack EXTENDS it: a pack declares engine_src (the base it composes with) and pack_dir (its own extension files). No pack carries a copy of the base; the gate enforces the property that leaves open, which is that an engine file a pack DOES ship must be byte-identical to the base (absent is correct, different is a silent fork). wrapper_dir is where a pack's tool driver lives. Claude was the exception until 2026-08-09: its pack directory WAS the base, because plugin/ held both. The split gave the base its own home and made claude a sibling of the other six.",
+  "canonical_engine": "engine",
+  "packs": [
+    {
+      "id": "claude",
+      "tool": "Claude Code",
+      "engine_src": "engine",
+      "pack_dir": "packs/claude",
+      "wrapper_dir": "packs/claude",
+      "wrapper": "packs/claude (agents, skills, hooks, .claude-plugin)",
+      "agents_md": "engine/AGENTS.md",
+      "note": "the Claude pack, a sibling of the other six since the 2026-08-09 split. It extends the base like every other pack and carries no copy of it."
+    },
+    {
+      "id": "cursor",
+      "tool": "Cursor",
+      "engine_src": "engine",
+      "pack_dir": "packs/cursor",
+      "wrapper_dir": "packs/cursor",
+      "wrapper": "packs/cursor (.cursor/rules/veldo.mdc always-on, .cursor/hooks + hooks/pre-push guard, .cursor/agents, skills, AGENTS.md)",
+      "agents_md": "packs/cursor/AGENTS.md",
+      "note": "the first committed self-contained pack: the full engine is copied into packs/cursor and held byte-identical to the canonical source by the drift-check (this is what makes the check cross-pack load-bearing)."
+    },
+    {
+      "id": "codex",
+      "tool": "Codex CLI",
+      "engine_src": "engine",
+      "pack_dir": "packs/codex",
+      "wrapper_dir": "packs/codex",
+      "wrapper": "packs/codex (AGENTS.md layered, .codex/config.toml + .codex/hooks.json + .codex/veldo-guard-hook.sh, hooks/pre-push guard, .codex/agents, skills)",
+      "agents_md": "packs/codex/AGENTS.md",
+      "note": "the CLI-cluster pattern: AGENTS.md walked up from cwd, a .codex/config.toml with a before-shell hook feeding the guard the JSON payload it parses, plus the guaranteed git pre-push hook + CI. Committed engine copy held byte-identical by the drift-check."
+    },
+    {
+      "id": "copilot",
+      "tool": "GitHub Copilot",
+      "engine_src": "engine",
+      "pack_dir": "packs/copilot",
+      "wrapper_dir": "packs/copilot",
+      "wrapper": "packs/copilot (.github/copilot-instructions.md always-injected, .github/prompts, .github/agents, hooks/pre-push guard, skills, AGENTS.md)",
+      "agents_md": "packs/copilot/AGENTS.md",
+      "note": "the hook-less-enforcement case: Copilot has no local editor pre-push hook, so the VELDO invariant is enforced by the git pre-push hook (hooks/pre-push, feeding the guard the JSON payload) PLUS the CI required status check (.github/workflows/veldo-gate.yml, in the engine). Committed engine copy held byte-identical by the drift-check."
+    },
+    {
+      "id": "antigravity",
+      "tool": "Antigravity CLI (agy)",
+      "engine_src": "engine",
+      "pack_dir": "packs/antigravity",
+      "wrapper_dir": "packs/antigravity",
+      "wrapper": "packs/antigravity (plugin.json agy manifest, hooks.json before-tool-call + veldo-guard-hook.sh, rules/veldo.md, hooks/pre-push guard, agents, skills, AGENTS.md)",
+      "agents_md": "packs/antigravity/AGENTS.md",
+      "note": "Antigravity CLI (agy, Google's successor to Gemini CLI which shut down 2026-06-18). agy's plugin model mirrors Claude's: a plugin.json manifest + hooks.json (before-tool-call lifecycle hook feeding the guard the JSON payload) + rules/ + reused skills/ + agents/, plus the guaranteed git pre-push hook + CI. Committed engine copy held byte-identical by the drift-check."
+    },
+    {
+      "id": "opencode",
+      "tool": "OpenCode",
+      "engine_src": "engine",
+      "pack_dir": "packs/opencode",
+      "wrapper_dir": "packs/opencode",
+      "wrapper": "packs/opencode (opencode.json + .opencode/veldo-guard-hook.sh tool.execute.before, .opencode/command/veldo.md, .opencode/agent, hooks/pre-push guard, skills, AGENTS.md)",
+      "agents_md": "packs/opencode/AGENTS.md",
+      "note": "the CLI-cluster OpenCode pack: opencode.json points instructions at AGENTS.md and wires a tool.execute.before hook feeding the guard the JSON payload, plus the guaranteed git pre-push hook + CI. Committed engine copy held byte-identical by the drift-check."
+    },
+    {
+      "id": "aider",
+      "tool": "Aider",
+      "engine_src": "engine",
+      "pack_dir": "packs/aider",
+      "wrapper_dir": "packs/aider",
+      "wrapper": "packs/aider (CONVENTIONS.md, .aider.conf.yml with git-commit-verify true + read AGENTS.md/CONVENTIONS.md, hooks/pre-push guard, agents, skills, AGENTS.md)",
+      "agents_md": "packs/aider/AGENTS.md",
+      "note": "the thin-primitives case: Aider has no agent-hook framework and defaults to --no-verify (skips git hooks), so the pack sets git-commit-verify true and the load-bearing gate is the git pre-push hook (feeding the guard the JSON payload) + the CI required check. Committed engine copy held byte-identical by the drift-check."
+    }
+  ]
+}

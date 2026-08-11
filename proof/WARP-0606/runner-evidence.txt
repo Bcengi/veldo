@@ -1,0 +1,41 @@
+WARP-0606 runner evidence - plan-creates-structure epic mirror (W6 of PLAN-0006)
+Impl commit under proof: 4d932723818e0298f46cdcf00cfc4d356a66be72
+
+== gate (clean detached worktree at 4d93272) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (4d932723818e0298f46cdcf00cfc4d356a66be72)
+
+== unit (selftest.py) ==
+selftest: 1157 passed, 0 failed
+(+24 for the WARP-0606 epic-mirror + build_plan_index blocks; the WARP-0605
+spec-mirror block still passes with no regression; baseline was 1133)
+
+== module smoke check (.warp/tracker_mirror.py selfcheck) ==
+passed: true - includes the plan-mirror smoke (epic keyed by plan id with the
+routing target recorded, one child per work item, shipped child mapped to Done,
+epic open while work remains, replay idempotent, plan index never mutated).
+
+== Note 1 fix verification (build_plan_index parser, mutation) ==
+Against the REAL repo, HEAD build_plan_index('plans','specs') returns PLAN-0006
+with 8 work items each carrying a live spec_status (W1/W2/W3/W5 shipped, W6 ready,
+W4/W7/W8 None as those specs are not yet created).
+Reverting build_plan_index to V.front_matter turns 4 selftest assertions RED:
+  SELFTEST FAIL: build_plan_index parses the nested work DAG (not a collapsed empty list)
+  SELFTEST FAIL: build_plan_index carries each work item's identity
+  SELFTEST FAIL: build_plan_index carries each work item's live spec status
+  SELFTEST FAIL: build_plan_index feeds a full epic (both children, not childless)
+  selftest: 1153 passed, 4 failed
+Restored (parse_yamlish): selftest 1157 passed, 0 failed. The parser swap is the fix.
+
+== reviews ==
+Full independent adversarial review at fc722fb: pass_with_notes, 0 blocking (all 5
+ACs confirmed by spies + a mutation matrix + an idempotency battery; three notes).
+Three notes fixed -> commit 4d93272 (build_plan_index parser + real-plan tests,
+fresh one-way index, W5/W6 co-ownership documented).
+Scoped independent re-review bound to 4d93272: PASS, 0 findings (delta is exactly
+the three note-fixes, the five core functions byte-identical, gate GREEN 1157/0,
+WARP-0605 not regressed, capabilities.yaml copies byte-identical).
+
+== proof binding ==
+plan_hash: sha256:6dd3f98b5a0c1f68 (PLAN-0006, revision 1)
+proof_digest: sha256:dfef70f8496ff678 (validate.py over {spec_id, commit, criteria, checks})

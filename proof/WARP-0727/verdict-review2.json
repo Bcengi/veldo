@@ -1,0 +1,54 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0727",
+  "commit": "0ba2c4ed7a1a473525663c9a91d4e2ff893f00bd",
+  "reviewer": "independent-reviewer-2, did not build; /tmp scratch clones only; item branch untouched at 0ba2c4e, nothing pushed",
+  "verdict": "fail",
+  "round": 2,
+  "disposition": "The architecture is right and the headline claims are TRUE. Attacked the new design 15 ways on the prefix and 8 ways on repository shape; it held in 13 and 5 respectively. AC1, AC2 and AC3 CONFIRMED. It fails on the leg AC4 REQUIRES OF ITSELF: the red direction is a vacuous assertion, and one ordinary git feature silences the whole check. Both fixes are small and local.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "ONE anchoring, and 'two roots is unreachable' is TRUE - the reviewer could not write the call. divergence(root)/misfiled(root) take one root with no pathspec parameter, every git-facing function requires its root, and both retired constants are gone (hasattr false). All four second spellings are ROUTED (policy_check :113/:194/:227/:245 -> _VC.disk_corpus; validate.py:193 -> corpus_in_dir; warp-guard.sh:101 -> disk_corpus) plus a FIFTH reader found and routed at intent_corpus.py:82. NO `.glob` over the corpus remains anywhere in shipped source. `:(literal)` is genuinely load-bearing and holds; separately confirmed that `rev-parse --show-prefix` does NOT apply core.quotePath (cafe, tab and newline all return raw), so the quoting attack does not exist on that call."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Vendored fixture at head: 167 vs 167, forgery dead, log byte-unchanged. THIRD DIVERGENCE CONFIRMED as real and fixed: at bdb4055 tracked_under_proof answered `sub/proof/...` (git-top-relative) while disk answered `proof/...`; both now `proof/...`. Prefix battery 15 shapes, 13 held at 167 vs 167 with 0 appended and 0 contract errors, including a NEWLINE component, `sta*r`, `q?m`, `br[a]ck`, `cafe`, `ha#sh`, `do$llar`, `co:lon`, `.hidden`, `mid space`. Repo shapes: linked worktree (.git FILE), worktree of a worktree, real submodule, core.worktree over a formerly bare repo, and a symlinked WARP root all clean at 167/167. GIT_DIR/GIT_WORK_TREE behaves exactly as declared (appends, contract stage RED and naming it). WARP vendored inside outer/.git/ enumerates the outer proof root and appends, but contract RED, so inside the declared known-open."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Controls re-driven with substitution counts and sha256 asserted BEFORE believing any result: additive-corpus 8 subs, bb2210d739b6a75b -> e6a09811c09ee8e4, 3358 passed / 1 failed on the named leg, and the pre-mutation sha matches the manifest EXACTLY; anchor-at-repo-root 8 subs, 3356/3 including WARP-0727 AC1/AC4 ROUND 2. Both printed a summary line. Pristine 3359 passed / 0 failed by running it. GATE GREEN at 0ba2c4e by running it. events.py 999 by wc AND splitlines against max 1000, real; ast top-level diff shows NOTHING LOST in the move. No cardinality pinned, confirmed additively."
+    },
+    {
+      "id": "AC4",
+      "status": "failed",
+      "note": "The forward direction is clean and independently verified (167 keys, 0 entitled without an event, 0 logged outside the enumeration, 0 unresolvable, three consecutive runs 167/167/0 with the log md5 unchanged each time, 134 old-form events resolved by the reviewer's own `git rev-parse <commit>:<path>`). It FAILS on the red direction AC4 states in its own words: 'the gate must be RED on one that git reports as tracked yet the enumeration does not hold'. See B1 and B2."
+    }
+  ],
+  "blocking_findings": [
+    "B1 THE RED DIRECTION IS A VACUOUS ASSERTION. `contradiction = (disk_set - tracked_set) - untracked` with `untracked = disk_set - tracked` is IDENTICALLY EMPTY FOR EVERY INPUT, because disk_corpus returns only members and tracked_set = tracked intersect members. Proved algebraically AND by brute force over 6 fixtures built to force git and disk apart: WITNESS NONE. The check NEVER ASKS GIT whether a path is tracked - it infers untracked-ness from the very enumeration it is validating, so validated_not_entitled is excused wholesale. The suite asserts `contradiction == []` for all four patterns at 13_warp_0623_codified_live.py:2467 and sells it at :2457 as part of 'EQUAL IN BOTH DIRECTIONS'. A vacuous assertion is the class this repository condemns loudest. FIX: ask git directly whether the path is tracked, rather than deriving it from the enumeration under test.",
+    "B2 ONE ORDINARY GIT FEATURE SILENCES THE WHOLE CHECK, AND A FORGERY LANDS. `if not (base / PROOF_ROOT).is_dir(): return 0`, printing NOTHING. Reached with `git sparse-checkout set` naming every top-level directory except proof: `validate.py all` exits 0 where the same commit with proof present exits 1, and `reconcile-verdicts` reports 168 tracked, 1 APPENDED, log 33ae75e86607 -> 8123a1e8c154, the line carrying `\"verdict\": \"pass\"` for WARP-9999 with a real blob. THE EARLY RETURN IS UNNECESSARY - measured: with no proof root and nothing tracked, divergence returns all-empty and the body scores 0 anyway. FIX: delete the early return.",
+    "B1(b) A WHITESPACE-LEADING PREFIX BREAKS ENUMERATION SILENTLY, and head is the WORST of the three columns. `_git_line` returns `r.stdout.strip()`, so a repo-relative prefix of ` lead/` becomes `lead/`, the pathspec becomes `:(top,literal)lead/proof`, git answers successfully with nothing: tracked 0, disk 167, entitlement 0, contract errors 0, validate.py exit 0, reconcile exit 0 printing '0 verdict artifact(s) tracked'. THREE COLUMNS: ffaab41 = 166 tracked and refuses LOUDLY at exit 2; bdb4055 = 1 and appends the forgery; HEAD = 0 and SILENT. This is the same 166-to-0 signature review 1 blocked as B1. A symlinked vendored proof/ gives the same shape: tracked 0 vs non-empty disk at contract GREEN."
+  ],
+  "key_claim_corrections": [
+    "Corpus is 167 by the reviewer's own method, and the manifest's 427/426/141 was measured at 5378da4 BEFORE its own file was tracked. Reviewer method: `git ls-files -z --full-name -- ':(top,literal)proof'` gives 428 records, 427 of exactly three components with proof first, own fnmatchcase gives verdict 167, manifest 142, approval 9, design-verdict 0. The single non-three-component path is proof/REVIEW-RECORD-DEFECT-2026-07-29.md.",
+    "The legacy `<commit>:<path>` reasoning HOLDS, and the failure is loud (unresolvable named, counted, appends withheld). One imprecision: for events predating a move the recorded top-relative path IS the correct rev spelling, so re-spelling would break what currently works.",
+    "The 999-of-1000 headroom is a DECLARED RESIDUAL, NOT A TRAP: the gate reds loudly and the designed remedy is decomposition, which this round performed.",
+    "The shell guard DOES fail closed on a missing or broken corpus owner (exit 2, driven three ways) - but its NEW COMMENT's claim about python3 is FALSE: with python3 gone the guard cannot parse the payload and exits 0, unguarded. Identical at ffaab41, so a PRE-EXISTING fail-open that is now misdescribed.",
+    "design-verdict leg still runs over an EMPTY set (0 artifacts): present and unexercised, correctly said so now.",
+    "check_generated.sh, check_template_sync.sh, check_pack_drift.py and shape_gate.py all pass. RULE #1 clean over 16 non-pack changed files and all 6 commit messages."
+  ],
+  "routes_that_held": "13 of 15 prefix shapes; 5 of 8 repo shapes; two-roots unreachable by construction (could not write the call); no corpus .glob anywhere in shipped source; GIT_DIR redirect exactly as declared.",
+  "what_i_could_not_test": [
+    "Blob substitution and git internals: DECLARED UNTESTED per the standing decision.",
+    "The builder's exact git-cwd-is-the-process-cwd mutant: the reviewer's harsher variant CRASHED the suite at :3554 with no `selftest:` line, so it is a different mutation and 3355/4 is neither confirmed nor refuted.",
+    "The positive control.",
+    "Case-insensitive and normalising filesystems; Windows.",
+    "The timing figures.",
+    "Lock concurrency.",
+    "Log-name symlink entitlement transfer (declared out of scope)."
+  ]
+}

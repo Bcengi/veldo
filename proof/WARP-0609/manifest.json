@@ -1,0 +1,44 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0609",
+  "commit": "6ddd821136618fc61d4352ea3fe6a816bd52a17b",
+  "producer": "claude-opus-4-8[1m] (release, PLAN-0006 at 8/8, in-session single writer)",
+  "produced_at": "2026-07-19T00:46:42Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "all eight PLAN-0006 work items are status shipped with a proof and a passing verdict: WARP-0601 pass_with_notes, WARP-0602 pass_with_notes, WARP-0603 pass_with_notes, WARP-0604 pass, WARP-0605 pass, WARP-0606 pass, WARP-0607 pass, WARP-0608 pass; each proof dir has manifest.json + verdict.json, each verdict reviewer is claude-opus-4-8[1m] (independent reviewer). python3 .warp/plan.py release-check PLAN-0006 reports 'PLAN-0006: releasable'; plans/PLAN-0006 status is set to released. Independent review confirmed all four sub-checks."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "plugin/.claude-plugin/plugin.json version bumped 3.2.0 -> 3.3.0 (clean minor, only that line changed), and the plan's release.version reflects plugin 3.3.0. The method document is unchanged - git show 6ddd821 --stat touches only the release spec, the plan (status + release.version), plugin.json, the derived index, and the two .warp ledger artifacts; no method.md/setup.md or any product/method doc. Independent review confirmed the version diff and the minimal changeset."}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the full gate is GREEN at 6ddd821 (independent review re-ran it in a clean detached worktree: GATE GREEN, selftest 1205 passed, 0 failed, contracts pass); the docs hygiene check (genericity + dash sweeps) passes on the changed plan and this spec; no protected path (verify.sh/warp-guard.sh/policy.yaml/policy_check.py + twins) is in the changeset; the two capabilities.yaml copies remain byte-identical and untouched."}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1205 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "A standalone release act (lane standalone), the same shape as WARP-0708 (the fleet release): it marks PLAN-0006 released, sets its release.version to plugin 3.3.0, and bumps plugin/.claude-plugin/plugin.json 3.2.0 -> 3.3.0. The plan's release contract (require_all_work_shipped + require_full_regression, RJ1/RJ2 owned by W8) holds. No product or method change ships; the tracker integration is generic tooling behind a vendor-neutral seam, per-org config-wired, proven offline over the fake tracker, with the live Jira/Confluence adapters reference-wired. The version bump is a minor (new capabilities behind a seam, no breaking change). Two independent reviews across the plan's final item and this release commit: WARP-0608 passed a full + a scoped re-review, and this release commit 6ddd821 passed an independent review (PASS, 0 blocking) that confirmed all 8 work items are genuinely shipped-with-passing-verdict, the release is minimal, and the gate is GREEN. The release spec is status ready at this impl commit (its own proof/verdict land in this evidence commit), exactly as WARP-0708 was.",
+    "The plan_hash changing due to the plan edit does not invalidate the already-committed proofs (validate.py has no plan_hash logic and never re-checks a proof's recorded plan_hash against the live plan; the 8 manifests recorded plan_hash sha256:6dd3f98b at build time). Rollback is a git revert of the release commit + this evidence, setting PLAN-0006 back to in_progress; the shipped work items and their proofs are unaffected."
+  ],
+  "rollback": "git revert the release commit and this evidence; set PLAN-0006 back to in_progress if the release must be withdrawn (the work items stay shipped)."
+}

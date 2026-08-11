@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0319",
+  "commit": "08b542b5906a4c72b599546f95c5e099a06ae565",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 wave 5)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T13:10:17Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "terminal/TUI reference runner ships at plugin/templates/scripts/runners/terminal/ (a stdlib VT/ANSI renderer maintaining a grid of cells with attributes, cursor, SGR state, and scrollback, driven by a real pty that feeds keystrokes and asserts cell/text_at/attr/history against the rendered screen) plus pass/fail fixtures, README, and test wrapper"
+        },
+        {
+          "type": "unit",
+          "ref": "the ANSI renderer control logic (CUP, SGR bold/color/reset, CR/LF, wrap, scroll-into-history, erase) unit-tested over crafted byte strings with NO pty, plus both shipped fixtures driven end to end through a real stdlib pty in scripts/selftest.py; part of selftest 536 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "terminal/TUI reference runner ships at plugin/templates/scripts/runners/terminal/ (a stdlib VT/ANSI renderer maintaining a grid of cells with attributes, cursor, SGR state, and scrollback, driven by a real pty that feeds keystrokes and asserts cell/text_at/attr/history against the rendered screen) plus pass/fail fixtures, README, and test wrapper"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "terminal/TUI reference runner ships at plugin/templates/scripts/runners/terminal/ (a stdlib VT/ANSI renderer maintaining a grid of cells with attributes, cursor, SGR state, and scrollback, driven by a real pty that feeds keystrokes and asserts cell/text_at/attr/history against the rendered screen) plus pass/fail fixtures, README, and test wrapper"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "terminal/TUI reference runner ships at plugin/templates/scripts/runners/terminal/ (a stdlib VT/ANSI renderer maintaining a grid of cells with attributes, cursor, SGR state, and scrollback, driven by a real pty that feeds keystrokes and asserts cell/text_at/attr/history against the rendered screen) plus pass/fail fixtures, README, and test wrapper"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "terminal/TUI reference runner ships at plugin/templates/scripts/runners/terminal/ (a stdlib VT/ANSI renderer maintaining a grid of cells with attributes, cursor, SGR state, and scrollback, driven by a real pty that feeds keystrokes and asserts cell/text_at/attr/history against the rendered screen) plus pass/fail fixtures, README, and test wrapper"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "terminal/TUI reference runner ships at plugin/templates/scripts/runners/terminal/ (a stdlib VT/ANSI renderer maintaining a grid of cells with attributes, cursor, SGR state, and scrollback, driven by a real pty that feeds keystrokes and asserts cell/text_at/attr/history against the rendered screen) plus pass/fail fixtures, README, and test wrapper"
+        },
+        {
+          "type": "unit",
+          "ref": "the ANSI renderer control logic (CUP, SGR bold/color/reset, CR/LF, wrap, scroll-into-history, erase) unit-tested over crafted byte strings with NO pty, plus both shipped fixtures driven end to end through a real stdlib pty in scripts/selftest.py; part of selftest 536 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 536 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: both halves run in the gate on this Linux box - the VT/ANSI renderer is a pure function over crafted byte strings, and the stdlib pty drives both fixtures through a real pseudo-terminal; the live drive is POSIX-only and raises loud when pty is absent so the claim never overreaches."
+  ],
+  "rollback": "git revert the impl; additive under plugin/templates/scripts/runners/terminal/, no protected path, selftest cases within the suite."
+}

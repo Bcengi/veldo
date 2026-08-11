@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1003",
+  "commit": "028b9fe447081dfbf68f5e243e9891bb231d43a1",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0010 W3, the promote gate)",
+  "plan_hash": "sha256:f6a5cc8e425f566b",
+  "produced_at": "2026-07-20T23:30:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The inbound bridge (.warp/tracker_bridge.py) gains a non-LLM PROMOTE RECONCILER reconcile_promotions(adapter, config, store), a SIBLING to reconcile_drafts over the SAME two injected seams (the WARP-0603 adapter seam and the SpecStore seam). For each intake item it calls the REUSED is_eligible (tracker.py, WARP-1001, the FULL triple: assignee equals the single configured Agent user AND status in the ready-for-dev set AND the repo tag resolves via resolve_repo) and, for a fully eligible ticket, looks up its EXISTING draft by the SAME durable intake_source oracle the draft stage keys on (store.spec_id_for_source(repo, _source_link(item))) and flips that spec's front-matter status draft -> ready via the store (store.promote_spec -> _flip_draft_to_ready, the fence-scoped status rewrite mirroring dispatch.py _set_status). This wires the human validation gate: only the human's tracker action (move to Approved-for-dev, keep it assigned to Agent) makes is_eligible true and promotes the draft into a claimable frontier unit; the draft trigger (WARP-1002 draft_candidate) is the two-leg subset, the promote adds the ready-status leg. No new parser, no LLM call - it imports tracker.py (is_eligible) and reuses the WARP-1002 SpecStore seam."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (scripts/selftest.py, the WARP-1003 block after the WARP-1002 block) drives the offline FakeTracker + FakeSpecStore: a fully eligible ticket (Agent + 'Approved for dev' + resolvable repo) whose spec was drafted by reconcile_drafts (status: draft) is flipped to status: ready by reconcile_promotions (result promoted == the ticket, store.status_of == 'ready'), and the reference FilesystemSpecStore over a temp dir flips the on-disk draft to ready in place via the durable intake_source link read by a FRESH store."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The promote is IDEMPOTENT and FAIL-CLOSED, a reconciler over the durable intake_source link with NO processed-offset ledger and NO second store. store.promote_spec -> _flip_draft_to_ready flips ONLY when the leading front-matter status is exactly 'draft'; a spec already ready or beyond is a byte-identical no-op (input returned unchanged, promote_spec False, not counted in promoted). A not-fully-eligible ticket never reaches the flip (is_eligible short-circuits it). A fully eligible ticket whose intake_source has no drafted spec (store.spec_id_for_source is None) has nothing to flip and is recorded skipped, not promoted. So re-running reconcile_promotions over the same tickets changes nothing already promoted."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts: a second pass over the now-ready spec records promoted == [] and leaves markdown_for(...) byte-identical (and status 'ready'); on the FilesystemSpecStore a second reconcile_promotions leaves the on-disk file byte-identical to the first post-promote read; and the no-draft leg (a fully eligible ticket, empty store) records promoted == [], store.count() == 0, and the ticket in skipped, then drafting it first makes the SAME ticket promote (non-tautology)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Human control is preserved by the reused is_eligible triple: a draft whose ticket a human reassigned off the Agent, or moved out of the ready-for-dev set, is NOT promoted (is_eligible returns ineligible before the flip), so a human can pull a ticket back from the fleet before it builds. The promote advances ONLY the spec's own draft -> ready lifecycle gate: _flip_draft_to_ready rewrites ONLY the status line inside the FIRST front-matter fence and touches nothing else on the spec, and reconcile_promotions writes NOTHING back to the tracker (no comment, no status, no reassign - the outbound writes are WARP-1004), so the repository stays the single source of truth."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest teeth: a drafted ticket reassigned to 'a-human' (still at the ready status) is NOT promoted and the spec stays draft, and restoring the Agent assignee promotes the SAME drafted ticket (non-tautology); a drafted ticket left at 'In Progress' is NOT promoted and stays draft, and moving it to 'Approved for dev' promotes the SAME ticket (non-tautology). The promote emits ZERO adapter writes (FakeTracker.writes() == []) and changes ONLY the status line (before.replace('status: draft','status: ready',1) == after, with exactly one 'status: draft' occurrence in the rendered spec)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "The gate-test over the FakeTracker has TEETH (scripts/selftest.py, WARP-1003 block): the positive (Approved-for-dev + Agent + resolvable repo WITH a drafted spec) flips the spec draft -> ready; three single-leg negatives each leave the draft unpromoted and still draft - a status not in the ready set, a non-Agent/reassigned assignee, and a ticket with no drafted spec - and each is NON-TAUTOLOGICAL: restoring the ready status, restoring the Agent assignee, or drafting the spec first each promotes the SAME ticket. Idempotency is asserted directly (a second pass over the ready spec promotes nothing and leaves the markdown byte-identical, on both FakeSpecStore and FilesystemSpecStore). No live network runs in the gate; the FilesystemSpecStore per-repo roots are the reference-wired shape used elsewhere."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml gains an honest entry tracker_promote_gate (status mechanical, home .warp/tracker_bridge.py, scope: repo-only because its home ships in neither plugin/templates nor the packs, exactly like its sibling tracker_inbound_bridge whose seams it reuses), present byte-identical in both copies (.warp/capabilities.yaml and plugin/templates/.warp/capabilities.yaml) and re-synced byte-identical into all six packs (aider, antigravity, codex, copilot, cursor, opencode). The only edited ENGINE_GLOBS-matched file is .warp/capabilities.yaml (a .warp/*.yaml engine file), re-synced to plugin/templates and the six packs (check_pack_drift.py green); .warp/tracker_bridge.py is repo-only build machinery (not laid into plugin/templates, so not a synced engine glob) and scripts/selftest.py is repo-root-only. No protected path touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins are unmodified). The change lands in the canonical two-commit shape (this reviewed commit R plus the orchestrator's evidence commit)."
+        },
+        {
+          "type": "unit",
+          "ref": "bash scripts/verify.sh -> GATE: GREEN at R (028b9fe447081dfbf68f5e243e9891bb231d43a1): catalog 5 run, 18 na, 0 waived, 0 undeclared. selftest 1419 passed / 0 failed (was 1407 at WARP-1002; +12 WARP-1003 checks). check_template_sync.sh: pass. check_pack_drift.py: pass (7 packs, engine byte-identical to source). check_docs.sh: pass (dash sweep, non-ASCII sweep, genericity sweep clean). RULE #1 clean (no em-dash, no en-dash, no prose double-hyphen; the only '--' occurrences are YAML front-matter fences and the selftest '# ---' section dividers)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "python3 scripts/selftest.py -> 1419 passed, 0 failed at R, including the WARP-1003 promote block (eligible drafted ticket flips draft -> ready; three single-leg negatives each unpromoted and still draft with non-tautology restores; idempotent byte-identical second pass on FakeSpecStore and FilesystemSpecStore; zero adapter writes and only-status-line-changed)."},
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated via python3 scripts/update_index.py (WARP-1003 now shipped, PLAN-0010 mirror W3 shipped); check_generated.sh reports the regeneration is a no-op."},
+    {"name": "docs", "status": "passed", "detail": "check_docs.sh pass: dash sweep, non-ASCII sweep, and genericity sweep (docs/ and plugin/) all clean; the promote reconciler, selftest block, capability entry, and spec carry no company/product reference and no em/en dash."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh: pass (the paired engine files are byte-identical to plugin/templates; capabilities.yaml is intentionally not a template-sync pair, but is drift-checked across the packs)."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs, engine byte-identical to source; the updated .warp/capabilities.yaml is byte-identical across plugin/templates and all six packs)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all exit 0; the WARP-1003 spec is valid at status shipped with required_evidence [unit]; PLAN-0010 mirroring intact (W1 shipped, W2 shipped, W3 now shipped)."}
+  ],
+  "assumptions": [
+    "WARP-1003 depends only on WARP-1002 (shipped); plan.py run-check PLAN-0010 WARP-1003 = clear to build. The promote is additive to the bridge and nothing runs it automatically yet (the unattended runner is a later item), so removing it leaves the drafts sitting un-promoted, harming nothing.",
+    "The promote trigger is the FULL WARP-1001 eligibility triple (is_eligible: Agent assignee AND a ready-for-dev status AND a resolvable repo), reused unchanged - the ready-status leg (Approved-for-dev) is the human's promote action, the exact leg the WARP-1002 draft trigger deliberately omits. The machine never promotes its own draft (PLAN-0010 NG1); only the human's tracker action does.",
+    "tracker_bridge.py is repo-only, consistent with its shipped siblings tracker_intake.py / tracker_adapter.py / tracker_mirror.py (all scope: repo-only, present only in the repo-root .warp, not in plugin/templates or the packs). The single edited engine file that ships (.warp/capabilities.yaml) is re-synced byte-identical across plugin/templates and the six packs; .warp/tracker_bridge.py and scripts/selftest.py are repo-only and not synced.",
+    "The flip advances ONLY the spec's own draft -> ready gate (fence-scoped status rewrite, mirroring dispatch.py _set_status) and writes NOTHING to the tracker; the outbound tracker writes (status, comment, links, reassign) are WARP-1004. Idempotency is by the durable intake_source link and the fail-closed flip (already ready/beyond is a byte-identical no-op), with no processed-offset ledger and no second store.",
+    "This manifest is the canonical evidence artifact (required_evidence [unit], satisfied by the unit check and per-criterion unit evidence). It is bound to R and left uncommitted for the orchestrator's evidence step; no verdict is written here and nothing is pushed. .warp/last_verify (commit=R, green) and .warp/events.jsonl are left uncommitted."
+  ],
+  "rollback": "git revert the reviewed commit R. The change adds one repo-only reconciler (.warp/tracker_bridge.py: reconcile_promotions + SpecStore.promote_spec + _flip_draft_to_ready + the FakeSpecStore/FilesystemSpecStore _promote_spec primitives + the FakeSpecStore status_of observer), a selftest block, one honest capabilities.yaml entry (both copies + six pack re-syncs), and flips the WARP-1003 spec to shipped with a regenerated index. Nothing consumes the promote automatically yet (the live runner is a later item), so removing it has no downstream effect; the drift and template-sync checks prove no pack forked."
+}

@@ -1,0 +1,138 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0716",
+  "commit": "2a3cd68468d9990d6895ae5785b06baf31ad3cd4",
+  "producer": "claude-opus-5[1m], writing the manifest WARP-0716 NEVER HAD, in an isolated worktree; nothing pushed, main never touched. READ THIS FIRST, because it is the honest shape of this item's history and the manifest exists partly to record it: the original build landed with a proof directory holding only the generated report and NO manifest, so its acceptance criteria were recorded nowhere as passed - 138 of 140 proof directories carried one and this was one of the two that did not, the other being an unbuilt item. The generator fix that followed (b1b15ee, 411a017) LANDED WITHOUT AN INDEPENDENT REVIEW. The review that finally came, on 2026-07-29, ruled fail / not_shippable and found three defects, one of which was a typed paragraph in the generated document asserting three classifications that its own tables contradicted at a green gate. This manifest is written AFTER that review, against the state that fixes it, and every criterion below says which round it was proven in and what was wrong before.",
+  "produced_at": "2026-07-29T13:00:00Z",
+  "round": 3,
+  "rollback": "Revert the commits. The item adds one analysis script that emits its own report, its selftest block against fixtures, one generated report and this manifest under proof/, and one derived-artifact entry in the existing CHECK_generated stage script. No engine module, no stage in verify.sh, no contract change, and the suite is not restructured, so a revert removes an analysis and its freshness entry and nothing else. Nothing depends on it at runtime and there is no migration.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "THE ENUMERATION IS MECHANICAL, FROM THE AST. scripts/suite_survey.py parses the target and reports every module-level name whose REACHING DEFINITION lies outside the region of one of its reads. Proven against a TANGLED fixture whose ground truth is declared by construction with #@b / #@r / #@v / #@u tags on the lines they describe, so no expected line number is typed: a name bound and read inside one region is NOT reported (`local_c1`, `tmp_c3`, `arg_c2`), a name bound in one region and read in another IS reported with its exact binding and read lines, a name only ever read is reported UNBOUND, and reaching-definition correctness is asserted on a rebinding pair where the naive bound-here-read-there model gives the wrong answer."
+        },
+        {
+          "type": "unit",
+          "ref": "REAL FILE, STRUCTURAL. Over scripts/selftest.py the survey COMPLETES and every record carries a class from the closed four-value vocabulary, a carrier from the CARRIERS constant, at least one reading line, and a binding line whose TEXT CONTAINS that identifier (or no binding line at all, allowed only for an UNBOUND record). This fires on off-by-one line attribution and on a fifth class value leaking in. It CANNOT fire on an omission, which is why the report carries a blind-spot section instead of a clean bill of health."
+        },
+        {
+          "type": "unit",
+          "ref": "PARTITION INCLUSION, the mechanical form of the boundary-dimension completeness claim, asserted on the fixture AND on the real file as a SET RELATION and never as a count: the crossing set under the marker partition is a subset of the set under the per-statement partition, the finest the file admits. Coarsening only merges regions and merging can only remove boundary pairs, so no later choice of suite boundary can surface a crossing the survey did not already see."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "EVERY CROSSING SYMBOL IS CLASSIFIED AND UNDETERMINED IS THE DEFAULT. SHARED_FIXTURE requires a purity FIXPOINT; a conditional binding, a with-item target, any mutation, or a callable read outside call position keeps the name UNDETERMINED or ORDERING_DEPENDENCY. Driven on the fixture: a conditionally bound name is UNDETERMINED rather than guessed, a mutated accumulator and a monkeypatched module attribute are ORDERING_DEPENDENCY, and a temp-dir name whose lifetime ended is still reported. The counts per class are published in the report's Totals section, emitted from the record set."
+        },
+        {
+          "type": "unit",
+          "ref": "THE CARRIER SET IS AN ARGUMENT WITH A MECHANICAL TOOTH. A closure assertion derives both sides - the survey's own CARRIERS constant and this block's case table - and requires that the set of carriers with both a positive and a negative case EQUALS the set marked DETECTED, that every BLIND carrier has a non-empty reason and no case, and that the two sets exhaust the constant. Neither side is a literal count, so adding a carrier WITH its two cases passes and adding one WITHOUT them reddens the gate. ADDED IN THIS ROUND, from the review: CARRIER_DOC is now bound to the fixture BY VALUE as well as by carrier id - every backticked token in a DETECTED carrier's two published cases must appear VERBATIM in the tangled fixture source. Before this, renaming a fixture symbol left the published table describing a case that no longer existed, green. Driven: CARRIER_DOC's C1 positive case changed to a name absent from the fixture gives 3321 passed, 1 failed on exactly that assertion."
+        },
+        {
+          "type": "unit",
+          "ref": "MUTATOR_METHODS IS DERIVED FROM THE INTERPRETER, not typed: the methods a mutable builtin has and its immutable counterpart does not. The first typed draft omitted set.difference_update, which the target was calling on a validator module's vocabulary, so the omission cost a real crossing. The SET_C3 fixture case reddens a regression to a hand-written list."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "THE DOCUMENT IS DERIVED FROM THE MEASUREMENT, NOT PRINTED, driven over every fixture in the case list rather than a count of them: each emitted document carries every required section exactly once, states that fixture's OWN verdict token from the survey's vocabulary, carries that fixture's OWN crossing-name count, names the sha256 of the exact bytes it measured, and is byte-identical on a second emission. The fixtures DISAGREE with each other (tangled and monolith NOT_FEASIBLE, the detangled twin FEASIBLE with zero crossings), so an emitter printing a constant document fails here."
+        },
+        {
+          "type": "unit",
+          "ref": "THE REVIEW'S HEADLINE DEFECT, AND WHAT CLOSES IT. THE LANDED STATE PUBLISHED A TYPED PARAGRAPH THAT ASSERTED THREE CLASSIFICATIONS. Measured on 2b5d0fa, not quoted: with ONE never-taken `if FAIL < 0:` conditional rebinding of `expect` added to scripts/selftest.py (substitution count asserted 1 before the result was believed), the landed emitter published at line 96 that `expect` is SHARED_FIXTURE and `PASS` and `FAIL` are ORDERING_DEPENDENCY, while its own tables at lines 156 and 914 said `expect` UNDETERMINED and at lines 706 and 773 said `PASS` and `FAIL` SHARED_FIXTURE. Regeneration was a no-op, CHECK_generated passed, the suite was green. WHY THE CHECK COULD NOT SEE IT, stated exactly because it is the transferable lesson: regeneration proves the FILE matches the EMITTER and says nothing about whether the EMITTER matches the MEASUREMENT. CLOSED TWO WAYS. (1) The paragraph is DERIVED: _preparation_3() reads the class of the assertion callee and of every name whose mutation the measurement attributes to a call of it off survey.as_dict()['records'], via two new structured fields (`mutated_via` per record, `assert_callee` per survey) rather than by parsing a prose string. Re-driven on the real target with the fixed emitter: under the same mutation the paragraph now says UNDETERMINED and AGREES with the tables. (2) prose_claims() REFUSES a typed sentence of that shape before anything is emitted."
+        },
+        {
+          "type": "unit",
+          "ref": "NO TYPED SENTENCE IN THE EMITTER MAY ASSERT A CLASSIFICATION, and the refusal is driven in BOTH directions. The rule: a sentence may not carry a backticked bare identifier that THIS measurement reports as a crossing name, or a backticked interpolation slot a name will be substituted into, together with a word from CLASSES or VERDICTS. THE DOMAIN IS DISCOVERED, NEVER LISTED: every string constant in the module's own AST except docstrings, so a paragraph typed tomorrow is covered on the day it is typed. NEGATIVE CONTROL and it is the half that matters: over the real source the guard returns ZERO claims and the document it emits is byte-identical to the default emission, so it is not refusing everything. POSITIVE: a new typed constant naming a measured name with a class word, and a second plant where the NAME is an interpolation slot and only the CLASS is typed, each make render_report REFUSE and name the sentence. A source that does not parse is a NAMED REFUSAL, not a SyntaxError, because the gate stage redirects this generator's stdout and a traceback would leave a truncated document and report nothing."
+        },
+        {
+          "type": "unit",
+          "ref": "A CORRUPTED DOCUMENT IS DISTINGUISHABLE FROM A FRESH EMISSION, which is the only property the gate's diff rests on, and THE STAGE ITSELF IS DRIVEN rather than read: the real scripts/check_generated.sh, pointed by GENERATED_CHECK_ROOT at a fixture tree, exits 0 on a correct report, exits 1 on a report with ONE DIGIT of one figure changed (substitution count asserted first), REWRITES it back to the emitter's output, and exits 0 next run. Also that verify.sh declares CHECK_generated required rather than na: or waived:. A first draft asserted the wiring as TEXT and was measured missing a mutant that left the path in the file and short-circuited the call with `true ||`."
+        },
+        {
+          "type": "unit",
+          "ref": "THE EMITTER REFUSES A DOCUMENT IT CANNOT FULLY DESCRIBE: a carrier in CARRIERS with no CARRIER_DOC entry, and a judgement constant with no published meaning, each raise and NAME what is missing rather than emit a blank cell. Driven through render_report's own parameters, so nothing monkeypatches the module under test. Every exception is caught and a non-ReportRefusal is recorded as a FAILURE: measured on a mutant that deleted the pre-flight, the emitter raised KeyError and the traceback killed the whole run, and a suite with no summary line reports nothing, which is worse than a red."
+        },
+        {
+          "type": "operational",
+          "ref": "THE VERDICT IS NOT THE EXIT CODE. Over a fixture engineered to NOT_FEASIBLE the tool exits 0 with the negative verdict published; exit 1 is reserved for a REFUSAL with the reason named (target missing, does not parse, star import, dynamic namespace write). An analyst that cannot return a negative result without breaking the build is not measuring anything."
+        },
+        {
+          "type": "operational",
+          "ref": "THE PUBLISHED VERDICT, as emitted at this commit: FEASIBLE_WITH_PREPARATION over scripts/selftest.py, content digest sha256 16f5f2437c758f73443f5c06e6596c0ab538e04571e79f2eaab52e6b75d9ec8d. The report names the proposed boundary set, the blocking symbols, the per-symbol index and the sensitivity table. No figure in this manifest restates one of them: they are rows of a generated document and a copy here would be the same defect this round exists to fix."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "full suite, clean tree",
+      "result": "3322 passed, 0 failed (exit 0)",
+      "note": "READ OFF THE SUITE'S OWN FINAL LINE and the only number in this manifest that is a count. 3319 before this round; three assertions added (the typed-prose refusal, the derived classification paragraph, CARRIER_DOC by value). No assertion pins it: the suite total is a moving repository property."
+    },
+    {
+      "name": "full gate, clean tree",
+      "result": "GATE: GREEN (2a3cd68468d9990d6895ae5785b06baf31ad3cd4)",
+      "note": "Run from a clean tree so the attestation names a commit that exists. CHECK_generated reports both derived artifacts passing, which means regenerating specs/index.md and proof/WARP-0716/crossing-state.md is a no-op."
+    },
+    {
+      "name": "the review's own mutation, landed state",
+      "result": "prose line 96 SHARED_FIXTURE vs tables lines 156 and 914 UNDETERMINED; `PASS` and `FAIL` prose ORDERING_DEPENDENCY vs tables SHARED_FIXTURE",
+      "note": "Measured in a throwaway worktree at 2b5d0fa, substitution count asserted 1. The defect is recorded as observed rather than as reported."
+    },
+    {
+      "name": "the review's own mutation, fixed state",
+      "result": "prose UNDETERMINED, tables UNDETERMINED: AGREES",
+      "note": "Same mutation, same target, on this commit's emitter. Both the target and the regenerated report were restored afterwards and verified byte-identical."
+    },
+    {
+      "name": "typed-prose guard, measured over the real emitter",
+      "result": "1071 string constants scanned, 466 measured names, 0 claims after the fix",
+      "note": "Before the fix the same scan returned exactly 2 hits, both sentences of _P_PREPARATION_3, and nothing else. That measurement is why the rule is sentence-scoped and identifier-scoped: a paragraph-scoped or loosely-tokenised version flagged _P_BOUNDARY_HEAD and _P_MUTATOR_METHODS, which assert nothing, and a guard that reds on correct prose gets weakened."
+    },
+    {
+      "name": "mutants, in place with the count asserted and the file restored",
+      "result": "6 mutants, each reddens exactly the assertion that owns the property",
+      "note": "M1 pre-flight deleted -> the guard assertion. M2 derived paragraph replaced by the typed one that shipped -> the derived-paragraph assertion. M3 CARRIER_DOC drifted from the fixture -> the by-value assertion. M4 the `via` attribution dropped -> the derived-paragraph assertion. M5 the interpolation-slot half of the rule removed -> the guard assertion. Each 3321 passed, 1 failed. M4 and M5 SURVIVED the first draft of these assertions, which is why the counter names now come from an INDEPENDENT oracle (the fixture's own `global` statement, which the survey does not touch) and why a second plant covers the slot shape."
+    },
+    {
+      "name": "negative control",
+      "result": "3322 passed, 0 failed",
+      "note": "An ordinary additive prose edit to the emitter (a sentence appended to _P_TOTALS_HEAD asserting nothing about a measurement) stays green. Without this the guard could be a check that reds on any prose edit, which is the unbounded-manual-cost trap this item already paid for once."
+    },
+    {
+      "name": "placement gate, before",
+      "result": "13 ready specs, 7 claimable, 5 withheld, WARP-0716 in NEITHER; check_placement and check_spec both 0 errors",
+      "note": "arch.footprint_tier_floor computed high from the pair {enforcement, engine}; declared risk standard; arch.placement_gate refused the unit and nothing reported it. Exactly what WARP-0724's risk section predicted."
+    },
+    {
+      "name": "placement gate, after, via the shipped frontier",
+      "result": "8 claimable including WARP-0716, 5 withheld, ready-minus-claimable-minus-withheld is EMPTY",
+      "note": "placement corrected to [enforcement], the one declared area this footprint actually falls in. Footprint UNCHANGED except for adding this manifest. Verified through .warp/frontier.py, the shipped CLI, not through a private helper."
+    }
+  ],
+  "known_limits": [
+    "THE TYPED-PROSE GUARD IS A SHAPE TRIPWIRE, NOT A PROOF, and this is the largest residual in the round. It catches a typed SENTENCE pairing a backticked measured name or interpolation slot with a word from CLASSES or VERDICTS. It does NOT catch a claim split across two sentences, a class named in lower-case prose instead of the vocabulary's own spelling, a claim about a read count or a region count rather than a class, a claim about a name the measurement does not report, or prose that is simply wrong about something the survey never measures. It is published as a blind spot in the document itself rather than left to silence.",
+    "DOCSTRINGS ARE OUTSIDE THE GUARD'S DOMAIN, declared here as its one hole in its own domain. They are documentation of the code and are not published in the document, but the exclusion is a decision and not a proof.",
+    "THE SWEEP OF THE OTHER TYPED CONSTANTS WAS A READ, backed by the mechanical scan for the classification shape only. Every one of the emitter's 27 typed constants was read and named in the commit message; four were found asserting a measurement and fixed (_P_PREPARATION_3, _P_HISTORY_V, _P_FS_INDEX_TAIL, _P_MUTATOR_METHODS) and the remainder describe the tool's METHOD or a table's construction. A read is not evidence, which is the whole premise of this item, so a future reviewer should attack the remainder rather than trust this line.",
+    "EVERY HARD ASSERTION ABOUT THE TOOL'S BEHAVIOUR IS STILL AGAINST A FIXTURE. The real-file assertions are structural and cannot fire on a crossing the survey never looked for. Unchanged by this round and published as the document's own blind spot.",
+    "THE CARRIER ENUMERATION IS AN ARGUMENT AND ITS FAILURE IS SILENT. A seventh carrier nobody named produces no symbol, and absence of a look is indistinguishable from absence of a crossing. The fail-closed UNDETERMINED default does not cover it. NOT CLOSED, and the largest silent-failure path in the item itself.",
+    "WITHHELD() IS STILL BLIND TO A PLACEMENT REFUSAL. The instance is fixed by correcting a false placement; the CLASS is not. A ready spec that any future refusal reason drops still disappears from both halves of the frontier. WARP-0726 is written for it, status draft, human_approval required, and this item does not build it: one concern per item.",
+    "THE PROOF MANIFEST IS RETROSPECTIVE. It is written after the fact, in round 3, for an item whose first two rounds landed without one and whose generator fix landed with no independent review. A manifest written after the review that failed the work is weaker evidence than one written as the work was proven, and saying so is the point of this line.",
+    "NO WALL-CLOCK OR THROUGHPUT NUMBER IS CLAIMED ANYWHERE. This item measures a property of a file; it makes the suite no faster and does not claim to."
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0908",
+  "commit": "a791ddd8dfebbd024ac73f490fa98d4864fa47ec",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder)",
+  "reviewed_at": "2026-07-20T03:20:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:94fe49f465f991bc",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Version bumped to 3.5.0 for the WARP Fleet distribution v1 milestone. At R: plugin/.claude-plugin/plugin.json version 3.5.0, .claude-plugin/marketplace.json version 3.5.0, README.md 'Current plugin version: 3.5.0.', and PLAN-0009 release.version 'plugin 3.5.0'. No stale 3.4.0 remains in any of the four files. The generic method documents (method.md, AGENTS.md) are not in R: the fleet ships as engine and packs, not a change to the WARP method. git show --stat a791ddd confirms the release touches no method document and no engine file."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "The shipped fleet stays recorded honestly and R adds no new claim: capabilities.yaml is not in R's diff (git show --stat a791ddd lists six files, neither capabilities.yaml copy among them), so the honest record from W5/W6/W7 is unchanged and nothing is over-claimed. The WARP-0906 home-resolution honesty check and byte-identity of both .warp/capabilities.yaml and plugin/templates/.warp/capabilities.yaml pass inside the GREEN selftest at R (1374 passed, 0 failed), and template sync reports pass; the W6 repo-only markers remain intact because the file is untouched."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "No engine file (scripts, bin/warp, .warp/*.py, .warp/*.yaml, workflow, templates) is edited by R, so every declared pack's engine stays byte-identical to the canonical source with no re-sync required. python3 scripts/check_pack_drift.py reports 'pack drift: pass (7 pack(s))', each pack (claude, cursor, codex, copilot, antigravity, opencode, aider) engine byte-identical to source, and cross-pack conformance passes inside the GREEN selftest at R."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "The docs point to the shipped fleet. R's README diff bumps the plugin-version line to 3.5.0 and carries the WARP Fleet section describing the installable fleet as it ships (fleet ships in the engine, installing a pack lays it, the warp CLI drives it, warp fleet N in-session workers and warp work single worker). Every fleet command named in the docs (work, fleet, account, status and watch, answer/steer/abort, supervisor) exists in the shipped bin/warp, which routes them per the WARP-0904 and WARP-0907 selftest suites. Docs hygiene (dash, non-ASCII, genericity) passes at R."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "The plugin/ to packs/claude rename and the marketplace source repoint remain deferred as a separate human-approved change (they would move the protected enforcement files and rewrite the .warp/policy.yaml entries naming them). This release keeps plugin/ in place as the option-B Claude pack, marketplace source ./plugin, and the name stays WARP (VELDO parked). Verified independently: R's six files are checked against the seven protected_paths patterns from .warp/policy.yaml by exact and both-direction prefix match and none matches, so policy_check requires no approval; plugin/ is present and packs/claude is absent."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Because W8 gates PLAN-0009, release-check requires WARP-0908 shipped. R carries the spec at status shipped and PLAN-0009 at status released, with W1 through W7 already shipped, so at R python3 .warp/plan.py release-check PLAN-0009 reports 'PLAN-0009: releasable (WARP Fleet distribution v1 ...)' (exit 0) directly, no simulation required, and python3 .warp/plan.py status PLAN-0009 reports 'status released, revision 2, 8/8 shipped, frontier: none'. See the note in findings: the AC6 and Notes prose still describes the pre-restructure impl-plus-evidence sequencing, but the reviewed commit's actual state is directly releasable and the manifest's AC6 evidence reflects that accurately."
+    },
+    {
+      "id": "AC7",
+      "status": "confirmed",
+      "note": "The full gate is GREEN at R. I reran bash scripts/verify.sh: GATE GREEN (a791ddd), selftest 1374 passed / 0 failed (the /tmp fixture lines are the intended negative-case selftests, all counted in the pass total), generated pass (specs/index.md regenerated, WARP-0908 row at shipped and PLAN-0009 at 8/8 released), docs hygiene pass, template sync pass, secret scan pass, contracts pass, pack drift pass (7 packs) with cross-pack conformance in the selftest. .warp/last_verify records status green, commit a791ddd. No protected path is edited (verified against the policy.yaml set). RULE #1 clean: no em or en dash in R's six files, and no prose double-hyphen (every double-hyphen is a version arrow, a CLI flag, or a front-matter fence)."
+    }
+  ],
+  "checks": [
+    "bash scripts/verify.sh at R -> GATE: GREEN (a791ddd8dfebbd024ac73f490fa98d4864fa47ec); selftest 1374 passed, 0 failed; generated, docs hygiene, template sync, secret scan, and contracts all pass; catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared.",
+    "R's diff is exactly the six release files (.claude-plugin/marketplace.json, README.md, plans/PLAN-0009-fleet-distribution.md, plugin/.claude-plugin/plugin.json, specs/WARP-0908-release-fleet-distribution.md, specs/index.md): no stray file, no engine file, no protected path.",
+    "Version 3.5.0 is present in all three version files and PLAN-0009 release.version reads plugin 3.5.0; no stale 3.4.0 remains where it should have moved.",
+    "release-check at R reports releasable directly (exit 0) with WARP-0908 shipped, PLAN-0009 released, W1 through W7 already shipped; status PLAN-0009 reports 8/8 shipped, frontier none.",
+    "capabilities.yaml is not edited by R, so the honest record from W5/W6/W7 is unchanged and no fleet capability is over-claimed; the honesty check and both-copy byte-identity pass in the GREEN selftest.",
+    "pack drift pass for all seven packs (each engine byte-identical to source); cross-pack conformance passes inside the selftest.",
+    "no protected path in R (the six files checked against the seven policy.yaml protected_paths patterns by exact and both-direction prefix; none matches).",
+    "RULE #1: no em or en dash in R's six changed files; no prose double-hyphen (double-hyphens are version arrows like 3.4.0 -> 3.5.0, CLI flags, or front-matter fences).",
+    "proof sequencing: this verdict binds to the reviewed release commit a791ddd (R) and its proof_digest is set to proof_digest(manifest)=sha256:94fe49f465f991bc, recomputed independently with the repo helper and confirmed equal; the manifest is the canonical evidence artifact (required_evidence [operational] satisfied by the operational evidence entries and the operational check)."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Non-blocking. After the commit-topology restructure, R carries the WARP-0908 spec at status shipped and PLAN-0009 at status released, so release-check is directly releasable at R. The spec's AC6 sentence and its Notes section, however, still describe the pre-restructure two-commit sequencing (the impl commit reports not-yet-releasable with WARP-0908 pending, and the spec flips to shipped in the evidence commit, verifiable by simulating WARP-0908 shipped). That description no longer matches the reviewed commit, which already carries the spec at shipped. This is descriptive staleness in the spec prose only, not a functional defect: the mechanical state at R is correct and directly verifiable (release-check releasable at 8/8, plan released, gate green), and the manifest's AC6 evidence accurately records the restructured reality (releasable directly at R, no simulation required). The final released state is identical to the canonical WARP-0810 shape. A future edit could reconcile the AC6 and Notes prose to the single-reviewed-release-commit topology."
+    }
+  ],
+  "summary": "WARP-0908 (release WARP Fleet distribution v1, W8 of PLAN-0009) passes with notes at the reviewed release commit a791ddd, zero blocking findings. R's diff is exactly the six release files with no stray, engine, or protected file (AC1, AC5, AC7). The plugin version is 3.5.0 across plugin.json, marketplace.json, the README version line, and PLAN-0009 release.version, with no stale 3.4.0 (AC1). capabilities.yaml is untouched, so the honest fleet record from W5, W6, and W7 stands with no new claim and nothing over-claimed, and its honesty check and byte-identity pass in the green selftest (AC2). No engine file is edited, so pack drift is empty for all seven packs and cross-pack conformance passes (AC3). The README fleet section and version line point at the shipped fleet, and every named fleet command exists in bin/warp (AC4). The rename and repoint stay deferred, no protected path is touched, and the name stays WARP (AC5). Because W8 gates PLAN-0009 and R carries WARP-0908 shipped with W1 through W7 shipped, release-check reports releasable directly at R at 8/8 and PLAN-0009 is released (AC6). I reran the gate: GATE GREEN at a791ddd, selftest 1374 passed and 0 failed, with generated, docs hygiene, template sync, secret scan, contracts, and pack drift all passing; last_verify records status green at a791ddd (AC7). RULE #1 is clean across R's six files (no em or en dash, no prose double-hyphen). proof_digest binds to the manifest at sha256:94fe49f465f991bc, recomputed and confirmed equal. One non-blocking note: the spec's AC6 and Notes prose still describes the pre-restructure impl-plus-evidence sequencing rather than the restructured single-reviewed-release-commit shape that R actually implements; the mechanical state at R is correct and the manifest reflects it accurately. Verdict: pass_with_notes."
+}

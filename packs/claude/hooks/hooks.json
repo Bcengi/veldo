@@ -1,0 +1,17 @@
+{
+  "description": "Veldo guard: blocks merge and push attempts when the canonical gate is not green for HEAD or no proof manifest exists for HEAD.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/veldo-guard.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "app survives the simulator lifecycle (happy path + re-drives)",
+  "bundle_id": "com.example.app",
+  "udid": "booted",
+  "recovery_assertion": {"action": "expect_label", "value": "HomeScreen"},
+  "steps": [
+    {"action": "launch", "bundle_id": "com.example.app", "settle": 1},
+    {"action": "expect_label", "value": "HomeScreen"},
+    {"action": "state", "name": "home"}
+  ],
+  "lifecycle_redrives": ["process_death", "background_foreground", "appearance"]
+}

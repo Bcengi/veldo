@@ -1,0 +1,35 @@
+{
+  "name": "owner-scoped orders (happy path)",
+  "base_url": "http://127.0.0.1:8080",
+  "timeout": 5,
+  "identities": {
+    "alice": {"headers": {"Authorization": "Bearer alice-token"}},
+    "bob": {"headers": {"Authorization": "Bearer bob-token"}}
+  },
+  "checks": [
+    {
+      "name": "owner reads own order",
+      "as": "alice",
+      "request": {"method": "GET", "path": "/orders/ord-1"},
+      "expect": "allow",
+      "allow_status": [200],
+      "max_seconds": 5,
+      "body_must_contain": ["owner-secret-9f3a"]
+    },
+    {
+      "name": "cross-tenant read is denied",
+      "as": "bob",
+      "request": {"method": "GET", "path": "/orders/ord-1"},
+      "expect": "deny",
+      "deny_status": [403],
+      "body_must_not_contain": ["owner-secret-9f3a"]
+    },
+    {
+      "name": "anonymous read is rejected",
+      "request": {"method": "GET", "path": "/orders/ord-1"},
+      "expect": "deny",
+      "deny_status": [401],
+      "body_must_not_contain": ["owner-secret-9f3a"]
+    }
+  ]
+}

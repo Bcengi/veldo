@@ -1,0 +1,13 @@
+{
+  "name": "fast endpoint under concurrency (budgets hold)",
+  "workload": "sleep",
+  "workload_args": {"seconds": 0.002},
+  "requests": 40,
+  "concurrency": 8,
+  "budgets": {
+    "max_p95_seconds": 5.0,
+    "max_p99_seconds": 5.0,
+    "min_throughput_rps": 1.0,
+    "max_error_rate": 0.0
+  }
+}

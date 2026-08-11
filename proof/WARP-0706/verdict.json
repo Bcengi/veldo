@@ -1,0 +1,21 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0706",
+  "commit": "0fbdc97ef09bdebd0d6ddc83986e84fdf3657e11",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T13:08:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:c9aa8e59a82deeb1",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "windowed_spend is horizon-scoped (4h+60s spend over a 4h window = 0); measure_per_worker_rate arithmetic exact (8000/14400/4); no live remaining-token count queried."},
+    {"id": "AC2", "status": "confirmed", "note": "The min (tighter window) wins in BOTH directions (tight session -> 3; default -> weekly 8 not session 13); bootstrap (rate 0 and -5) -> max_workers; at-least-one when a worker outpaces a window (n=1 not 0); cap holds; never negative or nonsense."},
+    {"id": "AC3", "status": "confirmed", "note": "Each window independently forces 0 when over budget (a weekly-only over-budget forces 0 with the session clear); limit cooldown boundary correct (now==cooldown runs, future backs off)."},
+    {"id": "AC4", "status": "confirmed", "note": "resume_at verified at resume +/- epsilon across one-big-spend, five-small (JUST enough oldest age out), multi-window (the MAX), oversized-single, and under-budget (returns now) cases; NEVER points at a strictly-over-budget time; computes only, no sleep/spawn/socket (imports importlib.util + pathlib only)."},
+    {"id": "AC5", "status": "confirmed", "note": "now_epoch a parameter everywhere, reads no wall clock; gate GREEN, selftest 1047; mutation min->max reddens the tighter-window assertion, neutralizing the spent-out return 0 reddens the backs-off assertion."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review, PASS, 0 blocking. The control law and resume_at are correct: desired_workers paces to the tighter window's target rate with at-least-one-while-budget-remains and bootstrap-to-max, backs off to 0 on a spent-out window or a limit cooldown, and resume_at is verified never to point at a strictly-over-budget time. Reproductions run against the real governor.py with a deterministic base time; both mutation teeth (min->max, ignore-backoff) confirmed red."},
+    {"severity": "note", "text": "Four accepted non-blocking notes, all benign: (1) resume_at is the infimum - at the exact returned instant windowed_spend == budget under the inclusive trailing filter, so desired_workers still returns 0 there and the pool is clear only at +epsilon; safe because the launcher re-checks desired_workers on wake (Y7 must and does re-gate). (2) Future-dated events are counted (no upper time bound), conservative and safe for clock-skew. (3) A for/else branch in resume_at is dead but computes the identical value (harmless). (4) int(tokens) is unguarded, matching existing metrics.py behavior for system-produced integer spend. None affect correctness of the pacing or resume timing."}
+  ],
+  "summary": "Y6 (WARP-0706, the token pacing governor) is correct and honest. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 1047). It measures burn from the event stream within rolling windows (never querying a live remaining count, which Claude Code does not expose) and paces the active worker count to the tighter window's target rate - at least one worker while budget remains so the budget is used, none while a window's budget is spent in its horizon or during a limit cooldown - and resume_at computes when a backed-off pool may resume, verified never to point at a strictly-over-budget time. It is a pure stdlib control law with now_epoch as a parameter (deterministic) that spawns no process and sleeps nothing; the opt-in in-session resume waiter is deferred to the launcher (Y7), never a detached process. proof_digest via validate.py."
+}

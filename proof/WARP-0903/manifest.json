@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0903",
+  "commit": "e4ff4d2e54af4fc44ebf625ac6afdc8b9278fbb7",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0009 W3, orchestrator + builder agent a43d62f8)",
+  "plan_hash": "sha256:6b03ff568d65cd2f",
+  "produced_at": "2026-07-19T16:47:29Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/governor.py adds a per-account layer (lines 149-241) on top of the UNCHANGED single-pool control law: AccountGovernor.account_desired (:207) filters the stream to one account's burn and calls the unchanged desired_workers (:75); account_resume_at (:223) reuses the unchanged resume_at (:101); desired() (:216) sums per-account counts capped at pool_max, so a spent/cooling account contributes 0 while other accounts keep pacing (pool never fully stalls). No new pacing arithmetic; single-pool functions untouched."},
+        {"type": "unit", "ref": "independent review (agent ae9d1349, bound to e4ff4d2): git show shows ZERO deletions in governor.py (single-pool law 40-135 untouched, existing selftests pass); reuse-identity asserted (per-account desired == desired_workers on the account's own stream); pool-not-stalled 0+2+2->cap 3 confirmed."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "burn is attributed per account by tagging spend events with the account at the source (.warp/events.py make_event gains an optional account field + an --account flag defaulting to $WARP_ACCOUNT) and filtering with events_for_account (governor.py:159), keyed to WARP_ACCOUNT from W2; one account's spend never enters another's window; an account with no burn bootstraps to its cap like the single-pool law."},
+        {"type": "unit", "ref": "independent review: events_for_account filters correctly (alpha's window sees 1000 not the mixed 6000); the events.py account field is guarded by 'if account is not None' and metrics.py reads events only by specific keys (never enumerates), so a non-account event is unaffected; no-burn account bootstraps to cap."}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "account_resume_at (governor.py:223) computes resume_at per account over its own filtered events and windows, so each account resumes when ITS window rolls; a fleet with one account spent and another with budget keeps the second running and schedules the first at its own reset; the pool resume_at is the earliest backed-off account's reset."},
+        {"type": "unit", "ref": "independent review: alpha resumes now+90, bravo now+40 independently from their own windows; pool resume_at = earliest (now+40); resume never earlier than the account's own cooldown."}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "InSessionWaiter (.warp/fleet.py:249-289) fills the launcher wait seam: wait_until(epoch) blocks IN-SESSION in bounded steps via an injected sleep until an injected clock reaches the epoch - no process, thread, timer, or subprocess, so it dies with the session (feedback_no_rogue_processes, PLAN-0007 NG1); tick() advances one control interval. The launcher's run re-checks controller.desired() after wait_until (the loop continue) before spawning, so it never resumes into a still-spent window. The governor only COMPUTES times."},
+        {"type": "unit", "ref": "independent review: NO detached-wait/spawn path exists - fleet.py imports only importlib/time/uuid/pathlib and governor.py only importlib/pathlib (so the governor literally cannot sleep or spawn); a grep for subprocess/Popen/os.fork/threading/Timer/os.system/nohup/setsid/systemd/cron/multiprocessing/asyncio finds none in the waiter; the launcher re-check confirmed via the loop continue."}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WARP-0903 selftest block (+20, selftest 1302 -> 1322, 0 failed) drives per-account pacing, per-account limit cooldown, reuse-identity, burn attribution, per-account resume timing, the real InSessionWaiter over a FAKE clock/sleep (no real sleeping), and the launcher re-check; two teeth mutants - a whole-pool-zeroing governor and a no-re-check launcher (plus a third attribution mutant)."},
+        {"type": "unit", "ref": "independent review: both mutants fire - the whole-pool-zeroing governor turns the pool-not-stalled==3 assertion red, and the no-re-check launcher spawns at 1100 vs the real 1200; every W3 waiter injects a fake clock/sleep so the block never really sleeps (the only real time.sleep in selftest are pre-existing tests far above the W3 block). Gate GREEN at e4ff4d2."}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "selftest 1322 passed, 0 failed (+20 for the WARP-0903 block); GATE GREEN at e4ff4d2, verified by the builder and independently by the reviewer (agent ae9d1349) in an isolated worktree; the gate never really sleeps (fake clock throughout)."},
+    {"name": "generated", "status": "passed"},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "W3 of PLAN-0009, depends on W2. Repo-root dogfood machinery (.warp/), NOT the shipped engine plugin/templates/.warp - the fleet is not shipped until W5. The per-account layer reuses the single-pool control law (desired_workers/resume_at) unchanged; the governor only computes times and cannot sleep or spawn (imports only importlib+pathlib); the resume-waiter waits in-session with an injected blocking sleep, never a detached process; the gate uses a fake clock and never really sleeps.",
+    "EVENTS.PY DIVERGENCE (W5 carry-forward, not a defect): the impl added an optional account field to repo-root .warp/events.py but intentionally left the SHIPPED plugin/templates/.warp/events.py byte-unchanged. This is safe and gate-invisible: the field is optional and inert for existing/non-fleet callers (make_event guards it; metrics.py reads events only by specific keys); events.py is NOT in the template-sync PAIRS set; and plugin/templates being untouched means every pack still matches its canon (drift-check green). W5 (ship the fleet into the engine) must sync the account field into plugin/templates/.warp/events.py and re-sync the packs. The independent review confirmed all three points and rated it a note, not a blocker.",
+    "One independent adversarial review (agent ae9d1349, fresh-context Opus, distinct from the builder a43d62f8) returned pass_with_notes, 0 blocking; all three notes are favorable/confirmatory (events.py divergence safe; only legitimate `--flag`/`---`/`# ---` dash uses; protected paths clean). plan_hash sha256:6b03ff568d65cd2f is the canonical hash via plan.py."
+  ],
+  "rollback": "git revert the impl and evidence commits; additive - a per-account layer over the unchanged governor, the InSessionWaiter filling the launcher wait seam, an optional account field on events.py, a selftest block, and this spec, all repo-root dogfood (not shipped engine, not copied into packs). No protected path; pure stdlib; the single-pool control law is reused unchanged (its selftests pass); the gate uses a fake clock and never sleeps or spawns."
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0102",
+  "commit": "e79a545cd7743ad69b4fd5206fe4dac422b24dc4",
+  "reviewer": "claude-opus-4-8[1m] (independent WARP reviewer, fresh context)",
+  "reviewed_at": "2026-07-16T21:27:42Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Independently re-attacked check_spec lane logic with 18 fixtures OUTSIDE the repo (scratchpad). All hold with zero mismatches: lane planned without plan and/or without work is red; standalone with plan and/or work is red; unknown value is red; empty-string and whitespace-only lane are red (not silently treated as absent); absent lane stays green (back-compat, confirmed further by the 4 pre-existing specs WARP-0100/0101/0113/0114 that carry no lane and still pass validate.py all); planned with both present is green. No silent acceptance of any inconsistent lane. The 6 selftest cases exist and pass within 63/0."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Reproduced the half-promotion negative myself: baseline validate.py all is green; flipping WARP-0102 work W2 -> W3 makes validate.py all exit 1 with BOTH mirroring errors (plan-side: PLAN-0001 says WARP-0102 must declare work W2; spec-side: plan work W3 is spec WARP-0103, not WARP-0102); git checkout restores to exit 0. Matches negative-tests.txt exactly. Tree left clean."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "All three verbs exercised live against PLAN-0001. status: 1/12 shipped, frontier WARP-0102/0104/0105/0106/0108 - byte-matches specs/index.md. release-check exits 1 naming all 11 unshipped work items and the D1 block. impact WARP-0105 = [WARP-0107, WARP-0112] (hand-verified transitive); impact WARP-0101 set = {0102,0104,0103,0111,0112} (hand-verified). impact on a spec not in the plan (WARP-9999) errors cleanly (exit 1, no traceback). Built temp plans outside the repo to reach paths the live plan cannot: release-check reports releasable only when all work is shipped, journeys present, no blocking decision, milestone named, and flips to NOT releasable on each condition removed; the impact already-shipped-dependent WARNING branch fires. item_state unit cases (4) cover the state logic. NOTE: plan.py reads spec statuses ROOT-relative (specs/*.md of the live repo), so a copied plan's shipped-ness can only be steered by referencing specs that are/aren't shipped in this repo, not by editing spec files in a temp dir - inherent, not a defect."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "SKILL.md documents all seven verbs (create, refine, approve, pull, revise-with-impact, status, release) plus the two-lane/promotion boundary; revise cites python3 .warp/plan.py impact. specs/TEMPLATE.md carries the lane field (line 9). capabilities.yaml: plan_dialogue=procedure, plan_lane_fields=mechanical, plan_ops=mechanical, plan_run_integration=absent (W3). plugin/templates copies are byte-identical to the live .warp files (plan.py, validate.py, capabilities.yaml, TEMPLATE.md). The run-time context bundle is deferred by omission (never claimed as a verb). See finding F1 for the one prose overclaim about the run-skill refusal."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "SKILL.md pull section (line 39) states 'Do not pull a work item whose dependencies are unshipped; the run skill will refuse it anyway.' The run-skill unshipped-dependency refusal is W3 and capabilities.yaml correctly marks plan_run_integration as absent ('unshipped-dependency refusal at run time is W3'). Presenting the refusal as an already-active safety net, with no W3/not-yet caveat, is a soft overclaim - by the capability manifest's own rule ('a claim in prose that contradicts a status here is a documentation bug') it is a doc bug. Non-blocking: the source of truth (capabilities.yaml) is honest, no false-green gate results, and the run-time context bundle itself is correctly deferred by omission. Suggest rewording to 'the run skill will refuse it once run integration lands (W3)' or dropping the clause."
+    },
+    {
+      "severity": "note",
+      "text": "plan.py verbs are advisory: release-check exits non-zero and the skill instructs setting status: released only on a releasable result, but nothing in scripts/verify.sh calls plan.py, so plan_ops is not gate-enforced. Labeling it 'mechanical' is consistent with the manifest's existing usage for other non-gate-wired shipped code (e.g. plan_index / update_index.py), so this is a terminology observation, not a defect; AC3 requires only that the verbs exist, be derived, be exercised, and be unit-tested for state logic - all met."
+    }
+  ],
+  "summary": "Independent rerun and adversarial re-test of WARP-0102 on commit e79a545. All three required reruns reproduce: selftest 63 passed / 0 failed, validate.py all exit 0, verify.sh GATE GREEN (5 run, 0 undeclared). All four acceptance criteria confirmed against fresh evidence I generated (18 out-of-repo lane fixtures with zero mismatches, self-reproduced AC2 half-promotion both directions, live and temp-dir plan.py exercise covering the releasable path and the shipped-dependent WARNING, hand-verified transitive impact). One note-level finding: SKILL.md line 39 presents the W3 run-skill dependency refusal as if already active. No blocking findings; the change satisfies its specification. Tree left clean (only gate churn .warp/events.jsonl and .warp/last_verify, plus untracked proof/WARP-0102/)."
+}

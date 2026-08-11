@@ -1,0 +1,100 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0103",
+  "commit": "7f9bed8cfc7fe3f7d96c4bee3f75cde5c68e5116",
+  "producer": "claude-fable-5 (implementing agent)",
+  "plan_hash": "sha256:f1bea3833572c104",
+  "produced_at": "2026-07-17T01:10:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "proof/WARP-0103/runner-evidence.txt: run-check WARP-0103 clear (dep WARP-0102 shipped, exit 0); WARP-0111 refused naming unshipped dependency (exit 1)"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "selftest plan_hash cases (stability + volatility exclusion) underpin the revision check"
+        },
+        {
+          "type": "operational",
+          "ref": "runner-evidence.txt: WARP-0103 with plan_revision 2 refused (stale plan context vs current revision 3, exit 1); restored to 3 clears (exit 0)"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "runner-evidence.txt: plan.py bundle emits outcomes, work item feature+dependency status, constraints, and active regression for a work item"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "selftest: plan_hash stable, changes with content, excludes volatile keys"
+        },
+        {
+          "type": "operational",
+          "ref": "this manifest records plan_hash sha256:f1bea3833572c104; /warp:run skill enforces run-check + loads bundle + records hash for planned specs; capabilities plan_run_integration mechanical"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 97 passed, 0 failed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    }
+  ],
+  "assumptions": [
+    "run-check is enforced by the /warp:run skill (a procedure) before building a planned spec; there is no separate pre-build hook, deliberately (proportionality). The refusal logic itself is mechanical and demonstrated."
+  ],
+  "rollback": "git revert 7f9bed8; bundle/run-check/hash are additive plan.py verbs, the run skill gains a preflight, the template gains an optional field; the 94 prior selftest cases pass within the 97.",
+  "review_notes": [
+    "note (cosmetic): duplicated comment header selftest.py; harmless.",
+    "note (follow-up): plan.py module docstring says 'All three read spec status' but there are now 7 verbs - stale; batch into runner-hardening.",
+    "note (follow-up): run-check refusal logic has only operational coverage; add a hermetic unit test.",
+    "note (by design): revision check is one-sided (refuses when the spec is BEHIND the plan; a spec ahead is not a drift case).",
+    "note (accepted): plan_hash truncates to 64 bits - adequate for change-detection binding."
+  ]
+}

@@ -1,0 +1,16 @@
+Negative demonstrations - the auth runner is not a rubber stamp.
+
+[1] Failing fixture verbose output (a real cross-tenant bypass is named):
+FAIL 0:a non-owner must not read another user's record as bob (expect deny)
+     - authorization bypass: expected a denial in [403], got 200 (a non-owner reached the resource)
+     - cross-tenant data leak: denied response still contains 'owner-secret-9f3a'
+authorization journey FAILED: cross-tenant read must be denied (deliberately failing against the vulnerable resource)
+  exit: 1
+
+[2] Positive control - the SAME deny check against the SECURE /orders resource PASSES
+    (bob gets 403, no leak), proving the runner passes when authorization holds:
+  secure /orders deny check passed: True (expect True)
+
+[3] Tamper test - assert bob CAN read alice's secure order (expect allow); the runner
+    must FAIL this false claim because the server correctly returns 403:
+  false allow claim passed: False (expect False - the runner refuses to rubber-stamp)

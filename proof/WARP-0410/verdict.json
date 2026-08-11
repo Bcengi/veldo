@@ -1,0 +1,51 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0410",
+  "commit": "7e8a72c2630365d568bb2d19e32f414dcd3980c7",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T21:03:38Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:d508f7f5bc255408",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (validator, release-check, and gate rerun; descope cleanliness and honesty confirmed); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (validator, release-check, and gate rerun; descope cleanliness and honesty confirmed); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (validator, release-check, and gate rerun; descope cleanliness and honesty confirmed); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (validator, release-check, and gate rerun; descope cleanliness and honesty confirmed); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (validator, release-check, and gate rerun; descope cleanliness and honesty confirmed); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "The gate reads RED on a first run only because specs/index.md is stale relative to the working tree until this review's own WARP-0410 spec is added to the index; check_generated.sh regenerates it (adds exactly the WARP-0410 row) and the gate is GREEN. Harness artifact, not a defect in the release commit."
+    },
+    {
+      "severity": "note",
+      "text": "Honesty confirmed independently: X8/X9 were genuinely never built (no spec or proof files), no live work item depends on WARP-0408/0409, and .warp/capabilities.yaml honestly labels approvals as mechanical-but-not-identity-attested. Removing O2/F2 hides no work claimed done elsewhere."
+    },
+    {
+      "severity": "note",
+      "text": "The term control plane still appears in the generic method and setup docs as an optional scaling concept explicitly framed as deferred, and in some specs as future/out-of-scope; these are legitimate generic-methodology references, not delivery claims."
+    }
+  ],
+  "summary": "WARP-0410 is a legitimate, honest release. Independent adversarial review: pass_with_notes, 0 blocking. PLAN-0004 revision 4 cleanly descopes the never-built server-side control-plane and identity track (X8/X9, F2, O2) with a documented founder rationale; the surviving O1/O3/O4 -> F1/F3/F4 -> X1..X7 traceability is fully intact and validator-clean; the plan is released 7/7, release-check passes, plugin is exactly 3.0.0, and docs/method.md was correctly left unchanged (WARP 2.0 is tooling, not a method change). Full gate GREEN (selftest 760); the only wrinkle is the expected index regeneration for this review's own in-flight spec."
+}

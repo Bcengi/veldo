@@ -1,0 +1,71 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1210",
+  "commit": "b1d68946e30e3776b0a320fc7530e25b8b928e58",
+  "reviewer": "claude-opus-5[1m] (ROUND-6 independent adversarial reviewer, a sixth distinct fresh context)",
+  "reviewed_at": "2026-07-25T18:20:00Z",
+  "verdict": "fail",
+  "round": 6,
+  "supersedes": "proof/WARP-1210/verdict-5-fail.json",
+  "headline": "FAILS NARROWLY AND ON HONESTY OF DECLARATION RATHER THAN DESIGN. The approach stays confirmed, nothing needs redesign, the third surface is CLOSED, and the three restored declarations are all TRUE with the reviewer's own figures. Three claims do not survive measurement, and ONE of them hides a real defect: a skip-named DIRECTORY or SYMLINK containing real records is skipped while the section renders at 100 percent.",
+  "must_fix_before_live": [
+    {
+      "id": "R6-B1",
+      "criterion": "AC6",
+      "severity": "blocking",
+      "summary": "R5-B2 is closed in ONE place, not two, while the manifest states both are closed and PROVEN ON THE SHIPPED CLI. Measured under an ASCII locale with one 0xff byte appended to .warp/events.jsonl: all four surfaces exit 1 with UnicodeDecodeError, identical to the previous commit. The crash is at metrics.py:93 in load(), the LOOP reader, reached before any support code. The support reader IS fixed and stands the stream down by name, but only for a non-engine root, which the shipped CLI never uses. The crash is PRE-EXISTING (load() untouched since WARP-0108) so it is not a round-6 regression, but the declaration is false, and assumption 5 also lists this shape among the twelve that stand the section down when on the CLI it destroys all four surfaces."
+    },
+    {
+      "id": "R6-B2",
+      "criterion": "AC3",
+      "severity": "blocking, and the half that is a real defect",
+      "summary": "TWO problems under one claim. (a) A DIRECTORY or SYMLINK named archive or .gitkeep holding real records is SKIPPED and the section renders at the control's own 100.0 percent: archive/ containing INC-3, .gitkeep/ containing INC-4, archive symlinked to a directory of records, and .gitkeep symlinked to a real record each LOSE A SEEDED RECORD with the section rendering. The skip rule must match REGULAR FILES only. (b) The claim 'a human can see what was not read' is false on every surface: the basis of a COMPLETE read reaches no surface, so a skipped entry is named in the read record and nowhere a human looks. That sentence ships in eight copies and the spec's observability block was amended this round to say it too."
+    },
+    {
+      "id": "R6-B3",
+      "criterion": "AC6",
+      "severity": "blocking on honesty",
+      "summary": "SIX stale sentences in the shipped modules assert TWO surfaces in the very round whose subject is that there are THREE, each in eight copies: metrics_support.py at 21 and 678, metrics_support_contract.py at 15 and 277, metrics_support_report.py at 4, 34 and 136-138 (while line 18 of the same file says all three). This is R3-B5's class, which has now blocked this item twice."
+    }
+  ],
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed"
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "The recurrence population is narrowed to backing alone and round 3's assertion that treated record-only resolution as a feature is genuinely INVERTED, verified over a seeded tree."
+    },
+    {
+      "id": "AC3",
+      "status": "refuted",
+      "note": "THE THIRD SURFACE IS CLOSED, and the reviewer's hardest probe could not defeat it: a tree at 100 percent with a not_counted entry, a phantom recurrence and a negative interval, then one source broken, yields renderable false, twelve keys, NO measure key anywhere in the JSON tree, all twenty-three held-back keys named in withheld, and nothing neither kept nor listed. Nine near-True marks all refused; a dict subclass returns by identity. Six independent break shapes identical. The gate is not decorative: neutralising it emits diagnosability 100.0 beside renderable false. THE SKIP RULE holds where it was attacked hardest - a name-shaped record can NOT be silently skipped, because the record suffix is asked first, and case variants correctly go unaccounted - but refuted by R6-B2: a skip-named CONTAINER loses records."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed"
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Matrix instrumented independently in a throwaway clone: 40 by 40, 1600 cells, forty diagonal true, off-diagonal NONE, forty distinct targets each appearing exactly once, nine modules sha256-unchanged, the 39-cell grid true with both failure lists empty. BOTH declared tooth exceptions ruled SOUND, and the reviewer improved on one: the owner-reads module's 'carries no decision of its own' is imprecise because _owner does make the absent-versus-unreadable call, so the reviewer mutated it across five engine states and found every case degrades DOWN, never up."
+    },
+    {
+      "id": "AC6",
+      "status": "refuted",
+      "note": "Refuted by R6-B1, R6-B3 and R6-B2(b). Everything else audited TRUE: no bound relaxed (seven literals byte-identical, one added, and the contract's six deleted lines are precisely the two read constructors being rewritten, so the split was a split and not a compression), 26 assertions added and 13 removed each a stronger in-place rewrite, no existing number changed (compute() byte-identical from the last pre-item revision over the 553-event stream), engine sync one hash per file across ten files and eight copies, and every line-count figure in the manifest exact."
+    }
+  ],
+  "restored_declarations_ruling": "ALL THREE TRUE, measured by the reviewer itself. The right-schema receipt forgery reproduced exactly (two hand-written receipts plus two records plus two forged events yield renderable true, both authenticated, zero exclusions, 100 percent diagnosability, validated_by of '0' accepted, bound_digest absent without complaint, both receipt ids unrelated to content) and is correctly ranked above the fabricated-read residual. The gate-ungoverned figure of 2510 measured exactly. The availability cost of 12 render and 12 residual reproduced independently with zero disagreements.",
+  "notes": [
+    "Ranked by six-month impact. 1. The right-schema receipt forgery remains the ceiling on this item's honesty; until W11 closes it, everything above is a lock beside an open wall. 2. THE SKIP TABLE'S TRUE RESIDUAL IS OPEN-ENDED: sixteen further conventional entries still stand the section down, including .swo (vim's SECOND swapfile, while .swp is named) and .keep (the .gitkeep synonym), plus .gitattributes, Thumbs.db, desktop.ini, .editorconfig, LICENSE, .orig, .rej, .bak. A closed positive-match table cannot enumerate convention. 3. 2510 lines outside every mechanizable budget. 4. ONLY TWO OF THE FOUR SANITIZE POINTS ARE LOAD-BEARING against any surface: removing either ingress sanitize changes nothing on all 48 cells, while both egress points are load-bearing. The one-per-boundary reasoning does not hold as stated; the egress pair carries the property. 5. dashboard.py:178 (the entropy area id) is the last unsanitized interpolation on a stream, and the declaration about it is wrong in two ways: it is INSIDE this item's footprint, not outside, and the cost is the whole text dashboard exiting 1, not one section losing its render. 6. support_json(None) raises where support_renderable is defensive. 7. The two surfaces diverge on a whitespace-only event type. 8. withheld names held-back KEYS while excluded, recurrence_unresolved and the trends' unusable are republished inside named_inputs. 9. Three further untrue-in-the-letter sentences: contract_dependence.not_counted_count IS a count of authenticated incidents while three places say the dependence carries no figure, the accounting says FOUR directory sources had no name rule when there are three call sites of which two lacked one, and the grid's own assertion message still says EITHER surface while the cell checks three."
+  ],
+  "gate_observed": {
+    "verify": "GATE: GREEN (b1d6894)",
+    "selftest": "3112 passed, 0 failed, measured three times including in a clean clone",
+    "baseline": "3091, delta +21 exactly as claimed"
+  },
+  "disposition": "NOT LANDED. The remaining work is small and mostly PROSE: guard the loop reader or restate the claim, make the skip rule match regular files only and either surface the skipped entries or correct three sentences, and fix six stale two-surface sentences. THE PATTERN IS NOW THE POINT: five of six reviews have blocked this item partly or wholly on sentences that assert properties the code does not have. That is a different failure class from the engineering, and it needs a different rule - a docstring sentence making a checkable claim must be backed by an assertion or must not be written."
+}

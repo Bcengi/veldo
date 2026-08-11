@@ -1,0 +1,138 @@
+{
+ "schema": "veldo.suite_requires/v1",
+ "note": "DERIVED, do not edit by hand. Regenerate with `python3 scripts/run_scope.py --emit-requires`; scripts/check_generated.sh holds it fresh. Each entry is the fragment's prerequisite CLOSURE, in manifest order, INCLUDING the fragment itself. `python3 scripts/selftest.py --suite NAME` runs exactly this list. It is a FIXPOINT: the direct demand alone was measured to leave 5 of 13 fragments producing zero of their own labels, because a fragment inside the closure died first. WHERE EACH ENTRY COMES FROM, because the two halves are not equally trustworthy: a fragment WITH a region range takes its demand from the WARP-0712 measurement and nobody types it, while a fragment added after that cut has no range and its demand is the `requires` list a HUMAN TYPED in manifest.json, closed transitively. A MISSING declaration is a refusal by name. A WRONG one is accepted here and only surfaces as a NameError under `--suite`, with no verdict line, so a post-cut fragment's declaration is worth exactly the label-identity check behind it.",
+ "derived_from": {
+  "measurement": "proof/WARP-0712/order-dependence.json",
+  "digest": "e8b70e982e750436c6e65e7874b5df7c8ed5cebd085ea68cfe9acbe109cdfa9d",
+  "manifest": "scripts/suites/manifest.json"
+ },
+ "requires": {
+  "01_warp_0101_reviewer_notes": [
+   "01_warp_0101_reviewer_notes"
+  ],
+  "02_mobile_ios_runner_b8": [
+   "01_warp_0101_reviewer_notes",
+   "02_mobile_ios_runner_b8"
+  ],
+  "03_plugin_extension_loading_runner": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner"
+  ],
+  "04_run_status_reader_veldo": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo"
+  ],
+  "05_tracker_routing_resolver_veldo": [
+   "05_tracker_routing_resolver_veldo"
+  ],
+  "06_capabilities_manifest_honesty_veldo": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo",
+   "06_capabilities_manifest_honesty_veldo"
+  ],
+  "07_warp_1103_completion_mandatory": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo",
+   "06_capabilities_manifest_honesty_veldo",
+   "07_warp_1103_completion_mandatory"
+  ],
+  "08_restoration_spec_generation_veldo": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo",
+   "06_capabilities_manifest_honesty_veldo",
+   "07_warp_1103_completion_mandatory",
+   "08_restoration_spec_generation_veldo"
+  ],
+  "09_action_whitelist_warp_1205": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo",
+   "05_tracker_routing_resolver_veldo",
+   "06_capabilities_manifest_honesty_veldo",
+   "07_warp_1103_completion_mandatory",
+   "08_restoration_spec_generation_veldo",
+   "09_action_whitelist_warp_1205"
+  ],
+  "10_warp_0613_anti_vacuity": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo",
+   "05_tracker_routing_resolver_veldo",
+   "06_capabilities_manifest_honesty_veldo",
+   "07_warp_1103_completion_mandatory",
+   "08_restoration_spec_generation_veldo",
+   "09_action_whitelist_warp_1205",
+   "10_warp_0613_anti_vacuity"
+  ],
+  "11_inbound_command_receipt_reconcile": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo",
+   "05_tracker_routing_resolver_veldo",
+   "06_capabilities_manifest_honesty_veldo",
+   "07_warp_1103_completion_mandatory",
+   "08_restoration_spec_generation_veldo",
+   "09_action_whitelist_warp_1205",
+   "10_warp_0613_anti_vacuity",
+   "11_inbound_command_receipt_reconcile"
+  ],
+  "12_warp_1210_hardening_four": [
+   "01_warp_0101_reviewer_notes",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo",
+   "05_tracker_routing_resolver_veldo",
+   "06_capabilities_manifest_honesty_veldo",
+   "07_warp_1103_completion_mandatory",
+   "08_restoration_spec_generation_veldo",
+   "09_action_whitelist_warp_1205",
+   "10_warp_0613_anti_vacuity",
+   "11_inbound_command_receipt_reconcile",
+   "12_warp_1210_hardening_four"
+  ],
+  "13_warp_0623_codified_live": [
+   "01_warp_0101_reviewer_notes",
+   "02_mobile_ios_runner_b8",
+   "03_plugin_extension_loading_runner",
+   "04_run_status_reader_veldo",
+   "05_tracker_routing_resolver_veldo",
+   "06_capabilities_manifest_honesty_veldo",
+   "07_warp_1103_completion_mandatory",
+   "08_restoration_spec_generation_veldo",
+   "09_action_whitelist_warp_1205",
+   "10_warp_0613_anti_vacuity",
+   "11_inbound_command_receipt_reconcile",
+   "13_warp_0623_codified_live"
+  ],
+  "14_warp_0717_subset_runner": [
+   "14_warp_0717_subset_runner"
+  ],
+  "15_warp_1402_estimate_record": [
+   "15_warp_1402_estimate_record"
+  ],
+  "15_warp_1404_historical_analogy": [
+   "15_warp_1404_historical_analogy"
+  ],
+  "15_warp_1405_reconciliation": [
+   "15_warp_1405_reconciliation"
+  ],
+  "15_warp_1406_normalization": [
+   "15_warp_1406_normalization"
+  ],
+  "15_warp_1407_judgment_load": [
+   "15_warp_1407_judgment_load"
+  ],
+  "15_warp_1408_budget_rollup": [
+   "15_warp_1408_budget_rollup"
+  ],
+  "15_warp_1409_cost_to_change_per_area": [
+   "15_warp_1409_cost_to_change_per_area"
+  ],
+  "16_warp_1403_sizing_pass": [
+   "16_warp_1403_sizing_pass"
+  ]
+ }
+}

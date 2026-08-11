@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>VELDO web runner fixture (deliberately broken)</title>
+</head>
+<body>
+  <h1>Saved Searches</h1>
+  <img src="logo.png">
+  <input id="q" type="text">
+  <button id="save" type="button"></button>
+  <!-- Deliberately broken: the Save handler never reveals status, the button
+       has no accessible name, the image has no alt, the input has no label,
+       and <html> has no lang. Both the flow assertion and the a11y scan
+       must catch this. -->
+  <p id="status" hidden>Saved</p>
+</body>
+</html>

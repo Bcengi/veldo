@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Veldo git pre-push hook for the Claude Code pack - the guaranteed local push gate.
+#
+# Claude Code's PreToolUse guard refuses a push the AGENT attempts. A human pushing from a
+# terminal does not go through it, so this hook is the guaranteed local layer, exactly as in
+# every other pack.
+#
+# Enable it once per clone (git does not run a committed hook until its hooks path points here):
+#
+#   git config core.hooksPath hooks
+#
+# It invokes the shared engine guard (scripts/veldo-guard.sh). The guard reads the command from a
+# JSON payload on STDIN (tool_input.command), NOT from an env var, so this feeds it that payload
+# (git's ref list on the hook's stdin is not what the guard wants). A push is what we are gating.
+set -u
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+GUARD="$ROOT/scripts/veldo-guard.sh"
+if [ -f "$GUARD" ]; then
+  printf '%s' '{"tool_input":{"command":"git push"}}' | bash "$GUARD"
+  exit $?
+fi
+echo "VELDO pre-push: scripts/veldo-guard.sh not found; refusing to push without the gate." >&2
+exit 1

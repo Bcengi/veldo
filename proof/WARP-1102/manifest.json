@@ -1,0 +1,179 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1102",
+  "commit": "b17fb5c59aab5524afa7a96dfacdbcd54ab1dee7",
+  "producer": "claude-opus-4-8[1m] (WARP-1102 build worker, planned lane; W2 of PLAN-0011, gate enforcement of the mechanizable shape rules - the contract-driven shape gate .warp/shape_gate.py wired thin into scripts/verify.sh; intelligent builder, did not review its own work)",
+  "produced_at": "2026-07-22T00:00:00Z",
+  "plan": "PLAN-0011",
+  "work": "W2",
+  "plan_revision": 2,
+  "plan_hash": "sha256:5f6e8c623065cda0",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The mechanizable shape rules are enforced at the gate and fail closed with the rule NAMED. .warp/shape_gate.py reads .warp/architecture.yaml and, for every rule marked enforcement: mechanizable, refuses a violation and fails verify.sh with the rule named. Gate-blocking today, driven by this repository's contract labels: the file_lines budget module_lines (refused over the change set with the budget id named), and the engine invariants engine_byte_identical, derived_never_authoritative, and adoption_safe_fail_closed (each mapped to a wired enforcement: check_pack_drift.py plus check_template_sync.sh; check_generated.sh; and this gate's own stand-down, and refused by name if a named enforcing check is absent). Reuses validate.parse_yamlish and arch.area_for_path plus the boundary-graph helpers (no second parser, glob compiler, or boundary implementation). Standalone python3 .warp/shape_gate.py over this repository returns 0 with the mechanizable rules enforced and 4 review-lane notes."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1102 AC1 block: SG.run(ROOT, set()) is (False, [], notes) with review-lane notes present; a seeded governed file over the file_lines budget refuses and NAMES module_lines (1 finding), the same file under the budget passes (revert), and a changed file outside every declared area is not budget-governed. Mutation teeth confirmed load-bearing: neutering shape_gate.file_lines_findings to return [] turned the AC1/AC3/AC4 size assertions RED, then the module was reverted byte-identical (md5 1422ddba...)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Adoption safe (C2): a repository with NO architecture contract stands the whole shape gate down. shape_gate.run over a temporary tree with no .warp/architecture.yaml returns standdown True and no problems; python3 .warp/shape_gate.py in such a tree prints one standdown line and returns 0. Live tooth: moving this repo's .warp/architecture.yaml aside made the gate print 'no architecture contract, standing down (adoption safe)' exit 0, then it was restored."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1102 AC2 block: over a temp tree with no contract, SG.run returns standdown True and problems [], and stands down even with a change present."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Green safe and CHANGE SCOPED, never a corpus re-sweep. The size budget binds only the files this change touches (git diff against the trunk plus the working tree; runtime and derived artifacts .warp/last_verify, .warp/events.jsonl, specs/index.md, and proof/ excluded), grandfathering the shipped corpus exactly as W3's placement gate never re-sweeps shipped specs. This is the only green-safe reading: this repository's own .warp/validate.py is 1207 lines, over the 1000-line budget, as a pre-contract module, so a whole-tree corpus sweep at the max would turn the green gate RED. ./scripts/verify.sh is GREEN over the whole current repo after this change (commit b17fb5c)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1102 AC3 block: the real validate.py line count exceeds the budget max (grandfathering is real); an EMPTY change set flags nothing; the SAME real over-budget file WOULD be refused (naming module_lines) if it were in the change set, so the rule has teeth and only change-scope grandfathers it. Live tooth: bloating .warp/plan.py to 1170 lines made python3 .warp/shape_gate.py print 'budget module_lines (file_lines): .warp/plan.py is 1170 lines, over the 1000-line budget' exit 1, then git checkout reverted it to 369 lines exit 0."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The D6 stdlib reference implementations (import-boundary, function-length, duplication, complexity) ship in .warp/shape_gate.py, honestly labeled: enforced (gate-blocking) only when the contract marks their rule mechanizable AND the code passes, and while marked review (as today for dependency boundaries, function_lines, duplication, complexity) surfaced as NON-BLOCKING notes, never a gate refusal (NG5). Nothing flips a rule from review to mechanizable; the contract's enforcement label is the sole authority."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1102 AC4 block: each reference analyzer detects a seeded violation (function-length, complexity, duplication, and an unmodeled cross-area import over the real contract) - non-vacuous; and over a fixture contract the SAME file_lines violation BLOCKS under a mechanizable label but is a NON-BLOCKING note under a review label (the label is the sole authority)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Footprint versus diff (the O3 half W3 deferred to W2) enforced green safe: when the change set names EXACTLY ONE spec that declares a footprint, every changed source path must be covered by that spec's footprint globs or the gate refuses by name, reusing arch._glob_re; it stands down for zero or more than one footprinted spec (no corpus re-sweep). WARP-1102 dogfoods it: its footprint covers every path it touches, so the live gate's footprint-versus-diff passes over this change (verified over the real change set). Real teeth observed during the build: an undeclared touch to .warp/init_scaffold.py, and later to .warp/plan.py, were each refused by this check until declared or reverted."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1102 AC5 block: over fabricated change sets, one footprinted spec with all paths within footprint passes, a path outside refuses by name, zero footprinted specs stands down, and more than one footprinted spec stands down; dogfood: SG.footprint_findings over the real change set is empty."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "RJ1 conformance: a seeded violation of each mechanizable rule class present fails the gate with the rule named, and the clean tree stays green. Budget class: a seeded over-budget governed file names module_lines (AC1/AC3). Engine-invariant class: a mechanizable prose rule whose enforcing catalog check is absent refuses naming the rule; the byte-divergent-pack tooth is caught by the wired check_pack_drift.py and the stale-index tooth by check_generated.sh, which the shape gate confirms are wired. The current change under evaluation yields NO shape-gate problems (green, the enforcement did not break our own build). Live tooth: appending a byte to packs/cursor/.warp/shape_gate.py made check_pack_drift.py report 'pack cursor: 1 engine file drifted' FAIL, then re-syncing reverted it to pass."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1102 AC6 block: a mechanizable prose rule with an ABSENT enforcing check refuses by name; over the real tree the enforcing checks are present so the engine invariants pass; and SG.run over the real change set yields no problems (clean tree green)."
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Fail closed and anti-vacuity (C1, C2, NG5): a contract that marks a prose rule mechanizable with an id the gate has no wired enforcement for is REFUSED by name, and a mechanizable budget of a kind with no reference implementation is refused; shape_gate.main fails closed on any unexpected error. The positive control (this repository's real contract, every mechanizable rule wired) passes."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1102 AC7 block: an UNKNOWN mechanizable prose rule id yields 'no wired gate enforcement'; SG.run over a fixture with a mechanizable prose rule of an unknown id, and over a fixture with a mechanizable budget of kind loc_count, each refuse by name."
+        }
+      ]
+    },
+    {
+      "id": "AC8",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Byte-identical across all 8 engine copies and thin protected-file diff. .warp/shape_gate.py (472 lines) is new engine synced byte-identical to plugin/templates and the 6 packs; .warp/capabilities.yaml gains one honest mechanical entry (shape_gate_enforcement) synced across all 8 copies (pack drift and template sync pass). scripts/verify.sh and its plugin/templates twin gain ONLY a thin call (+3 lines each: the exact block 'if ! python3 .warp/shape_gate.py; then FAIL=1; fi'); warp-guard.sh, .warp/policy.yaml, and .warp/policy_check.py are NOT touched. .warp/init_scaffold.py lays the module down so a fresh init stays green. This spec declares placement [enforcement, contracts] and a footprint that spans them over the allow-listed enforcement -> contracts edge (cohesive breadth, footprint tier standard, not a boundary crossing); it is a PROTECTED-PATH change (edits verify.sh) so it carries human_approval: required and the founder's recorded approval (2026-07-22), independent of the tier."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1102 AC8 block: shape_gate.py and capabilities.yaml byte-identical root vs plugin/templates and across all 6 packs; the shape_gate_enforcement capability is mechanical; both verify.sh copies carry only the thin call; warp-guard.sh/policy.yaml/policy_check.py carry no shape-gate reference; dogfood: the spec's footprint spans enforcement and contracts, footprint_tier_floor is '' (standard), placement_gate passes at risk high, and it declares scripts/verify.sh in protected_paths with human_approval required."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1782 passed, 0 failed (was 1745 at the WARP-1104 baseline; this item adds the WARP-1102 block covering the mechanizable-rule enforcement and rule naming, adoption-safe stand-down, change-scoped green-safety with the validate.py grandfathering, the D6 reference analyzers and the label-controls-blocking rule, footprint-versus-diff over fabricated and real change sets, RJ1 per-class teeth, anti-vacuity refusals, and byte-identical sync). The pack-drift, pack-conformance, and runner-catalog harnesses run inside this slot and pass. Mutation teeth observed RED then reverted byte-identical: neutering file_lines_findings (md5 1422ddba... restored); a byte-divergent packs/cursor copy (check_pack_drift FAIL then re-synced); a bloated .warp/plan.py at 1170 lines (module_lines RED then git checkout)."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all returns rc 0: check_arch over this repository's own contract, check_spec over WARP-1102 (placement [enforcement, contracts] resolves and validates), the plan/spec binding, every proof manifest and verdict, and the examples block."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "bash scripts/check_generated.sh: python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1102 as draft, risk high, approval required (derived from front matter, status NOT flipped to shipped), on the PLAN-0011 frontier."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "bash scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (plugin/ files carry no company or product reference) all pass. RULE #1 hand-checked across every changed file: the only double-hyphen occurrences are ASCII section-divider rows (matching the existing .warp/validate.py convention) and the YAML front-matter fence regex; never prose."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: pass (the checked pairs byte-identical; verify.sh, capabilities.yaml, and shape_gate.py are per-repo or drift-checked, not template-sync pairs)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: every pack's engine (including the new .warp/shape_gate.py and the edited .warp/capabilities.yaml and scripts/verify.sh) byte-identical to the canonical source plugin/templates; drift empty across all 7 packs."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py: pass (21 runners each complete; the shape_gate_enforcement capability is mechanical with home .warp/shape_gate.py, not a runner, so it is not subject to the runner completeness checks and its note carries no runners/ path)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "verify.sh built-in shape gate (python3 .warp/shape_gate.py): pass; mechanizable rules enforced (module_lines over the change set, the engine invariants wired), 4 review-lane rules surfaced as non-blocking notes, footprint-versus-diff over the change set clean. Adoption safe and change scoped, so the gate stayed green over the whole current repo (the enforcement did not break our own build)."
+    },
+    {
+      "name": "gate",
+      "status": "passed",
+      "detail": "./scripts/verify.sh -> GATE: GREEN (b17fb5c59aab5524afa7a96dfacdbcd54ab1dee7). catalog: 5 run, 18 not-applicable, 0 waived, 0 undeclared. Post-commit re-run stays green."
+    }
+  ],
+  "rollback": "git revert b17fb5c. The commit adds one module (.warp/shape_gate.py: the contract-driven mechanizable-rule enforcement, the change-set computation, the file_lines budget enforcement, the prose-rule enforcement registry, the footprint-versus-diff check, and the stdlib reference analyzers), a thin call to it from scripts/verify.sh and its plugin/templates twin, one capabilities.yaml entry, an init_scaffold.py substrate entry, and a selftest block, all re-synced byte-identical across plugin/templates and the 6 packs. The shape gate stands down entirely when no architecture contract exists (adoption safe), so a repository without a contract is unaffected either way; reverting returns the gate to its prior behavior with no migration and nothing to unwind. The already-shipped corpus was never re-swept (change scoped), so nothing about the historical tree changes on revert.",
+  "proof_digest": "sha256:86f22c838df12f37"
+}

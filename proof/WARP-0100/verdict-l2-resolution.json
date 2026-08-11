@@ -1,0 +1,33 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0100",
+  "commit": "0de75f3ee243249a6161a5a606d713c4eeb8456e",
+  "resolution_of": "verdict-l2.json",
+  "resolved_at_commit": "ea259df4caf080b5a8f55a22f53741f0f0a3c745",
+  "reviewer": "claude-opus-4-8[1m]",
+  "reviewed_at": "2026-07-16T20:42:38Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "F1",
+      "status": "confirmed",
+      "note": "CLOSURE VERIFIED. Commit 096cf76 corrects proof/WARP-0100/approval-dmitry.json decision from 'approve' to the canonical 'approved' (recorded_by also corrected to claude-fable-5, resolving the provenance-mismatch note, with a correction_note preserving what happened). Independently reran the real .warp/policy_check.py at HEAD ea259df: valid_approval_for('0de75f3...') now returns /path/to/repo/proof/WARP-0100/approval-dmitry.json (was None). The vocabulary is additionally pinned: validate.py now rejects any approval whose decision is not approved|rejected, and scripts/selftest.py exercises exactly the original near-miss ('approve' rejected with an explanatory message, observed in the selftest run: 49 passed, 0 failed)."
+    },
+    {
+      "id": "F2",
+      "status": "confirmed",
+      "note": "CLOSURE VERIFIED. Commit f67336e (WARP-0113) adds blocking_findings() to .warp/policy_check.py (byte-identical in plugin/templates, verified by diff): dict shape returns the blocking list, list shape returns entries whose severity is not note|non_blocking, and anything unreadable counts as blocking (fails closed). Independently exercised at HEAD: blocking_findings(verdict.json) = 0 entries, blocking_findings(verdict-l2.json) = 2 entries (the two original blocking findings), no exception; valid_verdict_for('0de75f3...') returns proof/WARP-0100/verdict.json without raising (previously AttributeError). Refutation attempts all failed closed: string findings, dict with non-list blocking, and a list entry with an unknown severity each count as blocking. validate.py now pins the findings contract (dict {blocking, non_blocking} with list values, or list of {severity: blocking|note, text}); python3 .warp/validate.py all exits 0 at HEAD with the array-shaped verdict-l2.json present."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Protected-surface closure is partial by choice: .warp/policy_check.py and plugin/templates/.warp/policy_check.py joined protected_paths (verified in .warp/policy.yaml), but .warp/validate.py and the check bodies (check_docs.sh, check_lint.sh, check_template_sync.sh, selftest.py) named in the original high-risk note remain unprotected. That original observation was a note, not blocking, and template sync plus the mandatory independent verdict remain the backstop, so this does not reopen anything; recording the residual for the record."
+    },
+    {
+      "severity": "note",
+      "text": "verdict-l2.json intentionally still carries its two blocking findings (corrections reference, never rewrite), so blocking_findings() correctly returns 2 for it and valid_verdict_for skips it; the passing verdict for 0de75f3 is satisfied by verdict.json, and this resolution file records closure. Anyone auditing later should read verdict-l2.json together with this file."
+    }
+  ],
+  "summary": "Both blocking findings from verdict-l2.json are independently verified CLOSED at HEAD ea259df. F1: the approval record now carries the canonical decision 'approved' and valid_approval_for returns the file path where it previously returned None, with the decision vocabulary pinned in validate.py and the exact near-miss red in selftest (49 passed). F2: blocking_findings() normalizes both canonical verdict findings shapes and fails closed on junk, valid_verdict_for no longer raises on the array-shaped verdict, validate.py pins the findings contract and exits 0 over the whole repository, and policy_check.py (plus its template twin) joined the protected paths. Two residual notes, neither reopening a finding."
+}

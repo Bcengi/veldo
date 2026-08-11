@@ -1,0 +1,14 @@
+=== AC5 negative: hand-edited index red pre-commit; regenerated green pre-commit ===
+exit with stale index: 1
+exit after regeneration (uncommitted): 0
+
+=== AC3: gate run leaves no bytecode churn ===
+gate exit: 0
+pyc entries in git status after gate: 0
+
+=== AC1 operational: policy_check reads the array-shaped WARP-0100 verdict without crashing ===
+verdict.json -> findings type: list | blocking: 0
+verdict-l2.json -> findings type: list | blocking: 2
+
+=== AC10 operational: the once-inert approval now evaluates live ===
+valid_approval_for(0de75f3...): /path/to/repo/proof/WARP-0100/approval-dmitry.json

@@ -1,0 +1,126 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1108",
+  "commit": "7f63236cdd1cce3587fda8fc513e223a99cb4df4",
+  "producer": "claude-opus-4-8[1m] (WARP-1108 build worker, planned lane; W8 of PLAN-0011, entropy metrics - cost-to-change per architecture area; intelligent builder, did not review its own work; stopped at the review boundary with this manifest uncommitted)",
+  "produced_at": "2026-07-22T22:40:00Z",
+  "plan": "PLAN-0011",
+  "work": "W8",
+  "plan_revision": 2,
+  "plan_hash": "sha256:5f6e8c623065cda0",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A new metrics-area module .warp/entropy.py derives a per-area cost-to-change SERIES from what the loop ALREADY records. The per-correlation components (tokens, cost_usd, human_minutes, review cycles from verdict.recorded, gate failures from correlated gate.failed) are read through metrics.compute's new cost_by_correlation aggregation (a second VIEW of the same events keyed by correlation_id, extracted into metrics.cost_by_correlation and called from compute so the map, the dashboard, and the budget enforcer read the ONE aggregation - no new instrumentation, no second store). area_series attributes each SHIPPED change (a correlation with a spec.shipped event) to the contract area(s) its spec's placement/footprint touched via arch.footprint_areas (the W3 join key); a cross-area change contributes its recorded cost to EACH area it touched, and a change with no placement (pre-W3 history) is UNATTRIBUTED and counted, never dropped (the best-effort limit the plan's data-provenance section names). python3 .warp/entropy.py renders the per-area report over the real recorded stream."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1108 AC1: over seeded events with an injected area index, alpha's human_minutes series is time-ordered [10,10,10,10,10,10,10,30] and tokens [100..100,300]; review_cycles are counted from verdict.recorded; the attributed/unattributed counts are {attributed:14, unattributed:1} (the orphan change is counted, not dropped); metrics.compute exposes cost_by_correlation with the recorded components (human_minutes, tokens, review_cycles, gate_failures, shipped_at); and a cross-area change contributes its cost to each of the two areas it touched."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "detect_crossings implements the D2 threshold policy: per area and per recorded dimension it compares the LATEST sample against the mean of the trailing baseline_window PRIOR samples and flags a crossing when the latest is at least baseline * (1 + degradation_factor) with a positive baseline - a RELATIVE degradation against the area's OWN history, never an absolute threshold. A crossing is ADVISORY while the area is still calibrating (fewer than calibration_min samples); BASELINE_WINDOW/DEGRADATION_FACTOR/CALIBRATION_MIN are the recommended D2 defaults, tunable per repo. NOTHING auto-gates on the number: the derivation is advisory, surfaced via the entropy CLI and the dashboard, and is never invoked by scripts/verify.sh, .warp/shape_gate.py, or validate.py run_all."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1108 AC2: a rising series crosses (alpha latest 30 vs baseline 10) and is TRUSTED (advisory False at >= calibration_min samples); a flat series (beta) does NOT cross (non-vacuous); a 6-sample rising series is ADVISORY (advisory True, still calibrating); MUTATION teeth flatten the latest sample back to baseline and the crossing disappears (the recorded number, not a flag, drives it); and the gate never invokes the entropy module (.warp/entropy.py absent from verify.sh, shape_gate.py; entropy_report and .warp/entropy.py absent from validate.py, so run_all carries no entropy check)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "area_static_shape puts the gate's OWN static shape measures on the same per-area map, REUSED from shape_gate's reference analyzers over the area's current source files (enumerated from the contract's area includes): duplication_findings, complexity_findings, function_length_findings, and boundary_findings (boundary pressure) - no reimplemented duplication or complexity, and the contract's own budgets supply the limits. Adoption safe on two axes: entropy_report over a repository with NO architecture contract returns a standdown report (byte-identically unaffected), and a contract with no recorded events yields empty series and no crossings. Dogfood over the real repo: python3 .warp/entropy.py renders real per-area static measures (e.g. runners duplication, fleet boundary pressure) beside the series."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1108 AC3 over temporary trees: a contract whose core area includes a source file with an over-long function yields static_shape.function_length >= 1, and a short function yields 0 (non-vacuous, reflecting the source); a contract with no events renders an empty series and no crossings; and a tree with NO architecture.yaml stands the whole derivation down (standdown True, empty areas and crossings) - adoption safe."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "IN-SESSION ONLY, nothing detached (NG1, the contract invariant no_detached_processes, feedback_no_rogue_processes). entropy_report is a PURE function that reads recorded files (events.jsonl via metrics.load, spec front matter, source files) and takes the events and the trailing-window policy as INJECTED parameters; it starts no process/thread, installs no timer, and never polls in the background. .warp/entropy.py imports only argparse, importlib.util, json, sys, and pathlib. A threshold crossing is emitted as the machine-readable signal WARP-1109 (W9) consumes: each crossing names the area, the dimension, the baseline, the latest, the relative_increase, the advisory flag, and consumed_by=WARP-1109; W9 drafts the restoration spec a human promotes, and the incident-metrics join (PLAN-0012) is referenced - neither is built here."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1108 AC4: a source string-scan (over the same _TRIP_DETACH_TOKENS list WARP-1107 uses: subprocess/Popen/os.fork/os.exec/os.spawn/os.system/setsid/nohup/start_new_session/multiprocessing/threading/asyncio/sched/claude -p) passes over the real entropy.py, which imports no process/thread machinery; MUTATION teeth append a detached subprocess.Popen(claude -p, start_new_session=True) and a background daemon thread and each turns the check RED, and the mutations are in-memory only (the real module on disk byte-unchanged); and every crossing carries the area, dimension, baseline, latest, advisory keys and consumed_by == WARP-1109 (the W9-consumable signal shape)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Extends the metrics derivation (metrics.compute gains cost_by_correlation, additive; the recorded-cost aggregation is extracted into metrics.cost_by_correlation so compute stays cohesive) and the dashboard (.warp/dashboard.py gains a per-area entropy section in both the text and HTML renders, drawn ONLY from entropy_figures -> entropy_report, never a recompute). .warp/entropy.py ships byte-identical across plugin/templates and all 6 packs, and the edited metrics.py, dashboard.py, and capabilities.yaml are re-synced likewise; capabilities.yaml gains ONE honest mechanical entry (entropy_metrics) in every copy. No protected path touched (entropy, metrics, dashboard are the non-protected metrics area). The full gate is GREEN (lint, selftest, generated, docs, template sync, secret scan, contracts, shape gate) and RULE #1 is clean (ASCII hyphen only; the only double-hyphen tokens are genuine CLI flags and YAML/regex front-matter delimiters). Dogfood: the spec's placement [metrics] resolves and its footprint tier is standard (a single area; footprint_tier_floor == '', validate.py ready rc 0, run-check clear)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1108 AC5: .warp/entropy.py byte-identical root vs plugin/templates and across all 6 packs; metrics.py and dashboard.py byte-identical root vs plugin/templates; the entropy_metrics capability declared mechanical; the dashboard entropy section EQUALS entropy.area_figures(entropy.entropy_report(...)) plus the report's crossings (no fork) and the text render carries the per-area entropy section; and dogfood teeth - the spec's footprint_areas == {metrics}, footprint_tier_floor == '', placement_gate == [], protected_paths == [] and human_approval not_required."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1815 passed, 0 failed (1782 before this build; +33 assertions for WARP-1108 - the per-area cost-to-change series over seeded events, the cross-area attribution, cost_by_correlation, the relative-baseline crossing over a rising-vs-flat series, the advisory-vs-trusted calibration flag, the mutation that removes a crossing, the not-wired-to-the-gate teeth, the static-shape measures over a temp tree with an over-long-function tooth, the adoption-safe standdown, the no-detach source scan with subprocess/thread mutation teeth, the W9-consumable crossing signal shape, the byte-identical sync across templates and 6 packs, the mechanical capability, the dashboard no-fork tooth, and the dogfood placement/tier). The pack-drift, template-sync, pack-conformance, and runner-catalog harnesses run inside this slot and pass."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes: check_arch, check_decisions, check_decision_reviews, check_tripwires (stands down; no .warp/decisions/ here), check_spec over all 112 specs (adds WARP-1108, draft), the plan/spec binding (PLAN-0011 W8 = WARP-1108), the manifests, and the examples block. validate.py ready specs/WARP-1108-entropy-metrics.md rc 0 (placement [metrics] resolves, footprint tier standard); plan.py run-check PLAN-0011 WARP-1108 clear (deps WARP-1102, WARP-1103 shipped, plan revision 2 current)."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1108 as draft and the PLAN-0011 burndown shows W8."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/) all pass. RULE #1 hand-checked across every changed file: no em or en dash, no prose double-hyphen; the only double-hyphen tokens are genuine CLI flags (--json, --html, --out) and YAML/regex front-matter delimiters (--- and the front-matter regex)."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "scripts/check_lint.sh: py_compile over every tracked .py (including .warp/entropy.py and the plugin/templates and pack copies) and bash -n over every .sh pass."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "scripts/check_template_sync.sh: pass (validate.py and the checked pairs byte-identical root vs plugin/templates; entropy.py/metrics.py/dashboard.py/capabilities.yaml are held byte-identical root/templates/packs by the pack-drift check and the WARP-1108 selftest sync teeth)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: every pack's engine (including the new .warp/entropy.py and the edited .warp/metrics.py, .warp/dashboard.py, and .warp/capabilities.yaml) byte-identical to the canonical source plugin/templates; drift empty across all 7 packs (the option-B Claude pack plus 6 committed packs)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    }
+  ],
+  "rollback": "git revert 7f63236. This commit adds one metrics-area derivation module (.warp/entropy.py), extends metrics.compute with an additive cost_by_correlation aggregation (existing keys unchanged), adds a per-area entropy section to the dashboard render, and adds one capabilities entry, all re-synced byte-identical across plugin/templates and the 6 packs. The derivation is advisory and unwired from the gate, so reverting changes no gate behavior; a repository with no architecture contract stands the derivation down entirely (adoption-safe), so there is no migration and the entropy series is inert derived data that owns no store."
+}

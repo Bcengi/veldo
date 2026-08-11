@@ -1,0 +1,43 @@
+{
+  "name": "safe plugin loader confinement",
+  "loader": "safe",
+  "cases": [
+    {
+      "name": "a well-formed plugin loads and exposes its manifest",
+      "members": [
+        {"name": "plugin.json", "data": "{\"name\": \"sample-plugin\", \"version\": \"1.0.0\", \"entry\": \"lib/main.py\"}"},
+        {"name": "lib/main.py", "data": "def activate():\n    return True\n"},
+        {"name": "README.md", "data": "sample plugin\n"}
+      ],
+      "verdict": "load",
+      "expect_manifest": {"name": "sample-plugin", "version": "1.0.0", "entry": "lib/main.py"}
+    },
+    {
+      "name": "a zip-slip dot-dot traversal is rejected",
+      "members": [
+        {"name": "plugin.json", "data": "{\"name\": \"evil\", \"version\": \"9.9.9\"}"},
+        {"name": "../escaped.txt", "data": "written outside the target"}
+      ],
+      "verdict": "reject",
+      "expect_error_contains": "traversal"
+    },
+    {
+      "name": "an absolute-path member is rejected",
+      "members": [
+        {"name": "plugin.json", "data": "{\"name\": \"evil\", \"version\": \"9.9.9\"}"},
+        {"name": "/tmp/veldo-plugin-abs-should-not-exist", "data": "absolute write attempt"}
+      ],
+      "verdict": "reject",
+      "expect_error_contains": "absolute"
+    },
+    {
+      "name": "a symlink whose target escapes the root is rejected",
+      "members": [
+        {"name": "plugin.json", "data": "{\"name\": \"evil\", \"version\": \"9.9.9\"}"},
+        {"name": "config-link", "symlink_target": "../../../../etc/passwd"}
+      ],
+      "verdict": "reject",
+      "expect_error_contains": "symlink"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0709",
+  "commit": "b01058a0c4d77c832e908c40efbafe3da5b30e89",
+  "producer": "claude-opus-4-8[1m] (implementing agent)",
+  "produced_at": "2026-07-18T13:52:41Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "README.md now stands on its own: what WARP is, a 'Why WARP exists' section (verification is the bottleneck once codegen is cheap), the one rule and the Intent->Spec->Impl->Proof->Review->Merge loop, and the nine principles, all before it points to docs/. Independent review confirmed it orients a new team member without requiring the full method document first."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "The 'How the loop works in practice' section names the real artifacts a team touches - specs/WARP-####-*.md, scripts/verify.sh (the gate), proof/WARP-####/, the independent verdict, .warp/policy_check.py (the guard), specs/index.md (the board), plans/PLAN-####-*.md - and the independent review confirmed each exists and is used correctly, matching the capability manifest's mechanical guarantees."}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "The 'What the plugin ships' section documents the gate/policy plane, the runners (web/a11y/UI-state, Android adb, iOS xcrun simctl macOS-gated, token lint + baseline comparator), ephemeral environments, the Run Lens, and the WARP Fleet, and defers to .warp/capabilities.yaml as the machine-readable truth; it names plugin 3.2.0. The independent review checked every claim against the manifest and found NO contradiction or overstatement (reference capabilities are described as must-be-wired, mechanical ones as enforced; the fleet's no-detached-process and no-central-coordinator claims match WARP-0701..0707); plugin.json confirms 3.2.0."}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "The adoption path gives the install commands (matching docs/plugin.md exactly), /warp:init once per repo, a five-step first-change checklist, and running at scale with warp fleet N / warp work; it points to docs/method.md, docs/setup.md (the two-week pilot), and docs/plugin.md for depth. The independent review confirmed the commands and skills exist and the referenced docs resolve."}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "README.md is generic (the only company token is the necessary Bcengi/warp install coordinate, matching docs/plugin.md), ASCII-only with no em-dashes, en-dashes, or double-hyphens (all four sweeps zero matches), the full gate is GREEN (dash sweep, non-ASCII sweep, genericity sweep, selftest 1054 all pass), and git show touches only README.md, the WARP-0709 spec, specs/index.md, and the machinery - docs/method.md and every other doc untouched, no code, no protected path (independent review confirmed)."}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1054 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "A standalone documentation change (comprehensive README for team adoption). The capability manifest (.warp/capabilities.yaml) remains the machine-readable truth; the README describes the surface and defers to it, so prose cannot contradict the manifest - the independent review verified no claim oversells it. Only README.md and the WARP-0709 spec changed; docs/method.md and every other document are untouched. Reviewed against commit 2cad3c0; the sole delta to this commit (b01058a) is a one-line prose addition surfacing the warp fleet N command in the scale paragraph (accuracy-neutral, gate re-verified GREEN), per the reviewer's non-blocking suggestion. Accepted non-blocking note: README genericity is not machine-enforced (the sweep covers docs/ and plugin/; the README is repo-root), and rests on discipline, which holds today (the only company token is the install coordinate)."
+  ],
+  "rollback": "git revert; the change is confined to README.md and the WARP-0709 spec; no code, no protected path, no other document."
+}

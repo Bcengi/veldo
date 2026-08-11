@@ -1,0 +1,15 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-0109-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-0109",
+    "commit": "224ae5fbc17728a643bece95536c0d17e4a8a202",
+    "paths": [".warp/policy_check.py", "plugin/templates/.warp/policy_check.py"]
+  },
+  "basis": "Standing authorization to run PLAN-0001 autonomously (2026-07-16) and to fix what dogfooding surfaces. WARP-0109 closes the core-loop honesty gaps in the protected enforcer: ready-spec boundary, spec-revision invalidation, verdict-proof digest binding, approval self-separation, and path-scoped approval authorization. It touches both copies of policy_check.py (the repo instance and the shipped template), so this approval scopes both protected paths explicitly - the exact path-scoped rule W9 introduces. Agent-recorded under standing authorization with provenance; not a fresh per-change human attestation (an auth gateway injecting a verified human identity remains honestly out of scope, tracked for a later platform iteration).",
+  "recorded_at": "2026-07-16T23:12:00Z",
+  "recorded_by": "claude-opus-4-8[1m] (Ava, recording the human's standing authorization with provenance; distinct from the proof producer claude-fable-5, satisfying self-separation)",
+  "expires_at": "2026-08-15T00:00:00Z"
+}

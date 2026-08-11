@@ -1,0 +1,10 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "apr-0001",
+  "decision": "approved",
+  "approver": {"id": "jane", "role": "billing-owner"},
+  "scope": {"spec_id": "WARP-0001", "commit": "7f43e6159aa6", "proof": "proof/WARP-0001/manifest.json"},
+  "reason": "Staging simulation passed.",
+  "recorded_at": "2026-07-16T15:04:00Z",
+  "expires_at": "2026-07-16T16:04:00Z"
+}

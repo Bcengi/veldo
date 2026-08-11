@@ -1,0 +1,21 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0904",
+  "commit": "a3fec2e978f617cc8450ead9af4a5a0fe6937933",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent aa09586b19c195a2e)",
+  "reviewed_at": "2026-07-19T18:00:24Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:cff819e2437c9e41",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "bin/warp is a real executable committed 100755, a thin dispatcher reimplementing no loop/launcher/governor/reader/registry; unknown subcommand and bad args fail loud exit 2."},
+    {"id": "AC2", "status": "confirmed", "note": "status/watch->runstatus.py, account->accounts.py, answer/steer/abort->runcmd.py, verified by running the real bin/warp executable over a throwaway root, all standalone with no agent."},
+    {"id": "AC3", "status": "confirmed", "note": "work/fleet assemble the real W1-W3 machinery; build/review/spawn stay fail-loud delegated seams; NO detached-spawn path (no subprocess/Popen/fork/Thread/multiprocessing in code); unknown --account fails by name via the both-bases handler (the W2 double-load is real and load-bearing); the fleet refuses a fabricated budget."},
+    {"id": "AC4", "status": "confirmed", "note": "only argument parsing + module calls; GovernorController delegates desired/resume_at to the governor and work_remains to the frontier; no reimplemented mechanics."},
+    {"id": "AC5", "status": "confirmed", "note": "gate GREEN 1345/0 with no live agent, no process spawned, no real fleet run; both mutants (swallow-unknown, fabricate-build/spawn) bite; the umask-fixed exec-bit assertion still has teeth (chmod -x bin/warp turns it RED) and is now green on the same umask-002 machine that previously went RED."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "RESOLVED (prior blocking): the first review (bound to 58b042c) found the builder's exec-bit selftest assertion hard-coded st_mode == 0o755, which is umask-dependent and went gate-RED on the reviewer's umask-002 checkout (git checks an executable file out 0775 there) though the committed git mode is correctly 100755. Fixed by relaxing to the exec-bit check (st_mode & 0o111 != 0); bin/warp is byte-identical across the amend (58b042c -> a3fec2e), still committed 100755. The re-verify confirmed the fix is the sole delta and the gate is GREEN on the previously-red umask-002 machine. LESSON: selftest exec-bit checks must be umask-independent."},
+    {"severity": "note", "text": "Spend-gate touch honest and correct: the fleet refuses to pace against a fabricated token budget (fails loud when no session/weekly windows declared) - a fleet must pace against a real budget (RULE #2/#6). Protected paths clean (the amended commit adds only scripts/selftest.py to the prior 4-file impl); RULE #1 clean."}
+  ],
+  "summary": "WARP-0904 (the real warp CLI, W4 of PLAN-0009) passes at a3fec2e. bin/warp is a genuinely thin, fail-loud dispatcher over the W1-W3 modules with no detached-spawn path, correct double-load account-error handling, an honest fabricated-budget refusal, and a correct committed 100755 mode; all five ACs' behaviors were confirmed by concrete probes in an isolated worktree, and the gate is GREEN with selftest 1345/0. The first review returned fail on a single umask-dependent selftest assertion (mode == 0o755) that went RED on a umask-002 checkout; the one-line fix (check the exec bit, not the exact mode) resolved it with bin/warp unchanged, and the re-verify confirmed GREEN on that same machine with the assertion still biting. Two non-blocking notes. Verdict: pass."
+}

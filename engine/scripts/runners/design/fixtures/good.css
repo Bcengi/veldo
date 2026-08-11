@@ -1,0 +1,7 @@
+.button {
+  color: var(--paper);
+  background: var(--brand);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+}

@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0802",
+  "commit": "4004e69324d6f55d18867938da560f508cc25b6d",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0008 W2, in-session single writer)",
+  "plan_hash": "sha256:9a44f5fc3e951eee",
+  "produced_at": "2026-07-19T01:17:34Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/pack.py ENGINE_GLOBS finalized against plugin/templates: adds scripts/warp-guard.sh and the scripts/runners tree to the existing substrate; engine_files excludes __pycache__ and .pyc via _is_artifact so the engine set is exactly the shipped source."},
+        {"type": "unit", "ref": "independent review: engine_files(plugin/templates) = 139 files including warp-guard.sh, scripts/runners/**, verify.sh, .warp/validate.py, the CI workflow, and the templates, with zero __pycache__/.pyc; a sneak test injected .pyc under runners and top-level and confirmed exclusion while .py was kept (the exclusion is load-bearing against real .pyc on disk); part of selftest 1218 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/packs.json (warp.packs/v1) declares the Claude pack; load_packs validates it and _validate_packs rejects a malformed manifest by name (PackManifestError)."},
+        {"type": "unit", "ref": "independent review: PackManifestError raised by name for all 9 malformations (bad schema, empty packs, missing packs, missing id/tool/engine_src/pack_dir, duplicate ids, non-dict) each with a distinct message; the real manifest loads and declares the claude pack; a missing manifest returns {}; part of selftest 1218 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "scripts/check_pack_drift.py reads the manifest and reports per-pack drift via engine_drift (reuses WARP-0801, no second impl); empty is conformance, drift fails by name. Enforced IN THE GATE through the selftest unit check (asserts pack_drift_report has no drift, len>=1), not by editing the protected scripts/verify.sh."},
+        {"type": "unit", "ref": "independent review: check_pack_drift exits 0 on the clean manifest and reuses pack_drift_report/engine_drift (no filecmp, no second impl); verify.sh has CHECK_unit required and the selftest asserts drift-free with len>=1 (so an emptied manifest turns the gate red); scripts/verify.sh NOT in the changeset (protected path untouched); part of selftest 1218 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "plugin/ is recognized as the Claude pack without restructure (option B); the manifest's Claude entry has engine_src == pack_dir == plugin/templates (its engine is the canonical source in-place, so drift is trivially empty), and the rename to packs/claude + marketplace repoint are deferred to the release (W10). No product behavior changes."},
+        {"type": "unit", "ref": "independent review: git show --summary shows only 3 new files (spec, packs.json, check_pack_drift.py) plus edits, no renames/moves; the Claude entry's empty drift is honest by construction and (AC5b) does not mask real drift for a future pack; part of selftest 1218 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest gives the drift-check teeth over a temp assembled pack (identical -> [], mutate -> differs, remove -> missing) and asserts the real manifest is drift-free; a malformed manifest is rejected by name."},
+        {"type": "unit", "ref": "independent review mutation matrix (fresh worktrees, .pyc generated so the artifact assertion is exercised): neuter engine_drift -> 4 red, neuter _is_artifact -> 1 red, neuter _validate_packs -> 4 red; AC5b W3 simulation (engine_src plugin/templates, pack_dir a mutated copy) CAUGHT the drift by name - proving the check will hold future packs to the source, not a tautology; part of selftest 1218 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1218 passed, 0 failed (+13 for the WARP-0802 pack block)"}
+  ],
+  "assumptions": [
+    "W2 of PLAN-0008, built in-session by a single writer. It wires the WARP-0801 pack engine to the real plugin/templates substrate and stands the Claude pack up as the first peer (the pattern-setter for W3-W8), under option B (plugin/ IS the Claude pack through the build; rename to packs/claude at release W10). ENGINE_GLOBS finalized (guard + runners) with a __pycache__/.pyc exclusion; a pack manifest .warp/packs.json + loader; a drift-check scripts/check_pack_drift.py reusing engine_drift; enforced in the gate via the selftest (not the protected verify.sh). Two independent adversarial reviews: the full pass on 4004e69 returned pass_with_notes, 0 blocking - it mutation-tested the selftest (three neuterings each turn it red) and simulated a W3-style pack to prove the drift-check has real teeth (not a no-op tautology), confirmed verify.sh is untouched, and confirmed byte-identical caps and clean hygiene. NON-BLOCKING NOTES to reconcile in the PLAN-0008 text (bundled into the W3 impl commit, since a plans/ edit cannot ride an evidence-only commit and a bare plans/-only commit trips policy_check): Note 1 - the plan's W2 work-item title still says 'restructure the existing Claude wrapper under the new pack layout', stale vs the option-B scope that shipped (the spec is authoritative); Note 2 - the plan's W6 title says 'Gemini CLI' but the 4th tool was retargeted to Antigravity CLI (reconcile at/before W6). Note 3 (design, expected): the Claude pack's real-manifest drift is trivially empty because its engine is the source; the load-bearing teeth are the temp-tree/mutation assertions and it becomes cross-pack load-bearing at W3.",
+    "check_pack_drift.py and .warp/packs.json are warp-repo tooling for maintaining the packs, not adopter substrate, so they ship in scripts/ and .warp/ (not plugin/templates) and need no template twin. The standalone script's 'no manifest = no-op' path cannot silently disable gate enforcement because the selftest additionally asserts len(pack_drift_report) >= 1."
+  ],
+  "rollback": "git revert; additive - the finalized ENGINE_GLOBS + __pycache__/.pyc exclusion + a manifest loader in .warp/pack.py, a new .warp/packs.json, a new scripts/check_pack_drift.py, a selftest block, one capability entry (both capabilities.yaml copies), and the WARP-0802 spec; no protected path touched; pure stdlib, no network."
+}

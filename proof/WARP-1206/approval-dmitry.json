@@ -1,0 +1,15 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-1206-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-1206",
+    "commit": "bf2d8a464bfe5318f051ba123e740ec0bf7d43f3",
+    "proof": "proof/WARP-1206/manifest.json"
+  },
+  "basis": "PLAN-0012 C2 requires a recorded founder approval to land the execution organ, the single most safety-critical spec in the plan. Fresh per-change approval given in-session on 2026-07-23 after full disclosure and after an independent L2 adversarial review returned pass_with_notes with zero blocking findings. The tier was confirmed HIGH not critical adversarially: the reviewer constructed six data-mutating or irreversible executions (including a whitelisted data-mutating action reached by a remedy declaring itself reversible) and all six refused, and a guard-mutation proved the data-mutating fence is exactly what closes the path, so no reachable data-mutating execution path exists. What this approval vouches for: the executor runs ONLY a whitelisted action with validated parameters bound to the exact human-confirmed proposal digest (no free-form command path exists, confirmed by grep and by the reviewer); L0/L1 and unconfigured systems never execute; nothing irreversible or data-mutating runs here at all (that path refuses pending the two-key rule WARP-1207); kill switch, action budgets, timeouts, and canary-first each refuse by name; no self-escalation; all offline against fake systems with nothing live-wired. Explicitly NOT vouched for and honestly unbuilt: the two-key rule (WARP-1207), the compressed loop (WARP-1208), the numbers (WARP-1210), validate.py run_all wiring and init lay-down (WARP-1211), and any live target enablement (a separate per-system human act). Independent L2 verdict bound to bf2d8a4; the offered second review was declined by the founder given the rigor of the first.",
+  "recorded_at": "2026-07-23T12:54:46Z",
+  "recorded_by": "claude-opus-4-8[1m] (Ava, recording the founder's fresh in-session approval captured this session; distinct from the proof producer, satisfying self-separation)",
+  "expires_at": "2026-08-22T12:54:46Z"
+}

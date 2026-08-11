@@ -1,0 +1,29 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0306",
+  "commit": "fa1be4052a321ea8877df3bbf550e6751e47d9d0",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 wave 1)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T01:55:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0306/runner-evidence.txt: cli_runner.py over pass.cases.json exits 0 (every case's expectations hold across echo/printf/false/cat/sh/true, incl a nonzero-exit case and stdin)"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0306/runner-evidence.txt: cli_runner.py over fail.cases.json exits 1 with the failing case and broken expectation named (asserts wrong stdout and wrong exit code)"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "assertions reflect real observed process behavior - the runner runs each command as a real subprocess (no shell) and checks exit_code, stdout_contains/equals, stderr_contains, and a max_seconds timeout that is always a failure"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py cli-runner block (8 cases): drives the runner over the fixture pair (pass -> passed True, fail -> passed False) and exercises check_result directly (clean on match; loud on wrong exit code, missing substring, and timeout). No external dependency. Part of selftest 161 passed / 0 failed. capabilities.yaml marks cli_process_runner status: reference"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 161 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference runner: generic, stdlib only, drives trivial universally-present commands (echo, false, true, cat, sh) in the selftest so the control logic is gate-tested with no external dependency. Shipped under plugin/templates/scripts/runners/cli/; capabilities: reference; not run in the warp repo's own gate."],
+  "rollback": "git revert the impl; additive under plugin/templates/scripts/runners/cli/, no protected path, selftest cases within the 161."
+}

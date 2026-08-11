@@ -1,0 +1,171 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0712",
+  "commit": "eb9cd1be338096cf97008d94bc0b4e25157db38f",
+  "producer": "claude-opus-5[1m], in an isolated worktree on branch warp-0712-suite-decomposition; nothing pushed, main never touched. ROUND 2 SPLIT THE SUITE. Round 1 built the proofs and moved no file; round 2 used them as the landing condition on the cut. READ THIS FIRST, because round 1's text below is kept deliberately: it said THIS ROUND SPLITS NOTHING. It builds the two proofs that have to exist before a split is safe (AC5 label-set identity, AC4 standalone-versus-aggregate equivalence), it DRIVES the order-dependence survey AC3 asks for, and it records the decomposition plan. AC2 and AC6 are therefore not passed and are recorded partial or not_started, because they are criteria about a split that has not happened, and marking them passed would be exactly the silent overstatement this item exists to prevent.",
+  "produced_at": "2026-07-29T21:00:00Z",
+  "round": 2,
+  "rollback": "Revert the commits. Round 1 added three analysis tools under scripts/, one selftest block, one recorded measurement plus two documents derived from it under proof/WARP-0712/, and two entries in the existing CHECK_generated stage script. Round 2 replaced scripts/selftest.py with a dispatcher that holds no assertion of its own and moved its body into scripts/suites/ as one shared preamble module plus 13 fragments, and re-pointed five sites whose subject was the suite-as-one-file. Because the entry point, the aggregate output line and the exit semantics are unchanged, a revert is invisible to scripts/verify.sh and to every caller: it restores the monolith and with it the serialization and the 27,000-line conflict surface. That is a throughput regression rather than a return to a good state and it must not be done to unblock a lane. No record, event, contract or write path changed, so there is no migration. The cut is reproducible: scripts/suite_extract.py against the monolith at the commit before the split.",
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "extra",
+      "status": "passed"
+    }
+  ],
+  "limits": [
+    "THE SUITES ARE NOT INDEPENDENT MODULES. They are fragments executed into one namespace in the original order. See AC4 for the measured reason and for the two driven failures that produced it. What this buys is what the item was for (13 disjoint files, a prefix inner loop, an unchanged entry point); what it does not buy is a per-suite standalone run.",
+    "THREE LABELS CHANGED TEXT, AND THIS IS A ROUND-3 RECOUNT OF A ROUND-2 SENTENCE THAT SAID ONE. HOW IT WAS COUNTED: the label multiset was captured from a run of the pre-split tree (6c6f2b8, where scripts/selftest.py is still the monolith) and from a run of this tree, and the two were compared by identity in both directions with scripts/suite_labels.py's own comparator. Result: the same number of labels each side (3352 in this captured pair, each reconciled against the summary line its own run printed), ZERO multiplicity changes, ZERO counter-delta changes, THREE missing paired with THREE added. Every pair is the same assertion at the same expect( site, so NO ASSERTION WAS LOST. The three, and the two that are this item's OWN round-1 assertions: (1) 'WARP-0716 AC1 REAL FILE, structural: over scripts/selftest.py the survey COMPLETES...' became '...over the file this suite's own assertions are in...' - the one round 2 declared, and the only one belonging to another item, because its label NAMED the path and that path is now a dispatcher. (2) 'WARP-0712 AC5 THE MUTATION IS ASSERTED APPLIED...' changed 'scripts/selftest.py on disk is sha256-UNCHANGED' to 'the measured file on disk is sha256-UNCHANGED' in the split commit 0aeab03: THIS ITEM'S OWN ROUND-1 ASSERTION, undeclared until now. (3) 'WARP-0712 DOGFOOD...' had its text and its condition moved from AC2 to AC4, AC5 and AC6 in caa0bdf, which is LATER than the commit this manifest recorded until this round: also THIS ITEM'S OWN ROUND-1 ASSERTION, and not a re-point at all but a status declaration catching up with the split. Every other label is byte-identical, with identical multiplicity and identical counter delta.",
+    "SIX LOGICAL RE-POINTS, COUNTED BY ENUMERATING THEM. Round 2 said FOUR, listed four things, then called a fifth of them 'the fourth', and omitted a sixth. HOW IT WAS COUNTED: the pre-split monolith at 6c6f2b8 was diffed line by line against the concatenation of the shipped shared module and the thirteen fragments, and every difference that is not a mechanical artefact of the cut (the shared module's header, the deeper ROOT, the fragment headers, the moved epilogue) was read. Six sites whose subject was the suite-as-one-file now read the suite as a directory: (1) scripts/check_runner_catalog.py's reference scan, which appends every scripts/suites/*.py to the entry point's text before scanning; (2) WARP-1011's label-retirement read, which reads suite_source() instead of scripts/selftest.py; (3) WARP-0722's record enumeration and (4) its explicit path clause, both now keyed on _V22_SELF_REL, the running fragment's own path; (5) WARP-0712 AC5's primitive-file read, which resolves the assertion primitive through the shared entry of scripts/suites/manifest.json (_w12_primitive_file) instead of naming a path; and (6) WARP-0716's real-file survey read, which now calls suite_file(). TWO of the six changed their label text, (5) and (6); the third changed label is the DOGFOOD declaration, which is not a re-point (see the previous limit). A SEVENTH re-point was tried and REVERTED: moving suite_survey.py's DEFAULT_TARGET off the entry point broke that tool's own AC3 fixture tree, which pins scripts/selftest.py as the target it drives check_generated.sh over. So the PUBLISHED survey report now measures the dispatcher and answers a question nobody is asking. Both emitters now carry a caveat sentence in the document header saying exactly that, so no reader takes the published verdict for a statement about today's suite; moving the fixture tree with the target is follow-up work and is not claimed here.",
+    "AC1 CONSUMES WARP-0716'S VERDICT AND 0716 IS A SELF-VERIFIED ARTIFACT. 0716's own manifest records that its generator fix landed WITHOUT an independent review, that the review which finally came ruled fail / not_shippable, and that one of its defects was a typed paragraph asserting classifications its own tables contradicted at a green gate. What this round RE-DERIVED rather than trusted: the feasibility question itself, by running the suite region by region instead of reading a static analysis. 0716 reported 365 hoistable symbols, a giant component holding 67 of 206 regions and 632 of 2988 assertion sites, and a verdict of FEASIBLE_WITH_PREPARATION. The driven measurement agrees on the direction and disagrees on the size: 143 names, not 365, actually stop a region from running, and every one of the 134 regions that will not run alone dies on an undefined NAME rather than on anything subtle. What remains TRUSTED from 0716 and was not re-derived: its per-symbol CLASSIFICATION vocabulary (shared fixture, per-suite local, ordering dependency, undetermined) and its three feasibility constants. This round does not use either to decide anything, so nothing here rests on them.",
+    "THE MEASUREMENT IS NOT GATE-REGENERATED, DELIBERATELY. Producing proof/WARP-0712/order-dependence.json runs the suite once and then one subset per region and per prerequisite round, which costs minutes. It is a measurement OF scripts/selftest.py, the one file every work item edits, so a freshness check that re-measured it or pinned its digest would redden the gate on every single item and leave a minutes-long re-measurement as the only remedy. That is the trap WARP-0716's first version built and had to undo. The digest of the measured file is recorded in the artifact and printed in the report, and the two DOCUMENTS derived from it are gate-regenerated at millisecond cost. Round 2 promised a successor check here, scripts/suite_equiv.py over the real suites; that promise is DELETED rather than restated, because the suites now exist and that check does not pass over them (see AC4), so nothing in the gate re-measures this and the limit stands unmitigated.",
+    "THE LABEL INSTRUMENT BOUNDS A MOVE, NOT A REWRITE. Label identity says nothing about what a label asserts. An assertion whose condition is weakened while its label is untouched is invisible to it, and so is an assertion inside a branch taken in neither run. This is why the spec's out-of-scope section forbids rewriting assertions during the decomposition rather than relying on the proof to catch it.",
+    "ORDER INDEPENDENCE IS FALSIFIED OVER THE ORDERS THAT WERE RUN, not proven over all permutations. Three were run over the whole file (reverse, a seeded shuffle, a reversed twenty-region block order) and all three die. A dependency that every one of those orders happens to preserve would not be caught.",
+    "THE PREREQUISITE SEARCH FOLLOWS UNDEFINED NAMES. A dependency carried by a mutated shared object, an environment variable or a file left on disk does not raise NameError. One such dependency was found by accident and is recorded in the report rather than by the search: the suite CRASHES under PYTHONDONTWRITEBYTECODE=1 at line 20040 OF THE PRE-SPLIT MONOLITH, because a region plants a FIFO where a bytecode cache would be and the cache is never created. That path carries a dispatcher now, so the location is stated against the file it was measured in; the round-1 review re-measured the same crash after the cut at scripts/suites/12_warp_1210_hardening_four.py line 5553, inherited rather than caused. That class is not enumerated by this round."
+  ],
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "THE VERDICT IS CONSUMED AND ITS WEAKNESS IS DECLARED RATHER THAN PASSED OVER. WARP-0716 returns FEASIBLE_WITH_PREPARATION, so this item proceeds. Because 0716 shipped self-verified (see limits[0]), the feasibility question was re-derived by DRIVING the suite rather than by re-reading the analysis: 193 content regions were each run with only the preamble in front of them, in a fresh interpreter. 59 run unchanged; 134 die; all 134 die on a NameError; 133 of the 134 reach an identical label set once their measured prerequisites are supplied. The boundary set this round proposes is derived FROM THAT READ PATTERN and not from topic names: proof/WARP-0712/split-plan.md is generated from the measurement, and its partition is closed on an assertion budget and forbidden from closing at a marker a top-level statement straddles."
+        },
+        {
+          "type": "unit",
+          "ref": "THE THROUGHPUT EVIDENCE IS THE ALREADY-MEASURED proof/WARP-0712/throughput-baseline.md, unchanged by this round. What this round adds to it is the per-region cost: the sum of every region's own elapsed time, each run with the preamble, is a small fraction of a full lap, and the heaviest single region is seconds rather than the whole suite's ninety. Those figures are in the measurement rather than typed here."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "THE ENTRY POINT DID NOT MOVE. `python3 scripts/selftest.py` is still the invocation, it still prints `selftest: N passed, M failed` in the same format, and it still exits 0 on green and 1 on any failure. scripts/verify.sh is byte-UNCHANGED: it was not touched at all this round, so no protected path was involved. The full run reports the same count as the monolith did, 3352 passed and 0 failed, and the label instrument reconciles that printed line against the counters the shared module holds."
+        },
+        {
+          "type": "unit",
+          "ref": "THE DISPATCHER HOLDS NO ASSERTION OF ITS OWN, and that is structural rather than a convention: it carries zero `expect(` sites, and a label emitted from it would attribute to a file the manifest does not enumerate, which scripts/suite_equiv.py refuses as SUITE_NOT_ENUMERATED and which the `dispatcher_asserts` fixture variant drives end to end."
+        },
+        {
+          "type": "unit",
+          "ref": "THE FAST PATH CANNOT BE MISTAKEN FOR A GATE PASS. `--upto NAME` runs a prefix, prints a DIFFERENT final line (`selftest (PARTIAL, N of M suites): ...`) so nothing that parses the aggregate line can read it as a full run, and exits 2 on success rather than 0. Measured: the first suite alone is 1.63s against 89.8s for the whole run."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "FOUND BY RUNNING, NOT ASSUMED ABSENT, AND REPORTED WITH A DRIVEN REPRODUCTION PER REGION. scripts/suite_slice.py selects a region's own top-level statements plus the preamble ON THE AST, by statement index, compiles them with their original line numbers and runs them in a fresh interpreter with the label recorder installed. The target file is never edited and its sha256 is asserted unchanged after every run. Each region's outcome is one of CLEAN, CRASHES_ALONE with the exception and the line quoted, PROVES_DIFFERENTLY, TIMED_OUT or a named refusal. For every region that will not run alone, the undefined name is resolved to the regions that BIND it and the region is run again until it closes, which yields that region's own prerequisite set and the names that had to be supplied. The whole measurement is proof/WARP-0712/order-dependence.json and the report generated from it is proof/WARP-0712/order-dependence.md."
+        },
+        {
+          "type": "unit",
+          "ref": "THE SILENT CASE IS PROVEN REACHABLE, which is what makes the finding evidence instead of a reassurance. A fixture monolith whose region B emits one extra assertion only when a name region A binds is present runs to completion alone, exits zero, prints its summary, and is reported PROVES_DIFFERENTLY with exactly that label missing. Without that control, a measurement reporting no silent cases would be indistinguishable from an instrument that cannot see them."
+        },
+        {
+          "type": "unit",
+          "ref": "AN ATTRIBUTION DEFECT WAS FOUND AND FIXED BEFORE IT BECAME A FINDING, and it is recorded because the fixed version is the one to trust. A '# --- ' marker can sit INSIDE a top-level statement that began before it, so attributing a label by the executing LINE puts it in the next marker region while the statement that emits it belongs to the previous one. The first version of this measurement attributed by line and reported eleven regions as silently proving two assertions less than they should; all of it was the artefact. Attribution now follows the top-level STATEMENT that is executing, because slicing moves statements. The measurement records the thirteen markers a statement straddles, which therefore cannot be suite boundaries at all."
+        },
+        {
+          "type": "unit",
+          "ref": "EVERY SHARED FIXTURE GETS A DECLARED OWNER, DERIVED. The hoist list is the union of the names regions had to be given, and each carries the regions that bind it, taken from a SCOPE-AWARE binder index over the AST: a name a nested function assigns is that function's local and not a module binding, while a name it declares global IS one, which is how this suite's own assertion helper writes its counters."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "partial",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "THE HARNESS EXISTS AND COMPARES WHAT EACH RUN PROVED, NOT ITS EXIT CODE. scripts/suite_equiv.py runs the aggregate through one entry point and each suite alone in a fresh interpreter, attributes every label to a suite by the INNERMOST module-level frame lying in an enumerated suite file, and compares the aggregate projection with the standalone run by identity in both directions, with multiplicity and with each label's counter delta. It also runs the aggregate under a different suite order and compares the whole profile the same way. Its closed defect vocabulary names the dangerous case explicitly: PROVES_LESS_ALONE, two green exit codes and a shorter label set."
+        },
+        {
+          "type": "unit",
+          "ref": "PROVEN OVER TWELVE FIXTURE VARIANTS WHOSE GROUND TRUTH IS DECLARED BY CONSTRUCTION, each derived from the clean tree by substitutions whose counts are asserted before any result is believed. TWELVE, and round 2 said eleven: counted this round as the length of the VARIANTS table by importing scripts/suite_equiv.py rather than by reading it. The clean variant is the negative control and reports nothing. The other eleven, by their own names: fails_alone, a suite that crashes alone; proves_less_alone; proves_more_alone; outcome_differs, a label that passes in company and fails alone; multiplicity_differs; order_dependent; order_only, order dependence with standalone equivalence intact; dispatcher_asserts, a label emitted from the dispatcher itself; not_enumerated, a suite file on disk and absent from the manifest; file_missing, a manifest naming an absent file; and label_collision, two suites declaring one label."
+        },
+        {
+          "type": "unit",
+          "ref": "ROUND 1'S EVIDENCE, KEPT AS WRITTEN AND SUPERSEDED BY THE ITEM BELOW, WHICH IS THE ROUND-2 MEASUREMENT OVER THE REAL SUITES. PARTIAL, AND WHY. There are no real suites yet, so the harness has been proven against the SHAPE the decomposition will take (a thin dispatcher, a manifest, one shared fixture module holding the assertion primitive, and per-suite files each runnable alone) and not against the real ones. The criterion is passed when it is run over the real suites and every one of them is reported EQUIVALENT, which cannot happen in a round that moves no file."
+        },
+        {
+          "type": "unit",
+          "ref": "NOT PASSED, AND THE REASON IS A MEASUREMENT RATHER THAN A SHORTFALL OF EFFORT. AC4 asks that each suite run ALONE in a fresh interpreter with no dependence on another suite having run first. Two designs that would deliver that were built and DRIVEN, and both died on the same class: the monolith carries cross-region dependencies through MUTATED OBJECTS and through the FILESYSTEM, not only through names. Statement-level hoisting resolved seven module specs and two module loads and then died on a directory made inside a temporary tree another region created. Region-level hoisting of the union of the measured closures (89 regions, which is the preamble plus the 88 regions that union holds, spanning 16,790 lines of the monolith: still a god file) died on a dict a LATER region fills that an earlier one reads through a defensive `or` fallback which turns the missing input into a silent None instead of a NameError. No analysis in this repository finds that class, so no membership rule for independent modules can be PROVEN closed, and shipping one that is merely believed closed is the exact silent failure this item exists to prevent. What shipped instead executes the fragments in ONE namespace in the ORIGINAL ORDER, which needs no membership rule and makes label identity a property of the construction. The equivalence a suite gets is therefore PREFIX equivalence (`--upto NAME`), not standalone equivalence. Making the suites independent modules is a separate item whose work is now named: eliminate the mutation-carried and filesystem-carried dependencies between regions."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "IDENTITY, NOT A COUNT, AND MEASURED AT RUNTIME RATHER THAN SCANNED OUT OF THE SOURCE. scripts/suite_labels.py locates the assertion primitive STRUCTURALLY (a module-level function that declares module globals and writes them), wraps it by an AST injection performed in a child process, and records every label with the delta of every counter the primitive writes. Scanning expect( literals would be guarding a DESCRIPTION of the labels: a label built by an f-string or a loop variable is invisible to it, and this suite has such labels. The instrument compares MULTISETS in both directions and reports lists, never counts."
+        },
+        {
+          "type": "unit",
+          "ref": "THE COMPLETENESS ARGUMENT IS A RECONCILIATION AGAINST THE SUBJECT'S OWN ARITHMETIC, not a claim. Per counter, the sum of the recorded deltas must equal the counter's final value in the subject's globals, AND the integers the subject printed in its own summary line must be exactly those final values. An assertion that bypassed the primitive, a double-counting wrapper, or a summary line printing something else, each becomes a named refusal rather than a quietly short label set. On the real suite, in each of the two runs captured for this landing: every record reconciled, and the distinct-label count equal to the record count and to the integers the run printed in its own summary line (3352 in both, against 'selftest: 3352 passed, 0 failed')."
+        },
+        {
+          "type": "unit",
+          "ref": "ADDITIVE AND SUBTRACTIVE CONTROLS, AND THE CASE A COUNT SURVIVES. Removing one assertion is reported as exactly that label missing with nothing added; ADDING one is reported as exactly that label added with nothing missing, which is the half a rename battery is blind to; and the `swap` twin removes one and adds one so the TOTAL IS UNCHANGED and a count proof passes, while the identity comparison reports both. Multiplicity and counter-delta twins cover the two dimensions a SET of labels cannot hold. Every twin's substitution count is asserted to be exactly one first, because a twin that is a copy of the original would score a false green."
+        },
+        {
+          "type": "unit",
+          "ref": "DETERMINISM IS MEASURED, NOT ASSUMED, because a label that varies run to run would make this whole proof unusable. Two independent full runs of the real suite produce IDENTICAL label multisets. The same run also measures that no label is emitted more than once today, which is what keeps AC5's set-identity wording safe now and is why the instrument nonetheless compares the multiset: a set survives losing one occurrence of a duplicated label, and the suite is expected to grow."
+        },
+        {
+          "type": "unit",
+          "ref": "TEETH AS TWO MATRICES, AND WHY NOT ONE DIAGONAL. `compare` is SHARED: the equivalence harness reports PROVES_LESS_ALONE by asking it for the missing labels, so neutralizing one guard moves both instruments and a single matrix could not be diagonal. Matrix A drives the label instrument's ten decisions at their own seam with constructed inputs. Matrix B drives the equivalence harness's ten own decisions over every fixture variant (ten, and round 2 said nine: counted this round as the number of rows in the matrix's own mutation table, read off the shipped block's syntax tree). In both, each neutralized guard is asserted to remove EXACTLY its own name from EXACTLY the fixtures that reported it, with the violation list asserted as an EMPTY LIST; every mutation target is asserted to appear exactly once in the module it mutates; all targets are distinct; no mutation is inert; and every mutated module is asserted sha256-unchanged on disk afterwards."
+        },
+        {
+          "type": "unit",
+          "ref": "THE TWO STRUCTURAL REFUSALS THE DECOMPOSITION'S OWN INTEGRITY NEEDS ARE BUILT AND TOOTHED. SUITE_NOT_ENUMERATED fires in both its forms: a suite file present on disk and absent from the manifest, and a label produced by a file the manifest does not name. SUITE_LABEL_COLLISION fires when two suites declare one label, which is what would let one mask the other inside the identity proof."
+        },
+        {
+          "type": "unit",
+          "ref": "THE INSTRUMENT WAS THE LANDING CONDITION ON THE SPLIT, AND THE RESULT IS THREE CHANGED LABELS, RECOUNTED IN ROUND 3. Pre-split and post-split label multisets were captured by running both and compared by identity in BOTH directions: the same number of labels each side (3352 in the captured pair, each reconciled against the summary line its own run printed), ZERO multiplicity changes, ZERO counter-delta changes, and THREE missing paired with THREE added. Each pair is the same assertion at the same expect( site, so NOTHING WAS LOST; what moved is three label TEXTS, enumerated in limits, TWO OF THEM THIS ITEM'S OWN ROUND-1 ASSERTIONS. Why any of them moved: an assertion whose label NAMED `scripts/selftest.py` as the file it measures would ship a false sentence once that file is a dispatcher, and leaving its READ on that path would make it pass vacuously. ROUND 2 REPORTED ONE HERE. That is the defect this round fixes and it is a defect of the SENTENCE, not of the split: the quantity was written once and not recounted after two later commits, 0aeab03 and caa0bdf, changed two more labels. The instrument is what makes the recount possible; it is not what got the number wrong. ROUND 3 RAN A NEGATIVE CONTROL ON ITS OWN CORRECTIONS: the same capture, taken again after every text edit in this round, differs from the pre-edit capture in NOTHING - zero missing, zero added, zero multiplicity changes, zero counter-delta changes - so 'the corrections changed no assertion' is a measurement here and not an assurance."
+        },
+        {
+          "type": "unit",
+          "ref": "A SECOND, STRUCTURAL PROOF THAT NOTHING WAS LOST, independent of the runtime one. The cut is a LINE PARTITION taken from the AST: span i is lines end_lineno[i-1]+1 through end_lineno[i], so the spans tile the whole file with no gap and no overlap and every comment travels with the statement below it. scripts/suite_extract.py asserts, BEFORE writing anything, that the statement indices used are exactly range(len(body)) with no duplicate and none missing, and that the concatenated spans rebuild the source byte-identically. Nothing was unparsed and nothing reformatted."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "partial",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "THE PARALLELISM IS DEMONSTRATED BY THE FILES THEMSELVES. Where every item used to edit one 27,000-line file, there are now 13 suite files plus a shared preamble module and the dispatcher. THE DISPATCHER'S LINE COUNT IS DELIBERATELY NOT TYPED IN THIS MANIFEST OR IN THE SOURCE COMMENTS ANY MORE. Three comments carried one for the same file, and two of the three were already wrong: 85 in the shared module and 45 in suite 13, against 88 counted this round with wc -l. Round 3 DELETED all three rather than resetting them to 88, because a hand-typed number that drifts is the defect being closed, and resetting it only restarts the clock. What is asserted about it is the property, that it carries no assertion site of its own. Two lanes editing different suites touch disjoint files, and the only shared files are the dispatcher, the manifest and shared.py. The inner loop is measured rather than claimed: 1.63s for the first suite and 24.95s through the sixth, against 89.8s for the whole run."
+        },
+        {
+          "type": "unit",
+          "ref": "PARTIAL, AND WHAT IS MISSING IS NOT WHAT ROUND 2 SAID IT WAS. Round 2 wrote that plugin/templates and the six packs 'still ship a monolithic selftest.py'. Those files DO NOT EXIST. Measured this round by running `find . -name selftest.py` over the tree outside .git: it returns EXACTLY ONE file, scripts/selftest.py. plugin/templates/scripts/ carries no selftest.py at all, and the template plus all six packs declare an EMPTY CHECK_unit deliberately (seven verify.sh files, one such line each, counted by grepping for the declaration), so the unit suite was never in the template-sync canon and check_template_sync.sh never listed it. NOTHING CAN DRIFT AND NO RED IS WAITING. That is recorded in this direction, against the item's own interest, so a future item does not 'fix' the sentence above by copying a monolith into plugin/templates. What IS genuinely missing is the worked example AC6 asks for: two named queued items whose footprints collide today and not after the cut. That is follow-up work and is not claimed here."
+        }
+      ]
+    }
+  ]
+}

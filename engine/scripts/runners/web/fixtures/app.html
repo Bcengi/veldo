@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>VELDO web runner fixture</title>
+</head>
+<body>
+  <h1>Saved Searches</h1>
+  <label for="q">Search</label>
+  <input id="q" type="text">
+  <button id="save" type="button" aria-label="Save this search">Save</button>
+  <p id="status" hidden>Saved</p>
+  <script>
+    document.getElementById('save').addEventListener('click', function () {
+      document.getElementById('status').hidden = false;
+    });
+  </script>
+</body>
+</html>

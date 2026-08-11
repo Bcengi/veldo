@@ -1,0 +1,140 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1206",
+  "commit": "bf2d8a464bfe5318f051ba123e740ec0bf7d43f3",
+  "producer": "claude-opus-4-8[1m] (WARP-1206 implementer agent, planned lane; W6 of PLAN-0012, the execution organ - separate, privileged, laddered: the executor (.warp/action_executor.py, warp.executor/v1) that actually runs a remediation, on its OWN credential and code path, running ONLY whitelisted actions with validated parameters bound to a proposal digest, behind the autonomy ladder and the standing safeguards. HIGH RISK, the enforcement core on the execution side per C2, and NOT critical because it builds NO data-mutating execution path - L2 executes only strictly reversible non-data-mutating actions and anything irreversible or data-mutating REFUSES pending the two-key rule W7. The two-key rule W7, the compressed loop W8, the numbers W10, and the run_all/init wiring W11 are NOT built here. Invention #3 / O2 / O3 / C2 / C3 / C4 / C5 / NG1 / NG3 / NG4)",
+  "produced_at": "2026-07-23T12:27:47Z",
+  "plan": "PLAN-0012",
+  "work": "W6",
+  "plan_revision": 2,
+  "plan_hash": "sha256:9c8616540899be1d",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The execution organ (schema warp.executor/v1, module .warp/action_executor.py, 778 lines under the 1000 module_lines budget) exists as a SEPARATE organ from the WARP build-loop executor (.warp/executor.py, WARP-0401, capability executor_driver): a name collision honestly reconciled by giving this organ its own module. Separation is STRUCTURAL (C4): ExecutorCredential is a DISTINCT type from the responder's evidence.ReadOnlyCredential / ReadHandle (WARP-1202), with no query/read/open_read method, so the executor is not an investigator and shares no credential and no code path with the responder; the credential is a secret REFERENCE resolved at the shared D4 seam (evidence.resolve_secret_ref reused, never a raw literal, redacted in every string form via REDACTION_MARKER which mirrors evidence.REDACTION_MARKER, C5/D4). It accepts a whitelist action reference plus validated parameters bound to a proposal digest, NEVER command text: the action is resolved through W5's store (action.require_action / action.validate_parameters reused, no second resolver) and the proposal re-validated through W1 (incident.validate_remedy, no second parser). python3 .warp/action_executor.py EXECUTES the shipped remedy example against a fake system (canary-first) and --no-confirm REFUSES with the reason named."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1206 block: POSITIVE CONTROL 'an L2 reversible whitelisted action with a bound human confirmation EXECUTES' (and carries the proposal digest, names no secret); a NON-WHITELISTED action refuses (action_not_whitelisted); a shell-looking reference is unresolvable; an empty whitelist means nothing exists to the machine path; an INVALID PARAMETER (out-of-pattern, out-of-range) refuses by name (invalid_parameters); a proposal smuggling a command field refuses (invalid_proposal, W1 proposal-not-execution); constructing the executor with the responder's read-only credential refuses; the executor credential is a distinct type from the responder's with no query/read method, and the ActionExecutor exposes no read/investigation method while the responder harness carries no execute and no executor credential; resolve_executor_credential refuses a raw literal and an env: reference resolves and redacts its secret; REDACTION_MARKER equals evidence.REDACTION_MARKER."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE AUTONOMY LADDER (O3, D2) is constructed PER SYSTEM by a human (AutonomyLadder) and READ by the executor, which NEVER raises its own level (NG4). L0/L1 are the read-only floor and NEVER execute (below_execution_floor); an unconfigured system defaults to L0 (fail closed). L2 executes only provably-reversible non-data-mutating actions after the confirmation, and the requested level may not exceed the system's (autonomy_level_insufficient; a non-execution rung request refuses; degrade DOWN never up, C3). L3 is DISABLED by default and may never be enabled per D2 (l3_disabled), and even if ever enabled auto-executes the LOWEST risk class alone (l3_lowest_class_only); because the whitelist floor is high (W5/C2) no whitelisted action is ever the lowest class, so L3 auto-executes nothing. The executor exposes NONE of the FORBIDDEN_ESCALATION_METHODS (raise-level, enable-l3, edit-whitelist, reset-kill-switch, set-budget); it reads the ladder, whitelist, kill switch, and budget as human-owned controls (NG4)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'the read-only floor L0 / L1 NEVER executes' (both); 'an unconfigured system defaults to the floor L0'; 'L3 is DISABLED by default and REFUSES'; 'even if L3 were ENABLED, a HIGH-class whitelisted action REFUSES (lowest class only)'; 'a proposal needing L3 at an L2 system REFUSES (autonomy insufficient)'; 'a proposal requesting L1 (not an execution rung) REFUSES'; 'the executor exposes NONE of the self-escalation/mutator methods'; and the NON-VACUITY tooth 'a subclass ADDING a self-escalation method is detected'. Positive control: the L2 execution above."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "ANYTHING IRREVERSIBLE OR DATA-MUTATING REFUSES pending the two-key rule (WARP-1207, W7), and the L2 human confirmation is BOUND TO THE PROPOSAL DIGEST. proposal_digest is the canonical digest of a warp.remedy/v1 proposal (the validate.proof_digest / action.action_digest idiom applied to the remedy; it hashes an already-parsed record, not a second parser), and W7 will import it from here so the binding has one truth. L2 executes ONLY the strictly reversible, non-data-mutating case, checking BOTH the action's vetted reversibility (W5) and the remedy's declared one (W1) so a mismatch fails closed; a data-mutating action, an irreversible or costly action, and a remedy requiring two_key each REFUSE (requires_two_key), so this organ builds NO data-mutating execution path and does not reach the critical tier (HIGH, not critical, C2). A missing, non-confirming, machine-authored (self_authorization_refused, NG4), or digest/incident-mismatched (foreign_confirmation) confirmation refuses; a proposal EDITED after confirmation is STALE and refuses because its digest changed (C3)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: a DATA-MUTATING proposal and an IRREVERSIBLE proposal and a proposal requiring two_key each REFUSE (requires_two_key); a MISSING confirmation and a non-confirming decision refuse (missing_human_confirmation); a MACHINE-authored confirmation and one authored by the executor's own actor refuse (self_authorization_refused); a FOREIGN confirmation (different digest) and a foreign incident refuse (foreign_confirmation); THE DIGEST-BINDING TOOTH 'a proposal EDITED after confirmation is STALE and REFUSES'; and 'proposal_digest is deterministic and changes with the proposal'. Positive control: the base reversible remedy with a bound confirmation executes."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE STANDING SAFEGUARDS stand guard on every run, each proven NON-VACUOUSLY (C1). A KILL SWITCH any human trips INSTANTLY with no ceremony halts EVERYTHING first (kill_switch_tripped); resetting requires a RECORDED highest-tier (critical) human approval - a reset without one, or approved by a machine, refuses and stays tripped (D5). An action BUDGET refuses once exhausted (action_budget_exhausted); a budget of one executes once then refuses (consumed on engagement). A TIMEOUT refuses an over-budget run (timeout_exceeded) for the canary and the main action alike. CANARY-FIRST where declared: the canary demonstrably runs BEFORE the main action (the executed sequence and the FakeActionSystem ordered op log both read [canary, action]), a FAILED canary refuses (canary_failed) WITHOUT running the main action (the op log reads [canary] alone), and an action declaring no canary runs the main directly. Against a FAKE system (NG1): LiveTargetSystem FAILS LOUD, FakeActionSystem is the offline proof, mirroring evidence.LiveEvidencePlane and executor.LiveLoop."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'a TRIPPED kill switch REFUSES everything'; 'any human trips it instantly'; 'reset WITHOUT a highest-tier approval REFUSES and it stays tripped'; 'a reset approved by a MACHINE is refused'; 'reset WITH a recorded highest-tier human approval succeeds'; 'an EXHAUSTED budget REFUSES'; 'a budget of 1 executes ONCE then REFUSES the second'; 'an over-timeout ACTION REFUSES'; 'an over-timeout CANARY REFUSES and the main action is NOT run'; the CANARY-FIRST assertion 'the canary runs BEFORE the main action (sequence [canary, action])'; the load-bearing tooth 'a FAILED canary REFUSES and the main action is NOT run (op log [canary] alone)'; and 'an action declaring no canary runs the main directly'."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "IN-SESSION with no detached process (NG3): .warp/action_executor.py imports pathlib/json/hashlib at module top (json/hashlib for the proposal digest) and importlib LAZILY in the credential seam and CLI, starts no process/thread/timer, and a subprocess.Popen(..., start_new_session=True) mutation turns the no-detach check RED. .warp/action_executor.py and .warp/capabilities.yaml are byte-identical across root, plugin/templates, and all 6 packs (aider, antigravity, codex, copilot, cursor, opencode) by cmp. capabilities.yaml gains ONE honest mechanical entry (action_executor, home .warp/action_executor.py) that names what ships and defers the two-key rule (W7), the compressed loop (W8), the numbers (W10), and the run_all/init wiring (W11). validate.py is NOT edited (gate wiring honestly deferred to W11). No protected path is touched (verify.sh, warp-guard.sh, policy.yaml, policy_check.py and their plugin/templates twins unchanged). RULE #1 clean (ASCII hyphen only; the section divider and the argparse-style flags are the established engine convention)."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 2247 passed, 0 failed (60 new WARP-1206 assertions over the 2187 baseline). No-detach teeth ('action_executor.py starts no detached/background process', 'imports no process/thread machinery at module scope', 'a detached subprocess.Popen(claude -p) mutation turns the check RED', 'the mutation is in-memory only'); byte-identity across root/plugin/6-packs for action_executor.py + capabilities.yaml; 'the action_executor capability is declared mechanical with home .warp/action_executor.py'. Dogfood: 'the spec placement resolves and passes the mandatory placement gate (tier standard, no boundary crossing)' and 'HIGH RISK and human_approval REQUIRED (C2) and no protected path is touched'. ./scripts/verify.sh: GATE GREEN at bf2d8a4 (catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared); python3 .warp/validate.py all exit 0 (zero regressions over the corpus); index regenerated (WARP-1206 review/high/required, in the PLAN-0012 frontier)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 2247 passed, 0 failed. The WARP-1206 block adds 60 assertions: the separate organ and its structural separation from the responder plus the whitelist-reference-not-command-text binding (AC1); the per-system autonomy ladder with the read-only floor, L2 rung, disabled L3, autonomy sufficiency, and the no-self-escalation enumeration with its non-vacuity tooth (AC2); the two-key fence (irreversible/data-mutating/two_key refuse) and the digest-bound human confirmation with the stale-edit tooth (AC3); the standing safeguards kill switch, budget, timeout, and canary-first each with a positive control and the canary-first ordering and canary-gates-main teeth (AC4); and the no-detach tooth, the byte-identical engine sync, the honest capability, and the HIGH-RISK dogfood (AC5)."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes (exit 0), including check_plan over PLAN-0012 with WARP-1206 mirrored back (lane planned, plan PLAN-0012, work W6, plan_revision 2, depends_on [WARP-1205]) and the mandatory placement gate over the spec (placement [contracts] resolves, footprint tier standard). The executor introduces no new gate wiring for W6; landing an executor check into validate.py run_all plus the init lay-down is WARP-1211 (W11). validate.py is unedited and stays under the module_lines budget. The organ is exercised standalone (python3 .warp/action_executor.py) and through fixtures and the shipped examples in the selftest."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py (124 specs); the WARP-1206 row reads review/high/required, and the PLAN-0012 frontier shows WARP-1206 (W6) with W7 and W8 waiting on it. check_generated.sh reports no drift (regeneration is a no-op)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry no company or product references) all pass. The new engine material (.warp/action_executor.py and the capabilities entry) is generic; WARP is the method's own name and the systems are generic fakes (fake-deploy-controller, fake-service-controller, fake-pool-controller). RULE #1 verified: no em/en dash, no prose double-hyphen (the section divider and the front-matter fence are established conventions)."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "bash scripts/check_lint.sh: pass. .warp/action_executor.py and every synced copy compiles under python3 -m py_compile."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: template sync pass (the PAIRS-tracked files are unchanged; validate.py is not edited). .warp/action_executor.py and .warp/capabilities.yaml follow the byte-identical discipline across all engine copies."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pack drift pass (7 packs). .warp/action_executor.py and .warp/capabilities.yaml are byte-identical between plugin/templates (canonical source) and every pack (cursor, codex, copilot, antigravity, opencode, aider); the claude pack is the source in-place. The executor uses no per-repo example artifacts (it operates on the existing remedy/action examples)."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. Footprint-versus-diff: WARP-1206 is the single footprinted spec in the change set and every changed source path is covered by its declared footprint (.warp/action_executor.py and .warp/capabilities.yaml and their plugin/templates and packs copies, scripts/selftest.py, and the spec; specs/index.md is an excluded derived artifact). No file_lines violation: .warp/action_executor.py is 778 lines (under the 1000 module_lines budget) and resolves to no area (a placeless engine module like the sibling organs); .warp/validate.py is deliberately NOT edited. Placement [contracts] resolves; footprint tier standard (a single area, no boundary crossing)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass. The executor holds a secret REFERENCE (env: or keychain:) resolved at the D4 seam and never a raw literal; it carries no secrets and opens no connection (the reference target is fake)."
+    }
+  ],
+  "assumptions": [
+    "WARP-1206 is a PLANNED spec (lane planned, W6 of PLAN-0012 revision 2, depends_on [WARP-1205] which shipped). The manifest carries plan/work/plan_revision/plan_hash to bind the change to the plan state it was built against (plan_hash sha256:9c8616540899be1d, PLAN-0012 revision 2 unchanged).",
+    "This item is the EXECUTION ORGAN: the executor that actually runs a remediation proposal's whitelisted action, on its OWN credential and code path, bound to a proposal digest, behind the autonomy ladder and the standing safeguards (kill switch, budget, timeout, canary-first). It is HIGH RISK per C2 (the executor is the enforcement core on the execution side) and ships at human_approval required. It is HIGH and NOT critical: it builds NO data-mutating execution path - L2 executes only strictly reversible, non-data-mutating actions, and anything irreversible or data-mutating REFUSES (requires_two_key) pending the two-key rule WARP-1207 (W7), which is NOT built here. C2 reserves the CRITICAL tier for data-mutating execution paths, and none exists in this build.",
+    "PRIOR MODULE RECONCILIATION: a .warp/executor.py already existed - it is the WARP BUILD-LOOP executor (WARP-0401, capability executor_driver) that drives a ready spec through resolve/build/gate/proof/review/merge. That is a DIFFERENT organ from the production-support ACTION executor this item builds. To avoid clobbering it, this organ lives in its own module, .warp/action_executor.py, and the build executor is untouched; the docstring, the spec, and the capability entry state the distinction explicitly.",
+    "THE PROPOSAL DIGEST (proposal_digest) is defined in this organ (the one that introduces the binding), using the validate.proof_digest / action.action_digest canonical-JSON idiom over an already-parsed remedy - it is not a second parser. W7 (the two-key rule) will import proposal_digest from here so the binding has one truth; W1 (incident.py) is deliberately left untouched, so this HIGH-RISK build does not modify a separately-approved shipped safety organ as a side effect.",
+    "HONEST DEFERRAL (not a dodge): the two-key rule WARP-1207 (W7) that an irreversible or data-mutating action binds to, the compressed loop and reconciliation WARP-1208 (W8) that would drive an incident through the executor, the support metrics WARP-1210 (W10), and landing an executor check into validate.py run_all plus the init lay-down WARP-1211 (W11) are separate later items and are NOT built here. The executor FENCES OFF anything that would need the two keys (it refuses, fail closed). Because validate.py is not edited it stays under the module_lines budget; the module ships runnable standalone and exercised through fixtures and the shipped examples in the selftest, matching how W1 through W5 shipped their organs unwired.",
+    "The impl is a single commit (action_executor.py across all engine copies + one capabilities entry per copy + the selftest block + the spec + the regenerated index). Per the review boundary: specs/WARP-1206 is flipped to review (not shipped), no verdict is written, this proof manifest and .warp/last_verify and .warp/events.jsonl are left uncommitted, and nothing is pushed. Because this is the SINGLE MOST SAFETY-CRITICAL spec (HIGH RISK, the executor that can run actions), the landing requires TWO independent fresh-context reviews AND a separate recorded FOUNDER approval as the landing key; the builder does not review its own work and does not land."
+  ],
+  "rollback": "git revert bf2d8a4. The change adds one engine module (.warp/action_executor.py, synced byte-identical across plugin/templates and the 6 packs) and one capabilities entry, plus a selftest block and this spec. Nothing consumes the executor: it is not wired into verify.sh or validate.py run_all (that is WARP-1211, W11), the two-key rule it fences off is WARP-1207 (W7), and the compressed loop that would drive it is WARP-1208 (W8), so the module is not on the gate path and reverting returns the gate to its prior behavior with no migration and nothing to unwind. A repository that never configures the responder is unaffected either way; the executor holds no store, opens no connection, and runs nothing against any live system.",
+  "proof_digest": "sha256:4c3bf339eb24cc56"
+}

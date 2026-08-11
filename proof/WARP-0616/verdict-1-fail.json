@@ -1,0 +1,40 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0616",
+  "commit": "e43d2be",
+  "review_round": 1,
+  "reviewer": "claude-opus-4-8[1m] (independent, fresh context, adversarial - tried to authorize-when-must-not against the real input contract)",
+  "reviewed_at": "2026-07-24T15:40:00Z",
+  "verdict": "fail",
+  "summary": "The SHIPPED artifact is provably INERT and fail-closed (no human_decisions block in any of the 8 policy.yaml; load_policy None over the real policy.yaml; every request denied no_human_decisions_policy), gate GREEN (selftest 2599/0, validate.py all + proof exit 0), 8 authorization.py copies one sha256, frozen readers + policy.yaml byte-unchanged, protected_paths [], dash/genericity clean, 5 teeth reproduced non-vacuously. NO live exposure today. BUT the safety-critical logic that activates at VEL-3 switch-on authorizes cases the spec says it must REFUSE, fail-OPEN in a module advertising fail-closed. FAIL, fixable before switch-on.",
+  "criteria": [
+    {"id": "AC1", "status": "pass", "note": "required_roles/quorum/is_authorized pure, read-only; 8 copies byte-identical (sha256 9bba35c2); declared in new engine area of architecture.yaml."},
+    {"id": "AC2", "status": "pass", "note": "Genuinely INERT: no block in any shipped policy.yaml; absent/empty/roles-without-quorum/malformed all fail closed; policy.yaml byte-unchanged."},
+    {"id": "AC3", "status": "pass_with_notes", "note": "Attestation structure + per-request + digest-invalidation work for well-formed input. Gaps: null-id request matches a blanket attestation (None==None); risk_acceptance string 'false' accepted as acceptance."},
+    {"id": "AC4", "status": "fail", "note": "Machine-actor refusal, distinct-approver quorum, and two-key (list impact) solid. BUT separation of duties does NOT hold: warp.request/v1 has no producer field, so req.get('producer') is always None and a self-approval by the proposer authorizes. Non-list impact coerces to [] and drops the two-key requirement. Both fail OPEN."},
+    {"id": "AC5", "status": "pass_with_notes", "note": "5 teeth genuinely non-vacuous (T1/T2/T5 reproduced, mutant authorizes/real refuses, on-disk sha256 unchanged). Caveat: T2 + separation checks rest on a fixture-injected producer field real records never carry, so they prove the guard line is load-bearing without demonstrating the property is reachable for real input. No negative selftest for producerless/idless/scalar-impact/risk_acceptance-false."}
+  ],
+  "findings": [
+    {"severity": "blocking", "text": "SEPARATION OF DUTIES DORMANT + FAILS OPEN. warp.request/v1 defines no producer/proposer field; is_authorized derives separation solely from req.get('producer') = always None on a real record, so a self-approval by the actual proposer returns authorized=True. A safety authorizer must FAIL CLOSED when the identity needed for a load-bearing property is absent. Fix: use a VERIFIED proposer identity supplied by the W5 edge (never a self-declared request field), and REFUSE when it is absent. Add a producerless-request negative selftest."},
+    {"severity": "blocking", "text": "NON-LIST impact DROPS TWO-KEY. needs_2k uses _as_list(impact) which coerces a scalar (impact='irreversible') to [] => needs_2k False => irreversible/money/external authorizes with no second key. Fix: treat a non-list/malformed impact as fail-closed, not 'no two-key needed'. Add a scalar-impact negative."},
+    {"severity": "note", "text": "PER-REQUEST BYPASS ON NULL id: rid=None matches an attestation with absent/None request_id (None==None) => a blanket attestation authorizes an idless request. Refuse a request with no id; never treat null request_id as a per-request match."},
+    {"severity": "note", "text": "risk_acceptance == string 'false' accepted as acceptance (_is_str('false') True); parse_yamlish turns unquoted false into 'false'. Normalize risk_acceptance through _as_bool and reject anything resolving to False."},
+    {"severity": "note", "text": "min_independence defaults to per-identity groups when the registry omits 'independence' (grp=who), so undeclared independence is treated as independent (fail-open for the independence guarantee). Default conservatively or require an explicit group when min_independence > 1."}
+  ],
+  "must_fix_before_live": [
+    "Separation of duties enforceable + fail-closed: is_authorized uses a VERIFIED proposer identity supplied by the W5 edge (not a self-declared req field), and REFUSES when it is absent. Add a producerless-request negative selftest.",
+    "Non-list/malformed impact is fail-closed on the two-key path (do not coerce to [] and drop the second key). Add a scalar-impact negative.",
+    "Refuse a request with no id; kill the None==None per-request match. Add an idless-request negative.",
+    "Reject risk_acceptance resolving to False via _as_bool (including string 'false').",
+    "min_independence default must not silently treat undeclared independence as independent."
+  ],
+  "checks": [
+    "verify.sh GREEN (stamped bf92f3f); selftest 2599 passed / 0 failed; validate.py all + proof exit 0.",
+    "8x authorization.py one sha256 (9bba35c2); 8x capabilities.yaml one sha256 (ed5c3df3); architecture.yaml engine area added.",
+    "Frozen readers (two_key/policy_check/decision/request) + policy.yaml byte-unchanged in e43d2be; protected_paths [].",
+    "INERT confirmed: no human_decisions block in any of 8 policy.yaml; self-approval/scalar-impact/no-id/money all denied no_human_decisions_policy in shipped state.",
+    "Teeth T1/T2/T5 independently reproduced (mutant authorizes, real refuses, on-disk sha256 unchanged).",
+    "RULE #1 clean (0 em/en-dash, no prose double-hyphen), module non-ASCII/company-literal clean.",
+    "ADVERSARIAL (with a configured fixture policy = post-switch-on): self-approval on producerless schema-valid request -> AUTHORIZED (blocker); scalar impact irreversible no keys -> AUTHORIZED (blocker); idless + blanket attestation -> AUTHORIZED (note); risk_acceptance 'false' -> AUTHORIZED (note). Machine/service-account spoofing + two-key confirmer==producer + no-clock correctly REFUSED."
+  ]
+}

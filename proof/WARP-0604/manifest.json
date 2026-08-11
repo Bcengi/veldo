@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0604",
+  "commit": "58ad5ecda89ff5f42223664e9f8c805311e7e58e",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0006 W4, in-session single writer)",
+  "plan_hash": "sha256:6dd3f98b5a0c1f68",
+  "produced_at": "2026-07-18T20:53:41Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_intake.py intake_item reads a ticket through the WARP-0603 seam (adapter.read_item) and draft_spec_from_item builds a warp.spec/v1 DRAFT (status draft, lane standalone) bound to the resolved repo, with the report as the AC1 reproduction observable, a no-regression ACn, and the source ticket linked in intake_source; it feeds the existing plugin/skills/intake procedure, not a parallel pipeline, and treats ticket content as untrusted input."},
+        {"type": "unit", "ref": "independent review confirmed the read-through-seam and the draft fields (AC1 reproduction, ACn no-regression, intake_source tracker/item/url); part of selftest 1176 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the ticket's repo is resolved with the reused WARP-0601 resolve_repo (no second parser) and a ticket with no routing signal, an unknown repo, or an ambiguous one is REFUSED by name (IntakeError), never drafted to a default."},
+        {"type": "unit", "ref": "independent review proved reuse by monkeypatch spy (resolve_repo called once, draft repo == its output) and refusal by name on empty item, empty-suffix label, ambiguous two-repo, unknown repo, no-config, and unknown component; could not sneak a misroute; part of selftest 1176 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the risky Jira field mapping (_jira_issue_to_item) is pure and gate-tested - key to id, summary to title, an Atlassian Document Format or plain description flattened to text (_jira_text), labels/components/custom-fields preserved for routing - proven over a fixture issue with no live Jira."},
+        {"type": "unit", "ref": "independent review survived every adversarial fixture without crashing: plain-string / ADF / missing / list-shaped / malformed (non-string, None, int, content-not-a-list) descriptions, missing/empty labels and components, mixed component shapes, and preserved custom fields; part of selftest 1176 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the live JiraCloudAdapter is REFERENCE-WIRED (Jira Cloud REST v3 via stdlib urllib, mapping through the gate-tested _jira_issue_to_item); the token is resolved from a secrets reference (token_ref) and it FAILS CLOSED (TrackerAdapterError) if none resolves, never a raw credential in a file/prompt/proof/log (C4); it is NOT run in the gate (needs live Jira, C5), and the capability manifest marks it reference while the intake logic and mapping are mechanical."},
+        {"type": "unit", "ref": "independent review confirmed fail-closed on an unresolved token, no hardcoded credential (regex scan empty), no top-level urllib import (network confined to JiraCloudAdapter._request, not the pure paths), the gate secret scan passes, and epic/child methods raise by name (a correct W4 scope boundary); part of selftest 1176 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest drives intake over the FakeTracker + a fixture Jira issue offline - a routing-resolved ticket drafts bound to the repo with AC1 reproduction and the ticket linked, missing/ambiguous/unknown routing is refused by name, the pure mapping reads and flattens correctly, and the rendered draft is parsed by the REAL validator (check_spec == 0) - non-tautologically (the routing label present drafts, removed it refuses)."},
+        {"type": "unit", "ref": "independent review mutation matrix: hardcoding the repo / not calling resolve_repo turned 4 assertions RED, neutering the ADF flatten 1 RED, removing the token guard 1 RED; a rendered draft validated with the real check_spec; part of selftest 1176 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1176 passed, 0 failed (+19 for the WARP-0604 intake block including the injection-defense assertions)"}
+  ],
+  "assumptions": [
+    "W4 of PLAN-0006: the Jira intake edge, built in-session by a single writer, in a new .warp/tracker_intake.py. The network is kept at arm's length so the substance is gate-tested offline: the intake LOGIC (resolve + draft + refuse) and the risky Jira field MAPPING (_jira_issue_to_item, ADF flatten) are mechanical and gate-tested over the FakeTracker + a fixture issue; only the actual HTTP (JiraCloudAdapter's urllib calls) is reference-wired (needs live Jira, not gate-run, token from a secrets ref never a raw credential). No template twin (not a validate/policy_check load dependency, same as the other tracker modules). A REVIEW-DRIVEN SECURITY FIX was applied to the reviewed code and re-reviewed: the first review found a front-matter injection (an untrusted ticket title emitted verbatim into the rendered YAML could inject a front-matter key line, e.g. hijack id/schema); fixed with _fm_safe which collapses every control character (ord < 32) and, via a second split()/join pass, every Unicode line separator (U+2028/U+2029/U+0085) to single spaces at both the draft boundary and every front-matter emission, so ticket content can only ever be a scalar VALUE not a structural KEY. Two independent adversarial reviews (the full pass on 4223f0b and a scoped re-review bound to this commit 58ad5ec) both PASS with 0 blocking; the re-review tried 10 attack families (title/body/labels/components/owner/tab/Unicode-line-separators, and injections of id/schema/owner/status/plan/work/protected_paths/human_approval/acceptance_criteria) and none injected a structural key or escalated any field.",
+    "The ticket report body is intentionally NOT sanitized (it is emitted after the closing --- as the human-readable report, not front matter); a fenced fake-spec in the body cannot hijack the front matter or produce a second parsed spec (confirmed). An informational note carried forward, out of scope for W4: PLAN-0006 prose says .warp/trackers.yaml while WARP-0601 ships .warp/trackers.json - W4 takes the config as an argument and never reads it from disk, so it is unaffected."
+  ],
+  "rollback": "git revert; additive - a new .warp/tracker_intake.py, two capability entries (tracker_intake mechanical + jira_cloud_intake_adapter reference; both capabilities.yaml copies), a selftest block, and the WARP-0604 spec; no protected path; pure stdlib, the live adapter reference-wired (not gate-run)."
+}

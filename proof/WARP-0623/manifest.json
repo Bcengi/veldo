@@ -1,0 +1,137 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0623",
+  "commit": "f35a900f04dcef0a61af07cc89bd413f86de4bca",
+  "producer": "claude-opus-5[1m] (WARP-0623 implementation in an isolated git worktree of /path/to/repo at /path/to/repo/WARP-0623, branch warp-0623-live-provisioner-name-collision, off main at c37e833. Standalone item, no plan; hardening of the PLAN-0016 live edge found on the first real execution attempt)",
+  "produced_at": "2026-07-24T00:00:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "THE REPRODUCTION WAS WRITTEN FIRST AND WATCHED FAIL. scripts/selftest.py gained, before any source change, an assertion that constructs the REAL adapter composition (JI.JiraCompanyManagedProvisioner, the shipped factory over the shipped JiraCloudAdapter base, NOT the FakeTracker) twice, once with project='PROJ' and once with project=None, using an injected secret resolver so the construction is entirely offline, and asserts every method name the live provisioning mixin defines is CALLABLE on that instance: 'WARP-0623 AC1 REPRODUCTION: every provisioning method the live mixin defines is CALLABLE on the REAL composed adapter instance, both with a project key configured and without one'. Run on the unfixed tree it FAILED: 'selftest: 2816 passed, 1 failed' with the line 'SELFTEST FAIL: WARP-0623 AC1 REPRODUCTION ...'. Run after the rename it PASSED: 'selftest: 2817 passed, 0 failed'. The two TypeErrors were also observed directly, offline, on the unfixed tree: project='PROJ' -> TypeError: 'str' object is not callable; project=None -> TypeError: 'NoneType' object is not callable, with getattr(instance, '_project') resolving to 'PROJ' and None respectively. Because the reproduction reads the mixin's method names from the class rather than a literal list, it would have failed on every commit since the collision was introduced, and it covers whatever the mixin defines later."
+        },
+        {
+          "type": "unit",
+          "ref": "The same reproduction is also expressed through the module's own reachability HELPER (unreachable_provisioner_methods, which is asserted and mutated by the suite but wired into no production path), which is the site the teeth mutate: it reports [] on the real composed instance in both configurations and returned ['_project'] on every instance before the fix. The PREMISE that makes the defect invisible offline is asserted too: the FakeTracker defines its own '    def _project(self, project_key):' method in .warp/tracker_adapter.py, callable(FakeTracker()._project) is True, and '_project' is absent from vars(FakeTracker()), so no number of fixtures over the fake could ever reach the collision."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE METHOD WAS RENAMED, NOT THE ATTRIBUTE. In .warp/tracker_jira_live.py only: the mixin's def _project(self, project_key) became def _project_record(self, project_key) (line 81) and its TWO call sites were updated, self._project_record(project_key) in _project_type (line 95) and self._project_record(project_key).get('id') in _project_id (line 104) - three edit sites for the one name (its definition and its two calls). The method body is byte-for-byte the same single REST read, return self._request('GET', '/rest/api/3/project/%s' % project_key); no REST shape, endpoint, payload, cache or error class changed. The constructor attribute self._project keeps its name and its meaning: .warp/tracker_intake.py was READ and NOT EDITED (git diff over it is empty, and it still carries '        self._project = project'), and the constructed real instance carries _project == 'PROJ' with a project configured and None without one."
+        },
+        {
+          "type": "unit",
+          "ref": "Selftest assertions: the old name is GONE from the live module ('def _project(self' and 'self._project(' both absent), so the collision cannot silently return; the new name appears at exactly three call/def sites; NO other module under .warp/ references _project_record (60 modules scanned (.warp/*.py is 61 files and the scan excludes the module itself)); .warp/tracker_intake.py still sets self._project to the configured project key and contains no reference to the renamed method."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE STRUCTURAL CHECK, in .warp/tracker_jira_live.py (679 lines against the 1000-line module_lines budget; longest function 32 lines against the 120-line budget; python standard library only, one lazy import of dis). It enumerates BOTH sides FROM THE COMPOSITION at runtime, never from a literal list. Methods: provisioner_method_names(cls) unions the own-body callables (functions, staticmethods, classmethods; dunders and nested classes excluded) of every class in cls's MRO that carries the mixin's _PROVISIONER_OPS marker - the mixin itself, the composed provisioner, and any per-provider layer over it. The marker, not an issubclass test, is the recognizer BECAUSE this codebase loads each sibling by spec_from_file_location, which mints a distinct class per load, so an issubclass test run from one load over a class built by another would recognize NOTHING and report clean. Attributes: constructor_attribute_names(cls, instance) unions, for every class in the MRO, the attribute names its own __init__ assigns onto its first parameter, read from the constructor's COMPILED CODE (every STORE_ATTR whose target was just loaded from that local, tolerant of the fused LOAD_FAST forms), plus, when a constructed instance is passed, that instance's __dict__. shadowed_provisioner_methods returns one finding per intersecting name: {error: SHADOWED_PROVISIONER_METHOD, class, attribute, attribute_set_by, method, method_defined_by}. check_provisioner_composition REFUSES BY NAME (ProvisionerCompositionError, a TypeError subclass, message led by SHADOWED_PROVISIONER_METHOD) naming the class, the attribute, the constructor that sets it and the method it hides; it ALSO refuses a composition in which it recognizes no provisioning mixin at all, because a check that inspected nothing would report clean. It is wired at the two paths the single production composition uses (round-2 correction: both live on the FACTORY path, so a composition built directly from the exported mixin with type(...) is checked at neither site; there is exactly one production composition today, so this is future-facing): the factory returns check_provisioner_composition(JiraCompanyManagedProvisioner) instead of the bare class, and the provisioner's __init__ re-runs it with instance=self. Importing .warp/tracker_jira_init.py builds that class, and the gate imports it, so the check now runs on the real class in the gate."
+        },
+        {
+          "type": "unit",
+          "ref": "SEEDED COLLISION, BOTH DIRECTIONS, each refused by name. (1) The historical defect reconstructed: an extra mixin layer defining a method named _project composed over the REAL JiraCloudAdapter base is refused, and the finding reports attribute '_project', attribute_set_by 'JiraCloudAdapter', method_defined_by '_LPLayer', error SHADOWED_PROVISIONER_METHOD. (2) A FUTURE constructor field: a synthetic base whose __init__ sets self._project_record is refused, naming _project_record. IN SITU, the strongest form: the check applied to THIS MODULE'S OWN PRE-FIX SOURCE (the rename undone in an in-memory copy) refuses the REAL composition at factory time with 'SHADOWED_PROVISIONER_METHOD: JiraCompanyManagedProvisioner sets the instance attribute '_project' (in JiraCloudAdapter.__init__), which permanently shadows the provisioning method _project defined by _CompanyManagedProvisionerOps, so every call to it raises TypeError' - so the gate would have gone red the moment the collision was introduced. COLLISION REMOVED: the SAME check passes over the same fixture with the seeded attribute replaced by a non-colliding one (findings [] and the class returned), so the refusal is the collision and not the fixture. THE FIXED REAL COMPOSITION reports EMPTY at class level and against a constructed instance, with and without a project key. GENERICITY asserted: the enumerated method set equals the mixin's own definitions (27 names) and the attribute set includes the BASE adapter constructor's _project plus the composed constructor's own caches. CROSS-LOAD: a second load of the module still refuses the seeded collision built from the first load's mixin and still reports the real composition empty. VACUITY: dict and the bare JiraCloudAdapter (no provisioning mixin) are refused rather than reported clean. STATIC/RUNTIME COVER: an attribute set OUTSIDE an __init__ literal (setattr) is invisible to the bytecode scan and IS caught against the constructed instance."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "THE TEETH ARE A MATRIX, to the WARP-1208 round-2 standard. ONE guard is WIRED in the live module, the SHADOW REFUSAL (round-2 correction: the callability probe below is a TEST HELPER called from nothing in production, so counting it as a second shipped guard inflated the defence in depth to twice what ships) ('    if findings:' in check_provisioner_composition) and the CALLABILITY PROBE ('        if not callable(getattr(instance, name, None)):' in unreachable_provisioner_methods). Each mutation target is asserted to appear EXACTLY ONCE in the module. Each guard is neutralized in an in-memory compile of the module source and run against BOTH guards' fixtures (each fixture a seeded collision the real module catches): the 2x2 matrix is asserted EXACTLY DIAGONAL - 4 cells, 2 green, both on the diagonal, zero off-diagonal - so neither guard is propped up by the other. Neutralizing the shadow refusal lets a seeded collision through; neutralizing the callability probe makes a shadowed provisioning method report as reachable (the real guard reports ['_project_record']). TWO FURTHER SITES are WIRING, not independent guards: the factory's composition-time call and the constructor's per-instance call. Both are DOMINATED by the shadow refusal by construction (neutralizing that refusal flips their fixtures too), so, exactly as WARP-1208 handled its path guard's sub-mechanisms, they are proven OUTSIDE the matrix with their own teeth: neutralizing the factory call hands back a colliding class; neutralizing the per-instance call constructs an instance whose provisioning method is shadowed (its fixture uses a setattr collision the static half cannot see, so only that site can catch it); the domination is asserted in both directions, and the callability mutation is asserted NOT to flip either wiring fixture. The module on disk is asserted sha256-UNCHANGED after every run (every mutation is compiled in memory; the file is never written)."
+        },
+        {
+          "type": "unit",
+          "ref": "CONTROLS for the common look-alike names (NOT a proof of no over-firing: two real over-firing shapes exist, a constructor assigning a CALLABLE over a mixin method name, and an attribute set by a base __init__ the composed constructor never calls): an attribute whose name merely RESEMBLES a method name does NOT refuse (a _project_key and a near-miss plural _project_records beside the mixin's _project_record method, with the resembling attribute and the real method both asserted present in the two enumerated sets, so the control is not vacuous), and a mixin method that NO constructor attribute shadows does not refuse (an added _project_snapshot method over a clean base). The fixed real composition (10 constructor attributes beside 27 mixin methods) reports empty, which is the largest control."
+        },
+        {
+          "type": "operational",
+          "ref": "THE HONEST BOUNDARY, review lane, recorded in the module source and in the capability entry rather than only here: the check finds NAME collisions on the composed class. It does not find every way a live path can be unreachable - a wrong endpoint, a wrong payload shape, or a permission the credential lacks are found only by EXECUTING the path against a real board, which is WARP-0620 and needs the founder present. A selftest asserts both the module and the capability entry say so."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "ADDITIVE AND HONESTLY RECORDED. capabilities.yaml gains one entry, tracker_provisioner_shadow_check {status: mechanical, home: .warp/tracker_jira_live.py, scope: repo-only}, and it is BYTE-IDENTICAL across all eight copies (repository root, plugin/templates, and the six packs aider/antigravity/codex/copilot/cursor/opencode); a selftest asserts the byte-identity and the entry's content. The entry states plainly, and the selftest asserts, that the live provisioning path itself remains UNEXECUTED against a real board until WARP-0620, so no reader can mistake this item for the live proof. The module docstring records WHY the collision survived a green gate: the offline fake defines the same private names as the real adapter, so CODIFIED FROM A PROVEN SCRIPT IS NOT THE SAME AS THE CODIFIED PATH RAN; the selftest asserts that sentence and the FakeTracker explanation are in the source. No existing assertion was weakened or deleted: the selftest count only grew, 2816 -> 2849 (+33, one per new expect call site). No protected path is touched (git diff over scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py and their plugin twins is empty) and the safety core is untouched (.warp/authorization.py, .warp/two_key.py, .warp/decision.py unchanged). .warp/tracker_intake.py and .warp/tracker_adapter.py were READ and NOT EDITED. RULE #1 clean: no em dash, no en dash, no prose double-hyphen in any added line (the gate's dash sweep and non-ASCII sweep pass)."
+        },
+        {
+          "type": "unit",
+          "ref": "ENGINE SYNC, stated as it actually is rather than as the spec's AC5 wording assumed. capabilities.yaml is engine-synced and is synced here (all eight copies byte-identical, asserted). .warp/tracker_jira_live.py, however, is REPO-ONLY: the whole tracker board-bootstrap cluster (tracker_jira_live.py, tracker_jira_init.py, tracker_intake.py, tracker_adapter.py) has never been part of the canonical engine (plugin/templates), so there is no shipped copy of it in any pack and nothing to re-sync. A selftest asserts that truth mechanically (none of the four modules is in pack.engine_files(plugin/templates), plugin/templates/.warp/tracker_jira_live.py does not exist, no pack carries one, and pack_drift_report is empty for all seven packs), so the record cannot overclaim. This is why the capability entry carries scope: repo-only, which is what the repository's own capabilities-honesty check requires for a home that does not ship (the sibling tracker_agent_identity and tracker_board_bootstrap entries are marked the same way). Creating an engine copy of this one module would have shipped an orphan Jira provisioner to adopters without its orchestrator or its adapter base, which is a scope expansion this item declined; it is declared as a gap below."
+        },
+        {
+          "type": "unit",
+          "ref": "DOGFOOD: the spec is status ready, standard risk, human_approval not_required, declares no protected path, is behavior_bearing with an observability block, and passes the repository's own diagnosability gate (V.check_ready == 0); its placement resolves to the TRACKER area with footprint tier standard and an empty placement gate; and the named failure class its observability block promises (SHADOWED_PROVISIONER_METHOD) is the one the module ships."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py, run in this session in the worktree at this commit, not taken on report: 2849 passed, 0 failed. Baseline measured in the same worktree at c37e833 before any change: 2816 passed, 0 failed (identical to the main-tree baseline). So this item adds 33 runtime assertions across 33 WARP-0623 expect call sites, and nothing was weakened or deleted. The intermediate states were observed and recorded: with the reproduction written and the source unfixed, 2816 passed / 1 FAILED (the reproduction); after the rename, 2817 passed / 0 failed."
+    },
+    {
+      "name": "gate",
+      "status": "passed",
+      "detail": "./scripts/verify.sh run in this session in the worktree at the tree of this commit: GATE: GREEN. Stages: lint pass, unit pass (2849/0), generated pass, docs pass (dash sweep, non-ASCII sweep, genericity sweep), extra pass (template sync pass), secret scan pass, contracts pass, shape gate pass (mechanizable rules enforced; four review-lane notes as always). catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. The footprint-versus-diff check bound to this change set (exactly one footprinted spec in the diff) and found no changed path outside the spec's declared footprint. Budgets held: .warp/tracker_jira_live.py is 679 lines against the 1000-line module_lines budget (up from 471) and its longest function is 32 lines against the 120-line function_lines budget."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pass (7 packs), every declared pack's engine byte-identical to the canonical source. bash scripts/check_template_sync.sh: pass."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py spec specs/WARP-0623-live-provisioner-name-collision.md: 0 problems. python3 .warp/validate.py ready specs/WARP-0623-live-provisioner-name-collision.md: 0 problems. python3 scripts/update_index.py regenerated specs/index.md (137 specifications) and the generated check is a no-op afterwards."
+    },
+    {
+      "name": "offline",
+      "status": "passed",
+      "detail": "No live board call, no network, no process spawn and no timer anywhere in this item. The real composition is constructed with an injected secret resolver and no provisioning method is invoked; every collision fixture is a plain synthetic base; every teeth mutation is compiled in memory. The only new import in the module is a lazy 'import dis' inside the constructor-bytecode reader."
+    },
+    {
+      "name": "independent_review",
+      "status": "passed",
+      "detail": "Independent adversarial fresh-context review: pass_with_notes, must_fix_before_live EMPTY. It REPRODUCED THE ORIGINAL DEFECT at the parent commit c37e833 in a throwaway clone (both TypeErrors observed, str with a project key and NoneType without) and confirmed reachability at the reviewed commit by reaching the network layer. It ran 18 attacks on the recognizer and 9 on the attribute half, built its OWN 8 mutation sites against its OWN 6 fixtures (with different collision names), reproduced the 2x2 matrix as exactly diagonal and STRONGER than claimed (one fixture is a shape the shadow refusal cannot catch, so the probe's independence is by shape rather than fixture luck), confirmed both wiring sites are genuinely dominated in both directions, and mutated all 10 sites outside the declared teeth set on disk to confirm every one turns the shipped suite red. It verified every factual claim behind the AC5 gap independently (git log over the template paths is empty; pack.ENGINE_GLOBS derives the engine set from plugin/templates; the capabilities honesty check at selftest.py:5392 requires the repo-only marking) and ruled the resolution HONEST and THE SPEC WRONG to demand it. Gate GREEN at 0f49b61, selftest 2849 passed 0 failed against a 2816 baseline it measured itself, selftest diff 351 insertions and 0 deletions. It found five manifest overstatements, all corrected in this commit, and nine non-blocking notes."
+    }
+  ],
+  "assumptions": [
+    "The reported behavior of the pre-fix code is reproduced from the source in this repository, not from the earlier live attempt: the two TypeErrors ('str' object is not callable with a project configured, 'NoneType' object is not callable without one) were observed offline in this session against the unfixed tree, which matches what the live attempt reported.",
+    "The constructor-attribute side of the check reads STORE_ATTR onto the constructor's first parameter from each __init__ along the MRO. It therefore does not see an attribute a constructor sets indirectly (a setattr, or a helper method the constructor calls). That blind spot is covered at runtime by the per-instance pass (instance=self in the provisioner's __init__), which reads the constructed object's own __dict__; a selftest proves the runtime half catches a setattr collision the static half misses. A collision that exists only on an instance nobody ever constructs is not caught, and cannot bite either.",
+    "The check recognizes the provisioning mixin lineage by the _PROVISIONER_OPS marker. A future provisioning mixin composed into this class WITHOUT that marker would not have its methods enumerated; the vacuity refusal only fires when NO marked class is present at all, not when one of several mixins is unmarked. The marker is documented on the mixin for exactly this reason.",
+    "The check covers the provisioning mixin's methods, as the spec scopes it. A method defined by the adapter BASE and shadowed by a constructor attribute would be the same class of defect but is outside the enumerated set; measured on the real composition today, the broader full-MRO intersection is also empty."
+  ],
+  "rollback": "git revert the implementation commit. It renames one private method inside .warp/tracker_jira_live.py and its two call sites, adds the composition check plus its two wiring call sites in that same module, adds one capabilities entry re-synced byte-identical across plugin/templates and the six packs, and grows scripts/selftest.py by 33 assertions. Reverting restores the collision, which means the live provisioning path returns to raising TypeError on every call: it does not restore any working behavior, because there is none to restore. Nothing else reads the renamed method, the constructor attribute is untouched, .warp/tracker_intake.py was never edited, and no contract, gate stage, record or event changes, so there is no migration and nothing to unwind. The one behavioral consequence of a revert beyond that: the factory and the provisioner's __init__ would stop refusing a shadowed composition, so a future collision would again reach a live board as a TypeError.",
+  "gaps": [
+    "AC5 asks for .warp/tracker_jira_live.py to be re-synced BYTE-IDENTICAL across plugin/templates and every pack. That is not satisfiable as worded and was not done: the module has never been part of the canonical engine. plugin/templates/.warp/ ships tracker.py and trackers.json only, so there is no copy of tracker_jira_live.py (or tracker_jira_init.py, tracker_intake.py, tracker_adapter.py) in plugin/templates or in any of the six packs, and pack.ENGINE_GLOBS derives the engine set from what exists there. Creating one would make an orphan Jira provisioner an engine file every pack must carry, without its orchestrator or its adapter base, and would let the capability claim it ships to adopters when its cluster does not. What was done instead: capabilities.yaml (which IS engine-synced) carries the new entry byte-identical in all eight copies, the entry is marked scope: repo-only as the repository's own capabilities-honesty check requires, and a selftest asserts the repo-only truth mechanically so the record cannot overclaim. Template sync and pack drift both end empty.",
+    "The spec's observability block names SHADOWED_PROVISIONER_METHOD as the check's single failure class. The shipped check has ONE exception class (ProvisionerCompositionError) whose message always leads with that name, but it fires for TWO reasons: a shadowed method, and a composition in which the check recognizes no provisioning mixin at all. The second refusal is a deliberate strengthening rather than a taxonomy drift: without it, running the check across the codebase's multiple module load identities would have reported clean while inspecting nothing, which is the exact failure mode this item exists to eliminate.",
+    "The item is entirely offline by its own scope, so nothing here proves the live provisioning path WORKS. The path is now REACHABLE and this class of unreachability is now checked; whether the endpoints, payloads and credential scopes are right is decided only by executing it against a real board, which is WARP-0620."
+  ],
+  "proof_digest": "sha256:6c17e37d600ba81b"
+}

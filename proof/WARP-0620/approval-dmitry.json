@@ -1,0 +1,26 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-0620-1",
+  "spec_id": "WARP-0620",
+  "approver": "dmitry",
+  "decision": "approved",
+  "approved_at": "2026-07-24T22:51:00-04:00",
+  "scope": "Run the live-sandbox proof of the inbound edge on a throwaway project, from the reviewed WARP-0623 branch rather than after a merge.",
+  "recorded_from": "Dmitry created throwaway project TE1 (board 69) and sent it unprompted, then chose option A explicitly when asked whether to run from the reviewed branch or wait for the merge, then performed the single terminal transition the proof required.",
+  "what_it_authorized": [
+    "provisioning a THROWAWAY Jira project (TE1) through the codified bootstrap under the admin identity",
+    "creating seeded issues on that throwaway project",
+    "the agent ATTEMPTING and being refused the three terminal transitions, which is the load-bearing test",
+    "one real human terminal transition by the approver, on the throwaway project only"
+  ],
+  "what_it_did_NOT_authorize": [
+    "any read or write of a record on the production board beyond reading group membership and transition conditions",
+    "settling any real decision",
+    "creating any listener, webhook, timer or standing service",
+    "wiring the inbound edge to the production board"
+  ],
+  "expiry": "single-use: this authorization covers the one session it was given in and does not carry to a second live run",
+  "recorded_at": "2026-07-24T22:51:00-04:00",
+  "expires_at": "2026-07-25T00:00:00-04:00",
+  "canonical_fields_note": "recorded_at is a verbatim copy of approved_at, which was recorded live. expires_at expresses the single-use `expiry` prose already in this record as the timestamp the contract requires: end of the session the authorization was given in. It is deliberately IN THE PAST, so this record grants no live authority and cannot authorize a second run. Neither value was invented to satisfy the check; the held-back README refused to invent them and was right to."
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0506",
+  "commit": "b88cb420a874bdc846cac572abe6b79e96d284d2",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T00:36:55Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:6a14041fe701b15b",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, real CLI subprocess driven over a temp runs root, front-door-not-divergent confirmed, kind/payload mutation caught)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, real CLI subprocess driven over a temp runs root, front-door-not-divergent confirmed, kind/payload mutation caught)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, real CLI subprocess driven over a temp runs root, front-door-not-divergent confirmed, kind/payload mutation caught)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, real CLI subprocess driven over a temp runs root, front-door-not-divergent confirmed, kind/payload mutation caught)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Independent Opus review pass_with_notes, 0 blocking: drove the real CLI subprocess over both WARP_RUNS_ROOT and --root, confirmed each command posts the exact kind+payload, an unknown run and empty text exit 2 posting nothing, and CLI-posted commands drive R5's handle_run_commands unchanged (answer resumes a blocked run, abort stops it, steer is recorded) - a front door, not a divergent path. Wrong-kind and fixed-empty-payload mutations each turned the selftest red."
+    },
+    {
+      "severity": "note",
+      "text": "Cosmetic (non-blocking): unknown command KIND is rejected structurally by argparse (subcommands limited to answer/steer/abort) rather than a dedicated RC-layer assertion (post_command's unknown-kind guard is separately tested in R5); there is no unified warp dispatcher binary (each script exposes its warp subcommands, matching the repo convention); read_state's unknown-run guard also catches a corrupt state.json with the same fail-loud exit."
+    }
+  ],
+  "summary": "R6 (WARP-0506, chat-surface wiring) is correct and honest, closing PLAN-0005 at 6/6. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 848). A thin CLI over runlog.post_command lets a human or assistant answer/steer/abort a running build through the same inbox the R5 loop drains, failing loud on bad input and writing only through runlog; the assistant procedure (watch warp status --json, then act) and the requirement-change-must-commit rule are documented. proof_digest via validate.py."
+}

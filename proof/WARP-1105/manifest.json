@@ -1,0 +1,124 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1105",
+  "commit": "eee63737ab800211a7f58d01f036b6489d78deb0",
+  "producer": "claude-opus-4-8[1m] (WARP-1105 implementer agent, planned lane; W5 of PLAN-0011, the foundational decision record artifact and its structural validator)",
+  "produced_at": "2026-07-22T16:46:06Z",
+  "plan": "PLAN-0011",
+  "work": "W5",
+  "plan_revision": 2,
+  "plan_hash": "sha256:5f6e8c623065cda0",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A versioned decision-record format (schema warp.decision/v1) is defined in .warp/decision.py. A record declares id, title, problem_class, owner, an integer version >= 1, the reversal_cost class and the risk tier it maps to, a non-empty options list (each option an id, a summary, and its dead_end condition), and a non-empty assumptions list (each an id, a statement, a measurable signal, and a breach condition); a record with no assumptions is refused (a memo is not a tripwire). Records are homed as per-repo instance data under .warp/decisions/*.yaml, a subdirectory the .warp/*.yaml engine glob (single level) does not reach, so records stay per-repo like the architecture contract and are never in the shipped engine set. An illustrative example ships at .warp/examples/decision-example.yaml in the un-decided draft state with no attributed decider; python3 .warp/validate.py decisions .warp/examples/decision-example.yaml returns rc 0 (validates clean), and check_decision is exercised in the gate via the run_all examples block."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1105 block: 'the shipped decision example validates via check_decision' (V.check_decision == 0), 'the shipped example is present and in the un-decided (draft) state with no attributed decider' (present, status: draft, no decided_by), positive control 'a well-formed warp.decision/v1 record validates' and 'a present, well-formed record validates through the directory scan' pass; 'a record with no assumptions refuses (a memo is not a tripwire)' refuses."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/decision.py (invoked by .warp/validate.py check_decision / check_decisions, run in the gate via validate.py all) structurally validates a warp.decision/v1 record the way .warp/arch.py validates the contract: it reuses validate.parse_yamlish (no second YAML parser) and the validate.fail reporter (no import cycle, the parser and reporter are passed in). validate_record fails closed by name on a wrong schema id, a missing/empty required field, a non-integer version, an out-of-vocabulary status or reversal_cost class or risk tier, an option lacking its dead_end condition, a duplicate option id or assumption id within a record, and a file outside the parser subset (malformed, surfaced as DecisionRecordError)."
+        },
+        {
+          "type": "unit",
+          "ref": "Negative selftests each REFUSE (>0): 'a wrong schema id refuses', 'an out-of-vocabulary status refuses', 'an out-of-vocabulary reversal_cost class refuses', 'an out-of-vocabulary risk tier refuses', 'a non-integer version refuses', 'an option lacking its dead_end condition refuses', 'a duplicate option id refuses', 'a duplicate assumption id refuses within a record', and 'a malformed record (outside the parser subset) fails closed'. A well-formed record validates clean (positive control), so the check cannot pass vacuously."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Governance in validate_record: status == 'decided' requires a decision block with decided_by, decided_at, and a chosen option that resolves to a declared option, or it fails closed ('only a human decides, on the record' / 'never machine-decided' / 'referenced but absent'); a draft needs no decider (the un-decided state); and a non-decided record that carries a decision block with a decider or a chosen option is refused (no smuggling machine-decided state under a draft). D5 is mechanized: reversal_cost 'irreversible' with a risk tier other than 'critical' fails closed ('the irreversible choices carry the highest tier'). No machine-decided state is representable."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: negatives 'a record marked decided with no decision block refuses', 'a decided record with a decision block but no recorded decider refuses', 'a decided record whose chosen option does not resolve refuses (referenced but absent)', 'a draft may not smuggle a decision block with a decider (no machine-decided state)', and 'an irreversible decision NOT at the critical tier refuses (D5)' all refuse (>0); positives 'a fully decided record with a recorded human decider validates' (==0), 'a draft needs no decider (draft is the un-decided state)' (==0), and 'an irreversible decision AT the critical tier validates (D5)' (==0)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Adoption safe and fail closed at the directory and file boundary (decision.check_decisions_dir / check_record): an absent .warp/decisions/ directory stands down and returns 0 (a repository without records is byte-identically unaffected; the packs and a fresh init carry no .warp/decisions/ directory, so their validate.py all is unchanged), a required-but-absent single record fails closed by name, a malformed present record fails closed, and a decision id declared by more than one record is refused (an ambiguous reference across the set). Each assumption is required to carry a measurable signal and a breach condition, so the WARP-1107 tripwire pass has something to monitor; an assumption missing its signal or its breach is refused. The init scaffold now lays .warp/decision.py beside .warp/validate.py (init_scaffold._FILES and REQUIRED_SUBSTRATE) so a scaffolded repo's validate.py can call check_decisions, which then stands down cleanly with no .warp/decisions/ directory present."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests over a temporary tree: 'an absent decisions directory stands down (adoption safe)' (==0), 'a required-but-absent single record fails closed by name' (>0), 'a present, well-formed record validates through the directory scan' (==0), 'a malformed record (outside the parser subset) fails closed' (>0), and 'a duplicate decision id across records is refused' (>0). Assumption teeth: 'an assumption missing its signal refuses' (>0) and 'an assumption missing its breach condition refuses' (>0). The init-scaffold gate selftests ('init scaffold gate is GREEN on the empty starter plan' and 'still GREEN after a re-run') stay green, proving a fresh scaffold with decision.py laid down and no records present is adoption safe."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "TEETH proven by mutation over this repository's shipped decision-example.yaml (anti-vacuity C1): stripping an option's dead_end key ('    dead_end:' -> '    was_dead_end:') makes validate_record refuse ('a dead_end condition is required'); flipping the field line 'status: draft' to 'status: decided' without adding a decision block makes it refuse ('status decided requires a decision block'); each mutation is applied to the real example text and reverts byte-identical. .warp/decision.py ships in the engine and is byte-identical across all 8 copies (root, plugin/templates, and the six packs cursor/codex/copilot/antigravity/opencode/aider); the edited .warp/validate.py and .warp/capabilities.yaml are re-synced byte-identical across the same 8 copies. check_pack_drift.py: pack drift pass (7 packs). check_template_sync.sh: template sync pass (validate.py PAIRS-tracked). capabilities.yaml gains one honest mechanical entry (foundational_decision_record, home .warp/decision.py which ships in the engine, so the capabilities-honesty check resolves it without a repo-only marker). The decision RECORDS themselves are per-repo (.warp/decisions/, not in the shipped engine set), so a fresh init stays record-free and adoption safe. The adversarial decision review is WARP-1106 (W6) and the in-session tripwire pass is WARP-1107 (W7), referenced honestly and not built here. RULE #1 clean (no em dash, no en dash; the only repeated-hyphen sequences added are the YAML front-matter fences in the spec, which are structural). No protected path touched (verify.sh, warp-guard.sh, policy.yaml, policy_check.py and their plugin/templates twins unchanged)."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 1535 passed, 0 failed (29 new WARP-1105 assertions). MUTATION teeth: 'WARP-1105 TEETH: stripping an option's dead_end condition from the real example turns the check RED' and 'WARP-1105 TEETH: flipping the real example to decided without a recorded human decider turns the check RED' both pass (non-vacuous). ./scripts/verify.sh: GATE GREEN (catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared). The impl lands in one commit eee6373; specs/WARP-1105 stays status draft (not flipped to shipped), specs/index.md is regenerated (WARP-1105 row draft, PLAN-0011 with WARP-1105 in the ready frontier), no verdict is written, .warp/events.jsonl and .warp/last_verify and proof/WARP-1105 are left uncommitted, and nothing is pushed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1535 passed, 0 failed. The WARP-1105 block adds 29 assertions: AC1/AC2 well-formed positive + directory-scan positive + no-assumptions refusal; AC2 nine refusal classes (wrong schema, bad status, bad reversal_cost, bad risk, non-integer version, option missing dead_end, duplicate option id, duplicate assumption id, malformed subset); AC3 governance negatives (decided without block, decided without decider, chosen unresolved, draft smuggling a decider) plus positives (draft, fully decided, irreversible+critical) and the D5 negative (irreversible not critical); AC4 signal/breach teeth, adoption-safe stand-down, required-but-absent fail-closed, malformed fail-closed, duplicate id across records; AC5 example present+draft, integrated check_decision, and two mutation teeth over the real example. The init-scaffold gate selftests stay green after decision.py was added to the scaffold substrate."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes, including check_decisions() over the per-repo .warp/decisions/ directory (absent here, stands down) and the run_all examples block validating .warp/examples/decision-example.yaml (warp.decision/v1), the WARP-1105 spec (lane planned, plan PLAN-0011, work W5, plan_revision 2, required_evidence unit), and this manifest (criteria AC1-AC5 cover the spec exactly, unit evidence + a unit check satisfy required_evidence). python3 .warp/validate.py decisions .warp/examples/decision-example.yaml returns rc 0."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py (107 specifications); WARP-1105 row reads draft, PLAN-0011 shows WARP-1105 (W5) as draft in the ready frontier; check_generated.sh reports no drift."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry no company/product references) all pass. The new engine material (.warp/decision.py, the decision-example.yaml under plugin/templates, and the capabilities entry) is generic; 'WARP' is the method's own name and is not a company reference."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "check_template_sync.sh: template sync pass. Root .warp/validate.py matches plugin/templates/.warp/validate.py (the PAIRS-tracked file); decision.py, capabilities.yaml, and the decision example follow the repo's byte-identical discipline (decision.py and capabilities.yaml synced across all 8 copies, the example synced root and plugin/templates for init, decision records intentionally per-repo)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pack drift pass (7 packs). .warp/decision.py, .warp/validate.py, and .warp/capabilities.yaml are byte-identical between plugin/templates (canonical source) and every pack (cursor, codex, copilot, antigravity, opencode, aider); the claude pack is the source in-place."
+    },
+    {"name": "runner_catalog", "status": "passed", "detail": "python3 scripts/check_runner_catalog.py: pass (21 runners, each with a fixture pair, an honest capabilities status, and a gate wiring; no runner shelled by the home gate). The new capability foundational_decision_record is mechanical with home .warp/decision.py (not a runner), and the capabilities-honesty selftest confirms every unmarked home ships and every home exists."},
+    {"name": "secret_scan", "status": "passed", "detail": "verify.sh built-in secret scan: pass."}
+  ],
+  "assumptions": [
+    "WARP-1105 is a PLANNED spec (lane planned, W5 of PLAN-0011 revision 2, approved 2026-07-22). run-check PLAN-0011 WARP-1105 returned 'clear to build (deps shipped, plan context current)' (frontier root, depends_on []). The manifest carries plan/work/plan_revision/plan_hash (sha256:5f6e8c623065cda0) to bind the change to the plan state it was built against. The spec declares no spec-level revision, so no spec_revision is recorded.",
+    "This item is the decision-record ARTIFACT + its STRUCTURAL validator only. The adversarial decision REVIEW that attacks a proposed decision before a human decides (what breaks first at ten times the problem class, which future requirement is precluded, whether the tool is right or merely near) is WARP-1106 (W6, depends_on WARP-1105); the in-session TRIPWIRE pass that compares each assumption's signal against its recorded value and surfaces an approaching or reached breach as a named finding is WARP-1107 (W7, depends_on WARP-1105). Accordingly the record schema requires each assumption to carry a signal and a breach condition (so W7 has something to monitor) and enforces the D5 mapping (irreversible -> critical), but the two-verdict critical-tier scrutiny itself is applied by W6, and arguing a choice against the problem class rather than the current deployment (C6) is the review's judgment; the structural check requires only that problem_class is present. This is the anti-vacuity posture (NG5): no rule is marked mechanizable that nothing can yet refuse.",
+    "HONESTY (NG5 and the WARP-1101 over-attestation lesson): this repository ships the artifact format, its validator, and a clearly-marked DRAFT example that attributes no decision to any human. It does NOT manufacture a decided foundational decision record, because a genuinely decided record depends on the adversarial review (WARP-1106) that does not exist yet, and recording a human as having decided a choice through that process would be a false attestation. The example is status: draft with no decided_by. This repository therefore carries no .warp/decisions/ directory yet; the check stands down (adoption safe) and its teeth are exercised over the shipped example and self-contained fixtures. If the founder later decides a real foundational choice on the record, it is authored under .warp/decisions/ as a separate act (the decision itself, once WARP-1106 can attack it first).",
+    "The impl is a single commit eee6373 (spec + decision.py + validate.py edit + init_scaffold edit + capabilities entry + decision example + selftest + regenerated index, all engine copies byte-identical). Per the task's review boundary: the spec is NOT flipped to shipped, the index is NOT edited to shipped (it derives draft from the spec), no verdict is written, this proof manifest and .warp/last_verify and .warp/events.jsonl are left uncommitted, and nothing is pushed. The independent fresh-context reviewer authors the verdict; the orchestrator flips to shipped on a pass."
+  ],
+  "rollback": "git revert eee6373. The change adds one validator module (.warp/decision.py, synced across the engine), a call to it from .warp/validate.py (a run_all directory scan, a single-file examples check, and a decisions CLI mode), an init-scaffold substrate entry, one capabilities entry, one illustrative example artifact, and a selftest block; nothing consumes decision records for enforcement yet (first consumers are WARP-1106 and WARP-1107), so reverting returns the gate to its prior behavior with no migration and nothing to unwind. A repository with no .warp/decisions/ directory is unaffected either way (the adoption-safe posture)."
+}

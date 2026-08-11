@@ -1,0 +1,57 @@
+WARP-0909 independent-reviewer verdict backfill (chain hygiene)
+built commit  a2423c7552862a58ee9a75b30bd635b94fa0f8e1 (WARP-0909: clean-context dispatch loop)
+reviewer      claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder)
+verdict       pass_with_notes, zero blocking findings
+proof_digest  sha256:e74945c205004210 (= proof_digest over proof/WARP-0909/manifest.json {spec_id, commit, criteria, checks})
+
+why this backfill
+  WARP-0909 shipped its manifest at a2423c7 (impl) and 53461aa (evidence) but the independent
+  verdict was never committed. The review DID happen and returned pass_with_notes; this file and
+  proof/WARP-0909/verdict.json record it, bound to the built commit a2423c7, so the proof chain
+  is complete. No code, spec, or plan is changed by the backfill - proof/ only.
+
+=====================================================================
+1. GATE GREEN (AC6, at the built commit)
+=====================================================================
+$ bash scripts/verify.sh | tail
+selftest: 1374 passed, 0 failed
+   unit: pass
+generated: pass
+docs hygiene: pass
+template sync: pass
+contracts: pass
+GATE: GREEN (a2423c7552862a58ee9a75b30bd635b94fa0f8e1)
+
+pack drift, per pack: EMPTY for all seven (plugin/templates, cursor, codex, copilot,
+  antigravity, opencode, aider). Every edited engine file byte-identical to source.
+
+=====================================================================
+2. TEETH proven real by live mutation (AC4)
+=====================================================================
+The two teeth take the SAME bulky outcome (nested executor result + a 20 KB transcript) through
+a passthrough projection and are REJECTED (allowlist breached and size bound blown). Confirmed
+real: mutating dispatch_receipt to a passthrough drove the selftest RED, then reverted clean.
+
+=====================================================================
+3. AC map
+=====================================================================
+AC1  docs/method.md section 2.7.1 clean-context dispatch rule; names the 2026-07-19 OOM.
+AC2  plugin/skills/run/SKILL.md step 5 fresh-context reviewer dispatch, parity with build; keeps
+     only the receipt; points to the method loop rule.
+AC3  .warp/work.py RECEIPT_FIELDS + dispatch_receipt(outcome): allowlist-only, fail-closed.
+AC4  selftest receipt-contract teeth (allowlist + size bound), non-vacuous via passthrough mutant.
+AC5  .warp/executor.py + .warp/dispatch.py docstrings state the receipt contract; behavior unchanged.
+AC6  engine copies re-synced byte-identical; gate GREEN; template-sync + pack drift clean; no
+     protected path; index regenerated.
+
+=====================================================================
+4. Findings
+=====================================================================
+One non-blocking note: dispatch_receipt is a codified reusable utility for the agent-driven loop,
+deliberately NOT wired into the mechanical WorkLoop.step, consistent with the spec's out-of-scope
+(no change to the mechanical dispatch). Enforced by the contract and its teeth-test, not a call
+site inside WorkLoop. Recorded as a note, not a defect.
+
+RULE #1 clean: no em or en dash; every double-hyphen is a real code/selftest separator, not prose.
+gate GREEN, drift empty across all seven packs, verdict bound to a2423c7 with
+proof_digest set to proof_digest(manifest).

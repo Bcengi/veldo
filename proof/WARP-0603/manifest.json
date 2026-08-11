@@ -1,0 +1,63 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0603",
+  "commit": "0107b0bd0c32048649ddcaa4f3196fe3e7b71f8e",
+  "producer": "claude-opus-4-8[1m] (build worker, PLAN-0006 W3)",
+  "plan_hash": "sha256:6dd3f98b5a0c1f68",
+  "produced_at": "2026-07-18T17:18:45Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_adapter.py TrackerAdapter is an abstract seam: it declares the reads (list_intake_items, read_item) and writes (comment, set_status, create_or_update_epic, create_or_update_child) that intake and the mirror need, the base owns the cross-cutting logic (validation, the write audit, the fail-loud guard), and every surface primitive raises NotImplementedError so a real adapter must implement them (mirroring the env_provision.py seam pattern)."},
+        {"type": "unit", "ref": "independent review confirmed a bare TrackerAdapter().comment(...) raises NotImplementedError and the base owns _require/_record/writes; part of selftest 1099 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_adapter.py FakeTracker implements the seam in-memory (a dict of items/epics/comments/statuses) with no network, so intake and the mirror are gate-testable offline; imports are stdlib only (argparse/copy/json/sys)."},
+        {"type": "unit", "ref": "selftest drives the FakeTracker through the full seam (list/read/comment/set_status/epic+child upsert); independent review reproduced the full surface end to end offline; part of selftest 1099 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_adapter.py the seam is provider-agnostic (zero Jira/vendor/network code; a real Jira adapter is WARP-0604) and read/write separation is STRUCTURAL: every write routes through the base-owned audit (_record, surfaced by writes()) and no read touches it; reads return deep copies so a caller mutating a read cannot corrupt state."},
+        {"type": "unit", "ref": "independent review confirmed a run of reads leaves writes() and state_digest() unchanged while each write grows the audit by exactly one, all four writes call _record and no read does, and read/observe paths deep-copy; part of selftest 1099 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_adapter.py idempotency the mirror relies on: set_status returns True only on a real change and False (no transition) when the target already holds; comment(id, text, key=None) posts a keyed comment at most once across repeats (keyless always appends) so at-least-once event replay is safe; create_or_update_epic/_child are upserts keyed by a stable caller identity with deterministic ids (epic:<key>, child:<epic>:<key>) so replay never forks a second epic/child."},
+        {"type": "unit", "ref": "independent review replayed a realistic at-least-once stream (each event 3x) and got one epic, one child, one keyed comment, and transitions equal to real state changes; part of selftest 1099 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_adapter.py fail-loud: TrackerAdapterError (subclasses ValueError) for malformed args, TrackerItemNotFound (subclasses LookupError) for a read/write against an absent object; a selftest drives the fake through the full seam and asserts each write's observable effect and that reads reflect prior writes, non-tautologically."},
+        {"type": "unit", "ref": "independent review proved the teeth by mutation: making _record a no-op turns the audit-grew assertions RED, and making set_status always return True turns the no-op-repeat and transition-count assertions RED; part of selftest 1099 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1099 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "W3 of PLAN-0006: the provider-agnostic tracker adapter seam plus a deterministic in-memory FakeTracker for offline gate tests; a real Jira adapter is WARP-0604, intake WARP-0604, the mirror WARP-0605+. Pure stdlib, no network. Built by a worktree-isolated build worker and landed to main by fast-forward (main had not advanced); the independent review binds to the build commit 0107b0b. Accepted non-blocking review notes: comment's optional key param is mandated by AC4 (key-idempotency), not a vendor leak, and defaults to plain append; the epic/child audit detail logs only the key, not the applied status/title (minor observability, the audit still proves the write and read-purity); the spec is at status ready in the build commit and flips to shipped in this evidence commit, the established two-commit convention."
+  ],
+  "rollback": "git revert; additive - a new .warp/tracker_adapter.py, a selftest block, one capability entry (both copies), and the WARP-0603 spec; no protected path; pure stdlib, no network."
+}

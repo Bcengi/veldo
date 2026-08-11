@@ -1,0 +1,46 @@
+WARP-0608 runner evidence - tracker conformance (W8 of PLAN-0006)
+Impl commit under proof: f753c72522535a8306c7ccef1717257845bd22c2
+
+== gate (clean detached worktree at f753c72) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (f753c72522535a8306c7ccef1717257845bd22c2)
+
+== unit (selftest.py) ==
+selftest: 1205 passed, 0 failed
+(+17 for the WARP-0608 conformance block owning RJ1/RJ2; baseline was 1188)
+
+== conformance harness (.warp/tracker_conformance.py check) ==
+tracker conformance: PASS (intake + mirror + epic end to end over the fake tracker,
+idempotent replay, one-way, no write-back).
+
+== RJ1 no-rubber-stamp (broken-config matrix) ==
+good config            -> [] (conformance)
+routing prefix nomatch -> named finding (IntakeError, cannot be routed)
+status_map no shipped  -> named finding (did not move the child to the mapped shipped status)
+The independent review's false-pass hunt found no broken routing/write-back config
+that returns [] (the self-referential shipped-name case is the documented offline
+boundary per C5, not a broken mapping).
+
+== RJ2 one-way (write-back mutation, review-verified) ==
+patching mirror_events to mutate the spec index  -> "mutated the spec index - the
+  tracker wrote back a definition (RJ2 violation)"
+patching mirror_plan_events                      -> plan-index equivalent
+The deep-copy + json-compare guard is real; a non-seam write op is caught as stray.
+
+== NOTE 1 fix (capability-honesty teeth) ==
+The AC5 assertion now binds each capability name to its status (per-line regex).
+Honest declarations match; dishonest flips fail (jira reference->mechanical -> RED;
+tracker_routing mechanical->reference -> RED); the old substring check would have
+rubber-stamped the flip. .warp/tracker_conformance.py byte-unchanged by the fix.
+
+== reviews ==
+Full independent adversarial review at 3824944: pass_with_notes, 0 blocking (RJ1 and
+RJ2 could not be broken; composition proven by call-count probe; NOTE 1 test-strength
+gap + NOTE 2 boundary doc + two minor notes). Fixed -> commit f753c72.
+Scoped independent re-review bound to f753c72: PASS, 0 blocking (delta is exactly the
+NOTE 1 + NOTE 2 fixes, harness byte-unchanged, teeth confirmed, gate GREEN 1205/0, no
+regression, caps byte-identical, RJ1/RJ2 re-confirmed).
+
+== proof binding ==
+plan_hash: sha256:6dd3f98b5a0c1f68 (PLAN-0006, revision 1)
+proof_digest: sha256:21dc4f4e18f56f79 (validate.py over {spec_id, commit, criteria, checks})

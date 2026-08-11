@@ -1,0 +1,94 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0713",
+  "commit": "e1ece579b65ad32cd2d3906686102e95f4286130",
+  "round": 1,
+  "reviewer": "claude-opus-5[1m], agent a478a197f6e9e4ca8, workflow wf_53d93307-426. OFF-BOOK PROVENANCE, STATED FIRST BECAUSE IT IS THE THING A READER MUST NOT MISS. This review was run by an AGENT DISPATCHED BY THE ORCHESTRATOR INSIDE A WORKFLOW. It did NOT come through this repository's own review lane. Concretely, and each one checkable from the record rather than asserted: the spec was never transitioned to status 'review', so .warp/frontier.py never offered a review unit for it; no claim was taken in the claim ledger; the run did not go through the wrapper skill or plugin/agents/warp-reviewer.md; and no verdict artifact was produced at the time, which is why this one is written after the fact. WHAT INDEPENDENCE DID HOLD, because the weaker provenance is not the same as no independence: the reviewing agent was a separate process with fresh context that did not write this code, this spec, this manifest or any earlier review of this item; it worked in throwaway clones or a detached worktree; and it ran the gate and the suite ITSELF rather than reading the builder's numbers. But that independence is attested by the ORCHESTRATOR THAT DISPATCHED IT and by the agent's own transcript, not by the repository. TREAT THIS AS WEAKER EVIDENCE THAN A PROPERLY DISPATCHED REVIEW, and do not count it as one. The reviewed tree was the BRANCH state, not main: e1ece57 on branch warp-0713-mobile-runner-injected-clock, based on the older main 84e9233. The agent left the worktree clean and pushed nothing; it restored every file the gate dirties and every byte it mutated, re-verifying the digests. TRANSCRIBED, NOT AUTHORED. This artifact was written on 2026-07-29 by the ORCHESTRATOR, after the fact, from the reviewing agent's own structured return recorded as the {\"type\":\"result\"} line for agent a478a197f6e9e4ca8 in /path/to/repo/.claude/projects/-home-dmitry-projects-daybook/a6790af4-cb43-4a20-95c6-4726da07d545/subagents/workflows/wf_53d93307-426/journal.jsonl. The verdict, the criteria dispositions, the findings and every measurement below are that agent's, quoted or condensed without change of meaning. The orchestrator added no finding, removed none, and did NOT soften the verdict to a later, kinder one. Where this artifact says something the review did not say, it is marked ORCHESTRATOR NOTE.",
+  "reviewed_at": "2026-07-29T11:42:47Z",
+  "verdict": "fail",
+  "commit_note": "e1ece57 is the BRANCH COMMIT THE REVIEWER SAW, not main's head. The branch was based on 84e9233, an OLDER main, which is why the child's assertion count is not comparable to main's. Main is at a16e88c as this record is written.",
+  "headline": "THE MECHANICAL CORE IS SOUND AND THE SAVING IS REAL, BUT THE ITEM'S OWN HEADLINE DUTY IS NOT CLOSED AND THE GATE IS RED AS DELIVERED. All 23 routed settle constants kept their exact pre-change numeric values, checked by AST against the parent commit, constant by constant. The durations AND their order are genuinely asserted for the first time. The saving is real and the reviewer MEASURED it rather than taking the derivation: about 45.7 seconds, against a derived 46.0. NOT HELD: AC1's central promise, proven false by mutation, and the gate is RED at the reviewed commit.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "failed",
+      "note": "THE HEADLINE FAILS, AND THE REVIEWER PROVED IT BY MUTATION RATHER THAN BY READING. The assertion that exists is real (_sleep is time.sleep, _clock is time.monotonic, _record is None, with a negative control that is False for a fake waiter) but it constructs a SettleWaiter, NOT a runner. Production never constructs one: main() calls run(journey, driver, outdir) with no waiter, and run / apply_step / redrive each resolve `if waiter is None: waiter = SettleWaiter()`. Those three resolution sites are asserted by NOTHING. The reviewer edited all SEVEN shipped copies of the android runner to `waiter = SettleWaiter(sleep=lambda s: None)` at those sites - an adopter running the shipped runner would then do ZERO waiting on every launch, tap, text, key, wait and every lifecycle re-drive - and the full selftest reported 3261 passed, 0 failed. Byte-restored afterwards with the sha re-verified. So the exact outcome the spec calls 'the worst outcome available here' is reachable with the gate GREEN. AC1's own sentence describes a test that does not exist."
+    },
+    {
+      "id": "AC2",
+      "status": "failed",
+      "note": "The substance is verified and the wording is false. CONSTANTS: PASS, independently verified by parsing both runners with ast at the parent and the child and comparing the ORDERED duration lists - android 13 old / 13 new with identical durations, iOS 10 old / 10 new with identical durations, 23 routed, multisets and order identical, nothing shortened in either direction, step overrides preserved at every site that had one, the two raw android driver sleeps surviving untouched while iOS now has zero raw time.sleep calls, all 7 copies of each runner byte-identical and process_runner.py byte-unchanged across all 7. THE CRITERION'S OWN SENTENCE IS FALSE: 'THE CRITERION IS THEREFORE 23 ROUTED CALLS ON 21 LINES'. Measured at the parent, the 23 routed calls sat on NINETEEN lines (android 10, iOS 9). 21 is the count of ALL sleep-bearing lines, which includes the two android driver lines carrying the condition waits AC2 itself says are NOT routed. In the new source those 23 calls sit on 23 lines."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "REAL, AND NOT A STAND-IN. The recorder logs (reason, seconds, t0, t1); the whole ordered sequence is compared to a frozen expectation per module; process_death is additionally pinned as an explicit slice (terminate then launch); and a coherence assertion (t1 minus t0 equals seconds, now equals the running sum) proves the time came from the INJECTED pair. The two remaining raw waits really are condition waits (AdbDriver.wait_boot's sys.boot_completed poll, and stop_recording's flush before pulling the file) and were correctly left out of the seam."
+    },
+    {
+      "id": "AC4",
+      "status": "failed",
+      "note": "AC4's sentence 'the full gate is GREEN' is FALSE at the reviewed commit: the gate is RED on two stages. The manifest is honest about this and marks AC4 not_measured_yet, so it is AC4's sentence in the spec that is false rather than the manifest. Separately the reviewer measured the timing AC4 leaves unmeasured and found the saving real: selftest 191.57s and 190.19s at the parent, 145.84s and 145.81s at the child, a median delta of about 45.7s against the derived 46.0, corroborated to within about one percent on a box at load 0.5 to 1.2."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "blocking",
+      "text": "PROVEN: A FAKE DEFAULT AT THE RUNNER'S OWN RESOLUTION SITES SURVIVES THE SUITE. `waiter = SettleWaiter(sleep=lambda s: None)` in run / apply_step / redrive, applied to all 7 shipped android copies, leaves selftest at 3261 passed / 0 failed. Adopter waiting is gone and nothing reddens. This is the forbidden 'default to a fake clock in production'. THE FIX IS CHEAP AND COUNT-FREE, and the reviewer named it: an AST universal that EVERY SettleWaiter( construction inside each runner module carries zero args and zero keywords, composed with the existing identity check, plus a mutant proving it fires."
+    },
+    {
+      "severity": "blocking",
+      "text": "PROVEN: THE INJECTION-SITE AST CHECK MATCHES ONLY AR.run(...) AND IOS.run(...) ON THOSE TWO EXACT NAMES. Run over synthetic sources it MISSES mod.run(J, drv, d) - the very form the block's own _v13_drive helper uses internally - MISSES _v13_drive(\"android\", J, d), whose own waiter=None default silently restores wall time, MISSES an alias M = AR; M.run(...), and MISSES a dict lookup _V13_MODS['android'].run(...). So the item's stated likeliest silent regression is open through the helper this block itself defines."
+    },
+    {
+      "severity": "blocking",
+      "text": "PROVEN: THE 'NO REAL SLEEP LEAKS' PROBE IS STRUCTURALLY BLIND TO THAT SAME REGRESSION. It swaps the time.sleep MODULE ATTRIBUTE, but SettleWaiter.__init__'s default is bound at def time to the function OBJECT. The reviewer constructed SettleWaiter() with the wrapper installed and the wrapper never fired (w._sleep is the real time.sleep: True; is the patched attribute: False). A dropped waiter therefore sleeps for real and is charged to nobody. The negative control cannot expose this, because it calls time.sleep through the module attribute, which is the one path the wrapper can see."
+    },
+    {
+      "severity": "blocking",
+      "text": "FALSE SENTENCES, EACH MEASURED, TO DELETE RATHER THAN SOFTEN. (a) the spec's AC2, the rollback paragraph, the manifest's AC2 evidence and the dogfood assertion that pins it all carry 'ON 21 LINES', which was NINETEEN at the parent. (b) the spec's AC1 describes a test that does not exist. (c) the spec's AC4 says the full gate is GREEN and it is RED. (d) the INJECTION SITES assertion claims 'it is a UNIVERSAL over whatever drive sites exist rather than an assertion that there are ten, so a new one added tomorrow is covered too' - disproven for three call forms; delete the 'covered too' clause. (e) the T1 assertion and the identical claim shipped in BOTH runners' SettleWaiter docstrings say a condition wait is 'inexpressible in this API' and 'cannot be expressed in this API at all'; a poll IS expressible as settle-in-a-loop, which is exactly why T3 exists. State the true weaker thing: the API offers no predicate, deadline or poll primitive, so a condition wait cannot be expressed DIRECTLY. (f) the T3 assertion says 'a POLL cannot be built on top of the seam'; it cannot be built LEXICALLY INSIDE A LOOP BODY, and the consequence as written overstates a lexical check."
+    },
+    {
+      "severity": "note",
+      "text": "T1 AND T3 ARE LEXICAL, SO A CONDITION WAIT CAN BE BUILT ON THE SEAM: `while not p(): _one_settle()` with the settle in a module-level helper is caught by neither, because T3 only finds a settle lexically inside a For or While body and run() already calls apply_step from a for loop."
+    },
+    {
+      "severity": "note",
+      "text": "LATE BINDING, MINOR BUT WORTH KNOWING and the same mechanism as the probe blindness: the runners previously looked time.sleep up dynamically, so an adopter harness (or gevent-style patching) applied after import intercepted the waits; it no longer does. 'Behaviour outside the gate is byte-identical' holds for wall-clock waiting, NOT for interception."
+    },
+    {
+      "severity": "note",
+      "text": "ACCEPTED RATHER THAN RAISED, and correctly disclosed in the item's known_limits: the frozen table, the AST map and AC2's text all move together if one builder edits all three in one commit. The enumerated numbers in AC2 are the real defence."
+    }
+  ],
+  "must_fix_before_land": [
+    "Bind the adopter-safety assertion to the waiter THE RUNNER RESOLVES, at every resolution site, in every tracked copy, and prove it by driving the mutation.",
+    "Replace the two probes that cannot see their own subject (the injection-site AST check and the module-attribute sleep wrapper) with ones that OBSERVE the thing.",
+    "Delete the false sentences named above, including 'ON 21 LINES' and AC4's claim of a green gate.",
+    "Add the `rollback` field the proof contract requires, and re-run update_index.py at land time so the derived index is not stale."
+  ],
+  "disposition": "REWORK. That is the reviewer's own recommendation, recorded verbatim in the journal as 'rework'. The saving is real, the constants are safe, and the item's own headline duty is open.",
+  "gate_observed": {
+    "run_by": "the reviewing agent",
+    "how": "`time ./scripts/verify.sh`, nice -n 19, in the worktree at e1ece57, 2m27.9s wall",
+    "result": "GATE: RED at e1ece57. Two stages failed.",
+    "stage_1": "contracts: FAIL - 'proof/WARP-0713/manifest.json: missing field: rollback'. `rollback` is a required proof-manifest field in .warp/validate.py check_json and both sibling manifests carry it. Item-attributable, one-line fix.",
+    "stage_2": "generated: FAIL - 'specs/index.md was stale; regeneration changed it above'. The only difference is the generation date: the committed index says 2026-07-28 and regeneration writes 2026-07-29. Date drift in a derived file, not substantive; the fix is to re-run update_index.py at land time.",
+    "everything_else": "selftest, docs, template sync, secret scan, shape gate, pack drift and review events all passed. verify.sh, the stage list and the frozen safety core under .warp/ are byte-unchanged in the diff. RULE 1 clean: zero em dashes, zero en dashes, zero non-ASCII bytes over the added lines.",
+    "hygiene": "verify.sh dirties specs/index.md, .warp/events.jsonl and .warp/last_verify; the reviewer restored all three and left the worktree clean."
+  },
+  "count_observed": {
+    "method": "read off the suite's OWN summary line, never inferred from a green gate",
+    "child": "e1ece57: 3261 passed, 0 failed, measured twice - once inside the gate and once standalone during the mutation test",
+    "parent": "84e9233: 3231 passed, 0 failed, measured twice in a --shared clone",
+    "delta": "exactly +30 assertions, matching the manifest's claim of 30, and none removed: the diff deletes zero expect( lines, and the only touched pre-existing lines are the ten drive sites, which gained a waiter argument",
+    "not_comparable_to_main": "Main's count differs because this branch is based on 84e9233, an older main that has since taken about 32 assertions from other items, so the child's 3261 is base plus 30.",
+    "crashes": "NONE. No traceback in any run, and EVERY run printed its own 'selftest: N passed, M failed' summary line: the gate run, the mutation run and all four timing runs. Reported separately from failures, per law 3.",
+    "one_environmental_red_chased_and_dismissed": "In a --shared clone the child showed 3259 passed / 2 failed. The cause was the reviewer's own: it had written timing output .txt files into the clone root, and shape_gate.changed_source_paths() includes untracked files, so they entered the change set. In the real worktree those two assertions pass."
+  },
+  "what_happened_after_this_review": {
+    "rework": "The orchestrator reworked the item as round 2 across e897958 ('the adopter-safety assertion is bound to the waiter THE RUNNER resolves, and two probes that could not see their own subject are replaced by ones that observe the thing'), a2af2fd (the manifest gains the rollback field the gate demanded), 1b33497 (the additive battery), f62d8dc (two assertion counts this build was TOLD rather than measured are labelled as such) and d56a0ad (the one adopter-visible behaviour change named instead of hidden inside a claim of byte-identity, which is finding N2 above). Attested GATE GREEN against f62d8dc in 0992fbb and merged to main in 05286b6.",
+    "who_verified_the_rework": "THE ORCHESTRATOR, NOT A FRESH INDEPENDENT REVIEWER. No second review was dispatched for round 2 and no verdict artifact exists for it. The rework's own commit messages are written in the first person by the party that made the change. ORCHESTRATOR NOTE: this is recorded as a gap, not as evidence, and it is the reason a `fail` verdict plus this rework does not support `shipped`.",
+    "spec_status": "specs/WARP-0713-mobile-runner-injected-clock.md is at status `ready` and IS NOT CHANGED BY THIS RECORD. A sibling reviewer is independently reviewing the landed state; whatever it rules is what decides."
+  },
+  "process_defect": "See proof/REVIEW-RECORD-DEFECT-2026-07-29.md for the process defect this artifact exists to repair: a review that leaves no verdict artifact is off-book, and it happened four times on 2026-07-29."
+}

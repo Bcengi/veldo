@@ -1,0 +1,18 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-1102-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-1102",
+    "commit": "b17fb5c59aab5524afa7a96dfacdbcd54ab1dee7",
+    "paths": [
+      "scripts/verify.sh",
+      "plugin/templates/scripts/verify.sh"
+    ]
+  },
+  "basis": "The founder (Dmitry) explicitly approved the WARP-1102 gate-enforcement change on 2026-07-22 via Telegram ('approved'). WARP-1102 (W2 of PLAN-0011) wires the mechanizable architecture-contract rules into the protected gate: it edits scripts/verify.sh and its plugin/templates twin, each with a thin two-line call into the non-protected .warp/shape_gate.py, so both files are protected paths under .warp/policy.yaml (floor high) and the change carries human_approval: required regardless of its footprint tier. Those two files are the ONLY protected paths b17fb5c touches (confirmed against the policy.yaml protected_paths list: the packs/*/scripts/verify.sh copies are not protected, and warp-guard.sh, policy.yaml, and policy_check.py are untouched), so this approval is path-scoped to exactly them. The change keeps the gate green by enforcing, change-scoped, exactly what the code already passes (the shipped corpus is never re-swept), and it fails closed the moment a contract exists; PLAN-0011 was founder-approved, so this unit runs under that plan authorization. Agent-recorded with provenance under the founder's explicit approval; this is not a fresh auth-gateway verified human identity, which remains honestly out of scope and is tracked for a later platform iteration.",
+  "recorded_at": "2026-07-23T01:10:00Z",
+  "recorded_by": "claude-opus-4-8[1m] (Ava, recording the founder's explicit Telegram approval with provenance; the recording scribe, not the approver). Self-separation holds because the authorizing approver is the human dmitry, not any model: the proof producer for WARP-1102 is claude-opus-4-8[1m] (the WARP-1102 build worker) and the independent reviewer is a distinct fresh-context claude-opus-4-8[1m], while the approver 'dmitry' is inherently distinct from any model producer, so the model never approves its own work.",
+  "expires_at": "2026-08-22T00:00:00Z"
+}

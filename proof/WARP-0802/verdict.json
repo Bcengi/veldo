@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0802",
+  "commit": "4004e69324d6f55d18867938da560f508cc25b6d",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-19T01:17:34Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:27fc326016335151",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "ENGINE_GLOBS covers the guard + runners tree over plugin/templates (139 files) and excludes __pycache__/.pyc (proven load-bearing against real .pyc via a sneak test)."},
+    {"id": "AC2", "status": "confirmed", "note": "load_packs/_validate_packs reject all 9 malformations by name (PackManifestError); the real manifest loads and declares the claude pack; missing manifest -> {}."},
+    {"id": "AC3", "status": "confirmed", "note": "check_pack_drift reuses engine_drift (no second impl); enforced in the gate via the selftest unit check (asserts drift-free, len>=1); verify.sh (protected) untouched."},
+    {"id": "AC4", "status": "confirmed", "note": "plugin/ recognized as the Claude pack with no restructure (option B); Claude entry engine_src==pack_dir==plugin/templates (drift empty by construction, honest); rename deferred to W10."},
+    {"id": "AC5", "status": "confirmed", "note": "Mechanism teeth proven: temp assemble -> [], mutate -> differs, remove -> missing; three selftest neuterings each turn it red; a W3-style pack simulation caught the drift by name (not a tautology)."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Full independent adversarial review at 4004e69 returned pass_with_notes, 0 blocking. It mutation-tested the selftest (neuter engine_drift -> 4 red, neuter _is_artifact -> 1 red, neuter _validate_packs -> 4 red) proving enforcement is genuine, simulated a W3-style pack (engine_src plugin/templates, pack_dir a mutated copy) that the drift-check CAUGHT by name (proving it is not a no-op tautology and will hold future packs to the source), confirmed scripts/verify.sh is untouched (protected path), the two capabilities.yaml copies byte-identical, and no em/en-dash or prose double-hyphen in the changed files."},
+    {"severity": "note", "text": "Two non-blocking PLAN-TEXT staleness notes to reconcile (they are plan-doc issues, not W2-code defects; the spec is authoritative for what shipped). Note 1: PLAN-0008's W2 work-item title still says 'restructure the existing Claude wrapper under the new pack layout', stale vs the option-B scope that shipped (no restructure until W10). Note 2: PLAN-0008's W6 title says 'Gemini CLI' but the 4th tool was retargeted to Antigravity CLI. Both will be reconciled in the plan text bundled into the W3 impl commit (a plans/ edit cannot ride an evidence-only commit, and a bare plans/-only commit trips policy_check, so it bundles into an impl commit per the established pattern). Note 3 (design, expected and documented): the Claude pack's real-manifest drift is trivially empty because its engine is the canonical source; the load-bearing teeth are the temp-tree/mutation assertions and it becomes cross-pack load-bearing at W3."},
+    {"severity": "note", "text": "Operational: built in-session by a single writer; enforced in the gate via the selftest rather than editing the protected verify.sh; check_pack_drift.py + packs.json are warp-repo tooling (no template twin). Verified GREEN in a clean detached worktree."}
+  ],
+  "summary": "W2 of PLAN-0008 (the Claude pack as a peer) is correct. Independent adversarial review pass_with_notes, 0 blocking. It wires the WARP-0801 pack engine to the real plugin/templates substrate: ENGINE_GLOBS finalized to cover the guard and runners with a __pycache__/.pyc exclusion, a validated pack manifest declaring the Claude pack (option B, no restructure), and a drift-check (reusing engine_drift, no second impl) enforced in the gate through the selftest rather than the protected verify.sh. The drift-check has real teeth - proven by mutation and by a W3-style pack simulation that it catches by name - and is not a tautology despite the Claude pack's engine being the canonical source in-place. Gate GREEN (selftest 1218 passed, 0 failed), no regression, no protected path. Two non-blocking plan-text staleness notes (W2 title vs option B; W6 Gemini vs Antigravity) will be reconciled in the plan bundled into the W3 impl commit. proof_digest via validate.py."
+}

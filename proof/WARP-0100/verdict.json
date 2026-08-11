@@ -1,0 +1,66 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0100",
+  "commit": "0de75f3ee243249a6161a5a606d713c4eeb8456e",
+  "reviewer": "claude-fable-5",
+  "reviewed_at": "2026-07-16T19:36:30Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Independently reran python3 .warp/validate.py all at 0de75f3: exit 0. run_all covers specs, proof manifests, verdicts, approvals, and the four examples."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Independently reran ./scripts/verify.sh at 0de75f3: exit 0, GATE GREEN, catalog 5 run / 18 na / 0 waived / 0 undeclared. Inspected all five required commands: lint py_compiles and bash -n's every tracked script including plugin templates; unit is scripts/selftest.py (9 passed, all 8 planted-bad artifacts rejected); docs is the three-sweep hygiene check; generated regenerates specs/index.md and diffs it; extra is the byte-level template sync. All real commands, none stubs."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Independently reran python3 scripts/update_index.py: prints 'index: 1 specification(s)', regenerates specs/index.md byte-identical to the committed file, and the table lists WARP-0100 | Adopt WARP in the WARP home repository | ready."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Independently reproduced: planted an em-dash (U+2014) plus the word Tripdesk at the end of docs/plugin.md; scripts/check_docs.sh failed all three sweeps (dash, non-ASCII, genericity) and exited 1. After git checkout -- docs/plugin.md it exited 0. Matches proof/WARP-0100/negative-tests.txt exactly."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Independently reproduced: appended a comment line to .warp/validate.py; scripts/check_template_sync.sh reported the drift from plugin/templates/.warp/validate.py and exited 1. After git checkout -- .warp/validate.py it exited 0. Matches negative-tests.txt."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Verdict findings shape is unpinned and inconsistent across shipped artifacts: .warp/examples/verdict-example.json and plugin/agents/warp-reviewer.md use findings as {blocking: [], non_blocking: []}, while validate.py VERDICT_REQ does not require findings at all, and .warp/policy_check.py valid_verdict_for does v.get('findings', {}).get('blocking') with no type guard. A verdict whose findings is an array (this file, written in its commissioned shape) validates cleanly but makes policy_check.py raise AttributeError at push time - it fails closed with a traceback instead of a reason. Harden policy_check.py or pin the shape in validate.py; convert this file's findings to the dict shape before relying on the guard."
+    },
+    {
+      "severity": "note",
+      "text": "The spec declares risk: standard and human_approval: not_required while creating scripts/verify.sh, which the policy it ships floors at high (human_approval: true). The commit is unpushed and policy_check.py will mechanically block the push until a warp.approval/v1 bound to 0de75f3 is recorded, so enforcement fails closed, but the spec front matter contradicts its own policy. Record the human approval (owner and committer are the same human) rather than treating not_required as authoritative."
+    },
+    {
+      "severity": "note",
+      "text": "CLAUDE.md states as always-true facts two things this commit does not implement: plans validated by .warp/validate.py under contract warp.plan/v1 (validate.py contains no plan handling), and a plan status section in the specs index (update_index.py emits none; the generated index has none). Both are WARP-0101 scope per this spec's own Out of scope section - documentation is ahead of the machinery."
+    },
+    {
+      "severity": "note",
+      "text": "Beyond spec scope: six __pycache__/*.pyc binaries are committed (in .warp/, scripts/, and plugin/templates/), and no .gitignore excludes them; the lint check's py_compile regenerates them, so the working tree is perpetually dirty after every gate run. Tracked mutable state (.warp/last_verify, .warp/events.jsonl) is also rewritten by every verify.sh run, compounding the dirty-tree effect."
+    },
+    {
+      "severity": "note",
+      "text": "check_docs.sh's header claims 'no em-dash or en-dash anywhere in tracked text' but its sweep covers only docs/, plugin/, specs/, plans/, and README.md; WARP.md, CLAUDE.md, scripts/, and .warp/ are unswept. Independently verified those files are currently ASCII-clean, so nothing is hidden today, but the check is narrower than its stated rule."
+    },
+    {
+      "severity": "note",
+      "text": "na-catalog audit: no na is a dodge for a docs+templates repository (no runtime, DB, or UI), but two reasons are imprecise. build 'nothing to build' understates the committed pdf/ artifacts produced by scripts/render_pdfs.py (a manual release act needing Chrome CDP, disclosed in CLAUDE.md and the dependency_audit reason); dependency_audit names python-markdown but render_pdfs.py also imports websockets and yaml. The enforcement scripts themselves are stdlib-only as claimed (verified by import sweep)."
+    },
+    {
+      "severity": "note",
+      "text": "The AC4/AC5 negative behaviors are demonstrated once in proof/WARP-0100/negative-tests.txt (reproduced by this review) but are not encoded as a repeatable automated test, so a future weakening of check_docs.sh or check_template_sync.sh would not be caught by the gate; selftest.py covers only validate.py. Also, the proof's AC2 evidence ref attributes '0 waived, 0 undeclared' to .warp/last_verify, which records only checks_run and checks_na - those two counts come from gate stdout (both values verified true by rerun)."
+    }
+  ],
+  "summary": "All five acceptance criteria were independently reproduced against commit 0de75f3: the contract validator and canonical gate exit green with exactly five real required checks and zero undeclared slots, the index regenerates listing WARP-0100, and both negative demonstrations (planted em-dash plus company word failing the docs check; planted validator drift failing template sync) fail and recover exactly as the proof claims. The na catalog is honest for a docs-and-templates repository and every proof claim mapped to observed evidence. Seven non-blocking notes: an unpinned verdict-findings shape that crashes policy_check.py, a spec-vs-policy human-approval contradiction on the protected path (enforcement fails closed), CLAUDE.md documenting WARP-0101 machinery as existing, committed pycache binaries and mutable state files, a docs sweep narrower than its stated rule, two imprecise na reasons, and unautomated negative demonstrations."
+}

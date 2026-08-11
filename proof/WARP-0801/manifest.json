@@ -1,0 +1,63 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0801",
+  "commit": "97cfbc63d73ec9ef2e0da662b9f976055b997540",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0008 W1)",
+  "plan_hash": "sha256:497df827fbba71d5",
+  "produced_at": "2026-07-18T16:34:50Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/pack.py defines ENGINE_GLOBS - the canonical manifest of the tool-agnostic files a pack needs byte-identical (the gate scripts/verify.sh, scripts/*.py, the .warp/*.py substrate + policy_check + validate, .warp/*.yaml incl. capabilities.yaml, the CI workflow, the spec/plan templates); engine_files() returns the sorted de-duped set. The driver wrapper (per tool) is everything a pack adds on top."},
+        {"type": "unit", "ref": "selftest over temp trees confirms engine_files lists exactly the manifest-matched files (no double-count from overlapping globs); part of selftest 1073 passed, 0 failed. Independent review confirmed determinism and the manifest content."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/pack.py assemble_pack(engine_src, wrapper_src, agents_md, dest) copies every engine file byte-for-byte (shutil.copyfile, creating parent dirs), copies the full wrapper tree, and places the canonical AGENTS.md at dest/AGENTS.md - a self-contained pack, engine plus wrapper together, nothing external needed."},
+        {"type": "unit", "ref": "selftest asserts the assembled pack has the engine byte-identical + the wrapper + AGENTS.md; independent review reproduced over its own temp trees (17/17): a non-UTF-8 byte copied faithfully (true byte copy), a 3-level nested wrapper file copied, non-engine files in the source NOT copied, deep dest parents created; part of selftest 1073 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/pack.py engine_drift(engine_src, pack_dir) returns every engine file missing from or differing (filecmp.cmp shallow=False, a real content compare) in a pack; an empty list means the pack's engine is byte-identical to the source - the assertion the gate makes so no pack silently forks."},
+        {"type": "unit", "ref": "selftest asserts drift empty on a faithful pack, names a mutated engine file (differs) and a missing engine file (missing); independent review confirmed a dropped trailing newline is caught (differs) so the compare is content not stat; part of selftest 1073 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "plugin/templates/AGENTS.md ships as the canonical cross-tool instructions file carrying the WARP method and operating contract once (the one rule, the loop, the principles, the six-step operating contract, the enforcement invariant, the board), tool-neutrally; it is generic and ASCII with no em-dashes, and it defers to .warp/capabilities.yaml as the authority."},
+        {"type": "unit", "ref": "the gate's docs hygiene sweeps (dash, non-ASCII, genericity over plugin/) pass on AGENTS.md; independent review confirmed the method content, ASCII/no-dash cleanliness, no company-specific leakage, and the manifest-is-authority deference; part of selftest 1073 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest drives assemble_pack and engine_drift over temporary engine/wrapper/pack trees; the assertions are non-tautological (drift empty when identical, named on a byte change or a missing file)."},
+        {"type": "unit", "ref": "independent review proved the teeth: stubbing engine_drift to return [] turns exactly the mutation/missing assertions RED; the full gate is GREEN and selftest 1073 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1073 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "W1 of PLAN-0008: the pack MECHANISM (engine manifest, assembler, drift-check, canonical AGENTS.md), pure stdlib file ops, gate-tested over temporary trees. Wiring it to the real plugin engine and creating the seven self-contained packs is W2 (Claude as a peer) onward. Reviewed independently at commit 712b259 (pass_with_notes, 0 blocking); the two foundation commits were then rebuilt so each passes its own gate in isolation (a prior commit had shipped a stale index referencing the uncommitted PLAN-0008), and this proof binds to the rebuilt commit 97cfbc6 whose WARP-0801 content (.warp/pack.py, plugin/templates/AGENTS.md, the spec, PLAN-0008) is byte-identical to the reviewed 712b259 (empty diff) with the gate GREEN. Accepted non-blocking review notes for later items: ENGINE_GLOBS does not yet cover scripts/warp-guard.sh, the .sh runner-catalog checks, or the CI workflow's real location - W2 must finalize the manifest when wiring a real pack so the guard and CI are included; and engine_drift is one-directional (source to pack), so W9 conformance should decide whether a pack's .warp must be engine-only to catch an extra engine-shaped file."
+  ],
+  "rollback": "git revert; additive - a new .warp/pack.py, the canonical AGENTS.md, a selftest block, one capability entry (both copies), and the WARP-0801 spec; no protected path; pure stdlib file ops, no network."
+}

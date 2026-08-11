@@ -1,0 +1,145 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1110",
+  "commit": "0906fd17d790cc07b00de77ea888d23116ceea52",
+  "producer": "claude-opus-4-8[1m] (WARP-1110 build worker, planned lane; W10 of PLAN-0011, the release - land the shape organ in the canonical engine so /warp:init lays it down and the packs carry it, make the docs true, bump the plugin version, and mark the plan released; intelligent builder, did not review its own work; stopped at the review boundary with this manifest uncommitted, no verdict, WARP-1110 left status draft, no push)",
+  "produced_at": "2026-07-22T23:25:00Z",
+  "plan": "PLAN-0011",
+  "work": "W10",
+  "plan_revision": 2,
+  "plan_hash": "sha256:e9f2fc1e051aeec7",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The engine ships the full PLAN-0011 shape organ byte-identical across every copy. The eight new .warp modules - arch.py (W1/W3), shape_gate.py (W2), shape_review.py (W4), decision.py (W5), decision_review.py (W6), tripwire.py (W7), entropy.py (W8), restoration.py (W9) - plus the shape hook wired into scripts/verify.sh at W2 are present in plugin/templates/.warp (the canon) and byte-identical in this repository's own .warp and in all six assembled packs (cursor, codex, copilot, antigravity, opencode, aider). The machinery landed per item under the C5 sync discipline; this release item changes NO engine module and asserts the synced state holds (git show --stat 0906fd1 touches only docs, README, the two version files, PLAN-0011, the WARP-1110 spec, and the derived index - zero .warp/*.py or .warp/*.yaml)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/verify.sh built-ins on commit 0906fd1: scripts/check_template_sync.sh pass (root byte-identical to plugin/templates for the checked pairs) and scripts/check_pack_drift.py pass (every pack's engine byte-identical to the canonical source, drift empty across all 7 packs including the in-place Claude pack). Direct diff confirms all 8 copies (plugin/templates canonical + root + 6 packs) byte-identical for all eight organ modules. Live RED-then-revert tooth: appending one line to packs/cursor/.warp/arch.py turned check_pack_drift.py RED ('pack cursor: 1 engine file(s) drifted ... pack drift: FAIL'); git checkout reverted it and drift returned to 'pass (7 pack(s))', so the byte-identical assertion is load-bearing, not vacuous."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "/warp:init lays the validators an adopter needs while the architecture CONTRACT stays per-repo. .warp/init_scaffold.py lays down and lists in REQUIRED_SUBSTRATE the six gate-wired and validate-wired validators (arch.py, decision.py, decision_review.py, shape_review.py, shape_gate.py, tripwire.py); the two advisory CLI-only derivations (entropy.py, restoration.py) are correctly NOT in the minimal init substrate (never wired into verify.sh or validate.py run_all, and dependent on the metrics organ init does not lay) and ship in the full pack engine instead - the honest two-tier model. architecture.yaml is never shipped by init and never copied into a pack; it is this repository's own per-repo first instance. This item made no change to init_scaffold (W1-W7 added the validators per item); it asserts the shipped behavior."
+        },
+        {
+          "type": "unit",
+          "ref": "Live adoption-safe scaffold: python3 .warp/init_scaffold.py <tmp> created 32 files, 'substrate complete'; the fresh repo carries all six validators (arch/decision/decision_review/shape_review/shape_gate/tripwire present), entropy.py and restoration.py absent (minimal substrate), and NO .warp/architecture.yaml and no .warp/decisions dir. After git init + commit, its ./scripts/verify.sh runs GATE: GREEN with the shape gate printing 'no architecture contract, standing down (adoption safe)' - a fresh init repository has the validators, no contract, and a green gate. The scaffold end-to-end selftest (the warp_init_scaffold capability) already proves this mutation-fenced in the home gate's unit slot."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml is honest for the whole organ, in every copy. The manifest carries one accurate entry per organ capability - architecture_contract, spec_placement_footprint, shape_gate_enforcement, shape_fit_review, foundational_decision_record, adversarial_decision_review, decision_tripwires, entropy_metrics, restoration_generation - each naming exactly what ships and what is per-repo or reference, with no capability claimed that an adopter's tree does not carry. Each entry was authored per item at W1-W9; this release edits none and asserts they are complete and do not over-claim (e.g. the shape_gate_enforcement entry states plainly that only the module-size budget and the engine invariants are gate-blocking while dependency/function-length/duplication/complexity/patterns are review-lane, and the shape_fit_review and adversarial_decision_review entries state their live reviewers are fail-loud delegated seams)."
+        },
+        {
+          "type": "unit",
+          "ref": "Byte-identity of capabilities.yaml across copies is held by the pack-drift check (.warp/*.yaml is in the engine manifest) and by direct diff: root .warp/capabilities.yaml equals plugin/templates/.warp/capabilities.yaml, and every pack copy is byte-identical (covered by the same drift RED-then-revert tooth in AC1). The per-capability honesty of each entry is gate-tested by the mutation teeth each of W1-W9 shipped in selftest (1850 passed, 0 failed), which fail closed when a claimed mechanical property is broken."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The docs are made true, honestly and fully generic. README.md gains the architecture-organ capability bullet; docs/plugin.md gains section 13 (13.1 the contract, 13.2 the shape gate, 13.3 placement/footprint, 13.4 shape-fit review, 13.5 decision records + adversarial review + tripwires, 13.6 entropy/restoration, 13.7 what ships vs per-repo vs pending) at version 2.7; docs/setup.md gains section 7.8 (architecture as a contract, a governance mechanism) at version 2.11; docs/runbook.md gains the in-session tripwire and entropy pass in the weekly ritual (V.4) plus two cheat-sheet rows at version 1.7. Every doc states the HONEST split without over-claim: only the module-size budget and the engine invariants are gate-BLOCKING, dependency and import boundaries plus function-length/duplication/complexity budgets plus prose patterns are REVIEW-LANE reference implementations surfaced as non-blocking notes at this contract revision; the architecture.yaml contract is per-repo and not shipped; the shape-fit and adversarial-decision reviewers are fail-loud reference seams whose live reviewer prompt wiring is per-repo and pending; every monitoring pass is in-session, nothing detached. method.md the foundational document is unchanged, consistent with every prior release."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/check_docs.sh on commit 0906fd1: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry zero company or product references) all pass. RULE #1 hand-checked across every changed file with a targeted em/en-dash and prose-double-hyphen scan: none found; the only double-hyphen tokens are genuine CLI flags (--serve, --on-calendar, --account, and the git flags quoted in the changed-set helper prose) and YAML front-matter delimiters (---). scripts/check_generated.sh confirms specs/index.md is the regenerated derived truth (WARP-1110 draft row added, PLAN-0011 shown released)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Version bumped and the plan flipped in the reviewed impl commit. plugin/.claude-plugin/plugin.json, .claude-plugin/marketplace.json, and README.md all read 3.7.0 (the two Document History lines citing plugin 3.6.0 for WARP-1008 are historical and left unchanged). PLAN-0011 status flips ready -> released IN THE IMPL COMMIT because plans/ is excluded from the push guard's evidence-only allowlist (proof/|.warp/|specs/ only), so the plan flip cannot live in the trailing evidence commit; the canonical two-commit release shape from WARP-0810/WARP-1008 puts the version bump, docs, and plan flip in the reviewed impl commit and the evidence commit carries only proof/ and .warp/. WARP-1110 stays status draft in this impl commit (verified: git show HEAD:specs/WARP-1110 shows status: draft; git show HEAD:plans/PLAN-0011 shows status: released) and flips to shipped in the evidence commit at landing (the reviewer's step)."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 .warp/plan.py release-check PLAN-0011 reports 'NOT releasable' with the single reason 'work not shipped: WARP-1110' - EXPECTED and correct while WARP-1110 is draft. Simulating WARP-1110 shipped (sed status: draft -> shipped, then release-check) reports 'releasable' with the milestone printed (exit 0); reverting restores status: draft. This proves the plan becomes releasable the moment W10 ships (the evidence commit), and that WARP-1110 is the only work item not yet shipped."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The full gate is GREEN on commit 0906fd1 and the release touches no protected path and no engine module. The shape gate's footprint-versus-diff check passes because WARP-1110's declared footprint covers every path the impl commit touches (this spec, PLAN-0011, README, docs/plugin.md, docs/setup.md, docs/runbook.md, plugin/.claude-plugin/plugin.json, .claude-plugin/marketplace.json); specs/index.md is the excluded derived artifact and .warp/events.jsonl and .warp/last_verify are excluded runtime bookkeeping. The size budget has nothing governed to bind (the changed files resolve to no contract area). No protected path is touched (scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py and their plugin/templates twins are byte-unchanged; the W2 shape hook is already present in verify.sh). Dogfood: placement [distribution] resolves to a declared contract area and the footprint touches no second area, so footprint_tier_floor is empty and the risk tier stays standard; plan.py run-check PLAN-0011 WARP-1110 clears (deps shipped, plan context current, placement resolves)."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 1850 passed, 0 failed. python3 .warp/validate.py all passes (check_arch on the approved contract, check_spec over all specs including the new draft WARP-1110, the PLAN-0011 W10 = WARP-1110 binding, the manifests). ./scripts/verify.sh: GATE: GREEN (0906fd1) - unit, generated, docs, lint, extra (template sync), secret scan, contracts, and the shape gate all pass. Live RED-then-revert footprint tooth: removing 'README.md' from WARP-1110's footprint made the shape gate refuse ('shape gate FAIL: the diff touches README.md, outside the footprint declared by specs/WARP-1110-...: a change may not silently touch a path its spec did not declare'); restoring the line returned the shape gate to pass, proving the declared footprint is load-bearing over this release's docs-and-version diff. run-check clear at rc 0."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1850 passed, 0 failed (unchanged from the WARP-1109 baseline - this release adds no new mechanical check and therefore no new negative test, matching the prior release shape WARP-1008; the properties W10 asserts are proven by the existing teeth - the warp_init_scaffold end-to-end selftest for adoption-safe init, the pack-drift and template-sync harnesses for byte-identity, and the per-item W1-W9 mutation teeth for capability honesty). The pack-drift, template-sync, pack-conformance, and runner-catalog harnesses run inside this slot and pass."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes: check_arch over the approved .warp/architecture.yaml, check_spec over all specs (adds WARP-1110, draft, with placement [distribution] and a footprint resolving structurally), the plan/spec binding (PLAN-0011 W10 = WARP-1110), and the manifests. validate.py ready is not asserted for WARP-1110 (it stays draft by design); plan.py run-check PLAN-0011 WARP-1110 clears (deps WARP-1102/1104/1106/1107/1109 shipped, plan revision 2 current, placement [distribution] resolves, footprint tier standard)."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1110 as draft and the PLAN-0011 burndown shows status released with 9/10 shipped and W10 as draft (frontier) - honest, since WARP-1110 flips to shipped only in the evidence commit."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry zero company or product references) all pass. RULE #1 hand-checked across every changed file: no em or en dash, no prose double-hyphen; the only double-hyphen tokens are genuine CLI flags and YAML front-matter delimiters."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "scripts/check_lint.sh: py_compile over every tracked .py and bash -n over every .sh pass (no source file changed in this release, so this is unchanged-green)."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "scripts/check_template_sync.sh: pass (the checked pairs byte-identical root vs plugin/templates). No engine file changed in this release."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: every pack's engine byte-identical to the canonical source plugin/templates; drift empty across all 7 packs. Live RED-then-revert tooth confirmed the check refuses a one-byte change and returns to pass on revert."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py (verify.sh built-in): pass. The footprint-versus-diff check confirms every changed source path is covered by WARP-1110's declared footprint (the one footprinted spec in the change set); the changed files resolve to no contract area so no size/complexity/boundary rule binds them. Live RED-then-revert tooth confirmed the footprint is load-bearing (dropping README.md from the footprint turned it RED). The review-lane patterns and invariants are surfaced as non-blocking notes, as declared."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    }
+  ],
+  "rollback": "git revert the release commit 0906fd1 and its evidence commit. The version bump withdraws (plugin.json, marketplace.json, README return to 3.6.0), PLAN-0011 returns to ready, and the shipped W1-W9 organ keeps working unchanged - the release adds no behavior of its own, only makes the docs true, bumps the version, and marks the plan released. A repository with no architecture contract is byte-identically unaffected before and after (the adoption-safe posture), so removing the release needs no migration; decision records, readings, restoration drafts, and metric series are inert per-repo data and keep their history."
+}

@@ -1,0 +1,114 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0907",
+  "commit": "70a9ecba52ab34781da1398fa129c30564c98e29",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0009 W7, fleet supervisor)",
+  "plan_hash": "sha256:5d8cb8bd446e8f94",
+  "produced_at": "2026-07-20T01:48:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "In-session resume is the WIRED DEFAULT of warp fleet. bin/warp cmd_fleet builds fleet.InSessionWaiter when no waiter is injected (bin/warp docstring + cmd_fleet body added in 70a9ecb), so a living fleet that has hit every account's budget waits until the governor's resume time and re-checks the desired count before spawning, never resuming straight into the limit and detaching nothing. The default path creates no timer and no background process."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (WARP-0907, scripts/selftest.py ~5764-5794) drives cmd_fleet with waiter=None over a fake controller and a spy waiter and asserts: exactly one in-session default waiter is built when none is injected; the default waits until the governor resume epoch (4242) then re-checks; and a backed-off pool that then drains calls start zero times (spawns nothing). Runs over an injected clock so the gate never sleeps."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/supervisor.py is OFF by default: importing the module and not calling install() creates no artifact, schedules nothing, and launches nothing; with no explicit warp supervisor install the fleet behaves exactly as the AC1 in-session default. The module reaches nothing on import (only the explicit supervisor subcommand path calls install/status/uninstall)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (WARP-0907, scripts/selftest.py ~5814-5816) asserts no timer and no service unit exist until install() is explicitly called, over a temp unit dir. AC5 CLI check (~5895-5901) confirms warp supervisor with no action and warp supervisor install with no schedule both fail loud (nonzero) touching no systemd."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "warp supervisor install generates a standard systemd user timer plus a oneshot service unit (supervisor.py timer_unit_text / service_unit_text: [Timer] OnCalendar + WantedBy=timers.target, [Service] Type=oneshot + ExecStart), with OnCalendar computed from the governor resume epoch (next_reset_calendar over governor.resume_at), enabled through an injected runner (systemctl user enable plus daemon-reload); it prints exactly what it created and is idempotent (deterministic unit bytes). warp supervisor status reports timer state and warp supervisor uninstall disables and removes both units cleanly. It is a user systemd timer a person inspects with systemctl user, not a system crontab, resident daemon, lock-refresher, or headless polling loop."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (WARP-0907, scripts/selftest.py ~5810-5854) proves over a temp XDG dir and a FAKE systemctl: install generates the timer + oneshot service, computes OnCalendar from the resume epoch, enables via the injected runner and daemon-reload, is idempotent and confined (re-run writes identical bytes, exactly two units in the dir), status reports installed/is-enabled/is-active through the runner, and uninstall disables + removes both units and is idempotent (second removal is a clean no-op). The gate never touches the real user systemd."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The session-launch primitive is a fail-loud reference seam: supervisor.launch_session raises SupervisorLaunchError when no real launcher is wired (the same honesty shape as fleet.in_session_start) and delegates to an injected launcher when one is provided. WARP generates the timer and the documented ExecStart launch command but never spawns a session itself, in the gate, on the default path, or as a side effect of install. The only thing the opt-in path creates is an inert, inspectable systemd user unit the OS scheduler runs at the reset time. supervisor.py imports no subprocess at module top and never calls os.fork or os.system; RealSystemctl lazily imports subprocess only to run systemctl."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (WARP-0907, scripts/selftest.py ~5830-5890) asserts install runs only systemctl subcommands (daemon-reload/enable/disable/is-enabled/is-active) and launches no session; launch_session fails loud unwired and delegates when wired; a fabricate-a-schedule install (no resume_at, no on_calendar) is refused (RULE #6); and a launch spy proves install never calls launch_session by default or as a side effect."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/supervisor.py ships in the canonical engine (plugin/templates/.warp/supervisor.py) and all seven packs re-synced byte-identical (content and mode); the bin/warp supervisor subcommand ships identically across the engine and packs (100755). Three new capabilities.yaml entries are honest and NOT marked repo-only because they ship: fleet_in_session_resume_default (mechanical, home bin/warp + .warp/fleet.py), fleet_external_supervisor (mechanical, home .warp/supervisor.py + bin/warp), and fleet_supervisor_session_launch (reference, home .warp/supervisor.py); they pass the WARP-0906 home-resolution honesty check. Both capabilities.yaml copies stay byte-identical. docs/runbook.md (version 1.5 to 1.6) documents the in-session default and the opt-in external supervisor: that it is off by default, how to enable, inspect, and remove it, and the no-detached-process boundary."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (WARP-0907, scripts/selftest.py ~5895-5903) confirms bin/warp routes supervisor to supervisor.py and it fails loud without touching real systemd, and that .warp/supervisor.py resolves in the shipped engine (in _CH_ENGINE), so the WARP-0906 honesty check treats the new entries as shipped, not repo-only. Gate check_pack_drift reports empty for all seven packs and cross-pack conformance passes, proving the engine and pack copies are byte-identical."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The full gate is GREEN: selftest 1368/0 at the isolated build commit 70a9ecb, and 1374/0 at HEAD 53461aa which carries the WARP-0907 code unchanged (the later WARP-0909 landed only .warp/dispatch.py, .warp/executor.py, .warp/work.py, docs/method.md, plugin/skills/run and selftest additions, touching none of supervisor.py, bin/warp supervisor, the three capability entries, or runbook V.8). The selftest includes the supervisor tests, the capabilities-honesty check, the pack drift check, and cross-pack conformance across all seven packs. No protected path is edited (scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py or their plugin/templates twins); the index is regenerated; RULE #1 is clean (no em/en dash, every double-hyphen a real systemd or CLI flag); and the warp name is unchanged."
+        },
+        {
+          "type": "unit",
+          "ref": "bash scripts/verify.sh -> GATE: GREEN. Independent review re-ran the gate at HEAD 53461aa: selftest 1374 passed, 0 failed; template-sync pass; pack drift empty for all seven packs and cross-pack conformance pass; no protected path touched; RULE #1 clean."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 1368/0 at the WARP-0907 build commit 70a9ecb and 1374/0 at HEAD 53461aa (WARP-0909 added six dispatch-loop assertions on top, additive and independent, touching none of the WARP-0907 files); the supervisor suite (~scripts/selftest.py 5754-5903) proves AC1-AC5 with teeth (in-session default built and spawns nothing; off-by-default; timer generation, OnCalendar-from-governor, idempotent+confined install, status, clean idempotent uninstall over a temp XDG dir + fake systemctl; launch seam fails loud unwired and delegates when wired; fabricate-a-schedule refused; a spy proves install never launches a session; bin/warp routes supervisor and fails loud; supervisor.py resolves in the shipped engine). Pack drift empty for all seven packs; cross-pack conformance passes."
+    },
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated (python3 scripts/update_index.py); generated check green in the gate."},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass; RULE #1 hand-check of the runbook V.8 prose, the generated systemd unit text, and the capability markers clean (no em/en dash; every double-hyphen is a real systemd flag like user/now, a CLI flag like on-calendar/resume-at/account/launch-command, a front-matter fence, or a code reference)."},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all passes, including the revised PLAN-0009 (revision 2, D1 moved to resolved_decisions with blocks cleared) and the WARP-0907 spec now status shipped."}
+  ],
+  "assumptions": [
+    "W7 of PLAN-0009, depends on WARP-0903 (per-account governor + InSessionWaiter) and WARP-0905 (the fleet in the engine), both shipped. The impl (supervisor.py + bin/warp supervisor + three capability entries + all seven packs re-synced + runbook V.8 + selftest) was built and committed at 70a9ecb; this is the evidence-and-ship step: it resolves open decision D1, flips the spec to shipped, and records the independent verdict. It does not modify any implementation file.",
+    "Decision D1 is resolved as Option B (founder-authorized 2026-07-19): build W7 as an opt-in, off-by-default external supervisor, with the in-session resume-waiter (W3) as the default. D1 is moved from open_decisions to a resolved_decisions entry with its resolution recorded and its blocks list cleared, so plan.py release-check no longer reports it blocking WARP-0907 and the plan schema check (validate.py plan) still passes. PLAN-0009 is bumped to revision 2 with a Revision 2 note recording the resolution.",
+    "The three new capabilities are honest and ship, so none is marked repo-only: fleet_in_session_resume_default and fleet_external_supervisor are mechanical (the wiring, unit generation, install/status/uninstall, and reset-time computation are shipped code) and fleet_supervisor_session_launch is reference (wiring a real live session launcher is the adopter opt-in behind the fail-loud seam). All three homes resolve in the shipped engine under the WARP-0906 home-resolution honesty check.",
+    "The plugin 3.5.0 release and the PLAN-0009 released status are W8/WARP-0908, out of scope here; after this ship, release-check reports only WARP-0908 as not shipped (7/8). Proof sequencing (the W5/W6 lesson): this manifest is the canonical evidence artifact (required_evidence [unit] satisfied by the unit check); the independent verdict binds to the same built commit 70a9ecb and its proof_digest is set to proof_digest(this manifest).",
+    "The verdict was reviewed against the WARP-0907 change at commit 70a9ecb; because the WARP-0909 standalone spec landed on top before this evidence, the reviewer ran the live gate at HEAD 53461aa (which carries the WARP-0907 code byte-for-byte unchanged) and recorded selftest 1374/0 there, alongside the 1368/0 count at the isolated 70a9ecb build."
+  ],
+  "rollback": "git revert the WARP-0907 impl commit (70a9ecb) and this evidence commit; additive - a new .warp/supervisor.py (shipped to plugin/templates and re-synced to the seven packs), a bin/warp supervisor subcommand, three honest capability entries, runbook V.8 prose, and selftest coverage. Removing them returns to the in-session-only fleet. No protected path; the drift check and cross-pack conformance prove no pack forked. An installed user timer is removed with warp supervisor uninstall or systemctl user disable, a standard inspectable systemd unit. The plan D1 resolution and revision 2 note revert with the plan file."
+}

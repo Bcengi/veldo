@@ -1,0 +1,42 @@
+# VELDO evidence plane (veldo.evidence/v1): the read-only sources the production support
+# responder investigates through. This is an ILLUSTRATIVE EXAMPLE of the config format,
+# not a real evidence plane and not a connection to any real system: it shows the shape a
+# source declaration takes. Every source is a READ-ONLY kind (logs, metrics, traces, or a
+# read replica, and NEVER a primary), its access is read_only, its credential is a secret
+# REFERENCE resolved at the seam (env: or keychain:, never a raw literal, D4), it declares
+# the templated query shapes it permits (the broker refuses any free-form query), a row
+# cap, a rate cap, and a timeout (reads can overload), and the sensitive fields it redacts
+# before anything enters the responder's context. The credential the responder holds cannot
+# write: the write path structurally does not exist and a write is refused at the credential
+# seam (proven offline against a fake plane). Connecting this plane to any real source is a
+# separate, per-system, human-approved enablement act (NG1); the live edge fails loud.
+schema: veldo.evidence/v1
+id: reference-plane
+sources:
+  - id: app-logs
+    kind: logs
+    access: read_only
+    secret_ref: env:EVIDENCE_APP_LOGS_TOKEN
+    templates: [recent_errors, latency_series]
+    max_rows: 1000
+    rate_max: 60
+    timeout_ms: 2000
+    redact: [email, ip_address, card_number, phone]
+  - id: request-metrics
+    kind: metrics
+    access: read_only
+    secret_ref: env:EVIDENCE_METRICS_TOKEN
+    templates: [p99_by_endpoint, error_rate_by_deploy]
+    max_rows: 500
+    rate_max: 120
+    timeout_ms: 1500
+    redact: []
+  - id: orders-replica
+    kind: read_replica
+    access: read_only
+    secret_ref: keychain:EVIDENCE_ORDERS_REPLICA_DSN
+    templates: [row_count_by_status, recent_rows_by_tenant]
+    max_rows: 200
+    rate_max: 30
+    timeout_ms: 3000
+    redact: [email, shipping_address, card_number]

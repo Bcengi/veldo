@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "beforeToolCall": [
+      { "match": "shell", "command": "bash veldo-guard-hook.sh" }
+    ]
+  }
+}

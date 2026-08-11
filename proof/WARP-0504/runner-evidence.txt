@@ -1,0 +1,1 @@
+R4 (WARP-0504, thin local status server) is correct and honest. Gate GREEN, selftest 840 passed, 0 failed.

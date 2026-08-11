@@ -1,0 +1,18 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-0732-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-0732",
+    "commit": "f4598cacb21d055eb888a1f2ad0a3d1ba8b1cf80",
+    "paths": [
+      ".warp/policy_check.py",
+      "plugin/templates/.warp/policy_check.py"
+    ]
+  },
+  "basis": "Founder approval recorded verbatim from Telegram on 2026-08-02. He raised the problem himself in message 22377: 'Not good if werdict is rework still would merge. That's fluff and real theater.' He was then told, in message 22378, exactly what the change does, that it touches .warp/policy_check.py which is a protected path, that the guard was refusing the push until he approved, that I would not write his approval for him, and that the honest limit is that this is NOT a forgery defense because an agent that can write the repository can delete a verdict file. His answer to that briefing, message 22379, verbatim: 'Yes'. The briefing named the protected path before the approval was given, which is the condition that was missing an hour earlier and is why the approval was requested rather than recorded then.",
+  "recorded_at": "2026-08-02T11:18:04Z",
+  "recorded_by": "claude-opus-5 (implementing agent, recording the human's decision with provenance; the decision is his, the transcription is mine)",
+  "expires_at": "2026-09-01T11:18:04Z"
+}

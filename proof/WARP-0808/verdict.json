@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0808",
+  "commit": "dfa593413a13f109261992b04359d28de257f34e",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent a2c640529718e7c2d)",
+  "reviewed_at": "2026-07-19T06:08:21Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:8c910b25da133c44",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "packs/aider is a byte-identical, symlink-free copy of the 139-file engine + canonical AGENTS.md + thin Aider driver; engine_drift == [] (baseline empty), AGENTS.md diff -q identical."},
+    {"id": "AC2", "status": "confirmed", "note": "The push gate genuinely blocks an unproven push under real git (git archive committed mode, core.hooksPath, no chmod): PUSH_EXIT=1, 0 refs landed; proven push allowed (exit 0); the 644 control reproduces the fail-open. Committed hook mode 100755, guard fed JSON on stdin, git-commit-verify: true. The gate is STRONGER than the brief described (policy_check also requires an independent verdict.json bound to HEAD/parent)."},
+    {"id": "AC3", "status": "confirmed", "note": "Declared in the manifest; the mode-aware drift-check holds all 7 packs byte-identical (check_pack_drift: 'pack drift: pass (7 pack(s))', exit 0); content + mode + missing teeth proven on the committed aider copy (differs/mode/missing)."},
+    {"id": "AC4", "status": "confirmed", "note": "Engine/AGENTS.md/skills/agents identical to canonical; exactly three net-new authored files (.aider.conf.yml, CONVENTIONS.md, hooks/pre-push), all dash-clean."},
+    {"id": "AC5", "status": "confirmed", "note": "Selftest asserts aider drift-free + len>=7 + wrapper (CONVENTIONS.md + .aider.conf.yml) + reused skill/agent files + 'git-commit-verify: true' in the real conf + 'tool_input'/'warp-guard.sh' in the real hook + os.access X_OK; reads real file contents, non-tautological."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "ROBUSTNESS (W7-adjacent, SYSTEMIC across all 7 packs, not aider-specific): no automated check asserts the COMMITTED git-index mode of the wrapper hooks/pre-push. The selftest checks working-tree executability (os.access X_OK, which can diverge from the index), and the mode-aware drift-check covers only ENGINE_GLOBS (the wrapper hook is a per-pack authored file, not engine). At dfa5934 the committed mode is correct (100755), so this is NOT a defect - but given W7's exact lesson (git silently skips a non-executable committed hook, fail-open), a future edit committing the wrapper hook 644 while the local tree is 755 would pass selftest. Scheduled for W9 (WARP-0809, cross-pack conformance) as its natural home."},
+    {"severity": "note", "text": "FORMAT: .aider.conf.yml (read list, git-commit-verify: true) is plausible documented Aider idiom on a fast-moving surface; the spec flags the key surface as fast-moving. The guaranteed gate (git pre-push + CI) does not depend on this config, so the uncertainty is immaterial. Format-uncertainty note only, not a defect."},
+    {"severity": "note", "text": "PROMPT vs REALITY: the AC2 ALLOW condition in the review brief ('green last_verify + proof manifest -> ALLOWED') is incomplete versus the actual gate, which additionally requires an independent verdict.json (policy_check). This makes enforcement STRONGER, not weaker. Pre-existing advisory (not a WARP-0808 defect): specs/index.md embeds a 'Generated <date>' line, a date-sensitivity of update_index.py (did not trigger this run)."}
+  ],
+  "summary": "W8 of PLAN-0008 (the Aider pack, the seventh and final pack, the thin-primitives NG2 test) holds up under adversarial testing. All five ACs confirmed with concrete probes. The high-risk item - the git-invoked push gate on the thinnest tool - genuinely blocks an unproven push through the real git hook path (exit 1, 0 refs), the committed pre-push hook is executable (100755), the guard is fed the JSON payload on stdin (not env CMD), git-commit-verify is true, and the enforcement is deeper than 'honor-system' (policy_check also requires a commit-bound verdict.json). The engine copy is 139 files byte-identical across all 7 packs with a mode-aware drift-check that has real teeth (differs/mode/missing). The three net-new authored files are dash-clean; the full gate is GREEN with 1262/0 selftest assertions and no pollution (main repo untouched, HEAD dfa5934). Notes are non-blocking robustness/clarity observations. proof_digest via validate.py. Verdict: pass_with_notes (recorded as pass, 0 blocking)."
+}

@@ -1,0 +1,133 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0908",
+  "commit": "a791ddd8dfebbd024ac73f490fa98d4864fa47ec",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0009 W8, WARP Fleet distribution v1 release)",
+  "plan_hash": "sha256:c9f8ce017844cafd",
+  "produced_at": "2026-07-20T03:05:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Version bumped to 3.5.0 for the WARP Fleet distribution v1 milestone: plugin/.claude-plugin/plugin.json 3.4.0 -> 3.5.0, .claude-plugin/marketplace.json 3.4.0 -> 3.5.0, README.md 'Current plugin version: 3.5.0.', and PLAN-0009 release.version reads 'plugin 3.5.0'. The generic method documents (docs/method.md / AGENTS.md) are NOT in the release commit - the fleet ships as engine and packs, not a change to the WARP method."
+        },
+        {
+          "type": "unit",
+          "ref": "git show --stat a791ddd lists exactly six files: the three version files (.claude-plugin/marketplace.json, README.md, plugin/.claude-plugin/plugin.json), the new specs/WARP-0908-release-fleet-distribution.md, plans/PLAN-0009-fleet-distribution.md, and the regenerated specs/index.md; no method.md/AGENTS.md and no engine file. grep confirms plugin.json, marketplace.json, and README (Current plugin version: 3.5.0.) all read 3.5.0, and PLAN-0009 line 238 reads 'version: plugin 3.5.0'."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The shipped fleet is already recorded honestly (W5/W6/W7), so this release adds no capability claim and over-claims nothing. Every fleet capability an adopter's tree carries has a home resolving in the shipped engine: fleet_dispatcher (.warp/dispatch.py), account_registry (.warp/accounts.py), worker_spawner (.warp/fleet.py), per_account_governor (.warp/governor.py), in_session_waiter (.warp/fleet.py), warp_cli (bin/warp), fleet_in_session_resume_default (bin/warp + .warp/fleet.py), fleet_external_supervisor (.warp/supervisor.py + bin/warp) all mechanical, and fleet_supervisor_session_launch (.warp/supervisor.py) reference; none is marked scope: repo-only. The repo-only markers from W6 (the tracker + pack + dogfood family) stay intact. R does not edit capabilities.yaml (not in git show --stat a791ddd)."
+        },
+        {
+          "type": "unit",
+          "ref": "The selftest capabilities-honesty check (WARP-0906) passes as part of the 1374/0 GREEN gate at R: every unmarked home resolves in the shipped engine (pack.py engine_files), every home exists, both .warp/capabilities.yaml and plugin/templates/.warp/capabilities.yaml are byte-identical (one sha256), and the repo-only marker count is >= 15. capabilities.yaml was not edited by this release, so its honesty and byte-identity are unchanged from the green baseline."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "No engine file (ENGINE_GLOBS: scripts, bin/warp, .warp/*.py, .warp/*.yaml, workflow, templates) was edited by this release: R's six files are the three version files, the WARP-0908 spec, PLAN-0009, and the index. Every declared pack's engine therefore stays byte-identical (content and mode) to the canonical plugin/templates source with no re-sync required."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/check_pack_drift.py reports 'pack drift: pass (7 pack(s))' with each pack (claude, cursor, codex, copilot, antigravity, opencode, aider) engine byte-identical to source; the cross-pack conformance harness passes inside the selftest (part of 1374/0), proving every pack enforces the WARP invariant identically."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The README fleet section (What the plugin ships -> The WARP Fleet) describes the installable fleet as it ships (the fleet ships in the engine, installing a pack lays it, the warp CLI drives it, warp fleet N in-session workers and warp work single worker), and the plugin-version line reads 3.5.0 with no claim beyond W1 through W8. Every fleet command named in the docs exists in the shipped bin/warp; the full CLI surface (work, fleet, account, status/watch, answer/steer/abort, supervisor) ships via the warp_cli capability (bin/warp is engine)."
+        },
+        {
+          "type": "unit",
+          "ref": "docs hygiene sweeps (dash, non-ASCII, genericity) pass over README and docs in the GREEN gate at R; the bin/warp routing selftest (WARP-0904 for work/fleet/account/status, WARP-0907 for supervisor) asserts each subcommand routes to its module by running the real executable, part of 1374/0."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The plugin/ to packs/claude rename and the marketplace source repoint remain DEFERRED as a separate human-approved change (they move the protected enforcement files plugin/templates/scripts/verify.sh, plugin/templates/scripts/warp-guard.sh, plugin/templates/.warp/policy_check.py and rewrite the .warp/policy.yaml entries naming them, floor high). This release keeps plugin/ in place as the option-B Claude pack, marketplace source ./plugin, and the name stays WARP (VELDO parked). No protected path is touched, so policy_check requires no approval."
+        },
+        {
+          "type": "unit",
+          "ref": "R (a791ddd) changed exactly six files (.claude-plugin/marketplace.json, README.md, plans/PLAN-0009-fleet-distribution.md, plugin/.claude-plugin/plugin.json, specs/WARP-0908-release-fleet-distribution.md, specs/index.md); none matches any protected_paths pattern (scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py and their plugin/templates twins) by exact or both-direction prefix. plugin/ still present, packs/claude absent, marketplace source ./plugin."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Because W8 is itself a gating work item of PLAN-0009, release-check requires WARP-0908 shipped. R sets WARP-0908 to status shipped and all of W1 through W7 are already shipped, so at R python3 .warp/plan.py release-check PLAN-0009 reports releasable at 8/8 directly, no simulation required (open_decisions empty after D1, release.milestone set, RJ1-RJ5 journeys defined). PLAN-0009 status is released in R."
+        },
+        {
+          "type": "unit",
+          "ref": "At R, python3 .warp/plan.py release-check PLAN-0009 reports 'PLAN-0009: releasable (WARP Fleet distribution v1 ...)' at 8/8 shipped (exit 0), and python3 .warp/plan.py status PLAN-0009 reports 'status released, revision 2, 8/8 shipped'. Independently re-verifiable at R directly by re-running release-check on the checked-out tree."
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "bash scripts/verify.sh at R -> GATE: GREEN; selftest 1374 passed / 0 failed; generated, docs hygiene (dash / non-ASCII / genericity), template sync, secret scan, and contracts (validate.py all, including the WARP-0908 spec at status shipped and this manifest) all pass. .warp/last_verify records status green, commit a791ddd. RULE #1 hand-check of the new spec and this proof clean (no em or en dash, no prose double-hyphen)."
+        },
+        {
+          "type": "unit",
+          "ref": "The selftest includes the fleet suites (dispatcher, spawner, per-account governor, in-session waiter, CLI, supervisor), the capabilities-honesty check, the pack drift check, and cross-pack conformance across all seven packs; specs/index.md regenerated by scripts/update_index.py (generated: pass); no protected path edited."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "operational",
+      "status": "passed",
+      "detail": "Release math verified: three version files at 3.5.0, PLAN-0009 release.version reads plugin 3.5.0; because W8 gates PLAN-0009 and R carries WARP-0908 shipped with W1 through W7 already shipped, release-check reports releasable at 8/8 directly at R, and PLAN-0009 status is released in R; no protected path in the 6-file release commit."
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1374 passed, 0 failed at R (a791ddd) (fleet suites + capabilities-honesty + pack drift + cross-pack conformance included). GATE GREEN, last_verify status green commit a791ddd."
+    },
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated (scripts/update_index.py); WARP-0908 row present at status shipped and PLAN-0009 shown at 8/8 released; check_generated.sh reports no drift."},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass; RULE #1 hand-check of the WARP-0908 spec and this proof clean (no em or en dash; every double-hyphen is a real CLI flag, a version arrow like 3.4.0 -> 3.5.0, a front-matter fence, or a code reference)."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh: pass (the shared engine instances match the plugin/templates canon)."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs), every engine byte-identical to source; nothing re-synced because no engine file changed."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all passes, including PLAN-0009 (revision 2, released), the WARP-0908 spec (status shipped, planned lane bound to PLAN-0009 W8), this manifest (criteria AC1-AC7, required_evidence operational satisfied), and the WARP-0909 verdict (bound to a2423c7)."}
+  ],
+  "assumptions": [
+    "W8 of PLAN-0009, the release item, depends on WARP-0905 (the fleet in the engine) and WARP-0906 (the docs made true), both shipped. Single reviewed release commit shape: R (a791ddd) is the one reviewed release commit and carries the version bump to 3.5.0 across the three version files, the new WARP-0908 spec at status shipped, PLAN-0009 flipped to released, and the regenerated specs/index.md - six files total. The evidence-only commit added on top of R carries ONLY proof/ and .warp/ files (this manifest, the independent verdict, runner-evidence, last_verify, events); it changes no spec, plan, or implementation file, because the spec flip to shipped and the plan flip to released already live in R.",
+    "capabilities.yaml is NOT edited by this release (not in git show --stat a791ddd): the fleet was already recorded honestly across W5 (shipped modules mechanical), W6 (the home-resolution honesty check plus repo-only markers), and W7 (the three supervisor entries), so O5/C6 hold with no new claim - marking anything additionally mechanical would be over-claiming. Because no engine file changed, no pack re-sync was needed and pack drift stays empty for all seven packs.",
+    "AC6 release subtlety: because W8 is itself a gating work item of PLAN-0009, release-check requires WARP-0908 shipped. R sets WARP-0908 to shipped and all of W1 through W7 are already shipped, so at R release-check reports releasable at 8/8 directly, with no simulation required, and PLAN-0009 status is released in R.",
+    "Proof sequencing (the W5/W6 lesson): this manifest is the canonical evidence artifact (required_evidence [operational] satisfied by the operational evidence entries and the operational check); the independent verdict binds to the same reviewed commit a791ddd and its proof_digest is set to proof_digest(this manifest). plan_hash sha256:c9f8ce017844cafd is PLAN-0009 at revision 2 (status released) via plan.py hash. The WARP-0909 independent verdict already exists and binds to a2423c7; it is untouched by this release."
+  ],
+  "rollback": "git revert this release commit (a791ddd) and its evidence commit; the version bump withdraws, the WARP-0908 spec returns to its pre-release state, and PLAN-0009 returns to in_progress (the eight work items stay shipped). The release is additive - a version bump, a confirmed honest capability record (no capabilities.yaml edit), the fleet docs, the WARP-0908 spec, and the plan flip - so reverting it leaves the shipped fleet engine and the seven packs intact."
+}

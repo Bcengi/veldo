@@ -1,0 +1,1 @@
+plan validator clean; plan release-check releasable; plan status released 7/7; plugin 3.0.0; method unchanged; full gate GREEN (selftest 760 passed, 0 failed); dash/non-ASCII/genericity sweeps pass. Independent Opus review pass_with_notes, 0 blocking.

@@ -1,0 +1,154 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0612",
+  "commit": "d023021e1ee8a88f0380751569b66b4cdabd9be4",
+  "producer": "claude-opus-4-8[1m] (build, WARP-0612, fresh-context single writer, in-session; AC7 issue-type provisioning extension)",
+  "produced_at": "2026-07-23T00:00:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "resolve_bootstrap_config in .warp/tracker_jira_init.py reads every input BY REFERENCE from config['bootstrap'] (project_key, required_project_type default company-managed, issue_types default Epic/Task, statuses default the nine-status lifecycle) plus the existing routing/status_map/trackers block; base_url + token_ref (a secret reference) are read by build_live_provisioner from the jira-cloud connection block, never a raw credential. There is no company- or board-specific literal in the module."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0612 block: a valid bootstrap block resolves to the nine-status lifecycle; a config with no bootstrap block is None (not wired), not an error; four malformed blocks (blank project key, empty statuses, bad category, empty issue types) each raise BootstrapError by name; and a regex over the module source finds no bcengi/dejitech/atlassian-host literal (grep-clean). Part of selftest 2334 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "provision_board calls provisioner.project_type FIRST and raises BootstrapError before any provision_status call when the type is not the configured required type; the message names the project, its actual type, the required type, and the remediation (recreate as a company-managed project). Detection precedes provisioning, so a refused project is left with zero statuses (never a half-board)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0612 block: a team-managed project fails loud with a message naming PROJ + team-managed + company-managed, and the project has zero statuses after the refusal. ANTI-VACUITY TOOTH: an in-memory copy of the module with 'if actual != required:' neutralized to 'if False and ...' provisions all nine statuses on a team-managed board, while the real module refuses and the module on disk is byte-unchanged. Part of selftest 2334 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "provision_status is create-or-reuse BY NAME (idempotent, returns created=False on reuse) and wire_status_into_workflow is wire-if-absent (idempotent, returns False when already reachable), both added to the TrackerAdapter base seam and modeled by the FakeTracker; provision_board provisions every configured status and wires it into every configured issue type. A re-run creates nothing and wires nothing; a partial board has its absent statuses created and its present ones reused."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0612 block: a fresh company-managed board -> created 9, wired 18, nine statuses present; a re-run -> created 0, wired 0, reused 9, already_wired 18, state_digest byte-identical; a partial board (Backlog, Ready present) -> created 7, reused 2, all nine present after (absent before), so a missing status is created not skipped; provisioning reads are side-effect-free (audit unchanged) and the two writes are audited. ANTI-VACUITY TOOTH: an in-memory FakeTracker with the create-or-reuse guard neutralized DUPLICATES on a re-run (created 9), while the real create-or-reuse stays a no-op (created 0), tracker_adapter.py on disk byte-unchanged. Part of selftest 2334 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "bootstrap() calls tracker_mirror_runner.run_from_repo over the SAME provisioner object after provisioning, feeding the shipped tracker_mirror.mirror_events / mirror_plan_events (WARP-0605/0606/1004..1006); the module adds no projection rule of its own and reimplements no mirror logic. The mirror's marker-keyed upsert forks no epic/child on replay."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0612 block: bootstrap over a fixture spec/plan index + event stream provisions the board (created 9) AND creates one epic and at least one child; a second bootstrap pass leaves the epic count at 1 and the state_digest byte-identical (idempotent). Part of selftest 2334 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "bin/warp routes a 'jira' subcommand to the repo-only .warp/tracker_jira_init.py, guarded by the same existence check as 'warp mirror' (a pack that did not lay the module fails loud). warp jira init --dry-run previews the whole bootstrap over a FakeTracker seeded as the required type with no network/token; without it build_live_provisioner constructs the reference JiraCompanyManagedProvisioner (a JiraCloudAdapter subclass) and fails closed when no token resolves. The bin/warp change is byte-identical across root + plugin/templates + 6 packs (template_sync + pack_drift green). No timer/daemon/auto-start; nothing detached (NG1)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0612 block: bin/warp contains the jira subcommand + guard; warp jira init --dry-run over a temp repo returns 0 and runs the whole bootstrap; a repo with no tracker config is a clean no-op (0); build_live_provisioner fails closed by name with no jira-cloud tracker; JiraCompanyManagedProvisioner is a subclass of JiraCloudAdapter. Part of selftest 2334 passed, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py drives the WHOLE bootstrap over the deterministic FakeTracker offline (no network): the fresh-board provision, the idempotent re-run, the partial-board create-vs-reuse, the team-managed fail-loud with no half-board, the issue-type ensure/add (AC7), and the reused-mirror no-fork-on-replay - each a non-tautological assertion (created tracks the real gap: 9 on empty, 7 on partial; issue types 1 added on a project missing Epic, 0 on a full one), plus in-memory source-mutation teeth (neutralizing the project-type check provisions a team-managed board; neutralizing create-or-reuse duplicates on re-run; neutralizing the add-missing-type leaves the type absent; neutralizing the never-invent fail-loud invents a nonexistent type) each proven to turn a refused case green while the real modules on disk are byte-unchanged. The WARP-0612 dogfood front-matter checks assert standalone lane, standard risk, placement [tracker] + footprint, behavior_bearing + observability, no protected path, the module declared in the tracker area of the architecture contract, and the AC7 issue-type criterion in the spec. selftest 2346 passed, 0 failed (+38 for the WARP-0612 block over the 2308 baseline)."
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A vendor-neutral issue-type seam was added to the TrackerAdapter base (existing_issue_types read-only; provision_issue_type ensure-present, idempotent by name, recorded in the audit only when it attaches a type) and modeled by the FakeTracker (a per-project set of issue types plus an instance catalog of addable types; provision_issue_type moves a catalog type into the project, is a no-op if present, and FAILS LOUD by name - TrackerItemNotFound - if the type is not in the instance catalog, never inventing a type). provision_board (tracker_jira_init.py) ensures EVERY configured issue type exists AFTER the team-managed fail-loud check and BEFORE provisioning statuses/wiring/mirror, adding any missing type and never falling back to a wrong type. The reference live JiraCompanyManagedProvisioner implements _existing_issue_types and _provision_issue_type against Jira Cloud REST v3 (GET /rest/api/3/issuetype for the instance catalog, GET /rest/api/3/issuetypescheme/project + /issuetypescheme/mapping to read the project's scheme, POST /rest/api/3/issuetypescheme/{schemeId}/issuetype to attach the type id), reference-wired via the inherited _request, and raises BootstrapError by name when the instance holds no such type - never a silent skip, never a Sub-task fallback. Founder directive: add types if missing, don't use wrong types."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0612 block: a company-managed project missing the epic type (has only Task, instance holds Epic) -> issue_types_created 1, reused 1, Epic present after; a re-run adds nothing (created 0, reused 2) and is byte-identical; a project already holding both types is a no-op (created 0, reused 2); the write-audit order proves provision_issue_type precedes provision_status and wire_status_into_workflow; a configured type absent from the instance catalog FAILS LOUD by name (Epic named); existing_issue_types is side-effect-free and provision_issue_type is audited only on an actual attach. ANTI-VACUITY TEETH: an in-memory FakeTracker with the add-missing-type write neutralized leaves Epic ABSENT while the real fake adds it; an in-memory FakeTracker with the never-in-instance fail-loud neutralized INVENTS a type the instance does not hold while the real fake refuses by name - tracker_adapter.py on disk byte-unchanged in both. The adapter-module selfcheck also drives the ensure/reuse/fail-loud path. Part of selftest 2346 passed, 0 failed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 2346 passed, 0 failed (+38 for the WARP-0612 board-bootstrap block, incl. the AC7 issue-type ensure/add/fail-loud tests and two anti-vacuity teeth)"
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated (127 specs); check_generated green"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "root == plugin/templates for bin/warp and the shared engine; capabilities.yaml root == template (selftest byte-identity guard)"
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "engine byte-identical across plugin/templates + 6 packs (bin/warp + capabilities.yaml propagated); check_pack_drift pass (7 packs)"
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "no shape-gate problems; footprint stays inside the tracker area (no boundary crossing), module_lines budget respected (max 1000: tracker_jira_init.py 664, tracker_adapter.py 671)"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all green; check_ready (placement + observability gate) green for WARP-0612"
+    }
+  ],
+  "assumptions": [
+    "COMMIT BINDING: the gate ran GREEN at HEAD d561bfd (the parent, the prior WARP-0612 build commit) with this AC7 issue-type extension in the working tree, exactly as scripts/verify.sh stamped .warp/last_verify; the build commit that carries this proof sits directly on top of it. This is the build-time proof pattern (WARP-0114): the manifest binds to the gate-run commit, and after the evidence commit the push guard resolves the verdict by parent inheritance. STOPPED AT REVIEW: no evidence commit, no push, no self-review.",
+    "WARP-0612 is a STANDALONE tracker-lineage spec composing on the RELEASED tracker foundation (PLAN-0006 seam/mirror + PLAN-0010 live edges), which are released so no work item is available; this matches the standalone-hardening precedent (WARP-0113, WARP-0114, WARP-0411, WARP-1212). Like every tracker_*.py module it is REPO-ONLY build machinery (the WARP home repo's own tooling to mirror its own work onto a board), so only .warp/tracker.py is engine-synced and the new module ships no template twin; shipping the tracker integration to adopters is a separate release concern.",
+    "The LIVE JiraCompanyManagedProvisioner (project-type detection via project style/simplified; issue-type ensure via GET /rest/api/3/issuetype for the instance catalog, GET /rest/api/3/issuetypescheme/project + /issuetypescheme/mapping to read the project's scheme, and POST /rest/api/3/issuetypescheme/{schemeId}/issuetype to attach the type id; status create via POST /rest/api/3/statuses; and the company-managed workflow update API) is REFERENCE-WIRED and NEVER run in the gate, exactly like the reference JiraCloudAdapter (WARP-0604) and the live mirror runner (WARP-1004..1006): it needs a live Jira and a scoped token and is verified in a separate live run. The whole bootstrap LOGIC (detection, fail-loud, issue-type ensure-present with never-a-wrong-type, create-or-reuse and wire-if-absent idempotency, mapping, mirror drive) is what the gate proves, over the FakeTracker, offline. The exact Jira issue-type-scheme-attach and workflow-update payloads are the API shapes not exercisable offline and are confirmed against a live company-managed board on first run. The Bcengi instance already holds Epic (hierarchyLevel 1), Task/Story/Bug (0), and Sub-task (-1), so a missing Epic on a fresh company-managed project is added by attaching the existing instance type to the project's scheme, never by substituting a wrong type.",
+    "RISK STANDARD: the change touches no protected path (verify.sh, warp-guard.sh, policy.yaml, policy_check.py and their template twins untouched) and nothing in the production-support safety core (executor, whitelist, two-key rule, kill switch, ladder), so per policy.yaml the floor is standard; the mechanical footprint stays inside the single tracker architecture area, so the footprint tier floor does not elevate it. Live external writes at run time are reference-wired and applied only by an explicit human act (like warp mirror), not part of landing this spec."
+  ],
+  "rollback": "git revert; additive - a new repo-only .warp/tracker_jira_init.py, a provisioning seam on .warp/tracker_adapter.py modeled by the FakeTracker (status seam plus the AC7 issue-type seam: existing_issue_types / provision_issue_type with a per-project issue-type set and an instance catalog), a warp jira init subcommand in bin/warp (root + template + 6 packs, byte-identical), one capability entry (all eight capabilities.yaml copies), a bootstrap example + aligned status_map in the template trackers.json, the new module added to the tracker area of the architecture contract, a selftest block, and this spec/proof; no protected path; pure stdlib; the live provisioner is reference-wired and never run in the gate."
+}

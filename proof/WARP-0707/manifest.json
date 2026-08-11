@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0707",
+  "commit": "587eff4e2362a0916ded4e8ffa41d9e8baf29128",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0007 Y7)",
+  "plan_hash": "sha256:c5ff657b05dd9b8f",
+  "produced_at": "2026-07-18T13:27:52Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet.py FleetLauncher.run reads the controller's desired count each tick, caps it at max_workers, and calls reconcile(target); reconcile clamps target = max(0, min(target, max_workers)) then spawns up / retires down via the injected WorkerSpawner to reach it, returning (spawned, retired). Idempotent (reconciling to the current size is a no-op), never exceeds N, never negative."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts reconcile scales up (3,0), scales down by retiring the delta (0,2), and caps at max_workers (active 8 for target 100); independent review brute-forced every target in -5..200 across max_workers 0..6 - active_count never exceeded max and never went negative, reconcile(3) twice is a true no-op; part of selftest 1054 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet.py at target 0 the loop breaks (drained) when work_remains() is False, else releases the workers (reconcile(0)), waits until controller.resume_at() via the waiter seam, and continues - looping back to re-read desired() and reconcile before any spawn, so a wake never resumes straight into the limit."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts a backoff waits to resume_at then re-checks and spawns the governed count (waits [5000], spawned 2 only after the re-check), and drain stops and retires all; independent review confirmed two consecutive backoffs then drain spawn ZERO workers, and a faithful resume-into-limit mutation (spawn max after the wait without re-checking) turns the backoff assertion RED; part of selftest 1054 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet.py the module imports only importlib.util, uuid, and pathlib - it spawns no process, opens no socket, starts no thread, and sleeps nothing; spawning is the injected WorkerSpawner seam (whose real implementation spawns in-session, never detached) and the resume wait is the injected waiter seam. The multi-account path (one session per account, CLAUDE_CONFIG_DIR on Linux) is a documented procedure, not an auto-spawner this module runs."
+        },
+        {
+          "type": "unit",
+          "ref": "independent review grepped fleet.py for subprocess/os.system/Popen/fork/socket/threading/sleep/daemon/asyncio and found nothing in code (only docstrings and the injected-seam call); confirmed the docstrings and spec are honest that the real in-session spawn and resume waiter are the caller's; part of selftest 1054 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet.py the launcher threads self.scope (a plan id, a label, or a workspace) unchanged to spawner.spawn(worker_id, scope) on every spawn, so a fleet can be scoped to a slice of the frontier and different groups can work different slices while sharing the one claim ledger."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts every spawned worker receives the launcher's scope (set(scopes) == {the scope}); independent review confirmed the scope is passed unchanged across reconcile and full runs; part of selftest 1054 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the selftest drives FleetLauncher over fake WorkerSpawner, FleetController, and waiter seams (spawning no process, sleeping nothing): reconcile scaling and cap and scope, and full runs for scale-up-then-drain-retires-all, backoff-waits-then-re-checks-and-respawns, and terminate-on-drain-after-backoff."
+        },
+        {
+          "type": "unit",
+          "ref": "non-tautology proven by the independent review: deleting the retire-down loop reddens three assertions (retire-on-scale-down, retires-all-on-stop, backoff-respawn), and a faithful resume-into-limit mutation reddens the backoff assertion; termination is bounded by max_ticks (a backoff-forever controller returns without hanging) and the finally retires all even on an exception mid-run; gate GREEN, selftest 1054 passed, 0 failed; both capabilities.yaml copies byte-identical"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1054 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "The capstone of PLAN-0007, on WARP-0703 (worker loop), WARP-0704 (lander), WARP-0705 (env), and WARP-0706 (governor). Pure-stdlib control logic; spawning and waiting are injected seams so the gate runs no process and sleeps nothing, honoring the hard no-detached-process rule (feedback_no_rogue_processes): a worker is a real in-session session (the WorkerSpawner real impl is in-session), the resume waiter is opt-in and in-session, and multi-account (one session per account, CLAUDE_CONFIG_DIR on Linux; one worker per account on macOS due to the shared keychain) plus terminal-count guidance (terminals are the unit of parallelism, not project count) are a documented procedure. The loop always terminates (bounded by max_ticks), never leaks a worker (finally retires all on stop or exception), never exceeds N, and re-checks the governed desired after every backoff before spawning (honoring the WARP-0706 resume_at note). Accepted non-blocking note: worker ids are uuid4 hex[:12] (48 bits); a collision within one fleet is astronomically negligible at fleet scale."
+  ],
+  "rollback": "git revert; additive - a new .warp/fleet.py, a selftest block, one fleet_launcher capability (both copies), and the WARP-0707 spec; no protected path; pure stdlib control logic with spawning and waiting as injected seams, so the gate runs no process and sleeps nothing."
+}

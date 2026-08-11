@@ -1,0 +1,32 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0302",
+  "commit": "f4a6fcf348ea11d0b584e6d8390a6deca331edc5",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B5)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T03:52:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/auth/warp_auth_runner.py exists: reads an authorization journey (base_url + identities map of request headers + checks), drives each request as a named identity (identity headers merged with check headers, check wins), evaluates allow/deny, stops at the first failing check, exits 0 all-hold else 1 with the failing check and every failed assertion named (see runner-evidence.txt and negative-tests.txt)"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py auth block: evaluate_check exercised for allow (2xx pass, non-2xx fail, explicit allow_status match/miss, owner data present/absent), deny (proper denial passes, ANY 2xx is a bypass even with no body assertion, wrong status fails, 5xx is not a denial, body leak fails on a denial status, 2xx names bypass AND leak together), missing/invalid expect fail loud, max_seconds budget; resolve_headers known/unknown/anonymous/override"},
+      {"type": "operational", "ref": "proof/WARP-0302/negative-tests.txt: the failing fixture names 'authorization bypass' and 'cross-tenant data leak'; a positive control (deny against the secure resource) passes; a tamper test (false allow claim for a non-owner) is refused - the runner is not a rubber stamp"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0302/runner-evidence.txt: test_auth_runner.sh stands up the stdlib mock server (whose /orders resource enforces owner-scoping and whose /leaky resource is a deliberate insecure-direct-object-reference) and drives both fixtures - pass.journey.json exits 0 (owner-scoping holds), fail.journey.json exits 1 (the cross-tenant bypass and owner-data leak caught)"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py auth block: imports the runner + mock server, drives the runner over both shipped fixtures against an in-process ephemeral-port stdlib server (pass -> exit 0, fail -> exit 1 with the bypass/leak named), plus the pure evaluation and identity-resolution cases above. Part of selftest 184 passed / 0 failed (was 161); all prior cases still pass and the gate is green"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, mock server, wrapper, and README carry zero company/product names (docs-hygiene genericity sweep passes); .warp/capabilities.yaml marks authorization_runner status: reference (a shipped artifact an adopting repo wires to its authorization or contract gate slot; the warp repo has no authenticated surface and does not run it), kept byte-identical with the plugin template copy (template-sync gate passes)"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 184 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference runner: generic, stdlib only, driven against an in-process mock server for the selftest so the authorization control logic is gate-tested with no external dependency. Identity is expressed as headers, so the runner is authentication-mechanism-agnostic (it asserts authorization, not token issuance). An adopting repo points it at its own authenticated endpoint and identities. Shipped under plugin/templates/scripts/runners/auth/; not wired into the warp repo's own gate (capabilities: reference)."],
+  "rollback": "git revert the impl; the runner is additive under plugin/templates/scripts/runners/auth/, touches no protected path, and its selftest cases sit within the 184."
+}

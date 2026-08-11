@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0313",
+  "commit": "9486749bfc47c8b4c53e34c9dfae9b9b0fccd4ea",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T10:39:38Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:83924574e701119e",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Runner ships at plugin/templates/scripts/runners/process/process_runner.py (stdlib subprocess/os/signal only), reads the JSON fixture (name, spawn argv, env, assertions, windows) and drives a REAL child. It spawns with start_new_session=True (child becomes session + process-group leader, pgid==pid) and signals the whole group with os.killpg. Reran the fixtures directly: pass.lifecycle.json exits 0 (spawn/graceful_signal/respawn/kill_tree all PASS); fail.lifecycle.json exits 1 with graceful_signal and kill_tree named on stdout."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Every assertion is observed from the real process, not narrated. Liveness = os.kill(pid,0) plus /proc zombie(Z) check; exit = subprocess.Popen.poll(). Reproduced: graceful_signal on a SIG_IGN target does not hang - it SIGTERMs the group, waits the grace window, then SIGKILLs and reports 'force-kill reported'; well-behaved target exits rc=-15 (killed by SIGTERM). respawn requires a DIFFERENT live pid (observed 1271761 -> 1271781; equal pid would fail). kill_tree waits for a real child-of-child via the WARP_PIDFILE seam, kills the parent group, and NAMES the survivor: a setsid-escaped grandchild that ignores SIGTERM survived the group kill and was caught as orphan pid 1275568. Pid reuse can only cause a conservative false FAIL, never a false pass."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Directly exercised each edge case against run(): no assertions -> 'fixture asserts nothing' error (cannot rubber-stamp); unknown assertion -> named error listing known set; missing/empty/non-string spawn argv -> 'no spawn argv' named error; missing command -> 'cannot spawn target: [Errno 2]...' named spawn failure, not a crash; immediate-exit target -> spawn fails named (rc=0); kill_tree whose target reports no child-of-child -> 'target reported no child-of-child ...; kill_tree cannot be verified' named failure, NOT a vacuous pass. Exit 0 only when every declared assertion held."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Ran python3 scripts/selftest.py: 426 passed, 0 failed, exit 0 (matches manifest). The process block loads the real runner and drives real short-lived python -c sleepers with generous windows, no external dependency. Verified leak-cleanliness in isolation (a concurrent parallel selftest from another shell was polluting a naive ps sweep, so I instrumented run() on the full 4-assertion leak fixture): after run() returned, all 5 spawned targets AND all 5 setsid-escaped descendants were dead and the mkdtemp temp dir was removed (VERDICT: CLEAN). _teardown SIGKILLs escaped children via the tracked pidfiles, so even a target that ignores SIGTERM and escapes the group leaks nothing."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Word-boundary grep over runner + fixtures + README: zero company/product names (an earlier hit was the substring 'ava' inside 'available'). No em-dash/en-dash/double-hyphen in the added files. .warp/capabilities.yaml marks process_lifecycle_runner status: reference and is byte-identical to plugin/templates/.warp/capabilities.yaml (cmp: whole file identical). ./scripts/verify.sh at 9486749 => GATE: GREEN (unit/generated/docs incl. dash+non-ASCII+genericity sweeps/template sync/secret scan/contracts all pass). Recomputed proof_digest == sha256:83924574e701119e; manifest commit == HEAD."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "runner-evidence.txt records only outcome lines (well-behaved exit 0 / misbehaving exit 1 / self-test pass) rather than captured runner stdout. Evidence is honest - every outcome was independently reproduced - but thin; the reproducible source of truth is the fixtures + selftest, not this file."
+    },
+    {
+      "severity": "note",
+      "text": "kill_tree and teardown cleanup depend on the target reporting descendant pids to WARP_PIDFILE. The shipped fixtures write the pid immediately after fork (well within the settle window), so detection and cleanup are reliable and were verified. An adopting daemon that reports children late (after the settle/grace windows) could surface a descendant the runner never learns of. This is the documented seam an adopting repo owns, not a defect in the reference; and a target that reports nothing fails kill_tree named rather than passing vacuously."
+    }
+  ],
+  "summary": "Adversarially reran everything at 9486749: both shipped fixtures (pass exit 0, fail exit 1 naming graceful_signal + kill_tree), all AC3 edge cases directly against run(), the full selftest (426 passed / 0 failed), an isolated leak test, and the full gate (GATE: GREEN). spawn/graceful_signal/respawn/kill_tree are observed from the real process via os.kill signal 0, /proc zombie detection, and Popen.poll - not narrated. graceful force-kills a SIGTERM-ignoring target and reports it (never hangs); respawn requires a genuinely different live pid; kill_tree caught a real setsid-escaped orphan and cleaned it up, leaking nothing. Runner is generic (zero product names), capabilities status: reference byte-identical across both copies, no forbidden punctuation. proof_digest recomputed == sha256:83924574e701119e. No blocking findings."
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0114",
+  "commit": "f1f2991d8b8135844289493e8b3927d21d7da2f5",
+  "producer": "claude-fable-5 (implementing agent)",
+  "produced_at": "2026-07-16T21:40:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py: 53 passed, 0 failed; range-binding cases: in-range approval accepted, out-of-range rejected, expired-in-range rejected, near-miss decision inert"},
+      {"type": "operational", "ref": "independent review verdict.json (claude-opus-4-8[1m]): 13/13 attack checks held with an isolated proof root - mid-range accepted, out-of-range/expired/non-canonical/empty-scope/empty-commit/missing-key all rejected; widening did not become accept-anything"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0114/negative-tests.txt: at HEAD f1f2991 with 5 protected paths touched in the 9-commit push range, policy_check exits 0 with the verdict and range-bound approvals present (the first allow-path success in this repository), and exits 1 with all approvals hidden"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 53 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "AC2's allow-path demonstration is captured at the impl commit HEAD f1f2991 with the (uncommitted) verdict and approval files present in the working tree, exactly as the guard reads them; after the evidence commit the same allows via the parent-verdict fallback.",
+    "KNOWN LIMITATION (reviewer note 1, spec-sanctioned): approval is scoped to a commit-in-range, not to specific paths - any one in-range approval authorizes every protected edit in the range. Demonstrated live in negative-tests.txt (hiding one of three approvals still allows; hiding all blocks). Path-scoped approval enforcement is tracked into PLAN-0001 W9 (approval self-separation and scope), not silently omitted."
+  ],
+  "rollback": "git revert f1f2991; the change widens approval matching from HEAD-only (unsatisfiable) to the push range, keeps decision/expiry/exact-commit binding, and makes the approval glob deterministic (sorted); no other policy_check behavior changes."
+}

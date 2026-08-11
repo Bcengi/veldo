@@ -1,0 +1,152 @@
+{
+ "schema": "warp.proof/v1",
+ "spec_id": "WARP-0615",
+ "commit": "efe6a37b41ac1b0bb260f922827fee4a397e3e74",
+ "producer": "claude-opus-4-8[1m] (build, WARP-0615 W2 of PLAN-0016, fresh-context single writer, in-session; build the warp.request/v1 envelope, its canonical digest, its fail-closed validator, the check_requests_dir wiring into validate.py run_all, the additive event vocabulary, and the selftest block, over deterministic fixtures offline, with no change to the frozen settlement readers)",
+ "produced_at": "2026-07-24T02:40:00Z",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "A new record type warp.request/v1 is defined in .warp/request.py (a sibling of .warp/decision.py) as a THIN ENVELOPE with the fields id, request_hash, touchpoint, tier, impact, required_roles, quorum, expires_at, supersedes/superseded_by, bound_artifact, settlement, tracker, and status. validate_record checks the closed vocabularies FAIL CLOSED by name: touchpoint in {spec_approval, plan_approval, decision_choice, review_disposition, risky_action_authorization, escalation}; tier in {low, standard, high, critical}; status in the request lifecycle set {open, in_discussion, awaiting_approval, needs_decision, changes_requested, blocked, accepted, rejected, superseded}; impact entries in {data_mutating, money, external, irreversible} as FLAGS (a scalar impact, not a list, is refused; impact is never a fifth tier). The record REFERENCES a settlement record (approval/decision/verdict) by bound_artifact {kind, ref, digest} and settlement {record, path}; it does NOT contain or duplicate the settlement data. git diff HEAD confirms this spec makes NO change to .warp/policy_check.py, .warp/two_key.py, or .warp/decision.py."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0615 block, offline (no network): a well-formed request of EACH of the six touchpoints validates; a wrong schema id, an out-of-vocabulary touchpoint/tier/status, an out-of-vocabulary impact flag, an impact given as a scalar tier, a missing required field (touchpoint, request_hash), a non-positive version, a missing bound_artifact, and a superseded request with no superseded_by each refuse by name. Part of selftest 2481 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "request_digest(record) is the ONE canonical integrity hash over the request SUBSTANCE (id, touchpoint, tier, impact, required_roles, quorum, expires_at, bound_artifact), computed exactly like policy_check.proof_digest and action_executor.proposal_digest (json.dumps sort_keys + sha256 truncated, sha256: prefix). It is SEPARATE from bound_artifact.digest: the lifecycle fields (status, settlement, tracker) are excluded so the substance hash is stable as the request settles, and the two hashes are never unified. bound_artifact.digest is POLYMORPHIC per touchpoint (a commit-range hash for a spec/plan approval, a warp.decision/v1 record digest for a decision_choice, a proposal digest for a risky_action) and is NEVER fed to a frozen reader; the validator treats it as an opaque per-touchpoint string. Two derivations are enforced: an irreversible impact must map to the critical tier (consistent with decision.py's D5), and a decision_choice request's tier is DERIVED from the bound decision's risk via derive_tier(), checked in check_record when the bound decision (bound_artifact.ref) resolves, refusing an independently-set tier by name."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0615 block: request_digest is stable over the same substance, content-sensitive (a different tier changes it), separate from bound_artifact.digest, and unchanged as the request moves to accepted with a settlement and tracker set (lifecycle excluded); a bare commit-range hash and a sha256 proposal digest both validate as bound_artifact.digest (polymorphic); an irreversible impact at the critical tier validates and below critical refuses; money/external validate at any tier; a decision_choice whose tier IS the bound decision's risk validates through check_record over a temp tree and one whose tier is NOT refuses by name. Part of selftest 2481 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "check_requests_dir(rdir, root, parse, fail) validates every .warp/requests/*.yaml record STRUCTURALLY and is wired into validate.py run_all (errs += check_requests(), immediately after check_decisions()), in the EXACT adoption-safe, fail-closed, dependency-free style of decision.check_decisions_dir: the front-matter parser (validate.parse_yamlish) and the failure reporter (validate.fail) are passed in through a _request_module() loader that loads .warp/request.py by path (no second YAML parser, no import cycle). An absent .warp/requests/ directory stands the check down and returns clean (a repo that never uses the surface is byte-identically unaffected). A present malformed record fails closed by name; the two filesystem-aware fail-closed checks in check_record (a settlement.path that must exist, and a decision_choice tier that must be the bound decision's risk) run after the pure validate_record. A duplicate request id across the set is refused by name. A `python3 .warp/validate.py requests [record|dir]` CLI mode mirrors the decisions mode."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0615 block over a temp tree: an absent requests directory stands down (0); a required-but-absent single record fails closed by name; a present well-formed record validates through the directory scan; a tab-indented record (outside the parser subset) fails closed; two records sharing an id are refused by name; an accepted request whose settlement.path does not exist fails closed by name; an accepted request with no bound_artifact.digest is refused (unbound acceptance binds nothing) and with a digest validates. python3 .warp/validate.py all exits 0 (check_requests stands down cleanly, no .warp/requests/ in this repo). Part of selftest 2481 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The event vocabulary in .warp/events.py EVENT_TYPES gains request.opened, request.accepted, request.rejected, request.superseded, and decision.decided (the settled decision-choice had no event before this surface), added as a conscious contract change in a commented block. The vocabulary is owned by the contract organ as request.REQUEST_EVENT_TYPES, and a selftest drift-guard binds the two (REQUEST_EVENT_TYPES == the five literal types and REQUEST_EVENT_TYPES <= events.EVENT_TYPES) so the contract and the emitter cannot drift, mirroring incident.py's INCIDENT_EVENT_TYPES pattern. No existing event type is removed or renamed."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0615 block: request.REQUEST_EVENT_TYPES equals exactly {request.opened, request.accepted, request.rejected, request.superseded, decision.decided}; it is a subset of the freshly-loaded events.py EVENT_TYPES; decision.decided is present and the pre-existing types (plan.created, spec.shipped, approval.recorded, incident.opened) are all still present (nothing removed). Part of selftest 2481 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The optional back-reference fields request_id and request_hash may be carried on a warp.approval/v1, warp.decision/v1, or warp.verdict/v1 record; because the shipped readers read only the fields they know via .get() and ignore unknown fields, linking a settlement record to its request never breaks a frozen reader. This spec adds the fields' MEANING and the tolerance proof and modifies NONE of the three reader modules: git diff HEAD shows .warp/policy_check.py, .warp/two_key.py, and .warp/decision.py untouched, and a selftest confirms none of the three gained request_id/request_hash reader logic."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0615 block: decision.validate_record still returns 0 for a warp.decision/v1 record (GOOD_DECISION) carrying request_id/request_hash; two_key.authorize still returns no refusal reason when KEY 1 (approval) and KEY 2 (verdict) both carry request_id/request_hash back-references (bound to the same proposal digest, unexpired); policy_check.valid_approval_for still finds a back-ref'd warp.approval/v1 record written to a temp proof tree (P.ROOT repointed, then restored). Part of selftest 2481 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC6",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The WARP-0615 selftest block drives the request validator over deterministic fixtures offline (no network) and is NON-TAUTOLOGICAL: positive controls (a well-formed request of each touchpoint validates; the frozen readers accept a back-ref'd record) plus the fail-closed cases (bad schema, out-of-vocabulary touchpoint/tier/status/impact, missing required field, non-positive version, duplicate id, an accepted request whose bound_artifact digest does not resolve, a settlement path that does not exist, a decision_choice tier not derived from the bound decision). Each load-bearing guard carries an in-memory source-mutation TOOTH that turns its assertion RED while .warp/request.py stays byte-unchanged: T1 neutralizes the closed-vocabulary check (a bad touchpoint passes), T2 neutralizes the duplicate-id guard (two records share an id), T3 neutralizes the accepted-requires-bound-digest check (an unbound accepted request passes), T4 neutralizes the irreversible->critical derivation (an irreversible impact below critical passes), and T5 neutralizes the decision_choice tier derivation (a tier not the bound decision's risk passes). None of the teeth is vacuous: each mutant flips exactly its target assertion while the real module refuses, and the on-disk .warp/request.py sha256 is byte-unchanged after each."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0615 block: all five teeth reproduced in-memory (each via an exec of the mutated .warp/request.py source in fresh globals), each turning its target assertion RED (bad touchpoint validates; two records share an id; an unbound accepted request validates; an irreversible non-critical request validates; a decision_choice with a wrong tier validates) while the real path refuses and (ROOT/.warp/request.py).read_text() is byte-unchanged after each. Plus the WARP-0615 dogfood front-matter checks (standalone lane, standard risk + human_approval not_required + no protected path, placement [contracts] with a footprint, behavior_bearing with observability, .warp/request.py declared in the contracts area of the architecture contract and the placement gate passing with no tier elevation) and the engine-sync checks (request.py, events.py, capabilities.yaml byte-identical across root + plugin/templates + 6 packs; the human_touchpoint_request capability declared mechanical with home .warp/request.py). Part of selftest 2481 passed, 0 failed."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "lint",
+   "status": "passed"
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "python3 scripts/selftest.py: 2481 passed, 0 failed (the WARP-0615 block: positive controls for all six touchpoints, request_digest properties, the two derivations, the fail-closed cases, the adoption-safe/fail-closed directory boundary, the AC5 back-ref tolerance across all three frozen readers, the five anti-vacuity teeth T1-T5, and the dogfood + engine-sync checks)"
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "specs/index.md regenerated by scripts/update_index.py with WARP-0615 (status review); check_generated green"
+  },
+  {
+   "name": "docs",
+   "status": "passed",
+   "detail": "no em/en dash, no double-hyphen, no non-ASCII in the authored files (.warp/request.py, the spec, the capability entry); genericity sweep clean"
+  },
+  {
+   "name": "template_sync",
+   "status": "passed",
+   "detail": "check_template_sync green; .warp/validate.py byte-identical root vs plugin/templates; bin/warp untouched; .warp/init_scaffold.py is repo-only build machinery (no template twin), edited in root only to add .warp/request.py to the scaffold lay-down beside decision.py"
+  },
+  {
+   "name": "pack_drift",
+   "status": "passed",
+   "detail": "engine byte-identical across all 7 packs (claude/plugin-templates + cursor, codex, copilot, antigravity, opencode, aider): the new .warp/request.py plus the edited .warp/validate.py, .warp/events.py, and .warp/capabilities.yaml propagated to all eight copies, sha256 identical"
+  },
+  {
+   "name": "shape_gate",
+   "status": "passed",
+   "detail": "mechanizable module_lines budget respected (.warp/request.py is 375 lines, well under 1000; .warp/validate.py and .warp/events.py grew within budget); footprint-versus-diff passes (every changed source path is covered by the WARP-0615 footprint globs); .warp/request.py resolves to the contracts area (added to its includes) so the change spans contracts + metrics, a pair joined by the allow-listed metrics->contracts edge (cohesive breadth, no tier elevation)"
+  },
+  {
+   "name": "secret_scan",
+   "status": "passed"
+  },
+  {
+   "name": "contracts",
+   "status": "passed",
+   "detail": "python3 .warp/validate.py all exit 0; the WARP-0615 spec validates (status review), check_requests stands down cleanly (no .warp/requests/ in this repo), and this proof passes check_required_evidence (unit) and check_criteria_coverage (AC1-AC6 exactly)"
+  },
+  {
+   "name": "teeth_reproduced",
+   "status": "passed",
+   "detail": "T1 closed-vocabulary check neutralized: a bad touchpoint validates (real refuses). T2 duplicate-id guard neutralized: two records share an id (real refuses). T3 accepted-requires-bound-digest check neutralized: an unbound accepted request validates (real refuses). T4 irreversible->critical derivation neutralized: an irreversible impact below critical validates (real refuses). T5 decision_choice tier derivation neutralized: a tier that is not the bound decision's risk validates (real refuses). Each mutant flips only its target; .warp/request.py sha256 byte-unchanged on disk after each"
+  }
+ ],
+ "assumptions": [
+  "COMMIT BINDING: the gate ran GREEN at efe6a37b41ac1b0bb260f922827fee4a397e3e74 (the WARP-0615 code commit this proof binds to), exactly as scripts/verify.sh stamped .warp/last_verify. This proof is committed in a second evidence commit on top, so the manifest binds to the commit it proves (the WARP-0613/0614/1212 pattern, not an in-commit-proof deviation). STOPPED AT REVIEW: no push, no self-review; an independent fresh-context reviewer records the verdict.",
+  "WARP-0615 is a STANDALONE contracts-lineage spec (W2 of PLAN-0016) composing on the shipped decision organ (warp.decision/v1 + check_decisions_dir, whose adoption-safe/fail-closed/dependency-free shape it mirrors), the shipped approval/two-key/decision readers (which it must not break), and the released event stream. No plan work item binds it here (it ships standalone, matching the WARP-0613/0614 tracker-lineage precedent); W6/W3/W4/W5 (WARP-0616/0617/0618/0619) are its downstream consumers and are honestly out of scope.",
+  "NO CHANGE TO THE FROZEN READERS: git diff HEAD shows .warp/policy_check.py, .warp/two_key.py, and .warp/decision.py untouched. The back-reference tolerance (AC5) rests on the readers ignoring unknown fields (they read only the fields they know via .get()); the selftest proves each of the three still accepts a record carrying request_id/request_hash, so linking a settlement to its request never breaks the merge gate or the two-key rule. This is the whole point of the thin-envelope decoupling: the settlement records stay byte-compatible.",
+  "TWO HASHES, NEVER UNIFIED: request_digest (the request substance integrity hash carried in request_hash, for tamper-detection and the W5 material-change rule) is SEPARATE from bound_artifact.digest (the polymorphic per-touchpoint binding the eventual settlement reader checks: commit-range for policy_check, proposal digest for two_key, decision-record digest for a decision-choice). Enforcing request_hash == request_digest against the repository is the W5 recompute-from-repo concern (the proof/verdict precedent where the manifest carries the digest and a later reader binds it); at W2 request_hash is required present and well-formed, and request_digest is the one canonical function W5 will reuse.",
+  "FOOTPRINT COMPLETENESS AND ENGINE SYNC (a deviation from the spec's original footprint, corrected): request.py, validate.py, and events.py are ENGINE files (like their sibling decision.py, which is byte-identical across all eight copies), so a correct build MUST propagate them to plugin/templates and the six packs or check_template_sync / check_pack_drift / the WARP-1201-style byte-identical selftest fails. The original spec footprint listed only the eight capabilities.yaml copies; it was expanded to also list the plugin/templates and packs/*/ copies of request.py, validate.py, and events.py so the shape-gate footprint-versus-diff check (which enforces every changed path against the single footprinted spec) passes. .warp/init_scaffold.py was edited (root only, repo-only build machinery, no engine twin) to add .warp/request.py to the scaffold lay-down beside decision.py, because check_requests now loads request.py in run_all and a scaffolded repo without it would crash its own gate; the two init-scaffold selftests proved this is load-bearing (they went red until request.py was added to the lay-down). RISK STANDARD: the change touches no protected path (verify.sh, warp-guard.sh, policy.yaml, policy_check.py and their template twins untouched) and nothing in the safety core; the footprint spans the contracts and metrics areas, a pair joined by the allow-listed metrics->contracts edge, so the footprint tier floor does not elevate it. The pre-existing modified .warp/events.jsonl and .warp/last_verify (gate bookkeeping) were not staged.",
+  "FINDING #1 RESOLVED (this follow-up commit, addressing the review verdict's pass_with_notes recommended item): validate_record now enforces the CHEAP, pure, in-memory self-consistency invariant request_hash == request_digest(record), recomputed over the same DIGEST_FIELDS/substance and failing closed BY NAME, at CREATION (W2). This validates the material-change baseline the moment a request is written, so the intermediate consumers that ship before the inbound edge (W3 projection, W4 doorbell) never trust an unverified request_hash. Only the self-consistency check (a record versus its OWN digest) is added; the repo-recompute (request_hash versus state recomputed from the repository/changelog) remains deferred to W5 exactly as originally scoped. The WARP-0615 selftest gains a self-consistency positive control (a well-formed request whose request_hash equals request_digest(record) validates) and a negative control (a forged request_hash fails closed by name), plus a sixth anti-vacuity tooth T6 (neutralizing the self-consistency check lets a tampered request_hash pass the mutant while the real module refuses, with .warp/request.py sha256 byte-unchanged on disk). .warp/request.py stays engine-synced byte-identical across all eight copies (template_sync + pack_drift green). The manifest body above records the original efe6a37 build (selftest 2481 passed, teeth T1-T5); after this fix the gate is GREEN with selftest 2485 passed, 0 failed and the teeth are T1-T6."
+ ],
+ "rollback": "git revert; purely additive - a new schema module .warp/request.py (engine-synced across the eight copies like decision.py) and its validate.py run_all wiring (check_requests + a requests CLI mode), additive event-vocabulary entries in .warp/events.py (owned as request.REQUEST_EVENT_TYPES, drift-guarded), one human_touchpoint_request capability entry (all eight capabilities.yaml copies byte-identical), the new module declared in the contracts area of architecture.yaml and added to the init scaffold lay-down, a selftest block, and this spec; no protected path; no change to the frozen settlement readers; pure stdlib."
+}

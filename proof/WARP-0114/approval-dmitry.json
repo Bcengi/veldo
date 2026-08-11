@@ -1,0 +1,15 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-0114-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-0114",
+    "commit": "f1f2991d8b8135844289493e8b3927d21d7da2f5",
+    "paths": [".warp/policy_check.py"]
+  },
+  "basis": "Standing authorization to run PLAN-0001 and fix what dogfooding surfaces. WARP-0114 repairs the mechanically-unsatisfiable approval allow path found by attempting the first protected-path push. Agent-recorded under standing authorization with provenance; not a fresh per-change human attestation (PLAN-0001 W9).",
+  "recorded_at": "2026-07-16T21:20:30Z",
+  "recorded_by": "claude-fable-5 (implementing agent, recording the human's standing authorization with provenance)",
+  "expires_at": "2026-08-15T00:00:00Z"
+}

@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0702",
+  "commit": "1efc63630c623352c984242d95c6ef44d6a0fcfb",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0007 Y2)",
+  "plan_hash": "sha256:c5ff657b05dd9b8f",
+  "produced_at": "2026-07-18T04:41:06Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/frontier.py computes the global claimable frontier: claimable(worker_caps, scope, repo_root, claims_root) returns the units a worker may claim across the whole repo - BUILD work (a ready spec whose plan deps are all shipped, across every ACTIVE plan (status ready or in_progress; draft plans yield nothing, released/closed have no frontier), reusing plan.py item_state/_shipped_set/_decision_blocks) plus standalone/bug ready specs, plus REVIEW work (a spec in status review awaiting its verdict, kind review). It excludes already-claimed units (claim.claimed_units), work whose requires are not a subset of worker_caps (claim.capability_ok), and out-of-scope work (a plan id or a label). Read-only. Repo reading is parametrized by repo_root and spec front matter is parsed with parse_yamlish so requires/labels are real lists. A warp frontier CLI lists it."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives claimable() over a temporary repo tree and a temporary claims root: a ready build with deps met, a standalone ready spec, and a pending review are claimable; a dependency-blocked build, a ready spec under a DRAFT plan, capability-gated work without the cap, an already-claimed unit, and out-of-scope work are excluded; non-tautological - with the capability the gated work appears and after a claim the unit drops out; reviewer independently reproduced all 5 ACs and confirmed the capability and claimed mutations each turn it red; part of selftest 1001 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/frontier.py computes the global claimable frontier: claimable(worker_caps, scope, repo_root, claims_root) returns the units a worker may claim across the whole repo - BUILD work (a ready spec whose plan deps are all shipped, across every ACTIVE plan (status ready or in_progress; draft plans yield nothing, released/closed have no frontier), reusing plan.py item_state/_shipped_set/_decision_blocks) plus standalone/bug ready specs, plus REVIEW work (a spec in status review awaiting its verdict, kind review). It excludes already-claimed units (claim.claimed_units), work whose requires are not a subset of worker_caps (claim.capability_ok), and out-of-scope work (a plan id or a label). Read-only. Repo reading is parametrized by repo_root and spec front matter is parsed with parse_yamlish so requires/labels are real lists. A warp frontier CLI lists it."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/frontier.py computes the global claimable frontier: claimable(worker_caps, scope, repo_root, claims_root) returns the units a worker may claim across the whole repo - BUILD work (a ready spec whose plan deps are all shipped, across every ACTIVE plan (status ready or in_progress; draft plans yield nothing, released/closed have no frontier), reusing plan.py item_state/_shipped_set/_decision_blocks) plus standalone/bug ready specs, plus REVIEW work (a spec in status review awaiting its verdict, kind review). It excludes already-claimed units (claim.claimed_units), work whose requires are not a subset of worker_caps (claim.capability_ok), and out-of-scope work (a plan id or a label). Read-only. Repo reading is parametrized by repo_root and spec front matter is parsed with parse_yamlish so requires/labels are real lists. A warp frontier CLI lists it."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/frontier.py computes the global claimable frontier: claimable(worker_caps, scope, repo_root, claims_root) returns the units a worker may claim across the whole repo - BUILD work (a ready spec whose plan deps are all shipped, across every ACTIVE plan (status ready or in_progress; draft plans yield nothing, released/closed have no frontier), reusing plan.py item_state/_shipped_set/_decision_blocks) plus standalone/bug ready specs, plus REVIEW work (a spec in status review awaiting its verdict, kind review). It excludes already-claimed units (claim.claimed_units), work whose requires are not a subset of worker_caps (claim.capability_ok), and out-of-scope work (a plan id or a label). Read-only. Repo reading is parametrized by repo_root and spec front matter is parsed with parse_yamlish so requires/labels are real lists. A warp frontier CLI lists it."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/frontier.py computes the global claimable frontier: claimable(worker_caps, scope, repo_root, claims_root) returns the units a worker may claim across the whole repo - BUILD work (a ready spec whose plan deps are all shipped, across every ACTIVE plan (status ready or in_progress; draft plans yield nothing, released/closed have no frontier), reusing plan.py item_state/_shipped_set/_decision_blocks) plus standalone/bug ready specs, plus REVIEW work (a spec in status review awaiting its verdict, kind review). It excludes already-claimed units (claim.claimed_units), work whose requires are not a subset of worker_caps (claim.capability_ok), and out-of-scope work (a plan id or a label). Read-only. Repo reading is parametrized by repo_root and spec front matter is parsed with parse_yamlish so requires/labels are real lists. A warp frontier CLI lists it."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives claimable() over a temporary repo tree and a temporary claims root: a ready build with deps met, a standalone ready spec, and a pending review are claimable; a dependency-blocked build, a ready spec under a DRAFT plan, capability-gated work without the cap, an already-claimed unit, and out-of-scope work are excluded; non-tautological - with the capability the gated work appears and after a claim the unit drops out; reviewer independently reproduced all 5 ACs and confirmed the capability and claimed mutations each turn it red; part of selftest 1001 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 1001 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical + read-only: the claimable computation runs in the gate over a temp repo tree and temp claims root, stdlib. It reuses the pure plan logic (item_state, shipped set, decision blocks) and the claim ledger (capability_ok, claimed_units), reimplementing neither. This is the read side; claiming a unit is WARP-0701 and driving it is WARP-0703. A REVIEW unit's claim keys on the spec id (integration with the worker loop, Y3)."
+  ],
+  "rollback": "git revert; additive - a new .warp/frontier.py, a selftest block, one frontier_resolver capability (both copies), and the WARP-0702 spec; no protected path; read-only."
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0607",
+  "commit": "09200df169f10639e5d77ebc210977fdd058b184",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T21:34:18Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:c2e856ca0dc70302",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "Page read through the seam drafts a warp.spec/v1 bound to the resolved repo with the page's ACs as AC1..ACn (feature, not reproduction) + a no-regression AC, the page linked; reuses the WARP-0604 module, not a new pipeline."},
+    {"id": "AC2", "status": "confirmed", "note": "Routing via the reused WARP-0601 resolver (page label, spy-proven same object); no-label/unknown/ambiguous/no-config/empty/substring-prefix all refused by name; no misroute possible."},
+    {"id": "AC3", "status": "confirmed", "note": "parse_requirements and _confluence_page_to_item/_confluence_text are pure and robust across headings, bullets, empty/absent sections, entities, nested/unclosed/non-string XHTML, and missing/malformed labels without crashing."},
+    {"id": "AC4", "status": "confirmed", "note": "ConfluenceCloudAdapter is honestly reference-wired; token from a secrets ref, fails closed, no raw credential, no network in pure paths; status/epic writes raise by name (a wiki has no status workflow). Template generic and dash-clean."},
+    {"id": "AC5", "status": "confirmed", "note": "Rendered draft validates (check_spec == 0); injection defeated on title/AC-bullet/control-char vectors and a body-embedded second front-matter block ignored; mutation matrix (no-AC parse -> 2 red, skip resolve_repo -> refusal red, _confluence_text passthrough -> 3 red) proves teeth."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Full independent adversarial review at 5ecd808 returned pass_with_notes, 0 blocking, confirming all 5 ACs (routing/refusal spy-verified, parse/mapping robust across adversarial fixtures, secrets fail-closed, injection defeated on all three vectors, mutation teeth). It raised ONE non-blocking note: _confluence_page_to_item(None) raised AttributeError because it guarded the body deref but not the id/title/metadata/_links derefs - a latent, non-exploitable inconsistency (read_item guards with _has_object first; a live GET always returns a dict)."},
+    {"severity": "note", "text": "The note was FIXED in this commit (09200df): _confluence_page_to_item now guards page = page or {} at the top for full consistency, so a None page yields a benign item instead of raising, covered by a new selftest assertion. A scoped independent re-review bound to 09200df returned PASS with zero findings: the delta is exactly the None-guard + its test with parse_requirements, draft_spec_from_requirements, the Jira functions, the adapters, and _fm_safe byte-identical; behavior is preserved for all real inputs (NEW == OLD on a normal page and on {}), the None case is now benign, the gate is GREEN (selftest 1188 passed, 0 failed) with no regression, and the two capabilities.yaml copies are byte-identical."},
+    {"severity": "note", "text": "Operational: built in-session by a single writer; the requirement's ACs come from the page (feature framing) and page content is sanitized by the reused _fm_safe guard. No template twin (not a validate/policy_check load dependency). Verified GREEN in a clean detached worktree before and after the fix."}
+  ],
+  "summary": "W7 of PLAN-0006 (Confluence requirements intake) is correct. Two independent adversarial reviews (a full pass on 5ecd808, a scoped re-review bound to this shipped commit 09200df) both PASS with 0 blocking. A structured requirements page becomes a routing-resolved warp.spec/v1 draft whose acceptance criteria come from the page (a feature, not a reproduction), read through the WARP-0603 seam, repo resolved with the reused WARP-0601 resolver (refused by name if unroutable), rendered as a spec the real validator accepts and that untrusted page content cannot hijack (the reused _fm_safe guard). The structured parse and the Confluence page mapping are pure and gate-tested; the live ConfluenceCloudAdapter is honestly reference-wired (token from a secrets ref, fails closed, not gate-run, wiki has no status workflow). It reuses the WARP-0604 intake module rather than forking a parallel pipeline (C3). A latent None-page half-guard found by review was fixed and re-verified. Gate GREEN (selftest 1188 passed, 0 failed), no regression, no protected path. proof_digest via validate.py."
+}

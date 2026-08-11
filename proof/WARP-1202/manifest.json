@@ -1,0 +1,142 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1202",
+  "commit": "96fb65f3726578e179b4cfb9c57621c041c5c9e4",
+  "producer": "claude-opus-4-8[1m] (WARP-1202 implementer agent, planned lane; W2 of PLAN-0012, the evidence plane and its read-only access physics)",
+  "produced_at": "2026-07-23T06:11:41Z",
+  "plan": "PLAN-0012",
+  "work": "W2",
+  "plan_revision": 2,
+  "plan_hash": "sha256:9c8616540899be1d",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "warp.evidence/v1 is defined in .warp/evidence.py (validate_plane). A config declares an id and one or more sources, each with an id, a kind from the read-only vocabulary {logs, metrics, traces, read_replica} and NEVER a primary, an access that MUST be read_only, a secret_ref that is a reference (env: or keychain:) and never a raw literal (D4), a non-empty templates list, positive max_rows/rate_max/timeout_ms quotas, and an optional redact list. Configs are homed per-repo under .warp/evidence/*.yaml, a subdirectory the single-level .warp/*.yaml engine glob does not reach, so they stay per-repo like the architecture contract and the incident/remedy records and are never shipped. The illustrative example ships at .warp/examples/evidence-sources-example.yaml (id reference-plane, three sources: logs, metrics, read_replica) and validates clean: python3 .warp/evidence.py .warp/examples/evidence-sources-example.yaml returns 'clean'."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1202 block: positive control 'a well-formed warp.evidence/v1 config validates' (==0) and 'the shipped evidence-sources example validates' (==0). Fail-closed negatives each refuse (>0): a source declared as a primary, an out-of-vocabulary kind, a writable access, a raw-literal secret (D4), a source with no templated query shapes, a missing row-limit, a non-positive timeout, a missing rate-cap, a wrong schema, and a config outside the parser subset (a tab). Adoption-safe/fail-closed over a temp tree: 'an absent .warp/evidence/ directory stands down' (==0), 'a required-but-absent single config fails closed' (>0), 'a present valid config validates through the scan' (==0), 'a duplicate evidence-plane id across configs is refused' (>0)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The credential seam is read-only PHYSICS in two layers. Layer 1 (type-level): a ReadOnlyCredential (GRANTS frozenset({'read'})) yields only a ReadHandle via open_read, and the ReadHandle's sole operation is query - neither type carries a write, insert, update, delete, execute, or mutate method, so a write cannot be expressed. There is no open_write on the credential. Layer 2 (seam-level): FakeEvidencePlane.submit_write authorizes a write by the submitting credential's granted role, never by inspecting the op or asking a policy; a write submitted with the responder's read-only credential raises EvidenceWriteRefused naming the credential seam and leaves the store unchanged. NON-VACUITY: WriteCapableCredential (grants read+write, which the responder never holds) applies the same write, so the refusal is the read-only grant, not a disabled store."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: type-level absence 'ReadHandle exposes only query (no write/insert/update/delete/execute/mutate)', 'ReadOnlyCredential yields only a read handle (no open_write/execute/mutate)', 'a read-only credential grants only read'. THE NEGATIVE TEST 'a write with the responder's read-only credential is refused AT THE CREDENTIAL SEAM, store unchanged' (predicate _ev_write_is_refused returns True: EvidenceWriteRefused raised with 'credential seam' in the message AND row_count unchanged). NON-VACUITY 'a write-granted credential DOES apply the same write' (row_count + 1)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The read path is a Broker (not a raw connection). Broker.query enforces, in order: templated shape (only a template the source declares; a free-form or undeclared template refuses 'not a declared template'), rate quota (queries beyond rate_max within the window refuse 'rate quota'), row quota (est_rows over max_rows refuses 'row quota', plus an overload guard on the actual returned rows), and per-query timeout (est_ms over timeout_ms refuses 'timeout'). It then reads through the plane and REDACTS the source's declared sensitive fields (redact_row replaces each with ***redacted*** before the rows enter context), and records EVERY query (allowed or refused) in a QueryAudit carrying source, template, params, decision, and row count."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: positive control 'a declared, in-quota, in-timeout query succeeds'; 'seeded PII never reaches context' (email and ip_address are ***redacted*** in the returned rows, and the raw values user@example.com / 203.0.113.9 appear in no row). Each refusal by name (>0 via _ev_refused): 'a free-form (undeclared-template) query is REFUSED', 'an over-row-cap query is REFUSED (row quota)', 'an over-timeout query is REFUSED (timeout)', 'a query beyond the rate cap is REFUSED (rate quota)'. AUDIT 'every query (allowed or refused) lands in the full audit log' (4 entries: 1 allowed + 3 refused, first decision 'allowed')."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The live edge is a fail-loud reference seam. LiveEvidencePlane.connect and .execute_read each raise EvidencePlaneError naming the per-system human-approved enablement act (NG1); no live connection is opened in the gate and a runtime injects a real adapter, mirroring executor.LiveLoop refusing to fabricate a build. All proof is offline against FakeEvidencePlane, which serves the read path in memory. Secret references resolve at the seam (resolve_secret_ref): a raw literal is refused (D4), an env: reference resolves from the injected environment, and a keychain: reference fails loud offline (a live per-system act). The raw secret never surfaces: _ResolvedSecret and ReadOnlyCredential redact the value in repr, and context_view returns secret ***redacted*** (C5)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'the live edge fails loud on connect' and 'on read' (EvidencePlaneError naming 'per-system'); 'the fake plane serves the read path offline'; 'a raw-literal secret reference is REFUSED (D4)' ('never a raw literal'); 'an env: reference resolves at the seam and its repr redacts the raw value' (s3cr3t absent from repr); 'a keychain reference fails loud offline' ('live per-system act'); 'a credential's context view and repr redact the secret' (secret == ***redacted***)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "TEETH by mutation (anti-vacuity C1), each observed RED then reverted (mutations are in-memory copies; the real module on disk is byte-unchanged, asserted). The CREDENTIAL-SEAM negative test goes RED when the responder's credential is granted write (_EvWriteGrantedRO with GRANTS read+write makes the write APPLY, so _ev_write_is_refused returns False) - proving the physics is the read-only grant, not a disabled store. A read-handle-gains-a-write-method mutation (inject 'def write(' before query) turns the read-only-handle source check RED. Dropping a source's redact fields leaks the seeded PII (email appears in the returned rows). The no-detach source scan finds none of the detach tokens, and a subprocess.Popen(..., start_new_session=True) mutation turns the no-detach check RED; the module imports no process/thread machinery at module scope (pathlib only). .warp/evidence.py and .warp/capabilities.yaml are byte-identical across root, plugin/templates, and all 6 packs (aider, antigravity, codex, copilot, cursor, opencode); the example is byte-identical root vs plugin/templates. capabilities.yaml gains one honest mechanical entry (evidence_plane, home .warp/evidence.py) that defers honestly: responder loop W4, intent corpus W3, whitelist W5, executor W6, two-key W7, the live connection, and run_all/init wiring (W11) are referenced, never implied built. No protected path is touched. RULE #1 clean (ASCII hyphen only; the '# ---' dividers are an established engine convention, a horizontal rule, not a prose em-dash stand-in)."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 1987 passed, 0 failed (50 new WARP-1202 assertions). MUTATION teeth all pass: credential granted write turns the negative test RED; read-handle write-method injection turns the read-only-handle check RED; dropped redact leaks PII; free-form / over-row / over-rate / over-timeout each refuse; the Popen(claude -p) mutation turns the no-detach check RED; the real module on disk is byte-unchanged after the mutations. Byte-identical sync assertions across root/plugin/6-packs for evidence.py and capabilities.yaml, and root/plugin for the example. The evidence_plane capabilities entry is matched by regex (mechanical, home .warp/evidence.py). Dogfood: placement [contracts] passes placement_gate ([]), footprint_tier_floor is '' (tier standard), no protected path touched, human_approval not_required. ./scripts/verify.sh: GATE GREEN (catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared). The impl lands in one commit 96fb65f; specs/WARP-1202 stays status draft (not flipped to shipped); specs/index.md regenerated (WARP-1202 draft, in the PLAN-0012 ready frontier); no verdict written; .warp/events.jsonl / .warp/last_verify / proof/WARP-1202 left uncommitted; nothing pushed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1987 passed, 0 failed. The WARP-1202 block adds 50 assertions: config positive + the read-only physics at the config layer (never a primary, read_only access, secret references never raw, templated shapes required, quotas required) + malformed + adoption-safe/duplicate-id over a temp tree; the credential-seam negative test (type-level no write method, seam-level EvidenceWriteRefused with store unchanged) + non-vacuity; the broker (templated shape, row/rate quota, timeout, redaction, audit) + PII-never-in-context; the live edge fail-loud + secret-reference resolution + secret redaction; the mutation teeth (credential granted write, read-handle write method, dropped redact, no-detach Popen); byte-identical sync across root/plugin/6-packs; the capabilities entry; and the placement/tier dogfood."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes, including check_plan over PLAN-0012 with WARP-1202 mirrored back (lane planned, plan PLAN-0012, work W2, plan_revision 2), the mandatory placement gate over the spec (placement [contracts] resolves, footprint tier standard), and check_events over .warp/events.jsonl. The evidence-plane validator is NOT wired into validate.py run_all: that landing plus the init lay-down is WARP-1211 (W11), matching how W1 (WARP-1201) shipped its contract validator unwired; so .warp/validate.py is unedited and stays at 925 lines, under the module_lines budget. The validator is exercised standalone (python3 .warp/evidence.py) and through validate.parse_yamlish + validate.fail in the selftest."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py; WARP-1202 row reads draft, PLAN-0012 ready frontier shows WARP-1202 (W2). check_generated.sh reports no drift (regeneration is a no-op)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry no company/product references) all pass. The new engine material (.warp/evidence.py, the example under plugin/templates, the capabilities entry) is generic; 'WARP' is the method's own name. RULE #1 verified on the new files: no em/en dash, no prose double-hyphen (the '# ---' section dividers and the YAML front-matter '---' are established conventions, not prose punctuation)."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "bash scripts/check_lint.sh: pass. .warp/evidence.py and every synced copy compiles under python3 -m py_compile."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: template sync pass (the PAIRS-tracked files, e.g. validate.py, are unchanged). .warp/evidence.py and .warp/capabilities.yaml follow the byte-identical discipline across all engine copies; the example is synced root and plugin/templates for init."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pack drift pass (7 packs). .warp/evidence.py and .warp/capabilities.yaml are byte-identical between plugin/templates (canonical source) and every pack (cursor, codex, copilot, antigravity, opencode, aider); the claude pack is the source in-place."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py: pass (21 runners). The new capability evidence_plane is mechanical with home .warp/evidence.py (an engine file that ships, not a runner); the capabilities-honesty selftest confirms every unmarked home ships and every home exists."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. Footprint-versus-diff: WARP-1202 is the single footprinted spec in the change set and every changed source path is covered by its declared footprint. No file_lines violation: .warp/evidence.py is 584 lines (under the 1000 module_lines budget) and resolves to no area (a placeless engine module outside the contract areas); .warp/validate.py is deliberately NOT edited. Placement [contracts] resolves; footprint tier standard (the footprint touches only the contracts placement area plus placeless engine files, no boundary crossing)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass. The evidence-plane config and example carry only secret REFERENCES (env: and keychain:), never a raw literal (D4); the example is also under .warp/examples/ which the scan excludes."
+    }
+  ],
+  "assumptions": [
+    "WARP-1202 is a PLANNED spec (lane planned, W2 of PLAN-0012 revision 2, a frontier root with depends_on []). run-check PLAN-0012 WARP-1202 returned 'clear to build (deps shipped, plan context current)' after the spec's placement was declared. The manifest carries plan/work/plan_revision/plan_hash (sha256:9c8616540899be1d) to bind the change to the plan state it was built against.",
+    "This item is the read-only evidence plane and its structural validator only. The safety architecture is encoded as PHYSICS (the credential cannot write because the write path does not exist on the responder's types, and a raw write is refused at the credential seam by the read-only grant), proven OFFLINE against a fake plane. The ORGANS that consume the plane are honestly later items: the intent corpus WARP-1203 (W3), the responder investigation loop WARP-1204 (W4, the first consumer), the action whitelist WARP-1205 (W5), the execution organ WARP-1206 (W6), and the two-key rule WARP-1207 (W7). Connecting the plane to any real system is a separate, per-system, human-approved enablement act (NG1); the live edge fails loud and no live connection is opened in the gate. Nothing here investigates, proposes, or executes.",
+    "HONEST DEFERRAL of the gate wiring (not a dodge): the evidence-plane validator is designed to be invoked by validate.py (it takes validate.parse_yamlish and validate.fail, no second parser) and is exercised that way in the selftest and via its own CLI. It is NOT wired into validate.py run_all in W2, matching how W1 (WARP-1201) shipped its contract validator unwired; landing the checks into validate.py run_all and the init lay-down is WARP-1211 (W11, land the checks in the canonical engine). Because validate.py is not edited, it stays at 925 lines, well under the module_lines budget; the note in the task that validate.py now has margin is acknowledged, but W2's plan text does not require a run_all check, so none was added.",
+    "The impl is a single commit 96fb65f (evidence.py + the example + one capabilities entry + selftest block + regenerated index, all engine copies byte-identical). Per the review boundary: the spec is NOT flipped to shipped, the index derives draft from the spec, no verdict is written, this proof manifest and .warp/last_verify and .warp/events.jsonl are left uncommitted, and nothing is pushed. The independent fresh-context reviewer authors the verdict; the orchestrator flips to shipped on a pass."
+  ],
+  "rollback": "git revert 96fb65f. The change adds one engine module (.warp/evidence.py, synced across the engine), one illustrative example artifact, and one capabilities entry, plus a selftest block and this spec. Nothing consumes the evidence plane for enforcement yet (the first consumer is the responder investigation loop WARP-1204, and gate wiring is WARP-1211), and the validator is not wired into verify.sh or validate.py run_all, so reverting returns the gate to its prior behavior with no migration and nothing to unwind. A repository with no .warp/evidence/ directory is unaffected either way (the adoption-safe posture); evidence-plane source declarations are inert per-repo data and the module opens no live connection to any real system."
+}

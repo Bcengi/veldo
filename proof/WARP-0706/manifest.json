@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0706",
+  "commit": "0fbdc97ef09bdebd0d6ddc83986e84fdf3657e11",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0007 Y6)",
+  "plan_hash": "sha256:c5ff657b05dd9b8f",
+  "produced_at": "2026-07-18T13:09:58Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/governor.py windowed_spend sums the tokens on events within the trailing horizon of a window (reusing metrics.parse_at), and measure_per_worker_rate estimates tokens/sec/worker from recent windowed burn - both horizon-scoped so spend older than the window does not count. No live remaining-token count is queried (none is imported or read); burn is measured from the event stream, the same tokens metrics.compute reads."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts windowed_spend excludes spend older than the window (a 4h+60s-old spend over a 4h window = 0) and that measure_per_worker_rate is exact (8000/14400/4); independent review confirmed the arithmetic and horizon scoping; part of selftest 1047 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/governor.py desired_workers is a pure control law: the min over windows of target_rate (budget/window) divided by the measured per-worker rate, at least one worker while budget remains (so the budget is used), capped at max_workers; when per_worker_rate <= 0 (burn not yet measured) it bootstraps to max_workers."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts the tighter window wins (weekly 8, not session 13), bootstrap returns max (32), and at-least-one-worker while budget remains (a window a single worker outpaces yields 1, not 0); independent review confirmed the min wins in BOTH directions, the cap holds, and no negative/nonsense count; part of selftest 1047 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/governor.py desired_workers returns 0 when a window's windowed spend is already >= its budget (each window checked independently) or when now_epoch is before a configured limit_cooldown_until, so the pool never runs the budget out and then keeps hammering the limit."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts a window at budget forces 0 and a limit cooldown forces 0; independent review confirmed one over-budget window forces 0 even when the other has headroom, and the cooldown boundary (now == cooldown runs, future cooldown backs off); part of selftest 1047 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/governor.py resume_at computes the earliest time enough of the oldest in-window spend has aged out of every over-budget window (the max across over-budget windows), or now_epoch if already runnable; it only computes the time and never sleeps or spawns anything (the module imports only importlib.util and pathlib). A detached background resumer is forbidden (feedback_no_rogue_processes); wiring an opt-in in-session resume waiter is the launcher's concern (Y7), which re-checks desired_workers after waking."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts resume_at is when the oldest over-budget spend ages out (~4h minus 1000s) and is now when no window is over budget; independent review recomputed windowed_spend at resume +/- epsilon across one-big-spend, five-small-spends (JUST enough oldest age out), multi-window (the MAX), and oversized-single cases and confirmed resume_at NEVER points at a strictly-over-budget time; part of selftest 1047 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/governor.py takes now_epoch as a parameter everywhere and reads no wall clock (no time.time / datetime.now / sleep), so the selftest is deterministic; the selftest drives synthetic event streams with a fixed base time."
+        },
+        {
+          "type": "unit",
+          "ref": "non-tautology proven by the independent review: mutating min->max over windows turns the tighter-window assertion RED, and neutralizing the spent-out return 0 turns the backs-off-to-0 assertion RED; the selftest also asserts bootstrap, at-least-one, limit backoff, resume timing, per-worker measurement, and horizon scoping; gate GREEN, selftest 1047 passed, 0 failed; both capabilities.yaml copies byte-identical"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1047 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "Pure-stdlib control law over the event stream (reuses metrics.parse_at); measures burn rather than querying a live remaining-token count (Claude Code exposes none outside the limit error). now_epoch is always a parameter so the gate is deterministic; the governor spawns no process, opens no socket, and sleeps nothing - resume_at only COMPUTES when a backed-off pool may resume, and the opt-in in-session resume waiter is the launcher's concern (Y7), never a detached background process (feedback_no_rogue_processes). Accepted non-blocking notes from the independent review: resume_at is the infimum (at the exact returned instant windowed_spend == budget under the inclusive trailing filter, so desired_workers still returns 0 there; the pool is clear at resume_at + epsilon, and the launcher re-checks desired_workers on wake, so no early hammering); future-dated events are counted (no upper time bound), which is conservative (over-counts spend, earlier backoff / later resume) and safe for clock-skew; a for/else branch in resume_at is dead but computes the identical value (harmless); int(tokens) is unguarded, matching existing metrics.py behavior for system-produced integer spend."
+  ],
+  "rollback": "git revert; additive - a new .warp/governor.py, a selftest block, one token_governor capability (both copies), and the WARP-0706 spec; no protected path; pure stdlib control law over the event stream, no process spawned."
+}

@@ -1,0 +1,60 @@
+{
+  "system_under_test": "tripdesk backend companion home (GET /api/v1/home/)",
+  "base_url": "http://localhost:8002",
+  "note": "Live API journeys for PLAN-0002. Driven against the running backend as the system under test; no product code is changed. Re-run with proof/WARP-0112/run_companion_journeys.py.",
+  "journeys": [
+    {
+      "id": "CJ1",
+      "spec": "WARP-0201",
+      "title": "Home returns every section for a user with a trip, in one call, under budget",
+      "method": "GET",
+      "path": "/api/v1/home/",
+      "headers": {"X-Bcengi-User-Id": "srch-p1-user"},
+      "expect": {
+        "status": 200,
+        "max_seconds": 0.5,
+        "json_keys": ["active_trip", "phase", "countdown_days", "now_next", "today", "to_book", "checklist", "ideas_gaps", "connectivity", "insurance", "weather", "discover", "next_action", "suggested_chips"]
+      }
+    },
+    {
+      "id": "CJ2",
+      "spec": "WARP-0201",
+      "title": "A missing user header is rejected with 401",
+      "method": "GET",
+      "path": "/api/v1/home/",
+      "headers": {},
+      "expect": {"status": 401}
+    },
+    {
+      "id": "CJ3a",
+      "spec": "WARP-0203",
+      "title": "A foreign itinerary_id is 404 (owner-scoped, never another user's trip)",
+      "method": "GET",
+      "path": "/api/v1/home/?itinerary_id=00000000-0000-0000-0000-000000000000",
+      "headers": {"X-Bcengi-User-Id": "srch-p1-user"},
+      "expect": {"status": 404}
+    },
+    {
+      "id": "CJ3b",
+      "spec": "WARP-0203",
+      "title": "A user with no trips is 200 with phase none (calm empty state, not an error)",
+      "method": "GET",
+      "path": "/api/v1/home/",
+      "headers": {"X-Bcengi-User-Id": "nobody-warp-dogfood-xyz"},
+      "expect": {"status": 200, "json_equals": {"phase": "none"}}
+    },
+    {
+      "id": "CJ4",
+      "spec": "WARP-0202",
+      "title": "The auto-selected trip is owner-scoped and is the traveler's own active trip, with a derived next action",
+      "method": "GET",
+      "path": "/api/v1/home/",
+      "headers": {"X-Bcengi-User-Id": "srch-p1-user"},
+      "expect": {
+        "status": 200,
+        "json_path_present": ["active_trip.id", "next_action.title"],
+        "json_path_equals": {"active_trip.user_id": "srch-p1-user"}
+      }
+    }
+  ]
+}

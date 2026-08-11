@@ -1,0 +1,53 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0407",
+  "commit": "47eb7c2f45f0b00f9346cdd2fe9c4ce3556fe2e2",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T14:48:12Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:8fbce4849cd26913",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC7",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Reference wiring: the live deployer is unexercised in the home gate by design; the promote-only-if-healthy and rollback-to-last-good invariants are proven with the fake deployer and a promote-anyway mutant that fails the health invariant."
+    }
+  ],
+  "summary": "X7 (WARP-0407, release and rollback automation) is correct and honest. Independent adversarial review: pass_with_notes, gate GREEN, control logic driven independently (healthy promotes through full and sets flags with no rollback; unhealthy canary halts ok=False and rolls back to baseline with the new flow disabled; mid-stage failure rolls back to last-good; rollback idempotent). Non-tautology 10/10 (invert gate, promote-anyway, gate-respected-true, skip rollback, skip reconcile, rollback-to-baseline-always and more all caught). Reference status honest (no deploy surface in the home gate; live path fails loud); proportionate (stdlib seam, no bespoke deploy stack); both capabilities.yaml copies byte-identical; generic; ASCII. proof_digest recomputed via validate.py."
+}

@@ -1,0 +1,118 @@
+{
+ "schema": "warp.proof/v1",
+ "spec_id": "WARP-0717",
+ "commit": "135d55c22de5d4ded8a1c661fbc1fe343a1d1ed5",
+ "commit_note": "RESTAMPED FOR REVIEW 1's C6. The previous stamp named 00b0e22, the build commit, which is one commit BEHIND the state the evidence was measured against: what it named was not what was measured. This key names the commit that carries the corrected code and every artifact this manifest cites. A file cannot contain its own hash, so it is written by the single commit immediately after it, which changes nothing else.",
+ "producer": "claude-opus-5[1m], in an isolated worktree on branch warp-0717-subset-runner; nothing pushed, main never touched. Built AC2 before AC1, as the spec's Notes require, so the guard existed before the fast path did. Review 1's eight claim corrections and its two cross-item findings were then applied in one pass over this branch.",
+ "produced_at": "2026-07-30",
+ "rollback": "Revert the commits. The change adds scripts/run_scope.py, a --suite selector, a refusal for any unrecognised argument beginning with `--` and a partial-run banner in scripts/selftest.py, a derived scripts/suites/requires.json with one check_generated.sh entry holding it fresh, one new suite fragment with 27 assertions, two historical-template headers in scripts/suite_extract.py, and one paragraph in docs/runbook.md III.1. No protected path, no engine canon, no assertion moved or removed, scripts/verify.sh byte-identical. Reverting removes the fast path and the refusal together and restores the full-suite-only inner loop, which is a productivity regression and nothing more.",
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "selftest: 3389 passed, 0 failed (from 3362 at the base commit 67a5678; 27 added, none moved or removed). COUNTED THIS ROUND, after review 1's corrections added two assertions: `--upto 13_warp_0623_codified_live` runs every fragment except this item's own and reports exactly the base's 3362 with all 13 per-fragment counts identical to the base record, and 3389 minus 3362 is fragment 14's own 27. Detail in proof/WARP-0717/assertion-delta.txt"
+  },
+  {
+   "name": "lint",
+   "status": "passed"
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "5 derived artifacts, including the new scripts/suites/requires.json entry"
+  },
+  {
+   "name": "docs",
+   "status": "passed",
+   "detail": "dash sweep, non-ASCII sweep and genericity sweep over the new docs/runbook.md paragraph"
+  },
+  {
+   "name": "extra",
+   "status": "passed",
+   "detail": "template sync"
+  }
+ ],
+ "limits": [
+  "verify_stamp_payload and unit_evidence_check have NO production caller in this repository. .warp/last_verify is written by scripts/verify.sh IN SHELL, and proof artifacts are written by hand. Their refusals are forward guards for the first Python-side stamp writer and the first generated evidence record. The PRESENT-DAY protection against a green stamp from a partial run is the exit code, which is never 0, and that is asserted by driving it.",
+  "validate.check_required_evidence reads the evidence KIND and NOT its STATUS, measured. So the refusal buys the WITHHOLDING of a unit-evidence record, not the rejection of a forged one. Nothing in a test suite can stop a human typing a passed unit check into a proof file; the guard against that is the review.",
+  "byte-identity of scripts/verify.sh is recorded here as evidence (sha256 807e7f5b663e1bae2252b52466f9937b11904dcdabcc6f48aaddbaf83b9487c6, identical to the base commit) rather than pinned inside an assertion. A pinned digest would red on any unrelated catalog edit with re-pinning as the remedy, which trains people to re-pin. The gate asserts the durable invariant instead: exactly one unit slot, its command is `python3 scripts/selftest.py` with nothing following it, and no selector flag appears anywhere in the file.",
+  "the closure is sufficient AS MEASURED over the fragments that exist, 13 of 13 CLOSED by label identity. It is not PROVEN sufficient for all future edits: WARP-0712 established that cross-fragment dependencies travel through mutated objects and the filesystem, which no mechanical name analysis finds. CORRECTED BY REVIEW 1 (C2), BECAUSE THE OLD SENTENCE WAS FALSE IN THE UNSAFE DIRECTION. It said such a fragment 'will fail under --suite and pass under the full run'. Measured otherwise: a fragment edited to depend on something outside its closure will fail under --suite, OR PASS FOR A WEAKER REASON WITH THE SAME LABEL. Review 1 drove it with a planter fragment setting an attribute on a module, a MUTATED OBJECT so no NameError, and a reader iterating it: `--suite <reader>` exited 2 with 0 failures, its assertion iterating an EMPTY list and passing, while the full run iterated 2 real rows and also passed. THE LANDING CONDITION THIS ITEM CLAIMS IS LABEL IDENTITY, NOT SEMANTIC IDENTITY: identical labels with identical outcomes, which is exactly what held there while the subset proved strictly nothing. The full run remains the only definition of done. That is the same limit the decomposition already carried, not a new one.",
+  "FAIL-CLOSED COVERS A MISSING DECLARATION, NEVER A WRONG ONE, and this is review 1's C5. A post-cut fragment has no region range in the WARP-0712 measurement, so direct_demand takes its HAND-TYPED `requires` from manifest.json at face value and merely closes it transitively. Only the ABSENCE of a declaration is a refusal. MEASURED THIS ROUND in a copy of the repository under /tmp: a fifteenth fragment declaring `requires: [itself]` while using `PL`, a name fragment 01 binds, was ACCEPTED by the generator at exit 0 with the entry ['15_c5_wrong_declaration']; the requires.json freshness entry PASSED in isolation and the whole generated stage went green on its second pass, the first pass having regenerated an unrelated survey report in place; and `python3 scripts/selftest.py --suite 15_c5_wrong_declaration` died on `NameError: name 'PL' is not defined`, exit 1, with ZERO verdict lines of any kind, which is the dead-run shape this repository calls worse than a red. In the same tree the full run executed that fragment's assertion and it PASSED, no FAIL line for its label, which is the contrast: the declaration was wrong and only the subset run paid for it.",
+  "the review verdict filed beside this manifest is review 1's (verdict-review1.json), written by an independent reviewer who did not build. This item's producer files no verdict of its own, and human_approval is not_required for the build, not for the review.",
+  "the timings are from one box and one run each. They are recorded to make the UNEVENNESS visible, not as a benchmark. WHICH FIGURES ARE MEASURED AND WHICH ARE MODELLED, review 1's C7: proof/WARP-0717/timings.txt is the only artifact whose numbers are wall-clock timings of SHIPPED COMMANDS. In proof/WARP-0717/inner-loop-measurement.json only closure_measured_s is a measured run; prefix_modelled_s and closure_modelled_s are MODELLED, summed from per-fragment times measured inside one full run, and the AC1 amendment's per-fragment 'against the prefix' figures come from those. Review 1's own independent runs land within about 2 percent of them, so they are substantively right, and they are now labelled modelled everywhere they appear.",
+  "the flag refusal covers arguments beginning with `--` and nothing else, declared rather than implied: a bare word that is not a flag's value is still ignored, so `python3 scripts/selftest.py nonsense` runs the whole suite. That shape cannot be mistaken for a selector, and refusing it was not measured. Detail in proof/WARP-0717/flag-shapes.txt.",
+  "scripts/suite_extract.py, the one-time migration tool WARP-0712 used, STILL EMBEDS THE PRE-0717 DISPATCHER and the old unconditional report() as string templates, and scripts/selftest.py is not in check_generated.sh, so nothing holds them in step. This is review 1's X2. Re-running that tool would silently revert this item's whole mechanism. The cheap half is fixed in this pass: both templates now carry a header naming WARP-0717, saying they are HISTORICAL, and saying they must not be re-applied. Deleting them was considered and rejected, because they are the record of what the monolith's dispatcher was and the tool is also the documented way a future decomposition is done; a freshness check binding the template to the shipped file is the real remedy and it belongs to X2's own item, not here."
+ ],
+ "review_1_corrections": {
+  "verdict": "proof/WARP-0717/verdict-review1.json: pass_with_notes, shippable, ZERO blocking findings. Eight claim corrections and two cross-item findings, all dispositioned below. NO CHANGE was made to the selector's behaviour, the closure derivation or the refusal mechanism except where a correction required one: C3 and C8 did, and nothing else did.",
+  "C1": "FIXED BY ADDING THE FIELDS AND REGENERATING, not by deleting the sentences, because the protocol really was followed and the remedy for a record that does not show it is to make it show it. failing-witnesses.json now carries per touched file the substitution count, the count expected, and the sha256 before, after and restored, with the restoration asserted before the next mutation runs. The battery grew by the guards this round adds and by its own negative control. The harness is committed beside it.",
+  "C2": "REWRITTEN FROM THE MEASUREMENT in limits item 4. 'will fail under --suite and pass under the full run' became 'will fail under --suite, OR pass for a weaker reason with the same label', and the landing condition is stated as label identity rather than semantic identity.",
+  "C3": "FIXED IN CODE. Every argument beginning with `--` is checked against one declared table; one that is not in it exits 2 as UNRECOGNISED_FLAG. Driven through the real dispatcher for the equals form with a real name, the equals form with a bogus name, the equals form of --upto, and an undefined flag. `--list` is byte-identical, both space-form selectors are identical with elapsed times masked, and the no-selector path still emits the aggregate line at exit 0.",
+  "C4": "FIXED IN docs/runbook.md III.1. The operator text now names the non-zero exit status as TODAY's mechanism and says which of the four acts have production callers, which the module, the spec and this manifest already disclosed and the operator guide did not.",
+  "C5": "HEADLINE CORRECTED in the spec and recorded as a declared limit here, with the consequence measured this round: fail-closed covers a MISSING declaration, never a WRONG one.",
+  "C6": "RESTAMPED. See commit_note.",
+  "C7": "LABELLED MODELLED where it is modelled, in this manifest, in the spec's AC1 amendment, in the dispatcher's docstring and in inner-loop-measurement.json's own method.",
+  "C8": "FIXED IN FRAGMENT 14. The hostile-selector results are a LIST, not a dict keyed by the bad name, and both all()s over them are bound to the length of their own literal shape list. The canon-absence probe list is built first, its length bound to the literal file pair times the roster's own length, and an EMPTY roster now reds. Each binding has a witness that empties its source: M16, M17, M18 and M19, four REDs.",
+  "X1": "SPEC WRITTEN, NOT FIXED HERE, because the defect reaches other specs and one item owns the class: specs/WARP-0729-footprint-globs-must-match-a-path.md, status draft, unpromoted, four acceptance criteria, one concern. RE-COUNTED THIS ROUND AND ONE OF X1's OWN SENTENCES IS OVERSTATED: it says FOUR SHIPPED specs, and the four carrying the trailing-slash form are one shipped (WARP-0712), two ready (WARP-0718, WARP-0719) and one draft (WARP-0720). The finding's mechanism reproduces exactly, 3 findings for WARP-0712 and 1 each for the others, driven through the real shape_gate.footprint_findings. It is also WIDER than X1 reported: swept over 2302 paths in the tree, 9 specs carry 18 entries that match nothing, of which the slashed form is 6 in 4 specs, and the rest are declared paths that were never created plus proof/ paths that could not bind in any case. The new spec carries the corrected numbers.",
+  "X2": "CHEAP HALF FIXED IN THIS PASS, the rest is X2's own item. See limits."
+ },
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "note": "AMENDED BY THE BUILD, on the record in the spec, in two places, because two of its sentences were measured false. 'Runs exactly that suite' is unreachable for 12 of 13 fragments (every fragment is PASSES_IN_AGGREGATE_FAILS_ALONE), so the criterion is the named suite plus its measured TRANSITIVE prerequisite closure, landing on label identity: measured 13 of 13 CLOSED, identical labels and identical outcomes. 'About a second' is true for 2 of 13, so the criterion is that the selector runs a measured-minimal set and reports its own cost, and the per-fragment figures for the PREFIX it is compared against are MODELLED, not measured (see limits, C7). The transitivity is itself a measurement: the DIRECT demand left 5 of 13 fragments producing zero of their own labels. Unknown selectors refuse for four hostile NAME shapes, and after review 1's C3 an unrecognised ARGUMENT refuses too: `--suite=NAME` was recognised by nothing and fell through to a FULL run at exit 0, so every argument beginning with `--` is now checked against one declared table and one that is not in it exits 2 as UNRECOGNISED_FLAG. Driven for four shapes, with `--list` proven byte-identical and both space-form selectors proven unchanged.",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/14_warp_0717_subset_runner.py: closure table both directions, closure contains itself and is manifest-ordered, fixpoint, re-derivation through the generator's own entry points, fixpoint non-vacuity, four hostile selector shapes, --suite runs exactly the closure, per-fragment count and elapsed reported"
+    },
+    {
+     "type": "unit",
+     "ref": "proof/WARP-0717/inner-loop-measurement.json: 13 of 13 CLOSED, and the direct-demand failure that forced the fixpoint"
+    },
+    {
+     "type": "unit",
+     "ref": "proof/WARP-0717/timings.txt: 0.07s for fragment 05 against 21.84s for the equivalent --upto, and 59.41s for fragment 12, stated rather than averaged. THE ONLY ARTIFACT HERE WHOSE NUMBERS ARE MEASURED WALL-CLOCK TIMINGS OF SHIPPED COMMANDS"
+    },
+    {
+     "type": "unit",
+     "ref": "proof/WARP-0717/flag-shapes.txt: the four flag shapes before and after C3, the three recognised shapes proven unchanged (--list byte-identical, sha256 5937697d475c30f6), and the declared limit that a bare word is still ignored"
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "note": "The three acts are methods on ONE RunScope built once from the parsed command line, and each is proven by CALLING it on a partial scope and asserting PARTIAL_RUN_CANNOT_VERIFY by name, never by grepping for an absent call. Each is paired with a positive control on a FULL scope, so a method that always raised would red. Partiality is decided by the SELECTOR, not by how much ran. The full path is driven end to end in a hermetic fixture: no selector emits the aggregate line and exits 0, one flag different emits none and exits non-zero. AMENDED on how byte-identity is proven and on which acts have teeth today; see limits.",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/14_warp_0717_subset_runner.py: three refusals by name, the all-suites selector still refused, three positive controls, the exit code never 0, the unit slot exact, no selector flag in verify.sh, and the hermetic full-run control"
+    },
+    {
+     "type": "unit",
+     "ref": "proof/WARP-0717/failing-witnesses.json: REGENERATED for review 1's C1, which found the file claiming fields it did not carry. 21 of 21 guard mutations RED, 0 GREEN, 0 CRASH, 0 NOT_APPLIED, and every witness now carries, PER TOUCHED FILE, its substitution count against the count expected, and the sha256 before, after and restored with the restoration asserted. Plus one negative control of the battery ITSELF, a mutation whose anchor is absent, reported NOT_APPLIED with the count 0 that refused it: without that the NOT_APPLIED classification is a claim the record never exercises. The closing baseline re-runs the unmutated target and is GREEN, which is what proves every restoration put the tree back"
+    },
+    {
+     "type": "unit",
+     "ref": "proof/WARP-0717/witness-battery.py: the harness that produced the file above, committed so the measurement can be re-derived rather than believed. One copy of the repository under /tmp, never the worktree; the observation is fragment 14 alone"
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "note": "One paragraph in docs/runbook.md III.1, where a person reading about a red gate will meet it, saying what it is for and that no proof manifest, evidence claim or landing decision may cite a partial run. The genericity, dash and non-ASCII sweeps pass over it. AMENDED on the record: there is nothing to re-sync, because the unit suite is NOT engine canon. .warp/packs.json declares plugin/templates the canonical engine and no selftest.py has ever lived there, so the canon is byte-UNCHANGED, which is the stronger outcome, and absence is asserted against the pack roster read from the manifest rather than a hand-written directory list. No protected path touched, no existing assertion added, moved or removed (3362 to 3389, 27 new, all in this item's own fragment), gate GREEN, RULE #1 clean. THE OPERATOR PARAGRAPH IS CORRECTED FOR REVIEW 1's C4: it now names the non-zero exit status as TODAY's mechanism and says which of the four acts have production callers, which the module, the spec and this manifest already disclosed and the operator text did not.",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/14_warp_0717_subset_runner.py: the selector absent from plugin/templates and every declared pack, and --upto unchanged with its old partial line a strict prefix of the new one"
+    },
+    {
+     "type": "operational",
+     "ref": "bash scripts/verify.sh: GATE GREEN, catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared"
+    }
+   ]
+  }
+ ]
+}

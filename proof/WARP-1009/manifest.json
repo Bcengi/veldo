@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1009",
+  "commit": "5e58a5b62a3cd8c9a45ad598d75d765098cd137d",
+  "producer": "claude-opus-4-8[1m] (WARP-1009 implementer agent, standalone accuracy cleanup)",
+  "produced_at": "2026-07-21T11:36:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "specs/WARP-0909-clean-context-dispatch-loop.md front-matter status flipped ready -> shipped at R. python3 .warp/frontier.py at R reports 'nothing claimable'; before the flip it listed 'build WARP-0909 (standalone)' and 'build WARP-1009 (standalone)', so WARP-0909 no longer appears as a claimable BUILD unit. Its implementation (a2423c7) and proof (proof/WARP-0909/manifest.json + verdict.json) were already on origin, so shipped is now the true status and ready was stale."
+        },
+        {
+          "type": "unit",
+          "ref": "specs/index.md was regenerated (scripts/update_index.py, 104 specifications) and the WARP-0909 row reads status shipped; the generated check (check_generated.sh) reports no drift in the GREEN gate at R."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The tracker_assign_op note in .warp/capabilities.yaml no longer says the live JiraCloudAdapter raises 'in a later increment, WARP-1005'. It now states the live JiraCloudAdapter assign is WIRED (WARP-1005) - its _assign PUTs the assignee to the Jira Cloud issue-assignee endpoint (PUT /rest/api/3/issue/ID/assignee, token-authed at construction) as a REFERENCE live edge that is NOT gate-run - while the ConfluenceCloudAdapter still RAISES by name (a wiki page has no assignee). This matches the shipped code: .warp/tracker_intake.py JiraCloudAdapter._assign issues PUT /rest/api/3/issue/%s/assignee (WARP-1005). Only this entry was changed; its status stays mechanical and home stays .warp/tracker_adapter.py, and no other capability claim was touched."
+        },
+        {
+          "type": "unit",
+          "ref": "md5sum across all eight capabilities.yaml copies (.warp, plugin/templates, and the six packs cursor/codex/copilot/antigravity/opencode/aider) collapses to a single hash; check_pack_drift.py reports 'pack drift: pass (7 pack(s))' and check_template_sync.sh 'template sync: pass' in the GREEN gate at R. The capabilities-honesty and status-bound-regex selftest checks pass (home resolves; tracker_assign_op is not among the status-asserted names and stays mechanical)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/templates/.warp/trackers.json token_ref example changed from 'secrets:jira_token' to 'env:JIRA_TOKEN'. The shipped default resolver _default_secret_resolver in .warp/tracker_intake.py reads an env: reference (env var name after the colon) via os.environ: 'secrets:jira_token' would be looked up as an env var named literally 'secrets:jira_token' and fail, whereas 'env:JIRA_TOKEN' resolves JIRA_TOKEN, matching the resolver's own docstring example, so the template example is now true to the code. trackers.json is not an ENGINE_GLOBS file (the glob set covers .warp/*.py and .warp/*.yaml, not .warp/*.json) and exists only under plugin/templates, so no pack re-sync applies."
+        },
+        {
+          "type": "unit",
+          "ref": "The tracker_intake.py comment fix clause is a verified no-op: JiraCloudAdapter._assign already credits WARP-1005 and PUTs the assignee, and the selftest check 'JiraCloudAdapter._assign is completed live (the WARP-1005 deferral is gone, a PUT assignee remains)' asserts the deferral string is absent from tracker_intake.py and the PUT endpoint present. No stale increment comment naming a now-done increment exists there, so .warp/tracker_intake.py is left unchanged (no engine re-sync)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "No shipped spec's revision field was bumped and no acceptance_criteria text was edited: the only spec-file changes are the WARP-0909 status flip and the new WARP-1009 spec set to shipped. WARP-0908's AC6 descriptive prose is intentionally left as-is (a historical shipped spec; editing it would risk staling its bound proof for no functional gain). policy_check.ready_boundary_violations() and policy_check.spec_revision_stale() both return empty (CLEAN) at R."
+        },
+        {
+          "type": "unit",
+          "ref": "No proof is invalidated: WARP-0909 carries no revision field (default 1) so its bound proof (proof/WARP-0909) stays valid; spec_revision_stale is empty and the gate contracts check passes at R. The change is status/manifest/template accuracy only, not a spec-contract change."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "bash scripts/verify.sh at R (5e58a5b62a3cd8c9a45ad598d75d765098cd137d) -> GATE: GREEN; selftest 1476 passed / 0 failed; generated, docs hygiene (dash / non-ASCII / genericity), template sync, secret scan, and contracts all pass; .warp/last_verify records status green at 5e58a5b. RULE #1 clean: no em or en dash in any edited file and no prose double-hyphen introduced (grep of the reworded capabilities line finds no double-hyphen). No protected path was touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins are unchanged)."
+        },
+        {
+          "type": "unit",
+          "ref": "The one reviewed commit R changed exactly twelve files: the eight byte-identical capabilities.yaml copies, plugin/templates/.warp/trackers.json, the WARP-0909 spec, the new WARP-1009 spec, and the regenerated specs/index.md. The only edited ENGINE_GLOBS file is capabilities.yaml, re-synced byte-identical across plugin/templates and all six packs (check_pack_drift.py pass, check_template_sync.sh pass). .warp/last_verify, .warp/events.jsonl, and proof/WARP-1009 are left uncommitted; this build writes no verdict and does not push."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "operational",
+      "status": "passed",
+      "detail": "Accuracy corrections verified against the shipped code: WARP-0909 flipped to shipped and off the frontier (frontier.py 'nothing claimable'); the capabilities.yaml tracker_assign_op note made true to JiraCloudAdapter._assign (WARP-1005 PUT), byte-identical across all eight copies; the trackers.json token_ref example changed to env:JIRA_TOKEN which the shipped env-only resolver actually reads; no shipped-spec revision bumped and the WARP-0908 AC6 prose deferred; policy_check ready-boundary and spec-revision both CLEAN."
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py at R: 1476 passed, 0 failed. GATE GREEN, last_verify status green at 5e58a5b. The tracker suites (assign op, ready-to-test handoff, JiraCloudAdapter._assign completed-live check, capabilities honesty) all pass unchanged."
+    },
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated (scripts/update_index.py, 104 specs); WARP-0909 and WARP-1009 rows both read shipped; check_generated.sh reports no drift."},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, and genericity sweep all pass; RULE #1 hand-check of the edited files clean (no em or en dash; no prose double-hyphen introduced in the reworded capabilities note)."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh 'template sync: pass'; the edited capabilities.yaml matches the plugin/templates canon."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pack drift: pass (7 pack(s)), every engine byte-identical to source; capabilities.yaml byte-identical across all eight copies (.warp, plugin/templates, six packs)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "warp contracts pass, including the WARP-1009 spec (status shipped, standalone lane, required_evidence operational) and this manifest (criteria AC1-AC5, required_evidence operational satisfied)."}
+  ],
+  "assumptions": [
+    "WARP-1009 is a standalone spec (lane: standalone), not a numbered PLAN work item, so this manifest carries no plan_hash - matching proof/WARP-0909 (also standalone). required_evidence: [operational] is satisfied by the operational evidence entries on every criterion and by the operational check.",
+    "Single reviewed commit R (5e58a5b): this standalone accuracy cleanup lands in ONE reviewed commit carrying the WARP-0909 status flip, the capabilities.yaml tracker_assign_op correction (all eight byte-identical copies), the plugin/templates/.warp/trackers.json token_ref fix, the WARP-1009 spec at status shipped, and the regenerated specs/index.md (twelve files). No comment fix was needed in .warp/tracker_intake.py (its WARP-1005 assign comment is already accurate), so no repo-home-only engine file changed.",
+    "This is the canonical evidence artifact for the cleanup (required_evidence [operational]); it is left UNCOMMITTED alongside .warp/last_verify and .warp/events.jsonl. No independent verdict is written and nothing is pushed (per the standalone cleanup instruction: this is the last WARP change before it is parked)."
+  ],
+  "rollback": "git revert R (5e58a5b). The changes are pure accuracy corrections - a spec status, a capability manifest note, a config-template example, and the regenerated index - so reverting restores the prior stale text with no functional effect."
+}

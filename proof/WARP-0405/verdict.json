@@ -1,0 +1,57 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0405",
+  "commit": "06ee38f12f8b6b9db9ff73e9ad2d8bbb3913a99f",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T18:28:50Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:9023ec067adefbb3",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, enforcer driven over synthetic streams, no-drift reimplemented, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, enforcer driven over synthetic streams, no-drift reimplemented, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, enforcer driven over synthetic streams, no-drift reimplemented, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, enforcer driven over synthetic streams, no-drift reimplemented, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, enforcer driven over synthetic streams, no-drift reimplemented, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, enforcer driven over synthetic streams, no-drift reimplemented, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC7",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, enforcer driven over synthetic streams, no-drift reimplemented, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Reviewer proved non-tautology with four one-line mutations (cap-ignoring check, plan_spend uses the global total, drop the per-spec loop, plan-level check uses the global total) each caught by the selftest and restored to 760 passed / 0 failed - exceeding the two mutations the builder claimed."
+    },
+    {
+      "severity": "note",
+      "text": "validate.py was deliberately not extended; budgets shape validation lives in budget.py.parse_budgets as a named BudgetError and check_plan ignores the unknown top-level budgets key so PLAN-0004 still validates (backward compatible). Reviewer confirmed old events and the new budgets block both parse and gate green."
+    }
+  ],
+  "summary": "X5 (WARP-0405, cost and token budget governance) is correct and honest. Independent adversarial review: pass_with_notes, 0 blocking, gate GREEN (selftest 760). The reviewer drove .warp/budget.py over synthetic streams and the real CLI (under budget passes; over a plan token cap and over a per-spec cap each fail loud naming the plan or spec and the overage; a no-budgets plan passes; real PLAN-0004 exits 0 under budget), independently reimplemented the aggregation and confirmed NO DRIFT (totals and the full spend_by_correlation map equal metrics.compute() exactly; plan attribution correctly excludes unrelated correlations), and proved non-tautology with four mutations. Capabilities budget_governance=mechanical is honest (reader and enforcer plus real surface run in the gate over stdlib); both capabilities.yaml copies byte-identical; events.py and metrics.py byte-identical across both copies; backward compatible (old events and pre-budget plans still parse and gate green); proportionate (spend rides the single event stream via correlation_id, no second store or service); generic; ASCII. proof_digest recomputed via validate.py."
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0109",
+  "commit": "224ae5fbc17728a643bece95536c0d17e4a8a202",
+  "producer": "claude-fable-5 (implementing agent)",
+  "plan_hash": "sha256:f1bea3833572c104",
+  "produced_at": "2026-07-16T23:10:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest: 'draft spec with proof is a ready-boundary violation' (WARP-9 in ready_boundary_violations) and 'shipped spec with proof is not a violation' (not in) - both pass within selftest 121/0"},
+      {"type": "operational", "ref": "negative-tests.txt: live ready_boundary_violations() flags a draft-status spec that carries a proof manifest, and does not flag the same spec once shipped"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest: 'spec revised past its proof is stale' and 'spec at proof revision is not stale' pass; non-integer revision fails closed in validate/policy_check"},
+      {"type": "operational", "ref": "negative-tests.txt: live spec_revision_stale() flags a proof produced against revision 1 when the spec now declares revision 2, and clears once the spec is back at revision 1"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest: 'proof_digest agrees between validate and policy_check (no drift)', 'proof_digest changes with content', 'verdict with matching proof_digest is valid', 'verdict with mismatched proof_digest is invalid'"},
+      {"type": "operational", "ref": "negative-tests.txt: live valid_verdict_for accepts a verdict whose proof_digest equals proof_digest(manifest) and rejects a verdict carrying a mismatched digest (a verdict cannot be reused for a proof it did not review). Digest fn is byte-identical in .warp/policy_check.py and .warp/validate.py (template-sync md5 equal)"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest: _approval_covers named/glob/uncovered/empty; valid_approval_for path-scoped accept+reject, self-approval rejected (approver==producer), non-self accepted"},
+      {"type": "operational", "ref": "negative-tests.txt: live valid_approval_for accepts only when scope.paths covers the touched path, rejects an uncovered path, rejects a self-approval (approver == proof producer), and treats empty scope.paths as authorizing nothing. This very ship exercises it: W9 touches two protected paths (.warp/policy_check.py and plugin/templates/.warp/policy_check.py) and its approval-dmitry.json scopes both, with approver dmitry != producer claude-fable-5"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 121 passed, 0 failed (105 pre-W9 incl W7, +16 W9)"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed", "detail": ".warp/policy_check.py == plugin/templates/.warp/policy_check.py and .warp/validate.py == its template copy (md5 equal)"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "All five closure checks are strictly tightening and fail closed. The optional fields they key on (spec_revision on a manifest, proof_digest on a verdict) are enforced ONLY when present, so prior proofs and verdicts (W1..W8) remain valid without them. High risk: W9 edits the protected enforcer .warp/policy_check.py (and its template copy), so this ship carries a recorded, path-scoped, self-separated approval. The digest binding is the proportionate subset of the setup's fuller signed-contract vision; full content-addressed contract forms remain honestly absent (capabilities.yaml)."
+  ],
+  "rollback": "git revert 224ae5f; every check is additive and fails closed on absence of the optional field, so reverting restores the prior enforcer with no proof/verdict invalidation. The 105 prior selftest cases pass within the 121."
+}

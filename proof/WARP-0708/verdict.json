@@ -1,0 +1,18 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0708",
+  "commit": "ac4b6e031066963b5fddb767c4c9afadfaa6388d",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T13:36:00Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:d5575ae82fefa741",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "plan.py status PLAN-0007 = released, 7/7 shipped; release-check releasable; all of WARP-0701..0707 have a passing verdict (0 blocking) with manifest.commit == verdict.commit, and the reviewer recomputed proof_digest for all seven and confirmed each matches (incl. WARP-0704 and WARP-0707)."},
+    {"id": "AC2", "status": "confirmed", "note": "plugin.json bumped 3.1.0 -> 3.2.0 (only that line); plan release.version reads plugin 3.2.0; docs/method.md is not in the commit (unchanged)."},
+    {"id": "AC3", "status": "confirmed", "note": "gate GREEN at ac4b6e0, selftest 1054; commit touches only the WARP-0708 spec, plugin.json, plans/PLAN-0007, specs/index.md, and machinery - no protected path, no method/product doc; both capabilities.yaml copies byte-identical."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent review of the release, PASS, 0 blocking. All three ACs confirmed against the committed state (working tree clean at ac4b6e0). The reviewer recomputed proof_digest via the canonical validate.proof_digest on all seven work-item manifests and WARP-0710's and confirmed every one matches its verdict's stored digest; WARP-0710 is correctly lane: standalone, not a PLAN-0007 work item, and does not gate the release. The only note was about the review instructions (validate.py exposes no proof_digest CLI subcommand, only the function), not the release."}
+  ],
+  "summary": "WARP-0708 (release WARP Fleet v1) is correct. Independent review PASS, 0 blocking; gate GREEN (selftest 1054). All seven PLAN-0007 work items (Y1-Y7, WARP-0701..0707) are shipped with passing independent verdicts and matching proof digests, the release check reports releasable, the plan is set to released, the plugin is bumped to 3.2.0 for the WARP Fleet v1 milestone, and the method document is unchanged. The release commit's scope is exactly the release spec, the version bump, the plan flip, the index, and the machinery - no protected path or product/method doc touched. proof_digest via validate.py."
+}

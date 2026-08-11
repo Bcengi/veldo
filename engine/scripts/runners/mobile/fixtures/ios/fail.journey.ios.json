@@ -1,0 +1,9 @@
+{
+  "name": "deliberately failing (asserts a label that is not present)",
+  "bundle_id": "com.example.app",
+  "udid": "booted",
+  "steps": [
+    {"action": "launch", "bundle_id": "com.example.app", "settle": 1},
+    {"action": "expect_label", "value": "ScreenThatIsNotPresent"}
+  ]
+}

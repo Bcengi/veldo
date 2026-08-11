@@ -1,0 +1,32 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0307",
+  "commit": "3c5c8d05615c660b11d1481fa7d6e93c18879eea",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B7)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T05:00:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/integration/warp_integration_runner.py exists: reads a contract journey (name, base_url, timeout, interactions each with a request of method/path/body/headers and a contract of expect_status + required dotted-path->type + forbidden dotted-paths), drives each interaction against a sandbox base_url via urllib (a 4xx/5xx is a returned assertable status, not raised; a non-JSON body is an error not a silent empty body), validates the response against the declared contract, exits 0 when every interaction conforms and 1 with each violation named. The transport is a seam: run(journey, base_url, timeout, caller) defaults to a urllib caller but accepts an injected caller, and [base_url]/BASE_URL override the journey base_url. proof/WARP-0307/runner-evidence.txt: pass fixture exit 0, fail fixture exit 1"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py integration block exercises check_contract for every outcome: status match/mismatch, each type match and mismatch (string/number/integer/boolean/array/object/null), bool rejected as integer/number (type safety), required present/absent, forbidden present/absent, a nested dotted path resolving present/absent, present-but-null distinguished from absent, an unknown declared type named, and an interaction that asserts nothing reported as a journey error"},
+      {"type": "operational", "ref": "proof/WARP-0307/negative-tests.txt: status mismatch, missing required field, wrong-typed field, bool-is-not-integer, forbidden field present, asserts-nothing journey error, present-but-null vs absent, nested dotted path, and unknown declared type each produce a named violation; a fully-conforming response returns an empty violation list"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0307/runner-evidence.txt: pass.journey.json (interaction hits the conforming /order resource, contract of required id/amount/currency/status + forbidden internal_debug) exits 0; fail.journey.json (interaction hits the deliberately-broken /order/broken resource) exits 1 naming all three violations: amount expected number got string, currency absent, internal_debug forbidden field present. Both fixtures ship under plugin/templates/scripts/runners/integration/fixtures/ with a stdlib http.server mock (serve(port), conforming + violating resources)"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py integration block (appended after the perf block) drives run() over both shipped fixtures against an in-process mock server on an ephemeral port (0) in a daemon thread (pass -> passed True; fail -> passed False with the violations named) and exercises check_contract + resolve_path directly for every AC4 outcome. Part of selftest 275 passed / 0 failed (was 236); all prior cases still pass and the gate is GREEN at 3c5c8d0"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, mock server, wrapper, and README carry zero company/product names (docs-hygiene genericity sweep passes); .warp/capabilities.yaml marks integration_contract_runner status: reference (a shipped artifact an adopting repo wires to its integration/contract gate slot against its own sandbox; the warp repo has no external integration and does not run it), kept byte-identical with the plugin template copy (both sha256 eb3241343ba724df; template-sync gate passes); verify.sh prints GATE: GREEN (3c5c8d0...)"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 275 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference runner: generic, stdlib only (urllib + http.server). Model behavior of a real external service is nondeterministic, costs money, and rate-limits, so the runner drives an integration in sandbox/contract mode: it asserts the response contract (status, required fields present and correctly typed via dotted paths, forbidden fields absent) rather than calling the live third party. The reference ships a stdlib mock server (a conforming resource and a deliberately-violating one) so the contract logic, dotted-path resolution, and type checks are gate-tested with no live service, and an adopting repo points base_url at its own sandbox or contract-test endpoint. Shipped under plugin/templates/scripts/runners/integration/; not wired into the warp repo's own gate (capabilities: reference)."],
+  "rollback": "git revert the impl; the runner is additive under plugin/templates/scripts/runners/integration/, touches no protected path, and its selftest cases sit within the 275."
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0104",
+  "commit": "72167322877cd78692e66a17ac24b9227929d65b",
+  "producer": "claude-fable-5 (implementing agent)",
+  "produced_at": "2026-07-16T22:55:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest regression cases: bad when, after:unknown, owner_spec not-a-work-item, bad profile, empty profiles all rejected; after:work-spec, owner+profiles, manual accepted (8 cases)"},
+      {"type": "operational", "ref": "proof/WARP-0104/negative-tests.txt: planting activation when 'whenever' into PLAN-0001 fails validate.py plan with the exact vocabulary message; restore exit 0"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0104/negative-tests.txt: plan.py regression per_spec:WARP-0105 = RJ1 only; release = RJ1 plus RJ2 surfaced as manual (not auto-run)"},
+      {"type": "unit", "ref": "selftest _journey_active cases: start active per_spec, manual inactive per_spec, release-only inactive per_spec, after:X active once X shipped and inactive before, manual inactive at release (6 cases)"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/skills/plan/SKILL.md regression section documents the journeys-slot wiring; capabilities.yaml plan_regression_mechanics = mechanical for contract+computation, per-repo gate-slot execution marked reference (not overclaimed)"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plans/PLAN-0001 revision 3: RJ1 owner_spec WARP-0101 + profiles [per_spec, release]; RJ2 activation manual + profiles [release]; Revisions entry present; validate.py plan exit 0"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 77 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "The warp repo has no UI, so its journeys gate slot stays na; the regression mechanism is validated and computed here and demonstrated against PLAN-0001, and executed in the journeys slot by consuming repos (honestly marked reference in capabilities)."
+  ],
+  "rollback": "git revert 7216732; regression validation only checks the fields it defines, plan.py regression is additive, skill/capabilities are docs; the 63 prior selftest cases pass within the 77."
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1208",
+  "commit": "1e81f39bad1a4f104ee0a2b8e570d3782f13e3e7",
+  "reviewer": "claude-opus-5[1m] (ROUND-2 independent adversarial reviewer, a third distinct fresh context: not the builder, not the round-1 reviewer, not the hardener, not the orchestrating session; instructed to default to REFUTED when uncertain, to re-run round 1's four attacks from the failing verdict's own descriptions rather than trust the fixes, to build its OWN teeth matrix, and to verify that fixing the four defects broke or hid nothing else)",
+  "reviewed_at": "2026-07-24T21:20:00Z",
+  "verdict": "pass_with_notes",
+  "round": 2,
+  "supersedes": "proof/WARP-1208/verdict-1-fail.json",
+  "proof_digest": "sha256:85aa4360fe2400b1",
+  "must_fix_before_live": [],
+  "defect_rulings": [
+    {
+      "id": "F1",
+      "criterion": "AC3",
+      "ruling": "CLOSED",
+      "note": "The guard decides on Path.resolve() with every segment case-folded, in one place. All three round-1 bypasses plus ten further attacks refuse by name with nothing written into either forbidden root: the traversal, a symlinked drafts directory, .WARP/Actions/, Specs/, sPeCs/, a symlink CHAIN, a relative symlink, a forbidden parent that does not exist yet, a target whose parent is a symlink, a symlink LOOP, and a CWD-anchored relative traversal. The look-alike control (x.warp/actions_of_mine) still settles, so it does not over-fire on similar names. Residuals that do not re-open the criterion: a hard link into the store can land a draft when the existing draft is unreadable (still unreviewed, still excluded from the whitelist); a bind mount would defeat any realpath guard; and the guard refuses over-broadly by shape, which the reviewer ruled acceptable fail-closed DIRECTION but the wrong SHAPE."
+    },
+    {
+      "id": "F2",
+      "criterion": "AC2",
+      "ruling": "CLOSED",
+      "note": "diagnosis_material now binds the remedy id and the shipped proposal_digest. The round-1 attack is dead: the same validation with the whole remedy swapped from rollback_deploy to drop_customer_table refuses by name with zero drafts and zero events, and a separate assertion proves the swapped remedy was itself contract-valid so the refusal comes from the binding. A right-remedy-stale-digest refuses, a missing bound_remedy refuses, a bound_remedy naming another remedy refuses, and a no-remedy validation reused with a remedy refuses. The reviewer enumerated coverage: every remedy field including the diagnosis, the cited evidence, the rollback, the risk class, the autonomy level, the reversibility and the required authorization, plus the incident's signal, affected behavior, affected spec, affected area and diagnosed_at. Outside the binding: incident title, severity, status and opened_at, none of which is diagnosis substance."
+    },
+    {
+      "id": "F3",
+      "criterion": "AC4",
+      "ruling": "CLOSED for the property the failing verdict named, with one residual recorded as note 1",
+      "note": "Eight corruption forms (truncated JSON, non-JSON bytes, null, an empty array, a bare string, an empty file, a bare integer, and mode-000) each refuse by name, are NOT overwritten, and leave exactly ONE incident.closed. A mapping missing required keys conflicts. An already-closed incident with an unreadable receipt refuses. The control confirms that with the file restored the same re-run is an idempotent replay with the same id. Residual: the sentinel is compared by object identity, so a store loaded from a second module instance defeats the pass's closed-replay branch; the WRITE path is immune, which is why the reviewer did not escalate it."
+    },
+    {
+      "id": "F4",
+      "criterion": "AC3",
+      "ruling": "CLOSED, genuinely enforced",
+      "note": "The rendered text is parsed by the one parser and judged by the shipped action.validate_action inside the write path. Every contract-valid remedy the reviewer could craft that renders an invalid action is refused by name with the contract's own message and no draft written: empty, whitespace, newline, tab and non-breaking-space parameter keys, two keys collapsing to one, a rollback rendering as a list or a mapping, a reversibility analysis rendering as a list, a canary shape rendering as a list, and a receipt system field rendering as a list. Controls: the honest draft has zero problems, is not reviewed, and is absent from build_whitelist over its own directory."
+    }
+  ],
+  "teeth_matrix": "The reviewer built its OWN 12 single-site mutations (each asserted to appear exactly once in its owning organ) and its OWN 12 fixtures, driven over a REAL FILESYSTEM store on temporary trees rather than the selftest's registry. Result: exactly diagonal, 12 of 144 cells green, zero off-diagonal, zero unexpected refusal names, zero exceptions, and both organs sha256-unchanged after all 144 runs. No tooth is vacuous: each fixture goes green only under its own mutation, not merely renamed. Both of the hardening's admissions were verified HONEST: neutralizing settle()'s sentinel check yields a conflict refusal rather than green, so the backend sentinel is the load-bearing site and mutating it is the correct tooth; and the two path-guard sub-mechanisms each flip only their own fixture while the outer check dominates by refusing nothing. Gap the reviewer names: the pass's OWN replay-path sentinel check is a 13th load-bearing site with no tooth, and it is exactly the site of note 1.",
+  "design_ruling_f2": "CORRECT, and the reviewer states it would have chosen the same. Verified against the shipped source: action_executor.proposal_digest hashes the WHOLE remedy record, so no field lies outside it and the diagnosis with every cited evidence artifact is covered, where a subset would have covered them no better while leaving the rollback plan, risk class, autonomy level and required authorization free. The executor computes the same function and refuses a confirmation whose digest differs, and two_key binds the value the executor passes, so a human's validation and the machine's confirmation genuinely bind ONE artifact identity. Caveats recorded: the digest is truncated to 64 bits (consistent with every sibling digest here); json default=str collapses value types, unreachable from parser output; and because the digest covers the remedy's status, any post-validation lifecycle edit invalidates both the validation and the execution claim, which is fail-closed but means WARP-1211 must freeze the remedy between validation and reconciliation.",
+  "new_manifest_overstatements_found": [
+    "AC3 operational claimed an unresolvable target including an UNREADABLE PARENT is refused. False on Linux and CPython: resolve() succeeds on a mode-000 parent and the guard returns no forbidden root; the write then raises PermissionError instead of a named refusal. Corrected in the manifest; the same overclaim in the shipped _real_parts docstring is carried to the follow-up rather than edited after review.",
+    "AC4 operational claimed no caller can mistake the sentinel for an absence. A caller does worse: with a store from a second module load the pass treats a corrupt receipt as a settled RECORD. Corrected.",
+    "AC3 operational claimed both drafts are written ONLY into .warp/incident_drafts/. The drafts directory is a constructor argument and the guard is a deny-list, so a caller can write drafts into scripts/ or .git/hooks/. Corrected to state only what the deny-list guarantees."
+  ],
+  "notes": [
+    "Ranked by six-month impact. 1. THE SENTINEL IS COMPARED BY OBJECT IDENTITY across a module boundary, and the repo's dominant idiom is loading modules by path, so a caller who loads the store himself silently loses the corrupt-receipt check. Small structural fix (a store.is_unreadable predicate or a string outcome) and it should land BEFORE WARP-1211 wires any caller. 2. The absence-versus-corruption conflation that F3 removed from _get SURVIVES in _read_draft: an existing but unreadable draft is treated as absent and overwritten, contradicting put_draft's own docstring, and the receipt then records the digest of what was intended rather than what is on disk. 3. The path guard is a DENY-LIST, not a containment check: over-broad one way (any absolute path containing a specs segment refuses everything) and under-broad the other (scripts/ and .git/hooks/ are reachable). The correct guard is: the resolved target must resolve INSIDE the resolved drafts directory, plus the two deny roots. 4. The F3 fix lives in the BACKEND while the base class docstring claims the base owns the unreadable refusal, so a future SQL or S3 backend that returns None on error reintroduces F3 exactly; the primitive should return bytes-or-absent and the base should decide. 5. Two unnamed crash paths: a directory where a receipt or draft belongs raises IsADirectoryError, and a draft under an unreadable parent raises PermissionError, neither of which is a named refusal from the closed taxonomy the spec's error_taxonomy promises. 6. Neither record is validated against its own shipped contract: a remedy with eleven validate_remedy problems settles, and the receipt then asserts the digest covers a diagnosis and cited evidence for a record carrying neither. 7. The new caller-visible bound_remedy requirement is nowhere in the acceptance criteria: AC2 still says four conditions and five refusals where the shipped gate has five and six, because the spec was edited for footprint only.",
+    "ROUND-1 NOTES THAT GOT WORSE: the base-class-only enforcement note now covers three mechanisms instead of two, all three lost by a subclass overriding put_draft or settle (the reviewer reproduced it: settled, a seeded conflicting receipt overwritten, both drafts written into the whitelist store), and the extraction makes injecting a foreign store a first-class documented pattern, which is also the vector for note 1. The put_draft-adopts-on-disk-content note gains a twin in note 2. The other nine round-1 notes are unchanged and were re-verified where cheap."
+  ],
+  "gate_observed": {
+    "verify": "GATE: GREEN (1e81f39)",
+    "selftest": "2816 passed, 0 failed",
+    "baselines_measured_by_reviewer": "2769 at 03de88f (the round-1 reviewed tree) and 2658 at 668dbb3 (trunk), both in throwaway clones; +47 over round 1, +158 over trunk, across 124 WARP-1208 call-sites",
+    "assertion_integrity": "Label diff round 1 to round 2: 19 removed, 48 added, and every removal is a strengthened restatement. No assertion weakened or dropped, including the ordinary-drafts-directory control.",
+    "engine_sync": "Both organs plus validate.py and capabilities.yaml byte-identical across all 8 locations; check_pack_drift.py passes for 7 packs; plan.py run-check clear to build",
+    "character_rules": "0 em dashes, 0 en dashes, 0 non-ASCII, 0 non-separator double-hyphens"
+  },
+  "disposition": "LANDS. All four blocking defects closed, must_fix_before_live empty, the gate green at the reviewed commit, and the teeth independently reproduced as exactly diagonal by a reviewer that built its own mutations and fixtures. The three new manifest overstatements are corrected in this evidence. The seven notes, the two worsened round-1 notes, and the _real_parts docstring overclaim are carried to a follow-up hardening specification in the pattern of WARP-1212; note 1 is flagged to land before WARP-1211 wires any caller of this pass.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "The failure signature and recurrence detection hold. Round 1 confirmed determinism across processes, sensitivity to exactly the four identity fields, insensitivity to title, severity, id and timeline, self-exclusion and the malformed-record skip; round 2 re-verified the criterion's assertions (AC1.1 through AC1.7) unchanged after the split and the hardening."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Refuted in round 1 (F2: the bound digest bound no diagnosis) and now CLOSED. The validation binds the remedy id plus the shipped proposal_digest, which hashes the whole remedy record, so the diagnosis and every cited evidence artifact are covered and the round-1 remedy swap refuses by name with zero drafts and zero events. Five refusals verified against crafted input, plus the positive control. Recording gap carried as note 7: the criterion's own text still says four conditions and five refusals where the shipped gate now has five and six, because the spec was edited for footprint only."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Refuted in round 1 twice (F1 the unnormalized path guard, F4 structural validity exhibited rather than enforced) and both now CLOSED. The guard decides on the resolved, case-folded path and refuses all three original bypasses plus ten further attacks; the rendered draft is judged by the shipped validate_action inside the write path and every invalid render the reviewer could craft is refused with the contract's own message. The central claim that survived every attack in both rounds: no path makes a promoted or reviewed draft exist. Shape notes carried: the guard is a deny-list rather than a containment check, over-broad one way and under-broad the other."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Refuted in round 1 (F3: an unreadable receipt read as an absence, overwritten, double-emitting the event) and CLOSED for exactly that property: eight corruption forms each refuse by name, are not overwritten, and leave exactly one incident.closed, with the restore control proving an idempotent replay afterwards. Residual recorded as note 1 and NOT escalated: the sentinel is compared by object identity, so a store loaded from a second module instance defeats the pass's closed-replay branch; the write path is immune."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Independently reproduced and strengthened. The reviewer built its OWN twelve single-site mutations and twelve fixtures over a real filesystem store and found the 12 by 12 matrix exactly diagonal: twelve of 144 cells green, zero off-diagonal, zero unexpected refusal names, both organs sha256-unchanged after all runs. No tooth is vacuous. Both admissions in the hardening report were verified honest. Gap named: the pass's own replay-path sentinel check is a thirteenth load-bearing site with no tooth, which is the site of note 1."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified independently: standard library only, both organs plus validate.py and capabilities.yaml byte-identical across all eight locations, pack drift clean across seven packs, safety-core and protected-path diff empty against the pre-change commit, the only callers being the capability entry and the spec, run-check clear, and the gate green at the reviewed commit with 2816 passing against baselines of 2769 and 2658 the reviewer measured itself. Assertion integrity checked by label diff: nineteen removed, forty-eight added, every removal a strengthened restatement, nothing weakened or dropped."
+    }
+  ]
+}

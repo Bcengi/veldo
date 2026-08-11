@@ -1,0 +1,21 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0709",
+  "commit": "b01058a0c4d77c832e908c40efbafe3da5b30e89",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T13:51:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:1834b9d7961b343e",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "Stands on its own (what/why/one-rule/loop/principles) before pointing to docs/; orients a new team member without the full method doc."},
+    {"id": "AC2", "status": "confirmed", "note": "Names the real artifacts (specs/, scripts/verify.sh, proof/, verdict, .warp/policy_check.py, specs/index.md, plans/) and each exists and is used correctly, matching the manifest's mechanical guarantees."},
+    {"id": "AC3", "status": "confirmed", "note": "Every capability claim checked against .warp/capabilities.yaml - NO contradiction or overstatement (reference described as must-be-wired, mechanical as enforced; fleet no-detached-process / no-central-coordinator match WARP-0701..0707); plugin.json confirms 3.2.0."},
+    {"id": "AC4", "status": "confirmed", "note": "Install commands match docs/plugin.md exactly; /warp:init, /warp:spec, /warp:run and specs/TEMPLATE.md exist; the two-week pilot pointer resolves; scale guidance consistent with the fleet."},
+    {"id": "AC5", "status": "confirmed", "note": "Zero em-dashes/en-dashes/double-hyphens/non-ASCII; gate GREEN (dash + non-ASCII + genericity sweeps, selftest 1054); commit touches only README + WARP-0709 spec + index + machinery (method.md and every other doc untouched); every link resolves."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent review of the README, pass_with_notes, 0 blocking. The reviewer read the full README, the capability manifest, and the repo, ran the gate, and actively tried to find a claim that oversells the manifest - and could not: where the system is reference-only (runners, ephemeral envs) the prose says so, and where the fleet is hands-free-with-a-caveat (multi-account) the adoption section says so. Editorial judgment: the README genuinely enables a team to adopt WARP from the repo alone. Verified reviewing 2cad3c0; the only delta to this commit (b01058a) is a one-line prose addition surfacing the warp fleet N command in the scale paragraph (the reviewer's own non-blocking suggestion), accuracy-neutral and gate re-verified."},
+    {"severity": "note", "text": "Accepted non-blocking note: the machine genericity sweep covers docs/ and plugin/, not the repo-root README, so README genericity rests on discipline (it holds - the only company token is the necessary Bcengi/warp install coordinate, matching docs/plugin.md which is inside the swept scope and passes)."}
+  ],
+  "summary": "WARP-0709 (comprehensive README for team adoption) is correct and accurate. Independent review pass_with_notes, 0 blocking; gate GREEN (selftest 1054). The README is expanded into a complete standalone orientation - what WARP is, why (verification is the bottleneck), the one rule and the loop, the principles, how the loop works with the real repository artifacts, the current capability surface the plugin ships (deferring to the capability manifest, so prose cannot contradict it), and a concrete adoption path from install to running the fleet at scale. It names plugin 3.2.0, is generic and ASCII-only with no em-dashes, changes only README.md and its spec (docs/method.md untouched), and every link resolves. The reviewer verified no capability claim oversells the manifest. proof_digest via validate.py."
+}

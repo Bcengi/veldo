@@ -1,0 +1,21 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0707",
+  "commit": "587eff4e2362a0916ded4e8ffa41d9e8baf29128",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T13:26:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:54eab99c2a6db640",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "reconcile clamps to [0, max_workers], spawns up / retires down to the target, idempotent; brute-forced every target -5..200 across max 0..6 - never exceeded max, never negative, reconcile twice a no-op."},
+    {"id": "AC2", "status": "confirmed", "note": "Drain (work_remains False) breaks; backoff (True) releases workers, waits to resume_at, and loops to RE-CHECK desired before spawning. Two consecutive backoffs then drain spawn ZERO; a faithful resume-into-limit mutation reddens the assertion."},
+    {"id": "AC3", "status": "confirmed", "note": "Module imports only importlib.util/uuid/pathlib; grep found no subprocess/Popen/fork/socket/threading/sleep in code - spawns nothing, opens no socket, no thread, sleeps nothing. Spawning and waiting are injected seams; real in-session spawn + resume waiter are the caller's. Honors feedback_no_rogue_processes."},
+    {"id": "AC4", "status": "confirmed", "note": "self.scope threaded unchanged to spawner.spawn on every spawn; set(scopes) == {the scope} across reconcile and full runs."},
+    {"id": "AC5", "status": "confirmed", "note": "Gate GREEN, selftest 1054; caps byte-identical. Non-tautology: deleting the retire-down loop reddens three assertions; a faithful resume-into-limit mutation reddens the backoff assertion. Termination bounded by max_ticks; finally retires all on stop or exception (verified spawn-raises and waiter-raises leak nothing)."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review, pass_with_notes, 0 blocking - effectively clean. The control loop is correct: it terminates (bounded by max_ticks; a backoff-forever controller returns without hanging), never leaks a worker (finally reconcile(0) retires all on stop AND on a mid-run exception in spawn or waiter - verified), never exceeds N (brute-forced), re-checks the governed desired after every backoff before spawning (the never-resume-into-the-limit guard, confirmed by a faithful resume-into-limit mutation reddening the test), and the module spawns no process / opens no socket / starts no thread / sleeps nothing (imports importlib.util, uuid, pathlib only). Spawning and the resume wait are injected seams; the real in-session spawn and the multi-account path (documented procedure) are the caller's, honoring the hard no-detached-process rule."},
+    {"severity": "note", "text": "Accepted non-blocking note: worker ids are uuid4 hex[:12] (48 bits); a collision within one fleet would overwrite a dict entry, but the probability is astronomically negligible at fleet scale, not worth a change. (The reviewer also noted that one mutation the review prompt suggested - removing the loop `continue` - does not trip the test, because the re-check guard is structural rather than dependent on `continue`; the review substituted a faithful resume-into-limit mutation that does redden the assertion, confirming the test has real teeth against the failure mode it guards.)"}
+  ],
+  "summary": "Y7 (WARP-0707, the fleet launcher) is correct and honest, and is the capstone of PLAN-0007. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 1054). warp fleet N runs an elastic control loop that reconciles the active worker pool to the token governor's desired count (spawn up / retire down via a WorkerSpawner seam, capped at N), distinguishing a drained frontier (stop and retire all) from a governor backoff (wait until resume_at via a waiter seam, then re-check desired before spawning, so it never resumes into the limit). It threads a grouping scope to every worker, always terminates, never leaks a worker or exceeds N, and - honoring feedback_no_rogue_processes - spawns no process and sleeps nothing itself: the real in-session worker spawn, the opt-in in-session resume waiter, and the multi-account procedure are the caller's. proof_digest via validate.py."
+}

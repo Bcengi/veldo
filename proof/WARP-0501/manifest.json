@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0501",
+  "commit": "87f14f2af2099f123d3d0c8245ed9e0f086b8be4",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0005 R1)",
+  "plan_hash": "sha256:48ebdb0410a49b25",
+  "produced_at": "2026-07-17T23:02:43Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runlog.py is the Run Lens live substrate: a per-run folder under the git common dir at warp/runs/<run-id>/ (shared across worktrees, outside git history) with a write-once meta.json, an atomically written state.json (temp file plus os.replace, fsync), a sequence-numbered append-only live.jsonl, and a commands inbox; set_state merges atomically, append_live is monotonic from 0 and read_live is gap-detectable and tolerates a torn trailing line, classify returns active/blocked/stale/done with terminal winning, an explicit blocker winning over a stale heartbeat, and an absent or aged heartbeat classifying stale (never blocked). Five durable run milestones (run.started/blocked/resumed/done/aborted) were added to EVENT_TYPES in both events.py copies; run.step and run.heartbeat are live-only and absent from the committed vocabulary. Runs root resolves from git-common-dir with a WARP_RUNS_ROOT override for tests."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the registry over a temporary runs root: create, atomic set_state merge, sequenced live append and since_seq filter, heartbeat, block with question, explicit-blocker-wins-over-stale, resume, old-heartbeat-running classifies stale with a non-tautology teeth assertion that it is not active, finish classifies done, terminal-wins-over-stale, list_runs, plus the two closures (absent heartbeat classifies stale; read_live skips a torn trailing line) each with a teeth assertion, and the vocabulary checks (milestones present, run.step/heartbeat absent); part of selftest 783 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runlog.py is the Run Lens live substrate: a per-run folder under the git common dir at warp/runs/<run-id>/ (shared across worktrees, outside git history) with a write-once meta.json, an atomically written state.json (temp file plus os.replace, fsync), a sequence-numbered append-only live.jsonl, and a commands inbox; set_state merges atomically, append_live is monotonic from 0 and read_live is gap-detectable and tolerates a torn trailing line, classify returns active/blocked/stale/done with terminal winning, an explicit blocker winning over a stale heartbeat, and an absent or aged heartbeat classifying stale (never blocked). Five durable run milestones (run.started/blocked/resumed/done/aborted) were added to EVENT_TYPES in both events.py copies; run.step and run.heartbeat are live-only and absent from the committed vocabulary. Runs root resolves from git-common-dir with a WARP_RUNS_ROOT override for tests."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runlog.py is the Run Lens live substrate: a per-run folder under the git common dir at warp/runs/<run-id>/ (shared across worktrees, outside git history) with a write-once meta.json, an atomically written state.json (temp file plus os.replace, fsync), a sequence-numbered append-only live.jsonl, and a commands inbox; set_state merges atomically, append_live is monotonic from 0 and read_live is gap-detectable and tolerates a torn trailing line, classify returns active/blocked/stale/done with terminal winning, an explicit blocker winning over a stale heartbeat, and an absent or aged heartbeat classifying stale (never blocked). Five durable run milestones (run.started/blocked/resumed/done/aborted) were added to EVENT_TYPES in both events.py copies; run.step and run.heartbeat are live-only and absent from the committed vocabulary. Runs root resolves from git-common-dir with a WARP_RUNS_ROOT override for tests."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runlog.py is the Run Lens live substrate: a per-run folder under the git common dir at warp/runs/<run-id>/ (shared across worktrees, outside git history) with a write-once meta.json, an atomically written state.json (temp file plus os.replace, fsync), a sequence-numbered append-only live.jsonl, and a commands inbox; set_state merges atomically, append_live is monotonic from 0 and read_live is gap-detectable and tolerates a torn trailing line, classify returns active/blocked/stale/done with terminal winning, an explicit blocker winning over a stale heartbeat, and an absent or aged heartbeat classifying stale (never blocked). Five durable run milestones (run.started/blocked/resumed/done/aborted) were added to EVENT_TYPES in both events.py copies; run.step and run.heartbeat are live-only and absent from the committed vocabulary. Runs root resolves from git-common-dir with a WARP_RUNS_ROOT override for tests."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runlog.py is the Run Lens live substrate: a per-run folder under the git common dir at warp/runs/<run-id>/ (shared across worktrees, outside git history) with a write-once meta.json, an atomically written state.json (temp file plus os.replace, fsync), a sequence-numbered append-only live.jsonl, and a commands inbox; set_state merges atomically, append_live is monotonic from 0 and read_live is gap-detectable and tolerates a torn trailing line, classify returns active/blocked/stale/done with terminal winning, an explicit blocker winning over a stale heartbeat, and an absent or aged heartbeat classifying stale (never blocked). Five durable run milestones (run.started/blocked/resumed/done/aborted) were added to EVENT_TYPES in both events.py copies; run.step and run.heartbeat are live-only and absent from the committed vocabulary. Runs root resolves from git-common-dir with a WARP_RUNS_ROOT override for tests."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the registry over a temporary runs root: create, atomic set_state merge, sequenced live append and since_seq filter, heartbeat, block with question, explicit-blocker-wins-over-stale, resume, old-heartbeat-running classifies stale with a non-tautology teeth assertion that it is not active, finish classifies done, terminal-wins-over-stale, list_runs, plus the two closures (absent heartbeat classifies stale; read_live skips a torn trailing line) each with a teeth assertion, and the vocabulary checks (milestones present, run.step/heartbeat absent); part of selftest 783 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 783 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: the registry control logic and its real surface (writing and reading the per-run folder, classification) run in the gate over a temp runs root, stdlib only. This item is storage and classification only; the executor produces the events live in R2. The run folder is outside git history, so nothing high-volume is committed. Non-blocking follow-ups: the atomic-write mechanism is present and correct but has no dedicated race test; meta.json write-once is a caller convention (unreachable second write, fresh uuid); _next_seq is O(n^2) over a long live log, to be replaced by a cached counter when the executor owns the run in R2."
+  ],
+  "rollback": "git revert; additive - .warp/runlog.py, five run.* entries in both events.py copies, a run_registry capability entry (both copies), a selftest block, the WARP-0501 spec, and the PLAN-0005 plan; no protected path; the run folder is outside git history."
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0907",
+  "commit": "70a9ecba52ab34781da1398fa129c30564c98e29",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder)",
+  "reviewed_at": "2026-07-20T01:50:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:caa278dafff9bb2d",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "In-session resume is the wired default. bin/warp cmd_fleet builds fleet.InSessionWaiter when no waiter is injected; the selftest drives cmd_fleet with waiter=None over a spy and asserts exactly one in-session default waiter is built, it waits until the governor resume epoch (4242) then re-checks the desired count, and a backed-off pool that then drains spawns nothing (start called zero times). Over an injected clock, so the gate never sleeps. The default path creates no timer and no background process."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "The external supervisor is opt-in and off by default. Importing supervisor.py and not calling install() leaves no timer and no service unit (selftest over a temp unit dir). Nothing reaches install/status/uninstall except the explicit warp supervisor subcommand; warp supervisor with no action and install with no schedule both fail loud (nonzero) touching no systemd. With no explicit install the fleet behaves exactly as the AC1 in-session default."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Right architecture, visible, removable. install() generates a standard systemd user timer plus a oneshot service ([Timer] OnCalendar + WantedBy=timers.target, [Service] Type=oneshot + ExecStart), computes OnCalendar from the governor resume epoch, enables through an injected runner plus daemon-reload, and is idempotent and confined (re-run writes byte-identical units, exactly two files in the injected dir). status reports installed/is-enabled/is-active through the runner; uninstall disables and removes both units cleanly and is idempotent. All over a temp XDG dir and a fake systemctl; the real user systemd is never touched. It is a user timer, not a system crontab, resident daemon, lock-refresher, or headless polling loop."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "The session-launch primitive is a fail-loud reference seam. launch_session raises SupervisorLaunchError unwired and delegates to an injected launcher when wired. install runs only systemctl subcommands (daemon-reload/enable/disable/is-enabled/is-active) and never launches a session; a fabricate-a-schedule install is refused (RULE #6); and a launch spy proves install never calls launch_session by default or as a side effect. supervisor.py imports no subprocess at module top and never calls os.fork or os.system; RealSystemctl lazily imports subprocess only to run systemctl. No detached process is created by default, by the gate, or by the in-session path."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": ".warp/supervisor.py ships in the canonical engine and all seven packs byte-identical (content and mode), and the bin/warp supervisor subcommand ships identically (100755). The three new capability entries are honest and correctly not repo-only because they ship (fleet_in_session_resume_default and fleet_external_supervisor mechanical, fleet_supervisor_session_launch reference); all homes resolve in the shipped engine under the WARP-0906 honesty check (.warp/supervisor.py in _CH_ENGINE). Both capabilities.yaml copies are byte-identical. docs/runbook.md (1.5 to 1.6) documents the in-session default, the opt-in external supervisor (off by default, how to enable/inspect/remove), and the no-detached-process boundary. Pack drift empty for all seven packs; cross-pack conformance passes."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "The full gate is GREEN. I re-ran the gate at HEAD 53461aa: selftest 1374 passed, 0 failed (this carries the WARP-0907 code unchanged; WARP-0909 landed only dispatch/executor/work.py, method.md, plugin/skills/run and selftest additions, touching none of supervisor.py, bin/warp supervisor, the three capability entries, or runbook V.8), and the isolated build at 70a9ecb was 1368/0. Template-sync pass; pack drift empty for all seven packs and cross-pack conformance pass; no protected path edited (verify.sh, warp-guard.sh, policy.yaml, policy_check.py + plugin/templates twins); index regenerated; RULE #1 clean; warp name unchanged."
+    }
+  ],
+  "checks": [
+    "SAFETY (no-rogue-processes boundary): PASS. .warp/supervisor.py imports no subprocess at module top; the only subprocess import is lazy, inside RealSystemctl.run, which only ever runs `systemctl --user`. No Popen/fork/exec/spawn of any session anywhere. Off by default and opt-in: import and install create no timer on their own; only the explicit `supervisor` subcommand reaches install/status/uninstall.",
+    "SAFETY teeth: a launch-spy proves install never launches a session (spy stays empty); a fake systemctl proves the runner only ever runs systemctl subcommands (daemon-reload/enable/disable/is-enabled/is-active), never a spawn; a fabricate-a-schedule install (no resume_at, no on_calendar) is refused.",
+    "bash scripts/verify.sh -> GATE: GREEN at HEAD 53461aa; selftest 1374 passed, 0 failed; isolated 70a9ecb build 1368/0 (WARP-0909 added the delta on top, additive).",
+    "pack drift empty for all seven packs; cross-pack conformance passes inside selftest; all capabilities.yaml copies byte-identical.",
+    "no protected path in the WARP-0907 impl (git show 70a9ecb: supervisor.py + bin/warp + capabilities.yaml x8 + runbook.md + selftest.py + spec + index; none is verify.sh/warp-guard.sh/policy.yaml/policy_check.py or a plugin/templates twin).",
+    "RULE #1: no em/en dash; every double-hyphen is a real systemd flag (user/now), a CLI flag (on-calendar/resume-at/account/launch-command/xdg-dir), a front-matter fence, or a code reference.",
+    "proof sequencing: this verdict binds to the built commit 70a9ecb and its proof_digest is set to proof_digest(manifest)=sha256:caa278dafff9bb2d; the manifest is the canonical evidence artifact (required_evidence [unit] satisfied by the unit check)."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Non-blocking. A hypothetical raw subprocess.Popen placed directly inside install() (bypassing both the injected runner and the launch_session seam) would evade the current teeth: the launch spy patches SUP.launch_session, and the fake systemctl only observes calls routed through the runner, so neither would observe a Popen written straight into install. The shipped code is clean (no such Popen exists; the module imports no subprocess at module top and only RealSystemctl.run touches subprocess, for systemctl only), so this is recorded as a note, not a defect. A future guard could add source-inspection teeth asserting supervisor.py never references subprocess/os.fork/os.system outside RealSystemctl.run."
+    }
+  ],
+  "summary": "WARP-0907 (the fleet supervisor, W7 of PLAN-0009) passes with notes at 70a9ecb, zero blocking findings. In-session resume is the wired default of warp fleet (AC1, proven by driving cmd_fleet with no waiter over a fake clock: it builds the InSessionWaiter, waits to the governor resume epoch, re-checks, and spawns nothing). The external supervisor is opt-in and off by default (AC2): nothing is scheduled or created until the user explicitly runs warp supervisor install. It is the right architecture, visible and removable (AC3): a standard systemd user timer plus oneshot service with OnCalendar from the governor resume time, enabled through an injected runner, idempotent and confined, with clean idempotent status/uninstall, all tested over a temp XDG dir and a fake systemctl so the real user systemd is never touched. The session launch is a fail-loud reference seam (AC4): install runs only systemctl subcommands and never launches a session, launch_session fails loud unwired and delegates when wired, a fabricate-a-schedule install is refused, and a spy proves install never launches a session. The module ships in the engine and all seven packs byte-identical with three honest, non-repo-only capability entries and runbook V.8 documentation (AC5). The full gate is GREEN (AC6): 1374/0 at HEAD 53461aa which carries the WARP-0907 code unchanged, 1368/0 at the isolated 70a9ecb build, template-sync and pack drift and cross-pack conformance clean, no protected path edited, index regenerated, RULE #1 clean, warp name unchanged. The safety boundary (feedback_no_rogue_processes) holds by construction: no subprocess at module top, the only subprocess use is a lazy systemctl call inside RealSystemctl, and no session spawn exists anywhere. One non-blocking note: a hypothetical raw Popen written directly into install would bypass the spy and the fake runner, but no such code exists and the shipped module is clean. Verdict: pass_with_notes."
+}

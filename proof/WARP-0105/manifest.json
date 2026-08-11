@@ -1,0 +1,97 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0105",
+  "commit": "da6a96f145e42997457aa875250f13eddd38cf3c",
+  "producer": "claude-fable-5 (implementing agent)",
+  "produced_at": "2026-07-16T23:30:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "journeys",
+          "ref": "proof/WARP-0105/runner-evidence.txt: pass.journey.json drives real chromium 7 steps (3 assertions: expect_hidden/expect_visible/expect_text) all green, exit 0"
+        },
+        {
+          "type": "operational",
+          "ref": "run.sh resolves Playwright via global npm root; passing fixture green end to end"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "ui_states",
+          "ref": "proof/WARP-0105/landing.png + after-save.png captured by driving the flow; fail run captured FAILURE-step-2.png"
+        },
+        {
+          "type": "journeys",
+          "ref": "runner-evidence.txt: fail.journey.json stops at step 2 (expect_visible #status times out - status never revealed), exits 1"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "runner-evidence.txt: broken fixture a11y scan flags img-alt, input-label, control-name, html-lang (4 real violations); good fixture a11y clean (0)"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "test_web_runner.sh: pass fixture exit 0, fail fixture exit 1 (self-test green); README + portable resolver ship; capabilities.yaml marks journeys_runner/ui_state_runner/accessibility_scan reference; warp gate declares journeys na (no UI)"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 77 (unchanged; runner has its own browser self-test)"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    }
+  ],
+  "assumptions": [
+    "The runner is exercised in this proof and by its own self-test (both require Node + Playwright chromium, present here). It is not wired into the every-commit warp gate by design: warp has no UI, and a per-commit browser launch is heavy and environment-dependent. Consuming repos wire it into their journeys slot."
+  ],
+  "rollback": "git revert da6a96f; the runner and fixtures are additive files under scripts/runners/web/, touch no synced core, and are not in the warp gate; selftest unchanged at 77.",
+  "review_notes": [
+    "advisory: a journey with no expect_* step (and no a11y) exits 0 - it asserts nothing; legitimate for capture-only journeys but a rubber-stamp risk. Tracked follow-up: warn when a journey asserts nothing.",
+    "info: the duplicate-id a11y rule is implemented and unit-checked but broken.html triggers only the other four; tracked follow-up: extend the fixture to exercise all five.",
+    "info (resolved): AC1 evidence wording corrected - 3 of the 7 steps are assertions, not 7."
+  ]
+}

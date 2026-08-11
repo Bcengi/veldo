@@ -1,0 +1,48 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0403",
+  "commit": "f2cf149e13b09ab44bb6700f13625768252acc3d",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T14:48:12Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:40c12698d172c4fd",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Only double-hyphen occurrences are CLI flags in backticked command examples and YAML front-matter fences, accepted by the gate's dash sweep, not em-dash stand-ins."
+    }
+  ],
+  "summary": "X3 (WARP-0403, lessons store) is correct and honest. Independent adversarial review: clean PASS, gate GREEN, add()/relevant()/scope_matches() driven independently over a temp store and the real seed (match surfaced, unrelated path AND tag lessons excluded from a path-only context, empty and no-match return [], most-recent-first ordering, all eleven malformed shapes raise LessonError with store size unchanged). Non-tautology 5/5: relevant-returns-all, scope-always-true, unknown-category-accepted, ordering-not-reversed, two-key-scope-accepted mutations all caught. Capabilities lessons_store mechanical + lessons_surfacing procedure both honest per the fresh_context_review split; both capabilities.yaml copies byte-identical; stdlib only; proportionate; generic; ASCII. proof_digest recomputed via validate.py."
+}

@@ -1,0 +1,3 @@
+passing fixture: exit 0 (every case matched)
+failing fixture: exit 1 (real defect caught and named)
+control logic + fixtures self-test: pass (part of selftest 667 passed, 0 failed)

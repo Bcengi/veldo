@@ -1,0 +1,24 @@
+{
+  "name": "naive plugin loader leaks a file (deliberately failing)",
+  "loader": "naive",
+  "cases": [
+    {
+      "name": "a well-formed plugin loads and exposes its manifest",
+      "members": [
+        {"name": "plugin.json", "data": "{\"name\": \"sample-plugin\", \"version\": \"1.0.0\"}"},
+        {"name": "lib/main.py", "data": "def activate():\n    return True\n"}
+      ],
+      "verdict": "load",
+      "expect_manifest": {"name": "sample-plugin", "version": "1.0.0"}
+    },
+    {
+      "name": "a zip-slip dot-dot traversal is rejected",
+      "members": [
+        {"name": "plugin.json", "data": "{\"name\": \"evil\", \"version\": \"9.9.9\"}"},
+        {"name": "../escaped.txt", "data": "the naive loader writes this outside the target"}
+      ],
+      "verdict": "reject",
+      "expect_error_contains": "traversal"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0609",
+  "commit": "6ddd821136618fc61d4352ea3fe6a816bd52a17b",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-19T00:46:42Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:18c4d9264426a9d8",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "All 8 work items (WARP-0601..0608) status shipped with a proof and a passing verdict (three pass_with_notes, five pass; none fail); release-check reports PLAN-0006 releasable; plan status is released."},
+    {"id": "AC2", "status": "confirmed", "note": "plugin.json bumped 3.2.0 -> 3.3.0 (clean minor); plan release.version is plugin 3.3.0; method document unchanged; the changeset touches only the spec, plan, plugin.json, index, and .warp ledger artifacts."},
+    {"id": "AC3", "status": "confirmed", "note": "Gate GREEN in a clean checkout at 6ddd821 (selftest 1205 passed, 0 failed, contracts pass); docs/genericity/dash sweeps pass; no protected path in the changeset; capabilities.yaml copies byte-identical and untouched."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review of the release commit 6ddd821 returned PASS, 0 blocking. It independently confirmed each of the eight PLAN-0006 work items is genuinely status shipped with a proof (manifest + verdict) carrying a passing verdict, ran the release-check (releasable), verified the plan is released and the plugin version is a clean 3.2.0 -> 3.3.0 minor, and verified the changeset is minimal (spec + plan + plugin.json + index + ledger, no method/product doc, no protected path) and the gate is GREEN (selftest 1205/0). Three non-blocking notes, all expected: (1) the release spec is status ready at its own impl commit, exactly as WARP-0708 was - its proof/verdict land in this evidence commit; (2) last_verify/events.jsonl record the parent commit 7d6c25b (the standard WARP pre-commit gate pattern), and the reviewer re-ran the gate against the actual release SHA and it is GREEN; (3) three of the eight verdicts are pass_with_notes, which satisfies passing (only fail blocks)."},
+    {"severity": "note", "text": "Downstream sanity confirmed by the reviewer: the plan still validates with status released, validate.py has no plan_hash logic so the plan edit does not invalidate the already-committed proofs, and spec/plan binding holds across the tree. A legitimate, minimal release act mirroring WARP-0708."}
+  ],
+  "summary": "WARP-0609 releases WARP tracker integration v1: PLAN-0006 is marked released and the plugin is bumped 3.2.0 -> 3.3.0. Independent adversarial review PASS, 0 blocking. All eight PLAN-0006 work items (routing W1, enforcement W2, seam W3, Jira intake W4, spec mirror W5, epic mirror W6, Confluence intake W7, conformance W8) are genuinely shipped with independent passing verdicts; the release-check reports the plan releasable; the version bump is a clean minor; the changeset is minimal (no method/product doc, no protected path); and the gate is GREEN (selftest 1205 passed, 0 failed). A standalone release act mirroring the WARP-0708 fleet release. proof_digest via validate.py."
+}

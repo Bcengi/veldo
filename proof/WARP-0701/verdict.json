@@ -1,0 +1,51 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0701",
+  "commit": "12e205a70cf8283a437683454548bfbc05d8d06e",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T04:14:42Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:98d581b6b9db280e",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by independent adversarial review (four passes; gate reran green, own concurrency stress on fresh and stale paths, mutations caught)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by independent adversarial review (four passes; gate reran green, own concurrency stress on fresh and stale paths, mutations caught)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by independent adversarial review (four passes; gate reran green, own concurrency stress on fresh and stale paths, mutations caught)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by independent adversarial review (four passes; gate reran green, own concurrency stress on fresh and stale paths, mutations caught)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by independent adversarial review (four passes; gate reran green, own concurrency stress on fresh and stale paths, mutations caught)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "DOGFOOD VALUE: across FOUR independent Opus reviews this foundational primitive had three real defects caught and fixed before ship. (1) BLOCKING code bug: the fresh claim used a zero-byte O_CREAT|O_EXCL create then a separate write, so a racing loser read the empty file and also won (~110/150 concurrent trials) - fixed by publishing a fully-written temp via atomic os.link. (2) BLOCKING code bug: stale-takeover did a blind os.remove then relink (a TOCTOU), so concurrent reclaimers deleted a fresh winner's record and many won (284/300) - fixed with a per-unit flock plus a re-check under the lock. (3) BLOCKING test-strength gap: the fresh-race selftest was effectively sequential and caught a reverted publish only ~3% of the time - fixed by a barrier-synchronized 96-thread x 120-round race that turns red on a normal run."
+    },
+    {
+      "severity": "note",
+      "text": "Final review confirmed the code correct under independent barrier stress (fresh 200x128 and stale 100x96: 0 double-winners; live claim never stolen 0/30x64) and all three mutations reliably caught. Residual (non-blocking): the create-then-write mutant still escapes about 1 in 500 selftest runs at 120 rounds; the code is additionally defended at runtime by the flock re-check, so this is a test-tail caveat, not a live risk."
+    },
+    {
+      "severity": "note",
+      "text": "Deferred (non-blocking): heartbeat() takes no fencing lock, so a holder that resumes after passing the stale threshold can briefly double-hold with a reclaimer and self-resolves on its next heartbeat (inherent TTL-lease behavior, never steals a fresh claim). fcntl makes the module Unix-only, documented, fine for the Linux/Mac fleet."
+    }
+  ],
+  "summary": "Y1 (WARP-0701, the fleet claim ledger with capability matching) is correct and honestly tested. Independent adversarial review across FOUR passes caught and closed two blocking concurrency bugs (a zero-byte fresh-claim race and a blind-remove stale-takeover TOCTOU) and a blocking test-strength gap, and the final review confirms the code correct under heavy barrier stress (0 double-winners on fresh and stale, live claims never stolen) with genuinely threaded, reliable non-tautology teeth. A fresh unit is claimed atomically via os.link, stale-takeover is serialized by a per-unit flock with a re-check, and a claim is granted only when the unit's requirements are a subset of the worker's capabilities. Gate GREEN (selftest 992). proof_digest via validate.py."
+}

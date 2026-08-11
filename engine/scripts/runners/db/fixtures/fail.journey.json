@@ -1,0 +1,23 @@
+{
+  "name": "asymmetric down (deliberately failing: the down forgets a table)",
+  "check_reversibility": true,
+  "migrations": [
+    {
+      "id": "0001_create_users_and_audit",
+      "up": [
+        "CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT NOT NULL)",
+        "CREATE TABLE audit_log (id INTEGER PRIMARY KEY, action TEXT)"
+      ],
+      "down": [
+        "DROP TABLE users"
+      ]
+    }
+  ],
+  "seed": [
+    "INSERT INTO users (id, email) VALUES (1, 'a@example.test')"
+  ],
+  "invariants": [
+    {"name": "one user seeded", "query": "SELECT count(*) FROM users", "expect_rows": [[1]]}
+  ],
+  "budgets": []
+}

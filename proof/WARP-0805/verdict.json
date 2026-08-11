@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0805",
+  "commit": "7544b142380bf4c0b8cc650e7de3e6768d7e3f50",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-19T02:46:17Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:5126ac0f9538dfdd",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "packs/copilot is a byte-identical, symlink-free copy of the 139-file engine + canonical AGENTS.md + CI workflow + thin Copilot driver; engine_drift == []."},
+    {"id": "AC2", "status": "confirmed", "note": "Hook-less enforcement holds: git pre-push feeds the guard the JSON stdin payload and behaviorally blocks unproven (exit 2), allows proven (exit 0), fails closed if guard missing (exit 1); CI required check documented + runs the gate; not weaker than a local-hook tool. No fail-open."},
+    {"id": "AC3", "status": "confirmed", "note": "Declared in the manifest; drift-check spans 4 packs all byte-identical; teeth proven on the committed copilot copy (differs/missing)."},
+    {"id": "AC4", "status": "confirmed", "note": "Engine/AGENTS.md/skills/agents identical to canonical; only the thin Copilot driver (copilot-instructions.md, prompt, hooks/pre-push) net-new."},
+    {"id": "AC5", "status": "confirmed", "note": "Selftest's 5 assertions bound to real file content + the mutate/remove drift teeth (re-proven on the copilot copy); non-tautological."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review at 7544b14: pass_with_notes, 0 blocking. The highest-risk claim (hook-less enforcement, NG2) was behaviorally cleared: the git pre-push hook feeds scripts/warp-guard.sh the JSON payload on stdin (tool_input.command), NOT the env CMD the guard ignores, so an unproven push EXITS 2 (blocks), a proven push (green last_verify commit==HEAD + proof for HEAD) EXITS 0 (allows), a wrong-commit EXITS 2 (commit-bound), and a missing guard EXITS 1 (fail-closed); env CMD + empty stdin reproduced the W3 fail-open (exit 0), confirming stdin is the only live channel. copilot-instructions.md documents enabling both the git hook (core.hooksPath) and the required CI status check, and warp-gate.yml actually runs verify.sh + policy_check server-side. Enforcement is NOT weaker than a local-hook tool."},
+    {"severity": "note", "text": "Three non-blocking notes: (1) the Copilot instruction/prompt/agent format is plausible current idiom on a fast-moving surface (the spec flags this; the guaranteed enforcement does not depend on it); (2) both enforcement mechanisms need one-time human enablement (git config core.hooksPath hooks; setting the required status check in branch protection) - inherent to the git/hook-less model, documented honestly, true of every pack, not a Copilot-specific weakening; (3) the copilot selftest reuses the shared drift machinery rather than a copilot-specific temp-clone mutation - teeth still real (re-proven directly on the copilot copy), a stylistic asymmetry."},
+    {"severity": "note", "text": "Operational: faithful engine copy (139 files, real, no symlinks); gate GREEN, selftest 1236/0, no pollution (packs/copilot/specs + plans carry only TEMPLATE.md); caps byte-identical; authored wrapper + spec dash-clean; purely additive commit. Verified GREEN in a clean detached worktree."}
+  ],
+  "summary": "W5 of PLAN-0008 (the GitHub Copilot pack, the hook-less-enforcement case) is correct. Independent adversarial review pass_with_notes, 0 blocking. packs/copilot is a committed self-contained directory: the 139-file canonical engine copied in byte-identical (held by the now-four-pack drift-check) + the canonical AGENTS.md + a thin Copilot driver (always-injected copilot-instructions.md, a loop prompt, the git pre-push hook, reused skills/agents). The distinctive claim - hook-less enforcement - holds: Copilot has no local editor hook, so the git pre-push hook (feeding the guard the JSON stdin payload) plus the CI required status check enforce the invariant, behaviorally proven to block the unproven and allow the proven, not weaker than a local-hook tool. Reuse is faithful. Gate GREEN (selftest 1236 passed, 0 failed), no pollution, no regression, caps byte-identical, no protected path. proof_digest via validate.py."
+}

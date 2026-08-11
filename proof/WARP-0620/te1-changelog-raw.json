@@ -1,0 +1,23 @@
+{
+  "issue": "TE1-1",
+  "entries": [
+    {
+      "id": "31204",
+      "at": "2026-07-24T20:28:12.074-0400",
+      "actor": "Veldo Agent",
+      "actor_type": "app",
+      "account_id": "712020:591c1515-6d45-42a5-b862-796a0690e44f",
+      "from": "To Do",
+      "to": "Needs Decision"
+    },
+    {
+      "id": "31205",
+      "at": "2026-07-24T20:30:34.329-0400",
+      "actor": "Dmitry Grinberg",
+      "actor_type": "atlassian",
+      "account_id": "712020:fbf897f7-f36a-429c-b87d-247c12b6a2af",
+      "from": "Needs Decision",
+      "to": "Approved"
+    }
+  ]
+}

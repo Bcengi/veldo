@@ -1,0 +1,139 @@
+{
+ "schema": "warp.proof/v1",
+ "spec_id": "WARP-0617",
+ "commit": "9cf58f1298827eecefdb15b5653ba73616833dfe",
+ "producer": "claude-opus-4-8[1m] (build, WARP-0617 W3 of PLAN-0016, fresh-context single writer, in-session; build the one-way, idempotent, redacted outbound Decision projection - a repo-only sibling of tracker_mirror that projects a warp.request/v1 onto a VEL Decision issue through the shipped WARP-0603 seam, over the deterministic FakeTracker offline, with the live edge reference-wired via the shipped fenced adapter and never gate-run)",
+ "produced_at": "2026-07-24T03:42:44Z",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "project_requests in .warp/request_projection.py (a repo-only sibling of tracker_mirror.mirror_events) reads warp.request/v1 records and UPSERTS ONE Decision issue per request, keyed by the request id, through the shipped WARP-0603 seam: create_or_update_child(None, rid, ...) makes a top-level issue (never under a spurious epic, keyed by the request id so it never forks), set_status transitions it, comment posts the brief and any NG4 status comment, assign sets the approver, and the new set_watchers sets the watchers. Status reaches the tracker through resolve_request_status_map, which mirrors tracker_mirror.resolve_status_map exactly (global map, per-repo override, fail-closed key validation, NG4-safe empty default) but validates against the DISTINCT request status vocabulary (a separate resolver, because request statuses are not spec-lifecycle statuses and tracker_mirror.py is not in this spec's footprint); an unmapped request status is a KEYED comment via _project_one's single load-bearing NG4 line (status_map.get returns None), never an invented transition. It writes ONLY through the seam - there is NO path that mutates a request/spec/plan/decision record or the requests index - so the repository stays the single source of truth. IDEMPOTENT: the issue shell is keyed by the request id (never forked), set_status is a no-op when unchanged, and the brief + NG4 comments are keyed so they post at most once."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0617 block, offline (no network) over the FakeTracker: a well-formed request of EACH of the six touchpoints projects exactly one Decision issue keyed by its request id (six created, six transitions); a re-run forks nothing, records no duplicate transition (transitions 0) or comment (briefs 0), reports every issue reused (reused 6), and leaves the board state_digest byte-identical; the requests index (json.dumps) is byte-unchanged after both runs (one-way); an unmapped request status is a keyed comment (unmapped 1, transitions 0, a REQ-NG4:reqstatus: keyed comment present) and leaves the status unset (NG4). Part of selftest 2515 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "build_brief assembles the readable brief a human decides from: a plain-language summary; an explicit RISK section (_risk_section: the tier and why, the reversal-cost class reversible|costly|irreversible via _reversal - the bound decision's reversal_cost when a decision_choice, else the irreversible impact flag, the impact flags data_mutating/money/external, whether the projection is a fake offline write or a live board write, and the residual trust a human still carries); WHAT approving vouches for and what it does NOT (_vouches_section); the options with their dead-ends (_options_section, read from the bound warp.decision/v1 through the injected decision_reader when the touchpoint is decision_choice); and the bound_artifact DIGEST DISPLAYED. The issue is assigned to the responsible human approver (resolve_approver: a required role in projection.role_approvers, else projection.approver) and the configured projection.watchers are set. It DISPLAYS bound_artifact.digest as the binding and NEVER presents request_hash to a human (request_hash is not read into the brief anywhere)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0617 block: for each of the six touchpoints the projected issue carries a keyed brief comment containing '## RISK' and '## What approving vouches for', the record's own bound_artifact.digest (sha256:bindN) present and its request_hash (sha256:reqhashN) ABSENT, the assignee dmitry-acct, the watchers [watch-1, watch-2], and fields.warp_issue_type Decision; the decision_choice brief additionally carries '## Options and dead-ends' with the bound decision's option summary ('adopt X') and its dead-end ('fails past 10k rps'). Part of selftest 2515 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "redact(text, terms) scrubs every secret-reference token (env:/keychain:, via _SECRET_REF_RE modeled on evidence.py's SECRET_REF_SCHEMES) and every org-declared sensitive term (operating data per RULE #3, case-insensitive) to REDACTION_MARKER, and _safe drops a value (returns None) on ANY doubt - a non-string value, or a residue that still matches a secret scheme after redaction - so a field the projection is not certain it scrubbed clean never reaches the third-party surface (fail closed). The brief, the RISK, the title, and every projected comment pass through redact before the write leaves the repository. Inbound ticket content is treated as untrusted DATA, never instructions: the module reads only repository records (already validated by the gate) and treats the human-authored free text it renders (a decision's option summaries and dead-ends) as data to be redacted and displayed - the tracker_intake / tracker_bridge posture reaffirmed in the module docstring, not re-implemented."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0617 block: a decision_choice request whose bound decision's option carries a secret reference (env:PROD_DB_PASSWORD, keychain:prod_signing_key) and an operating datum (MRR 45000, declared in projection.sensitive_terms) projects with all three redacted and never in the clear (none appear in the brief, [redacted] does); redact masks a secret reference directly ('token env:X here' -> 'token [redacted] here') and _safe(12345) is None (a non-string value fails closed). Part of selftest 2515 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The projection is wired as `warp requests project` (main -> _cli): a dry-run projects over an in-memory FakeTracker with no network and no token (run_mode fake); without it the runner builds the SAME fenced OAuthJiraCloudAdapter the mirror builds via tracker_mirror_runner.build_live_adapter (a secret reference resolved at the seam) and FAILS CLOSED when no token resolves (run_mode live), reference-wired and NEVER run in the gate. project_from_repo is the thin repo wrapper (build_request_index reads .warp/requests over the one parser; _repo_decision_reader resolves a bound decision via decision.load_record). The request status maps onto the provisioned VEL Decision states (Needs Decision, In Discussion, Awaiting Approval, Changes Requested, Approved/Decided, Rejected, Blocked, Superseded) through resolve_request_status_map. It creates no timer or daemon and spawns nothing detached (NG1): each invocation is one reconcile pass. A repo with no tracker config is a clean no-op."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0617 block: a request with no tracker config is SKIPPED cleanly (projected empty, every record in skipped), never errored; the module hardcodes no company/board config value (no bcengi/dejitech/.atlassian.net match); an unmapped request status maps to a keyed comment against the provisioned states (NG4). The module selfcheck (python3 .warp/request_projection.py selfcheck) drives a fixture request end to end over the FakeTracker offline. Part of selftest 2515 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The WARP-0617 selftest drives the WHOLE projection over the deterministic FakeTracker offline (no network) and is NON-TAUTOLOGICAL: a request of each touchpoint projects one Decision issue with the brief + RISK + displayed digest + assignee + watchers; a re-run is byte-identical (idempotent); the requests index is byte-unchanged (one-way); a secret reference and an operating datum are redacted (never in the clear); an unmapped status is a keyed comment not a transition (NG4). Each load-bearing behavior carries an in-memory source-mutation TOOTH that turns its assertion RED while the on-disk .warp/request_projection.py stays byte-unchanged: T1 neutralizes the redactor (out = _SECRET_REF_RE.sub(REDACTION_MARKER, text) -> out = text) so a secret reference is emitted in the clear; T2 neutralizes the keyed brief-comment reuse (key=\"%s:brief\" % rid -> key=None) so a re-run duplicates the brief and the board is no longer byte-identical; T3 neutralizes the NG4 guard (status_map.get(status) -> status_map.get(status, status)) so an unmapped status invents a transition to the raw status. None of the teeth is vacuous: each mutant flips exactly its target assertion while the real path holds, and the module sha256 is byte-unchanged on disk after each."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0617 block: T1 the mutant redact leaks 'env:PROD_SECRET' while the real masks it (module byte-unchanged); T2 the mutant re-run changes state_digest while the real re-run is byte-identical (module byte-unchanged); T3 the mutant transitions the unmapped-status issue to 'in_discussion' while the real leaves it unset with a keyed comment (module byte-unchanged). Plus the WARP-0617 dogfood front-matter checks (standalone lane, standard risk + human_approval not_required + no protected path, placement [tracker] with a footprint, behavior_bearing with observability, .warp/request_projection.py declared in the tracker area of the architecture contract, the placement gate passing with no tier elevation) and the engine-sync / honesty checks (capabilities.yaml byte-identical across root + plugin/templates + 6 packs; the tracker_request_projection capability declared mechanical, repo-only, home .warp/request_projection.py; the module REPO-ONLY like the tracker family, not shipped to plugin/templates or packs). Part of selftest 2515 passed, 0 failed."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "lint",
+   "status": "passed"
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "python3 scripts/selftest.py: 2515 passed, 0 failed (the WARP-0617 block adds 30 checks: positive controls for all six touchpoints with the brief + RISK + displayed digest + assignee + watchers, the options/dead-ends render, idempotency, one-way, redaction, NG4, the generic no-op + no-hardcode checks, the three anti-vacuity teeth T1-T3, and the dogfood + engine-sync checks; baseline before this spec was 2485)"
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "specs/index.md regenerated by scripts/update_index.py with WARP-0617 (status review); check_generated green"
+  },
+  {
+   "name": "docs",
+   "status": "passed",
+   "detail": "no em/en dash, no non-ASCII in the authored files (.warp/request_projection.py, the .warp/tracker_adapter.py edit, the spec, the capability entry); no double-hyphen prose separator; genericity sweep clean (the module hardcodes no company/board value)"
+  },
+  {
+   "name": "template_sync",
+   "status": "passed",
+   "detail": "check_template_sync green; .warp/request_projection.py is REPO-ONLY (a tracker-family sibling, like tracker_mirror.py / tracker_adapter.py - the whole tracker family lives only at root .warp/, only tracker.py is engine-synced), so it has no template/pack twin; only the tracker_request_projection capability ENTRY is synced, byte-identical across all eight capabilities.yaml copies"
+  },
+  {
+   "name": "pack_drift",
+   "status": "passed",
+   "detail": "engine byte-identical across all packs; the only engine-relevant change is the capabilities.yaml entry, propagated to all eight copies (root + plugin/templates + 6 packs) sha256 identical; .warp/request_projection.py and the .warp/tracker_adapter.py edit are repo-only tracker-family code, not part of the shipped engine set"
+  },
+  {
+   "name": "shape_gate",
+   "status": "passed",
+   "detail": "mechanizable module_lines budget respected (.warp/request_projection.py is 601 lines, .warp/tracker_adapter.py 910, both under 1000); footprint-versus-diff passes (every changed source path is covered by the WARP-0617 footprint globs); .warp/request_projection.py and .warp/tracker_adapter.py both resolve to the tracker area (placement [tracker], no cross-area edge, no tier elevation). Review-lane (non-blocking) notes: .warp/tracker_adapter.py duplication_ratio 15% is PRE-EXISTING structural duplication of the seam's uniform validate-then-primitive methods (identical at HEAD; the new set_watchers follows that established pattern and did not increase it); the cyclomatic-complexity hotspots were removed by extracting _merge_projection/_validate_projection and _target_repo/_resolve_decision/_project_one"
+  },
+  {
+   "name": "secret_scan",
+   "status": "passed"
+  },
+  {
+   "name": "contracts",
+   "status": "passed",
+   "detail": "python3 .warp/validate.py all exit 0; the WARP-0617 spec validates (status review), and this proof passes check_required_evidence (unit) and check_criteria_coverage (AC1-AC5 exactly)"
+  },
+  {
+   "name": "teeth_reproduced",
+   "status": "passed",
+   "detail": "T1 redactor neutralized: a secret reference is emitted in the clear (real masks it). T2 keyed brief-comment reuse neutralized: a re-run duplicates the brief and the board is no longer byte-identical (real re-run is byte-identical). T3 NG4 guard neutralized: an unmapped status invents a transition to the raw status (real posts a keyed comment and leaves the status unset). Each mutant flips only its target; .warp/request_projection.py sha256 byte-unchanged on disk after each"
+  }
+ ],
+ "assumptions": [
+  "COMMIT BINDING: the gate ran GREEN at 9cf58f1298827eecefdb15b5653ba73616833dfe (the WARP-0617 code commit this proof binds to), exactly as scripts/verify.sh stamped .warp/last_verify. This proof is committed in a second evidence commit on top, so the manifest binds to the commit it proves (the WARP-0613/0614/0615 pattern, not an in-commit-proof deviation). STOPPED AT REVIEW: no push, no self-review; an independent fresh-context reviewer records the verdict.",
+  "WARP-0617 is a STANDALONE tracker-lineage spec (W3 of PLAN-0016) composing on the shipped W2 request envelope (warp.request/v1, WARP-0615), the shipped one-way mirror (tracker_mirror, WARP-0605/0606 + the WARP-0613 snapshot pattern), the WARP-0603 seam + FakeTracker, and the live fenced OAuth adapter (WARP-0612/0614). It reads the request and projects outward only; the inbound edge (W5, WARP-0619) writes the settlement and advances the status, and the authorization/quorum logic (W6, WARP-0616) is a separate, not-yet-built item - honestly out of scope here.",
+  "REPO-ONLY, NOT ENGINE-SYNCED: .warp/request_projection.py is a tracker-family module. The whole tracker family (tracker_adapter, tracker_mirror, tracker_intake, tracker_jira_init, tracker_mirror_runner, tracker_bridge, tracker_conformance, tracker_jira_live) lives ONLY at root .warp/ and is marked scope: repo-only in the capabilities manifest; only tracker.py (the routing resolver) is engine-synced across plugin/templates + the six packs. So request_projection.py stays repo-only like its siblings (a selftest asserts it is NOT present under plugin/templates or any pack), and ONLY the tracker_request_projection capability ENTRY is synced byte-identical across all eight capabilities.yaml copies. This CORRECTS the task's working premise that tracker_mirror.py is engine-synced (8 copies) - it is not; it is repo-only, and the footprint (which lists request_projection.py only at root, and capabilities.yaml at all eight locations) already encodes the repo-only decision.",
+  "STATUS MAP IS A SIBLING RESOLVER, NOT resolve_status_map VERBATIM: the request status vocabulary (open, in_discussion, awaiting_approval, needs_decision, changes_requested, blocked, accepted, rejected, superseded) is DISTINCT from the spec-lifecycle vocabulary tracker_mirror.resolve_status_map validates keys against (ready, blocked, in_review, shipped, merged), and the VEL Decision states map 1:1 to the REQUEST statuses, not through the spec statuses. Since tracker_mirror.py is not in this spec's footprint (it must not be edited), resolve_request_status_map is a new sibling in request_projection.py that mirrors resolve_status_map's exact shape (global map + per-repo override + fail-closed key validation + NG4-safe empty default) and reuses the NG4 guarantee verbatim, but validates against REQUEST_STATUSES (loaded from request.py so the two cannot drift). This is the architecturally correct reading of 'reconcile status through resolve_status_map onto the VEL states': the pattern and the NG4 guarantee are reused; a second vocabulary gets its own map rather than being forced through a validator built for a different one.",
+  "SEAM ADDITION (set_watchers): AC2 requires the configured watchers be set, and the WARP-0603 seam had no watcher primitive, so .warp/tracker_adapter.py (in the footprint) gains a minimal set_watchers write op - validated by name, audited, idempotent by target SET (order-insensitive), fail-loud on an unknown object - plus its _set_watchers primitive and a watchers field on the FakeTracker record, modeled the same way assign is. This is additive; no existing seam op or test changed behavior (the new watchers field is present in every record before and after, so all before/after state_digest comparisons still hold).",
+  "REDACTION COMPLETENESS (a point for the reviewer to scrutinize): the projection's leak surface is the human-authored free text it renders (a decision's option summaries and dead-ends) plus the request's own reference strings; all of it passes through redact (secret-reference schemes env:/keychain: masked by regex, org-declared sensitive terms masked case-insensitively) and _safe (fail closed: a non-string value or a residue still matching a secret scheme is dropped). Operating-data redaction is DECLARED (config projection.sensitive_terms) per RULE #3, not heuristically detected - so the org declares its operating terms; the always-on scrub is the secret-reference schemes. There is NO write-back path: every write is through the seam (comment, set_status, assign, set_watchers, create_or_update_child), and a selftest proves the requests index is byte-identical after a run.",
+  "GATE bookkeeping (.warp/events.jsonl, .warp/last_verify) is stamped by verify.sh on every run and was NOT staged; only the WARP-0617 footprint was committed (git add with explicit paths). The pre-existing unrelated working-tree changes (briefing/, linkedin_engagement/, mem0_memory/, stripe/, data/) were left untouched."
+ ],
+ "rollback": "git revert; purely additive - a new repo-only projection module .warp/request_projection.py (a tracker-family sibling of tracker_mirror.py, reusing the shipped WARP-0603 seam and the WARP-0601 routing resolver), a minimal set_watchers op added to .warp/tracker_adapter.py, one tracker_request_projection capability entry (all eight capabilities.yaml copies byte-identical, marked repo-only), the module declared in the tracker area of .warp/architecture.yaml, a selftest block, and this spec; no protected path; the live edge is the already-shipped fenced OAuth adapter, never run in the gate; pure stdlib."
+}

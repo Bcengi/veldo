@@ -1,0 +1,76 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1007",
+  "commit": "2053f1c60f268a931f97f178483cfea299d7c95c",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0010 W7, document to plan generator)",
+  "plan_hash": "sha256:f6a5cc8e425f566b",
+  "produced_at": "2026-07-21T00:00:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "draft_plan_from_requirements (.warp/tracker_intake.py) turns a structured requirements page into a warp.plan/v1 DRAFT: it reads the page THROUGH the shipped WARP-0603 seam (intake_plan_from_requirements calls adapter.read_item, the FakeTracker in the gate and a ConfluenceCloudAdapter in production), reuses the WARP-0607 parse_requirements to extract the page's Outcomes AND the Deliverables work breakdown (no second parser), resolves the target repo with the REUSED WARP-0601 resolver (resolve_repo, a warp-repo:<repo> page label) and FAILS CLOSED by name (IntakeError) on a missing/unknown/ambiguous signal, and renders a plan whose OUTCOMES come from the page's Outcomes and with ONE work item per named Deliverable, bound to the resolved repo, the source page linked in intake_source. selftest WARP-1007 block asserts: a resolvable page drafts bound to repo-a, the outcomes equal the page's two Outcome bullets, the three work items equal the three Deliverable bullets, the source page (PLP-1, confluence) is linked in source and intake_source, and intake_plan_from_requirements drafts the same through the FakeTracker seam."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "The rendered plan is a valid warp.plan/v1 (render_plan_markdown feeds V.check_plan which returns 0 in the selftest, over a temp dir with no wired tracker config) and is a DRAFT (status: draft, no approved_by): the generator NEVER approves; a human refines the plan, allocates a real spec id per work item, and records the draft to ready approval (front_matter carries no approved_by and the selftest asserts status draft and approved_by absent). It is a deterministic non-LLM structural transform reusing parse_requirements and the routing resolver, adding no second parser and no agent call. Page content is untrusted: every front-matter value is sanitized by the SAME _fm_safe guard, so a malicious page title with embedded newlines (id:/schema:/status: injection attempt) cannot open a new front-matter key - the selftest asserts the injected keys are absent from the rendered markdown, the plan keeps the generator's PLAN-9004 id and stays a draft, and the injected plan still passes check_plan."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "The generator supplies ONLY the generation step and wires NO new tracker writes: draft_plan_from_requirements / intake_plan_from_requirements / render_plan_markdown are pure (no network, no file write, no adapter write path) and the live epic-plus-child projection that consumes an approved plan is WARP-1006 (already shipped), unchanged here. This item adds only the plan-drafting function, its seam reader, its renderer, and a Deliverables extension to the reused parser; it touches no mirror, runner, bridge, promote gate, reassign/links, or epic/child creation. The end-to-end chain (kickoff ticket -> plan draft -> human approval -> WARP-1006 epic mirror -> children through O1) is complete with this generation step in place."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "Gate-tested offline over a fixture requirements page and the FakeTracker with TEETH (selftest WARP-1007 block, no network, no filesystem beyond a temp dir): a resolvable page renders a schema-valid plan draft bound to repo-a whose outcomes MATCH the page's Outcomes and with ONE work item per named Deliverable and the page linked; parse_requirements extracts the Deliverables work breakdown; an unresolvable page (no routing label) is refused by name (IntakeError); a malicious page title cannot inject plan front matter and the resulting plan still validates as a warp.plan/v1 draft; and the rendered plan passes V.check_plan. Non-tautological: with the routing label present the page drafts (repo resolved), removed it refuses."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "capabilities.yaml gains an honest doc_to_plan_generator entry (status: mechanical, home .warp/tracker_intake.py, scope: repo-only) describing the reuse of the WARP-0603 seam, the WARP-0607 parse, and the WARP-0601 resolver, the status:draft never-auto-approved plan, the _fm_safe injection guard, and that it wires no new tracker writes. The entry is byte-identical across all eight capabilities.yaml copies (.warp, plugin/templates/.warp, and the six packs; a single md5). The only edited ENGINE_GLOBS file that ships is .warp/capabilities.yaml (re-synced byte-identical); .warp/tracker_intake.py and scripts/selftest.py are repo-only build machinery (not laid into plugin/templates or the packs, consistent with their shipped siblings) and plugin/templates/confluence-requirements-template.md is a plugin wrapper doc, not an ENGINE_GLOBS file, so none need pack sync. bash scripts/verify.sh -> GATE: GREEN at R (2053f1c60f268a931f97f178483cfea299d7c95c): catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared; selftest 1476 passed / 0 failed (+12 WARP-1007 checks over 1464 at WARP-1006); check_template_sync.sh pass; check_pack_drift.py pass (7 packs, engine byte-identical, capabilities.yaml byte-identical across plugin/templates and the six packs); check_docs.sh pass (em/en dash sweep, non-ASCII sweep, genericity sweep clean); python3 .warp/validate.py all exit 0 (WARP-1007 valid at status shipped, required_evidence [unit]; PLAN-0010 mirroring intact). No protected path is touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins unmodified). specs/index.md regenerated (today 2026-07-21; regeneration is a no-op afterward). RULE #1 clean (no em-dash, no en-dash, no prose double-hyphen in any edited or new file). The change lands in the canonical shape: one reviewed commit R plus this uncommitted proof."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "python3 scripts/selftest.py -> 1476 passed, 0 failed at R, including the WARP-1007 block: a fixture requirements page drafts a schema-valid warp.plan/v1 draft bound to the resolved repo with outcomes from the page and one work item per named deliverable and the page linked, the seam reader (intake_plan_from_requirements) drafts through the FakeTracker, an unroutable page is refused by name, a malicious page title cannot inject plan front matter and the plan still validates and stays a draft, and the Deliverables work breakdown parses - non-tautologically (label present drafts, removed it refuses)."},
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated via python3 scripts/update_index.py (WARP-1007 now shipped; today 2026-07-21 restamps the header); regeneration is a no-op afterward (check_generated.sh pass)."},
+    {"name": "docs", "status": "passed", "detail": "check_docs.sh pass: em/en dash sweep over all tracked text files, non-ASCII sweep, and genericity sweep all clean; the new generator, its selftest block, the capability entry, the template Deliverables section, and the spec carry no company/product reference and no em/en dash."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh: pass (capabilities.yaml is intentionally not a template-sync pair but is drift-checked across the packs; no template-sync pair drifted)."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs, engine byte-identical to source; .warp/capabilities.yaml byte-identical across plugin/templates and all six packs)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all exit 0; the WARP-1007 spec is valid at status shipped with required_evidence [unit]; PLAN-0010 mirroring intact (W1-W6 shipped, W7 now shipped, W8 pending)."}
+  ],
+  "assumptions": [
+    "WARP-1007 depends on WARP-1006 (shipped); plan.py run-check PLAN-0010 WARP-1007 = clear to build. This increment adds the document-to-plan generation step only: draft_plan_from_requirements + intake_plan_from_requirements + render_plan_markdown in .warp/tracker_intake.py, reusing parse_requirements (extended with a Deliverables work-breakdown section) and the WARP-0601 routing resolver. It adds no new tracker write, no new event type, store, or offset ledger; the shipped seam, intake, mirror, bridge, promote gate, and epic/child creation are unchanged.",
+    "The generator is a deterministic non-LLM structural transform, pure (no network, no file write); the live Confluence read is the reference-wired ConfluenceCloudAdapter (WARP-0607, fails closed on no token, not gate-run). The gate drives the pure function and the FakeTracker seam offline. The drafted plan is status:draft and is never auto-approved; a human refines it, allocates real work-item spec ids, and records the approval (the work-item spec ids the generator emits are placeholders by design).",
+    "The edited .warp/tracker_intake.py and scripts/selftest.py are repo-only build machinery (present only in the repo root, not in plugin/templates or the packs, consistent with the shipped tracker_*.py siblings, so they need no sync). plugin/templates/confluence-requirements-template.md is a plugin wrapper template, not an ENGINE_GLOBS file, and has a single copy. The one edited engine file that ships (.warp/capabilities.yaml) is re-synced byte-identical across plugin/templates and the six packs.",
+    "required_evidence is [unit]; this manifest carries unit evidence on every criterion plus a unit check (selftest), the executable gate proof. It is bound to R and left uncommitted for the orchestrator's evidence step; no verdict is written here and nothing is pushed. .warp/last_verify (commit=R, green) and .warp/events.jsonl are left uncommitted."
+  ],
+  "rollback": "git revert the reviewed commit R. The change adds draft_plan_from_requirements / intake_plan_from_requirements / render_plan_markdown and a Deliverables key to parse_requirements (.warp/tracker_intake.py), a Deliverables work-breakdown section to plugin/templates/confluence-requirements-template.md, a WARP-1007 selftest block, a doc_to_plan_generator capability entry (both copies plus six pack re-syncs, byte-identical), and flips the WARP-1007 spec to shipped with a regenerated index. The generator is additive and nothing runs it automatically; removing it leaves requirements intake producing a single spec draft exactly as before, with no migration."
+}

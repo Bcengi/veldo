@@ -1,0 +1,153 @@
+{
+ "schema": "warp.proof/v1",
+ "spec_id": "WARP-0614",
+ "commit": "006c74fd4ceee390b529db0bb325ef1d160a171a",
+ "producer": "claude-opus-4-8[1m] (build, WARP-0614 F3 codification, fresh-context single writer, in-session; codify the proven live Jira REST shapes into the extracted tracker_jira_live.py provisioner, verified against VEL; the gate-proven logic and all AC verdicts unchanged)",
+ "produced_at": "2026-07-23T21:30:00Z",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "A new AUTH MODE is added to the live edge in build_live_adapter (.warp/tracker_mirror_runner.py), selected BY REFERENCE from the jira-cloud tracker block's 'auth' field: 'basic' (the UNCHANGED default: email + token_ref, building the shipped JiraCloudAdapter) or 'oauth-client-credentials' (client_id_ref + client_secret_ref, both SECRET REFERENCES resolved via the existing resolve_secret seam, never raw). OAuthTokenManager fetches a client-credentials access token from the token endpoint (audience api.atlassian.com), CACHES it until self._SKEW (300s) before expiry and RE-FETCHES on lapse (no refresh token). OAuthJiraCloudAdapter subclasses JiraCloudAdapter (footprint keeps tracker_intake.py untouched) and overrides only _request to send Bearer against the api.atlassian.com/ex/jira/{cloudId} GATEWAY base (gateway_base(cloud_id)); the cloudId is read from config or resolved once from accessible-resources (basic auth + the site URL fails for a service-account token, so oauth MUST use the gateway). It FAILS CLOSED by name (MirrorRunnerError) when no credential resolves and never logs/reprs the secret or token. The network (_http_fetch, _accessible_resources, _request) is reference-wired and NEVER run in the gate; nothing hardcodes a company/site value."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0614 block, offline against an INJECTED fake fetch + clock (no network): OAuthTokenManager.token() fetches once and caches within expiry (calls == 1, audience api.atlassian.com), then re-fetches once the clock advances past expiry minus skew (calls == 2); gateway_base('cid-xyz') == 'https://api.atlassian.com/ex/jira/cid-xyz'; repr leaks neither the secret nor the token; a resolver returning None raises MirrorRunnerError by name; build_live_adapter with auth oauth-client-credentials + a config cloud_id builds an OAuthJiraCloudAdapter whose _base is the gateway (fully offline), and an unknown auth mode is refused by name (basic stays the default). Part of selftest 2413 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "A vendor-neutral fence seam was added to the TrackerAdapter base (.warp/tracker_adapter.py) and modeled by the FakeTracker: ensure_group(name) create-or-reuse; group_has_member(account_id, group) read; set_group_membership(account_id, group, member) idempotent by target membership. provision_fence (.warp/tracker_jira_init.py) ensures the configured agent group and approver group (config, default veldo-agents / veldo-approvers via DEFAULT_FENCE_GROUPS) and sets the configured agent accountId (config agent_account_id, no default) as a member of the agent group and NOT the approver group. Group config is resolved fail-closed by name in _resolve_fence (agent_group/approver_group non-empty and must differ; agent_account_id non-empty). The live JiraCompanyManagedProvisioner gains reference-wired _ensure_group / _group_has_member / _set_group_membership against Jira Cloud REST v3 (group + group/user endpoints), NEVER gate-run."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0614 block over the FakeTracker offline: a fresh board fence reports agent_group_created and approver_group_created True; the agent accountId is IN veldo-agents and NOT in veldo-approvers; a re-run creates no group and changes no membership and leaves state_digest byte-identical. Part of selftest 2413 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "For each configured TERMINAL transition (Approved/Decided/Rejected, config terminal_states, never hardcoded) provision_fence calls restrict_transition(project, transition, approver_group), an idempotent add-if-absent seam write so only the approver group may fire it. The FakeTracker models a transition as present iff a project status of that name exists; restrict_transition FAILS LOUD by name (TrackerItemNotFound naming the transition) when the workflow lacks it, never a silent skip. can_fire_transition models AC3: a restriction present means only members of the restricted approver group may fire, so the fenced agent (in the agent group, not the approver group) is structurally UNABLE. transition_restriction is the side-effect-free read. The live JiraCompanyManagedProvisioner gains reference-wired _restrict_transition / _transition_restriction (idempotent by reading the current restriction first) against the company-managed workflow REST API, NEVER gate-run."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0614 block: after the fence, transition_restriction('PROJ', t) == 'veldo-approvers' for every terminal state and every restriction in the report is restricted True; can_fire_transition('acct-agent-1','PROJ','Approved') is False while an approver-group member (acct-rev-9) is True; a terminal transition the board lacks (Decided absent) fails loud by name (TrackerItemNotFound containing 'Decided'); a re-run adds no restriction (report restricted False) and is byte-identical. TOOTH T1 (see checks) reproduced. Part of selftest 2413 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The three fence WRITES (ensure_group, set_group_membership, restrict_transition) are ADMIN-ONLY: the base routes each through _require_fence_admin, which raises TrackerFenceError BY NAME when _fence_admin() is False, so a non-admin (agent) credential can never fence or unfence itself. The FakeTracker models the credential kind with an is_admin flag (default True for the admin provisioner; False for the agent); the two reads (group_has_member, transition_restriction) are NOT admin-gated. provision_fence is composed into bootstrap (.warp/tracker_jira_init.py) AFTER provision_board and BEFORE the mirror/snapshot, so a freshly provisioned board is fenced in the same pass; the live JiraCompanyManagedProvisioner._fence_admin returns True (it is the admin provisioner) while live the real gate is the credential's withheld group/workflow-admin scopes (a 403). A principal can never fence itself because the agent's service-account credential lacks those admin scopes. HARDENING (WARP-0614 F2, fail-closed): when the tracker config declares an AGENT IDENTITY (a jira-cloud tracker with auth oauth-client-credentials, a fenced runtime writer) resolve_bootstrap_config now REQUIRES a bootstrap.fence block and refuses BY NAME (via require_fence_for_agent_identity in tracker_mirror_runner.py) when it is missing, so warp jira init can never provision a working UNFENCED agent-writer board and quietly report fenced:false; a basic-only board (no agent identity) is unaffected, the fence stays optional there."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0614 block: a non-admin FakeTracker (is_admin=False) is refused all three admin-only fence writes by name (TrackerFenceError x3) while still permitted the reads; bootstrap() over the FakeTracker returns a fence report with fenced True and the agent grouped, and the write audit order shows provision_status/wire_status_into_workflow BEFORE the first ensure_group/restrict_transition (fence runs after provisioning). TOOTH T4 (admin-only guard neutralized -> a non-admin performs the fence) reproduced. Part of selftest 2413 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "docs/tracker-operator-guide.md gains a GENERIC 'two-identity model' section (docs-made-true): an admin identity does one-time provisioning + fencing; a separate non-human service account does runtime writes and is fenced out of the terminal states; how to stand up the service account + its OAuth client-credentials + the minimal scopes (read:jira-work, write:jira-work, read:jira-user, and the deliberately withheld group/workflow-admin scopes that make the fence structural); the auth-mode config (basic unchanged as default, or oauth-client-credentials with secret references); and the fence config (agent_group, approver_group, agent_account_id, terminal_states). PLACEHOLDERS only, no secret and no company/board literal (version bumped to 1.2 with a Document History row). A new tracker_agent_identity capability entry (status mechanical, home .warp/tracker_jira_init.py) was added byte-identically across all EIGHT capabilities.yaml copies (.warp + plugin/templates + packs/{aider,antigravity,codex,copilot,cursor,opencode})."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0614 block: the operator guide contains 'two-identity model', 'oauth-client-credentials', 'agent_group', 'approver_group', 'terminal_states' and no bcengi/dejitech literal; the tracker_agent_identity entry is present and byte-identical across all eight capabilities.yaml copies (sha compared root vs plugin/templates vs the six packs). scripts/check_docs.sh (dash/non-ASCII/genericity) and scripts/check_template_sync.sh pass in the gate; the module genericity greps confirm tracker_mirror_runner.py and tracker_jira_init.py hardcode no company/board site value. Part of selftest 2413 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC6",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The WARP-0614 selftest block drives the WHOLE fence + membership + auth-mode behavior over the deterministic FakeTracker and an injected fake token source offline (no network) and is NON-TAUTOLOGICAL: positive controls assert a fresh board ensures both groups, sets the agent membership (in the agent group, not the approver group), restricts all configured terminal transitions to the approver group, a re-run is byte-identical, the token manager caches + re-fetches on expiry + builds the gateway URL, and the agent credential is refused the admin-only fence ops. Each of the four load-bearing behaviors carries an in-memory source-mutation TOOTH that flips its assertion RED while the on-disk module stays byte-unchanged: T1 neutralizes the terminal-transition restriction (agent can fire a terminal transition), T2 neutralizes the membership exclusion (agent lands in the approver group), T3 neutralizes the token-expiry check (no re-fetch), T4 neutralizes the admin-only guard (a non-admin performs the fence). None is vacuous: each mutant flips exactly its target assertion and the real path differs. HARDENING (WARP-0614 F1, all-or-nothing): provision_fence now calls the seam read require_transitions_exist (tracker_adapter.py) to verify EVERY configured terminal transition exists BEFORE any fence write (verify-all-then-apply), so a misconfigured board (a configured terminal_state that is not a provisioned status) fails loud by name (TrackerItemNotFound, the existing type) with ZERO writes, never a partial fence that leaves a later terminal transition OPEN to the already-grouped agent. The added NO-PARTIAL selftest asserts the leftover state (on the missing-transition board no terminal transition is restricted, the agent is in no group, and writes() == []), not merely that it raised."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0614 block: all four teeth reproduced in-memory (T1/T2 via the _ji_mut exec of mutated tracker_jira_init.py; T3 via an exec of mutated tracker_mirror_runner.py; T4 via an exec of mutated tracker_adapter.py), each turning its assertion RED (agent can_fire True; agent in approver group; token calls == 1 not 2; non-admin ensure_group returns True) while the real path holds and the on-disk module read_text() is byte-unchanged after each. Plus the WARP-0614 dogfood front-matter checks (standalone lane, standard risk + human_approval not_required + no protected path, placement [tracker] with a footprint, behavior_bearing with observability, all three touched modules declared in the tracker area of the architecture contract). Part of selftest 2413 passed, 0 failed (+39 for the WARP-0614 block over the 2374 baseline, including the F1 all-or-nothing NO-PARTIAL case and the three F2 require-fence-for-agent-identity cases)."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "lint",
+   "status": "passed"
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "python3 scripts/selftest.py: 2413 passed, 0 failed (+39 for the WARP-0614 fence + auth-mode block, incl. the positive controls, the four anti-vacuity teeth T1-T4, the F1 all-or-nothing NO-PARTIAL case, and the three F2 require-fence-for-agent-identity cases)"
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "specs/index.md regenerated by scripts/update_index.py with WARP-0614 (status review); check_generated green"
+  },
+  {
+   "name": "docs",
+   "status": "passed",
+   "detail": "no em/en dash, no double-hyphen, no non-ASCII; genericity sweep clean (the operator-guide two-identity section carries only placeholders, no company/board/secret value)"
+  },
+  {
+   "name": "template_sync",
+   "status": "passed",
+   "detail": "check_template_sync green; bin/warp untouched and byte-identical; the three touched tracker modules are repo-only (no template twin)"
+  },
+  {
+   "name": "pack_drift",
+   "status": "passed",
+   "detail": "capabilities.yaml byte-identical across root + plugin/templates + 6 packs (the tracker_agent_identity entry propagated to all eight, sha256 identical)"
+  },
+  {
+   "name": "shape_gate",
+   "status": "passed",
+   "detail": "mechanizable module_lines budget respected (tracker_jira_init.py is exactly 1000 lines, at the 1000 budget after the F1/F2 additions were fit by tightening the module docstring and moving the verify-all read to the tracker_adapter.py seam; tracker_adapter.py 875; tracker_mirror_runner.py 487). Review-lane non-blocking notes: tracker_adapter.py duplication 15% (the parallel provisioning/fence seam surfaces) and cyclomatic complexity 24 on resolve_bootstrap_config and snapshot_from_repo, consistent with the WARP-0612/0613 precedent that accepted complexity 24"
+  },
+  {
+   "name": "secret_scan",
+   "status": "passed"
+  },
+  {
+   "name": "contracts",
+   "status": "passed",
+   "detail": "python3 .warp/validate.py all exit 0; the WARP-0614 spec validates (status review), and this proof passes check_required_evidence (unit) and check_criteria_coverage (AC1-AC6 exactly)"
+  },
+  {
+   "name": "teeth_reproduced",
+   "status": "passed",
+   "detail": "T1 terminal-transition restriction neutralized: fenced agent can_fire_transition Approved True (real False). T2 membership exclusion neutralized: agent group_has_member approver True (real False). T3 token-expiry check neutralized: token manager fetch calls == 1 after clock advance (real re-fetched, calls == 2). T4 admin-only guard neutralized: non-admin ensure_group returns True (real raises TrackerFenceError). Each mutant flips only its target; tracker_jira_init.py (T1/T2), tracker_mirror_runner.py (T3) and tracker_adapter.py (T4) sha256 byte-unchanged on disk after each"
+  }
+ ],
+ "assumptions": [
+  "COMMIT BINDING: the gate ran GREEN at f3f1e851d7c76c20f5fdedeec067c981e20cf53c (the WARP-0614 code commit this proof binds to), exactly as scripts/verify.sh stamped .warp/last_verify. This proof is committed in a second evidence commit on top, so the manifest binds to the commit it proves (the WARP-1212/WARP-0613 pattern, not the in-commit-proof deviation). STOPPED AT REVIEW: no push, no self-review; an independent fresh-context reviewer records the verdict.",
+  "WARP-0614 is a STANDALONE tracker-lineage spec composing on the RELEASED tracker foundation (PLAN-0006 seam/mirror + PLAN-0010 live edges), the WARP-0612 board bootstrap, and the WARP-0613 snapshot, so no plan work item is available; this matches the standalone precedent (WARP-0113, WARP-0411, WARP-1212, WARP-0612, WARP-0613). Like every tracker_*.py module the three it touches are REPO-ONLY build machinery (only .warp/tracker.py is engine-synced), so they ship no template twin; the tracker_agent_identity capability entry is synced with its siblings across all eight capabilities.yaml copies.",
+  "The LIVE edges are REFERENCE-WIRED and NEVER run in the gate, exactly like the WARP-0604 JiraCloudAdapter, the WARP-0612 provisioner, and the WARP-1004..1006 live mirror runner: (a) the OAuth token acquisition and the api.atlassian.com gateway REST (OAuthTokenManager._http_fetch, _accessible_resources, OAuthJiraCloudAdapter._request) and (b) the JiraCompanyManagedProvisioner group + workflow-restriction REST (_ensure_group, _group_has_member, _set_group_membership, _restrict_transition, _transition_restriction). They need a live Jira and a scoped credential, fail closed when none resolves, and are applied live only by an explicit human-authorized admin act. The whole LOGIC (the auth-mode selection, the token-manager cache/expiry/gateway-URL, the fence composition, the admin-only guard, the idempotency, the fail-loud on a missing transition) is what the gate proves over the deterministic FakeTracker and an injected fake token source, offline. The OAuth token-endpoint and gateway hosts (auth.atlassian.com, api.atlassian.com) are the shared Atlassian PLATFORM endpoints (the vendor coupling, like the /rest/api/3 paths), not a company- or board-specific value.",
+  "CAN THE AGENT BYPASS THE FENCE: no path in this change lets the fenced runtime identity move a ticket into a terminal state. In the model the FakeTracker enforces the admin-only guard on all three fence writes (a non-admin is refused by name), and can_fire_transition returns False for a principal outside the restricted approver group. Live, the separation rests on the service account's credential lacking group-admin and workflow-admin scopes (documented in the operator guide), so the endpoints that would alter groups or the transition restriction are unreachable by it, and the Jira workflow condition enforces who may fire the transition. The one non-atomicity a reviewer should scrutinize: provision_fence ensures the groups and sets membership BEFORE it restricts transitions, so if a configured terminal transition is missing the run fails loud after the groups exist; this is not a bypass (the groups are idempotent and a re-run after fixing the config completes; a missing restriction means the transition is simply not yet fenced, never that the agent gained approval rights), but it is the seam where fail-loud is not all-or-nothing.",
+  "RISK STANDARD: the change touches no protected path (verify.sh, warp-guard.sh, policy.yaml, policy_check.py and their template twins untouched) and nothing in the production-support safety core, so per policy.yaml the floor is standard; the footprint stays inside the single tracker architecture area (three repo-only modules the bootstrap/mirror already live in), so the footprint tier floor does not elevate it. The spec notes the fence is the anti-self-approval boundary approved in VEL-1, so it carries HIGH security importance and warrants a rigorous independent adversarial review of the fence correctness even though the mechanical footprint is standard-tier. bin/warp is byte-identical and was not edited. The pre-existing modified .gitignore/events.jsonl/last_verify and the untracked proof/WARP-1212/ were not staged.",
+  "F3 CODIFIED (follow-up commit 'WARP-0614: codify the proven live Jira provisioner'): the reviewer's F3 finding was that the live Jira REST shapes were plausible-but-unverified placeholders. Those shapes are now the ones PROVEN LIVE against the real VEL board and are encoded verbatim: statuses GLOBAL (POST /rest/api/3/statuses {scope:GLOBAL}); the modern BULK workflow edit (read POST /rest/api/3/workflows; VALIDATE POST /rest/api/3/workflows/update/validation with the WRAPPER {payload, validationOptions}; APPLY POST /rest/api/3/workflows/update with the BARE payload), UUID statusReferences, keep-existing statuses (no migration), transition ids required; the fence condition {operation:ALL, conditionGroups:[] mandatory, conditions:[{ruleKey:system:restrict-issue-transition, parameters:{groupIds:<approver-UUID>}}]} with groups addressed by UUID (POST /group, GET /groups/picker, POST/DELETE /group/user?groupId=, GET /group/member?groupId=). The OAuth agent auth mode in tracker_mirror_runner.py already matched the proven flow (client-credentials, audience api.atlassian.com, Bearer against the api.atlassian.com/ex/jira/{cloudId} gateway); no drift, unchanged. To hold the module_lines budget while encoding the real API bodies, the live provisioner was EXTRACTED into a sibling module .warp/tracker_jira_live.py, imported by tracker_jira_init.py through a factory over its own JiraCloudAdapter base and BootstrapError (one load identity; the issubclass check still holds). The gate-proven LOGIC over the FakeTracker is UNCHANGED and every AC verdict above still stands; only the reference-wired live bodies (never run in the gate) changed from guessed placeholders to the proven shapes, and three new static selftest assertions lock the split and the proven shapes in. The live provisioner is verified live in a separate admin-authorized run, never in the gate.",
+  "REVIEW FINDING #1 RESOLVED (follow-up commit 'WARP-0614: lossless transition round-trip in the live provisioner'): an independent fresh-context review of the codified live provisioner (commit 64b2a4a) found ONE HIGH latent defect. In .warp/tracker_jira_live.py the _norm_transition helper, used by _compose_bare_payload to echo back EXISTING transitions during the read-modify-write bulk workflow edit, kept only {id, type, name, actions, validators, toStatusReference, conditions} and DROPPED links, properties, triggers (and any legacy from). A fresh company-managed workflow's default transitions are DIRECTED and carry their source routing in links:[{fromStatusReference, fromPort, toPort}] (the captured VEL default-workflow read shows Done and Reopen as DIRECTED with populated links). Dropping links on a DIRECTED transition yields a malformed transition on re-apply, so warp jira init would fail closed (BootstrapError, via the validate-then-apply ERROR path) on the FIRST live workflow-wire of a fresh adopter board. It does not affect the already-provisioned VEL board or state at rest. FIX (lossless round-trip, seam unchanged): _norm_transition now PRESERVES every field the read carries when present (toStatusReference, conditions, links, properties, triggers, from) in addition to id/type/name/actions/validators, so an existing transition is re-applied byte-faithfully and only NEW statuses/transitions the callers add ever change the workflow; the read-modify-write seam is kept, only the normalization is made lossless. Verified against the captured default-workflow read that both DIRECTED transitions (Done id 21, Reopen id 51) survive a normalize round-trip UNCHANGED including their populated links, and the INITIAL Create transition keeps its links:[]/properties/triggers. TWO MINOR CLEANUPS from the same review: (a) the speculative statusCategory dict branch in _global_statuses would have emitted WRONG enum keys (new/indeterminate/done) if it ever fired; it now maps the classic keys correctly (new->TODO, indeterminate->IN_PROGRESS, done->DONE) via _CLASSIC_CATEGORY_KEY (the PROVEN /statuses/search endpoint returns the string enum directly, so this only defends a legacy dict shape). (b) the _workflow_id fallback 'or ws.get(\"name\")' would have passed the workflow-SCHEME name to a workflow-NAME lookup and resolved zero workflows; it now uses only the resolved defaultWorkflow name, failing closed by name when unresolved. The gate-proven LOGIC over the FakeTracker is UNCHANGED (verify.sh GREEN, selftest 2416 passed, 0 failed); only reference-wired live bodies (never run in the gate) changed, and the module stays within the module_lines budget (tracker_jira_live.py 471, tracker_jira_init.py 819)."
+ ],
+ "rollback": "git revert; additive - a new auth mode on the repo-only live mirror adapter (basic stays the unchanged default) plus an OAuthTokenManager + OAuthJiraCloudAdapter in .warp/tracker_mirror_runner.py; a fence + membership seam (ensure_group, set_group_membership, restrict_transition + two reads + TrackerFenceError) added to the repo-only .warp/tracker_adapter.py base and modeled by the FakeTracker (is_admin, can_fire_transition); a provision_fence step composed into bootstrap plus reference-wired fence methods on JiraCompanyManagedProvisioner in .warp/tracker_jira_init.py; one tracker_agent_identity capability entry (all eight capabilities.yaml copies, byte-identical); an operator-guide two-identity section; a selftest block with four anti-vacuity teeth; and this spec; no protected path; pure stdlib; the live OAuth + group/workflow-admin edges are reference-wired and never run in the gate. bin/warp is untouched."
+}

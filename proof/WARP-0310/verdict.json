@@ -1,0 +1,38 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0310",
+  "commit": "1e80993eee96ba3d1197eeb53648bf0f154255ee",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T09:02:18Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:4ad3ed868bde2012",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "I read warp_agent_runner.py in full and drove run(journey, step, tools) from my own /tmp scripts. The HARNESS owns execution: for each step-emitted tool call it computes tool_result = registry[name](args) and records {tool, args, result}; the step returns only {tool_calls:[{tool,args}]} or {final}. I built a journey whose fake step attached a bogus result:HACKED to the tool call and the observed result was the harness value Paris (HACKED ignored); asserting HACKED then FAILED naming get_city. I also drove the adopting-repo path with my own step= and tools= callables (no journey fake/registry): the loop invoked my real add(a,b) exactly once and recorded the real result 5. Exit 0 on all-hold and exit 1 naming the first failure both observed via the CLI."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "I independently exercised every assertion mode. A result_equals of 99 against a real 42 FAILED naming 'tool call 0'. result_contains held/failed correctly for a string (substring), a dict (subset match and a wrong-value miss), and a list (membership and a non-member miss). Wrong tool, wrong order (named tool call 0), a missing call (expected 2 observed 1) and an extra call (expected 1 observed 2) each failed named. A forbidden tool invoked FAILED naming it even with a passing final grader. args_equals/args_contains and the contains/not_contains/equals/regex final graders all held on correct input and failed on wrong input. Result assertions are against the harness-executed value, not narration."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "I actually ran a non-finalizing journey (last scripted turn is a tool call, repeated): it RETURNED in under 2s (no hang), passed False, error 'agent did not finalize within max_turns', turns == max_turns; the for-range(max_turns) loop bounds it. A call to an unregistered tool failed loud ('unknown tool') with zero observed invocations (not a silent skip). An assert block with no expected_tool_calls key, no forbidden_tools, and no final is a journey error ('asserts nothing'). An empty expected_tool_calls list [] IS treated as an assertion: it caught an extra call ('expected 0 tool call'), and with zero real calls it passed; an absent key is asserts-nothing. Confirmed via _asserts_nothing which keys on presence of expected_tool_calls."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "The selftest block (lines 1047-1122) uses a FAKE scripted step with no live agent, mirrors the other runners, and covers happy plus every named failure mode. I proved the cases are non-tautological: I copied the runner to /tmp, replayed the exact selftest assertions against a pristine copy (all held) and against six one-line mutants. Dropping the forbidden-tool check flipped 'forbidden fails named'; removing the did-not-finalize failure flipped 'never-finalize hits max_turns'; recording None instead of executing the tool flipped 'happy passes', 'records harness result (echo flows)' and 'pass fixture passes'; silently skipping an unknown tool flipped 'unknown tool fails loud'; removing the asserts-nothing guard flipped 'asserts-nothing journey error'. I drove both shipped fixtures end to end: pass.journey.json exits 0, fail.journey.json exits 1 naming delete_trip (plus the sequence and final-grader failures). The wrapper reported pass."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "A case-insensitive grep for bcengi|dejitech|travelpass|workpass|agentpass|coreconnect|onesim|mvne|dmitry|tripdesk|daybook|stripe|hubspot over the runner, both fixtures, the wrapper, and the README returned zero matches. Separate grep -P sweeps for U+2014, U+2013, and the literal double-hyphen over the same files returned zero matches. Both .warp/capabilities.yaml and plugin/templates/.warp/capabilities.yaml are byte-identical (sha256 3c1d45f85043977f1dae11d780b79381c55eadd8bf61663985c36262d10d47d3) and the agent_loop_runner entry declares status: reference, never mechanical."
+    }
+  ],
+  "findings": [],
+  "summary": "I reran everything independently at HEAD 1e80993 (confirmed == the target commit). I recomputed the manifest proof_digest with .warp/validate.py and got sha256:4ad3ed868bde2012, matching. verify.sh printed GATE: GREEN bound to 1e80993 with 0 undeclared, and scripts/selftest.py reported 298 passed, 0 failed. I read warp_agent_runner.py in full and attacked its control logic with my own throwaway /tmp scripts, never modifying any repo file. The honesty core holds: the harness computes each result via registry[name](args) and the step never supplies a result, so a step-injected result field is ignored and an assertion on it fails; there is no path where a narrated result is trusted (a vacuous pass is impossible). All five ACs confirmed. AC1 result/observation seam and adopting-repo step=/tools= path both work; AC2 every ordered call and result assertion catches wrong values naming the position; AC3 the loop is max_turns-bounded (returns, does not hang), unknown tools fail loud, asserts-nothing is a journey error, and empty [] asserts zero calls; AC4 the selftest fake-step block is non-tautological (five distinct sabotage mutants each flip a named assertion) and both fixtures behave as claimed; AC5 zero company/product names, no em/en-dash or double-hyphen, capabilities byte-identical and marked reference. One benign observation (not a finding): a mutant that makes the harness prefer a step-supplied result flips no selftest assertion, but only because the shipped runner has no narrated-result field concept at all, which is itself the honesty property; that property is guarded in the selftest by the echo-arg-flows-through assertion, which the record-None mutant does flip. No blocking or note findings. Verdict: pass."
+}

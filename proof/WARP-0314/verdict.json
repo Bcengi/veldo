@@ -1,0 +1,43 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0314",
+  "commit": "9486749bfc47c8b4c53e34c9dfae9b9b0fccd4ea",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T10:37:32Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:37e87bb41d78883c",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Runner ships at plugin/templates/scripts/runners/config/config_runner.py. Reran test_config_runner.sh: pass fixture exits 0 (13 samples, every verdict matched its label), fail fixture exits 1 (mislabeled-valid caught). Direct runs confirm exit 0 when verdicts match and exit 1 naming the failing sample and offending field. Schema declares fields with type + optional required/enum/pattern/min/max plus allow_unknown, exactly as specified."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Rejection is honest and names field+reason. Verified JSON-honest types (bool is not integer; integer widens to number; float does not satisfy integer; null is its own type), enum, pattern (re.search on string), min/max as VALUE for numbers and LENGTH for strings/arrays, and undeclared-key rejection when allow_unknown false. expect_field and expect_reason enforce the RIGHT reason: a genuinely-invalid sample pinning the wrong field or wrong reason substring is caught (both tampered, both exit 1). Tampered mislabeled-valid samples (port>max, enum, bool-as-int) each fail loud naming the field; a valid config labeled invalid is also caught. The shipped fail fixture exits 1 naming field 'port' (value 70000 above max 65535), matching the manifest claim."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Crux holds. A malformed schema fails loud and never rubber-stamps: unknown type, missing type, bad regex, min above max, pattern on a non-string field, and unknown field-spec key each exit 1 naming the schema problem even when the sample would otherwise pass (0 samples checked). An empty sample set is a fixture error ('a validation run with nothing to check is not proof'); a label that is neither valid nor invalid is a fixture error. Verified by crafting each broken schema and confirming exit 1."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "python3 scripts/selftest.py = 426 passed, 0 failed, exit 0. The config block (lines 1326-1426) loads config_runner.py via importlib with no external dependency and exercises accept, reject, every constraint kind (required, type, enum, pattern, min/max as numeric value and as array length, undeclared field), the integer-widens-to-number rule, allow_unknown tolerance, six malformed-schema forms failing loud, the asserts-nothing fixture, a bad sample label, rejection for the wrong field, plus driving both shipped fixtures end to end (pass -> passed, mislabeled -> failed naming 'port'). All prior selftest cases pass."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Genericity sweep of the runner dir (runner, fixtures, wrapper, README) returns zero company/product names. .warp/capabilities.yaml marks config_schema_runner status: reference with an honest note (warp home repo has no product config schema of its own to run), never mechanical. Template and repository capabilities.yaml are byte-identical (matching sha256 e165179f...). ./scripts/verify.sh at 9486749 = GATE: GREEN (unit, generated, docs incl. dash/non-ASCII/genericity sweeps, template sync, secret scan, contracts all pass)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "The selftest config block opens with a section-divider comment '# --- config-schema validation runner ...' containing an ASCII double-hyphen. This is a pre-existing codebase convention (29 such '# ---' dividers across selftest.py, present well before B14) used as a visual separator, not a prose em-dash stand-in, and the project's own docs-hygiene gate forbids only Unicode em/en dashes (both absent here) rather than ASCII hyphens. No em/en dash or double-hyphen appears anywhere in the runner, fixtures, wrapper, README, proof, or spec. Non-blocking."
+    }
+  ],
+  "summary": "Independent rerun at 9486749 fully substantiates B14 (WARP-0314). AC1-AC5 all confirmed. The config-schema validator is honest, not a rubber stamp: it enforces required-ness, JSON-honest types (bool != integer, integer widens to number, null its own type), enum, pattern, min/max as value for numbers and length for strings/arrays, and undeclared-key rejection, naming the offending field and reason; expect_field/expect_reason prove rejection for the RIGHT reason. Tampered mislabeled-valid samples, malformed schemas (unknown/missing type, bad regex, min>max, misplaced pattern, unknown key), empty checks, and bad labels all fail loud with the correct message. selftest 426 passed/0 failed with no external dependency; runner is generic (zero company/product names); capabilities status: reference, byte-identical both copies; full gate GREEN; proof_digest recomputed via .warp/validate.py equals sha256:37e87bb41d78883c. Verdict: pass."
+}

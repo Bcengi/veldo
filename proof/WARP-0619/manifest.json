@@ -1,0 +1,138 @@
+{
+ "schema": "warp.proof/v1",
+ "spec_id": "WARP-0619",
+ "commit": "ddd9451560f422238036b2ed290a699b4842cba6",
+ "producer": "claude-opus-4-8[1m] (build, WARP-0619 W5-logic of PLAN-0016, fresh-context single writer, in-session; build the inbound command-and-receipt reconcile - the safety-critical path that turns a human's tracker transition, only a SUBMITTED ASSERTION, into an authorized settlement record by deriving the true actor and intent from the ORDERED ATTRIBUTED changelog, validating against the shipped safety core with identities VERIFIED from the changelog, and writing the settlement record + event only through an append-only compare-and-swap receipt keyed (request_id, changelog_id), built and gate-proven ENTIRELY OFFLINE over a deterministic FakeTracker with a seeded changelog)",
+ "produced_at": "2026-07-24T17:27:00Z",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "A READ-ONLY read_changelog seam is added to the WARP-0603 TrackerAdapter base and the FakeTracker in .warp/tracker_adapter.py. The base surface primitive _read_changelog raises NotImplementedError and the public read_changelog validates the obj_id, fails loud (TrackerItemNotFound) on an object the tracker does not hold, and is SIDE-EFFECT-FREE (never touches the base-owned write audit); a live adapter reads the real board's issue history through the same seam, reference-wired and NEVER exercised in the gate. FakeTracker.seed_changelog(obj_id, entries) stores the ORDERED, ATTRIBUTED changelog (each entry id, ts, actor, from-state, to-state) in a SEPARATE self._changelogs map, not the object's mutable record, so read_changelog returns a deep copy that cannot mutate the seeded source and the tracker state_digest is unchanged; the reconcile writes nothing back through it. There is NO always-on listener: reconcile_requests is demand-driven, one pass per explicit invocation (main exposes only selfcheck; no timer, daemon, or poller)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0619 block, offline (no network): read_changelog on a bare TrackerAdapter subclass raises NotImplementedError (the base seam is reference-wired); FakeTracker.read_changelog returns the ordered attributed log [c1, c2] each carrying id/ts/actor/from/to with the terminal entry actor alice, from 'Needs Decision', to 'Approved'; it is read-only (mutating the returned copy does not change the source, and reads do not grow the write audit); read_changelog on an unknown object fails loud (TrackerItemNotFound). Part of selftest 2658 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "reconcile_requests in .warp/request_reconcile.py is a repo-only sibling of the shipped reconcile_promotions. It finds OPEN requests by the repo index (the warp.request/v1 records passed in, read from .warp/requests/ by the reference reconcile_from_repo) plus the issue link (record.tracker.issue) plus a status query (_is_open_status: a known request status that is not already terminal) and NEVER by assignee==agent (the module reads no assignee field at all). For each it pulls the ordered attributed changelog via read_changelog and derives the TRUE actor and intent FROM THE CHANGELOG: _opening_actor is the verified proposer (the actor of the opening transition, from no prior state), _terminal_decision resolves the decisive terminal transition and _entry_actors the approving actor(s), and the receipt is keyed on the terminal entry's id - never from the current status, which anyone can set or which can drift."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0619 block: the valid case derives proposer 'builder' (opening actor), approver ['alice'] (terminal actor), intent 'accept', and changelog_id 'c2' from the changelog; a request with no tracker link is SKIPPED (never selected by assignee); an already-settled (terminal status) request is SKIPPED (the repo is the source of truth, never re-settled); a request whose changelog has no terminal transition yet is SKIPPED (the human has not decided). Part of selftest 2658 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "Before a decision settles the reconcile VALIDATES it against the shipped safety core with identities DERIVED and VERIFIED from the changelog/lineage, never a self-declared request field: it recomputes the bound artifact digest FROM THE REPO (the injected digest_reader; the reference recompute_file_digest is sha256 of the referenced file's content, the canonical short-sha form) and BLOCKS unless it equals the displayed bound_artifact.digest, then calls authorization.is_authorized (reused UNCHANGED) with proposer=the changelog opening actor and the attestation's approver SET to the changelog terminal actor, so is_authorized enforces that the terminal actor is an authorized approver for the tier, separated from the verified proposer, and never the agent/a service account, with quorum and independence, and - composing the frozen two_key - the second key for an irreversible/money/external action. Any gap, conflict, or ambiguity (no attributable actor, an unresolvable proposer, both an accept and a reject terminal transition) BLOCKS - held, never inferred or defaulted-open. The frozen readers authorization.py / two_key.py / policy_check.py / decision.py are edited nowhere and carry no reference to this module."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0619 block: the positive valid case settles under a fixture human_decisions policy; with the SHIPPED INERT policy (policy=None reads the real .warp/policy.yaml, which carries no human_decisions block) a valid transition is HELD, proving the safety-core composition is real and fails closed; an agent-made transition, a self-approval, a recomputed-digest mismatch, an irreversible action with no satisfied two_key, and a conflicting changelog each BLOCK (held, nothing settled). A selftest asserts no 'request_reconcile' reference was added to any of the four frozen readers. Part of selftest 2658 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "On a validated acceptance the reconcile writes the touchpoint settlement record (warp.approval for spec_approval/plan_approval/risky_action_authorization/escalation, warp.decision for decision_choice, warp.verdict for review_disposition, binding to the recomputed digest and naming the verified actor(s), carrying the request_id and changelog_id back-reference the frozen readers tolerate) and emits the event (request.accepted, plus decision.decided for an accepted decision_choice; a rejection emits request.rejected; the event vocabulary REUSED from request.REQUEST_EVENT_TYPES so it cannot drift) ONLY through the injected SettlementStore's append-only COMPARE-AND-SWAP settle(request_id, changelog_id, record, events): it writes AT MOST ONCE per (request_id, changelog_id), so a re-run, a re-projection, or a duplicated changelog entry is a NO-OP. The repo is the single source of truth: the settlement record lands in the repo FIRST and the reconcile writes NO tracker state (the FakeTracker write audit is empty after a run); setting the terminal tracker state is the downstream W3 projection. The reference FilesystemSettlementStore writes an append-only .warp/receipts.jsonl plus the settlement record under .warp/settlements/ and appends the event to .warp/events.jsonl, wired per repo and NEVER gate-run (the FakeSettlementStore runs)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0619 block: a valid transition settles ONCE (one settlement record, one request.accepted event, one receipt keyed (REQ, c2)); a re-run is a byte-identical no-op (already_applied, store digest unchanged, count still 1); the reconcile writes no tracker state (write audit empty); an accepted decision_choice writes a warp.decision/v1 record and emits request.accepted + decision.decided; a duplicate (request_id, changelog_id) with a pre-seeded receipt is a no-op (nothing written); a human rejection settles a request.rejected while an agent-made rejection is held. Part of selftest 2658 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The WARP-0619 selftest drives reconcile_requests over the FakeTracker with a seeded changelog ENTIRELY OFFLINE (no network) and is NON-TAUTOLOGICAL - a valid authorized-approver terminal transition settles once and a re-run is idempotent; an agent-made transition, a self-approval (terminal actor == verified proposer), a recomputed-digest mismatch, an irreversible action with no satisfied two_key, and a conflicting changelog are each BLOCKED; a duplicate (request_id, changelog_id) is a no-op. Each load-bearing guard carries an in-memory source-mutation TOOTH that turns its assertion RED while .warp/request_reconcile.py on disk stays byte-unchanged (sha256 asserted equal after each): T-agent neutralizes the actor-from-changelog derivation (actors = _entry_actors(term entries) -> actors = [record.get('decided_by')]) so a self-declared field drives it and an agent-made transition settles; T-proposer neutralizes the proposer-from-changelog derivation (proposer = _opening_actor(changelog) -> proposer = record.get('proposed_by')) so a self-approval slips through; T-digest neutralizes the repo-digest recompute comparison so a forged displayed digest is accepted; T-cas neutralizes the compare-and-swap (if self._has_receipt(...) -> if False and self._has_receipt(...)) so a re-run double-applies and a duplicate receipt applies; T-conflict neutralizes the conflict guard so an ambiguous changelog settles; T-authorized neutralizes the authorized-only settlement gate (if not decision.get('authorized') -> if False and ...) so an irreversible action with no second key settles. None is vacuous: each mutant flips exactly its target settle-count (0 -> 1, or 1 -> 2 for the CAS re-run) while the real path holds, and the module sha256 is byte-unchanged on disk after each."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0619 block: the seven cases plus six teeth. T-agent mutant settles the agent-made transition (count 1) while the real path blocks (count 0), module sha256 unchanged; T-proposer mutant settles the self-approval while the real path blocks; T-digest mutant settles the forged-digest request while the real path blocks; T-cas mutant double-applies a re-run (count 2, real 1) and applies a duplicate receipt (count 1, real 0); T-conflict mutant settles the ambiguous changelog while the real path holds; T-authorized mutant settles the irreversible-without-two-key request while the real path holds; each with the on-disk sha256 asserted byte-unchanged. Part of selftest 2658 passed, 0 failed (baseline before this spec was 2612; the WARP-0619 block adds 46 checks)."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "lint",
+   "status": "passed"
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "python3 scripts/selftest.py: 2658 passed, 0 failed (the WARP-0619 block adds 46 checks: the AC1 seam, the AC2/AC4 positive settle + idempotency + no-tracker-write, the AC2 finding/skip cases, the AC3 INERT composition proof, the AC4 decision_choice + rejection cases, the six AC5 BLOCK cases + the duplicate no-op, the six source-mutation teeth with their byte-unchanged assertions, and the dogfood + engine-sync checks; baseline before this spec was 2612)"
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "specs/index.md regenerated by scripts/update_index.py with WARP-0619 (status review); check_generated green"
+  },
+  {
+   "name": "docs",
+   "status": "passed",
+   "detail": "no em/en dash, no non-ASCII, and no double-hyphen prose separator in the authored files (.warp/request_reconcile.py, the tracker_adapter.py seam, the spec, the capability entry, the selftest block); genericity sweep clean (the capability entry in plugin/ and packs carries no company/product term; the module hardcodes no company/board value)"
+  },
+  {
+   "name": "template_sync",
+   "status": "passed",
+   "detail": "check_template_sync green; .warp/request_reconcile.py and the tracker_adapter.py seam are REPO-ONLY (tracker-family siblings - the whole tracker family lives only at root .warp/, only tracker.py is engine-synced), so they have no template/pack twin; only the tracker_request_reconcile capability ENTRY is synced, byte-identical across all eight capabilities.yaml copies"
+  },
+  {
+   "name": "pack_drift",
+   "status": "passed",
+   "detail": "engine byte-identical across all packs; the only engine-relevant change is the capabilities.yaml entry, propagated to all eight copies (root + plugin/templates + 6 packs) byte-identical; .warp/request_reconcile.py, the .warp/tracker_adapter.py seam, and the .warp/architecture.yaml edit are repo-only tracker-family artifacts, not part of the shipped engine set"
+  },
+  {
+   "name": "shape_gate",
+   "status": "passed",
+   "detail": ".warp/request_reconcile.py is 609 lines and .warp/tracker_adapter.py is 953 lines, both under the 1000-line module budget; footprint-versus-diff passes (WARP-0619 is the single footprinted spec in the change set and every changed source path is covered by its footprint globs, with .warp/tracker_adapter.py substituted for the footprint's original .warp/tracker.py); .warp/request_reconcile.py resolves to the tracker area (placement [tracker], no cross-area boundary crossing, tier floor not elevated)"
+  },
+  {
+   "name": "secret_scan",
+   "status": "passed"
+  },
+  {
+   "name": "contracts",
+   "status": "passed",
+   "detail": "python3 .warp/validate.py all exit 0; the WARP-0619 spec validates (status review), and this proof passes check_required_evidence (unit) and check_criteria_coverage (AC1-AC5 exactly)"
+  },
+  {
+   "name": "teeth_reproduced",
+   "status": "passed",
+   "detail": "six teeth: T-agent (actor-from-changelog), T-proposer (proposer-from-changelog), T-digest (repo-digest recompute), T-cas (compare-and-swap, covering the idempotent re-run and the duplicate-receipt assertions), T-conflict (conflict guard), and T-authorized (authorized-only settlement gate). Each neutralized guard flips exactly its target settle-count while the real path holds; .warp/request_reconcile.py sha256 byte-unchanged on disk after each"
+  }
+ ],
+ "assumptions": [
+  "COMMIT BINDING: the gate ran GREEN at ddd9451560f422238036b2ed290a699b4842cba6 (the WARP-0619 code commit this proof binds to), exactly as scripts/verify.sh stamped .warp/last_verify (status green, 5 run / 18 na). This proof is committed in a second evidence commit on top, so the manifest binds to the commit it proves (the WARP-0615/0617/0618 pattern). STOPPED AT REVIEW: no push, no self-review, no verdict.json; an independent fresh-context reviewer records the verdict and the parent lands the chain.",
+  "FOOTPRINT DEVIATION (noted, minimal): AC1's read_changelog seam belongs on the TrackerAdapter base and the FakeTracker, which live in .warp/tracker_adapter.py, NOT in .warp/tracker.py (the routing resolver, which has no adapter classes). The spec footprint originally listed .warp/tracker.py; it was reconciled to .warp/tracker_adapter.py (the real seam home) and .warp/tracker.py was not touched at all. Both files resolve to the tracker area, so the placement gate and tier floor are unaffected. This is the only deviation from the declared footprint; no protected path was touched (protected_paths is []).",
+  "OFFLINE AND INERT POSTURE: the entire gate runs over the deterministic FakeTracker with a seeded changelog and an in-memory FakeSettlementStore, no network. authorization.is_authorized ships INERT (the shipped .warp/policy.yaml carries no human_decisions block), so in the shipped state the reconcile authorizes and settles NOTHING (a selftest proves a valid transition is HELD under policy=None); the fixture human_decisions policy in the selftest is what a switched-on repository would carry under the separate VEL-3 approval. The live changelog read (read_changelog on a real adapter) and the reference FilesystemSettlementStore are reference-wired and NEVER run in the gate; the live-board shape is proven separately in WARP-0620.",
+  "SAFETY CORE UNCHANGED: this spec composes authorization.is_authorized (which itself composes the frozen two_key for an irreversible/money/external action and reads the same policy.yaml policy_check reads) and edits NONE of .warp/authorization.py, .warp/two_key.py, .warp/policy_check.py, or .warp/decision.py; a selftest asserts no 'request_reconcile' reference was added to any of the four. The digest recompute is the module's own repo-side check (sha256 of the referenced file, the canonical short-sha form) separate from is_authorized's attestation-staleness check, which is why the T-digest tooth is non-vacuous (is_authorized alone would not catch a forged displayed digest when the attestation binds to that same displayed digest).",
+  "REPO-ONLY, NOT ENGINE-SYNCED: .warp/request_reconcile.py is a tracker-family module (like request_projection.py / request_doorbell.py); the whole tracker family lives only at root .warp/ and only tracker.py is engine-synced, so the module has no plugin/templates or pack twin (a selftest asserts it is absent there) and ONLY the tracker_request_reconcile capability ENTRY is synced byte-identical across all eight capabilities.yaml copies. The read_changelog seam on tracker_adapter.py is likewise repo-only (tracker_adapter.py is not in the engine-sync set). The .warp/requests/, .warp/settlements/, and .warp/receipts.jsonl paths are per-repo runtime data (never swept by the engine glob) and are only ever written by the reference store, which is not gate-run.",
+  "GATE bookkeeping (.warp/events.jsonl, .warp/last_verify) is stamped by verify.sh on every run and was NOT staged; only the WARP-0619 footprint was committed (git add with explicit paths). bin/warp, policy.yaml, the frozen safety-core readers, .gitignore, and the other proof directories were not touched."
+ ],
+ "rollback": "git revert; purely additive - a new repo-only reconcile module .warp/request_reconcile.py (a tracker-family sibling that composes the shipped safety core and injects the compare-and-swap receipt seam), a read-only read_changelog seam on the repo-only .warp/tracker_adapter.py (base NotImplementedError + FakeTracker seed_changelog/read_changelog), one tracker_request_reconcile capability entry (all eight capabilities.yaml copies byte-identical, marked repo-only), the module declared in the tracker area of .warp/architecture.yaml, a selftest block, and this spec; it reuses the frozen safety core (authorization/two_key/policy_check/decision) UNCHANGED and the shipped reconcile_promotions pattern; no protected path; the live changelog read and the reference filesystem store are reference seams never run in the gate; pure stdlib. The LIVE-board shape proof is the separate WARP-0620."
+}

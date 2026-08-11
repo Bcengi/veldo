@@ -1,0 +1,1 @@
+claimable() over a temp repo + temp claims: build (deps met, cross-plan) + standalone + review claimable; dep-blocked, draft-plan, capability-gated, claimed, out-of-scope excluded; capability and claimed mutations turn it red; reuses plan.py + claim.py, read-only. Gate GREEN, selftest 1001 passed, 0 failed.

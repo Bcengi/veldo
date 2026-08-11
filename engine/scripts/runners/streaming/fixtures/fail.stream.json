@@ -1,0 +1,24 @@
+{
+  "name": "token stream (dropped chunk)",
+  "sequence_field": "i",
+  "expected_events": [
+    "token",
+    "token",
+    "done"
+  ],
+  "terminal": {
+    "event": "done"
+  },
+  "assemble_field": "text",
+  "final": [
+    {
+      "type": "contains",
+      "value": "Hello"
+    }
+  ],
+  "fake": [
+    "event: token\ndata: {\"i\": 0, \"text\": \"He\"}",
+    "event: token\ndata: {\"i\": 2, \"text\": \"!\"}",
+    "event: done\ndata: [DONE]"
+  ]
+}

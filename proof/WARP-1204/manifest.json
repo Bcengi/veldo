@@ -1,0 +1,138 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1204",
+  "commit": "4014513dbf332603f1722d1dc69ed393d9ac3a57",
+  "producer": "claude-opus-4-8[1m] (WARP-1204 implementer agent, planned lane; W4 of PLAN-0012, the responder investigation loop L0 investigate / L1 propose - the in-session agent harness that reaches a cited diagnosis from artifacts and emits a validated remedy proposal, and that structurally cannot execute, Invention #3 / O2 / O4)",
+  "produced_at": "2026-07-23T08:49:23Z",
+  "plan": "PLAN-0012",
+  "work": "W4",
+  "plan_revision": 2,
+  "plan_hash": "sha256:9c8616540899be1d",
+  "proof_digest": "sha256:7a7c2662cb172109",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The responder investigation loop (schema warp.responder/v1, module .warp/responder.py) is the in-session L0/L1 agent harness and the FIRST CONSUMER of the three roots of PLAN-0012: the incident and remedy contracts (WARP-1201 W1), the read-only evidence plane (WARP-1202 W2), and the intent corpus (WARP-1203 W3). Given an incident record (warp.incident/v1) the harness (ResponderHarness) composes the corpus governance trace (trace_incident) and a read-only evidence handle (a query-only ReadHandle) into a warp.responder_context/v1 investigation context and, through a DELEGATED fresh-context reasoning seam, reaches a CITED diagnosis. investigate is the L0 read (a cited Diagnosis, no proposal) and propose is the L1 emit of a validated warp.remedy/v1 PROPOSAL. The reference LiveResponder FAILS LOUD (raises ResponderError, never fabricates), exactly as executor.LiveLoop.build/review and the dispatch, shape, and decision reviewers refuse to fabricate their judgment; an adopting runtime injects a responder that dispatches a genuinely fresh context. Dependency free (pathlib at module top, importlib lazily in build_harness), receives the W1 contract module and the built corpus INJECTED (no second parser, no import cycle), reads the evidence plane only through a read-only ReadHandle, opens no live connection (NG1), and starts no process, thread, or timer (NG3). python3 .warp/responder.py prints the harness level and the delegated-seam posture; with no responder wired it honestly refuses rather than fabricate."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1204 block: 'offline investigate over a seeded incident returns a GOVERNED diagnosis citing the real corpus artifacts (spec + proof + verdict)' (over a seeded INC-RESP-1 affecting WARP-1202 and a read-only handle over a fake evidence plane); 'the reference LiveResponder FAILS LOUD when no responder is wired (never fabricates)'; 'a malformed incident (no id) fails closed by name'; 'the investigation context is the warp.responder_context/v1 shape'."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE HARNESS CONTAINS NO EXECUTION CAPABILITY AT ALL - the load-bearing safety property (Invention #3, O2/C4), structural and not a policy the responder must remember. ResponderHarness carries NONE of the execution methods enumerated in FORBIDDEN_EXECUTION_METHODS (execute, apply, run, remediate, mutate, write, deploy, perform, act, rollback, restart, scale, commit_change, submit_write, open_write); the only production-touching capability it holds is a read-only ReadHandle from the evidence plane (query only, W2 physics) and it holds no write-capable credential, so the write and execute path cannot even be expressed. Execution is a SEPARATE privileged organ on its own credentials and code path, WARP-1206 (W6), not built here. The property is proven NON-VACUOUS: a subclass that ADDS an execute method turns the no-execution check RED."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'ResponderHarness carries NONE of the execution methods' (hasattr false for every FORBIDDEN_EXECUTION_METHODS name on the class); 'a constructed harness instance carries no execution method either'; 'the module source DEFINES no execution method on the harness'; 'the only production-touching capability the harness holds is a query-only read handle (no write on it)'. THE NO-EXECUTION TOOTH: 'a subclass that ADDS an execute method turns the no-execution check RED (non-vacuous)' and 'the mutation is a subclass only (the real ResponderHarness is unchanged)'."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE LADDER FLOOR IS READ-ONLY, and the loop degrades down, never up (O3/C3, D2). The harness operates ONLY at L0 (investigate) or L1 (propose): it is constructed at one of those two levels and REFUSES by name to be constructed at L2 or L3 (the execution rungs, a separate organ WARP-1206 W6; D2 start and stay at L0/L1, L3 disabled by default). propose requires L1: at the L0 investigate-only floor propose REFUSES by name and degrades down, never up (C3); investigate is available at both L0 and L1. The refusals carry positive controls so they cannot pass vacuously: construction at L0 and L1 succeeds, investigate returns a governed diagnosis at L0, and propose emits a validated proposal at L1."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'construction at L0 (investigate) succeeds' and 'construction at L1 (propose) succeeds' (positive controls); 'construction at L2 is REFUSED by name (the execution rung is a SEPARATE organ, WARP-1206 W6)' and 'construction at L3 is REFUSED by name (L3 disabled by default, D2)'; 'propose REFUSES at the L0 floor and degrades down, never up (C3)'; 'investigate IS available at the L0 floor' and 'propose emits a warp.remedy/v1 proposal at L1' (positive controls)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "DIAGNOSIS FROM ARTIFACTS, NEVER FABRICATED (O4/C1). Every citation must resolve to a REAL artifact in the assembled investigation context (a corpus artifact path the governance trace cites, a recorded change commit touching the governing spec footprint, or an evidence query the reasoner ACTUALLY issued and the broker ALLOWED, an audit entry) or the harness REFUSES by name (FABRICATED DIAGNOSIS REFUSED); a governed incident must cite at least one corpus artifact so it rests on the record and not on evidence alone. Graceful degradation with no PLAN-0011 architecture contract (C7): the corpus stands down to spec and git level (areas None, contract_present False) and the harness still reaches a cited diagnosis. At L1 the emitted warp.remedy/v1 proposal is VALIDATED structurally through the W1 contract (INC.validate_remedy plus INC.bind_remedy) so a proposal missing any element is refused (fail closed), and the required human authorization is DERIVED mechanically by the harness (irreversible or data_mutating forces two_key so the two-key path W7 has an exact binding, otherwise human_confirmation)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: THE NO-FABRICATION TOOTH: 'a fabricated citation (resolves to no real artifact) is REFUSED by name' with the positive control 'a diagnosis citing only REAL corpus artifacts succeeds'; 'a diagnosis with no cited evidence is REFUSED'; 'a GOVERNED-incident diagnosis citing only an evidence query (no corpus artifact) is REFUSED'; 'an evidence query ACTUALLY issued and allowed (audited) grounds an evidence citation (evidence:source/template)'; THE GHOST-EVIDENCE TOOTH: 'a citation of an evidence query that was NOT issued is REFUSED'. Proposal: 'the emitted warp.remedy/v1 proposal validates clean through the W1 contract (INC.validate_remedy) and binds to the incident'; 'a reversible non-data-mutating action derives required_authorization human_confirmation'; 'an IRREVERSIBLE action forces required_authorization two_key' and 'a DATA-MUTATING action forces required_authorization two_key'; 'a proposal missing a mandated element (reversibility) is REFUSED at contract time (fail closed)'; 'with NO architecture contract the harness still reaches a cited diagnosis at spec and git level (areas None, contract_present False)'."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "TEETH proven by mutation (anti-vacuity C1), each observed RED then reverted byte-identical (the load-bearing teeth are the AC2 no-execution mutation, the AC3 floor, and the AC4 grounding mutation). IN-SESSION with no detached process (NG3): .warp/responder.py imports pathlib at module top and importlib LAZILY inside build_harness, uses no subprocess, thread, or timer, and a subprocess.Popen(..., start_new_session=True) mutation turns the no-detach check RED. .warp/responder.py (490 lines, under the 1000 module_lines budget) and .warp/capabilities.yaml are byte-identical across root, plugin/templates, and all 6 packs (aider, antigravity, codex, copilot, cursor, opencode). capabilities.yaml gains ONE honest mechanical entry (responder_loop, home .warp/responder.py) that defers honestly: the action whitelist W5, the executor W6, the two-key rule W7, the compressed loop W8, and the metrics W10 are referenced not built, and landing a responder check into validate.py run_all and lay-down via init is WARP-1211 (W11). validate.py is NOT edited. No protected path is touched. RULE #1 clean (ASCII hyphen only; the '# ---' dividers are the established engine horizontal-rule convention)."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 2062 passed, 0 failed (40 new WARP-1204 assertions; 38 expect() source lines, 2 of which run twice in the byte-identity loop over responder.py and capabilities.yaml). No-detach teeth: 'responder.py starts no detached/background process', 'imports no process/thread machinery at module scope', 'a detached subprocess.Popen(claude -p) mutation turns the no-detach check RED', 'the mutations are in-memory only (the real module on disk is byte-unchanged)'. Byte-identical sync across root/plugin/6-packs for responder.py and capabilities.yaml; 'the responder_loop capability is declared mechanical with home .warp/responder.py'. Dogfood: 'the spec placement resolves and passes the mandatory placement gate (tier standard)' (placement [contracts], footprint_tier_floor ''); 'no protected path is touched'. ./scripts/verify.sh: GATE GREEN (catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared); index regenerated (WARP-1204 review, in the PLAN-0012 ready frontier)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 2062 passed, 0 failed. The WARP-1204 block adds 40 assertions: offline investigate over a seeded incident + the delegated fail-loud default (AC1); the STRUCTURAL no-execution property and its tooth (a subclass adding an execute method turns the check RED) (AC2); the read-only ladder floor (construct L0/L1, refuse L2/L3, propose refuses at L0 and degrades down) with positive controls (AC3); diagnosis-from-artifacts grounding with the fabricated-citation and ghost-evidence teeth, the corpus-citation requirement for a governed incident, the derived two_key authorization, the fail-closed proposal validation, and the no-contract spec-and-git-level degradation (AC4); and the no-detach tooth, byte-identical sync, the capabilities entry, and the placement/tier dogfood (AC5)."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes, including check_plan over PLAN-0012 with WARP-1204 mirrored back (lane planned, plan PLAN-0012, work W4, plan_revision 2, depends_on [WARP-1201, WARP-1202, WARP-1203]), the mandatory placement gate over the spec (placement [contracts] resolves, footprint tier standard), and check_events. python3 .warp/plan.py run-check PLAN-0012 WARP-1204 returned 'clear to build (deps shipped, plan context current)'. The responder is an in-session organ (a READ over the corpus and a read-only handle) and introduces no new per-repo config artifact to validate, so there is nothing to wire into the gate for W4; landing a responder check into validate.py run_all plus the init lay-down is WARP-1211 (W11). validate.py is unedited and stays under the module_lines budget. The module is exercised standalone (python3 .warp/responder.py) and through the injected INC contract module and the built corpus in the selftest."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py (121 specs); the WARP-1204 row reads review, and the PLAN-0012 ready frontier shows WARP-1204 (W4). check_generated.sh reports no drift (regeneration is a no-op)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry no company/product references) all pass. The new engine material (.warp/responder.py and the capabilities entry) is generic; 'WARP' is the method's own name. RULE #1 verified on the new files: no em/en dash, no prose double-hyphen (the '# ---' section dividers and the YAML front-matter '---' are established conventions)."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "bash scripts/check_lint.sh: pass. .warp/responder.py and every synced copy compiles under python3 -m py_compile."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: template sync pass (the PAIRS-tracked files are unchanged; validate.py is not edited). .warp/responder.py and .warp/capabilities.yaml follow the byte-identical discipline across all engine copies."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pack drift pass (7 packs). .warp/responder.py and .warp/capabilities.yaml are byte-identical between plugin/templates (canonical source) and every pack (cursor, codex, copilot, antigravity, opencode, aider); the claude pack is the source in-place."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. Footprint-versus-diff: WARP-1204 is the single footprinted spec in the change set and every changed source path is covered by its declared footprint (.warp/responder.py and .warp/capabilities.yaml and their plugin/templates and packs/*/ copies, scripts/selftest.py, and the spec). No file_lines violation: .warp/responder.py is 490 lines (under the 1000 module_lines budget) and resolves to no area (a placeless engine module outside the contract areas, like the sibling organ modules); .warp/validate.py is deliberately NOT edited. Placement [contracts] resolves; footprint tier standard (a single area, no boundary crossing)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass. The responder harness resolves no credentials (the evidence plane W2 does) and carries no secrets; it opens no connection to any system."
+    }
+  ],
+  "assumptions": [
+    "WARP-1204 is a PLANNED spec (lane planned, W4 of PLAN-0012 revision 2, depends_on [WARP-1201, WARP-1202, WARP-1203], all shipped). run-check PLAN-0012 WARP-1204 returned 'clear to build (deps shipped, plan context current)'. The manifest carries plan/work/plan_revision/plan_hash to bind the change to the plan state it was built against.",
+    "This item is the responder investigation loop at L0 (investigate) and L1 (propose) only: the in-session agent harness that composes the intent corpus (W3) and a read-only evidence handle (W2) and, through a DELEGATED fresh-context reasoner, reaches a cited diagnosis and, at L1, emits a validated warp.remedy/v1 proposal (W1). The load-bearing properties are STRUCTURAL: the harness contains NO execution capability at all, it holds the read-only ladder floor (L0/L1, refusing L2/L3), and every citation resolves to a real artifact or it refuses. The action whitelist WARP-1205 (W5), the executor WARP-1206 (W6), the two-key rule WARP-1207 (W7), the compressed loop WARP-1208 (W8), and the support metrics WARP-1210 (W10) are separate later items; the harness shares no credential and no code path with any execution organ and opens no connection to any live system (NG1).",
+    "HONEST DEFERRAL of the gate wiring (not a dodge): the responder is an in-session organ that READS the corpus and a read-only handle and introduces NO new per-repo config artifact to validate, so there is nothing to wire into validate.py run_all for W4. Landing any responder-backed check and the init lay-down is WARP-1211 (W11). Because validate.py is not edited it stays under the module_lines budget; the module ships runnable standalone (python3 .warp/responder.py) and exercised through the injected INC contract module and the built corpus in the selftest, matching how W1, W2, and W3 shipped their organs unwired.",
+    "The impl is a single commit (responder.py across all engine copies + one capabilities entry per copy + the selftest block + the spec + the regenerated index). Per the review boundary: specs/WARP-1204 is flipped to review (not shipped), no verdict is written, this proof manifest and .warp/last_verify and .warp/events.jsonl are left uncommitted, and nothing is pushed. The independent fresh-context reviewer authors the verdict; the orchestrator flips to shipped on a pass."
+  ],
+  "rollback": "git revert 4014513. The change adds one engine module (.warp/responder.py, synced byte-identical across plugin/templates and the 6 packs) and one capabilities entry, plus a selftest block and this spec. Nothing consumes the responder for enforcement: the harness is an in-session organ, its first downstream is the compressed loop WARP-1208 (W8) once an executor exists, and gate wiring is WARP-1211 (W11), so the module is not wired into verify.sh or validate.py run_all and reverting returns the gate to its prior behavior with no migration and nothing to unwind. The harness reads only the recorded corpus and a read-only evidence handle and opens no live connection. A repository that never configures the responder is byte-identically unaffected either way."
+}

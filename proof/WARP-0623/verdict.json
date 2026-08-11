@@ -1,0 +1,57 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0623",
+  "commit": "0f49b614e49a6e0a0ff75edb6b42ade4cac9a408",
+  "reviewer": "claude-opus-5[1m] (independent adversarial fresh-context reviewer, distinct from the builder and the orchestrating session; told that the rename is trivial and THE CHECK IS THE DELIVERABLE, so most effort must go to whether the check catches the CLASS rather than the one instance)",
+  "reviewed_at": "2026-07-25T00:15:00Z",
+  "verdict": "pass_with_notes",
+  "round": 1,
+  "proof_digest": "sha256:6c17e37d600ba81b",
+  "must_fix_before_live": [],
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "THE ORIGINAL DEFECT WAS REPRODUCED AT THE PARENT COMMIT, which is the strongest possible evidence the fix fixes something real. In a throwaway clone at c37e833 the shipped factory over the shipped adapter yields a not-callable _project in both configurations, raising TypeError: 'str' object is not callable with a project key and 'NoneType' object is not callable without one. At the reviewed commit both configurations report zero not-callable mixin names and the renamed method reaches the network layer, which is reachability OBSERVED rather than asserted. The reviewer also restored the collision on disk in a second clone and confirmed the gate's own import then hard-crashes with the historical finding, so the wiring is real rather than decorative."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "The rename is the method, not the attribute; the body is byte-identical; the three call sites are updated; tracker_intake.py and tracker_adapter.py are read-only and the diff over them, the protected paths and the safety core is empty. The old name is gone from the mixin. One trivial correction: the module-count claim was off by one (60 scanned, not 61)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "The check catches the DECLARED class: a future constructor field colliding with a mixin method, and a future mixin method colliding with a constructor field, both refused, with the collision removed passing. The recognizer's design was independently vindicated: it identifies mixins by an explicit marker rather than issubclass BECAUSE this codebase loads siblings by path so every load yields a distinct class, and the reviewer confirmed an issubclass test would have recognized nothing and reported clean. The attribute half's cover story holds: every static blind spot the reviewer could build (assignment through __dict__, setattr with a computed name, a helper the constructor calls, __post_init__, a decorated __init__, augmented assignment) is caught by the per-instance pass. Full-MRO measurement on the real composition: 10 constructor attributes, 27 mixin methods, 71 MRO methods, intersection empty both ways. RESIDUAL, recorded as note 1: a CLASS-LEVEL shadow is the same defect with the same TypeError and is refused by neither wired site, and the function that would catch it already exists in the file but is wired nowhere."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "The teeth were reproduced INDEPENDENTLY and came out stronger than claimed. The reviewer built its own 8 mutation sites against its own 6 fixtures using different collision names, and the builder's 2x2 reproduces as exactly diagonal; critically one reviewer fixture is a class-attribute shadow the shadow refusal cannot catch at all, so the callability probe's independence is established BY SHAPE rather than by fixture luck. Neither matrix guard is propped up by the other. Both wiring sites are genuinely dominated in both directions, so neither is a load-bearing site left without a tooth. The reviewer went further and mutated all 10 sites OUTSIDE the declared teeth set on disk: every one turns the shipped suite red, and neutralizing the recognizer does not go silent because the vacuity refusal fires and the import crashes, which is the correct failure direction."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Confirmed as CORRECTED. The criterion as first written demanded a byte-identical engine sync of a module that has NEVER shipped in the engine, and its footprint named paths that do not exist. The reviewer verified every factual claim behind the resolution independently: git log over the template paths is empty, pack.ENGINE_GLOBS derives the engine set from plugin/templates so one copy would make it a file every pack must carry, capabilities.yaml IS engine-synced and byte-identical across all eight copies, and the repo-only marking is exactly what this repository's own capabilities-honesty check requires of an entry whose home does not resolve in the shipped engine, matching three sibling entries. Ruling: HONEST RESOLUTION, and THE SPEC WAS WRONG to demand it. The spec text and footprint are corrected in this commit rather than left false in a ready spec."
+    }
+  ],
+  "manifest_overstatements": [
+    "AC4 called the callability probe one of TWO INDEPENDENT GUARDS in the live module, and AC1 called it the module's own reachability GUARD. It is called from nothing in production: a grep finds its def plus three lines in the selftest. Counting it as a shipped guard inflated the defence in depth to twice what ships. Corrected.",
+    "The module docstring's claim to 'close the whole class of defect' is false: a class attribute, a stamped class attribute and an unassigned __slots__ entry are the same defect and are refused by neither wired site. The reviewer reproduced all three. Corrected to name the intersection class precisely.",
+    "AC4's 'CONTROLS, no over-firing' overstates: two real over-firing shapes exist and were reproduced (a constructor assigning a CALLABLE over a mixin method name, the ordinary override or retry-wrap idiom, and an attribute set by a base __init__ the composed constructor never calls). Corrected.",
+    "AC3's 'wired where it cannot be forgotten' is false off the factory path: both wired sites live on the factory, so a composition built directly from the exported mixin is checked at neither. Corrected, with the note that there is exactly one production composition today.",
+    "AC2's module count was off by one. Corrected."
+  ],
+  "notes": [
+    "Ranked by six-month impact. 1. THE CLASS-LEVEL SHADOW IS THE REAL RESIDUAL AND THE FIX IS ALREADY IN THE FILE: a class attribute or an unassigned slot ahead of the mixin makes a provisioning method unreachable exactly as the historical defect did, unreachable_provisioner_methods reports it correctly, and it is wired nowhere. Wiring the callability probe into the per-instance path is strictly stronger than intersecting names AND removes both false positives below, so it is one change closing three notes. It is the shape a provider layer will most plausibly introduce, a class default sitting beside a mixin method of the same name. 2. The two false positives, which is what gets a check deleted: a constructor assigning a callable over a mixin method name is refused while the call in fact works, and the message asserts every call raises; and an attribute set by a base __init__ that is never called is refused at class level although the instance never carries it. 3. A guard that guards nothing: either wire unreachable_provisioner_methods or stop calling it a guard. 4. The check is bound to the FACTORY rather than to the mixin lineage; an __init_subclass__ on the mixin would bind it to every composition. 5. The FakeTracker, whose private-name mirroring caused the blindness in the first place, is outside the check and already carries a _projects attribute one character from its own _project method; adding self._project to the fake would recreate the exact defect on the other side of the seam with no check anywhere. 6. The marker test is brittle by one character: a future layer writing = 1 drops silently out of the enumeration because the test is 'is True'. 7. Undeclared shape gaps worth one assumption line each: dunder-named methods are excluded by the name filter, a non-data descriptor whose object is not callable is enumerated on neither side, and a nested-class name shadow is invisible. 8. Amend the SPEC and not only the manifest (done in this commit). 9. The AC2 off-by-one."
+  ],
+  "gate_observed": {
+    "verify": "GATE: GREEN (0f49b61)",
+    "selftest": "2849 passed, 0 failed",
+    "baseline": "2816 at c37e833, measured by the reviewer in a throwaway clone; +33 matching 33 WARP-0623 call sites",
+    "assertion_integrity": "selftest diff is a single append hunk, 351 insertions and 0 deletions: nothing weakened or removed",
+    "mutation_sweep": "all 10 sites outside the declared teeth set mutated on disk; every one turns the shipped suite red (vacuity 1 failure, static-attr-half 10, instance-dict-half 3, method-enumeration 14, shadow-refusal 9, callability-probe 4, factory-wiring 4, ctor-wiring 3, _loads_local 10, recognizer an import crash)",
+    "hygiene": "check_pack_drift and check_template_sync pass; module 679 lines with a 32-line longest function; RULE #1 clean; worktree restored byte-identically by md5"
+  },
+  "disposition": "LANDS. must_fix_before_live is empty, the defect was reproduced at the parent commit and is repaired, the check catches the declared class, the teeth were independently reproduced as exactly diagonal and stronger than claimed, and the AC5 gap is an honest resolution of a criterion that was wrong. The five overstatements and the spec's false premise are corrected in this commit. The nine notes carry to a follow-up hardening item, and note 1 (wiring the callability probe, which also closes notes 2 and 3) should land before anything else builds on this check."
+}

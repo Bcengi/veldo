@@ -1,0 +1,548 @@
+{
+ "schema": "warp.measurement/v1",
+ "spec_id": "WARP-0717",
+ "what": "For every guard this item adds, the mutation that makes it RED. A guard with no failing witness is a description of a property, not a check on it.",
+ "regenerated": "REGENERATED for review 1's correction C1. The previous version of this file claimed a substitution count and the sha256 before, after and restored, and carried none of them, so the property that makes the battery trustworthy - that a mutation which failed to apply is reported NOT_APPLIED rather than as a guard that held - could not be audited from the record. Every witness now carries them per touched file. The protocol was followed the first time; the record did not show it, and the remedy for that is to make the record show it.",
+ "method": [
+  "ONE copy of the repository at an absolute path under /tmp, never the worktree; .git and __pycache__ excluded from the copy.",
+  "per mutation, per touched file: sha256 BEFORE, count the anchor's occurrences and ASSERT the count is the expected one, apply, ASSERT the sha256 CHANGED, run, restore from the source tree, ASSERT the sha256 is back to the BEFORE value. A mutation whose anchor count is wrong or whose sha256 did not move is reported NOT_APPLIED, never as a guard that held.",
+  "a `create` op has no BEFORE bytes, so its sha256_before and sha256_restored are the literal ABSENT and its APPLIED evidence is that the file did not exist and then did.",
+  "the observation is fragment 14 alone via `--suite 14_warp_0717_subset_runner`, about 2s, so the battery costs a minute rather than 20 full runs.",
+  "verdict is read from the run's OWN partial verdict line. A run with no verdict line is CRASH, not RED: a dead run prints nothing and reads like a run that found nothing wrong, which this repository calls worse than a red.",
+  "the battery ends by re-running the unmutated target, so the closing baseline is the proof that every restoration put the tree back."
+ ],
+ "result": "21 of 21 guard mutations RED, 0 GREEN, 0 CRASH, 0 NOT_APPLIED",
+ "battery_negative_control": "1 control mutation(s) with an anchor that is not in the file: MX NEGATIVE CONTROL OF THE BATTERY ITSELF -> NOT_APPLIED. Without this the NOT_APPLIED classification is a claim the record never exercises.",
+ "baseline": {
+  "verdict": "GREEN",
+  "passed": 53,
+  "failed": 0,
+  "exit": 2,
+  "elapsed_s": 1.98
+ },
+ "closing_baseline": {
+  "verdict": "GREEN",
+  "passed": 53,
+  "failed": 0,
+  "exit": 2
+ },
+ "witnesses": [
+  {
+   "mutation": "M1 aggregate_line stops consulting the scope",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "62cb3b2196710d6253137790d9845bdf4c56c1360dd1cddb208f079cc0127e87",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 51,
+   "failed": 2,
+   "failed_assertions": 2,
+   "detail": "WARP-0717 AC2: a PARTIAL run ASKED FOR THE AGGREGATE SUMMARY LINE is REFUSED BY NAME. The attempt is; WARP-0717 AC2: PARTIALITY IS DECIDED BY THE SELECTOR AND NOT BY HOW MUCH RAN, so a selector that nam"
+  },
+  {
+   "mutation": "M2 verify_stamp_payload stops refusing",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "649a445715e9dd2d35190302b4d6135b56cd5b373d411285831ddb6ef3638dff",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 51,
+   "failed": 2,
+   "failed_assertions": 2,
+   "detail": "WARP-0717 AC2: a PARTIAL run ASKED TO WRITE THE VERIFY STAMP is REFUSED BY NAME. scope.verify_stamp_; WARP-0717 AC2: PARTIALITY IS DECIDED BY THE SELECTOR AND NOT BY HOW MUCH RAN, so a selector that nam"
+  },
+  {
+   "mutation": "M3 unit_evidence_check stops refusing",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "893237bef4db88a2434749dbab3158966e052ec42096d932a8996f321e5b21f1",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 51,
+   "failed": 2,
+   "failed_assertions": 2,
+   "detail": "WARP-0717 AC2: a PARTIAL run ASKED TO SATISFY THE REQUIRED-EVIDENCE CHECK is REFUSED BY NAME. scope.; WARP-0717 AC2: PARTIALITY IS DECIDED BY THE SELECTOR AND NOT BY HOW MUCH RAN, so a selector that nam"
+  },
+  {
+   "mutation": "M4 a partial run exits 0 when nothing failed",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "38af633af54ab769ff894ef94e9ec3d221f8282b769a2bf1525a7b4b67463199",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 49,
+   "failed": 4,
+   "failed_assertions": 4,
+   "detail": "WARP-0717 AC2: A PARTIAL RUN'S EXIT CODE IS NEVER 0, passing or failing, while a full run's is 0 exa; WARP-0717 AC2, THROUGH THE REAL DISPATCHER: a run WITH a selector emits NO aggregate summary line at; WARP-0717 AC1: `--suite NAME` RUNS EXACTLY THE FRAGMENTS THE CLOSURE TABLE NAMES, no more and no few; WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and its final line stil"
+  },
+  {
+   "mutation": "M5 partiality is decided by the count of suites, not by the selector",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "0f8b9e4f6334148afc5a8c80f54ce68e8286dc08f86f5ed33035124b8630be97",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 51,
+   "failed": 2,
+   "failed_assertions": 2,
+   "detail": "WARP-0717 AC2: PARTIALITY IS DECIDED BY THE SELECTOR AND NOT BY HOW MUCH RAN, so a selector that nam; WARP-0717 AC2: A PARTIAL RUN'S EXIT CODE IS NEVER 0, passing or failing, while a full run's is 0 exa"
+  },
+  {
+   "mutation": "M6 an unknown selector exits 0 instead of refusing",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/selftest.py",
+     "op": "substitute",
+     "sha256_before": "771ee7079abad8cc13d14b034bebacd1774b0ab01b1f38dc5ad8710add05f2d8",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "06b2af9617f9ee97b0290e40049e5ff8fe871669d166fa372697779ee1a29d5f",
+     "sha256_restored": "771ee7079abad8cc13d14b034bebacd1774b0ab01b1f38dc5ad8710add05f2d8",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC1: AN UNRESOLVABLE SELECTOR IS A REFUSAL THAT NAMES THE AVAILABLE SUITES, driven through"
+  },
+  {
+   "mutation": "M7 resolve accepts a PREFIX of a real suite name",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "49c3c33824d13060c86497ab9bdd9822d2d435b9f5bf9ed0d61a5a4688d92fb8",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC1: AN UNRESOLVABLE SELECTOR IS A REFUSAL THAT NAMES THE AVAILABLE SUITES, driven through"
+  },
+  {
+   "mutation": "M8 the closure loses its fixpoint step (the generator returns the direct demand)",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "c03f8391adbe284545465e340f844ebac08203dd03738faf1fecd5b25cb42eff",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC1: THE COMMITTED CLOSURE TABLE IS EXACTLY WHAT RE-DERIVING FROM THE COMMITTED MEASUREMEN"
+  },
+  {
+   "mutation": "M9 the gate's unit slot grows a selector",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/verify.sh",
+     "op": "substitute",
+     "sha256_before": "807e7f5b663e1bae2252b52466f9937b11904dcdabcc6f48aaddbaf83b9487c6",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "7aec7da740a45653545b36d38c0607ca2880c70e7c53650b4f1db36e862e8184",
+     "sha256_restored": "807e7f5b663e1bae2252b52466f9937b11904dcdabcc6f48aaddbaf83b9487c6",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 51,
+   "failed": 2,
+   "failed_assertions": 2,
+   "detail": "WARP-0717 AC2: THE GATE STILL INVOKES THE SUITE WITH NO SELECTOR. scripts/verify.sh declares exactly; WARP-0717 AC2: NO SELECTOR FLAG APPEARS ANYWHERE IN scripts/verify.sh, not in the unit slot and not "
+  },
+  {
+   "mutation": "M10 the partial line drops its elapsed time",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "72ba23663afcd6c4fdfd14990b7214fd237bf1a1e0d8ece255dd9eb8e3cfd814",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 51,
+   "failed": 2,
+   "failed_assertions": 2,
+   "detail": "WARP-0717 AC1: a partial run REPORTS ITS OWN ELAPSED TIME AND THE SELECTED FRAGMENT'S OWN ASSERTION ; WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and its final line stil"
+  },
+  {
+   "mutation": "M11 the banner stops naming itself a partial run",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "e0f302507edd696f738b24f9e89a68b520208c75d508bab93fd664044a29802c",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 51,
+   "failed": 2,
+   "failed_assertions": 2,
+   "detail": "WARP-0717 AC2, THROUGH THE REAL DISPATCHER: a run WITH a selector emits NO aggregate summary line at; WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and its final line stil"
+  },
+  {
+   "mutation": "M11b the banner drops the separator the run-list parse looks for (the shape that used to CRASH the battery instead of reddening it)",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "d6443b32a413ab0edcbf3689ced73d9ef0ef9f9cd6b0c81f3f3505cf8ca1b916",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC1: `--suite NAME` RUNS EXACTLY THE FRAGMENTS THE CLOSURE TABLE NAMES, no more and no few"
+  },
+  {
+   "mutation": "M12 the stamp payload drops a key verify.sh writes",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "32626918b155d5e5018070e7757e57c570f14a79cbcd0550241209f2ce04357e",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC2 NON-VACUITY: the FULL scope's verify-stamp payload carries EXACTLY the keys scripts/ve"
+  },
+  {
+   "mutation": "M13 the derived closure table loses a fragment the manifest enumerates",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/suites/requires.json",
+     "op": "substitute",
+     "sha256_before": "b1c8b8c4db5922d86e749da064998610acb174953d470e3a014b82b25efbd7d2",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "1c133edbb2ca4509ad5faef7f363875334d7a0264e9dafacbf0d0afaf273eb8c",
+     "sha256_restored": "b1c8b8c4db5922d86e749da064998610acb174953d470e3a014b82b25efbd7d2",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 47,
+   "failed": 6,
+   "failed_assertions": 6,
+   "detail": "WARP-0717 AC1: THE CLOSURE TABLE AND THE MANIFEST ENUMERATE THE SAME FRAGMENTS, bound in BOTH DIRECT; WARP-0717 AC1: EVERY CLOSURE CONTAINS ITS OWN FRAGMENT and is ordered by manifest position, which is; WARP-0717 AC1: THE CLOSURE IS A FIXPOINT: for every fragment, the union of its closure members' own ; WARP-0717 AC1: THE COMMITTED CLOSURE TABLE IS EXACTLY WHAT RE-DERIVING FROM THE COMMITTED MEASUREMEN"
+  },
+  {
+   "mutation": "M14 ADDITIVE CONTROL: a fifteenth fragment with neither a measured region range nor a declared requires",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/suites/manifest.json",
+     "op": "substitute",
+     "sha256_before": "bdc8565b450116b24cbce11eff7ebc9076d1f1a968942a6b16fe44b2f00bc3b7",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "32e7f529d01c1611b68c859e8f16c5a6a33c28dd1d609d43d837ca3558b5ad9c",
+     "sha256_restored": "bdc8565b450116b24cbce11eff7ebc9076d1f1a968942a6b16fe44b2f00bc3b7",
+     "restored_ok": true
+    },
+    {
+     "path": "scripts/suites/15_m14_additive_control.py",
+     "op": "create",
+     "sha256_before": "ABSENT",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "660aa4f0f79659302be60b9d4265ae82d6a01dcdad3d5ffa31a598091e0a88db",
+     "sha256_restored": "ABSENT",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 48,
+   "failed": 5,
+   "failed_assertions": 5,
+   "detail": "WARP-0717 AC1: THE CLOSURE TABLE AND THE MANIFEST ENUMERATE THE SAME FRAGMENTS, bound in BOTH DIRECT; WARP-0717 AC1: EVERY CLOSURE CONTAINS ITS OWN FRAGMENT and is ordered by manifest position, which is; WARP-0717 AC1: THE CLOSURE IS A FIXPOINT: for every fragment, the union of its closure members' own ; WARP-0717 AC1: THE COMMITTED CLOSURE TABLE IS EXACTLY WHAT RE-DERIVING FROM THE COMMITTED MEASUREMEN"
+  },
+  {
+   "mutation": "M15 the unrecognised-flag refusal stops exiting 2 (it exits 0, the way the unrecognised flag itself used to)",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/selftest.py",
+     "op": "substitute",
+     "sha256_before": "771ee7079abad8cc13d14b034bebacd1774b0ab01b1f38dc5ad8710add05f2d8",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "6aeb094adab864cdf02be86bf03c723b6f52ea7ff333f3c71409bdbb2870cd86",
+     "sha256_restored": "771ee7079abad8cc13d14b034bebacd1774b0ab01b1f38dc5ad8710add05f2d8",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC1: AN UNRECOGNISED ARGUMENT BEGINNING WITH `--` IS A NAMED REFUSAL AT EXIT 2, driven thr"
+  },
+  {
+   "mutation": "M15b the unrecognised-flag refusal stops naming itself",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/selftest.py",
+     "op": "substitute",
+     "sha256_before": "771ee7079abad8cc13d14b034bebacd1774b0ab01b1f38dc5ad8710add05f2d8",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "2efa2d52848ee306950ca59685021465a496933ab78e2c4052a5d8c8e09bfda3",
+     "sha256_restored": "771ee7079abad8cc13d14b034bebacd1774b0ab01b1f38dc5ad8710add05f2d8",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC1: AN UNRECOGNISED ARGUMENT BEGINNING WITH `--` IS A NAMED REFUSAL AT EXIT 2, driven thr"
+  },
+  {
+   "mutation": "M16 EMPTIED SOURCE: the hostile-selector shape list, which two bound all()s iterate",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/suites/14_warp_0717_subset_runner.py",
+     "op": "substitute",
+     "sha256_before": "177ae5f9fe54e1c0503592d1ae34e0870f210c4945e5a0fc5327b260624fab6f",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "db70befc6cc8b6f3e3de08d50dcb9ad9a4c64898ecfc8c6584ddbdfd6885ef93",
+     "sha256_restored": "177ae5f9fe54e1c0503592d1ae34e0870f210c4945e5a0fc5327b260624fab6f",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 51,
+   "failed": 2,
+   "failed_assertions": 2,
+   "detail": "WARP-0717 AC1: AN UNRESOLVABLE SELECTOR IS A REFUSAL THAT NAMES THE AVAILABLE SUITES, driven through; WARP-0717 AC1: NONE of the four hostile selectors emits an aggregate summary line, so nothing that p"
+  },
+  {
+   "mutation": "M17 EMPTIED SOURCE: the literal file pair the canon-absence probe list is built from",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/suites/14_warp_0717_subset_runner.py",
+     "op": "substitute",
+     "sha256_before": "177ae5f9fe54e1c0503592d1ae34e0870f210c4945e5a0fc5327b260624fab6f",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "24415885b00b9d8611bfa4294724f4f6dabfb404d8e85d59d29cc9db1a038792",
+     "sha256_restored": "177ae5f9fe54e1c0503592d1ae34e0870f210c4945e5a0fc5327b260624fab6f",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC3: THE SELECTOR AND ITS BANNER ARE NOT ENGINE CANON AND ARE CORRECTLY ABSENT FROM plugin"
+  },
+  {
+   "mutation": "M18 EMPTIED SOURCE: the declared pack roster the canon-absence assertion reads",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": ".warp/packs.json",
+     "op": "substitute",
+     "sha256_before": "226d7fcaf2706615ea404cdd21e4475749598d4e379715eeaaa10606ae1fbeb8",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "de948e196c86e56db69f2f5bbb1122984f2fa15903d3aa297c60c0ada271bcdb",
+     "sha256_restored": "226d7fcaf2706615ea404cdd21e4475749598d4e379715eeaaa10606ae1fbeb8",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC3: THE SELECTOR AND ITS BANNER ARE NOT ENGINE CANON AND ARE CORRECTLY ABSENT FROM plugin"
+  },
+  {
+   "mutation": "M19 EMPTIED SOURCE: the bad-flag shape list the flag-refusal all() iterates",
+   "verdict": "RED",
+   "applied": true,
+   "is_battery_control": false,
+   "files": [
+    {
+     "path": "scripts/suites/14_warp_0717_subset_runner.py",
+     "op": "substitute",
+     "sha256_before": "177ae5f9fe54e1c0503592d1ae34e0870f210c4945e5a0fc5327b260624fab6f",
+     "substitutions": 1,
+     "substitutions_expected": 1,
+     "sha256_after": "9c53efb0a1147c4053b79e6d84a0f593480320d8614a928a077feb2079350d27",
+     "sha256_restored": "177ae5f9fe54e1c0503592d1ae34e0870f210c4945e5a0fc5327b260624fab6f",
+     "restored_ok": true
+    }
+   ],
+   "exit": 1,
+   "passed": 52,
+   "failed": 1,
+   "failed_assertions": 1,
+   "detail": "WARP-0717 AC1: AN UNRECOGNISED ARGUMENT BEGINNING WITH `--` IS A NAMED REFUSAL AT EXIT 2, driven thr"
+  },
+  {
+   "mutation": "MX NEGATIVE CONTROL OF THE BATTERY ITSELF: a mutation whose anchor is not in the file at all. It must be reported NOT_APPLIED, never as a guard that held, and the record must show the count that refused it",
+   "verdict": "NOT_APPLIED",
+   "applied": false,
+   "is_battery_control": true,
+   "files": [
+    {
+     "path": "scripts/run_scope.py",
+     "op": "substitute",
+     "sha256_before": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "substitutions": 0,
+     "substitutions_expected": 1,
+     "sha256_after": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "sha256_restored": "415bbc4d2c06490aa2c5656d2b16e83c69e0ca9e85aca933b6fca3c1480c707a",
+     "restored_ok": true
+    }
+   ],
+   "exit": null,
+   "passed": null,
+   "failed": null,
+   "failed_assertions": 0,
+   "detail": "",
+   "not_applied_because": "expected 1 substitution(s) of the anchor in scripts/run_scope.py, found 0"
+  }
+ ]
+}

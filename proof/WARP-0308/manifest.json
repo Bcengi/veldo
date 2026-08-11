@@ -1,0 +1,35 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0308",
+  "commit": "8443c080aa184053ef1a71edb2d811ce7b878676",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B8)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T05:44:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/mobile/warp_ios_runner.py exists: reads a journey (name, bundle_id, udid, steps of launch/tap/type/wait/expect_text/expect_label/state, optional device_profiles, optional lifecycle_redrives, optional recovery_assertion) and drives a SimctlDriver (xcrun simctl boot/launch/terminate/screenshot/video + an accessibility-bridge seam for tap/type/UI reads) through a driver seam, so run(journey, driver, outdir) executes against a FakeIosDriver with no simulator. Exit 0 when every asserted step and every lifecycle re-drive pass on every declared profile; exit 1 with the failing step or re-drive named and a failure screenshot captured. On this Linux host the live path fails loud (FileNotFoundError xcrun, exit 1), it does not fake a run - proof/WARP-0308/runner-evidence.txt"},
+      {"type": "unit", "ref": "scripts/selftest.py iOS block: the happy fixture driven through run() with the fake driver returns passed True with all steps ok; part of selftest 284 passed / 0 failed"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py iOS block drives all three re-drives green on the happy fixture (process_death, background_foreground, appearance) and re-asserts the recovery_assertion after each; the process_death re-drive proves a REAL restart via the launch token - a _StubbornIosDriver whose terminate does nothing (relaunch returns the same token) fails process_death with 'launch token unchanged ... not a real restart', and a brittle recovery_assertion that no longer holds fails the re-drive naming the mismatch. Only simctl-honest re-drives are offered (rotation and network loss are out of scope)"},
+      {"type": "operational", "ref": "proof/WARP-0308/negative-tests.txt cases 2 and 4: no-op terminate -> passed False, detail 'process_death: launch token unchanged (802) - not a real restart'; brittle recovery -> passed False, detail 'after process_death: label HomeScreen does not contain WILL-NOT-MATCH'"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py iOS block: a journey declaring device_profiles ['iPhone-15-iOS-17-0','iPad-Pro-iOS-17-0'] driven by a fake covering only iPhone-15-iOS-17-0 returns passed False with matrix_missing == ['iPad-Pro-iOS-17-0']; the runner records the connected/driven profile and fails naming any uncovered declared profile, so a partial matrix cannot pass silently"},
+      {"type": "operational", "ref": "proof/WARP-0308/negative-tests.txt case 3: matrix incomplete -> passed False, matrix_missing=['iPad-Pro-iOS-17-0']"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py iOS block (appended after the integration block) drives run() with a FakeIosDriver and NO simulator: happy journey passes; all three re-drives run green; the failing fixture returns passed False, names the failing step (1:expect_label), and records a FAILURE screenshot; a no-op process death is caught (no vacuous pass); a declared-but-uncovered device profile fails naming the missing profile. selftest 284 passed / 0 failed (was 275); all prior cases still pass and the gate stays GREEN at 8443c08"},
+      {"type": "operational", "ref": "proof/WARP-0308/runner-evidence.txt: python3 scripts/selftest.py -> 284 passed, 0 failed; plugin/templates/scripts/runners/mobile/test_ios_runner.sh -> pass journey exit 0, fail journey exit 1 (failure caught, screenshot captured), rc 0"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, wrapper, and README carry zero company/product names (case-insensitive scan returned no matches; docs-hygiene genericity sweep passes) and no em-dash/en-dash/double-hyphen. .warp/capabilities.yaml declares ios_simulator_driving status: reference (a shipped reference that REQUIRES macOS and a booted iOS simulator to drive live; the Linux warp home repo does not run it), never mechanical, kept byte-identical with the plugin template copy (both sha256 44e67ceacb99608e431755cf7f5055a78c589a0c48e9506d1f407f383614784d; template-sync gate passes). verify.sh prints GATE: GREEN (8443c08...)"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 284 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference-honest, macOS-gated. There is no macOS and no iOS simulator in the warp home environment (this repository is Linux), so a live simulator cannot be driven here and the honest evidence is the fake-driver control-logic unit tests, not an operational simulator run. required_evidence is therefore [unit], not operational: claiming a live-simulator run on a Linux box would be a lie the reviewer would correctly reject. The live SimctlDriver (xcrun simctl for boot/launch/terminate/screenshot/video/home-screen backgrounding/appearance, plus an accessibility-bridge seam for tap/type/UI-state assertions that fails loudly when the bridge is absent) is shipped and documented; only its control logic (journey sequencing, lifecycle re-drive orchestration with a provable launch-token restart, device-matrix completeness, and first-failure-named) is gate-tested against a FakeIosDriver with no simulator. Shipped under plugin/templates/scripts/runners/mobile/; not wired into the warp repo's own gate (capabilities: reference). An adopting repo on macOS runs the same runner against a real booted simulator and wires the accessibility bridge."],
+  "rollback": "git revert the impl; B8 adds a new runner file, a fixture pair, a wrapper and a README, a selftest block, and an honest capabilities entry (template and instance) under plugin/templates and scripts - it touches no protected gate script or enforcer, so reverting removes the reference artifact and its unit block with no effect on any running gate; the prior selftest cases are unchanged."
+}

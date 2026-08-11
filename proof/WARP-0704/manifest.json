@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0704",
+  "commit": "696a3a265489d4c55a08c52bc87a2ac38f87a157",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0007 Y4)",
+  "plan_hash": "sha256:c5ff657b05dd9b8f",
+  "produced_at": "2026-07-18T12:15:07Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/lander.py Lander serializes landing fleet-wide through a single land lock (a claim on the well-known unit __land_lock__ in the claim ledger, WARP-0701): _acquire waits (polling CL.claim) until the lock is ours, land() runs the steps, and _release frees the lock in a finally so a crash never wedges the trunk. The lock reuses the ledger's atomic claim, staleness, and heartbeat - and rests on the WARP-0710 hardening that makes every claim-ledger write path serialize on one per-unit arbiter, so the land lock is granted to at most one lander."
+        },
+        {
+          "type": "unit",
+          "ref": "control selftest over a fake LandOps: 8 barrier-synchronized concurrent Landers each land a distinct unit and a shared counter (incremented at sync_main, decremented at finalize) is asserted to reach at most 1. Re-verified on the fixed foundation (696a3a2, after WARP-0710): the independent reviewer's own concurrent-Landers reproduction, which showed two landers inside the land at once on the pre-fix primitive, now shows max concurrent landers == 1. part of selftest 1027 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/lander.py GitLandOps.reconcile lands by git merge (--no-edit --no-ff <build_ref>), not cherry-pick, so the build's implementation and evidence commits keep their shas and only the merge commit is new - which keeps the proof and verdict, both digest-bound to the implementation commit, valid after landing."
+        },
+        {
+          "type": "unit",
+          "ref": "real-git selftest over a temporary repo: a build branch is landed onto a trunk that advanced independently and the build's implementation commit sha is asserted present in the trunk history after the merge; independent review reproduced sha preservation on both a diverged merge and a fast-forward land; part of selftest 1027 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/lander.py reconcile union-resolves the known shared APPEND-ONLY files (scripts/selftest.py, both .warp/capabilities.yaml copies, .warp/events.jsonl) via _union_resolve_one (git merge-file -p --union over the three index stages) so both sides' additions survive with no conflict markers, and regenerates specs/index.md deterministically rather than merging it. An unsafe union - a binary file, where git merge-file --union returns non-zero and would truncate to empty - is rejected (the merge aborted) rather than committed as lost content."
+        },
+        {
+          "type": "unit",
+          "ref": "real-git selftest over temporary repos: a diverged trunk where both sides appended to selftest.py and events.jsonl lands with BOTH sides' additions present and no markers; a null-byte (binary) union-listed events.jsonl is rejected (reason union_unsafe), the merge aborted (clean tree), the file not truncated to empty; independent review reproduced the text union across selftest.py + events.jsonl + both capabilities.yaml copies and confirmed the binary guard; part of selftest 1027 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/lander.py reconcile treats a conflict in any file that is NOT a known append-only file (and not the regenerated index) as a real conflict: it aborts the merge (git merge --abort, leaving a clean tree) and returns ok False with the conflicting paths, so the build is revised rather than the lander guessing at a resolution."
+        },
+        {
+          "type": "unit",
+          "ref": "real-git selftest over a temporary repo: a README.md changed differently on the build branch and the trunk is rejected (ok False, README.md reported in conflicts) and the merge aborted (clean tree, no dangling MERGE_HEAD); independent review confirmed no wedged repo; part of selftest 1027 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/lander.py land() runs the steps in order (sync_main, reconcile, gate, finalize) and a failing step aborts the land at that step, with _release always freeing the lock in a finally. GitLandOps.finalize policy-checks then pushes fast-forward-only (git push, no --force) so a trunk that advanced under a held lock is never clobbered (the push simply fails and the land is retried) - a git-level correctness backstop independent of the lock. The lock is held with a heartbeat keep-alive thread (heartbeating well under the ledger staleness threshold) that tolerates a transient error rather than dying, so a long land never looks stale."
+        },
+        {
+          "type": "unit",
+          "ref": "control selftest over a fake LandOps: a failing stage aborts the land at that stage AND releases the lock (a later land then acquires the freed lock - non-tautology teeth on the finally-release); a rejected (non-ff) finalize fails the land at finalize without clobbering; the heartbeat keep-alive thread is asserted alive while the lock is held and stopped after release; independent review reproduced the abort-and-release mutation and the heartbeat keep-alive (with a shrunk staleness threshold the lock stays live across a land 2x longer than the threshold; with heartbeat off it is stealable), and confirmed the ff-only push does not clobber a real bare remote; part of selftest 1027 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1027 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "The lander CONTROL logic (the land lock, serialize, ordered stages, abort-and-release, the ff-push guard, the heartbeat keep-alive) is gate-tested over a fake LandOps with no real git; the REAL git steps (GitLandOps: merge, union-resolve, reject, regenerate, gate, ff-only push) are gate-tested over throwaway temporary git repositories. The lander lands ALREADY-COMMITTED build and evidence commits produced by the worker/executor - it authors no evidence itself; finalize only policy-checks and pushes. AC1's serialization guarantee rests on the WARP-0710 claim-ledger hardening (shipped first): the land lock is a claim on a well-known unit, and the first Y4 review refuted AC1 against the pre-WARP-0710 primitive (a fresh-vs-takeover race granted the lock to two landers); WARP-0710 closed that, and Y4 was re-based onto the fixed foundation (this commit) and AC1 re-verified. Which branch or worktree a build lives on is the worker loop's and launcher's concern (Y3, Y7); the lander takes a build ref. Unix-only via the claim ledger. Accepted, gate-backstopped notes from the independent review: a union of a same-file GENUINE semantic conflict on an append-only text path would combine both sides (the union set is append-only by convention and a corrupted result fails the gate stage before finalize); the index regeneration is not return-checked in reconcile (a broken generator is caught by the gate's generated check); git merge --no-ff forces a uniform merge commit even on a fast-forwardable land (intentional, sha preserved as a parent)."
+  ],
+  "rollback": "git revert; additive - a new .warp/lander.py, a selftest block, one serialized_lander capability (both copies), and the WARP-0704 spec; no protected path; the control logic is a seam with the real git steps in GitLandOps, and the selftest's git steps run over throwaway temp repos."
+}

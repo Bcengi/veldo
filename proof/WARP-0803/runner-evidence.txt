@@ -1,0 +1,40 @@
+WARP-0803 runner evidence - Cursor pack, first committed self-contained pack (W3 of PLAN-0008)
+Impl commit under proof: 69f2fe3fa9859b256af58d75fb5734af7bc2fe13
+
+== gate (clean detached worktree at 69f2fe3) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (69f2fe3fa9859b256af58d75fb5734af7bc2fe13)
+selftest: 1227 passed, 0 failed (+9 for the WARP-0803 block incl. the enforcement assertion)
+
+== self-contained pack ==
+packs/cursor: 139-file engine copied byte-identical (engine_drift == []), real files (no symlinks),
+canonical AGENTS.md, Cursor wrapper (.cursor/rules/warp.mdc, .cursor/hooks, hooks/pre-push, skills, .cursor/agents).
+check_pack_drift.py: pack cursor byte-identical to source; pack drift: pass (2 packs).
+
+== AC2 enforcement fix (review-driven, behaviorally proven) ==
+First review (ba9a5ce): FAIL - the Cursor push gate FAILED OPEN. The hooks passed the command to
+scripts/warp-guard.sh via a CMD env var, but the guard reads tool_input.command from a JSON stdin
+payload and ignores the env var -> both hooks exited 0 without blocking an unproven push.
+Fix (69f2fe3, wrapper-only): both hooks pipe the guard the JSON payload it parses.
+Behavioral proof (re-review, CLAUDE_PROJECT_DIR unset):
+  fixed hooks/pre-push, unproven HEAD           -> EXIT 2 (blocks, "gate not green for HEAD")
+  fixed .cursor hook, "git push" command        -> EXIT 2 (blocks)
+  fixed .cursor hook, non-push command (ls -la) -> EXIT 0 (correct passthrough)
+  fixed hooks, proven HEAD (green gate + proof) -> EXIT 0 (correctly allows)
+  gate red / proof commit mismatch              -> EXIT 2
+  quote-injection command                       -> EXIT 2, PWNED not executed (json.dumps safe)
+  OLD ba9a5ce hooks, same invocation            -> EXIT 0 (fail-open reproduced)
+
+== plan reconciliation (bundled, WARP-0802 notes) ==
+PLAN-0008 W2 title set to option B (no restructure); every Gemini CLI mention retargeted to
+Antigravity CLI (one legitimate historical reference remains). validate.py plan/all pass;
+release-check reports PLAN-0008 NOT releasable (correct, W3-W10 unshipped).
+
+== reviews ==
+First independent adversarial review at ba9a5ce: FAIL (1 blocking, AC2 fail-open) + all else passing.
+Scoped independent re-review bound to 69f2fe3: PASS_WITH_NOTES, 0 blocking (gate now genuinely blocks
+the unproven and allows the proven; delta is exactly the fix; drift-free; caps byte-identical; dash-clean).
+
+== proof binding ==
+plan_hash: sha256:837b26cb7db25a47 (PLAN-0008, revision 1, after the reconciliation)
+proof_digest: sha256:90ca8a5d279246b9 (validate.py over {spec_id, commit, criteria, checks})

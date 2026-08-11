@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0904",
+  "commit": "a3fec2e978f617cc8450ead9af4a5a0fe6937933",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0009 W4, orchestrator + builder agent a2ee21c5)",
+  "plan_hash": "sha256:6b03ff568d65cd2f",
+  "produced_at": "2026-07-19T18:00:24Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "bin/warp is a real #!/usr/bin/env python3 executable committed mode 100755 (git ls-files -s bin/warp), a thin argparse dispatcher (KNOWN_SUBCOMMANDS + route(), bin/warp:286) that reimplements no loop/launcher/governor/reader/registry; an unknown subcommand, no subcommand, and bad args (fleet without N, non-int N) each fail loud with a nonzero exit."},
+        {"type": "unit", "ref": "independent review (agent aa09586b, bound to a3fec2e): confirmed bin/warp committed 100755, thin dispatcher, unknown-subcommand/bad-args fail loud exit 2."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the read/registry subcommands route to the existing modules and run standalone with no agent: warp status/watch -> runstatus.py (argv forwarded via _cli), warp account add|list -> accounts.py (main), warp answer|steer|abort -> runcmd.py (main). Top-level argparse REMAINDER forwards each module's own argument surface verbatim (so --json etc. are not dropped)."},
+        {"type": "unit", "ref": "independent review ran the REAL bin/warp executable over a throwaway root: account add|list -> accounts.py, status --json -> runstatus.py (schema warp.runstatus/v1), watch renders, answer/abort -> runcmd.py; all standalone, no agent."}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "cmd_work (bin/warp:193) builds a W1 dispatch.Dispatcher (LiveLoop build hooks + fresh-context LiveReviewer + no lander) and runs work.warp_work; cmd_fleet (bin/warp:221) wires fleet.warp_account_fleet with the W2 in-session spawner + the W3 GovernorController + InSessionWaiter, capped at account capacity. The intelligent build/review and the worker-spawn primitive stay DELEGATED seams that FAIL LOUD without an agent/real-start wired; --account resolves that account's CLAUDE_CONFIG_DIR. bin/warp imports no subprocess/Popen/fork - it spawns NOTHING detached (feedback_no_rogue_processes, PLAN-0007 NG1). An unknown --account fails BY NAME via _account_error_bases() catching BOTH the accounts.py AccountError and fleet.py's double-loaded ACCT.AccountError."},
+        {"type": "unit", "ref": "independent review: NO detached-spawn path (grep clean); warp work fails loud (exit 1) and does not fabricate (spec stays ready); warp fleet fails loud at the in_session_start seam; unknown --account 'ghost' fails by name on both work and fleet (the both-bases handler is load-bearing - a single-class except would let fleet's copy propagate uncaught); the W2 double-load is real (fleet.ACCT.AccountError is a distinct class object)."}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the CLI adds no new control logic: GovernorController (bin/warp:113) is a thin adapter whose desired()/resume_at() delegate verbatim to the W3 governor and work_remains() to frontier.claimable; cmd_work/cmd_fleet assemble the real machinery and hand it the pieces; the deep behavior (claim, dispatch, reconcile, pace, wait, read) stays in the W1-W3 modules and runstatus/runcmd/accounts."},
+        {"type": "unit", "ref": "independent review: the diff is only argument parsing + module calls; no reimplemented mechanics."}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WARP-0904 selftest block (+23, selftest 1345, 0 failed) exercises routing (real bin/warp subprocess + in-process), unknown-subcommand/no-subcommand/bad-args fail loud, the double-load account-error trio, warp work fails loud + spec stays ready, warp fleet fails loud at the spawn primitive spawning nothing, the W3 AccountGovernor genuinely wired, and the fleet refusing a fabricated budget - with NO live agent, NO detached process, NO real fleet run; two teeth mutants (swallow-unknown, fabricate-build/spawn) plus the exec-bit assertion. The exec-bit mode assertion was made umask-independent (checks st_mode & 0o111, not == 0o755) after the first review found the hard-coded 0o755 went gate-RED on a umask-002 checkout (git checks the file out 0775 there); bin/warp is unchanged and still committed 100755."},
+        {"type": "unit", "ref": "independent review confirmed the two mutants bite (swallow-unknown -> red, fabricate-build/spawn -> red) and, on re-verify at a3fec2e, that the exec-bit assertion still has teeth (chmod -x bin/warp -> the assertion turns RED, restored after) and the gate is GREEN 1345/0 on the same umask-002 machine that previously went RED at 58b042c."}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "selftest 1345 passed, 0 failed (+23 for the WARP-0904 block); GATE GREEN at a3fec2e, verified by the builder (umask 022) and independently by the reviewer (agent aa09586b) on a umask-002 machine - the fix made the exec-bit assertion umask-independent so it is green in both environments."},
+    {"name": "generated", "status": "passed"},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "W4 of PLAN-0009, depends on W1/W2/W3. bin/warp + the fleet are repo-root dogfood (NOT the shipped engine plugin/templates/.warp - W5 moves the CLI + fleet modules into plugin/templates + /warp:init). The CLI reimplements nothing, runs no agent and spawns no process in the gate, and never launches a detached process; warp work/fleet are the entry points an in-session agent drives (they fail loud run bare). The fleet refuses to pace against a fabricated token budget (RULE #2 spend gate / RULE #6); a budget-config source is W5/W7.",
+    "The impl was AMENDED once from 58b042c (the first-reviewed commit) to a3fec2e: the first independent review found the builder's exec-bit selftest assertion hard-coded mode == 0o755, which is umask-dependent and went gate-RED on the reviewer's umask-002 checkout (git checks an executable file out 0775 there) even though the git-committed mode is correctly 100755. The one-line fix relaxes it to the exec-bit check (st_mode & 0o111 != 0), umask-independent; bin/warp is byte-identical across the amend. LESSON: a selftest exec-bit check must be umask-independent (check the exec bits, or the committed git-index mode, not an exact st_mode); the independent review running in a different-umask environment caught what the builder's umask-022 run could not.",
+    "Two independent adversarial reviews by agent aa09586b (fresh-context Opus, distinct from the builder a2ee21c5): the first (bound to 58b042c) confirmed all five AC behaviors by concrete probes but returned fail on the umask-dependent gate-RED; the re-verify (bound to a3fec2e) confirmed the one-line fix is the sole delta (bin/warp byte-identical, still 100755), the gate is GREEN 1345/0 on the previously-red umask-002 machine, and the exec-bit assertion retains teeth. plan_hash sha256:6b03ff568d65cd2f is the canonical hash via plan.py."
+  ],
+  "rollback": "git revert the impl and evidence commits; additive - a new bin/warp executable + its thin wiring, a selftest block, and this spec, all repo-root dogfood (not shipped engine; W5 moves the CLI + fleet into plugin/templates). No protected path; pure stdlib; the CLI reimplements nothing, runs no agent and spawns no process, and never launches a detached process."
+}

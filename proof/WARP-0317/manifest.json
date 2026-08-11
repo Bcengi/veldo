@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0317",
+  "commit": "c0e167a34a748aa1be80bfe3ecc7bd56528a6aa0",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 wave 5)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T13:10:17Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "sandbox/isolation reference runner ships at plugin/templates/scripts/runners/sandbox/ (runner + pass/fail fixtures + README + test wrapper); a live ContainerDriver shells to docker/podman with only declared mounts, read-only root, no network, all caps dropped, and fails loud when no runtime is on PATH; a FakeContainerDriver gate-tests the confine/classify/grade control logic with no container"
+        },
+        {
+          "type": "unit",
+          "ref": "control logic (confine, classify exit-code to allowed/denied/error, grade a check) plus both shipped fixtures driven end to end via the FakeContainerDriver in scripts/selftest.py; part of selftest 536 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "sandbox/isolation reference runner ships at plugin/templates/scripts/runners/sandbox/ (runner + pass/fail fixtures + README + test wrapper); a live ContainerDriver shells to docker/podman with only declared mounts, read-only root, no network, all caps dropped, and fails loud when no runtime is on PATH; a FakeContainerDriver gate-tests the confine/classify/grade control logic with no container"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "sandbox/isolation reference runner ships at plugin/templates/scripts/runners/sandbox/ (runner + pass/fail fixtures + README + test wrapper); a live ContainerDriver shells to docker/podman with only declared mounts, read-only root, no network, all caps dropped, and fails loud when no runtime is on PATH; a FakeContainerDriver gate-tests the confine/classify/grade control logic with no container"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "sandbox/isolation reference runner ships at plugin/templates/scripts/runners/sandbox/ (runner + pass/fail fixtures + README + test wrapper); a live ContainerDriver shells to docker/podman with only declared mounts, read-only root, no network, all caps dropped, and fails loud when no runtime is on PATH; a FakeContainerDriver gate-tests the confine/classify/grade control logic with no container"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "sandbox/isolation reference runner ships at plugin/templates/scripts/runners/sandbox/ (runner + pass/fail fixtures + README + test wrapper); a live ContainerDriver shells to docker/podman with only declared mounts, read-only root, no network, all caps dropped, and fails loud when no runtime is on PATH; a FakeContainerDriver gate-tests the confine/classify/grade control logic with no container"
+        },
+        {
+          "type": "unit",
+          "ref": "control logic (confine, classify exit-code to allowed/denied/error, grade a check) plus both shipped fixtures driven end to end via the FakeContainerDriver in scripts/selftest.py; part of selftest 536 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 536 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Reference runner: a live confinement check needs a real container runtime (docker/podman) which the warp home repo does not carry, so the runner is not run in the warp gate; the control logic is gate-tested with an in-process fake driver and the live path fails loud when no runtime is present. capabilities status: reference."
+  ],
+  "rollback": "git revert the impl; additive under plugin/templates/scripts/runners/sandbox/, no protected path, selftest cases within the suite."
+}

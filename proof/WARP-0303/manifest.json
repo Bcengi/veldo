@@ -1,0 +1,31 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0303",
+  "commit": "dea0f5fcfefe6deadca2f51aacc983a7085785be",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B2)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T04:05:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/db/warp_db_runner.py exists: reads a migration journey (ordered migrations with id/up/down, optional seed, invariants of name+query+expect_rows, budgets of name+query+max_seconds), snapshots the baseline schema, applies each up in order, seeds, asserts invariants and latency budgets, then applies each down in reverse and asserts the schema returns to baseline; exits 0 all-hold else 1 with the first failing migration/invariant/budget/un-reversed object named. Drives a real database via the stdlib sqlite3 (see runner-evidence.txt)"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0303/negative-tests.txt: an invariant mismatch is reported with the observed rows (expected [[5]], got [[2]]); a 0s latency budget is caught; a SQL error is a named failure (no such table: missing); the asymmetric-down fixture is caught naming the residual table 'audit_log'; a symmetric down reverses cleanly (positive control passes). check_reversibility defaults on and is per-journey"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0303/runner-evidence.txt: driven over both fixtures - pass.journey.json (two reversible migrations, seed, row-count + distinctness invariants, a lookup budget, clean reversal) exits 0; fail.journey.json (up creates users + audit_log, down drops only users) exits 1 with the residual table named"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py db block: drives the runner over both shipped fixtures against an in-memory sqlite database (pass -> passed True, fail -> passed False with 'audit_log' named), and exercises the pure helpers directly for both outcomes - check_invariant match and mismatch (observed rows reported) and SQL error, check_budget within and exceeded and SQL error, schema_diff identical/residual/missing, _apply SQL error fail-loud, and run with no migrations. Part of selftest 198 passed / 0 failed (was 184); all prior cases still pass and the gate is green"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, wrapper, and README carry zero company/product names (docs-hygiene genericity sweep passes); .warp/capabilities.yaml marks db_migration_runner status: reference (a shipped artifact an adopting repo wires to its migration or data gate slot; the warp repo has no product database and does not run it), kept byte-identical with the plugin template copy (template-sync gate passes)"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 198 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference runner: generic, stdlib sqlite3 only, driven against an in-memory database for the selftest so the migration control logic is gate-tested with no external dependency. The reference targets sqlite; an adopting repo points it at its own database and migration format via the [db_path] override. Shipped under plugin/templates/scripts/runners/db/; not wired into the warp repo's own gate (capabilities: reference)."],
+  "rollback": "git revert the impl; the runner is additive under plugin/templates/scripts/runners/db/, touches no protected path, and its selftest cases sit within the 198."
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0402",
+  "commit": "53c6a28898634e17c598dbedee42fb4b2997eccc",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T17:42:04Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:1f8093c3556c74d4",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC7",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "The scaffolder fills the template gate's two intentionally-blank slots (unit and dependency_audit) with na so the empty starter repo gates green; the interactive /warp:init skill remains the front door that configures real slots and protected paths with a human. The reviewer confirmed this split is honest rather than the scaffolder pre-deciding gate policy."
+    },
+    {
+      "severity": "note",
+      "text": "On an idempotent re-run only the derived specs/index.md is regenerated (AC2 explicitly exempts the one derived file from the never-overwrite guarantee). The reviewer scaffolded into a fresh dir (22 files laid), confirmed the produced repo's own scripts/verify.sh exits 0 GREEN on the empty starter plan, and a second scaffold created 0 and skipped 22 while preserving a hand-planted file."
+    }
+  ],
+  "summary": "X2 (WARP-0402, warp init scaffold) is correct and honest. Independent adversarial review: pass_with_notes, 0 blocking, gate GREEN (selftest 728). The reviewer scaffolded into a fresh temp dir itself - 22 files laid, the produced repository's own scripts/verify.sh exits 0 GREEN on the empty starter plan, the substrate complete, and a second scaffold created 0 and skipped 22 (idempotent, preserving a hand-planted file) - and confirmed the fail-loud paths (a gate-template drift or a failed index regeneration raises ScaffoldError). Non-tautology proven: a mutation omitting a substrate file or laying an invalid starter plan makes the green-gate assertion fail. Capabilities warp_init_scaffold=mechanical is honest (pure stdlib file-laying that reimplements no gate/validator/index logic and runs the produced gate green here); both capabilities.yaml copies byte-identical; stdlib only; proportionate (reuses the templates and the target's own generator and gate, no bespoke tooling); generic; ASCII. proof_digest recomputed via validate.py."
+}

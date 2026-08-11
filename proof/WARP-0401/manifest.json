@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0401",
+  "commit": "44219472af1ac520eb3169dc5f2f71d8256d2025",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0004 wave B)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T17:42:04Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py ships an Executor.run(spec_id) that sequences the WARP loop (resolve a ready spec, plan run-check for a planned spec, build, gate via scripts/verify.sh, assemble and validate the proof via .warp/validate.py, review, merge readiness) over a LoopSteps seam: it runs the mechanical steps itself and delegates and pauses for the agent and human steps (build, review, approve and steer). Halt-on-failure (XJ1) is enforced - a red gate does not reach proof, review, or merge, a fail verdict does not reach merge, and two failed review cycles stop for a human; the run records human_minutes, emitted only on verdict.recorded and approval.recorded so the run total equals what .warp/metrics.py derives from the stream; a reference LiveLoop wires the real seams and fails loud (ExecutorError) on the delegated steps; plugin/skills/run/SKILL.md notes the executor drives and halts while the agent still builds and reviews"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the Executor over a fake LoopSteps seam through a full success loop (correct step sequencing, evidence reached, human_minutes recorded, receipt shape, run total equal to the emitted-events sum) and through every failure case (a red gate halts before proof, review, and merge; a fail verdict halts before merge; two failed review cycles stop for a human; a non-ready spec and a plan refusal halt before build), with a loop_respected(result) invariant proven load-bearing by a mutation that proceeds past a failed step; part of selftest 728 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py ships an Executor.run(spec_id) that sequences the WARP loop (resolve a ready spec, plan run-check for a planned spec, build, gate via scripts/verify.sh, assemble and validate the proof via .warp/validate.py, review, merge readiness) over a LoopSteps seam: it runs the mechanical steps itself and delegates and pauses for the agent and human steps (build, review, approve and steer). Halt-on-failure (XJ1) is enforced - a red gate does not reach proof, review, or merge, a fail verdict does not reach merge, and two failed review cycles stop for a human; the run records human_minutes, emitted only on verdict.recorded and approval.recorded so the run total equals what .warp/metrics.py derives from the stream; a reference LiveLoop wires the real seams and fails loud (ExecutorError) on the delegated steps; plugin/skills/run/SKILL.md notes the executor drives and halts while the agent still builds and reviews"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py ships an Executor.run(spec_id) that sequences the WARP loop (resolve a ready spec, plan run-check for a planned spec, build, gate via scripts/verify.sh, assemble and validate the proof via .warp/validate.py, review, merge readiness) over a LoopSteps seam: it runs the mechanical steps itself and delegates and pauses for the agent and human steps (build, review, approve and steer). Halt-on-failure (XJ1) is enforced - a red gate does not reach proof, review, or merge, a fail verdict does not reach merge, and two failed review cycles stop for a human; the run records human_minutes, emitted only on verdict.recorded and approval.recorded so the run total equals what .warp/metrics.py derives from the stream; a reference LiveLoop wires the real seams and fails loud (ExecutorError) on the delegated steps; plugin/skills/run/SKILL.md notes the executor drives and halts while the agent still builds and reviews"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py ships an Executor.run(spec_id) that sequences the WARP loop (resolve a ready spec, plan run-check for a planned spec, build, gate via scripts/verify.sh, assemble and validate the proof via .warp/validate.py, review, merge readiness) over a LoopSteps seam: it runs the mechanical steps itself and delegates and pauses for the agent and human steps (build, review, approve and steer). Halt-on-failure (XJ1) is enforced - a red gate does not reach proof, review, or merge, a fail verdict does not reach merge, and two failed review cycles stop for a human; the run records human_minutes, emitted only on verdict.recorded and approval.recorded so the run total equals what .warp/metrics.py derives from the stream; a reference LiveLoop wires the real seams and fails loud (ExecutorError) on the delegated steps; plugin/skills/run/SKILL.md notes the executor drives and halts while the agent still builds and reviews"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py ships an Executor.run(spec_id) that sequences the WARP loop (resolve a ready spec, plan run-check for a planned spec, build, gate via scripts/verify.sh, assemble and validate the proof via .warp/validate.py, review, merge readiness) over a LoopSteps seam: it runs the mechanical steps itself and delegates and pauses for the agent and human steps (build, review, approve and steer). Halt-on-failure (XJ1) is enforced - a red gate does not reach proof, review, or merge, a fail verdict does not reach merge, and two failed review cycles stop for a human; the run records human_minutes, emitted only on verdict.recorded and approval.recorded so the run total equals what .warp/metrics.py derives from the stream; a reference LiveLoop wires the real seams and fails loud (ExecutorError) on the delegated steps; plugin/skills/run/SKILL.md notes the executor drives and halts while the agent still builds and reviews"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py ships an Executor.run(spec_id) that sequences the WARP loop (resolve a ready spec, plan run-check for a planned spec, build, gate via scripts/verify.sh, assemble and validate the proof via .warp/validate.py, review, merge readiness) over a LoopSteps seam: it runs the mechanical steps itself and delegates and pauses for the agent and human steps (build, review, approve and steer). Halt-on-failure (XJ1) is enforced - a red gate does not reach proof, review, or merge, a fail verdict does not reach merge, and two failed review cycles stop for a human; the run records human_minutes, emitted only on verdict.recorded and approval.recorded so the run total equals what .warp/metrics.py derives from the stream; a reference LiveLoop wires the real seams and fails loud (ExecutorError) on the delegated steps; plugin/skills/run/SKILL.md notes the executor drives and halts while the agent still builds and reviews"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the Executor over a fake LoopSteps seam through a full success loop (correct step sequencing, evidence reached, human_minutes recorded, receipt shape, run total equal to the emitted-events sum) and through every failure case (a red gate halts before proof, review, and merge; a fail verdict halts before merge; two failed review cycles stop for a human; a non-ready spec and a plan refusal halt before build), with a loop_respected(result) invariant proven load-bearing by a mutation that proceeds past a failed step; part of selftest 728 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 728 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "executor_driver is mechanical: the step sequencing, halt-on-failure, human_minutes summation, and receipt assembly run end to end in the gate over a fake LoopSteps seam with no live agent, gate, or backend, and real one-line source mutations to that logic make the selftest fail. executor_agent_dispatch is procedure: build, review, and approve and steer are delegated to an agent and a human (skills/run) and are not transactionally enforced; the reference LiveLoop fails loud rather than fabricate a build, a verdict, or an approval. executor.py lives in .warp/ only, matching the sibling PLAN-0004 modules; template-sync governs only validate, policy_check, update_index, and warp-guard."
+  ],
+  "rollback": "git revert; additive - .warp/executor.py, a selftest block, two capabilities entries (both copies), a plugin/skills/run note, and the spec; no protected path."
+}

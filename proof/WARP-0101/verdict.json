@@ -1,0 +1,58 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0101",
+  "commit": "af68c60a655349deea03cf40636b2bd1c651a674",
+  "reviewer": "claude-opus-4-8[1m] (independent WARP reviewer, different model from the Fable implementer)",
+  "reviewed_at": "2026-07-16T20:21:10Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Reran python3 .warp/validate.py all (exit 0) and python3 .warp/validate.py plan plans/PLAN-0001-warp-one-point-zero.md (exit 0). run_all also validates .warp/examples/plan-example.md (validate.py lines 581-582) inside the exit-0 pass. PLAN-0001 and the plan example both validate."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "scripts/selftest.py reports 26 passed, 0 failed; every planted-bad plan shape prints its rejection. I independently reproduced RED for a 3-node cycle, a figure-eight double cycle (both cycles caught), int dependency, revision 0 at status ready, and the forward+reverse mirroring negatives. The DFS did not miss any cycle in my adversarial multi-cycle graphs."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "specs/index.md carries the generated Product Plans section: PLAN-0001 in_progress, 0/12 shipped, ready frontier WARP-0101/0105/0106/0108, W2-W4/W7/W9-W12 waiting on named deps. The 'generated' gate check (update_index.py regenerate, then git diff against the committed index) is green, keeping it derived. The decision-blocked naming path is implemented and I proved it renders 'blocked: decision D1' in isolation; it is simply shadowed in the live index because the only decision-blocked item (WARP-0112) is also waiting on unshipped deps (see note finding)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "The spec declares plan: PLAN-0001 / work: W1 and validate.py all is green. I edited work: W1 -> W2: validate.py all went RED (exit 1) with BOTH mirroring errors (plan side: WARP-0101 does not declare work W1; spec side: plan PLAN-0001 work W2 is spec WARP-0102, not WARP-0101), matching negative-tests.txt verbatim. git checkout restored it and validate.py all returned exit 0."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Both .warp/capabilities.yaml and plugin/templates/.warp/capabilities.yaml list plan_contract_validation and plan_index as mechanical and plan_dialogue/plan_run_integration/plan_regression_mechanics as absent (named W2/W3/W4), identically. plugin/.claude-plugin/plugin.json version is 2.1.0. check_template_sync is green."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "SHARPEST EDGE (borderline). parse_yamlish accepts duplicate keys silently with last-wins and does not fail closed. Demonstrated: a plan whose work item W1 has two depends_on lines (first [WARP-9102], creating a W1<->W2 cycle, then []) validates GREEN because the second value silently wins and the cycle-creating edge is discarded. This contradicts the manifest assumption that 'anything outside the subset fails closed with a line hint.' Classified as a note not blocking because (1) no acceptance criterion (AC1-AC5) requires duplicate-key rejection, (2) it requires the author to write two contradictory lines for one key rather than distorting a single well-formed value, and (3) last-wins matches mainstream YAML (PyYAML) behavior. Recommend the parser reject duplicate keys to honor the stated fail-closed assumption, since a duplicated depends_on that silently drops a real edge is exactly the class of 'a decision nobody made' this contract exists to prevent."
+    },
+    {
+      "severity": "note",
+      "text": "The manifest assumption 'anything outside the subset fails closed with a line hint' is over-stated. Tab-indented children silently become siblings (indent is counted with lstrip(' ') only, so a tab is indent 0), and list-item siblings indented more than dash+2 (e.g. two spaces after the dash) silently fold into the previous scalar. Neither raises a ValueError line hint from the parser. For realistic full plans both still net RED via downstream required-field checks (I confirmed a tab-indented full plan and an over-indented-sibling plan both fail), so the gate stays safe, but the specific 'line hint' promise does not hold for these out-of-subset inputs."
+    },
+    {
+      "severity": "note",
+      "text": "Traceability coverage is not enforced. A work item may reference no feature (feature_refs absent or []), a feature may reference no outcome (outcome_refs absent), and an outcome may be referenced by nothing, all validating GREEN (verified). References that ARE present must resolve (enforced and tested), but nothing forces every work item to trace to a feature or every outcome to be covered. Consistent with the proportionate design and not an AC2 requirement, but it means the intent graph can contain orphans while green."
+    },
+    {
+      "severity": "note",
+      "text": "AC3 'decision-blocked items named' is implemented and works, but is not exhibited in the shipped specs/index.md: the render orders waiting-on-deps ahead of decision-block, and the only decision-blocked item (WARP-0112 via D1) is also waiting on five unshipped deps, so the live index shows 'waiting: ...' and the string 'blocked: decision' appears zero times. The manifest evidence text reads as if it is demonstrated in the artifact; the capability is real (proven in isolation) but latent in this commit."
+    },
+    {
+      "severity": "note",
+      "text": "Minor: work-item spec ids are not format-checked. A plan with integer spec ids (spec: 100, depends_on: [100]) validates GREEN; spec-id format is enforced only on the plan id via regex. Low impact because reverse mirroring self-corrects when a real spec is created, but a malformed work-item spec passes the plan-level gate."
+    }
+  ],
+  "summary": "All five acceptance criteria are confirmed by rerun: validate all/plan exit 0, selftest 26/0, verify.sh GATE GREEN (5 run, 0 undeclared), the index Product Plans section and frontier are correct and gate-derived, the AC4 mis-binding demonstration reproduces both mirroring errors and restores clean, and capabilities plus plugin 2.1.0 match. The DFS caught every cycle I threw at it and the specifically-listed AC2 planted shapes are all rejected. Notes: the parser accepts duplicate keys with silent last-wins (can green a cyclic plan via a duplicated depends_on) and does not emit the promised line hint on tab/over-indent, so the manifest 'fails closed on anything outside the subset' assumption is over-stated; none of this refutes an acceptance criterion."
+}

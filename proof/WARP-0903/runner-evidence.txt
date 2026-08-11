@@ -1,0 +1,41 @@
+WARP-0903 runner evidence - per-account governor + in-session resume-waiter (W3 of PLAN-0009)
+Impl commit:  e4ff4d2e54af4fc44ebf625ac6afdc8b9278fbb7
+plan_hash:    sha256:6b03ff568d65cd2f
+proof_digest: sha256:58f635b5ba23764b
+
+--- AC5: gate green, no real sleep ---
+$ bash scripts/verify.sh
+selftest: 1322 passed, 0 failed        (+20 for the WARP-0903 block: 1302 -> 1322)
+GATE: GREEN (e4ff4d2e54af4fc44ebf625ac6afdc8b9278fbb7)
+the W3 block injects a fake clock/sleep everywhere; the only real time.sleep in selftest are pre-existing tests far above the W3 block
+
+--- AC1/AC2/AC3: per-account governor (reuses the single-pool control law) ---
+governor.py adds AccountGovernor (lines 149-241); ZERO deletions (single-pool law 40-135 untouched, existing selftests pass)
+account_desired (:207) -> unchanged desired_workers (:75) over events_for_account (:159); account_resume_at (:223) -> unchanged resume_at (:101)
+desired() (:216) = sum of per-account desired, capped at pool_max: one account spent + two with budget -> 0+2+2 -> cap 3 (pool NOT stalled)
+burn attributed by the WARP_ACCOUNT tag (events.py make_event optional account field, guarded by `if account is not None`); alpha's window sees 1000 not the mixed 6000
+resume per account: alpha now+90, bravo now+40 from their own windows; pool resume_at = earliest (now+40)
+
+--- AC4 (no-rogue-processes): in-session waiter, no detached path ---
+InSessionWaiter (fleet.py:249-289): wait_until blocks IN-SESSION in bounded steps via an injected sleep until an injected clock reaches epoch; tick() advances one interval
+fleet.py imports: importlib, time, uuid, pathlib   governor.py imports: importlib, pathlib  (the governor cannot even sleep/spawn)
+grep of the waiter for subprocess/Popen/os.fork/threading/Timer/os.system/nohup/setsid/systemd/cron/multiprocessing/asyncio -> NONE
+launcher re-checks controller.desired() after wait_until (the run-loop `continue`) before spawning -> never resumes into a still-spent window
+
+--- teeth (reviewer confirmed all fire) ---
+whole-pool-zeroing governor -> pool-not-stalled==3 assertion RED
+no-re-check launcher -> spawns at 1100 (still spent) vs the real 1200 -> RED
+attribution mutant (unfiltered mixed stream) -> bravo's resume mis-times -> RED
+
+--- events.py divergence (W5 carry-forward, safe/additive) ---
+repo-root .warp/events.py has the optional account field; shipped plugin/templates/.warp/events.py is byte-untouched
+events.py NOT in template-sync PAIRS (validate/tracker/policy_check/update_index/warp-guard only); template-sync green; packs still match canon (drift green)
+W5 must sync the account field into the shipped events.py + re-sync packs
+
+--- scope hygiene ---
+impl commit touches: .warp/governor.py, .warp/fleet.py, .warp/events.py, scripts/selftest.py, specs/WARP-0903, specs/index.md
+NO protected path; NO plugin/templates/**; NO evidence files; NO plan file; spec status ready; single-pool governor/fleet selftests unchanged (within 1322)
+
+--- independent review ---
+Agent ae9d1349d96b72eab (fresh-context Opus, distinct from builder a43d62f8), isolated worktree (/tmp/warp-w3-rev, removed --force).
+Verdict: pass_with_notes, 0 blocking (3 non-blocking notes, all favorable/confirmatory). Main repo untouched.

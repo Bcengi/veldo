@@ -1,0 +1,17 @@
+{
+  "name": "veldo",
+  "displayName": "Veldo",
+  "description": "The Veldo local core: fail-closed gate catalog, contract and evidence validation, mechanical guard (gate, proof, verdict, approvals, emergency debt), the pipeline skills, and an honest capability manifest.",
+  "version": "3.10.1",
+  "author": {
+    "name": "Dmitry Grinberg"
+  },
+  "repository": "https://github.com/Bcengi/veldo",
+  "keywords": [
+    "veldo",
+    "methodology",
+    "sdlc",
+    "spec",
+    "proof"
+  ]
+}

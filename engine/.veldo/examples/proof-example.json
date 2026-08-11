@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "WARP-0001",
+  "commit": "7f43e6159aa6",
+  "produced_at": "2026-07-16T14:12:03Z",
+  "producer": {"role": "implementation", "model": "<exact model identifier>", "runtime": "claude-code"},
+  "criteria": [
+    {"id": "AC1", "status": "passed",
+     "evidence": [{"type": "test", "ref": "tests/payments/retry_test.py::test_no_duplicate_order"}]},
+    {"id": "AC2", "status": "passed",
+     "evidence": [{"type": "test", "ref": "tests/payments/retry_test.py::test_returns_original_id"}]}
+  ],
+  "checks": [{"name": "verify", "command": "./scripts/verify.sh", "result": "pass"}],
+  "rollback": "revert the merge commit; payment_retry_v2 flag off"
+}

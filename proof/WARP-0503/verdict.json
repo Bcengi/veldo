@@ -1,0 +1,52 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0503",
+  "commit": "7960213ba3608de53054a4cae77c1422fcb562c8",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T23:40:53Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:2cbbe2812db8b3cc",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Independent Opus review pass_with_notes, 0 blocking: all five required mutations turned the selftest red (drop a run -> red; force classification active; tokens 0 instead of unknown; blocked-elapsed folded away; a write during read), reverted to green. Read-only proven by a byte-identical snapshot; burn-down confirmed to reuse plan.py (matches the index)."
+    },
+    {
+      "severity": "note",
+      "text": "Minor follow-up (non-blocking): status() accepts now_epoch but threads it only into heartbeat-age display; classification via list_runs/classify uses wall-clock time. Not exercised by any shipped path; tighten when convenient."
+    }
+  ],
+  "summary": "R3 (WARP-0503, warp status and warp watch) is correct and honest. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 817). A read-only reader projects git, the durable event stream, and the R1 registry into one model, classifying each run and surfacing the blocked question and blocked-elapsed separately from human_minutes, with tokens shown unknown not estimated; five mutations proven to turn the selftest red and the reader proven to write nothing. status_reader mechanical is honest; the burn-down reuses plan.py so it cannot drift from the index. proof_digest via validate.py."
+}

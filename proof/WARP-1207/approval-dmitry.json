@@ -1,0 +1,15 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-1207-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-1207",
+    "commit": "32d69111c45b59df97f2e427a4d75c5048e820dd",
+    "proof": "proof/WARP-1207/manifest.json"
+  },
+  "basis": "PLAN-0012 C2 puts the two-key rule at the CRITICAL tier because it opens the irreversible/data-mutating execution path that WARP-1206 deliberately fenced off; per policy.yaml critical requires TWO independent fresh-context reviews plus a recorded founder approval as the landing key. Both independent L2 reviews returned pass_with_notes with zero blocking findings and each independently confirmed CRITICAL by running a real data-mutating action end to end against the fake system and confirming it executes ONLY behind two valid, distinct, digest-bound, self-separated keys (a recorded human authorization plus an independent fresh-context confirmation verdict). Every attack refused and failed closed: single key (human-only, confirmation-only), the old W6 single L2 confirmation, foreign digest, stale (edited proposal), expired, no-expiry, machine-authored human key, and confirmer equal to the proposer/executor-actor/authorizer/organ. The executor diff is additive-only: no W6 safeguard (kill switch, budget, timeout, canary, below-floor, no free-form path, structural separation) was weakened, and the reversible L2 single-confirmation path is unchanged. Fresh per-change approval given in-session on 2026-07-23 after full disclosure. ACKNOWLEDGED NON-BLOCKING NOTE both reviews raised: key freshness (expiry) is only enforced when a clock is injected; execute()/authorize() default now=None, so an expired-but-declared key would pass without a clock. It is NOT reachable in this build (all current callers inject a clock, no-expiry keys always refuse, and nothing downstream is live-wired), and the founder approves landing on the explicit condition that WARP-1208 (W8) and any live enablement require the clock on the two-key path and fail closed if it is absent. What this approval vouches for: irreversible/data-mutating remediation can now run, but only behind the two keys, against FAKE systems only, nothing live-wired. Explicitly NOT vouched for and honestly unbuilt: the compressed loop that drives an incident through the gate (WARP-1208), the numbers (WARP-1210), validate.py run_all wiring and init lay-down (WARP-1211), and any live target enablement (a separate per-system human act). Two independent L2 verdicts (verdict.json, verdict-2.json) bound to 32d6911.",
+  "recorded_at": "2026-07-23T15:01:48Z",
+  "recorded_by": "claude-opus-4-8[1m] (Ava, recording the founder's fresh in-session approval captured this session; distinct from the proof producer, satisfying self-separation)",
+  "expires_at": "2026-08-22T15:01:48Z"
+}

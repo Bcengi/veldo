@@ -1,0 +1,33 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0615",
+  "commit": "efe6a37b41ac1b0bb260f922827fee4a397e3e74",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder; adversarial on the foundation record's decoupling of the frozen safety-core readers, schema soundness, engine-sync, and the request_hash deferral)",
+  "reviewed_at": "2026-07-24T03:00:00Z",
+  "verdict": "pass_with_notes",
+  "summary": "WARP-0615 is sound. The thin-envelope decoupling is real: git diff of policy_check.py/two_key.py/decision.py is EMPTY, and the readers were verified by reading (not just the selftest) to be purely .get()-based with no strict-schema/unknown-field rejection - and the gate's own check_json uses a subset check, so a back-ref'd approval/verdict passes the GATE too, not just the readers. No tolerance hole. Closed vocabularies fail closed by name; request_digest is canonical + separate from the genuinely-polymorphic bound_artifact.digest; TIERS has exactly 4 (impact is flags, not a 5th tier); irreversible->critical and the decision_choice tier derivation are enforced; check_requests_dir is adoption-safe/fail-closed/dependency-free like check_decisions_dir; engine-sync complete (8 byte-identical copies); init_scaffold lay-down load-bearing and root-only; all 5 teeth RED and non-vacuous; gate GREEN, selftest 2481/0. Safe to build W3-W8 on top.",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "Envelope + closed vocabs (6 touchpoints, 4 tiers, 9 statuses, 4 impacts) fail-closed by name; references settlement by bound_artifact+settlement, duplicates no settlement data; the three frozen readers untouched (empty diff)."},
+    {"id": "AC2", "status": "confirmed", "note": "request_digest over substance only (lifecycle excluded), separate from bound_artifact.digest which is validated as an opaque non-empty string (genuinely polymorphic, not coerced); irreversible->critical; decision_choice tier == bound decision risk; no 5th tier."},
+    {"id": "AC3", "status": "confirmed", "note": "check_requests_dir absent-dir->clean, parser+reporter injected (no second parser/cycle), duplicate-id refused; wired into run_all; validate.py all exits 0 standing down cleanly."},
+    {"id": "AC4", "status": "confirmed", "note": "EVENT_TYPES gains the 4 request events + decision.decided; owned as REQUEST_EVENT_TYPES; drift-guard selftest updated; nothing removed/renamed."},
+    {"id": "AC5", "status": "confirmed", "note": "Back-ref tolerance proven by selftest AND by independent read of the readers + the gate's subset-based check_json; linking a settlement record to its request never breaks a reader or the gate."},
+    {"id": "AC6", "status": "confirmed", "note": "6 touchpoints validate; fail-closed cases refuse; 5 source-mutation teeth each assert mutant-passes AND real-refuses AND on-disk sha256 unchanged (dual assertion = non-vacuous)."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Finding #1 (forward-looking, address): request_hash is required-present but the CHEAP in-memory self-consistency invariant request_hash == request_digest(record) is NOT enforced at W2 (only the expensive repo-recompute is rightly deferred to W5). Because the build order is W2->W6->W3->W4->W5-logic, W3 (projection) and W4 (doorbell) ship BEFORE W5 enforces it, so the material-change baseline is unvalidated at creation. Fix: enforce the 2-line self-consistency check at W2 (this spec's follow-up), so no intermediate consumer trusts an unverified request_hash. (W3 already mitigates by displaying bound_artifact.digest, but that is not guaranteed by W2.)"},
+    {"severity": "note", "text": "Finding #2 (observation): decision_choice tier derivation is opportunistic - _check_decision_choice_tier stands down when bound_artifact.ref does not resolve to a file or the decision declares no risk. So an accepted decision_choice with an unresolvable ref can carry a tier inconsistent with its decision while passing (acceptance is still bound by digest + settlement.path). W6 (authz reads the tier) must not assume W2 universally guarantees tier == decision.risk."},
+    {"severity": "note", "text": "Finding #3 (benign, review-lane): validate_record is a single ~41-complexity function, consistent with decision.py/check_plan norms; worth splitting eventually, not now."}
+  ],
+  "must_fix": [],
+  "recommended": ["Finding #1 (enforce request_hash self-consistency at W2)"],
+  "checks": [
+    "git diff e923f28..efe6a37 -- .warp/policy_check.py .warp/two_key.py .warp/decision.py -> EMPTY (frozen readers untouched).",
+    "Readers verified purely .get()-based; validate.py check_json uses a subset (field-in-data) check, not exact-key match -> back-ref'd records pass reader AND gate. No unknown-field-rejection path anywhere.",
+    "python3 scripts/selftest.py -> 2481 passed, 0 failed. ./scripts/verify.sh -> GATE GREEN (386a909). validate.py proof + validate.py all + validate.py requests all exit 0.",
+    "8 copies of request.py/validate.py/events.py/capabilities.yaml byte-identical (1 sha256 each); template_sync/pack_drift green.",
+    "init_scaffold.py root-only (matches prior state), adds request.py to _FILES + REQUIRED_SUBSTRATE (load-bearing: run_all lazy-loads it); a freshly scaffolded repo stands up + passes its gate.",
+    "5 teeth reproduced RED with request.py sha256 unchanged; each replace-target matches a real line (non-matching target would no-op and fail the mutant==0 assertion).",
+    "Genericity/RULE#1 clean: engine .warp/request.py has no company/board/secret literal, ASCII-clean, no em/en-dash or prose double-hyphen; check_docs.sh green."
+  ]
+}

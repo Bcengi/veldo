@@ -1,0 +1,140 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1106",
+  "commit": "9f15c8f61ce4c664aa098f0866970fdc39e42fe0",
+  "producer": "claude-opus-4-8[1m] (WARP-1106 build worker, planned lane; W6 of PLAN-0011, adversarial decision review - the artifact, the delegated fresh-context reviewer seam, and the decided-requires-review gate; intelligent builder, did not review its own work)",
+  "produced_at": "2026-07-22T19:27:06Z",
+  "plan": "PLAN-0011",
+  "work": "W6",
+  "plan_revision": 2,
+  "plan_hash": "sha256:5f6e8c623065cda0",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A versioned decision-review artifact format (schema warp.decision_review/v1) is homed per-repo under .warp/decision_reviews/*.yaml, a directory the engine glob (.warp/*.yaml is non-recursive) does not sweep, so reviews stay per-repo like the decision records and are never shipped in the engine. A review binds to a decision (decision id + decision_version) and captures the attack on the framing: a problem_class challenge, a non-empty option_challenges list (each judging whether an option's dead_end holds), a missing_options list, a non-empty assumption_challenges list (each judging whether an assumption is load-bearing), a recommendation, and a disposition. The illustrative example ships at .warp/examples/decision-review-example.yaml reviewing the shipped decision-example (DEC-0000) in its draft state. python3 .warp/validate.py decision-review .warp/examples/decision-review-example.yaml returns rc 0."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1106 block: 'the shipped decision-review example validates and binds via check_decision_review' (V.check_decision_review == 0), 'the shipped example names the example decision (DEC-0000) and carries no decision block' (a review informs, never decides), and the AC2 positive control 'a well-formed warp.decision_review/v1 review validates' (_dr_errs(GOOD_REVIEW) == 0)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "validate_review in .warp/decision_review.py, invoked from validate.py check_decision_review, structurally checks a review the way decision.py checks a record and fails closed by name on: a wrong schema id, a missing/empty required field (id, decision, reviewer, recommendation), a non-integer version or decision_version, an out-of-vocabulary disposition or problem-class/dead-end/assumption verdict, an option_challenge or assumption_challenge lacking its finding, an empty option_challenges or assumption_challenges list, a duplicate option/assumption reference, a review that smuggles a decision (chosen, decided_by, decided_at), and a file outside the parser subset. Reuses validate.parse_yamlish (no second parser) and validate.fail (no import cycle)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1106 AC2 negatives each refuse (>0): wrong schema, missing recommendation, non-integer version, non-integer decision_version, bad disposition, bad problem-class verdict, bad dead_end verdict, bad assumption verdict, option_challenge lacking its finding, empty option_challenges list, duplicate option_challenge, smuggled chosen option, smuggled decider; the positive control validates clean (0)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "bind_review in .warp/decision_review.py pairs a review to the decision it reviews and fails closed when the record is malformed or absent (referenced but absent), when decision_version does not match the record's version (a stale review does not vouch for the current framing), and when the option_challenges or assumption_challenges do not COVER every option and assumption the decision declares, or reference one the decision does not declare. resolve_decision reads each record through the injected decision.load_record and matches on schema warp.decision/v1 and id, so a review-shaped file is never mistaken for a decision."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1106 AC3: the well-formed review binds clean to its decision (0); an absent/malformed decision refuses (>0); a version mismatch refuses; an uncovered option refuses (partial attack); an option the decision does not declare refuses (referenced but absent); an uncovered assumption refuses. Plus the integrated positive: the shipped example binds to the shipped example decision via check_decision_review."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The fresh-context adversarial reviewer is a DELEGATED seam that FAILS LOUD, mirroring the executor's LiveLoop.review and the dispatcher's LiveReviewer. AdversarialReviewer.review(decision, context) is the seam; the reference LiveAdversarialReviewer is wired to nothing and RAISES DecisionReviewError, refusing to fabricate a review. No review's findings, disposition, or recommendation are synthesized in code: decision_review.py validates and binds an artifact a real fresh context produced, and an adopting runtime must inject a reviewer that dispatches a genuinely fresh context over the proposed decision."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1106 AC4: 'the reference adversarial reviewer FAILS LOUD (refuses to fabricate a review)' (LiveAdversarialReviewer().review raises DecisionReviewError); 'DecisionReviewError is a ValueError (raised by name)'; and 'an injected reviewer is the only path an attack enters (the seam, not fabrication)' (a fake AdversarialReviewer subclass returns the attack, proving the seam is the sole entry point)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "decided_requires_review over the decision records refuses a record whose status is decided unless it carries at least the number of bound, valid adversarial reviews its risk tier requires, read from .warp/policy.yaml risk_tiers (the single source of truth): irreversible maps to critical (two independent reviews, D5), standard needs one. A review counts only when it validates structurally AND binds (resolves, version matches, full coverage) with zero errors, so a malformed or partial review cannot satisfy the gate. Adoption safe: with no .warp/decisions/ and no .warp/decision_reviews/ directory the whole gate stands down (a repository with no decision records is byte-identically unaffected); the moment a decided record exists the gate fails closed. This repository carries no real decision records, so run_all's check_decision_reviews stands down here; the teeth are proven over temporary trees."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1106 AC5 over a temporary tree (this repository's real policy.yaml copied in so risk_tiers is read): no .warp/decisions/ directory stands the gate down (0); a decided record with ZERO bound reviews is refused (>0); with one bound review passes (0); a decided CRITICAL/irreversible record with ONE review is refused (needs two, D5); with TWO bound reviews passes; a review bound to a stale decision_version does not satisfy the gate; a DRAFT (un-decided) decision needs no review (the gate does not bite before a human decides)."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "TEETH (anti-vacuity C1): over the shipped decision-review-example.yaml, stripping an option_challenge's finding and removing the recommendation each turn the check RED, reverting byte-identical; over a temporary tree, deleting the sole bound review of a decided record turns decided_requires_review RED. .warp/decision_review.py ships in the engine and is byte-identical across root, plugin/templates, and all 6 packs (drift empty), .warp/validate.py's edit and the capabilities.yaml entry (adversarial_decision_review, mechanical) are re-synced likewise (template sync and pack drift pass), and the init scaffold lays .warp/decision_review.py beside .warp/decision.py. required_reviews_for reads policy.yaml risk_tiers (standard=1, critical=2, high=1), defaulting to one (never zero) when absent. The delegated reviewer is honestly labeled a delegated seam that fails loud (NG5). No protected path is touched: the gate lives in the non-protected engine (decision_review.py, validate.py) and READS policy.yaml without editing it."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1106 TEETH: stripping an option_challenge finding from the real example turns the check RED; removing the recommendation turns it RED; the unmutated real example validates and binds (positive control); a decided record with its sole bound review passes and DELETING that review turns the gate RED; decision_review.py and validate.py byte-identical root vs plugin/templates; the adversarial_decision_review capability declared mechanical; the init scaffold required_substrate includes .warp/decision_review.py. Pack drift (7 packs), template sync, pack conformance, and runner catalog all pass inside the gate's unit slot."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1626 passed, 0 failed (was 1583 before this item; +43 assertions for the WARP-1106 structural validator, the cross-artifact binding, the fail-loud delegated reviewer seam, the decided-requires-review gate over temporary trees including the D5 critical-needs-two case, the policy risk_tiers read, and the mutation teeth over the shipped example). The pack-drift, pack-conformance, and runner-catalog harnesses run inside this slot and pass."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes: check_arch, check_decisions, the new check_decision_reviews (stands down here, no real records), check_spec over all 109 specs (the 108 shipped/prior + WARP-1106), the plan/spec binding, this manifest, and the examples block (the decision-review example validates and binds to the decision example). The decided-requires-review gate is adoption-safe: it stands down with no .warp/decisions/ directory."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "python3 scripts/update_index.py is a no-op after commit; specs/index.md reflects WARP-1106 as draft, risk standard, approval not_required (derived from front matter, status not flipped), and the PLAN-0011 burndown shows W6 as 'draft (frontier)'."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "scripts/check_docs.sh: dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (plugin/ files carry no company or product reference) all pass. RULE #1 hand-checked for prose double-hyphen across every changed file; the only '--' occurrences are the pre-existing '# ---' selftest section-divider convention (91 in the file, one per section, matching the WARP-1101/1105/1103 sibling headers) and structural YAML front-matter fences."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "scripts/check_template_sync.sh: pass (validate.py root vs plugin/templates byte-identical, among the checked pairs)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "scripts/check_pack_drift.py: every pack's engine (including the new .warp/decision_review.py, the edited .warp/validate.py, and .warp/capabilities.yaml) byte-identical to the canonical source plugin/templates; drift empty across all 7 packs (the option-B Claude pack plus 6 committed packs)."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py: pass; the adversarial_decision_review capability is mechanical with home .warp/decision_review.py (not a runner), so it is not subject to the runner completeness checks."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    }
+  ],
+  "rollback": "git revert 9f15c8f. The commit adds one validator module (.warp/decision_review.py), a call to it from .warp/validate.py (a directory scan in run_all, a single-file decision-review check for the example, the decided-requires-review gate over the decision records, and a decision-review CLI mode), an init-scaffold substrate entry, one capabilities entry, one illustrative example artifact, and a selftest block, all re-synced byte-identical across plugin/templates and the 6 packs. Nothing consumes decision reviews beyond the decided-requires-review gate, and that gate stands down entirely when no .warp/decisions/ directory exists, so reverting returns the gate to its prior behavior with no migration and nothing to unwind. A repository with no decision records (this repository included) is unaffected either way (the adoption-safe posture)."
+}

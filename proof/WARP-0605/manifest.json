@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0605",
+  "commit": "9bbfc5a163d4e19a2d36d354bd6a7d28b0754cda",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0006 W5, in-session single writer)",
+  "plan_hash": "sha256:6dd3f98b5a0c1f68",
+  "produced_at": "2026-07-18T19:12:18Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_mirror.py mirror_events consumes the lifecycle event stream (spec.ready, spec.blocked, verdict.recorded, spec.shipped, merge.completed) and writes ONLY tracker status and comments through the WARP-0603 seam (create_or_update_child, set_status, comment); it has no file-write path and never calls the seam's read/intake methods, so it is event-driven not polling, and it does not mutate its input spec_index."},
+        {"type": "unit", "ref": "independent review confirmed by grep that every mutation targets local structures (no open/write/write_text, os unused then removed), only the three seam write methods are called (no list_intake_items/read_item), and a deep before/after compare showed spec_index and config unchanged after a full run; the write audit is a subset of {create_or_update_child, set_status, comment}; part of selftest 1133 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the desired tracker status is only ever assigned from status_map[warp_status], so set_status can receive only a mapped value; an unmapped WARP status is recorded as a keyed comment and never transitioned (NG4); an absent status_map yields comments only; a per-repo status_map overrides the global default."},
+        {"type": "unit", "ref": "independent review probe: verdict.recorded (unmapped) left status at To Do with transitions==0 and unmapped==1; empty status_map -> transitions==0, comments only; a mutation making the desired loop use status_map.get(ws, ws) turned the NG4 selftest assertion RED; the per-repo override selftest asserts Backlog wins over the global To Do; part of selftest 1133 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the mirror is a RECONCILER (recompute the desired state each run: latest mapped event sets the status, comments are keyed) with no processed-offset ledger and no second store; set_status is a no-op when unchanged and comments post at most once, so replay, a doubled event, prefix growth, and out-of-order-with-timestamps all converge to identical state."},
+        {"type": "unit", "ref": "independent review battery: replay identical stream -> transitions==0/comments==0, state byte-identical; doubled event id collapsed; prefix-then-full walks To Do->Done and converges; out-of-order-with-timestamps sorts by at to the same final state; replay [ready, shipped] after shipped did not drive the status backward; the closing comment keyed sid:shipped posts exactly once; part of selftest 1133 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "reuses WARP-0601 tracker_for_repo (confirms a declared tracker_repo maps to a known tracker before any write) and the WARP-0603 seam; no reimplementation of routing or the adapter. A spec not wired for mirroring (no tracker_repo, no config, an unroutable repo, or no plan) is SKIPPED by name in the result; a malformed status_map fails closed by name (MirrorError)."},
+        {"type": "unit", "ref": "independent review proved reuse by monkeypatch/spy (MI.tracker_for_repo.__code__.co_filename resolves to .warp/tracker.py and is actually invoked with repo-a; MI defines no resolve_repo/FakeTracker/TrackerAdapter); all four skip cases return skipped[sid] by name with mirrored==[]; blank-value, unknown-key, and non-string status_map each raise MirrorError; part of selftest 1133 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest drives the mirror over the deterministic FakeTracker offline - a growing stream moves the child ready to shipped through the mapped statuses and posts the closing comment; a full replay plus a duplicated event id records no new transition or comment and leaves state identical; an unmapped status is annotated not transitioned; an unwired spec is skipped; the spec index is never mutated (the one-way guard, on a fresh never-mirrored index) - non-tautologically (no events means the child is never created)."},
+        {"type": "unit", "ref": "independent review mutation matrix: neutering set_status -> 4 red, sneaking an unmapped transition -> 2 red (NG4), removing the closing comment -> 2 red, breaking dedup -> 1 red, removing the unmapped annotation -> 1 red; the one-way index-mutation guard was strengthened to a fresh index after the first review found it dull, and a re-review independently confirmed the new guard turns RED on a stable-value writeback and GREEN clean while the old guard stayed green on the injection; part of selftest 1133 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1133 passed, 0 failed (+22 for the WARP-0605 mirror block)"}
+  ],
+  "assumptions": [
+    "W5 of PLAN-0006: an event-driven one-way spec mirror, built in-session by a single writer (the subagent worker died on the shared session token limit; the coordinator built it directly following the full WARP loop). Reuses WARP-0601 (tracker_for_repo) and the WARP-0603 seam (FakeTracker); no template twin ships for .warp/tracker_mirror.py because validate.py and policy_check.py do not import it at load, so an adopting repo's gate never loads it - the same treatment as tracker_adapter.py (WARP-0603), and check_template_sync is unchanged. Shipping the tracker integration modules to adopting repos via plugin/templates is a release/W8 concern. DESIGN NOTE: the mirror is a reconciler (like update_index.py) not an event-ledger applier, so idempotency is by construction with no second store. TWO REVIEW-DRIVEN FIXES applied to the reviewed code and re-reviewed: a dead import removed and the one-way guard given real teeth (a fresh never-mirrored index). Two independent adversarial reviews (the full pass on faa579c and a scoped re-review bound to this commit 9bbfc5a) both PASS with 0 blocking; neither could break the one-way or idempotency properties.",
+    "The status_map lives in .warp/trackers.json alongside routing; the mirror validates its own section (known WARP status keys, non-empty status names) at use, which is validation of a distinct mirror-owned section, not a second copy of the routing validator (that stays in tracker.py). The template trackers.json ships a status_map example."
+  ],
+  "rollback": "git revert; additive - a new .warp/tracker_mirror.py, one capability entry (both capabilities.yaml copies), a status_map example in the template trackers.json, a selftest block, and the WARP-0605 spec; no protected path; pure stdlib, read-only over the repo, no network."
+}

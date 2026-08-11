@@ -1,0 +1,141 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1209",
+  "commit": "379063b80323d6f7c3c5dd7528665b12acf6c095",
+  "producer": "claude-opus-4-8[1m] (WARP-1209 implementer agent, planned lane; W9 of PLAN-0012, diagnosability gated - the observability criteria vocabulary and the gate that refuses a behavior-bearing spec declaring no observability criteria, the diagnosability half of O6 / Invention #3, the stranger question made a gate concern)",
+  "produced_at": "2026-07-23T09:43:53Z",
+  "plan": "PLAN-0012",
+  "work": "W9",
+  "plan_revision": 2,
+  "plan_hash": "sha256:9c8616540899be1d",
+  "proof_digest": "sha256:0d4cd8e2d0f15f06",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The observability criteria VOCABULARY ships as a versioned engine organ (.warp/observability.py, schema warp.observability/v1): OBSERVABILITY_CRITERIA names exactly the four criteria O6 enumerates - logs (structured logs at decision points), metrics, traces, error_taxonomy (an honest error taxonomy). validate_observability is PURE over a spec's parsed front matter, reusing validate.parse_yamlish through the caller and the validate.fail reporter (no second parser, no import cycle, exactly as arch.validate_placement receives its parser and reporter). python3 .warp/observability.py <spec.md> validates a declaration and runs the gate standalone. It FAILS CLOSED by name on a behavior_bearing that is neither true nor false, an observability that is not a mapping, a criterion outside the vocabulary, and an empty description; and stands down (returns 0) for a spec that declares NEITHER field (adoption safe, byte-identically unaffected)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1209 AC1 block: OBSERVABILITY_CRITERIA == {logs, metrics, traces, error_taxonomy}; a well-formed declaration validates clean (positive control); a bad behavior_bearing, a non-mapping observability, an out-of-vocabulary key, and an empty value each refuse; a spec declaring neither field stands down (0)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "ELABORATION APPLIES the vocabulary and the VALIDATOR ENFORCES it at the ready transition (O6). observability_gate (a pure predicate returning the problem list) is wired at validate.check_ready - the same transition the placement gate uses, run by the /warp:spec skill before it promotes a spec to ready - and the /warp:spec skill (synced across all copies) asks for the behavior_bearing classification and the observability criteria during elaboration. A behavior-bearing spec (behavior_bearing: true) that declares NO observability criteria is REFUSED at check_ready with the reason named; check_observability additionally validates a declared block STRUCTURALLY over every spec at spec-validation time (present-only, so the shipped corpus is untouched)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests over a temporary tree with a contract: check_ready REFUSES a behavior-bearing spec with no observability declaration (>0) and ACCEPTS one that declares a criterion (0, positive control); check_observability validates a well-formed declaration clean; and the /warp:spec skill copy names 'observability' and 'behavior_bearing' (elaboration applies the vocabulary)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE REFUSAL IS THE PRODUCT and NON-VACUOUS (C1). Over this repository's real contract (which declares no observability section, so the spec-level floor applies): a behavior-bearing spec with no criteria is refused by name ('declares NO observability criteria'); an in-memory MUTATION of the module that neutralizes the mandatory floor branch turns that same fixture GREEN (the enforcement is load-bearing), and the module on disk is byte-unchanged; the same fixture WITH a criterion PASSES (a spec that declares criteria flips the result); and the CONTROLS: a non-behavior-bearing spec (behavior_bearing absent, and false) is EXEMPT (no false positive). The unmechanizable part is honestly review-lane (NG5): whether the criteria are SUFFICIENT is a reviewer judgment, stated in the module and this spec, while the mechanical floor and vocabulary are enforced."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: the behavior-bearing-no-criteria fixture yields exactly one problem naming 'declares NO observability criteria'; the enforcement-removed mutation (elif not declared -> elif False) turns it GREEN while the real observability.py on disk is byte-unchanged; the fixture with a criterion passes ([]); behavior_bearing absent and behavior_bearing false each yield [] (controls); and the review-lane labeling ('review lane' + 'sufficien') is present in the module source."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE C7 SOFT JOIN, degrading down and never faking a join. contract_observability reads a system's observability rules from the OPTIONAL contract-level observability.required list when a PLAN-0011 contract declares them, and observability_gate then requires a behavior-bearing change to declare EACH; where absent (as in this repository's own contract) the gate STANDS DOWN honestly to the spec-level floor (at least one recognized criterion), never inventing a rule; a malformed section (not a mapping, empty/non-list required, or an out-of-vocabulary criterion) is REFUSED rather than silently ignored."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests over temporary contracts: with observability.required=[logs, error_taxonomy] a spec missing one is refused and a spec declaring both passes; with no section the join reads 'absent' and the floor applies (a behavior-bearing spec with no criteria refuses, one with a criterion passes); a malformed section reads 'malformed' and the gate refuses naming 'observability rules are malformed'; and this repository's REAL contract reads 'absent', so the live gate honestly uses the floor (the join not faked here)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "BACKWARD COMPATIBLE (RJ6), engine-synced, honestly recorded. The mandatory rule binds at the ready transition only (check_ready/observability_gate), never a static check_spec sweep - exactly as the placement gate is scoped - so the 121 already-shipped specs (none declaring behavior_bearing) are never re-evaluated. .warp/observability.py, the edited .warp/validate.py (929 lines, under the 1000-line module_lines budget) and .warp/validate_checks.py, and .warp/capabilities.yaml are byte-identical across root, plugin/templates, and all 6 packs (cmp-verified); the /warp:spec skill is byte-identical across plugin and the 6 packs. capabilities.yaml gains one honest mechanical entry (diagnosability_gated, home .warp/observability.py). observability.py starts no process/thread/timer (NG3). No protected path is touched (validators are NOT protected per policy.yaml). Dogfood: WARP-1209 declares behavior_bearing true + an observability block (logs, error_taxonomy), passes its own gate (check_ready == 0), placement [contracts] resolves, footprint tier standard."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 2103 passed, 0 failed (41 new WARP-1209 runtime assertions). RJ6: run_all invokes no observability_gate/check_ready (inspect.getsource); the real shipped WARP-1103 spec still passes check_ready == 0 (exempt); validate.py all returns 0 over the whole corpus. Byte-identity: observability.py, validate.py, validate_checks.py, capabilities.yaml root-vs-plugin/templates and across all 6 packs; the skill across plugin+6 packs. The diagnosability_gated capability matches the mechanical/home regex. No-detach: no _TRIP_DETACH_TOKENS in the source, and a Popen mutation trips the check. Dogfood: check_ready(WARP-1209)==0, placement_gate []==, footprint_tier_floor ''. ./scripts/verify.sh: GATE GREEN (catalog 5 run, 18 na, 0 waived, 0 undeclared)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 2103 passed, 0 failed. The WARP-1209 block adds 41 runtime assertions (35 expect call-sites, two in a 4-file loop): the vocabulary and the fail-closed structural validator (AC1); elaboration-applies + validator-enforces at the ready transition over a temp tree, plus the skill naming the step (AC2); the non-vacuous refusal by mutation + controls + review-lane labeling (AC3); the C7 soft join over three temp contracts + the real-contract stand-down (AC4); and RJ6 backward-compat, byte-identical engine sync, the capability entry, no-detach teeth, and the dogfood (AC5)."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes over the whole corpus, including check_plan over PLAN-0012 with WARP-1209 mirrored back (lane planned, plan PLAN-0012, work W9, plan_revision 2, depends_on []), the mandatory placement gate (placement [contracts] resolves, footprint tier standard), and check_events. python3 .warp/plan.py run-check PLAN-0012 WARP-1209 returned 'clear to build (deps shipped, plan context current)' (a frontier root). check_spec now also runs check_observability (present-only, contract-conditioned); it stands down for every shipped spec (none declares behavior_bearing or observability) so run_all is unaffected. validate.py is 929 lines, under the module_lines budget."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py; the WARP-1209 row reads review, the PLAN-0012 ready frontier shows WARP-1209 (W9) as review (frontier). check_generated.sh reports no drift (regeneration is a no-op)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash, no prose double-hyphen), non-ASCII sweep, and genericity sweep all pass. The new engine material (.warp/observability.py, the capabilities entry, the /warp:spec skill addition) is fully generic; 'WARP' is the method's own name. RULE #1 verified on the new files (the '# ---' section dividers and the YAML '---' front-matter fences are established engine conventions, not prose em-dash stand-ins)."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "bash scripts/check_lint.sh: pass. .warp/observability.py, .warp/validate.py, .warp/validate_checks.py and every synced copy compile under python3 -m py_compile."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: template sync pass. .warp/validate.py (a PAIRS-tracked file) is byte-identical root vs plugin/templates; observability.py, validate_checks.py, and capabilities.yaml follow the same byte-identical discipline (asserted in selftest and covered by pack drift)."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pack drift pass (7 packs). The new .warp/observability.py and the edited .warp/validate.py, .warp/validate_checks.py, and .warp/capabilities.yaml are byte-identical between plugin/templates (canonical source) and every pack (cursor, codex, copilot, antigravity, opencode, aider); the claude pack is the source in-place."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. Footprint-versus-diff: WARP-1209 is the single footprinted spec in the change set and every changed source path is covered by its declared footprint globs. No file_lines violation: validate.py at 929 lines is under the 1000 module_lines budget; validate_checks.py and observability.py resolve to no area (placeless engine modules) and are outside every budget's scope. The function_lines and complexity findings on validate.py are pre-existing, contract-labeled review, surfaced as NON-BLOCKING notes. Placement [contracts] resolves; footprint tier standard (single area, no boundary crossing)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass. The observability organ carries no secrets; it is a pure validator over front matter and the architecture contract and opens no connection."
+    }
+  ],
+  "assumptions": [
+    "WARP-1209 is a PLANNED spec (lane planned, W9 of PLAN-0012 revision 2, a frontier root with depends_on []). run-check PLAN-0012 WARP-1209 returned 'clear to build (deps shipped, plan context current)'. The manifest carries plan/work/plan_revision/plan_hash to bind the change to the plan state it was built against.",
+    "SCOPE: this item is the DIAGNOSABILITY-GATING half of O6 only - the observability criteria vocabulary, elaboration applying it (the /warp:spec skill), and the validator refusing a behavior-bearing spec that declares no observability criteria (observability_gate at the ready transition). The METRICS half of O6 (time-to-diagnosis and time-to-restore trending, recurrence rate, the diagnosability score, incidents-per-area joined with PLAN-0011 cost-to-change) is a SEPARATE work item, WARP-1210 (W10); nothing here derives a metric or reads an event. The /warp:init lay-down is WARP-1211 (W11).",
+    "RISK is standard / human_approval not_required: W9 is not in C2's safety-core enumeration (executor / whitelist / two-key / kill-switch / ladder) and touches no protected path (validators are explicitly NOT protected per policy.yaml; only verify.sh, warp-guard.sh, policy.yaml, policy_check.py are). The footprint spans a single declared area (contracts, via .warp/validate.py) plus placeless engine modules, so the footprint tier is standard - no boundary crossing, consistent with the sibling elaboration/validator specs WARP-1201 and WARP-1203.",
+    "SCOPING DECISION (stated honestly, not a gap): the mandatory gate is enforced at the ready TRANSITION (validate.check_ready, run by /warp:spec), the canonical point O6's measure names ('the elaboration and validator refuse'). It is deliberately NOT wired into the claimable frontier or plan.py run-check. PLAN-0011's placement gate wired the claim path because its outcome O3 explicitly required 'never claimed for build' (and so touched the fleet area, raising the tier to high); O6 has no such claim-gate language, and wiring it would cross into the fleet area and raise the risk tier without serving O6. So the enforcement is scoped to the ready transition plus a present-only structural check in check_spec.",
+    "BACKWARD-COMPAT (RJ6) is achieved by two decisions, not by weakening the rule: (1) the mandatory rule lives in check_ready, never in the run_all/check_spec corpus sweep, so the 121 shipped specs (past ready) are never re-evaluated - identical grandfathering to the placement gate; and (2) an absent behavior_bearing is treated as not behavior-bearing (exempt), so the shipped corpus (which declares no such field) and the existing check_ready selftests (which assert the real WARP-1103 spec and a placed fixture pass check_ready == 0) stay green. The new required-criteria rule is NOT weakened for new behavior-bearing specs (an explicit behavior_bearing: true with no observability is refused).",
+    "The C7 soft join is honest: this repository's architecture.yaml declares no observability section (contract_observability reads 'absent'), so the live gate stands down to the spec-level floor; the contract-rules path is proven over temporary contracts in the selftest, and the human-approved architecture contract artifact is deliberately NOT edited (adding a system's observability rules would be a separate human-approved shape change).",
+    "The impl is a single commit (observability.py across all engine copies + the edited validate.py/validate_checks.py/capabilities.yaml per copy + the /warp:spec skill per copy + the selftest block + the spec at status review + the regenerated index). Per the review boundary: the spec is at status review (not shipped), no verdict is written, and this proof manifest, .warp/last_verify, and .warp/events.jsonl are left uncommitted. The independent fresh-context reviewer authors the verdict; the orchestrator flips review to shipped on a pass and makes the evidence commit."
+  ],
+  "rollback": "git revert the implementation commit. The change adds one engine organ (.warp/observability.py, synced across the engine), wires it thin from validate_checks.py (check_observability at spec-validation time, observability_gate at the ready transition) and validate.py (one check_observability call in check_spec plus the re-export), asks for the observability classification in the /warp:spec skill, adds one capabilities entry, and adds a selftest block. The mandatory gate is scoped to the ready transition, so it evaluates no already-shipped spec; the present-only structural check stands down for every spec that declares neither field. A spec that declares no behavior_bearing, and a repository with no architecture contract, are unaffected either way (the adoption-safe posture), so there is no migration and nothing to unwind."
+}

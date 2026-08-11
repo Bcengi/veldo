@@ -1,0 +1,21 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0603",
+  "commit": "0107b0bd0c32048649ddcaa4f3196fe3e7b71f8e",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T17:10:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:e3161991a2403e43",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "Abstract seam; base owns validation/audit/fail-loud; every surface primitive raises NotImplementedError (a bare TrackerAdapter().comment raises)."},
+    {"id": "AC2", "status": "confirmed", "note": "FakeTracker drives the full seam offline (stdlib only, no network); reproduced end to end."},
+    {"id": "AC3", "status": "confirmed", "note": "Provider-agnostic (no vendor/network code); read/write separation structural - reads leave writes()+state_digest unchanged, each write grows the audit by one, reads deep-copy."},
+    {"id": "AC4", "status": "confirmed", "note": "set_status changed-only, keyed comment at-most-once, epic/child upserts deterministic; a 3x at-least-once replay yields one epic/child/keyed-comment and transitions = real changes."},
+    {"id": "AC5", "status": "confirmed", "note": "Non-tautological by mutation: no-op _record reddens the audit assertions; always-True set_status reddens the no-op-repeat and transition-count assertions."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review, pass_with_notes, 0 blocking, bound to 0107b0b. All five ACs reproduced against the actual code (full seam offline; audit teeth load-bearing; idempotency replay-safe; fail-loud; non-tautology proven by mutation). No write bypasses the audit, no read mutates state, no vendor dependency, index self-consistent in a clean tree, both capabilities.yaml copies byte-identical. Built by a worktree-isolated worker; landed to main by fast-forward; the review binds to the build commit."},
+    {"severity": "note", "text": "Three minor non-blocking notes: (1) comment's optional key param is mandated by AC4 (key-idempotency for at-least-once replay), not a vendor leak, and defaults to plain append - sound minimal extension; (2) the epic/child audit detail logs only the key, not the applied status/title - a minor observability nit, the audit still proves the write and read-purity; (3) the spec is at status ready in the build commit and ships via this evidence commit (the established two-commit convention)."}
+  ],
+  "summary": "W3 of PLAN-0006 (the provider-agnostic tracker adapter seam + a deterministic offline FakeTracker) is correct. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 1099). The seam is the vendor-neutral boundary intake (W4) and the mirror (W5/W6) stand on: reads and writes are declared, the base owns validation, a structural write audit, and fail-loud errors, and every primitive raises NotImplementedError so a real adapter supplies only the surface. The FakeTracker is deterministic and offline, with the exact idempotency the mirror relies on (changed-only status, at-most-once keyed comment, deterministic epic/child upserts) so at-least-once event replay never forks. Non-tautology proven by mutation; no vendor or network dependency. proof_digest via validate.py."
+}

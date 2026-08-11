@@ -1,0 +1,102 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1212",
+  "commit": "f0aa8c30714a8d503082e52d065139102e55020a",
+  "producer": "claude-opus-4-8[1m] (WARP-1212 implementer agent, STANDALONE hardening lane; closes the latent two-key freshness fail-OPEN both independent reviews of WARP-1207 flagged (proof/WARP-1207/verdict.json + verdict-2.json): with no clock injected, _expired returned False for a key that DECLARES an expiry, so an expired-but-declared key passed the freshness check. The fix makes the two-key freshness FAIL CLOSED when no clock is available to verify a declared expiry - a clock is required on the two-key path and an expired-or-unverifiable-freshness key can never authorize regardless of the clock. HIGH risk per C2 (it edits the two-key organ) - not CRITICAL, because it opens no execution path and only ever REFUSES more (a pure fail-closed tightening). Standalone lane, not a PLAN-0012 work item, mirroring WARP-0113/0114; PLAN-0012's plan file untouched. Built against fake systems and stopped at review: no evidence commit, no approval, not landed. C1 / C2 / C3 / NG1 / NG3 / NG4)",
+  "produced_at": "2026-07-23T00:00:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The two-key freshness helper _expired (.warp/two_key.py), the single freshness check authorize() applies to BOTH keys, now FAILS CLOSED when no clock is available. Before, the no-clock branch returned False (fresh) for a key that DECLARES an expiry even a PAST one, so an expired-but-declared key passed. After, that branch returns True (expired); because the no-declared-expiry branch already returned True, _expired is now False (fresh) ONLY when a real clock (now) proves a declared expiry lies in the future - every other case (no expiry, or a declared expiry unverifiable for want of a clock) is expired and the gate REFUSES by name (authorization_expired / confirmation_expired). Minimal and surgical: only the no-clock branch changes (return False -> return True) plus its docstring and the two refusal-detail strings; no other guard, the two-distinct-keys guarantee, the digest binding, the self-separation, or the L2 single-confirmation path is touched. python3 .warp/two_key.py still AUTHORIZES the demo pair (it injects a clock) and --one-key still REFUSES (missing_independent_confirmation)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1212 block: POSITIVE CONTROLS - a valid unexpired pair WITH a clock authorizes and runs both keys end to end against the fake system (op log [canary, action]); an EXPIRED human authorization WITH a clock still refuses (authorization_expired); a NO-EXPIRY human authorization WITH a clock still refuses; and _expired for a confirmation-shaped key is True with no clock (expired-declared and valid-unexpired both unverifiable) and False only WITH a clock proving a future expiry."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "An expired-or-unverifiable-freshness key can NEVER authorize regardless of whether a clock was passed, at BOTH the gate and the executor surface (fail closed, C3). Through two_key.authorize and through ActionExecutor.execute(..., now=None): an expired-but-declared human authorization with no clock REFUSES authorization_expired (before, it authorized); a valid unexpired key with no clock also REFUSES (its declared expiry is unverifiable), so a clock is required on the two-key path and freshness cannot be silently disabled by omitting the clock; execute(expired human, now=None) returns executed False with the reason named and no run (the reviewers' exact probe, previously executed True). The confirmation side is hardened identically via the shared _expired (through the full gate KEY 1 is checked first and shields KEY 2 when there is no clock; the CONFIRMATION_EXPIRED path through the gate WITH a clock is unchanged). The neither-key fence is UNCHANGED: the fix returns before _expired on the both-absent path, so a call with neither key and no clock still refuses requires_two_key (drift-bound to action_executor.REFUSE_REQUIRES_TWO_KEY)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'an EXPIRED-but-declared human authorization with NO clock now REFUSES (authorization_expired); before, it PASSED'; 'even a VALID unexpired human key with NO clock REFUSES - a clock is required on the two-key path'; 'execute(expired human, now=None) is executed=False and refused=authorization_expired (was executed=True)'; 'the neither-key fence is unchanged (requires_two_key, before any freshness check) even with no clock'."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The fix is LOAD-BEARING and the engine is byte-identical. Reverting the one fix line to the pre-WARP-1212 return False in an IN-MEMORY copy of two_key.py makes a formerly-refused input AUTHORIZE again (reason None) - both an expired-but-declared key with no clock AND a valid unexpired pair with no clock - while the real on-disk module REFUSES (authorization_expired), with the real .warp/two_key.py byte-unchanged. .warp/two_key.py and .warp/action_executor.py are re-synced BYTE-IDENTICAL across root, plugin/templates, and all 6 packs (aider, antigravity, codex, copilot, cursor, opencode) by cmp. SECONDARY cosmetic fix (both reviews flagged, kept clearly secondary): the ActionExecutor class docstring that claimed the organ 'builds NO data-mutating execution path' (false since W7) is corrected to say it ROUTES to the two-key rule and the data-mutating path exists only behind both keys. No protected path is touched (verify.sh, warp-guard.sh, policy.yaml, policy_check.py, validate.py, shape_gate.py and their plugin/templates twins unedited). RULE #1 clean."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'reverting the freshness fix lets an EXPIRED-but-declared key with NO clock THROUGH (the fix line is load-bearing)' (real == authorization_expired and reverted is None); 'reverting the fix also lets a VALID pair with NO clock authorize (real REFUSES, reverted AUTHORIZES)'; 'the revert mutation is in-memory only (the real two_key.py on disk is byte-unchanged)'; WARP-1212 dogfood 'risk floor at least HIGH with human_approval REQUIRED (C2, edits the two-key organ), and no protected path touched' and 'standalone lane (no plan/work fields)'. python3 scripts/selftest.py: 2308 passed, 0 failed (+14 over the 2294 WARP-1207 baseline, zero regressions). ./scripts/verify.sh GATE GREEN at f0aa8c3; python3 .warp/validate.py all exit 0."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 2308 passed, 0 failed. The WARP-1212 block adds 14 assertions: 3 positive controls (valid pair + clock executes both keys; expired + clock refuses; no-expiry + clock refuses) plus the shared-helper confirmation-side check (AC1); the fail-closed fix at the gate and executor surface (expired human no-clock refuses; valid unexpired no-clock refuses; execute(expired,now=None) executed False; neither-key fence unchanged) (AC2); the load-bearing revert-the-fix teeth (expired-no-clock and valid-no-clock each turn RED when reverted, real module byte-unchanged) and the HIGH/human_approval/standalone dogfood (AC3)."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all: exit 0 (zero regressions over the whole corpus), including check_spec over WARP-1212 (placement [contracts] resolves, footprint a non-empty glob list, behavior_bearing true with a valid observability block) and check_json over this manifest (criteria AC1-AC3 cover the spec exactly, required_evidence unit present). validate.py is deliberately unedited: the two-key gate is still not wired into run_all (that is WARP-1211 / W11)."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py (126 specs); the WARP-1212 row reads review/high/required. check_generated reports no drift."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep all pass. RULE #1 verified on the edited two_key.py/action_executor.py lines and the new spec: ASCII hyphen only, no em or en dash, no prose double-hyphen (the pre-existing '# ---' section dividers are an established engine convention; the '---' front-matter fences are YAML)."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: pass. .warp/two_key.py and .warp/action_executor.py follow the byte-identical discipline; validate.py is not edited."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pass (7 packs). .warp/two_key.py and .warp/action_executor.py are byte-identical between plugin/templates and every pack (aider, antigravity, codex, copilot, cursor, opencode); the claude pack is the source in-place."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. Footprint-versus-diff: WARP-1212 is the single footprinted spec in the change set and every changed source path (.warp/two_key.py, .warp/action_executor.py and their plugin/templates and packs copies, scripts/selftest.py, and the spec) is covered by its declared footprint; specs/index.md and proof/ are excluded derived/evidence artifacts. Placement [contracts] resolves; footprint tier standard (both engine modules are placeless and resolve to no area, so no file_lines budget applies). No protected path touched."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass. The change holds no credential and no secret."
+    }
+  ],
+  "assumptions": [
+    "WARP-1212 is a STANDALONE hardening spec (no plan/work/lane fields), the direct lane for a defect a prior independent review found, exactly as WARP-0113 ('Harden enforcement per the WARP-0100 independent review findings') and WARP-0114 closed review/dogfood defects without being added to PLAN-0001's work list. It closes a WARP-1207 (PLAN-0012 W7) review finding without being added to PLAN-0012's work list; PLAN-0012's plan file is untouched and W7 stays shipped. The number WARP-1212 follows the plan's W1..W11 block (WARP-1201..WARP-1211), as WARP-0113/0114 followed the PLAN-0001 range. Because it is standalone, this manifest carries no plan/work/plan_revision/plan_hash (mirroring WARP-0113's manifest).",
+    "RISK is HIGH, not critical, with human_approval required and one independent review. C2 floors any spec touching the two-key organ at HIGH with recorded human approval; it reserves the CRITICAL tier for a spec that OPENS or WIDENS a data-mutating execution path. WARP-1207 met that trigger (a reachable data-mutating run now exists); this spec builds NO path and can never cause a run that would not have happened before - it is a pure fail-CLOSED tightening that removes a fail-open and only ever REFUSES more (in fact it PREVENTS the no-clock executions the buggy code allowed). Nothing lowers a class and nothing here raises it to critical.",
+    "THE FIX IS AT THE ENFORCEMENT POINT and is one line of behavior. _expired is the single freshness check authorize() applies to KEY 1 and KEY 2; its no-clock branch flips from return False (the fail-open) to return True (fail closed). This satisfies both forms the reviewers named simultaneously ('require a clock on the two-key path and refuse if it is absent' and 'refuse a declared-but-unverifiable expiry when no clock is supplied') because the no-declared-expiry case was already closed. No reason code is added or renamed; authorization_expired / confirmation_expired now also fire for the unverifiable-no-clock case, with the detail string and docstrings naming the cause.",
+    "HONEST DEFERRAL (unchanged from W7): the two-key gate is still not wired into validate.py run_all or the init lay-down (WARP-1211 / W11); validate.py is unedited. The compressed loop that would DRIVE an incident through the gate is WARP-1208 (W8). No live target is wired (a separate per-system human-approved enablement act, NG1). This hardening removes the exact caveat the WARP-1207 approver was asked to carry forward (that the freshness control was only enforced when the caller injected a clock): a future caller can no longer silently disable freshness by omitting the clock.",
+    "The impl is a single commit (f0aa8c3): the _expired fix + docstrings/detail strings in two_key.py, the secondary ActionExecutor class-docstring correction in action_executor.py, both synced byte-identical across root + plugin/templates + 6 packs, plus the selftest block, the spec, and the regenerated index. Per the review boundary: specs/WARP-1212 is flipped to review (not shipped), no verdict is written, this manifest and .warp/last_verify and .warp/events.jsonl are left uncommitted, and nothing is pushed. HIGH means one independent fresh-context review plus a separate recorded founder approval as the landing key; the builder does not review its own work and does not land."
+  ],
+  "rollback": "git revert f0aa8c3. The behavioral change is a single line in .warp/two_key.py's _expired helper (its no-clock branch flips from return False to return True) plus its docstring and two refusal-detail strings, re-synced byte-identical across plugin/templates and the 6 packs, and a secondary cosmetic ActionExecutor class-docstring correction in .warp/action_executor.py (also re-synced), plus a selftest block, the spec, and the regenerated index. Strictly TIGHTENING (fail closed): reverting restores the latent fail-open the WARP-1207 reviews flagged and changes nothing else - no reason code, no other guard, no execution path, no gate wiring (validate.py unedited; the two-key gate is still not wired into run_all, WARP-1211 / W11). A repository that never configures the responder is unaffected either way; no live target is wired (NG1).",
+  "proof_digest": "sha256:da573ef0a915fa3d"
+}

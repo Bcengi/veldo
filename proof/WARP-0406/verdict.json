@@ -1,0 +1,48 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0406",
+  "commit": "05f04830d0fa401271ce8bf9bc6759f2caf856be",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T14:48:12Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:1fa6c862da5406cd",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Leak detection re-observes real surface liveness rather than trusting bookkeeping; the live container path is unexercised in the home gate by design (reference), proven only via the injected fake runtime."
+    }
+  ],
+  "summary": "X6 (WARP-0406, ephemeral environment provisioning) is correct and honest. Independent adversarial review: pass_with_notes, gate GREEN, the lifecycle driven independently against both backends (fake: clean-on-create, seed observable, observe-after-teardown raises EnvStateError, idempotent double teardown, leak detection; live: fails loud without a runtime). Non-tautology 9/9 (skip-seed, skip-teardown, always-live, always-fixtures-present and more all caught). Reference status honest (no container surface in the home gate; live path fails loud); proportionate (stdlib seam, no bespoke provisioning stack); both capabilities.yaml copies byte-identical; generic; ASCII. proof_digest recomputed via validate.py."
+}

@@ -1,0 +1,23 @@
+Negative demonstrations of check_contract (pure, no server) - each violation named:
+
+1. status mismatch:
+   ['status: expected one of [200], got 500']
+2. required field absent:
+   ["required field 'amount' is absent (expected type number)"]
+3. required field wrong type (string given, number wanted):
+   ["required field 'amount' expected type number, got string"]
+4. bool is NOT an integer/number (type safety):
+   ["required field 'n' expected type integer, got boolean"]
+5. forbidden field present:
+   ["forbidden field 'internal_debug' is present"]
+6. interaction that asserts nothing is a journey error:
+   ['asserts nothing: declare an expect_status, a required field, or a forbidden field (a check that asserts nothing is not proof)']
+7. present-but-null distinguished from absent (required string, value null):
+   ["required field 'x' expected type string, got null"]
+8. nested dotted path resolves (customer.email absent):
+   ["required field 'customer.email' is absent (expected type string)"]
+9. unknown declared type is named, not silently accepted:
+   ["required field 'x' declares unknown type 'widget' (known: array, boolean, integer, null, number, object, string)"]
+
+All conform (should be empty list):
+   []

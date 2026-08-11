@@ -1,0 +1,47 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0113",
+  "commit": "ea259df",
+  "producer": "claude-fable-5 (implementing agent)",
+  "produced_at": "2026-07-16T20:52:00Z",
+  "implementation_commit": "f67336ebd7461b5535914531fb589a7fec813982",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest policy_check cases: dict blocking detected, dict/list notes-only clean, list blocking detected, absent clean, junk and unknown-severity fail closed (7 cases)"},
+      {"type": "operational", "ref": "proof/WARP-0113/negative-tests.txt: both real WARP-0100 verdicts (list-shaped) read without exception; blocking counted 0 and 2 correctly"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest findings-contract cases: both canonical shapes accepted; string findings, unknown severity, unknown dict key, non-list blocking all red (6 cases)"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "negative-tests.txt: gate run leaves 0 pyc entries in git status; .gitignore covers __pycache__/ and *.pyc; 6 tracked .pyc files removed in the implementation commit"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest hermetic docs cases: planted em-dash + company word red via DOCS_CHECK_PATHS, clean file green (2 cases)"},
+      {"type": "operational", "ref": "check_docs.sh sweeps git ls-files minus pdf/ and binary extensions; full-repo run green at this commit"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "negative-tests.txt: hand-tampered index red pre-commit (exit 1), regeneration green pre-commit (exit 0) - snapshot semantics, no git-diff dependence"}]},
+    {"id": "AC6", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "scripts/verify.sh catalog: build na names committed pdf/ + render_pdfs.py + Chrome CDP; dependency_audit na names markdown, websockets, yaml imports as manual release act"}]},
+    {"id": "AC7", "status": "passed", "evidence": [
+      {"type": "operational", "ref": ".warp/policy.yaml: all tiers min_independence L2, critical reviews 2, recorded founder-instruction comment; cross-vendor only on explicit per-case instruction"}]},
+    {"id": "AC8", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "docs/setup.md v2.8 (ladder table, cost paragraph, policy example, verdict example, control-plane principle, section 4.4) + docs/runbook.md v1.3 (protected-path walkthrough L2); no unqualified L3/L4 prescriptions remain in generic docs (grep evidence in review)"}]},
+    {"id": "AC9", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest WARP-0101-notes cases: duplicated depends_on green-cycle exploit now a parse error, duplicate map key red, tab indent red, work-without-feature_refs red, feature-without-outcome_refs red, non-string spec id red without crashing the DAG walk (6 cases)"},
+      {"type": "operational", "ref": "specs/index.md plan section renders 'Open decision D1 blocks: WARP-0112.' independent of dependency state"}]},
+    {"id": "AC10", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "selftest approval-vocabulary cases: 'approve' red, 'approved' green (2 cases)"},
+      {"type": "operational", "ref": "negative-tests.txt: valid_approval_for(0de75f3) now returns the corrected approval file (was None while inert); .warp/policy.yaml protects .warp/policy_check.py and its template - the enforcer is protected"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 49 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "Proof binds to the validated state ea259df (implementation cherry-picked as f67336e plus the PLAN-0001 revision-2 commit, which changes no code); the gate is green at this exact state."
+  ],
+  "rollback": "git revert f67336e; behavior changes are strictly widening (verdict shapes) or strictly tightening (parser, traceability, vocabulary, sweeps); the prior 26 selftest cases pass unmodified within the 49."
+}

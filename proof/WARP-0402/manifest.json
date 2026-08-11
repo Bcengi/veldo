@@ -1,0 +1,123 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0402",
+  "commit": "53c6a28898634e17c598dbedee42fb4b2997eccc",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0004 wave B)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T17:42:04Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/init_scaffold.py is a stdlib scaffolder that lays the WARP substrate from the plugin templates into a target repository (the transformed canonical gate scripts, the contract validator, policy, capabilities, spec templates, an empty valid warp.plan/v1 starter plan, proof/, and the repository instructions) without overwriting any existing file so it is idempotent, then regenerates the derived index by invoking the target repository's own update_index.py; the produced repository's own scripts/verify.sh runs GREEN on the empty starter plan; the interactive /warp:init skill remains the front door that configures the gate slots and protected paths with a human"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block scaffolds into a temporary directory and asserts the substrate is complete and the produced repository's gate runs GREEN on the empty starter plan, that a second scaffold over the same directory overwrites nothing (idempotent) while regenerating only the derived index, and that a mutation which omits a required substrate file or lays an invalid starter plan makes the green-gate assertion FAIL; part of selftest 728 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/init_scaffold.py is a stdlib scaffolder that lays the WARP substrate from the plugin templates into a target repository (the transformed canonical gate scripts, the contract validator, policy, capabilities, spec templates, an empty valid warp.plan/v1 starter plan, proof/, and the repository instructions) without overwriting any existing file so it is idempotent, then regenerates the derived index by invoking the target repository's own update_index.py; the produced repository's own scripts/verify.sh runs GREEN on the empty starter plan; the interactive /warp:init skill remains the front door that configures the gate slots and protected paths with a human"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/init_scaffold.py is a stdlib scaffolder that lays the WARP substrate from the plugin templates into a target repository (the transformed canonical gate scripts, the contract validator, policy, capabilities, spec templates, an empty valid warp.plan/v1 starter plan, proof/, and the repository instructions) without overwriting any existing file so it is idempotent, then regenerates the derived index by invoking the target repository's own update_index.py; the produced repository's own scripts/verify.sh runs GREEN on the empty starter plan; the interactive /warp:init skill remains the front door that configures the gate slots and protected paths with a human"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/init_scaffold.py is a stdlib scaffolder that lays the WARP substrate from the plugin templates into a target repository (the transformed canonical gate scripts, the contract validator, policy, capabilities, spec templates, an empty valid warp.plan/v1 starter plan, proof/, and the repository instructions) without overwriting any existing file so it is idempotent, then regenerates the derived index by invoking the target repository's own update_index.py; the produced repository's own scripts/verify.sh runs GREEN on the empty starter plan; the interactive /warp:init skill remains the front door that configures the gate slots and protected paths with a human"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/init_scaffold.py is a stdlib scaffolder that lays the WARP substrate from the plugin templates into a target repository (the transformed canonical gate scripts, the contract validator, policy, capabilities, spec templates, an empty valid warp.plan/v1 starter plan, proof/, and the repository instructions) without overwriting any existing file so it is idempotent, then regenerates the derived index by invoking the target repository's own update_index.py; the produced repository's own scripts/verify.sh runs GREEN on the empty starter plan; the interactive /warp:init skill remains the front door that configures the gate slots and protected paths with a human"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/init_scaffold.py is a stdlib scaffolder that lays the WARP substrate from the plugin templates into a target repository (the transformed canonical gate scripts, the contract validator, policy, capabilities, spec templates, an empty valid warp.plan/v1 starter plan, proof/, and the repository instructions) without overwriting any existing file so it is idempotent, then regenerates the derived index by invoking the target repository's own update_index.py; the produced repository's own scripts/verify.sh runs GREEN on the empty starter plan; the interactive /warp:init skill remains the front door that configures the gate slots and protected paths with a human"
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/init_scaffold.py is a stdlib scaffolder that lays the WARP substrate from the plugin templates into a target repository (the transformed canonical gate scripts, the contract validator, policy, capabilities, spec templates, an empty valid warp.plan/v1 starter plan, proof/, and the repository instructions) without overwriting any existing file so it is idempotent, then regenerates the derived index by invoking the target repository's own update_index.py; the produced repository's own scripts/verify.sh runs GREEN on the empty starter plan; the interactive /warp:init skill remains the front door that configures the gate slots and protected paths with a human"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block scaffolds into a temporary directory and asserts the substrate is complete and the produced repository's gate runs GREEN on the empty starter plan, that a second scaffold over the same directory overwrites nothing (idempotent) while regenerating only the derived index, and that a mutation which omits a required substrate file or lays an invalid starter plan makes the green-gate assertion FAIL; part of selftest 728 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 728 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "warp_init_scaffold is mechanical: pure stdlib file-laying (os, subprocess, sys, pathlib) that reimplements no gate, validator, or index logic - it copies templates and invokes the target repository's own update_index.py and verify.sh - and the produced gate is actually run green in the selftest here. The one transform it applies to the canon is filling the template gate's two intentionally-blank slots (unit and dependency_audit) with na so the empty starter repo gates green; the interactive /warp:init skill remains the front door for real slot configuration."
+  ],
+  "rollback": "git revert; additive - .warp/init_scaffold.py, plugin/templates/plans/STARTER.md, a selftest block, one capabilities entry (both copies), and the spec; no protected path."
+}

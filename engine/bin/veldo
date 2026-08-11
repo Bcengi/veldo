@@ -1,0 +1,405 @@
+#!/usr/bin/env python3
+"""veldo: the single front door for work, fleet, status, watch, account, and the run inbox.
+
+This executable is a THIN dispatcher. It parses one subcommand, then routes to an
+EXISTING module and calls it. It reimplements nothing: not the loop, not the
+launcher, not the governor, not the reader, not the registry. A review can diff
+this file and see only argument routing plus wiring.
+
+  routing table (subcommand -> module, all pre-built in earlier work):
+    veldo status            -> .veldo/runstatus.py   (the Run Lens read model)
+    veldo watch             -> .veldo/runstatus.py   (the compact terminal render)
+    veldo account add|list  -> .veldo/accounts.py    (the account registry, W2)
+    veldo answer|steer|abort-> .veldo/runcmd.py      (the run inbox front door, R6)
+    veldo work  [--account] -> .veldo/work.py over a .veldo/dispatch.py Dispatcher (W1)
+    veldo fleet N [--account] -> .veldo/fleet.py launcher + W2 spawner + W3 governor
+    veldo supervisor install|status|uninstall -> .veldo/supervisor.py (the opt-in,
+                            off-by-default external resume timer, W7)
+    veldo mirror [--dry-run] -> .veldo/tracker_mirror_runner.py (the opt-in,
+                            off-by-default live mirror runner, PLAN-0010 W5; a
+                            repo-only module, so a pack that did not lay it fails
+                            loud and honestly rather than import a missing file)
+    veldo jira init          -> .veldo/tracker_jira_init.py (bootstrap a
+                            company-managed Jira project into the live board -
+                            detect + provision the lifecycle statuses/workflow
+                            idempotently + mirror every plan and spec, WARP-0612;
+                            a repo-only module, guarded like mirror)
+
+For the delegated read and registry subcommands the remaining argv is forwarded
+verbatim to that module's own CLI, so their argument surfaces stay owned by the
+module (no re-declaration here). Only work and fleet have their own tiny flag
+parsing, and even they add NO control logic: they assemble the real machinery and
+hand it the pieces.
+
+The no-rogue-processes boundary (feedback_no_rogue_processes, PLAN-0007 NG1):
+veldo work and veldo fleet assemble the real loop and launcher, but the intelligent
+build, the fresh-context review, and the worker-spawn primitive stay DELEGATED
+seams that FAIL LOUD without an agent or a real in-session start wired. This CLI
+spawns NOTHING detached. Run bare with no agent wired, veldo work and veldo fleet
+fail loud, which is the honest behavior: they are the entry points an in-session
+agent drives.
+
+An unknown subcommand, bad arguments, or an unknown account each fail loud (a
+nonzero exit and an honest message), never a silent no-op. Pure stdlib."""
+import argparse
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+# The subcommands and which module surface each routes to (documentation the
+# dispatcher below keys off; the actual call sites cite the same modules).
+KNOWN_SUBCOMMANDS = ("work", "fleet", "supervisor", "mirror", "jira", "status", "watch", "account",
+                     "answer", "steer", "abort")
+
+_MODS = {}
+
+
+def _mod(name, rel):
+    """Load a sibling module by path, the codebase convention. Each loaded module
+    resolves its OWN ROOT from its real __file__, so its internal sibling loads
+    still point at the repo, and this stays a pure router over them."""
+    if name not in _MODS:
+        spec = importlib.util.spec_from_file_location(name, ROOT / rel)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        _MODS[name] = m
+    return _MODS[name]
+
+
+def _runstatus():
+    return _mod("veldo_cli_runstatus", ".veldo/runstatus.py")
+
+
+def _accounts():
+    return _mod("veldo_cli_accounts", ".veldo/accounts.py")
+
+
+def _runcmd():
+    return _mod("veldo_cli_runcmd", ".veldo/runcmd.py")
+
+
+def _work():
+    return _mod("veldo_cli_work", ".veldo/work.py")
+
+
+def _dispatch():
+    return _mod("veldo_cli_dispatch", ".veldo/dispatch.py")
+
+
+def _fleet():
+    return _mod("veldo_cli_fleet", ".veldo/fleet.py")
+
+
+def _frontier():
+    return _mod("veldo_cli_frontier", ".veldo/frontier.py")
+
+
+def _governor():
+    return _mod("veldo_cli_governor", ".veldo/governor.py")
+
+
+def _supervisor():
+    return _mod("veldo_cli_supervisor", ".veldo/supervisor.py")
+
+
+def _mirror():
+    return _mod("veldo_cli_mirror", ".veldo/tracker_mirror_runner.py")
+
+
+def _jira():
+    return _mod("veldo_cli_jira", ".veldo/tracker_jira_init.py")
+
+
+def _account_error_bases():
+    """The AccountError BASE classes to catch on an account failure.
+
+    CARRY-FORWARD (W2): fleet.py double-loads accounts.py under a private module
+    name (fleet.py: ACCT = _load(...)), so its AccountError family is a DISTINCT
+    set of class objects from a separately-imported accounts module. The fleet
+    path raises through fleet.py's OWN copy, so catching only a freshly-imported
+    accounts.UnknownAccountError would NOT match it. We catch BOTH bases, so an
+    unknown account fails by name whichever copy raised it."""
+    bases = []
+    fl_acct = getattr(_fleet(), "ACCT", None)
+    for m in (_accounts(), fl_acct):
+        if m is None:
+            continue
+        b = getattr(m, "AccountError", None)
+        if b is not None and b not in bases:
+            bases.append(b)
+    return tuple(bases)
+
+
+class GovernorController:
+    """A thin FleetController adapter over the W3 per-account governor and the
+    frontier. It holds NO pacing arithmetic and NO drain logic of its own:
+
+      desired()      IS the governor's desired count over the measured event burn.
+      resume_at()    IS the governor's resume computation over the same burn.
+      work_remains() IS whether the frontier still has a claimable unit in scope.
+      now()          IS the wall clock.
+
+    The launcher calls only these four; this reimplements none of them. Duck-typed
+    against fleet.FleetController so it needs no import-time base class."""
+
+    def __init__(self, governor, events_path, clock, scope=None, capabilities=None,
+                 repo_root=None, claims_root=None):
+        self._gov = governor
+        self._events_path = events_path
+        self._clock = clock
+        self._scope = scope
+        self._caps = list(capabilities or [])
+        self._repo_root = repo_root
+        self._claims_root = claims_root
+
+    def _events(self):
+        # Reuse the reader that runstatus.py already ships; do not parse the stream
+        # a second way.
+        return _runstatus()._read_events(self._events_path)
+
+    def now(self):
+        return self._clock()
+
+    def desired(self):
+        return self._gov.desired(self._events(), self.now())
+
+    def resume_at(self):
+        return self._gov.resume_at(self._events(), self.now())
+
+    def work_remains(self):
+        units = _frontier().claimable(
+            worker_caps=self._caps, scope=self._scope,
+            repo_root=self._repo_root, claims_root=self._claims_root)
+        return bool(units)
+
+
+def _build_governor_controller(account=None, accounts_root=None, windows=None,
+                               scope=None, capabilities=None, repo_root=None,
+                               claims_root=None, events_path=None, now=None,
+                               pool_max=None):
+    """Assemble the W3 AccountGovernor over the accounts this pool paces, wrapped in
+    the thin GovernorController adapter. This is wiring, not new logic: the pacing
+    is the governor's, the work-remaining test is the frontier's.
+
+    A fleet MUST be paced against a real token budget. This refuses to fabricate one
+    (RULE #2 spend gate, RULE #6): the session and weekly token windows are a
+    required input, and with none configured it fails loud rather than invent a
+    budget. That is honest: a founder who has not declared a budget should be told,
+    not silently paced against a made-up number."""
+    import time as _time
+    gov = _governor()
+    fleet = _fleet()
+    if account is not None:
+        names = [account]
+    else:
+        names = fleet.ACCT.list_accounts(root=accounts_root)
+    if not names:
+        raise fleet.NoAccountAvailableError(
+            "no accounts registered; add one with `veldo account add <name>` before running a fleet")
+    if not windows:
+        raise ValueError(
+            "no fleet token budget configured: declare session and weekly token windows "
+            "before pacing a fleet. Refusing to fabricate a budget.")
+    pacers = [gov.AccountPacer(nm, windows, max_workers=1) for nm in names]
+    governor = gov.AccountGovernor(
+        pacers, pool_max=(pool_max if pool_max is not None else len(names)))
+    ev_path = events_path or str(ROOT / ".veldo" / "events.jsonl")
+    clock = now if callable(now) else _time.time
+    return GovernorController(governor, ev_path, clock, scope=scope,
+                              capabilities=capabilities, repo_root=repo_root,
+                              claims_root=claims_root)
+
+
+def cmd_work(account=None, accounts_root=None, repo_root=None, claims_root=None,
+             capabilities=None, scope=None, dispatcher=None, max_units=10000):
+    """Assemble and run the real single-worker loop: work.veldo_work over a W1
+    dispatch.Dispatcher. The Dispatcher defaults wire the executor's LiveLoop build
+    hooks and the fresh-context LiveReviewer with no lander, so the intelligent
+    build, the review, and the land are DELEGATED seams that FAIL LOUD without an
+    agent. Nothing is fabricated.
+
+    --account resolves that account's CLAUDE_CONFIG_DIR and threads it into the
+    environment, so a worker driven from this session reuses that account's saved
+    login. An unknown account raises an AccountError (caught by name in route()).
+
+    Exit: a clean drain (nothing claimable) is 0; any unit that could not be built
+    or reviewed (no agent wired) is a loud nonzero, never a fabricated success."""
+    if account is not None:
+        acct = _accounts()
+        os.environ[acct.CONFIG_DIR_ENV] = acct.resolve(account, root=accounts_root)
+    if dispatcher is None:
+        dispatcher = _dispatch().Dispatcher(repo_root=repo_root)
+    result = _work().veldo_work(
+        dispatcher, capabilities=capabilities, scope=scope,
+        repo_root=repo_root, claims_root=claims_root, max_units=max_units)
+    outcomes = result.get("outcomes", [])
+    if any(not (o.get("result") or {}).get("ok") for o in outcomes):
+        return 1
+    return 0
+
+
+def cmd_fleet(n, account=None, accounts_root=None, scope=None, capabilities=None,
+              controller=None, waiter=None, start=None, windows=None,
+              repo_root=None, claims_root=None, events_path=None, now=None,
+              max_ticks=100000):
+    """Assemble and run the elastic launcher: fleet.veldo_account_fleet with the W2
+    in-session spawner, the W3 per-account governor (via GovernorController), and
+    the W3 InSessionWaiter. The pool is capped at the account-pool capacity inside
+    veldo_account_fleet, so one account is never run as two workers.
+
+    AC1 (WARP-0907): the in-session resume waiter (fleet.InSessionWaiter) is the WIRED
+    DEFAULT here - when no waiter is injected a living fleet that hits every account's
+    budget WAITS in-session until the governor's resume time and RE-CHECKS the desired
+    count before spawning (never resuming straight into the limit), and it detaches
+    NOTHING. The killed-session gap is closed by the OPT-IN, off-by-default external
+    supervisor (veldo supervisor), never by a default background process.
+
+    The spawn primitive stays the fail-loud IN-SESSION reference (fleet.in_session_
+    start) unless a real in-session start is injected. This NEVER spawns a detached
+    or rogue process (NG1); run bare, the fleet fails loud at the first spawn, which
+    is the honest behavior. An unknown --account fails fast by name through fleet's
+    own accounts copy (so the class matches what the launcher would raise)."""
+    fleet = _fleet()
+    if account is not None:
+        # Fail fast and by name on an unknown pinned account, through fleet.py's OWN
+        # accounts copy (the double-load), so the raised class is the one route()'s
+        # base-tuple handler is built to catch.
+        fleet.ACCT.resolve(account, root=accounts_root)
+    if start is None:
+        start = fleet.in_session_start
+    if waiter is None:
+        waiter = fleet.InSessionWaiter()
+    if controller is None:
+        controller = _build_governor_controller(
+            account=account, accounts_root=accounts_root, windows=windows,
+            scope=scope, capabilities=capabilities, repo_root=repo_root,
+            claims_root=claims_root, events_path=events_path, now=now)
+    return fleet.veldo_account_fleet(
+        controller, waiter, start, account=account, accounts_root=accounts_root,
+        capabilities=capabilities, scope=scope, max_workers=n, max_ticks=max_ticks)
+
+
+def build_parser():
+    """The single dispatcher parser: it identifies the subcommand and slurps the
+    rest for the owning module. Per-subcommand argument surfaces live in the modules
+    (delegated) or in _work_args / _fleet_args (work and fleet), never re-declared here."""
+    ap = argparse.ArgumentParser(
+        prog="veldo",
+        description="VELDO front door: dispatch work, fleet, status, watch, account, and the run inbox.")
+    ap.add_argument("subcommand", nargs="?",
+                    help="one of: " + ", ".join(KNOWN_SUBCOMMANDS))
+    ap.add_argument("rest", nargs=argparse.REMAINDER,
+                    help="arguments passed through to the subcommand")
+    return ap
+
+
+def _work_args(rest):
+    ap = argparse.ArgumentParser(prog="veldo work",
+                                 description="run one real single-worker loop (W1 dispatcher).")
+    ap.add_argument("--account", default=None,
+                    help="run under this registered account's CLAUDE_CONFIG_DIR")
+    return ap.parse_args(rest)
+
+
+def _fleet_args(rest):
+    ap = argparse.ArgumentParser(prog="veldo fleet",
+                                 description="run the elastic launcher (W2 spawner + W3 governor).")
+    ap.add_argument("n", type=int, help="max workers (capped at the account-pool capacity)")
+    ap.add_argument("--account", default=None,
+                    help="pin the fleet to this one registered account")
+    return ap.parse_args(rest)
+
+
+def route(argv):
+    """Dispatch one argv to the right module and return an exit code. All fail-loud
+    paths land here: an unknown subcommand, bad arguments, an unknown account, a
+    refused build, or a refused spawn each become a nonzero exit with an honest
+    message, never a silent success."""
+    parser = build_parser()
+    try:
+        ns = parser.parse_args(argv)
+    except SystemExit as ex:
+        return ex.code if isinstance(ex.code, int) else 2
+
+    cmd = ns.subcommand
+    rest = ns.rest
+
+    try:
+        if cmd is None:
+            parser.error("a subcommand is required (one of: %s)" % ", ".join(KNOWN_SUBCOMMANDS))
+        if cmd in ("status", "watch"):
+            # forward verbatim to runstatus.py's own CLI (its subcommand IS the name)
+            return _runstatus()._cli([cmd] + rest)
+        if cmd == "account":
+            # forward verbatim to accounts.py's own add/list CLI
+            return _accounts().main(rest)
+        if cmd in ("answer", "steer", "abort"):
+            # forward verbatim to runcmd.py's own answer/steer/abort CLI
+            return _runcmd().main([cmd] + rest)
+        if cmd == "supervisor":
+            # forward verbatim to supervisor.py's own install/status/uninstall CLI (the opt-in,
+            # off-by-default external resume timer). It fails loud on a missing schedule or
+            # subcommand and NEVER spawns a session; nothing runs unless the user runs it.
+            return _supervisor().main(rest)
+        if cmd == "mirror":
+            # the opt-in, off-by-default live mirror runner (PLAN-0010 W5): one reconcile pass that
+            # applies the one-way mirror (status, comments, artifact links, the ready-to-test
+            # reassignment) to the tracker. It creates NO timer, daemon, or auto-start and spawns
+            # NOTHING; a cadence is the operator's own poll interval when they run it again. The
+            # runner is REPO-ONLY build machinery (like the other tracker_*.py modules), so a pack
+            # that did not lay it fails loud and honestly here rather than import a missing module.
+            if not (ROOT / ".veldo" / "tracker_mirror_runner.py").exists():
+                sys.stderr.write("veldo mirror: the tracker mirror runner is repo-only and is not "
+                                 "present here; wire the tracker integration to use it\n")
+                return 2
+            return _mirror()._cli(rest)
+        if cmd == "jira":
+            # `veldo jira init` (WARP-0612): bootstrap a company-managed Jira project into the live
+            # board - detect the project type (fail loud on team-managed), provision the lifecycle
+            # status set + workflow idempotently, and mirror every plan and spec onto it, in ONE
+            # pass. Like `veldo mirror` it creates NO timer, daemon, or auto-start and spawns NOTHING;
+            # a re-run reconciles. The bootstrap is REPO-ONLY build machinery (like the other
+            # tracker_*.py modules), so a pack that did not lay it fails loud and honestly here
+            # rather than import a missing module.
+            if not (ROOT / ".veldo" / "tracker_jira_init.py").exists():
+                sys.stderr.write("veldo jira: the Jira bootstrap is repo-only and is not present "
+                                 "here; wire the tracker integration to use it\n")
+                return 2
+            return _jira().main(rest)
+        if cmd == "work":
+            args = _work_args(rest)
+            return cmd_work(account=args.account)
+        if cmd == "fleet":
+            args = _fleet_args(rest)
+            return cmd_fleet(args.n, account=args.account)
+        # unknown subcommand: fail loud, never a silent no-op
+        parser.error("unknown subcommand %r (one of: %s)"
+                     % (cmd, ", ".join(KNOWN_SUBCOMMANDS)))
+    except SystemExit as ex:
+        # argparse inside a work/fleet sub-parse (bad args) exits nonzero; honor it.
+        return ex.code if isinstance(ex.code, int) else 2
+    except _account_error_bases() as ex:
+        sys.stderr.write("account error: %s\n" % ex)
+        return 2
+    except _fleet().SpawnPrimitiveError as ex:
+        sys.stderr.write("fleet cannot start: %s\n" % ex)
+        return 2
+    except (_fleet().NoAccountAvailableError, ValueError) as ex:
+        # an unpaced fleet (no token budget) or an empty account pool: honest nonzero,
+        # never a traceback and never a fabricated budget.
+        sys.stderr.write("fleet error: %s\n" % ex)
+        return 2
+    except _dispatch().EX.ExecutorError as ex:
+        sys.stderr.write("build refused: %s\n" % ex)
+        return 2
+
+
+def main(argv=None):
+    return route(list(sys.argv[1:] if argv is None else argv))
+
+
+if __name__ == "__main__":
+    sys.exit(main())

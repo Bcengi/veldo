@@ -1,0 +1,45 @@
+WARP-0808 runner evidence - Aider pack, the thin-primitives NG2 case (W8 of PLAN-0008, the seventh and final pack)
+Impl commit under proof: dfa593413a13f109261992b04359d28de257f34e
+
+== gate (clean detached worktree at dfa5934) ==
+GATE: GREEN (dfa593413a13f109261992b04359d28de257f34e) on the FIRST run (no date-sensitivity hit)
+selftest: 1262 passed, 0 failed
+no pollution: post-run git status only .warp/last_verify + .warp/events.jsonl (the gate's own by-design outputs)
+
+== self-contained pack ==
+packs/aider: 139-file engine copied byte-identical (engine_drift == [], no symlinks), canonical AGENTS.md,
+thin Aider driver (CONVENTIONS.md, .aider.conf.yml with git-commit-verify: true + read [AGENTS.md, CONVENTIONS.md],
+hooks/pre-push). check_pack_drift.py (mode-aware): "pack drift: pass (7 pack(s))" exit 0.
+Exactly three net-new authored files: .aider.conf.yml, CONVENTIONS.md, hooks/pre-push.
+
+== the thin-tool NG2 answer ==
+Aider has no agent-hook framework and defaults to --no-verify (skips git hooks). Two moves, both enabled:
+  1. .aider.conf.yml sets git-commit-verify: true (Aider stops bypassing commit-time hooks)
+  2. git pre-push hook (committed EXECUTABLE 100755) + CI required status check = the load-bearing gate
+The hook feeds scripts/warp-guard.sh the JSON payload on stdin (not env CMD).
+
+== behavioral proof (REAL git-invoked path: git archive committed mode, core.hooksPath, NO manual chmod, bare remote) ==
+  UNPROVEN HEAD push       -> BLOCKED: PUSH_EXIT=1, remote show-ref empty (0 refs), "gate is not green for HEAD"
+  GREEN gate + proof + verdict (single evidence commit over proven parent) -> ALLOWED: PUSH_EXIT=0, ref landed
+  644 CONTROL (chmod hook 644) -> push LANDED (git: hook "was ignored because it is not set as executable"); restore 755 -> blocked again
+The committed hook mode 100755 is load-bearing; the exec bit is proven necessary and sufficient.
+FINDING (strengthening): the real gate is STRONGER than the brief - policy_check (Guard 3) also requires an
+independent verdict.json bound to HEAD/parent; green last_verify + proof manifest alone was NOT sufficient.
+
+== drift teeth (committed aider copy) ==
+faithful -> engine_drift []; content mutate -> ('scripts/verify.sh','differs');
+chmod 644 an engine script -> ('scripts/warp-guard.sh','mode'); remove -> ('.warp/validate.py','missing').
+
+== reuse ==
+diff -rq skills identical, agents identical, AGENTS.md identical. Only the 3 net-new driver files authored.
+All 6 pack copies + aider .warp/capabilities.yaml diff -q identical to canonical. Dash-clean (0 em/en-dashes).
+
+== review ==
+Independent adversarial review (agent a2c640529718e7c2d) bound to dfa5934: pass_with_notes, 0 blocking.
+All 5 ACs confirmed by concrete probes. Notes (non-blocking): (1) committed-git-mode of wrapper hooks not
+asserted by selftest (systemic, W7-adjacent) -> scheduled for W9 cross-pack conformance; (2) .aider.conf.yml
+key format is fast-moving surface, gate independent of it; (3) real gate stronger than brief.
+
+== proof binding ==
+plan_hash:   sha256:b86504755d842c46 (canonical, via plan.py / parse_yamlish, capturing the work DAG)
+proof_digest: sha256:8c910b25da133c44 (validate.py over {spec_id, commit, criteria, checks})

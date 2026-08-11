@@ -1,0 +1,67 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0906",
+  "commit": "97c4ac27d9515d650a3660b31243318512213ad1",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent a63b4decb5a5afbc4)",
+  "reviewed_at": "2026-07-19T19:58:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:781b3a60439c89ab",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "README made true. The fleet bullet leads with the true claim - the fleet ships in the engine, installing a pack lays it, and the warp CLI drives it (warp fleet N in-session workers, warp work single worker), all real per W1-W5. The stale 'Current plugin version: 3.2.0 (WARP Fleet v1)' is corrected to 'Current plugin version: 3.4.0.' (README.md:69) with NO release claim - grep confirms no '3.5.0' or 'Fleet v1' anywhere in README/docs (3.5.0 is W8). No external supervisor (W7) claimed. No operating metric in the README (grep for MRR/ARR/revenue/customers/$ is clean in README)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "docs/plugin.md gains section 11 (version 2.3): what the fleet is, that installing a pack lays the full engine including the fleet and the warp CLI, warp fleet N / warp work as entry points, per-repo capability, the per-account model, governor pacing, and the in-session no-detached-process boundary with the build/review/spawn delegated fail-loud seams. Every claim maps to a shipped module (warp_cli entry + fleet.py/dispatch.py/accounts.py/governor.py all ship in plugin/templates); no over-claim."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "docs/setup.md (version 2.10): the capability-by-scale table (2.4) gains parallel workers, fleet accounts + governor, and the work CLI/run lens; section 4.11 documents the fleet, warp CLI, account model, and governor consistent with the by-scale framing; and section 4.9 states the two-tier adoption model explicitly - a pack lays the FULL engine (fleet included) while /warp:init lays the MINIMAL governance substrate by design, 'the path that delivers the fleet is installing a pack, not /warp:init'. Reader can tell which path delivers the fleet."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "docs/runbook.md (version 1.5) gains Part V.8: one-time warp account add per account (a persisted CLAUDE_CONFIG_DIR login, no relogin), warp work --account / warp fleet N --account, monitoring via warp status / warp watch (plus answer/steer/abort), the in-session budget backoff-and-resume, and the no-detached-process boundary stated as a hard line; a cheat-sheet row added. All CLI flags verified present in bin/warp (--account on work and fleet at bin/warp:14-15,193-202)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "The manifest is honest end to end WITH TEETH. The new selftest check _caps_honesty_findings (scripts/selftest.py:4738) computes ship-truth from pack.py engine_files (dynamically imported at :4711-4713, not a hardcoded glob) and enforces: (1) every home exists in the repo, (2) every UNMARKED entry's home resolves in the shipped engine (engine_files(plugin/templates) + plugin skills/agents + plugin/ paths). TEETH PROVEN in my worktree: (a) un-marking budget_governance -> selftest 1338/12 (was 1350/0), core 'honest end to end' assertion RED; (b) pointing fleet_dispatcher home at a missing file -> 1339/11 RED; extra probe pointing metrics_dashboard at .warp/budget.py (exists in repo but does not ship) -> 1338/12 RED, proving ship-truth not mere existence. Independently recomputed the repo-only set: EXACTLY the builder's 17, all genuinely do-not-ship; 0 unmarked non-doc entries fail to ship; tracker_routing (.warp/tracker.py) and tracker_routing_enforcement (.warp/validate.py) correctly LEFT unmarked (both ship); zero marked entries actually ship (no real capability hidden). All 8 capabilities.yaml copies byte-identical (one sha256)."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Gate GREEN at 97c4ac2 on the isolated umask-002 checkout (selftest 1350/0, GATE line prints the reviewed commit); docs sweeps (dash/non-ASCII/genericity) pass; the two (all 8) capabilities.yaml copies share one hash (89f245de...); pack drift EMPTY for all 7 packs and cross-pack conformance passes. Impl commit touches 15 files, NONE protected (verify.sh/warp-guard.sh/policy.yaml/policy_check.py + plugin/templates twins all untouched; scripts/selftest.py is not protected). No proof/, .warp/last_verify, or .warp/events.jsonl in the impl commit. specs/index.md regenerated (generated: pass). warp name unchanged (only VELDO mention is the spec's 'warp stays warp; VELDO parked')."
+    }
+  ],
+  "checks": [
+    "bash scripts/verify.sh -> GATE: GREEN (97c4ac2...), selftest 1350 passed 0 failed, isolated umask-002 worktree; GATE line prints reviewed commit",
+    "pack drift independently EMPTY for all 7 packs via PK.engine_drift; cross-pack conformance passes in selftest",
+    "AC5 TEETH (a): un-mark budget_governance in both copies -> selftest 1338/12, 'capabilities manifest is honest end to end' FAIL",
+    "AC5 TEETH (b): fleet_dispatcher home -> missing file -> selftest 1339/11, honesty assertion FAIL",
+    "AC5 TEETH ship-truth: metrics_dashboard home -> .warp/budget.py (exists in repo, does NOT ship) -> 1338/12 FAIL (proves ship-truth, not existence)",
+    "AC5 doc-exemption teeth: branch_protection_recipe procedure->mechanical (docs home kept) -> 1339/11 FAIL (mechanical cannot hide behind docs)",
+    "AC5 ship-truth source: selftest imports .warp/pack.py and uses engine_files('plugin/templates') (selftest.py:4711-4713), not a hardcoded glob",
+    "AC5 recomputed repo-only set == builder's 17 exactly; 0 unmarked-non-doc that don't ship; tracker_routing + tracker_routing_enforcement correctly unmarked (ship); 0 marked entries that ship",
+    "resolution is real: skills/BOGUS_XYZ ships=False, .warp/budget.py ships=False, skills/run ships=True; plugin/skills/{run,review,spec,plan,intake} exist",
+    "AC1 README version 3.4.0, no 3.5.0/Fleet v1 claim (grep clean); AC1-AC4 no external-supervisor(W7) claim; --account/account/status/watch/answer/steer/abort all real in bin/warp",
+    "no operating metric in README/docs adopter surface (only pre-existing research/training + fictional runbook examples)",
+    "AC6 8 capabilities.yaml copies one sha256 (89f245de...); impl commit 15 files, 0 protected; no proof//last_verify/events.jsonl; index regenerated; warp name unchanged",
+    "RULE #1: no em/en dash in added lines; every '--' is a real --account flag, a --- fence, a # --- comment, or a backtick `--` reference"
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "The doc-procedure exemption is SOUND, not a loophole. The check (selftest.py:4753-4756) exempts a docs home from the shipped-code requirement ONLY when status == procedure; a mechanical/reference entry with a docs home is rejected (I proved this: flipping branch_protection_recipe from procedure to mechanical while keeping the docs/plugin.md home turns selftest RED). The docs home must still exist in the repo (the exists check runs for all entries). Only two entries use it - branch_protection_recipe (docs/plugin.md) and rollback_drills (docs) - both genuinely documented procedures, not mechanical capabilities. Residual (low): the exemption trusts the status label, so a future mechanical capability deliberately mislabeled status: procedure with a docs home could dodge the shipped check. Mitigated because the known dogfood/build statuses are separately pinned by selftest assertions (~selftest.py:4680-4695) and mislabeling is a deliberate lie a reviewer catches; worth a guard only if the manifest grows a real procedure-with-non-doc-home pattern."
+    },
+    {
+      "severity": "note",
+      "text": "By design (the AC5/AC6 byte-identical requirement) the adopter-facing plugin/templates/.warp/capabilities.yaml still ENUMERATES the 17 repo-only entries, each carrying the explicit 'scope: repo-only' marker. This is honest (the entries are marked as not-shipped-to-adopters, not over-claimed) and is exactly what the spec mandates, so it is not a defect - noted only so a reader knows the adopter manifest lists repo-only items rather than omitting them."
+    }
+  ],
+  "summary": "WARP-0906 (docs made true + honest capabilities manifest, W6 of PLAN-0009) passes with notes at 97c4ac2. All 6 ACs confirmed by adversarial probes in an isolated umask-002 worktree. The gate is GREEN (selftest 1350/0, GATE line on the reviewed commit), docs sweeps pass, all 8 capabilities.yaml copies share one sha256, and pack drift is empty for all 7 packs with cross-pack conformance passing. AC5 is the core and its TEETH bite hard end to end: un-marking a dogfood entry (budget_governance) drops selftest to 1338/12, pointing a shipped entry's home at a missing file drops it to 1339/11, and - the strongest probe - pointing a shipped unmarked entry (metrics_dashboard) at a file that EXISTS in the repo but does NOT ship (.warp/budget.py) also goes RED, proving the check enforces SHIP-truth rather than mere file existence. Ship-truth is computed from pack.py engine_files (dynamically imported), not a hardcoded glob, so it stays honest as the engine changes. I independently recomputed the repo-only set and it matches the builder's 17 EXACTLY: every marked entry genuinely does not ship, zero unmarked non-doc entries fail to ship, tracker_routing (.warp/tracker.py) and tracker_routing_enforcement (.warp/validate.py) are correctly left unmarked because they ship, and zero genuinely-shipped capabilities are wrongly marked repo-only. The doc-procedure exemption is sound - only status==procedure may use a docs home and a mechanical/reference entry with a docs home is rejected (proven RED). AC1-AC4 docs claim only what W1-W5 shipped: README version is 3.4.0 with no 3.5.0/Fleet-v1 release claim, no external supervisor (W7) is claimed, every warp CLI flag the docs cite (including --account) exists in bin/warp, and no operating metric appears on the adopter surface. AC6 is clean: no protected path edited, no evidence files in the impl commit, index regenerated, warp name unchanged. RULE #1 is clean - no em/en dashes and no bare double-hyphen in the new prose or markers (all '--' are real --account flags, --- fences, a # --- comment, or a backtick reference). Two non-blocking notes: the docs exemption trusts the status label (low residual, mitigated by pinned statuses), and the byte-identical adopter manifest honestly enumerates the repo-only entries by design. Verdict: pass_with_notes."
+}

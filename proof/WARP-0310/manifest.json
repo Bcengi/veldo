@@ -1,0 +1,35 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0310",
+  "commit": "1e80993eee96ba3d1197eeb53648bf0f154255ee",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B10)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T08:54:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/agent/warp_agent_runner.py exists: run(journey, step, tools) reads a journey (name, prompt, tools registry, optional max_turns, assert block) and drives an agent turn through a STEP seam (step(messages) -> {tool_calls:[...]} or {final:str}). The HARNESS executes each requested tool from the registry, records the observed invocation (tool, args, real returned result), feeds the real result back into the message history, and loops until the agent returns a final answer. Exit 0 when every assertion holds, exit 1 with the first failing assertion named. The reference ships a deterministic fake step (scripted from the journey) so the loop is replayable with no live agent; an adopting repo passes step=/tools= its own. Verified operationally: test_agent_runner.sh drives both fixtures (pass exit 0, fail exit 1), rc 0"},
+      {"type": "unit", "ref": "scripts/selftest.py agent block: the happy scripted journey driven through run() with the fake step returns passed True with two observed invocations and the correct final; 'agent records harness-executed results (echo arg flows through)' confirms the recorded result is the tool's real output. Part of selftest 298 passed / 0 failed"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py agent block: a wrong result_equals is caught ('tool call 0 (get_city): result Paris != expected London') proving the assertion is against the harness-executed result not the agent narration; a diverging call order is caught and named at 'tool call 0'; a call-count mismatch ('expected 1 tool call') is caught; a forbidden tool the agent invokes fails named ('forbidden tool invoked ... delete_trip') even when the final answer is correct; a missed final grader ('final contains') fails; args_contains and args_equals are exercised on the happy path"},
+      {"type": "operational", "ref": "proof/WARP-0310/negative-tests.txt cases 1, 2, 3 and 7: forbidden tool invoked -> passed False naming delete_trip; harness result contradicts expected -> passed False naming get_city Paris vs London; diverging order -> passed False naming both positions; empty expected_tool_calls [] asserts zero calls and catches an extra call"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py agent block: an agent that never finalizes (a script whose last turn is a tool call, repeated) hits max_turns=4 and fails with 'did not finalize' at turns==4; a call to a tool absent from the registry fails loud with 'unknown tool'; a journey whose assert block asserts nothing fails with 'asserts nothing: a check that asserts nothing is not proof'"},
+      {"type": "operational", "ref": "proof/WARP-0310/negative-tests.txt cases 4, 5, 6: non-finalizing loop -> passed False, turns 4, error 'agent did not finalize within max_turns=4'; unknown tool -> passed False, error 'unknown tool ghost: not in the journey tool registry'; asserts-nothing -> passed False, error names it"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py agent block (appended after the iOS block) drives run() with a FAKE scripted step and NO live agent: happy journey passes; wrong-result, diverging-order, call-count-mismatch, forbidden-tool, and missed-final-grader each fail named; non-finalizing loop hits max_turns; unknown tool fails loud; asserts-nothing is a journey error; empty expected_tool_calls asserts zero calls; then the two shipped fixtures are driven end to end (pass -> exit 0, fail -> exit 1 with the forbidden tool named). selftest 298 passed / 0 failed (was 284); all prior cases still pass and the gate stays GREEN at 1e80993"},
+      {"type": "operational", "ref": "python3 scripts/selftest.py -> 298 passed, 0 failed; plugin/templates/scripts/runners/agent/test_agent_runner.sh -> pass journey exit 0, fail journey exit 1 (forbidden tool caught, sequence violated), rc 0"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, wrapper, and README carry zero company/product names (case-insensitive scan of plugin/templates/scripts/runners/agent/ returned no matches) and no em-dash/en-dash/double-hyphen. .warp/capabilities.yaml declares agent_loop_runner status: reference (a shipped reference wired per repo to its own agent and tools; the warp home repo ships no live agent surface of its own to run), never mechanical, kept byte-identical with the plugin template copy (both sha256 3c1d45f85043977f1dae11d780b79381c55eadd8bf61663985c36262d10d47d3; template-sync gate passes). verify.sh prints GATE: GREEN (1e80993...), 0 undeclared"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 298 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference (not mechanical). The warp home repository ships no live agent of its own, so it cannot drive a real agent in its gate, and the honest evidence is the fake-step control-logic unit tests, not a live run. required_evidence is [unit]. The step and tools are seams so an adopting repo swaps in its real agent callable and its real functions with no change to the runner. The distinctive property proven here is that the HARNESS owns tool execution: the agent step emits tool CALLS and a final answer but never supplies tool RESULTS, so every result assertion is against the harness-executed result and cannot be fabricated by the agent. capabilities.yaml states status: reference, never mechanical, because the warp repo does not itself run it against a live agent."],
+  "rollback": "git revert the impl; B10 adds a new runner file, a fixture pair, a wrapper and a README, a selftest block, and an honest capabilities entry (template and instance) under plugin/templates and scripts - it touches no protected gate script or enforcer, so reverting removes the reference artifact and its unit block with no effect on any running gate; the prior selftest cases are unchanged."
+}

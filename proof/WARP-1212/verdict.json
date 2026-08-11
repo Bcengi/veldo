@@ -1,0 +1,27 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1212",
+  "commit": "f0aa8c30714a8d503082e52d065139102e55020a",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder; adversarial on the fail-closed-when-no-clock hardening of the two-key rule; closes the terminal-approval-only gap - this now has an independent review)",
+  "reviewed_at": "2026-07-24T02:00:00Z",
+  "verdict": "pass_with_notes",
+  "summary": "A genuine, surgical fail-closed tightening: two_key._expired now returns True when no clock is supplied (was return False = fail-OPEN, the latent hole both WARP-1207 reviews flagged). Traced every reachable path - the gate (authorize) and the executor (execute now=None) thread `now` verbatim with NO wall-clock fabrication anywhere; None / empty-string / non-str all take the fail-closed branch. No path lets a stale or unauthorized key pass without a clock. The neither-key fence (requires_two_key) is checked before any _expired call and is undisturbed. All WARP-1207 invariants preserved (both keys required, each digest-bound, independent/self-separated, L2 path untouched); no execution path opened; no reason code added/renamed. Load-bearing tooth reproduced RED and non-vacuous; module byte-identical across root + plugin/templates + 6 packs. Two notes are forward-looking (the future live driver), non-blocking, not defects in WARP-1212.",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "Fail closed + positive controls: only the no-clock branch flips (return False -> return True); the no-expiry branch already returned True; the helper is fresh only when a real clock proves a future expiry. Valid pair + clock runs both keys; expired+clock and no-expiry+clock refuse; CLI still authorizes (it injects a clock)."},
+    {"id": "AC2", "status": "confirmed", "note": "Never authorize expired/unverifiable at the gate AND the executor surface: authorize(now=None) returns authorization_expired for both an expired and a valid pair; execute(expired human, now=None) -> executed False / authorization_expired. Neither-key fence unchanged; taxonomy reused, no new reason code."},
+    {"id": "AC3", "status": "confirmed", "note": "Load-bearing + byte-identical + cosmetic docstring: the tooth turns RED; two_key.py + action_executor.py byte-identical across root/plugin/templates/6 packs; the ActionExecutor docstring corrected to 'ROUTES to the two-key rule'; no protected path touched."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Forward-looking (out of scope for 1212, flag for the WARP-1208 live driver): freshness is a lexicographic ISO string compare (now > exp), correct only for fixed-width identical formats. A future live caller supplying now and expires_at in mismatched ISO representations (differing precision, or +00:00 vs Z) could misjudge freshness, a theoretical fail-OPEN WHEN a clock is present. WARP-1212 neither introduces nor worsens this (it only changes the no-clock branch) and it cannot cause a no-clock fail-open. Recommend the live driver normalize/assert a canonical fixed-width UTC Z format for both operands."},
+    {"severity": "note", "text": "Observation, not a gap: KEY 2's no-clock fail-closed branch is not independently reachable through the full gate because KEY 1's _expired fires first when now is None; the KEY 2 hardening is proven at the shared _expired helper (selftest asserts _expired(conf-shaped, None) is True), sound since both keys use one helper with identical logic and KEY 1 already fails closed. No fail-open; KEY 2 coverage is helper-level, KEY 1 gate-level."}
+  ],
+  "must_fix": [],
+  "checks": [
+    "python3 scripts/selftest.py -> 2416 passed, 0 failed (manifest recorded 2308 at commit time; git diff f0aa8c3 -- two_key.py action_executor.py = 0 lines, reviewed code byte-identical to committed).",
+    "./scripts/verify.sh -> GATE GREEN (a832aa0, exit 0); unit/generated/docs/template-sync/pack-drift/secret/contracts/shape all pass.",
+    "python3 .warp/validate.py proof proof/WARP-1212/manifest.json -> exit 0.",
+    "Tooth: the target 'return True  # WARP-1212' string appears exactly once; reverting it in-memory to 'return False' makes the expired-no-clock key AND the valid-no-clock pair AUTHORIZE while the on-disk module REFUSES (authorization_expired); two_key.py sha256 identical before/after. Non-vacuous.",
+    "No protected/gate file in the diff (validate.py, verify.sh, warp-guard.sh, policy.yaml, policy_check.py, shape_gate.py). RULE #1 clean, no secrets.",
+    "Independent repro script confirmed: no-clock takes the fail-closed branch for expired, valid, and empty-string-clock cases; neither-key fence returns requires_two_key before any expiry check."
+  ]
+}

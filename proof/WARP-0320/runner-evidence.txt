@@ -1,0 +1,3 @@
+guardrail: clean (2 rule(s) hold)
+service/user_service.py:7: no-db-import-outside-repository: 'import db'
+guardrail: 1 violation(s) across 2 rule(s)

@@ -1,0 +1,3 @@
+pass fixture: exit 0 (correct)
+fail fixture: exit 1 (correct - failure caught)
+cli runner self-test: pass

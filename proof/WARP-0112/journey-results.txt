@@ -1,0 +1,15 @@
+SUT: tripdesk backend companion home (GET /api/v1/home/)
+base_url: http://localhost:8002
+
+[PASS] CJ1 (WARP-0201) Home returns every section for a user with a trip, in one call, under budget
+       -> HTTP 200 in 0.029s
+[PASS] CJ2 (WARP-0201) A missing user header is rejected with 401
+       -> HTTP 401 in 0.003s
+[PASS] CJ3a (WARP-0203) A foreign itinerary_id is 404 (owner-scoped, never another user's trip)
+       -> HTTP 404 in 0.003s
+[PASS] CJ3b (WARP-0203) A user with no trips is 200 with phase none (calm empty state, not an error)
+       -> HTTP 200 in 0.006s
+[PASS] CJ4 (WARP-0202) The auto-selected trip is owner-scoped and is the traveler's own active trip, with a derived next action
+       -> HTTP 200 in 0.012s
+
+5/5 journeys passed

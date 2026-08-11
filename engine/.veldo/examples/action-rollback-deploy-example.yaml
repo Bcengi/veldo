@@ -1,0 +1,39 @@
+# VELDO runbook action (veldo.action/v1): a pre-vetted, parameterized action the executor
+# may run ONLY by whitelist reference, never as command text. This is an ILLUSTRATIVE
+# EXAMPLE of the action format against a FAKE system (no live access, NG1); it describes
+# no real deploy controller. It is one of the reference trio per D3 (restart a service,
+# roll back a deploy, scale a pool). The remedy example (remedy-example.yaml) proposes
+# this action by reference, so the two artifacts bind end to end. The action carries NO
+# execution capability: nothing here runs anything. The executor that would run it is a
+# separate organ on separate credentials (WARP-1206, W6). Because this action is reviewed
+# and its content is unchanged since, its review binds to the digest of exactly this
+# content; editing the action would make the review stale and refuse it.
+schema: veldo.action/v1
+id: rollback_deploy
+title: Roll back a deployment to a prior release
+description: Restore the immediately-prior release of a service on the fake deploy controller.
+system: fake-deploy-controller
+risk_class: high
+reversibility:
+  class: reversible
+  analysis: A deploy rollback restores the immediately-prior release and can itself be rolled forward; it changes no persistent data, so it is fully reversible.
+  data_mutating: false
+parameters:
+  - name: service
+    type: string
+    required: true
+    pattern: "^[a-z][a-z0-9-]{1,62}$"
+  - name: to_release
+    type: string
+    required: true
+    pattern: "^[a-z0-9][a-z0-9.-]{0,62}$"
+rollback: Roll forward to the release being rolled back from (re-deploy it); the forward and backward paths are symmetric and involve no data migration.
+canary:
+  supported: true
+  shape: route one percent of traffic to the rolled-back release for five minutes and compare the health signal against budget before shifting the remainder.
+review:
+  status: reviewed
+  reviewer: illustrative fresh-context review (example only; a real action is vetted through the normal VELDO loop and promoted by a human)
+  verdict: approved
+  reviewed_at: 2026-07-23T00:00:00Z
+  reviewed_digest: sha256:d343a396f8215819

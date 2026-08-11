@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1004",
+  "commit": "a57b2ba5b5af319840a13d3688a0b6961086534b",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0010 W4, outbound reassignment and artifact links)",
+  "plan_hash": "sha256:f6a5cc8e425f566b",
+  "produced_at": "2026-07-20T23:55:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The WARP-0603 TrackerAdapter seam (.warp/tracker_adapter.py) gains assign(obj_id, assignee), a fifth explicit audited write beside comment/set_status/create_or_update_epic/create_or_update_child, with the SAME base-owned guarantees: it validates input BY NAME (a blank obj_id or assignee is a TrackerAdapterError via _require, before any surface call), FAILS LOUD on an object the tracker does not hold (TrackerItemNotFound, never a silent no-op), records the write in the base-owned writes() audit (_record 'assign'), and is idempotent by TARGET assignee (the subclass primitive _assign returns True on a real change, False when the object already holds that assignee). FakeTracker implements _assign in-memory (each record carries an 'assignee', added to _new_record; reassignment is idempotent by target) and the module docstring documents the guarantee. The live JiraCloudAdapter._assign and ConfluenceCloudAdapter._assign (.warp/tracker_intake.py) RAISE by name ('assignment against live Jira is wired in a later increment (WARP-1005)'; 'a wiki page has no assignee'), so the live path is NOT exercised here and the gate drives only the FakeTracker."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (scripts/selftest.py, the WARP-1004 block) drives the FakeTracker through the op with teeth: a first assign to a differing assignee returns True, a repeat returns False (idempotent by target), the write appears in writes() as op 'assign' (explicit + audited), a blank assignee raises TrackerAdapterError by name, and an assign to a missing object raises TrackerItemNotFound by name. The adapter selfcheck also exercises assign (real change True, idempotent False)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The spec mirror (.warp/tracker_mirror.py) projects ARTIFACT LINKS onto the ticket at the build-complete / ready-to-test point (a spec entering review after a build, verdict.recorded -> in_review). It posts a KEYED comment (key '<sid>:artifacts', so at most once under at-least-once replay) whose text carries only the links that EXIST: the commit always, and the pull request and the proof WHEN present. _artifact_links(evs) gathers commit/pr/proof from the lifecycle events (latest non-empty wins) and NEVER fabricates a missing one - a commit-only build yields a comment with the commit and no invented PR or proof. It writes only a comment through the audited seam (never a spec or plan definition), so the repository stays the source of truth."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts: at ready-to-test the artifact-links comment is posted exactly once (artifact_comments == 1) and its text carries the commit, the PR, and the proof when all three are on the event; a commit-only verdict yields a comment containing the commit and NEITHER 'pull request' NOR 'proof' text (no fabrication); a pre-ready-to-test point posts no links (artifact_comments == 0); and a replay posts no duplicate comment (idempotent by comment key, tracker state byte-identical)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "At the ready-to-test handoff (verdict.recorded -> in_review, the one transition) the mirror REASSIGNS the child away from the single Agent user (WARP-1001 config 'agent') to the configured reviewer via the new assign seam op. resolve_reviewer(config, repo_id, reporter) resolves a per-repo 'reviewer' in .warp/trackers.json OVER a global 'reviewer', either falling back to the ticket's reporter (carried on the spec metadata, read by build_spec_index), and returns None (leaving the assignee UNTOUCHED, never inventing one) when none is known. The reassign is guarded (reviewer and reviewer != agent) so it never assigns TO the Agent, and is idempotent by target assignee. It hangs off ONLY the ready-to-test transition: an earlier lifecycle point (spec.ready) never reaches the reassign, so the fleet keeps the ticket while it works. The per-repo reviewer setting is documented and templated in plugin/templates/.warp/trackers.json (global 'reviewer' + per-repo override + _reviewer_comment)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest teeth: at ready-to-test the child is reassigned to the reviewer (defaulting to the ticket's reporter) exactly once (assignee == reporter, reassignments == 1); a pre-ready-to-test replay of spec.ready does NOT reassign and the Agent keeps it (assignee == agent, reassignments == 0); a NON-TAUTOLOGICAL pair proves causation (the same setup with the ready-to-test event removed keeps the Agent, adding it hands to the reviewer); a per-repo 'reviewer' overrides the reporter default (assignee == qa-lead); and a replay performs no duplicate reassignment (idempotent by target)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "The gate-test over the FakeTracker has TEETH (scripts/selftest.py, WARP-1004 block, offline, no network): at the ready-to-test transition the ticket is reassigned to the reviewer (defaulting to the reporter) exactly once AND the artifact links are posted once; a lifecycle point BEFORE ready-to-test does NOT reassign and posts no links, proven NON-TAUTOLOGICALLY (removing the verdict.recorded event keeps the Agent, adding it hands to the reviewer); a re-run posts no duplicate comment and performs no duplicate reassignment (idempotent by comment key and by target assignee, tracker state byte-identical on replay); and an assign to a missing object fails loud (TrackerItemNotFound). The mirror selfcheck also covers the reporter-default handoff and its idempotency."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml gains two honest MECHANICAL entries in their shipped homes: tracker_assign_op (home .warp/tracker_adapter.py, scope: repo-only) and tracker_ready_to_test_handoff (home .warp/tracker_mirror.py, scope: repo-only), both scope repo-only exactly like their siblings tracker_adapter_seam and tracker_status_mirror (the tracker_*.py modules ship in neither plugin/templates nor the packs). The only edited ENGINE_GLOBS file that ships is .warp/capabilities.yaml (a .warp/*.yaml engine file), re-synced BYTE-IDENTICAL across .warp, plugin/templates, and all six packs (aider, antigravity, codex, copilot, cursor, opencode) - a single md5 across the eight copies. The edited repo-only modules (.warp/tracker_adapter.py, .warp/tracker_mirror.py, .warp/tracker_intake.py, .warp/tracker_conformance.py) and scripts/selftest.py are not synced engine globs, and plugin/templates/.warp/trackers.json is a template (not an engine glob, one copy). No protected path is touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins are unmodified). The change lands in the canonical shape: one reviewed commit R plus this uncommitted proof and the orchestrator's later evidence step."
+        },
+        {
+          "type": "unit",
+          "ref": "bash scripts/verify.sh -> GATE: GREEN at R (a57b2ba5b5af319840a13d3688a0b6961086534b): catalog 5 run, 18 na, 0 waived, 0 undeclared. selftest 1433 passed / 0 failed (was 1419 at WARP-1003; +14 WARP-1004 checks). check_template_sync.sh: pass. check_pack_drift.py: pass (7 packs, engine byte-identical to source). check_docs.sh: pass (em/en dash sweep over all tracked files clean, non-ASCII sweep clean, genericity sweep clean). python3 .warp/validate.py all exit 0. RULE #1 clean (no em-dash, no en-dash, no prose double-hyphen in any edited file; the only '--' occurrences are pre-existing CLI-flag references and the selftest '# ---' section dividers, none in the two new capability entries)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "python3 scripts/selftest.py -> 1433 passed, 0 failed at R, including the WARP-1004 block: assign seam op teeth (real change True, idempotent by target False, blank assignee rejected by name, missing object fails loud, explicit audited write); ready-to-test reassign to the reviewer (default reporter) exactly once with a pre-ready-to-test point NOT reassigning (non-tautological) and a per-repo reviewer override; artifact links posted once with commit/PR/proof and a commit-only no-fabrication case; idempotent byte-identical replay."},
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated via python3 scripts/update_index.py (WARP-1004 now shipped, PLAN-0010 W4 shipped); regeneration is a no-op afterward."},
+    {"name": "docs", "status": "passed", "detail": "check_docs.sh pass: em/en dash sweep over all tracked text files, non-ASCII sweep, and genericity sweep all clean; the seam op, mirror handoff, selftest block, two capability entries, and spec carry no company/product reference and no em/en dash."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh: pass (the template-sync PAIRS are byte-identical; capabilities.yaml is intentionally not a template-sync pair but is drift-checked across the packs)."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs, engine byte-identical to source; the updated .warp/capabilities.yaml is byte-identical across plugin/templates and all six packs)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all exit 0; the WARP-1004 spec is valid at status shipped with required_evidence [unit]; PLAN-0010 mirroring intact (W1-W3 shipped, W4 now shipped)."}
+  ],
+  "assumptions": [
+    "WARP-1004 depends only on WARP-1001 (shipped); plan.py run-check PLAN-0010 WARP-1004 = clear to build. The assign op and the reassign/links behavior are ADDITIVE; the live JiraCloud/Confluence assign still raises 'later increment (WARP-1005)', and the FakeTracker path is gate-only, so removing this leaves the mirror at its prior status-plus-comment behavior with no migration.",
+    "The READY-TO-TEST transition is verdict.recorded -> in_review (a spec entering review after a build), the single point where reassign + links hang; an earlier point (spec.ready) never reaches them, so the fleet keeps the ticket while it works (PLAN-0010 C7). This reuses the existing EVENT_STATUS lifecycle mapping unchanged - no new event type and no new store.",
+    "The reviewer is resolve_reviewer(config, repo, reporter): a per-repo 'reviewer' in .warp/trackers.json overrides a global 'reviewer', either falling back to the ticket's reporter carried on the spec metadata; absent all three the mirror leaves the assignee untouched (never invents one). The reviewer config section is validated in the mirror (its own section, MirrorError by name) parallel to resolve_status_map, so tracker.py's routing validator is not touched.",
+    "The tracker_*.py modules (tracker_adapter, tracker_mirror, tracker_intake, tracker_conformance) are repo-only build machinery (scope: repo-only, present only in the repo-root .warp, not in plugin/templates or the packs), consistent with their shipped siblings; the single edited engine file that ships (.warp/capabilities.yaml) is re-synced byte-identical across plugin/templates and the six packs, and plugin/templates/.warp/trackers.json is a template (not an engine glob).",
+    "This manifest is the canonical evidence artifact (required_evidence [unit], satisfied by the unit check and per-criterion unit evidence). It is bound to R and left uncommitted for the orchestrator's evidence step; no verdict is written here and nothing is pushed. .warp/last_verify (commit=R, green) and .warp/events.jsonl are left uncommitted. The live JiraCloud wiring of the reassign, links, and status stream is WARP-1005."
+  ],
+  "rollback": "git revert the reviewed commit R. The change adds one seam write (.warp/tracker_adapter.py assign + _assign primitive + FakeTracker._assign + the record assignee field), the mirror's ready-to-test handoff (.warp/tracker_mirror.py resolve_reviewer + _artifact_links + the reassign/links block + the reporter in build_spec_index), the live-adapter deferrals (.warp/tracker_intake.py), the conformance seam-op set (.warp/tracker_conformance.py), the per-repo reviewer template (plugin/templates/.warp/trackers.json), a selftest block, two honest capabilities.yaml entries (both copies + six pack re-syncs), and flips the WARP-1004 spec to shipped with a regenerated index. The live assign still raises until WARP-1005 and nothing runs the reassign automatically yet, so removing it has no downstream effect; the drift and template-sync checks prove no pack forked."
+}

@@ -1,0 +1,121 @@
+WARP-0907 independent-reviewer + ship evidence
+built commit  70a9ecba52ab34781da1398fa129c30564c98e29 (WARP-0907: the fleet supervisor)
+gate re-run   HEAD 53461aa5458d8028e106544a93225002152af65b (carries the WARP-0907 code unchanged)
+reviewer      claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder)
+verdict       pass_with_notes, zero blocking findings
+
+=====================================================================
+1. GATE GREEN (AC6)
+=====================================================================
+$ bash scripts/verify.sh | tail
+selftest: 1374 passed, 0 failed
+   unit: pass
+== generated
+generated: pass
+== docs
+-- dash sweep (em/en dashes forbidden)
+-- non-ASCII sweep
+-- genericity sweep
+docs hygiene: pass
+== extra
+template sync: pass
+contracts: pass
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (53461aa5458d8028e106544a93225002152af65b)
+
+selftest counts:
+  1368 / 0  at the isolated build commit 70a9ecb (WARP-0907 impl; per its commit record)
+  1374 / 0  at HEAD 53461aa (WARP-0909 added six dispatch-loop assertions on top, additive
+            and independent; it touched .warp/dispatch.py, .warp/executor.py, .warp/work.py,
+            docs/method.md, plugin/skills/run/SKILL.md, selftest.py - NONE of the WARP-0907
+            files: supervisor.py, bin/warp supervisor, the three capability entries, runbook V.8)
+
+Pack drift, per pack: EMPTY for all seven (plugin/templates, cursor, codex, copilot,
+  antigravity, opencode, aider). Cross-pack conformance passes inside selftest.
+All capabilities.yaml copies byte-identical (repo + plugin/templates + 6 packs).
+
+=====================================================================
+2. SAFETY: the no-rogue-processes boundary (feedback_no_rogue_processes)
+=====================================================================
+.warp/supervisor.py imports no subprocess at module top (only `os`, `sys`, `datetime`).
+The ONLY subprocess use is lazy, inside RealSystemctl.run, and it only ever runs
+`systemctl --user <args>` - never a session, never any other program.
+No Popen / os.fork / os.exec* / os.system / os.spawn* anywhere in the module.
+
+Off by default and opt-in:
+  - importing supervisor.py and NOT calling install() creates no timer and no service unit.
+  - install/status/uninstall are reached ONLY via the explicit `warp supervisor` subcommand.
+  - `warp supervisor` with no action and `warp supervisor install` with no schedule both
+    fail loud (nonzero), touching no systemd.
+
+Selftest teeth (scripts/selftest.py ~5754-5903, all over a temp unit dir + a FAKE systemctl):
+  AC1  cmd_fleet with waiter=None builds fleet.InSessionWaiter, waits to epoch 4242, re-checks,
+       spawns nothing (start called 0 times), over a fake clock (no real sleep).
+  AC2  no timer/service exists until install() is explicitly called.
+  AC3  install generates a systemd user timer + oneshot service; OnCalendar computed from the
+       governor resume epoch; enabled via the injected runner + daemon-reload; idempotent and
+       confined (re-run writes identical bytes; exactly two units in the dir); status reports
+       installed/is-enabled/is-active; uninstall disables + removes both cleanly and is idempotent.
+  AC4  install runs only systemctl subcommands and launches NO session; launch_session fails
+       loud unwired and delegates when wired; a fabricate-a-schedule install is refused;
+       a launch spy proves install never calls launch_session as a side effect.
+  AC5  bin/warp routes `supervisor` to supervisor.py and it fails loud without touching real
+       systemd; ".warp/supervisor.py" resolves in the shipped engine (_CH_ENGINE) so the
+       WARP-0906 honesty check treats the three new entries as shipped, not repo-only.
+
+Non-blocking note (recorded in the verdict): a hypothetical raw subprocess.Popen written
+DIRECTLY into install() (bypassing both the injected runner and the launch_session seam)
+would evade the current teeth. No such code exists; the shipped module is clean. Recorded
+as a note, not a defect; a future source-inspection guard could close the hypothetical.
+
+=====================================================================
+3. AC5 - shipped in the engine, honest, documented
+=====================================================================
+Engine + packs (git show --name-only 70a9ecb): .warp/supervisor.py and bin/warp shipped to
+plugin/templates and re-synced to all six packs byte-identical; the three capability entries
+added to all eight capabilities.yaml copies. runbook.md 1.5 -> 1.6 (Part V.8 rewritten to
+cover the in-session default, the opt-in external supervisor, and the no-detached boundary).
+
+Three new capability entries, all honest (they ship, so NONE is repo-only):
+  fleet_in_session_resume_default   mechanical  home bin/warp + .warp/fleet.py
+  fleet_external_supervisor         mechanical  home .warp/supervisor.py + bin/warp
+  fleet_supervisor_session_launch   reference   home .warp/supervisor.py
+
+=====================================================================
+4. AC6 - protected paths, name, index, RULE #1
+=====================================================================
+WARP-0907 impl commit file list (git show --name-only 70a9ecb), 28 files: supervisor.py x8
+(engine + 7 packs), bin/warp x8, capabilities.yaml x8, docs/runbook.md, scripts/selftest.py,
+specs/WARP-0907-fleet-supervisor.md, specs/index.md.
+protected paths touched: NONE (verify.sh, warp-guard.sh, policy.yaml, policy_check.py + the
+  plugin/templates twins all untouched; selftest.py is not protected).
+warp name unchanged (only VELDO reference is the spec's own "warp stays warp; VELDO parked").
+index regenerated: specs/index.md (generated: pass).
+RULE #1: no em/en dash; every double-hyphen is a real systemd flag (user/now), a CLI flag
+  (on-calendar/resume-at/account/launch-command/xdg-dir), a --- front-matter fence, or a
+  backtick code reference.
+
+=====================================================================
+5. D1 resolution + ship (this evidence step)
+=====================================================================
+plans/PLAN-0009-fleet-distribution.md: open decision D1 resolved as Option B (founder-
+  authorized 2026-07-19) - build W7 as an opt-in, off-by-default external supervisor with the
+  in-session resume-waiter (W3) as the default. D1 moved from open_decisions to a new
+  resolved_decisions entry with its resolution recorded and blocks cleared; plan bumped to
+  revision 2 with a Revision 2 note. Plan schema check passes:
+    $ python3 .warp/validate.py plan plans/PLAN-0009-fleet-distribution.md   -> ok
+specs/WARP-0907-fleet-supervisor.md: status ready -> shipped.
+
+$ python3 .warp/plan.py release-check PLAN-0009
+  PLAN-0009: NOT releasable
+    - work not shipped: WARP-0908
+  (D1 no longer blocks WARP-0907; only W8/WARP-0908, the release, remains - 7/8 shipped)
+
+=== ship-record (W7 of PLAN-0009) ===
+built commit:  70a9ecba52ab34781da1398fa129c30564c98e29
+plan_hash:     sha256:5d8cb8bd446e8f94 (PLAN-0009 at revision 2, via plan.py)
+proof_digest:  sha256:caa278dafff9bb2d (over manifest {spec_id, commit, criteria, checks})
+independent review: pass_with_notes, 0 blocking; safety boundary PASS; verdict bound to
+  70a9ecb with proof_digest set to proof_digest(manifest).
+gate at ship: GATE GREEN, selftest 1374 passed / 0 failed at HEAD, drift empty across all
+  seven packs.

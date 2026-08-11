@@ -1,0 +1,4 @@
+auth runner driven against the bundled stdlib mock server:
+
+pass.journey.json (owner-scoping holds): exit 0 (expect 0)
+fail.journey.json (IDOR resource): exit 1 (expect 1, cross-tenant bypass caught)

@@ -1,0 +1,53 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0727",
+  "commit": "f6b27a4144d1291d5c9da8d50f739350c629f468",
+  "reviewer": "independent-reviewer-3, did not build; /tmp scratch clones only; item branch untouched at f6b27a4, nothing pushed, no git internals, no blob substitution attempted",
+  "verdict": "pass_with_notes",
+  "round": 3,
+  "disposition": "SHIPPABLE ON THE ENGINEERING. Both round-2 defects genuinely fixed and neither could be broken. The red direction is NOT merely witnessed: it was made to fire from FOUR directions the reviewer constructed itself (mangled prefix, --skip-worktree, --assume-unchanged, sparse-checkout) and stays QUIET over a normal checkout and seven benign prefix shapes, so it is neither vacuous nor a check that fires on everything. Two independent mutants each red EXACTLY ONE leg, the round-3 witness leg. ONE working forgery route was found that this item does not close, and it behaves IDENTICALLY at ffaab41, bdb4055, 0ba2c4e and f6b27a4, so it is PRE-EXISTING, outside the declared spelling-and-anchoring class, and not a regression. THE MERGE STILL WAITS ON THE OWNER CLEARING A DRAFT SPEC.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "ONE rule, two sources, one anchoring, whitespace half holds. SEVEN prefix shapes driven - plain, leading space, trailing space, a prefix that IS a single space, a tab, a NEWLINE mid-component, and `st*r?[x]` - every one resolved the correct domain. `_git_line` removes exactly one trailing newline. `:(literal)` load-bearing and holding. Vendored at sub/ with a forgery at the OUTER proof root: outer artifact NOT entitled. A lone events.py copy RAISES at import, so the fan-out fails closed."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Both shapes driven. HEADLINE ROUTE at proof/WARP-9999/nested/verdict.json: ffaab41 exit 0 with ZERO lines and 1 appended (log 4b20b0fe19ec -> 01444adcec5b); f6b27a4 exit 1 naming it misfiled, 0 appended, log 3838a4b6bac7 UNCHANGED. SPARSE-CHECKOUT ROUTE: exit 1, 321 lines, 320 naming the reason, 169 deferred, log UNCHANGED."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "THREE mutants re-driven over all EIGHT copies with counts, sha256 and replacement presence asserted before believing any result. Pristine 975bb505ab1f3399 matches the manifest. Vacuous arithmetic: 8 subs, 3361/1, the ONE failure being the round-3 witness leg. Prefix-stripped: 8 subs, 3361/1, same leg. git-cwd-ignored: 16 subs, 3336/26 WITH a summary and no traceback, and BOTH former crash sites appear as reds naming their own legs."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Corpus 168 by THREE independent methods (ls-files 429 records / 428 three-component; find -mindepth 2 -maxdepth 2 = 168; an independent os.walk = 168). Forward: 168/168/0, nothing deferred, two REAL runs left log md5 3838a4b6bac7 byte-identical; a genuinely new verdict gives 169/1 then 169/0. NOTHING PINS == 168 and the suite at a 169-artifact corpus is 3362/0, so the next review's artifact will not red the gate. Red direction fired from four constructed directions and stayed quiet on the normal checkout and seven benign prefixes. Empty-domain leg: both modes fire distinguishably."
+    }
+  ],
+  "blocking_findings": [],
+  "claim_corrections": [
+    "A FALSE MEASURED SENTENCE IN SHIPPED SOURCE: `tracked_direct`'s docstring says the outer repository's proof/ 'comes back as ../proof/...'. MEASURED FALSE - a bare `git ls-files` from a subdirectory omits outer paths ENTIRELY. The conclusion is right and the behaviour correct, but a contributor might think the four-component rejection is load-bearing, or that adding --full-name is harmless. IT IS NOT: --full-name pulls the outer proof root in.",
+    "AN UNDECLARED LIMIT OF THE SAME CLASS, ONE AXIS DOWN: the validated set and the keyed set are one enumeration OF PATHS, NOT OF CONTENT. validate.py reads WORKING-TREE bytes; committed_blobs keys the INDEX blob; NOTHING COMPARES THEM. Driven: commit a forged verdict, leave valid bytes unstaged - validate.py all exits 0 with ZERO lines and reconcile-verdicts APPENDS 'verdict: pass' carrying blob 81fe14a7e5d150ec, a forged body no validator ever read. IDENTICAL at ffaab41, bdb4055, 0ba2c4e and f6b27a4, so PRE-EXISTING and not a regression. 'THE BYTES MUST BE THERE TO BE KEYED' proves only the PATH is on disk. Name it known-open; separate spec (compare git hash-object against the index blob, or key the bytes the validator read).",
+    "THE COST IS UNDERSTATED though the budget holds: declared +25 ms, measured 177-200 ms against 132-158 ms at 0ba2c4e, so about +45 ms. The 'about 6 ms per read' figure is inconsistent - four tracked_direct reads take 6 ms TOTAL over the same 2288 paths. validate.py all is 415-417 ms, inside the 500 ms budget but at 83% of it.",
+    "'NEVER SILENT' MEANS 'PRINTS A LINE', NOT 'REDS'. The printed-report mode returns 0 errors, so validate.py all exits 0 and a CI reading only the exit status sees green. Sound by design and declared, but 'is never unreported' is the honest phrasing.",
+    "tracked_under_proof COUNTS INDEX ENTRIES, NOT DISTINCT PATHS: a single conflicted path appears three times, so the message would say '3 path(s) tracked' for one path. Cosmetic, but the message asserts a count.",
+    "THE SECOND OPINION IS INDEPENDENT OF THE PATHSPEC AND PREFIX ARITHMETIC, NOT OF THE ENVIRONMENT. With GIT_DIR/GIT_WORK_TREE redirected both reads move together: contradiction 0, overclaimed 0. Still caught by the older entitled_not_validated leg, and the GIT_DIR limit is declared, but the independence claim needs that qualifier.",
+    "MUTANT IDENTITY MATTERS: deriving contradiction from `direct` rather than `tracked` reduces to (disk_set - tracked_set) intersect direct, which is NOT identically empty and is still a working check - the suite correctly stayed GREEN on it. Only the `tracked`-derived form is vacuous. The manifest's wording is correct.",
+    "THE NESTED-GITLINK DECLARATION IS HONEST, both halves confirmed: a FULL gitlink at the proof root IS caught by the empty-domain leg; with the domain otherwise non-empty the artifact is green and silently unrecorded, exactly as declared. Note a plain nested repo behaves identically, so 'committed in another repository' is more accurate than 'a nested GITLINK'."
+  ],
+  "routes_that_held": "The original depth-2 forgery; seven prefix shapes; vendored-at-sub/ with an outer forgery; sparse-checkout; --skip-worktree; --assume-unchanged; a conflicted index; a tracked symlink proof root; a full gitlink proof root; an adopter with nothing committed; a non-repository; a lone events.py copy (fails closed); and the normal 168-artifact checkout twice with the log byte-identical. NO THIRD CRASH SITE: only one suite file touches the corpus APIs, every remaining [0] is a 2-tuple unpack, and the harsher mutant scores 3336/26 with a summary and no traceback.",
+  "orchestrator_confirmations": "events.py 999 lines and BYTE-IDENTICAL to 0ba2c4e; AST top-level diff shows nothing lost but the two deliberately retired constants; RULE #1 clean over 67 changed files and all commit messages; check_generated, check_template_sync, check_pack_drift (7 packs), shape_gate and check_docs all pass; 8 engine copies 1 distinct sha, warp-guard.sh 9 copies 1 distinct.",
+  "what_i_could_not_test": [
+    "Blob substitution and git internals: DECLARED UNTESTED per the standing decision.",
+    "CRLF from rev-parse --show-prefix: unforceable without a different git build; reasoned that a trailing CR reds via the empty-domain leg.",
+    "Case-insensitive, case-preserving and unicode-normalising filesystems; Windows; macOS.",
+    "A gitlink-ancestor test.",
+    "Lock concurrency and parallel gate runs.",
+    "The five clone shapes of the WARP-0722 leg individually.",
+    "Four of the seven claimed mutants; three were re-driven including the harsher one review 2 could not score."
+  ]
+}

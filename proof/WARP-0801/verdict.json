@@ -1,0 +1,21 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0801",
+  "commit": "97cfbc63d73ec9ef2e0da662b9f976055b997540",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T16:20:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:bb99c8bf17785be2",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "ENGINE_GLOBS manifest covers the gate, .warp substrate, capabilities, CI workflow, and templates; engine_files deterministic and de-duped (no double-count from overlapping globs)."},
+    {"id": "AC2", "status": "confirmed", "note": "assemble_pack copies engine byte-for-byte (verified with a non-UTF-8 byte = true byte copy), the full nested wrapper tree, and AGENTS.md; non-engine source files are not copied; deep dest parents created. 17/17 in the reviewer's temp-tree run."},
+    {"id": "AC3", "status": "confirmed", "note": "engine_drift empty on a faithful pack, names differs/missing correctly; a dropped trailing newline is caught (filecmp shallow=False is a content compare)."},
+    {"id": "AC4", "status": "confirmed", "note": "Canonical AGENTS.md carries the method once (one rule, loop, principles, operating contract, enforcement invariant, board), generic, ASCII, no em-dashes, defers to the capability manifest as authority."},
+    {"id": "AC5", "status": "confirmed", "note": "Selftest non-tautological: stubbing engine_drift to return [] turns the mutation/missing assertions RED. Gate GREEN, selftest 1073."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review, pass_with_notes, 0 blocking. All five ACs confirmed against the actual code with reproductions over the reviewer's own temp trees (byte-faithful assembly incl. a non-UTF-8 byte, nested wrapper copy, non-engine files excluded; drift catches differs/missing/newline; selftest teeth proven). Pure stdlib file ops, no network. Two-way spec-plan mirror intact; PLAN-0008 ready + approved. Reviewed at commit 712b259; the two foundation commits were then rebuilt so each passes its own gate in isolation (a prior commit had shipped a stale index referencing the uncommitted PLAN-0008), and this verdict binds to the rebuilt 97cfbc6 whose WARP-0801 content is byte-identical to the reviewed 712b259 (empty diff), gate GREEN."},
+    {"severity": "note", "text": "Non-blocking notes for later PLAN-0008 items (not defects against W1, which is the mechanism gate-tested over temp trees): (1) ENGINE_GLOBS run over the real repo omits scripts/warp-guard.sh (the guard), the .sh runner-catalog checks, and the CI workflow's real path - W2 must finalize the manifest when wiring a real pack so the guard and CI ship in every pack; (2) engine_drift is one-directional (source to pack), so an extra engine-shaped file present in a pack but absent from source is invisible - W9 conformance should decide whether a pack's .warp must be engine-only."}
+  ],
+  "summary": "W1 of PLAN-0008 (the pack engine) is correct. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 1073). One canonical engine (ENGINE_GLOBS), assemble_pack producing a self-contained pack (engine byte-for-byte + wrapper + canonical AGENTS.md), and engine_drift proving a pack byte-identical to the source - self-contained for the user, one source of truth with a red gate the instant a pack drifts. The canonical AGENTS.md carries the method once for every tool. Pure stdlib, gate-tested over temp trees, non-tautological. proof_digest via validate.py. Verdict bound to the rebuilt commit 97cfbc6 (byte-identical WARP-0801 content to the reviewed 712b259)."
+}

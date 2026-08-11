@@ -1,0 +1,41 @@
+WARP-0609 runner evidence - release WARP tracker integration v1 (PLAN-0006 at 8/8)
+Release commit under proof: 6ddd821136618fc61d4352ea3fe6a816bd52a17b
+
+== gate (clean detached worktree at 6ddd821) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (6ddd821136618fc61d4352ea3fe6a816bd52a17b)
+selftest: 1205 passed, 0 failed
+
+== PLAN-0006 release-check ==
+PLAN-0006: releasable (WARP tracker integration v1 - routing, stock-Jira Cloud
+intake, event-driven mirror, Confluence intake, proven offline)
+
+== the eight work items (status shipped + passing verdict) ==
+W1 WARP-0601 routing               shipped  verdict pass_with_notes
+W2 WARP-0602 routing enforcement   shipped  verdict pass_with_notes
+W3 WARP-0603 adapter seam          shipped  verdict pass_with_notes
+W4 WARP-0604 Jira intake           shipped  verdict pass
+W5 WARP-0605 spec mirror           shipped  verdict pass
+W6 WARP-0606 epic mirror           shipped  verdict pass
+W7 WARP-0607 Confluence intake     shipped  verdict pass
+W8 WARP-0608 conformance           shipped  verdict pass
+
+== version bump ==
+plugin/.claude-plugin/plugin.json: 3.2.0 -> 3.3.0 (clean minor)
+plans/PLAN-0006 release.version: plugin minor bump -> plugin 3.3.0
+plans/PLAN-0006 status: ready -> released
+method document unchanged.
+
+== changeset (minimal, no protected path) ==
+specs/WARP-0609-release-tracker.md (new), plans/PLAN-0006-tracker-integration.md,
+plugin/.claude-plugin/plugin.json, specs/index.md, .warp/events.jsonl, .warp/last_verify.
+capabilities.yaml copies byte-identical and untouched.
+
+== review ==
+Independent adversarial review of 6ddd821: PASS, 0 blocking (all 8 work items
+genuinely shipped-with-passing-verdict, release minimal, gate GREEN, no protected
+path; three expected non-blocking notes: release spec ready-at-its-own-commit like
+WARP-0708, last_verify records the parent commit, pass_with_notes counts as passing).
+
+== proof binding ==
+proof_digest: sha256:18c4d9264426a9d8 (validate.py over {spec_id, commit, criteria, checks})

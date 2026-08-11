@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0903",
+  "commit": "e4ff4d2e54af4fc44ebf625ac6afdc8b9278fbb7",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent ae9d1349d96b72eab)",
+  "reviewed_at": "2026-07-19T16:47:29Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:58f635b5ba23764b",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "governor.py diff is pure addition (zero deletions, single-pool law untouched, existing selftests pass); AccountGovernor reuses the unchanged desired_workers/resume_at per account; desired() sums per-account capped at pool_max (0+2+2->3, pool not stalled); reuse-identity asserted."},
+    {"id": "AC2", "status": "confirmed", "note": "events_for_account filters by the WARP_ACCOUNT tag (alpha's window sees 1000 not the mixed 6000); the events.py account field is optional (guarded) and metrics.py reads events only by specific keys, so non-account events are unaffected; a no-burn account bootstraps to its cap."},
+    {"id": "AC3", "status": "confirmed", "note": "account_resume_at is per account over its own windows (alpha now+90, bravo now+40 independently); pool resume_at = earliest backed-off account; never earlier than the account's own cooldown."},
+    {"id": "AC4", "status": "confirmed", "note": "NO detached-wait/spawn path exists: InSessionWaiter uses only an injected blocking sleep; fleet.py imports importlib/time/uuid/pathlib and governor.py only importlib/pathlib (the governor cannot even sleep/spawn); the launcher re-checks desired() after wait_until before spawning."},
+    {"id": "AC5", "status": "confirmed", "note": "gate GREEN, both mutants fire (whole-pool-zeroing governor turns pool-not-stalled==3 red; no-re-check launcher spawns at 1100 vs the real 1200; plus a third attribution mutant); the W3 block never really sleeps (fake clock/sleep injected throughout)."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "The events.py divergence is a SAFE, additive W5 carry-forward, not a silent break: (a) the account field is optional and inert for existing callers (make_event guards it; metrics.py never enumerates/validates event keys); (b) events.py is NOT in the template-sync PAIRS set (only validate.py, tracker.py, policy_check.py, update_index.py, warp-guard.sh are compared) and template-sync passed; plugin/templates/.warp/events.py is byte-untouched so every pack still matches its canon; (c) it is documented as the W5 sync step in the spec rollback and PLAN-0009 W5. W5 must sync the account field into the shipped events.py + re-sync packs. Non-blocking."},
+    {"severity": "note", "text": "The only double-hyphen sequences in changed content are legitimate: --account/--flag CLI options, --- YAML front-matter delimiters, the established # --- selftest block header, and backtick-quoted meta-usage inside the spec Notes quoting the forbidden pattern to explain the hand-check (same as CLAUDE.md's own RULE #1 text). No em/en dashes anywhere in the six changed files. Non-blocking."},
+    {"severity": "note", "text": "Protected paths clean: the commit touches exactly 6 files (.warp/events.py, .warp/fleet.py, .warp/governor.py, scripts/selftest.py, specs/WARP-0903, specs/index.md); no verify.sh/warp-guard.sh/policy.yaml/policy_check.py or any plugin/templates/**, no evidence files, no plan file. Non-blocking."}
+  ],
+  "summary": "WARP-0903 (per-account token governor + in-session resume-waiter, W3 of PLAN-0009) is a clean, correct, additive W3. GATE GREEN at e4ff4d2, selftest 1322 passed / 0 failed. The per-account governor is a genuine reuse of the untouched single-pool control law (no deletions, no reimplemented pacing arithmetic); burn is attributed per WARP_ACCOUNT tag; resume is per-account; and the InSessionWaiter is a strictly in-session blocking wait with no detached/spawned path - the governor cannot even import a sleep or spawn primitive. Both required teeth mutants (plus a third) fire and the gate never really sleeps. The events.py divergence from the shipped engine is a documented, gate-invisible, behaviorally-inert W5 carry-forward, not a defect. Verdict: pass_with_notes, 0 blocking."
+}

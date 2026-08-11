@@ -1,0 +1,13 @@
+Negative demonstrations - each budget kind fails loud with the measured value:
+
+1. p95 latency over budget (0.20s vs 0.05s):
+   FAIL max_p95_seconds: 0.2000s exceeds budget 0.05s
+2. throughput below min (100 rps vs 500 rps floor):
+   FAIL min_throughput_rps: 100.00 rps is below 500
+3. error rate over budget (0.25 vs 0.0), names count:
+   FAIL max_error_rate: 0.250 exceeds budget 0.0 (10/40 requests failed)
+4. raising requests counted as errors, not silent success:
+   stats: {'requests': 10, 'ok': 5, 'errors': 5, 'error_rate': 0.5}
+   passed: False | failures: ['max_error_rate: 0.500 exceeds budget 0.0 (5/10 requests failed)']
+5. unknown workload fails loud (not a silent pass):
+   passed: False | error: unknown workload 'does_not_exist' (built-ins: noop, sleep, flaky)

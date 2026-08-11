@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0315",
+  "commit": "9486749bfc47c8b4c53e34c9dfae9b9b0fccd4ea",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T10:38:10Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:2d1f29ea6c4c6854",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Runner ships at plugin/templates/scripts/runners/security/security_guard_runner.py, reads a JSON case list (guard, input, label block|allow, optional config), applies the named guard and grades the verdict against the label. Three pure predicates (input, config) -> (blocked, reason), stdlib only, no I/O. Reran probes: is_ssrf_target blocks 169.254.169.254 (incl. userinfo form), loopback 127.0.0.1/::1, IPv4-mapped, 0.0.0.0, private 10/172.16/192.168, CGNAT 100.64, and non-http schemes (file:, gopher:), case-insensitive localhost and trailing dot; is_path_traversal blocks ../ escapes and absolute escapes (lexical normpath) and is not fooled by the /data vs /database prefix trap; is_secret_leak matches AWS/Google/GitHub/Slack/JWT/bearer/PEM. All real guards, no stub."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "fixtures/pass.security.json exits 0 with 11/11 cases matched, exercising all three guards in both directions (SSRF metadata/loopback/private/non-http blocked + public host allowed; dot-dot and absolute escape blocked + in-root file allowed; AWS key and PEM header blocked + prose allowed). Every fixture secret is an obviously-fake canonical example (AKIAIOSFODNN7EXAMPLE ends in EXAMPLE, bare PEM header with no key material, RFC-reserved api.example.com, documentation IP 169.254.169.254). No real credentials."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "fixtures/fail.security.json exits 1, printing 'SECURITY BYPASS: is_ssrf_target ALLOWED hostile input ...169.254.169.254...' - a config allow_hosts hole lets the metadata endpoint through while the corpus still labels it block. Tampering confirmed the grader is not a rubber stamp: a genuinely hostile input (169.254.169.254, ../../etc/passwd, AKIA key) mislabeled allow fails the run and names it (surfaces as FALSE POSITIVE because the guard correctly blocked it), and a benign public host mislabeled block fails as a named SECURITY BYPASS. Labels are the source of truth in both directions; a PASS-only runner is impossible."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "python3 scripts/selftest.py => 426 passed, 0 failed. The security block (selftest.py lines 1427-1490) loads the runner via importlib and drives each guard in both directions, names a bypass / false positive / config errors (unknown guard, bad label), proves config holes (SSRF allow_hosts, emptied secret patterns) let a hostile input through, and drives both shipped fixtures end to end (pass -> passed True, fail -> passed False with the 169.254.169.254 bypass named). No network, no filesystem beyond reading the shipped fixtures, no live service. Gate stays green."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Zero company/product names in runner, fixtures, wrapper, README (the lone grep hit was 'ava' inside the word 'javascript'). .warp/capabilities.yaml declares security_guard_runner status: reference (not mechanical), and the template and repo-instance copies are byte-identical. No em/en dash and no prose double-hyphen (only YAML frontmatter --- and PEM ----- markers). ./scripts/verify.sh => GATE: GREEN at 9486749 with unit, generated, docs (dash + genericity sweeps), template sync, secret scan, and contracts all passing."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "is_ssrf_target does not catch alternate IP encodings (decimal http://2130706433/, octal http://0177.0.0.1/, hex http://0x7f.0.0.1/ all classify as public hostnames, because Python's ipaddress rejects non-dotted forms). A client using inet_aton-style parsing could still reach loopback. This is an SSRF evasion class that does not require DNS; the README/out-of-scope only calls out DNS rebinding, not alternate encodings. Within the documented reference scope (deterministic literal classification, extend for your own threats) and AC1 does not claim to handle it, so non-blocking - but the reference docs would be more honest if the alternate-encoding limitation were named alongside DNS."
+    },
+    {
+      "severity": "note",
+      "text": "is_path_traversal treats backslash as a literal filename on POSIX (os.sep = '/'), so '..\\\\..\\\\x' is ALLOW. Correct on POSIX where the reference runs; would be a traversal on Windows. Reference is POSIX-scoped and lexical by design; non-blocking."
+    }
+  ],
+  "summary": "B15 (WARP-0315, security-guard runner) is correct and honest. Reran the test wrapper (correct corpus exit 0, holed corpus exit 1 bypass caught), both fixtures directly (11/11 pass; fail names the 169.254.169.254 SECURITY BYPASS), and selftest (426 passed, 0 failed). The three guards are real - not stubs, not trivially bypassable for the classes they claim and test: SSRF blocks loopback/link-local/private/reserved/non-global + non-http schemes, path-traversal blocks ../ and absolute escapes and survives the /data-vs-/database prefix trap, secret-leak matches AWS/Google/GitHub/Slack/JWT/bearer/PEM. Tampering proved the grader is label-driven in both directions and cannot only-ever-PASS. No hostile corpus input slips through, no real credentials (canonical fakes only), generic (zero company/product names), capabilities.yaml status reference byte-identical both copies, no em/en/double-hyphen, and ./scripts/verify.sh is GATE GREEN at 9486749. proof_digest recomputed via validate.py == sha256:2d1f29ea6c4c6854 (matches; policy_check copy agrees). Two non-blocking notes on reference-scope SSRF alternate-encoding and Windows-backslash gaps."
+}

@@ -1,0 +1,45 @@
+# VELDO adversarial decision review (veldo.decision_review/v1): a foundational choice
+# attacked by a fresh context before a human commits to it. This is an ILLUSTRATIVE
+# EXAMPLE of the artifact format, not a real VELDO verdict: it shows the shape a real
+# review takes when it attacks the draft decision-example (DEC-0000, the cross-instance
+# change-notification choice). It challenges the problem class, each option's dead_end,
+# whether a better option is missing, and whether each assumption is truly load bearing,
+# then leaves a recommendation and a disposition for the HUMAN. A review INFORMS the
+# decision; it never decides, so it carries no chosen option and no decider. The real
+# adversarial attack is performed by a genuinely fresh context an adopting runtime
+# injects; the reference reviewer fails loud rather than fabricate one.
+schema: veldo.decision_review/v1
+id: DR-0000
+version: 1
+decision: DEC-0000
+decision_version: 1
+reviewer: an-illustrative-fresh-context-reviewer (a real review is produced by a genuinely fresh context, never by this repository's code)
+reviewed_at: 2026-07-22
+problem_class_challenge:
+  verdict: honest
+  finding: The problem class is stated against the lifetime of a growing system (instance count and producer count both rising), not against how few instances run today, so it resists the "it is only one process today" anchor that constraint C6 forbids. The attack could not find a scale assumption hiding inside the framing.
+option_challenges:
+  - option: db_poll
+    dead_end_verdict: holds
+    finding: The dead_end holds under attack: detection latency and query load both scale with the instance count, a rare change is paid for on every poll of every instance, and there is no version at which constant polling becomes a real event stream. It stops working exactly where the framing says it does.
+  - option: db_listen_notify
+    dead_end_verdict: holds
+    finding: The dead_end holds: the notification path is bound to one database engine and its connection ceiling, so a second datastore or a non-database producer cannot emit the same signal without a translation shim, and the listener count is capped by the connections the engine will hold open. The attack confirms this is a real dead_end, not a hypothetical one.
+  - option: pubsub_bus
+    dead_end_verdict: holds
+    finding: The stated dead_end (an operational dependency to run and monitor, over-built where there is genuinely one producer and one consumer forever) holds as written, and the framing is honest that a cross-instance change-notification path is not that degenerate case. The cost is real but it is the accepted cost of the only option that survives the problem class.
+missing_options:
+  - summary: A transactional outbox with change-data-capture feeding the bus.
+    finding: The framing did not enumerate an outbox/CDC option that writes change intent in the same transaction as the state change and relays it to the bus. It is arguably a refinement of pubsub_bus rather than a distinct option, so it does not overturn the framing, but a human deciding should know it exists as a delivery-guarantee variant.
+assumption_challenges:
+  - assumption: a1
+    verdict: load_bearing
+    finding: Load bearing and correctly chosen: if the number of instances that must observe a change did NOT grow, db_poll would be defensible, so this assumption is exactly what rules the cheap option out. The attack agrees it is the real hinge.
+  - assumption: a2
+    verdict: load_bearing
+    finding: Load bearing: the moment a second producer type appears, db_listen_notify needs a shim, so this assumption is what separates the single-engine options from the bus. Its signal (count of distinct producer types) is the right thing to watch.
+  - assumption: a3
+    verdict: load_bearing
+    finding: Load bearing: reconcile-on-reconnect via a version or etag is what makes the bus correct under reconnect gaps; if a consumer assumed exactly-once delivery with no reconcile path, the chosen shape would be unsafe. This is a genuine load-bearing assumption, not a decorative one.
+recommendation: The framing survives the attack. Each cheap option has a dead_end that holds, the problem class is stated honestly, and the recorded assumptions are the real load-bearing ones. The outbox/CDC variant is worth surfacing as a delivery-guarantee refinement of the bus option. This review informs the human; the choice remains the human's to make on the record.
+disposition: defensible

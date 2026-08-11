@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0502",
+  "commit": "14a2279718401253e2da106156801ca8052fea2a",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0005)",
+  "plan_hash": "sha256:48ebdb0410a49b25",
+  "produced_at": "2026-07-17T23:40:53Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py gained an OPTIONAL, default-off run-observer seam (RunObserver base + RunLogObserver reference) so a driven run streams its live loop progress into the R1 run registry: run.started, a step per phase (resolve, plan_check, build, gate, proof, review, merge_ready), a heartbeat while working, a block+resume around the human approve step and a block on the two-failed-review adjudication, and a terminal finish (done with the receipt, or aborted with the reason on a hard halt, never a step past a failed step). A thin warp_run(spec_id, hooks) driver allocates the run via runlog, wires the observer, drives the executor, and returns the receipt plus the run id; the observer is a pure side effect (run() ignores its return values) so an observed and an unobserved run are byte-identical and halt semantics are unchanged; high-volume step/heartbeat stay in the run folder live.jsonl and never reach the committed events.jsonl. plugin/skills/run/SKILL.md notes the front door."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the instrumented executor over a fake LoopSteps seam and a temp runs root: a success loop writes run.started + a step per phase + run.done; a red-gate halt writes an aborted finish with the reason and no phase past the gate; a human-pause writes a blocked question; the two-failed-review halt blocks (classify blocked) rather than aborting; a crash marks aborted and re-raises; and the DEFAULT-OFF path leaves state/steps/receipt/human_minutes byte-identical with no run folder written; part of selftest 817 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py gained an OPTIONAL, default-off run-observer seam (RunObserver base + RunLogObserver reference) so a driven run streams its live loop progress into the R1 run registry: run.started, a step per phase (resolve, plan_check, build, gate, proof, review, merge_ready), a heartbeat while working, a block+resume around the human approve step and a block on the two-failed-review adjudication, and a terminal finish (done with the receipt, or aborted with the reason on a hard halt, never a step past a failed step). A thin warp_run(spec_id, hooks) driver allocates the run via runlog, wires the observer, drives the executor, and returns the receipt plus the run id; the observer is a pure side effect (run() ignores its return values) so an observed and an unobserved run are byte-identical and halt semantics are unchanged; high-volume step/heartbeat stay in the run folder live.jsonl and never reach the committed events.jsonl. plugin/skills/run/SKILL.md notes the front door."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py gained an OPTIONAL, default-off run-observer seam (RunObserver base + RunLogObserver reference) so a driven run streams its live loop progress into the R1 run registry: run.started, a step per phase (resolve, plan_check, build, gate, proof, review, merge_ready), a heartbeat while working, a block+resume around the human approve step and a block on the two-failed-review adjudication, and a terminal finish (done with the receipt, or aborted with the reason on a hard halt, never a step past a failed step). A thin warp_run(spec_id, hooks) driver allocates the run via runlog, wires the observer, drives the executor, and returns the receipt plus the run id; the observer is a pure side effect (run() ignores its return values) so an observed and an unobserved run are byte-identical and halt semantics are unchanged; high-volume step/heartbeat stay in the run folder live.jsonl and never reach the committed events.jsonl. plugin/skills/run/SKILL.md notes the front door."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py gained an OPTIONAL, default-off run-observer seam (RunObserver base + RunLogObserver reference) so a driven run streams its live loop progress into the R1 run registry: run.started, a step per phase (resolve, plan_check, build, gate, proof, review, merge_ready), a heartbeat while working, a block+resume around the human approve step and a block on the two-failed-review adjudication, and a terminal finish (done with the receipt, or aborted with the reason on a hard halt, never a step past a failed step). A thin warp_run(spec_id, hooks) driver allocates the run via runlog, wires the observer, drives the executor, and returns the receipt plus the run id; the observer is a pure side effect (run() ignores its return values) so an observed and an unobserved run are byte-identical and halt semantics are unchanged; high-volume step/heartbeat stay in the run folder live.jsonl and never reach the committed events.jsonl. plugin/skills/run/SKILL.md notes the front door."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/executor.py gained an OPTIONAL, default-off run-observer seam (RunObserver base + RunLogObserver reference) so a driven run streams its live loop progress into the R1 run registry: run.started, a step per phase (resolve, plan_check, build, gate, proof, review, merge_ready), a heartbeat while working, a block+resume around the human approve step and a block on the two-failed-review adjudication, and a terminal finish (done with the receipt, or aborted with the reason on a hard halt, never a step past a failed step). A thin warp_run(spec_id, hooks) driver allocates the run via runlog, wires the observer, drives the executor, and returns the receipt plus the run id; the observer is a pure side effect (run() ignores its return values) so an observed and an unobserved run are byte-identical and halt semantics are unchanged; high-volume step/heartbeat stay in the run folder live.jsonl and never reach the committed events.jsonl. plugin/skills/run/SKILL.md notes the front door."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the instrumented executor over a fake LoopSteps seam and a temp runs root: a success loop writes run.started + a step per phase + run.done; a red-gate halt writes an aborted finish with the reason and no phase past the gate; a human-pause writes a blocked question; the two-failed-review halt blocks (classify blocked) rather than aborting; a crash marks aborted and re-raises; and the DEFAULT-OFF path leaves state/steps/receipt/human_minutes byte-identical with no run folder written; part of selftest 817 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 817 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical for the registry-emission control logic (gate-tested over a fake seam and a temp runs root, stdlib). The build and review remain a delegated agent step and approve a human step (executor_agent_dispatch procedure); this item makes those pauses observable, it does not automate them."
+  ],
+  "rollback": "git revert; additive - an optional default-off observer in .warp/executor.py, a warp_run driver, a run SKILL.md note, a selftest block, one capability (both copies), the spec; no protected path."
+}

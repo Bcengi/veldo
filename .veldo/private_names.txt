@@ -1,0 +1,17 @@
+# The names that must not appear in the method's own documents.
+# Swept over docs/ and packs/ by scripts/check_docs.sh on every gate run.
+# These are this project's own public product names. The dogfooding records
+# under specs/, plans/ and proof/ name them on purpose: they are receipts of
+# real work and a falsified receipt is worth nothing.
+agentpass
+bcengi
+clubpass
+coreconnect
+cruisepass
+dejitech
+eventpass
+onesim
+ridepass
+staypass
+travelpass
+workpass

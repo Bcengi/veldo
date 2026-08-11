@@ -1,0 +1,52 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0401",
+  "commit": "44219472af1ac520eb3169dc5f2f71d8256d2025",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T17:42:04Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:c8fdf944251ab291",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, control logic driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Reviewer confirmed non-tautology with four independent one-line source mutations (proceed past a red gate, proceed past a fail verdict, skip review human_minutes, force the loop_respected invariant true); each was caught by the selftest and restored, and the baseline returns to 728 passed / 0 failed."
+    },
+    {
+      "severity": "note",
+      "text": "When a human step returns decision rejected with no note, the run still ends in state ready with the merge-readiness go-ahead text rather than a rejection-specific message; this matches the documented design (the executor records the human decision, it does not author it) and is non-blocking."
+    }
+  ],
+  "summary": "X1 (WARP-0401, Executor v1) is correct and honest. Independent adversarial review: pass_with_notes, 0 blocking, gate GREEN (selftest 728). The reviewer drove the Executor over its own fake seam - the happy path reaches merge_ready and records human_minutes equal to the emitted-events sum, a red gate and a fail verdict each HALT before evidence and merge, two failed review cycles re-drive the build twice then stop for a human, and non-ready, plan-refusal, build-fail, and bad-proof each halt at their step - and proved non-tautology with four one-line source mutations (proceed-past-red-gate, proceed-past-fail-verdict, skip-human_minutes, force-invariant-true), each caught by the selftest and restored. Capabilities executor_driver=mechanical (control logic gate-tested over a fake seam) + executor_agent_dispatch=procedure (build/review/approve delegated, LiveLoop fails loud) are both honest per the manifest vocabulary; both capabilities.yaml copies byte-identical; stdlib only; proportionate (a driver over existing seams, no daemon or service); generic; ASCII. proof_digest recomputed via validate.py."
+}

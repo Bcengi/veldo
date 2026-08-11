@@ -1,0 +1,38 @@
+WARP-0802 runner evidence - Claude pack as a peer + canonical engine + drift-check (W2 of PLAN-0008)
+Impl commit under proof: 4004e69324d6f55d18867938da560f508cc25b6d
+
+== gate (clean detached worktree at 4004e69) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (4004e69324d6f55d18867938da560f508cc25b6d)
+selftest: 1218 passed, 0 failed (+13 for the WARP-0802 pack block)
+
+== engine coverage (finalized ENGINE_GLOBS over plugin/templates) ==
+139 engine files: includes scripts/warp-guard.sh, scripts/runners/**, scripts/verify.sh,
+.warp/validate.py, .github/workflows/warp-gate.yml, specs/TEMPLATE.md, plans/TEMPLATE.md.
+Zero __pycache__ / .pyc (exclusion load-bearing against real .pyc on disk).
+
+== drift-check ==
+check_pack_drift.py on the real manifest: pack claude byte-identical to source, exit 0.
+Reuses engine_drift (WARP-0801); no second drift implementation.
+Enforced in the gate via the selftest unit check (asserts pack_drift_report drift-free, len>=1);
+scripts/verify.sh (protected) NOT touched.
+
+== mechanism teeth (mutation + W3 simulation, review-verified) ==
+temp assembled pack: engine_drift == []
+mutate scripts/verify.sh in the pack -> ("scripts/verify.sh", "differs")
+remove .warp/validate.py -> (".warp/validate.py", "missing")
+neuter engine_drift -> [] : 4 selftest assertions RED
+neuter _is_artifact -> False : 1 RED (artifact exclusion, against real .pyc)
+neuter _validate_packs (never raise) : 4 RED (manifest rejections)
+W3 simulation (engine_src plugin/templates, pack_dir a mutated copy) -> drift CAUGHT by name
+  [('cursor', [('.warp/validate.py','missing'), ('scripts/verify.sh','differs')])]
+
+== reviews ==
+Full independent adversarial review at 4004e69: pass_with_notes, 0 blocking (teeth proven,
+enforcement genuine, verify.sh untouched, caps byte-identical, hygiene clean). Three notes: two
+non-blocking PLAN-TEXT staleness items (W2 title vs option B; W6 Gemini vs Antigravity) to reconcile
+in the plan bundled into the W3 impl commit; one expected design note (Claude drift trivially empty).
+
+== proof binding ==
+plan_hash: sha256:9a44f5fc3e951eee (PLAN-0008, revision 1)
+proof_digest: sha256:27fc326016335151 (validate.py over {spec_id, commit, criteria, checks})

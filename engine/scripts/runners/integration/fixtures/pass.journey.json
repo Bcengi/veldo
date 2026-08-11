@@ -1,0 +1,26 @@
+{
+  "name": "order service contract (conforming)",
+  "base_url": "http://127.0.0.1:8080",
+  "timeout": 5,
+  "interactions": [
+    {
+      "name": "order payload conforms to the contract",
+      "request": {"method": "GET", "path": "/order/1"},
+      "expect_status": [200],
+      "contract": {
+        "required": {
+          "id": "string",
+          "amount": "number",
+          "currency": "string",
+          "status": "string",
+          "items": "array",
+          "customer": "object",
+          "customer.id": "string",
+          "customer.email": "string",
+          "items.0.qty": "integer"
+        },
+        "forbidden": ["internal_debug", "customer.password"]
+      }
+    }
+  ]
+}

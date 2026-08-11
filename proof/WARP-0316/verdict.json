@@ -1,0 +1,52 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0316",
+  "commit": "336972408c019c11289d26d1c8659dc8cf6ebc31",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T13:22:41Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:83701392c172cf51",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "The confinement scan covers escapes within the private workspace (target nested ESCAPE_SCAN_DEPTH=8 deep, giving ~10 levels of headroom versus any realistic zip-slip); an escape beyond the workspace root is the documented honest limit (README and docstring say run inside an OS sandbox for that class). Verified by the independent re-review driving ../ x k for k=1..12."
+    },
+    {
+      "severity": "note",
+      "text": "The passing fixture uses an absolute-path member as an inert attack payload to exercise absolute-path rejection; it is a generic non-existent sentinel the safe loader refuses before any write, and the docs genericity gate is green."
+    }
+  ],
+  "summary": "B16 (WARP-0316, plugin/extension-loading runner) is correct and honest. First independent adversarial review: pass_with_notes, 7/7 mutations, both fixtures correct, no rubber-stamp, mechanical honest, but flagged a real non-blocking gap: the confinement scan walked only a shallow subtree, so a multi-level ../../../ traversal landed above it UNDETECTED (a false green for an adopter's injected loader). Pre-ship fix applied and INDEPENDENTLY RE-REVIEWED (fresh Opus, clean PASS): scan_escapes now walks the whole private workspace and the target is nested ESCAPE_SCAN_DEPTH=8 deep, a new selftest drives a deep traversal and asserts it is caught and graded a PLUGIN ESCAPE, and the README/docstring state the honest boundary. Re-review verified: gate GREEN, gap closed (escapes caught k=1..10, k>=11 the documented limit above the workspace root, matching docs, no overreach), the new test is non-tautological (weakening the scan to a shallow walk makes it FAIL), no regression (both fixtures correct, safe loader rejects the deep traversal itself, asserts-nothing is a named config error, run fails closed), 5/5 mutations caught, generic, ASCII, no double-hyphen, stdlib-only, both capabilities.yaml copies byte-identical. proof_digest recomputed via validate.py."
+}

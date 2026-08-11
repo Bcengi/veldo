@@ -1,0 +1,26 @@
+=== push range ===
+commits ahead: 9
+
+=== protected paths touched in range ===
+.warp/policy.yaml
+.warp/policy_check.py
+plugin/templates/.warp/policy_check.py
+scripts/verify.sh
+scripts/warp-guard.sh
+
+=== ALLOW PATH: policy_check at HEAD with verdict + range-bound approvals present ===
+policy_check exit: 0
+
+=== BLOCK PATH (correct): ALL approvals hidden, same verdict/gate state ===
+WARP policy: blocked. Protected path touched with no valid approval bound to any commit being pushed.
+  .warp/policy.yaml  (protected by .warp/policy.yaml)
+  .warp/policy_check.py  (protected by .warp/policy_check.py)
+  plugin/templates/.warp/policy_check.py  (protected by plugin/templates/.warp/policy_check.py)
+  scripts/verify.sh  (protected by scripts/verify.sh)
+  scripts/warp-guard.sh  (protected by scripts/warp-guard.sh)
+  Required: an approved, unexpired warp.approval/v1 in proof/*/ whose scope.commit is a commit in this push (e.g. f1f2991d8b81).
+policy_check exit (no approvals): 1
+
+NOTE: with even ONE in-range approval present the check allows, because
+approval is scoped to a commit-in-range, not to specific paths (reviewer
+WARP-0114 note 1; path-scope enforcement tracked for PLAN-0001 W9).

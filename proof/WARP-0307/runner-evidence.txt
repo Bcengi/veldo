@@ -1,0 +1,11 @@
+integration/contract runner driven over its fixtures against an ephemeral stdlib mock server:
+
+pass.journey.json -> exit 0 (expect 0)
+  PASS 0:order payload conforms to the contract
+
+fail.journey.json -> exit 1 (expect 1)
+  FAIL 0:broken order payload must still satisfy the contract
+       - required field 'amount' expected type number, got string
+       - required field 'currency' is absent (expected type string)
+       - forbidden field 'internal_debug' is present
+

@@ -1,0 +1,15 @@
+=== AC1/AC2 unit ===
+selftest: 77 passed, 0 failed
+
+=== AC2 live: activation per context ===
+PLAN-0001 regression active in per_spec:WARP-0105:
+  RJ1  [scripts/selftest.py (plugin fixtures + negative tests)] owner=WARP-0101
+PLAN-0001 regression active in release:
+  RJ1  [scripts/selftest.py (plugin fixtures + negative tests)] owner=WARP-0101
+  manual (run on their own trigger, not auto at release):
+    RJ2  [tripdesk scripts/verify.sh + .warp/policy_check.py]
+
+=== AC1 negative: bad activation rejected ===
+bad activation exit: 1
+  ["  plans/PLAN-0001-warp-one-point-zero.md: regression RJ1: bad activation when 'whenever' (start | after:<spec> | manual)"]
+restored exit: 0

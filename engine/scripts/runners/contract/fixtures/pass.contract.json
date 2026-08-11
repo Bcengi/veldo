@@ -1,0 +1,22 @@
+{
+  "name": "order payload (conforms to golden v1)",
+  "version": "v1",
+  "strict": true,
+  "schema": {
+    "customer": "object",
+    "customer.name": "string",
+    "customer.vip": "boolean",
+    "id": "integer",
+    "items": "array",
+    "items[]": "object",
+    "items[].qty": "integer",
+    "items[].sku": "string",
+    "total": "number"
+  },
+  "captured": {
+    "id": 1,
+    "total": 9.5,
+    "items": [{"sku": "A1", "qty": 2}],
+    "customer": {"name": "sample", "vip": true}
+  }
+}

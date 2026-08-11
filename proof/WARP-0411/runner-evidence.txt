@@ -1,0 +1,1 @@
+Three anti-vacuity guards, each with a non-tautological selftest case (mutation turns it red): integration empty-interactions fails loud; db check_invariant missing expect_rows fails loud; db check_budget missing max_seconds fails loud. Fixtures unaffected; real failures still caught. Gate GREEN, selftest 763 passed, 0 failed.

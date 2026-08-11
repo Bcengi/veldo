@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0701",
+  "commit": "12e205a70cf8283a437683454548bfbc05d8d06e",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0007 Y1)",
+  "plan_hash": "sha256:c5ff657b05dd9b8f",
+  "produced_at": "2026-07-18T04:14:42Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py is the fleet's atomic self-dividing claim primitive: a claim file under the git common dir at warp/claims/<unit>.json (shared across worktrees, outside git history) with holder, requirements, and heartbeat. A fresh unit is published by writing the full record to a temp file and os.link-ing it onto the target (link fails if the target exists), so the target is never seen half-written and racing workers get exactly one winner; a live claim is never stolen. A stale, corrupt, or own claim is taken over under a per-unit flock with a re-check under the lock, so concurrent takeovers serialize to one winner and never overwrite a claim that turned fresh. A claim is granted only when the unit's requirements are a subset of the worker's capabilities (free-form tags, so iOS routes to a Mac and GPU work to a GPU box with no hardcoded OS map). heartbeat refreshes, release frees, own re-claim is idempotent. fcntl-based, so Unix-only (Linux and macOS, the fleet's targets)."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block over a temporary claims root drives capability refuse-vs-grant, a BARRIER-synchronized concurrent fresh-unit race (96 threads x 120 rounds, exactly one winner), a barrier-synchronized concurrent stale-takeover (64 threads x 10 rounds, exactly one winner), live-claim-not-stolen, sequential stale reclaim, heartbeat, release, and claimed_units filtering; non-tautological - reverting the atomic os.link publish, removing the takeover lock, or skipping the capability check each turns a threaded assertion red; part of selftest 992 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py is the fleet's atomic self-dividing claim primitive: a claim file under the git common dir at warp/claims/<unit>.json (shared across worktrees, outside git history) with holder, requirements, and heartbeat. A fresh unit is published by writing the full record to a temp file and os.link-ing it onto the target (link fails if the target exists), so the target is never seen half-written and racing workers get exactly one winner; a live claim is never stolen. A stale, corrupt, or own claim is taken over under a per-unit flock with a re-check under the lock, so concurrent takeovers serialize to one winner and never overwrite a claim that turned fresh. A claim is granted only when the unit's requirements are a subset of the worker's capabilities (free-form tags, so iOS routes to a Mac and GPU work to a GPU box with no hardcoded OS map). heartbeat refreshes, release frees, own re-claim is idempotent. fcntl-based, so Unix-only (Linux and macOS, the fleet's targets)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py is the fleet's atomic self-dividing claim primitive: a claim file under the git common dir at warp/claims/<unit>.json (shared across worktrees, outside git history) with holder, requirements, and heartbeat. A fresh unit is published by writing the full record to a temp file and os.link-ing it onto the target (link fails if the target exists), so the target is never seen half-written and racing workers get exactly one winner; a live claim is never stolen. A stale, corrupt, or own claim is taken over under a per-unit flock with a re-check under the lock, so concurrent takeovers serialize to one winner and never overwrite a claim that turned fresh. A claim is granted only when the unit's requirements are a subset of the worker's capabilities (free-form tags, so iOS routes to a Mac and GPU work to a GPU box with no hardcoded OS map). heartbeat refreshes, release frees, own re-claim is idempotent. fcntl-based, so Unix-only (Linux and macOS, the fleet's targets)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py is the fleet's atomic self-dividing claim primitive: a claim file under the git common dir at warp/claims/<unit>.json (shared across worktrees, outside git history) with holder, requirements, and heartbeat. A fresh unit is published by writing the full record to a temp file and os.link-ing it onto the target (link fails if the target exists), so the target is never seen half-written and racing workers get exactly one winner; a live claim is never stolen. A stale, corrupt, or own claim is taken over under a per-unit flock with a re-check under the lock, so concurrent takeovers serialize to one winner and never overwrite a claim that turned fresh. A claim is granted only when the unit's requirements are a subset of the worker's capabilities (free-form tags, so iOS routes to a Mac and GPU work to a GPU box with no hardcoded OS map). heartbeat refreshes, release frees, own re-claim is idempotent. fcntl-based, so Unix-only (Linux and macOS, the fleet's targets)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py is the fleet's atomic self-dividing claim primitive: a claim file under the git common dir at warp/claims/<unit>.json (shared across worktrees, outside git history) with holder, requirements, and heartbeat. A fresh unit is published by writing the full record to a temp file and os.link-ing it onto the target (link fails if the target exists), so the target is never seen half-written and racing workers get exactly one winner; a live claim is never stolen. A stale, corrupt, or own claim is taken over under a per-unit flock with a re-check under the lock, so concurrent takeovers serialize to one winner and never overwrite a claim that turned fresh. A claim is granted only when the unit's requirements are a subset of the worker's capabilities (free-form tags, so iOS routes to a Mac and GPU work to a GPU box with no hardcoded OS map). heartbeat refreshes, release frees, own re-claim is idempotent. fcntl-based, so Unix-only (Linux and macOS, the fleet's targets)."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block over a temporary claims root drives capability refuse-vs-grant, a BARRIER-synchronized concurrent fresh-unit race (96 threads x 120 rounds, exactly one winner), a barrier-synchronized concurrent stale-takeover (64 threads x 10 rounds, exactly one winner), live-claim-not-stolen, sequential stale reclaim, heartbeat, release, and claimed_units filtering; non-tautological - reverting the atomic os.link publish, removing the takeover lock, or skipping the capability check each turns a threaded assertion red; part of selftest 992 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 992 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: the claim/capability/takeover control logic and its real surface (the claim files, os.link, flock) run in the gate over a temp claims root with genuinely threaded races, stdlib only. fcntl makes it Unix-only (acceptable for a Linux/Mac fleet). heartbeat has no fencing lock - a resumed heartbeat by a holder already past the stale threshold can transiently double-hold with a reclaimer and self-resolves on the next heartbeat (worker_id mismatch); this is the inherent TTL-lease limitation and never steals a fresh claim, deferred as a fencing note. This item is the claim mechanics + capability match only; computing the claimable set (Y2) is separate."
+  ],
+  "rollback": "git revert; additive - a new .warp/claim.py, a selftest block, one claim_ledger capability entry (both copies), the WARP-0701 spec, and the PLAN-0007 plan; no protected path; claims live outside git history."
+}

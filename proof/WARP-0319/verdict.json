@@ -1,0 +1,52 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0319",
+  "commit": "08b542b5906a4c72b599546f95c5e099a06ae565",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T13:10:17Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:dc17a111946b2878",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC6",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "The selftest runs longer (dominated by the real pty subprocess drives); a gate-latency observation, not a defect."
+    },
+    {
+      "severity": "note",
+      "text": "Several renderer branches listed in AC1 (relative cursor moves, backspace, tab, bright colors, additional erase/scroll modes) are implemented and exercised indirectly but not each individually asserted; extending the unit block would harden the reference but is not required for correctness."
+    }
+  ],
+  "summary": "B19 (WARP-0319, terminal/TUI reference runner) is correct and honest. Independent adversarial review: clean PASS, gate GREEN, both fixtures correct (pass exit 0; fail exit 1 naming the dropped-bold cell at (2,4)/(2,6), a defect a raw-byte grep for the text would miss), 8/8 mutations caught, 7 rubber-stamp cases plus a forced pty-absent path all rejected as named errors, capabilities mechanical honest (renderer plus real pty both run in the gate; live drive fails loud without pty), generic, ASCII, no double-hyphen, stdlib-only, both capabilities.yaml copies byte-identical. Landed unchanged from review. proof_digest recomputed via validate.py."
+}

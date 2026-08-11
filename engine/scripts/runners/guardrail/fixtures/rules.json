@@ -1,0 +1,16 @@
+{
+  "schema": "veldo.guardrail/v1",
+  "rules": [
+    {
+      "name": "no-db-import-outside-repository",
+      "glob": "**/*.py",
+      "exclude": "repository/**",
+      "pattern": "^\\s*(?:import\\s+db|from\\s+db\\s+import)\\b"
+    },
+    {
+      "name": "no-legacy-global-singleton",
+      "glob": "**/*.py",
+      "pattern": "\\bGLOBAL_STATE\\b"
+    }
+  ]
+}

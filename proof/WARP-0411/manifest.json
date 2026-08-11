@@ -1,0 +1,84 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0411",
+  "commit": "8de881fff7a0540e89f0cb172d8d34ec85c60e3f",
+  "producer": "claude-opus-4-8[1m] (implementing agent)",
+  "produced_at": "2026-07-17T21:49:13Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "selftest 'integration empty interactions with a caller fails loud (drives nothing)' (scripts/selftest.py) drives run() with a caller and interactions:[] and asserts passed is False with a 'no interactions' error; removing the guard flips it to fail. Part of selftest 763 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "selftest 'db invariant missing expect_rows fails loud (asserts nothing)' asserts check_invariant on an invariant with a query but no expect_rows returns a 'malformed' failure; reverting to the old is-not-None guard flips it to fail; a real row mismatch and SQL error are still caught. Part of selftest 763 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "selftest 'db budget missing max_seconds fails loud (asserts nothing)' asserts check_budget on a budget with a query but no max_seconds returns a 'malformed' failure; reverting flips it to fail; a real budget-exceeded and SQL error are still caught. Part of selftest 763 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "three one-line mutations (drop the empty-interactions guard, revert check_invariant, revert check_budget) each turn a named selftest case red (lines 947/786/787), proving non-tautology; shipped pass/fail fixtures for both runners behave unchanged (db fail still fails at reversibility, empty budgets:[] legitimate, no-invariants-no-budgets journey passes); full gate GREEN. Part of selftest 763 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 763 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Both runners are mechanical (control logic gate-tested via selftest with no external surface). The guards short-circuit only on a missing query or a None expect_rows/max_seconds, using is None, so expect_rows:[] (assert zero rows) and max_seconds:0.0 (strict budget) stay legitimate assertions, not malformed. No protected path touched."
+  ],
+  "rollback": "git revert; three small guard clauses plus their selftest cases; no protected path; well-formed journeys unaffected."
+}

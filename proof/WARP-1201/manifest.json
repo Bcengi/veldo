@@ -1,0 +1,142 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1201",
+  "commit": "c62195e074bf9cfa37884530cc8d12a6a0d9ea22",
+  "producer": "claude-opus-4-8[1m] (WARP-1201 implementer agent, planned lane; W1 of PLAN-0012, the incident and remediation contracts and their structural validator)",
+  "produced_at": "2026-07-23T04:26:22Z",
+  "plan": "PLAN-0012",
+  "work": "W1",
+  "plan_revision": 2,
+  "plan_hash": "sha256:9c8616540899be1d",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "warp.incident/v1 is defined in .warp/incident.py (validate_incident). A record declares id, title, signal (what broke), affected_behavior (and softly affected_spec / affected_area for the later cross-plan join), a severity from the tier ladder {low,standard,high,critical}, a timeline mapping (opened_at always, diagnosed_at once diagnosed) that carries the time-to-diagnosis, and a lifecycle status {open,diagnosed,closed}. Records are homed per-repo under .warp/incidents/*.yaml, a subdirectory the single-level .warp/*.yaml engine glob does not reach, so records stay per-repo like the decision records and are never shipped. An illustrative example ships at .warp/examples/incident-example.yaml (INC-0000, status diagnosed) and validates clean: python3 .warp/incident.py .warp/examples/incident-example.yaml returns 'clean'."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1201 block: 'a well-formed warp.incident/v1 record validates' (==0), 'the shipped incident example validates' (==0), 'the shipped examples are clearly illustrative (INC-0000 / REM-0000)'. Timeline teeth: 'incident timeline with no opened_at refuses', 'a diagnosed incident with no diagnosed_at refuses (time-to-diagnosis)', 'a diagnosed_at before opened_at refuses (a negative time-to-diagnosis)' each refuse (>0)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "warp.remedy/v1 (validate_remedy) carries EVERY plan-mandated element: diagnosis, evidence with query citations (a non-empty list, each entry cites the query/artifact), proposed_action (an action reference plus a parameters mapping, never command text), risk_class, autonomy_level {L0,L1,L2,L3}, reversibility {class,analysis,data_mutating}, rollback, canary {supported, shape when supported}, and required_authorization. Records are homed per-repo under .warp/remedies/*.yaml. The illustrative example ships at .warp/examples/remedy-example.yaml (REM-0000, a reversible deploy-rollback proposal) binding to INC-0000, and validates clean with its incident resolved from the co-located examples directory."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'a well-formed warp.remedy/v1 proposal validates' (==0), 'the shipped remedy example validates and binds to the example incident' (==0). Element negatives each refuse (>0): remedy wrong schema, missing diagnosis, out-of-vocabulary risk_class / autonomy_level / reversibility class, evidence with no citation, proposed_action with no parameters, canary supported with no shape, malformed subset."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The safety architecture is structural in validate_remedy and fails closed. PROPOSAL-NOT-EXECUTION: a remedy may carry no execution-capability field (self_executing, auto_apply, applied, executed, execute, execution, run, command, shell) even set to false, and no status from the execution-claiming set {executed, applied, auto_applied, running, in_progress, done}; either is refused (execution is a separate organ, WARP-1206 W6). The two safety OMISSIONS: a missing rollback plan is refused, a missing required_authorization is refused. The two-key BINDING: reversibility.class irreversible OR reversibility.data_mutating true forces required_authorization two_key (the recorded human authorization plus the independent fresh-context confirmation, WARP-1207 W7) or it is refused. required_authorization is a closed vocabulary {human_confirmation, two_key}."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest negatives each refuse (>0): 'a remedy carrying a self_executing field is REFUSED (proposal-not-execution)', 'a self-execution field set to false is STILL refused', 'a remedy whose status claims it executed is REFUSED', 'a remedy that omits its rollback plan is REFUSED', 'a remedy that omits its required authorization is REFUSED', 'an out-of-vocabulary required_authorization refuses', 'an irreversible remedy that does not require two keys is REFUSED (W7 binding)', 'a data-mutating remedy that does not require two keys is REFUSED'. Positive control: 'an irreversible remedy WITH two_key validates' (==0)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/incident.py reuses validate.parse_yamlish (no second parser) and validate.fail (no import cycle), the way decision.py and arch.py receive theirs. validate_incident / validate_remedy fail closed by name on a wrong schema, a missing/empty required field, an out-of-vocabulary status/severity/risk_class/autonomy_level/reversibility class/authorization, a timeline with no opened_at, evidence with no citation, a proposed action with no action or parameters, and a file outside the parser subset. bind_remedy fails closed when a remedy's incident does not resolve (referenced but absent). check_records is adoption safe: with no .warp/incidents/ and no .warp/remedies/ directory it stands down (0); a required-but-absent record fails closed, a present malformed record fails closed, and a duplicate id within either set is refused."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests over a temporary tree: 'absent incidents AND remedies directories stand down (adoption safe)' (==0), 'a required-but-absent single incident/remedy fails closed by name' (>0), 'present valid records with a resolving binding validate through the scan' (==0), 'a remedy whose incident does not resolve fails closed (referenced but absent)' (>0), 'a malformed present incident fails closed' (>0), 'a duplicate incident id across records is refused' (>0), 'a duplicate remedy id across records is refused' (>0); 'bind_remedy accepts a resolving incident' (==0) and 'refuses an absent incident' (>0)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "TEETH by mutation over the shipped examples (anti-vacuity C1): stripping the incident's diagnosed_at, and on the remedy injecting self_executing, stripping the rollback, stripping the required_authorization, and flipping status to executed, each turn the check RED, and each mutation reverts byte-identical. .warp/incident.py ships in the engine and is byte-identical across root, plugin/templates, and the 6 packs (aider, antigravity, codex, copilot, cursor, opencode). .warp/events.py gains the incident lifecycle vocabulary (incident.opened, incident.diagnosed, remedy.proposed, incident.closed), owned as incident.INCIDENT_EVENT_TYPES and bound to events.EVENT_TYPES by a selftest so they cannot drift; emission and check_events recognition are WARP-1208 (W8). capabilities.yaml gains one honest mechanical entry (incident_remedy_contracts, home .warp/incident.py which ships in the engine). Honest deferrals: gate wiring into validate.py run_all and init lay-down is WARP-1211 (W11); the evidence plane (W2), intent corpus (W3), responder loop (W4), whitelist (W5), executor (W6), and two-key rule (W7) are referenced, never built here; this contract carries no execution capability. No protected path is touched (verify.sh, warp-guard.sh, policy.yaml, policy_check.py and their plugin/templates twins unchanged). RULE #1 clean."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 1908 passed, 0 failed (54 new WARP-1201 assertions). MUTATION teeth all pass: incident diagnosed_at strip, remedy self_executing inject, rollback strip, required_authorization strip, status->executed each turn the check RED. Byte-identical sync assertions across root/plugin/6-packs for incident.py, events.py, capabilities.yaml, and the examples for plugin. ./scripts/verify.sh: GATE GREEN (catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared). The impl lands in one commit c62195e; specs/WARP-1201 stays status draft (not flipped to shipped), specs/index.md is regenerated (WARP-1201 draft, in the PLAN-0012 ready frontier), no verdict is written, .warp/events.jsonl / .warp/last_verify / proof/WARP-1201 are left uncommitted, and nothing is pushed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1908 passed, 0 failed. The WARP-1201 block adds 54 assertions: incident positive + timeline/time-to-diagnosis teeth + closed vocabularies + malformed; remedy positive + the safety invariants (proposal-not-execution, missing rollback, missing required_authorization, irreversible/data-mutating requires two_key) + element negatives; binding accept/refuse; temp-tree adoption-safe stand-down, required-but-absent, malformed, duplicate-id, unbound-remedy; the shipped examples validate; five mutation teeth over the real examples; the event-vocabulary drift guard; byte-identical sync across root/plugin/6-packs; the capabilities entry; and the placement/tier dogfood."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes, including check_plan over PLAN-0012 with WARP-1201 mirrored back (lane planned, plan PLAN-0012, work W1, plan_revision 2), check_ready/placement over the spec (placement [contracts] resolves, footprint tier standard), and check_events over .warp/events.jsonl. The incident/remedy contract validator is NOT yet wired into validate.py run_all: that landing is WARP-1211 (W11), so editing the over-budget .warp/validate.py (which the shape gate's file_lines rule would refuse) is not required in W1. The validator is exercised standalone (python3 .warp/incident.py) and through validate.parse_yamlish + validate.fail in the selftest."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py; WARP-1201 row reads draft, PLAN-0012 ready frontier shows WARP-1201 (W1). check_generated.sh reports no drift (regeneration is a no-op)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash, no prose double-hyphen), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry no company/product references) all pass. The new engine material (.warp/incident.py, the two examples under plugin/templates, the events.py vocabulary, and the capabilities entry) is generic; 'WARP' is the method's own name."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "bash scripts/check_lint.sh: pass. .warp/incident.py and every edited/synced .py file compiles under python3 -m py_compile."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: template sync pass (the PAIRS-tracked files, e.g. validate.py, are unchanged). .warp/incident.py, .warp/events.py, and .warp/capabilities.yaml follow the byte-identical discipline across all engine copies; the two examples are synced root and plugin/templates for init."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pack drift pass (7 packs). .warp/incident.py, .warp/events.py, and .warp/capabilities.yaml are byte-identical between plugin/templates (canonical source) and every pack (cursor, codex, copilot, antigravity, opencode, aider); the claude pack is the source in-place."
+    },
+    {
+      "name": "runner_catalog",
+      "status": "passed",
+      "detail": "python3 scripts/check_runner_catalog.py: pass (21 runners). The new capability incident_remedy_contracts is mechanical with home .warp/incident.py (an engine file that ships, not a runner); the capabilities-honesty selftest confirms every unmarked home ships and every home exists."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. Footprint-versus-diff: WARP-1201 is the single footprinted spec in the change set and every changed source path is covered by its declared footprint. No file_lines violation: the change touches no over-budget governed file (.warp/validate.py, which is over the 1000-line budget, is deliberately NOT edited; .warp/events.py is metrics-area and 143 lines; .warp/incident.py resolves to no area and is outside every budget). Placement [contracts] resolves, footprint tier standard (contracts and metrics are joined by the allow-listed metrics->contracts edge, so it is cohesive breadth, not a boundary crossing)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass."
+    }
+  ],
+  "assumptions": [
+    "WARP-1201 is a PLANNED spec (lane planned, W1 of PLAN-0012 revision 2, ready 2026-07-22). run-check PLAN-0012 WARP-1201 returned 'clear to build (deps shipped, plan context current)' (frontier root, depends_on []). The manifest carries plan/work/plan_revision/plan_hash (sha256:9c8616540899be1d) to bind the change to the plan state it was built against.",
+    "This item is the incident and remedy CONTRACTS plus their STRUCTURAL validator only. The safety architecture is encoded in the contract (a remedy is a proposal and carries no execution capability; irreversible or data-mutating requires two_key), but the ORGANS that consume the contracts are honestly later items: the evidence plane WARP-1202 (W2), the intent corpus WARP-1203 (W3), the responder investigation loop WARP-1204 (W4), the action whitelist WARP-1205 (W5), the execution organ WARP-1206 (W6), the two-key rule WARP-1207 (W7), and the compressed loop WARP-1208 (W8). Nothing here executes anything.",
+    "HONEST DEFERRAL of the gate wiring (not a dodge): the contract validator is designed to be invoked by validate.py (it takes validate.parse_yamlish and validate.fail, no second parser) and is exercised that way in the selftest and via its own CLI. It is NOT wired into validate.py run_all in W1 because doing so requires editing .warp/validate.py, which is already 1207 lines and over the mechanizable module_lines budget (max 1000); the shape gate refuses any change that touches an over-budget governed file, so the run_all landing and the init lay-down are deferred to WARP-1211 (W11), exactly as WARP-1108/WARP-1109 shipped their modules unwired. The event vocabulary is likewise introduced in the emitter (.warp/events.py) in W1; check_events recognition and emission are wired with the compressed loop (W8) when incidents actually flow.",
+    "The impl is a single commit c62195e (incident.py + two examples + events.py vocabulary + capabilities entry + selftest + regenerated index, all engine copies byte-identical). Per the review boundary: the spec is NOT flipped to shipped, the index derives draft from the spec, no verdict is written, this proof manifest and .warp/last_verify and .warp/events.jsonl are left uncommitted, and nothing is pushed. The independent fresh-context reviewer authors the verdict; the orchestrator flips to shipped on a pass."
+  ],
+  "rollback": "git revert c62195e. The change adds one contract-validator module (.warp/incident.py, synced across the engine), two illustrative example artifacts, four incident lifecycle event types in .warp/events.py, and one capabilities entry; nothing consumes incident or remedy records for enforcement yet (the first consumers are WARP-1204/WARP-1206, and gate wiring is WARP-1211), and the validator is not wired into verify.sh or validate.py run_all, so reverting returns the gate to its prior behavior with no migration and nothing to unwind. A repository with no .warp/incidents/ and no .warp/remedies/ directory is unaffected either way (the adoption-safe posture)."
+}

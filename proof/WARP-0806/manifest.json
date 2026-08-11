@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0806",
+  "commit": "e56a048e68bec7895a792203a30e8929026e17ab",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0008 W6, in-session single writer)",
+  "plan_hash": "sha256:837b26cb7db25a47",
+  "produced_at": "2026-07-19T03:06:30Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "packs/antigravity is a committed self-contained pack: the full canonical engine (139 files) copied byte-identical + the canonical AGENTS.md + a thin agy plugin driver; targets the agy command (successor to the wound-down Gemini CLI), not Gemini CLI."},
+        {"type": "unit", "ref": "independent review: engine_drift(plugin/templates, packs/antigravity) == [] over 139 files, no symlinks, AGENTS.md identical to canonical; part of selftest 1240 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WARP push gate holds for agy with no honor-system path: the agy before-tool-call hook (hooks.json -> warp-guard-hook.sh) and the git pre-push hook (hooks/pre-push) both feed scripts/warp-guard.sh the JSON payload it parses (tool_input.command on stdin, the WARP-0803 fix from the start), backed by the CI required status check; commands built with json.dumps so they cannot inject."},
+        {"type": "unit", "ref": "independent review behaviorally proved in a synthetic unproven WARP repo: pre-push exit 2 (blocks) unproven, exit 0 (allows) proven (green last_verify + proof + verdict bound to HEAD), exit 2 on a different commit; the agy hook exit 2 on a push (env or stdin), exit 0 passthrough on a non-push; an injection command (touch pwned) was blocked with the file NOT created (json.dumps safe). W6 did NOT repeat the W3 fail-open. Part of selftest 1240 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the antigravity pack is declared in .warp/packs.json and the drift-check holds its engine copy byte-identical to source (the fifth pack)."},
+        {"type": "unit", "ref": "independent review: check_pack_drift 'pass (5 packs)', claude/cursor/codex/copilot/antigravity all byte-identical; teeth on the committed antigravity copy (append to scripts/verify.sh -> differs; rm .warp/validate.py -> missing); part of selftest 1240 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "reuse not reinvention: the engine, AGENTS.md, skills, and agents are copied from the one canonical source (identical); only the thin agy driver is authored, matching agy's plugin model (plugin.json + hooks.json + rules/ + skills/ + agents/)."},
+        {"type": "unit", "ref": "independent review: diff -rq plugin/skills vs packs/antigravity/skills identical, plugin/agents vs packs/antigravity/agents identical, AGENTS.md identical; only 5 net-new authored driver files (plugin.json, hooks.json, warp-guard-hook.sh, rules/warp.md, hooks/pre-push); part of selftest 1240 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest asserts the antigravity pack conforms (drift-free, len>=5) and carries its agy wrapper (plugin.json, hooks.json, the guard hooks feeding the JSON payload, rules, skills, agents, AGENTS.md), non-tautologically."},
+        {"type": "unit", "ref": "independent review: the WARP-0806 block is non-tautological (drift mutation caught; the tool_input substring is absent in a W3-style env-var hook), and the reviewer behaviorally verified the actual blocking above; part of selftest 1240 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1240 passed, 0 failed (+4 for the WARP-0806 antigravity-pack block)"}
+  ],
+  "assumptions": [
+    "W6 of PLAN-0008, built in-session by a single writer. Originally scoped for Gemini CLI, retargeted to the Antigravity CLI (agy) because Google folded Gemini CLI into Antigravity and shut Gemini CLI down 2026-06-18 (the plan text was reconciled Gemini->Antigravity in the W3 commit). agy's plugin model was researched at build (agy launched after the model cutoff): a plugin.json manifest + optional hooks.json (before-tool-call/after-model-call/loop-stop lifecycle hooks) + skills/ + agents/ + rules/ - close to Claude's, so the port is a clean re-path. The WARP-0803 enforcement fix was applied from the start (both hooks feed the guard the JSON stdin payload); the review behaviorally proved the gate blocks the unproven and allows the proven and is injection-safe, and W6 did NOT repeat the W3 fail-open. Independent adversarial review pass_with_notes, 0 blocking. TWO non-blocking notes: (1) agy's plugin.json/hooks.json schema is a fast-moving post-cutoff surface so the exact editor-hook format is unverifiable, but the guaranteed enforcement is the git pre-push hook + CI regardless (the spec states this); (2) COSMETIC - the pack spec front matter depends_on [WARP-0802] (the pattern-setter that built the manifest + drift + option B, the true dependency) while the plan's W6 work item still reads depends_on [WARP-0801] (the raw engine); validate does not enforce spec-vs-plan depends_on consistency (gate GREEN). The plan's pack-item depends_on (W3-W8: 0801 -> 0802) will be reconciled in the plan text bundled into the W7 impl commit (a plans-only commit trips policy_check).",
+    "The pack copy does not pollute the gate (packs/antigravity/specs + plans carry only TEMPLATE.md; the dash/genericity sweep covers docs/+plugin/ not packs/). check_pack_drift.py + .warp/packs.json are warp-repo tooling (no template twin)."
+  ],
+  "rollback": "git revert; additive - a new packs/antigravity tree (engine copy + agy wrapper), an antigravity entry in .warp/packs.json, a selftest block, and this spec; no protected path; pure stdlib, no network."
+}

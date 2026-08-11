@@ -1,0 +1,70 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0100",
+  "commit": "0de75f3ee243249a6161a5a606d713c4eeb8456e",
+  "reviewer": "claude-opus-4-8[1m]",
+  "reviewed_at": "2026-07-16T20:34:28Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Reran python3 .warp/validate.py all at 0de75f3 in the pinned worktree: exit 0. Read validate.py: run_all validates specs, proof manifests, verdicts, approvals, and the four examples via required-field and coverage checks."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Reran ./scripts/verify.sh: exit 0, GATE GREEN, catalog reported 5 run / 18 not-applicable / 0 waived / 0 undeclared. Read verify.sh end to end and each script: the five required slots map to real commands (lint = check_lint.sh py_compile + bash -n over every tracked script incl plugin templates; unit = selftest.py, 9 passed / 0 failed; docs = check_docs.sh three sweeps; generated = update_index.py + git diff --exit-code on specs/index.md; extra = check_template_sync.sh byte-diff of 4 instance files). No stubs. Counted the catalog: exactly 5 required, 18 na, 23 total slots in ORDER."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Reran python3 scripts/update_index.py: prints 'index: 1 specification(s)', regenerates specs/index.md byte-identical (no git diff), and the table row is WARP-0100 | Adopt WARP in the WARP home repository | ready."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Reproduced live: appended a line with a U+2014 em-dash plus the word Tripdesk to docs/plugin.md; bash scripts/check_docs.sh failed all three sweeps (dash, non-ASCII, genericity) and exited 1; after git checkout -- docs/plugin.md it exited 0. Matches proof/WARP-0100/negative-tests.txt."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Reproduced live: appended a comment line to .warp/validate.py; bash scripts/check_template_sync.sh reported drift from plugin/templates/.warp/validate.py and exited 1; after git checkout -- .warp/validate.py it exited 0. Matches negative-tests.txt."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "blocking",
+      "text": "The approval record for this protected-path change is inert as written. proof/WARP-0100/approval-dmitry.json has decision: 'approve', but .warp/policy_check.py (line 62) requires decision == 'approved', which is the canonical value used in every example and doc (approval-example.json, docs/runbook.md, docs/plugin.md, docs/setup.md). I imported the real policy_check.py and ran valid_approval_for(HEAD) against a copy of the actual file: it returns None (approval NOT accepted). scope.commit is the full HEAD hash (bound correctly), expires_at 2026-08-15 is unexpired, and scope.paths is ['scripts/verify.sh'] (matches the created protected path), so every other field is correct, but the one-character decision-value defect means the recorded human approval does not satisfy the guard it exists to satisfy. Because scripts/verify.sh is a protected_path in policy.yaml, policy_check blocks the push until a valid approval exists, so this fails closed (safe), but the authorization artifact for a high-risk change is defective and must be corrected to 'approved' before merge."
+    },
+    {
+      "severity": "blocking",
+      "text": "policy_check.valid_verdict_for crashes on the shipped verdict shape. verdict.json (L1) carries findings as an ARRAY, but policy_check.py line 100 does v.get('findings', {}).get('blocking') with no type guard; I imported the real module and ran valid_verdict_for(HEAD) against a copy of verdict.json: it raises AttributeError ('list' object has no attribute 'get'). The canonical .warp/examples/verdict-example.json uses the object shape {blocking, non_blocking}, while validate.py VERDICT_REQ does not pin findings at all, so the verdict contract is unpinned and the array shape (which is also the shape this L2 verdict was commissioned to use) makes the enforcer abort with a traceback at push time instead of returning a reason. This currently blocks every push (fails closed) once any array-shaped verdict is present in proof/. Harden policy_check.py to tolerate both shapes and pin the findings shape in validate.py."
+    },
+    {
+      "severity": "note",
+      "text": "The enforcement core is only partially protected. policy.yaml protects scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml and the two plugin/templates copies, but NOT the modules that implement enforcement: .warp/policy_check.py (the mechanical reader that actually blocks protected-path pushes) and .warp/validate.py (the contract validator), nor the check bodies (check_docs.sh, check_lint.sh, check_template_sync.sh, selftest.py). The enforcer of protection is thus itself unprotected while the policy DATA it reads is protected: editing policy_check.py achieves the same weakening as editing policy.yaml but escapes the high/human-approval floor, reachable through the ordinary lane (standard risk, L2 review, no human approval). check_template_sync catches single-instance drift of policy_check.py/validate.py, but editing both the repo instance and its plugin/templates twin identically passes it. The policy comment ('Deliberately narrow: validators and skills change with ordinary specs') shows this is intentional; the only residual backstop is the mandatory independent verdict on every push. Worth confirming this is the intended trust boundary for a repo that ships the gate everyone else trusts."
+    },
+    {
+      "severity": "note",
+      "text": "Nothing semantically verifies the verify.sh CHECK_ catalog beyond verify.sh being a protected path. Flipping a required check to na: does require an approval (good, verify.sh is protected), but no check confirms that a required slot points at a non-trivial command or that an na: reason is accurate; a required slot could point at a gutted check script (see the enforcement-core note) and the gate would still report GREEN. Diff review is the sole backstop."
+    },
+    {
+      "severity": "note",
+      "text": "Provenance mismatch in the proof record. manifest.json producer and approval-dmitry.json recorded_by both say 'claude-opus-4-8[1m] (implementing agent)', but the commit Co-Authored-By trailer and the L1 verdict.reviewer are 'claude-fable-5'. The implementing-agent attribution in the proof/approval disagrees with the commit authorship, and it muddies the L1/L2 model-independence accounting: if the implementer were truly opus-4-8[1m] this opus L2 review would not be a different-model review. The commit trailer and the L1 reviewer (both Fable) are the more authoritative signals; reconcile the producer/recorded_by attribution."
+    },
+    {
+      "severity": "note",
+      "text": "Spec metadata contradicts the policy it ships (corrected downstream per the review brief). At this commit the spec declares risk: standard and human_approval: not_required while creating scripts/verify.sh, which policy.yaml floors at high with human_approval: true; enforcement fails closed (policy_check blocks the protected-path push absent a valid approval), so no unsafe outcome, but the front matter contradicts the shipped policy. Separately, the spec's protected_paths field lists only [scripts/verify.sh] while policy.yaml actually protects five paths (a mismatch in the safe direction: more protection than declared)."
+    },
+    {
+      "severity": "note",
+      "text": "The built-in secret scan is shallow and excludes the proof tree. It matches only (api_key|secret|password|token) [:=] followed by a quoted 16+ char value, so it misses unquoted assignments, keyword-less high-entropy tokens (AWS AKIA, GitHub ghp_, Slack xox), and PEM private-key blocks, and its --exclude-dir list contains proof, so a secret pasted into an approval/verdict/manifest JSON would not be caught. Proportionate for a docs-and-templates repo with no runtime, but narrower than the 'secret detection runs always' framing implies."
+    },
+    {
+      "severity": "note",
+      "text": "Minor proof-manifest sourcing looseness. manifest AC2 evidence attributes '0 waived, 0 undeclared' to .warp/last_verify, which stores only checks_run and checks_na; those two counts come from gate stdout. Both values are true (I observed 0 waived / 0 undeclared on rerun), so the claim is correct, only the cited source is loose. The 5th required check is also named 'template_sync' in the manifest vs the slot name 'extra' in verify.sh (semantically consistent). Everything else in the manifest maps to observed evidence: AC1-AC5 all reproduced, all seven checks passed, the rollback claim (additive files plus one two-character ASCII fix in docs/method.md) matches git show, and the assumptions section honestly discloses that gate-before-push was applied manually because adoption was driven from an external session."
+    }
+  ],
+  "summary": "All five acceptance criteria were independently reproduced at commit 0de75f3 in the pinned worktree: the contract validator and canonical gate exit green with exactly five real required checks and zero undeclared slots, the index regenerates listing WARP-0100, and both negative demonstrations (planted em-dash plus company word failing the docs check; planted validator drift failing template sync) fail and recover exactly as the proof claims, so the spec claim could not be refuted. The proof manifest is accurate claim by claim. Two blocking findings sit in the surrounding enforcement and authorization chain, both independently reproduced by running the real policy_check.py and both failing closed (they block merge, never wrongly allow it): the recorded approval uses decision 'approve' where the guard requires 'approved' so valid_approval_for returns None, and the shipped array-shaped verdict crashes valid_verdict_for with AttributeError. Six notes cover the deliberately narrow protected surface leaving the enforcement implementations unprotected, an unverified check catalog, a producer-vs-committer provenance mismatch with independence implications, the known spec-vs-policy risk contradiction, a shallow secret scan, and minor manifest sourcing looseness."
+}

@@ -1,0 +1,102 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "WARP-0620",
+  "commit": "<the landing commit, set when this lands>",
+  "producer": "claude-opus-5[1m] (orchestrating session, run WITH the owner present; this item is deliberately not autonomous because its decisive input is a transition the machine is structurally unable to make)",
+  "produced_at": "2026-07-25T00:35:00Z",
+  "plan": "PLAN-0016",
+  "work": "W7",
+  "plan_revision": 1,
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The codified path ran end to end against a real board through the SHIPPED entry points with no monkeypatch and no local modification. veldo jira init on TE1: provisioned true, 1 issue type created (Decision), 2 reused, 0 statuses created and 14 REUSED (the attach-not-fake behaviour), 13 workflow transitions wired and 29 already correct, and 0 specs and 0 epics mirrored so no private artifact reached the sandbox. Commands, verbatim output and the resulting issue keys are recorded in run-record.md. Before WARP-0623 this same command could not run at all, in any configuration."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The raw ordered attributed changelog was captured VERBATIM before any interpretation, in te1-changelog-raw.json: two entries, the agent moving To Do to Needs Decision and the human moving Needs Decision to Approved, each with an actor, an accountType, an account id, an entry id and a timestamp. The field-by-field comparison against the offline fake's assumption is in run-record.md: the three fields the shipped accessors read (from, to, actor) are present in every real entry, and the real entries additionally carry id, at, account_id and actor_type which the accessors ignore. THE DIVERGENCE FOUND IS RECORDED AS A FINDING, NOT ADJUSTED AWAY: the shipped accessors read a FLAT shape while Jira's raw changelog is NESTED, and the normalization between them was written by hand for this run because no live implementation exists (GAP 2)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "partial",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The derivation functions were run on the real changelog and every claimed property held: _opening_actor resolves to the AGENT, _entry_actors to the HUMAN, _terminal_decision to accept FROM THE ORDER rather than current status, the decisive entry is the last accepting transition, no conflict, and proposer does not equal approver so separation of duties holds on real data. WHAT WAS NOT ESTABLISHED, and the criterion is therefore PARTIAL rather than passed: reconcile_requests was NOT driven end to end against the live board, so no settlement receipt was written from live data and the compare-and-swap and idempotent-replay properties remain proven offline only. The blocker is GAP 2, the absent live changelog reader, plus the fact that no seeded request record was projected to TE1."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE FENCE WAS PROVEN BY ATTEMPTING TO DEFEAT IT. Acting on the agent's own OAuth client credentials, identity confirmed from the API as ('Veldo Agent', 'app'): the three terminal transitions Approved, Decided and Rejected were each NOT OFFERED to that credential, which is stronger than a 403 because they do not exist for that identity. THE CONTROL, which is what makes the refusals meaningful rather than indistinguishable from broken authentication: a non-terminal transition to Needs Decision by the SAME credential in the same seconds PERFORMED. Supporting evidence recorded alongside: the agent group contains exactly the service account, the approver group contains exactly the owner, the agent is absent from the approver group, and of 16 transitions on the provisioned board exactly 3 carry a condition."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "partial",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The agent-cannot-fire-a-terminal-transition negative was run LIVE and is the item's strongest result (AC4). The remaining negatives - a forged rejection submitted as a machine actor, a terminal transition by an account outside the approver set failing to settle the repository record, a replayed changelog entry proving idempotent, and a stale bound digest refusing - were NOT run live, because each requires the reconcile to be driven against the live board, which GAP 2 prevents. They remain proven offline by WARP-0619's suite. Recorded as partial rather than passed."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The outcome is recorded honestly whatever it is, which in this case includes two gaps and two partial criteria. run-record.md carries the commands and their real output, the verbatim changelog, the field-by-field comparison, the refused terminal-transition attempts with their control, and an explicit section titled what this run did NOT establish. Both gaps are specified as their own items rather than patched here: GAP 1 the machine-actor guard that does not recognize the real agent (WARP-0624, which the public work surface must not ship before), and GAP 2 the absent live changelog reader. No production board record was read or written, no real decision settled, and no listener, webhook, timer or service was created, so nothing is left running."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "human_authorization",
+      "status": "passed",
+      "detail": "Recorded as an artifact in approval-dmitry.json rather than left in a chat message: the owner created the throwaway project unprompted, chose explicitly to run from the reviewed branch when asked, and performed the one terminal transition the proof required. Scope and non-scope are enumerated, and the authorization is single-use."
+    },
+    {
+      "name": "precondition",
+      "status": "passed",
+      "detail": "WARP-0623 landed and was independently reviewed (pass_with_notes, must_fix empty) before this ran, and the run used that branch. Running before it would have proven only the known defect."
+    },
+    {
+      "name": "no_production_impact",
+      "status": "passed",
+      "detail": "The production board was READ for group membership and transition conditions and never written. Every created artifact is on the throwaway project."
+    },
+    {
+      "name": "no_standing_mechanism",
+      "status": "passed",
+      "detail": "No listener, webhook receiver, daemon or timer was created (NG3, and the plan's O3 decision that the ingress is an in-session pull)."
+    }
+  ],
+  "assumptions": [
+    "TWO CRITERIA ARE PARTIAL, DELIBERATELY AND VISIBLY. AC3 and AC5 are marked partial because the reconcile was never driven end to end against the live board. Recording them as passed would have been the single most tempting overstatement available after a green live run, and this repository's last four reviews have all found overstatements of exactly that shape.",
+    "The field-by-field comparison in AC2 proves the shipped accessors CAN read the real data once it is normalized. It does NOT prove the normalization is right, because the normalization does not exist in the repository; it was hand-written for this run. That is GAP 2 and it is why AC3 is partial.",
+    "GAP 1 is not a defect in any shipped criterion of any item: WARP-0619 was scoped offline on purpose and the guard was never claimed to have been tested against a real identity. It is the finding this item existed to produce.",
+    "The fence result is specific to a tracker with per-transition conditions. It does NOT transfer to a surface without them, which is exactly why the public work surface carries its own negative test and a hard dependency on WARP-0624.",
+    "The run used the admin identity for provisioning and the agent identity for the fence attempts, which is the two-identity model behaving as designed rather than a shortcut."
+  ],
+  "rollback": "Nothing in the repository to roll back beyond reverting the evidence commit. On the board side the throwaway project's contents are disposable and touch no production record; the owner may delete TE1 or keep it as the sandbox. No listener, service, timer or webhook was created, so nothing is left running and no production board is wired by this item."
+}

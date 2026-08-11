@@ -1,0 +1,4 @@
+db runner driven over its fixtures against an in-memory sqlite database:
+
+pass.journey.json (clean round trip): exit 0 (expect 0)
+fail.journey.json (asymmetric down): exit 1 (expect 1, residual object caught)

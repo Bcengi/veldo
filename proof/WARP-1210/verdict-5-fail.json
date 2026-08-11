@@ -1,0 +1,76 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1210",
+  "commit": "97abb6e81a3461fa3a08cd4d94627fe15cd8476a",
+  "reviewer": "claude-opus-5[1m] (ROUND-5 independent adversarial reviewer, a fifth distinct fresh context; primary instruction was to attack the completeness default that the owner's option A introduced)",
+  "reviewed_at": "2026-07-25T13:10:00Z",
+  "verdict": "fail",
+  "round": 5,
+  "supersedes": "proof/WARP-1210/verdict-4-fail.json",
+  "headline": "THE APPROACH WORKS. The completeness default is genuinely fail-closed BY CONSTRUCTION and could not be defeated across eleven fabricated read shapes and twenty-six filesystem shapes, and ALL FIVE earlier blockers are CLOSED. The item fails on three narrow things: one shipped surface (--json) that still emits value-shaped measures while a shipped docstring in eight copies claims none does, one CRASH REGRESSION introduced by this round, and three declarations round 3 made and this manifest dropped - one of which understates the availability cost the owner approved.",
+  "must_fix_before_live": [
+    {
+      "id": "R5-B1",
+      "criterion": "AC3",
+      "severity": "blocking on honesty",
+      "summary": "The --json surface, documented in the module header as machine-readable, prints the full model UNCONDITIONALLY with no render check. Reproduced on the shipped CLI with one data path broken: renderable False, incomplete_sources named, and yet diagnosability_score 0.0 percent and recurrence_rate 0.0 percent printed. Meanwhile metrics_support.py states in EIGHT shipped copies that no surface renders a measure while renderable is False. Nothing consumes the JSON today, so the damage is prospective, but an untrue sentence on a shipped surface is exactly what round 4 blocked R3-B5 for."
+    },
+    {
+      "id": "R5-B2",
+      "criterion": "AC6/C3",
+      "severity": "blocking, and a REGRESSION this round introduced",
+      "summary": "One directory entry whose NAME the output stream cannot encode kills BOTH surfaces outright. Reproduced on the shipped CLI: a file named with a non-UTF-8 byte in specs/ makes the text CLI exit 1 with UnicodeEncodeError at the print, and the dashboard exit 1 with nothing written. The loop measures print first, then the traceback, so every PRE-EXISTING number is destroyed - and the crash is inside the stand-down path this item exists to keep standing. Verified NEW in round 5: the identical probe at the round-4 commit exits 0, because glob never surfaced the name and round 5's entry accounting interpolates the raw os.listdir name into the rendered detail. Also reachable with a plain non-ASCII filename under an ASCII locale, which is common in cron and CI. Second instance of the same class: load_events catches OSError but not ValueError, so a non-UTF-8 byte in events.jsonl raises UnicodeDecodeError and takes the whole dashboard with it."
+    },
+    {
+      "id": "R5-B3",
+      "criterion": "AC6",
+      "severity": "blocking on honesty",
+      "summary": "This manifest REPLACES round 3's and drops three things round 3 declared and round 4 verified as honestly declared. (a) The right-schema receipt forgery: two hand-written receipts plus two hand-written records plus two forged close events render renderable True with 100 percent diagnosability and zero exclusions, with validated_by of '0', no bound_digest required, and a receipt id never recomputed against the store's content address. Assumption 2 instead calls the fabricated-read-record residual THE ONE residual a fifth review should attack first, which it is not. (b) Round 3 declared that the support modules resolve to NO architecture area and are therefore outside every mechanizable budget, at 1330 lines. The figure is now 2255 and the declaration is gone. (c) THE AVAILABILITY COST IS UNDERSTATED BY A WIDE MARGIN: assumption 6 declares it as ONE TORN RECEIPT FILE, and the measured truth is that one .gitkeep, one README.txt, one archive subdirectory, one editor swapfile, or one .gitignore in a store stands the WHOLE SECTION down permanently. .gitkeep is the standard idiom for committing exactly the empty store directories an adopter needs. This matters more than the other two because it is the trade the owner approved when choosing option A."
+    }
+  ],
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "The four measures derive as specified and the earlier interval defects stay closed."
+    },
+    {
+      "id": "AC2",
+      "status": "refuted",
+      "note": "R3-B4 is closed for the reported input: a forged unbacked incident.closed leaves the rate at 0.0 percent, names UNRESOLVED_RECURRENCE, and the forged id is absent from the reported population. BUT the population is backing union records, so a hand-written incident record with no receipt and no event still moves the rate from 0 to 100 percent, while the docstring claims known_ids IS AN AUTHENTICATED POPULATION and that the writer AC2 exists to defeat cannot move this signal. A lower bar than the one AC2 was written against."
+    },
+    {
+      "id": "AC3",
+      "status": "refuted",
+      "note": "THE GOVERNING RULE ITSELF HOLDS AND IS THE STRONGEST PART OF THE CHANGE. read_proves_complete refused every shape built against it (a v2 token, True, 1, the token as bytes, basis of 1 or a list or empty or whitespace, an affirmation beside a problem, a duck-typed non-dict, and a str subclass correctly accepted). The WALK is where unrecognized actually lands and it fails closed in all ten cases: a missing read, reads None, reads empty, two reads for one source, an undeclared source's read, a read with no source key, a read that is a bare string, a source of None, and an affirmation beside a problem - each renderable False with ZERO measure lines and ZERO measure cards on both real surfaces. The load-bearing row: thirteen affirmed reads with input_problems set still renders nothing, because the decision is a conjunction. Refuted only by R5-B1, the third surface."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Honest denominators hold, and the reviewer confirmed the control that matters: removing a data path ENTIRELY leaves every source affirmed and the section rendering, so the fail-closed rule is not merely refusing always."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "The shipped matrix was independently INSTRUMENTED rather than re-implemented: 1260 cells recorded, zero off-diagonal green, and the four diagonal cells green by raising are both guards whose stated purpose is to prevent a raise. The reviewer then built its own 20 guards by 20 fixtures, 400 cells, whole pass rewired per mutation, zero decorative guards, all modules unchanged on disk. Its 43 off-diagonal cells were diagnosed as its own harness and coarser sites, not code defects, and it says so. Round 4's observation-point finding is DECLARED AND CONSTRAINED rather than eliminated, which round 5 does not claim otherwise; what round 5 genuinely fixed is that every mutation now runs the whole rewired pass, proven independently. Two near-vacuous assertions named (a card title that only exists on the stand-down path, and a source-string check whose real proof is its tooth)."
+    },
+    {
+      "id": "AC6",
+      "status": "refuted",
+      "note": "Round 4's six corrections are all TRUE now, each verified: exact line counts, the capability entry no longer claiming one renderer and now naming seven modules, the assertion-integrity figures matching git show --numstat line for line, the sibling-load claim, the module count and the engine sync. No bound relaxed (verified from git: four unchanged byte-identical, three added). No assertion deleted (all sixteen matched to their stronger replacements). No existing number changed (verified independently from the pre-support revision). Refuted by R5-B1, R5-B2 and R5-B3."
+    }
+  ],
+  "completeness_default_ruling": "GENUINELY FAIL-CLOSED BY CONSTRUCTION, and the reviewer could not defeat it. It also found NO filesystem or environment state that still reads as absent when it is unreadable, across twenty-six shapes beyond the grid's three: a FIFO named as a receipt, a unix socket named as a record, truncated-mid-JSON, events.jsonl as a FIFO, a dangling-symlink store, a trailing-space filename, a symlink to a 4000-character target, a non-UTF-8 filename, a store symlinked to a regular file or to /dev/null, an entry symlinked to a directory, a mode-000 record, a self-referential symlink inside the corpus, the contract as a FIFO, a sixty-deep symlink chain, .warp as a regular file, .warp at mode 000, and the rest. Every one fails closed with the right source named and no measure on either surface. The primitive change is what did it: os.lstat and os.listdir raise where exists() and glob answered plausibly.",
+  "notes": [
+    "Ranked by six-month impact. 1. A hand-written incident record moves the missing-specification signal from 0 to 100 percent, a lower bar than the writer AC2 was written against, and the docstring says it cannot happen. 2. The right-schema receipt forgery is the real ceiling on this item's honesty: validated_by of '0' passes, bound_digest is never required, and the receipt id is never recomputed against the store's content address. Until that lands, everything above it is a lock on a door in a wall anyone can walk around. 3. The accounting cannot tell a record it did not open from a file that is not a record; the corpus reader already carries the right pattern (an owner-declared skip rule) and the four store readers do not. That is the mechanism behind the .gitkeep cost. 4. 2255 lines sit outside every mechanizable budget with their bounds living only in this item's selftest. 5. Only the support section honours root: in the same rendered dashboard the entropy section reads the ENGINE's contract and corpus regardless, so one page can mix an adopter's support numbers with the engine's shape. 6. An events line that parses to a non-record is silently accepted while a receipt that does is named. 7. support_vocabulary caches in a module global. 8. support_share still returns 300 percent for a numerator outside its population, declared by round 3 and dropped by round 5. 9. Carried and still true: a no-record incident scores 0 where the truth is unknown, latest is the last close event, cross-cutting rows sum above the population."
+  ],
+  "gate_observed": {
+    "verify": "GATE: GREEN (97abb6e)",
+    "selftest": "3091 passed, 0 failed, measured twice",
+    "baseline": "3055 measured independently at dabec0d in a throwaway shared clone; delta +36 exactly as claimed",
+    "bounds": "NO BOUND RELAXED, verified from git: metrics.py < 400, derivation < 800, readers < 300 and report < 400 are byte-identical to round 4, with three ADDED (contract < 450, accounting < 300, shape < 300). Longest function outside the pre-existing compute is 85 lines.",
+    "assertions": "35 expect lines added and 16 removed; all sixteen matched by name to stronger replacements in place, including the purity set growing to 43 functions with os.listdir and os.lstat added to the forbidden list.",
+    "no_number_changed": "Verified independently by resolving the newest pre-support metrics.py from git and comparing compute() over the committed stream: byte-identical, no key added or removed."
+  },
+  "disposition": "NOT LANDED, but this is a CONVERGING failure rather than another instance of the class. The approach the owner chose is proven, the defect class that failed rounds 1 through 4 is closed, and what remains is three narrow items: one surface to bring under the render gate, one encoding regression to fix in two places, and three dropped declarations to restore. A sixth hardening pass is justified without another decision from the owner, because he already decided the approach and this is execution. ONE THING IS HIS TO KNOW RATHER THAN MINE TO SETTLE: the availability cost of option A is materially larger than the description he approved it on - a single .gitkeep in a store directory stands the whole section down - and the reviewer names the fix (give the store readers a declared skip rule, the pattern the corpus reader already carries)."
+}

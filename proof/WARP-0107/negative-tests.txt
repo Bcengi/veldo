@@ -1,0 +1,22 @@
+=== W7 (WARP-0107) negative demonstrations - things that MUST fail ===
+
+1. Fail journey (live emulator): asserts a screen not present.
+   -> exit 1, passed=false, FAILURE-step-1.png captured. (AC3 failure path)
+
+2. No-op kill unit negative (selftest, _StubbornDriver): force_stop that does
+   nothing must FAIL process_death, not pass vacuously.
+   -> selftest "no-op kill fails process_death (no vacuous pass)" passes:
+      r["passed"] is False and redrives[0]["ok"] is False.
+   This is the exact defect the independent review caught live against 47d5b6e.
+
+3. Brittle recovery assertion (selftest): a recovery_assertion that cannot
+   match must fail a re-drive.
+   -> selftest "android brittle app fails a re-drive": passed False.
+
+4. Incomplete device matrix (selftest): a journey declaring two device_profiles
+   run against one device must fail (no silent partial matrix).
+   -> selftest "android matrix incomplete fails": passed False, matrix_missing set.
+
+5. False assertions on live device: a fabricated expect_text and a wrong
+   expect_focus each exit 1 (the runner does not pass assertions that do not
+   hold against real device state).

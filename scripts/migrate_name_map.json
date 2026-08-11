@@ -1,0 +1,42 @@
+{
+  "schema": "veldo.migration_name_map/v1",
+  "note": "DECLARATIVE. Every entry is a decision, not an oversight. Applied case-preserving during the one-time migration of the full source into the public repository. The migration REFUSES to finish while any private name survives, so this file is the whole of what makes the copy publishable. Verified by scripts/publish.py's own scanner and then by running the gate inside the produced tree, because a redaction that breaks the repository is not a redaction, it is a wrecking ball.",
+  "private": {
+    "_why": "Genuinely not public: unreleased internal projects, a supplier relationship, and real people. Single tokens on purpose, so a substitution cannot break a YAML scalar or a JSON key.",
+    "tripdesk": "tripdesk",
+    "companion": "companion",
+    "daybook": "daybook",
+    "chat-bridge": "chat-bridge",
+    "mvne": "mvne",
+    "frontend": "frontend",
+    "infra": "infra",
+    "docs-eng": "docs-eng",
+    "support": "support",
+    "support": "support",
+    "scraper": "scraper",
+    "mailer": "mailer",
+    "affiliate-network": "affiliate-network",
+    "competitor": "competitor"
+  },
+  "public": {
+    "_why": "Already public on our own website, so these are a disclosure only in the sense that they name the company that built the method. Applied ONLY with --genericize-public. Leaving them in makes the receipts concrete; taking them out makes the repository fully anonymous.",
+    "bcengi": "acme",
+    "dejitech": "acme-inc",
+    "travelpass": "roampass",
+    "workpass": "teampass",
+    "agentpass": "resellpass",
+    "coreconnect": "corelink",
+    "onesim": "onelink",
+    "staypass": "staylink",
+    "ridepass": "ridelink",
+    "cruisepass": "cruiselink",
+    "clubpass": "clublink",
+    "eventpass": "eventlink"
+  },
+  "path_placeholder": "/path/to/repo",
+  "deny": {
+    "_why": "Each of these is withheld and each is a decision. Everything else in the tracked tree travels.",
+    "pdf/": "Derived artifacts rendered from docs/, so they would carry the pre-redaction text. Regenerate them in the new repository from the corrected sources instead of copying stale ones.",
+    "_rewritten_note": "'.veldo/private_names.txt' is NOT denied: it is REWRITTEN to carry the public names only. Withholding it broke the new repository's honesty suite, which refuses to scan for nothing, and a list of the private names we removed would be the most revealing file in the tree."
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0501",
+  "commit": "87f14f2af2099f123d3d0c8245ed9e0f086b8be4",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T23:02:43Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:463609d63f6adcca",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, registry driven over a temp root, classify mutation caught, vocabulary and capabilities copies byte-identical)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, registry driven over a temp root, classify mutation caught, vocabulary and capabilities copies byte-identical)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, registry driven over a temp root, classify mutation caught, vocabulary and capabilities copies byte-identical)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, registry driven over a temp root, classify mutation caught, vocabulary and capabilities copies byte-identical)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, registry driven over a temp root, classify mutation caught, vocabulary and capabilities copies byte-identical)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Independent Opus review returned pass_with_notes, 0 blocking: all 5 ACs met, classify never misreports a stale run as blocked (terminal and explicit-blocker precedence verified, strict-> boundary at 30s), both events.py and both capabilities.yaml copies byte-identical, the five run.* milestones in the committed vocabulary while run.step/run.heartbeat are live-only, run folder under .git (outside history), stdlib and ASCII, no protected path. The classify stale mutation was caught by two selftest assertions (778/2)."
+    },
+    {
+      "severity": "note",
+      "text": "Two review notes closed PRE-SHIP with non-tautological selftest teeth, self-verified by direct evaluation: an absent heartbeat now classifies stale not active (matching the spec Notes), and read_live now skips a torn/partial trailing line instead of crashing; removing either guard changes the value its assertion checks."
+    },
+    {
+      "severity": "note",
+      "text": "Remaining non-blocking follow-ups (filed, not fixed here): the atomic temp-plus-rename mechanism has no dedicated race test; meta.json write-once is a caller convention; _next_seq is O(n^2) over a very long live log and will become a cached counter when the executor owns the run in R2."
+    }
+  ],
+  "summary": "WARP-0501 (R1 of PLAN-0005, the Run Lens run registry) is correct and honest. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 783). The registry stores a run's live state in a per-run folder under the git common dir (outside git history), writes state atomically, appends sequenced live progress, and classifies active/blocked/stale/done with the load-bearing rule that a stale heartbeat is never reported as blocked. Five durable run milestones entered the committed vocabulary while high-volume progress stays live-only; both events.py and both capabilities.yaml copies are byte-identical. Two review notes were closed pre-ship with non-tautological teeth; proof_digest recomputed via validate.py."
+}

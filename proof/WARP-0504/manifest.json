@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0504",
+  "commit": "82e8389e294476d6767bdc242071e6fd68fbabee",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0005)",
+  "plan_hash": "sha256:48ebdb0410a49b25",
+  "produced_at": "2026-07-18T00:17:45Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/status_server.py is a thin read-only local status server over stdlib http: GET /status returns the R3 runstatus.status() model as JSON (one projection, no drift), GET / is a self-contained inline-CSS/JS page that renders and refreshes it, GET /events is an SSE live stream; it binds 127.0.0.1 ONLY (never 0.0.0.0), is GET-only (other methods return the stdlib 501), reads through runstatus and writes NOTHING. The front door is warp status --serve [--port N]; the server is lazy-imported so the reader keeps no load-time dependency on it."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block starts a REAL stdlib http server on an ephemeral 127.0.0.1 port over a temp runs root with a synthetic run, makes a real urllib GET /status, and asserts the run and its classification come back, the bound host is loopback (never 0.0.0.0), the served model equals a direct runstatus.status() call (single projection), the page is self-contained HTML with no external URL, and a before/after runs-root snapshot is byte-identical (read-only); part of selftest 840 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/status_server.py is a thin read-only local status server over stdlib http: GET /status returns the R3 runstatus.status() model as JSON (one projection, no drift), GET / is a self-contained inline-CSS/JS page that renders and refreshes it, GET /events is an SSE live stream; it binds 127.0.0.1 ONLY (never 0.0.0.0), is GET-only (other methods return the stdlib 501), reads through runstatus and writes NOTHING. The front door is warp status --serve [--port N]; the server is lazy-imported so the reader keeps no load-time dependency on it."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/status_server.py is a thin read-only local status server over stdlib http: GET /status returns the R3 runstatus.status() model as JSON (one projection, no drift), GET / is a self-contained inline-CSS/JS page that renders and refreshes it, GET /events is an SSE live stream; it binds 127.0.0.1 ONLY (never 0.0.0.0), is GET-only (other methods return the stdlib 501), reads through runstatus and writes NOTHING. The front door is warp status --serve [--port N]; the server is lazy-imported so the reader keeps no load-time dependency on it."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/status_server.py is a thin read-only local status server over stdlib http: GET /status returns the R3 runstatus.status() model as JSON (one projection, no drift), GET / is a self-contained inline-CSS/JS page that renders and refreshes it, GET /events is an SSE live stream; it binds 127.0.0.1 ONLY (never 0.0.0.0), is GET-only (other methods return the stdlib 501), reads through runstatus and writes NOTHING. The front door is warp status --serve [--port N]; the server is lazy-imported so the reader keeps no load-time dependency on it."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/status_server.py is a thin read-only local status server over stdlib http: GET /status returns the R3 runstatus.status() model as JSON (one projection, no drift), GET / is a self-contained inline-CSS/JS page that renders and refreshes it, GET /events is an SSE live stream; it binds 127.0.0.1 ONLY (never 0.0.0.0), is GET-only (other methods return the stdlib 501), reads through runstatus and writes NOTHING. The front door is warp status --serve [--port N]; the server is lazy-imported so the reader keeps no load-time dependency on it."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block starts a REAL stdlib http server on an ephemeral 127.0.0.1 port over a temp runs root with a synthetic run, makes a real urllib GET /status, and asserts the run and its classification come back, the bound host is loopback (never 0.0.0.0), the served model equals a direct runstatus.status() call (single projection), the page is self-contained HTML with no external URL, and a before/after runs-root snapshot is byte-identical (read-only); part of selftest 840 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 840 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: a real stdlib http server bound to an ephemeral 127.0.0.1 socket is started in the gate and a real GET /status is driven against it, no external surface. Read-only; the served model is runstatus.status() with no second projection. The blocking serve() CLI loop and the live /events SSE stream are provided but not gate-driven (the gate drives make_server + /status + /); serve() is thin glue over the driven make_server."
+  ],
+  "rollback": "git revert; additive - .warp/status_server.py, a --serve/--port flag on runstatus, a status SKILL.md note, a selftest block, one capability (both copies), the spec; no protected path."
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0710",
+  "commit": "6e5c390740c49079e258e9f25e9d7ca4ca4ce99b",
+  "producer": "claude-opus-4-8[1m] (implementing agent)",
+  "produced_at": "2026-07-18T11:55:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py claim() now runs the whole decision under a single per-unit lock (_unit_lock, a per-unit flock): it reads the current record under the lock, refuses only a live claim by another worker, and otherwise (unclaimed, stale, corrupt, or own) publishes a fully-written record with an atomic os.replace (_publish). The previous split - a lock-free fresh os.link path plus a separate flock-guarded takeover os.replace path - is gone (no os.link remains in claim.py), so the fresh-publish and the takeover share one arbiter and can never both grant the same unit."
+        },
+        {
+          "type": "unit",
+          "ref": "churn clobber detector selftest (16 workers x 400 rounds x 3, one unit, default staleness): a grant must leave the worker as holder; asserts zero clobbers; independent review reproduced the old race (threads 43 clobbers / 47 co-holder events; 12-16 real processes peak 2 simultaneous holders) and confirmed 0 on the fix across ~1.2M+ ops; part of selftest 1013 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py because every claimer serializes on the one per-unit lock, no fresh claim can be published (unlocked) underneath a takeover's re-check-then-publish, so the specific defect - a takeover's os.replace clobbering a freshly-linked live claim after a release removed the file - no longer occurs; mutual exclusion holds under claim/release churn."
+        },
+        {
+          "type": "unit",
+          "ref": "the churn clobber detector runs precisely this claim/release churn at default staleness and asserts no two live holders; reproduced 368 clobbers before the fix and 0 after (16 workers), and the independent review confirmed cross-process (no GIL) exactly-one-holder; part of selftest 1013 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py records are published via _publish (an atomic os.replace / rename), so lock-free readers (is_claimed, holder, claimed_units) always see a complete old-or-new record, never a half-written one; the lock file (<unit>.json.lock) is not a .json record so claimed_units ignores it; capability refuse-vs-grant, live-claim refusal, stale reclaim, heartbeat, release, and claimed_units are behaviorally unchanged."
+        },
+        {
+          "type": "unit",
+          "ref": "the pre-existing barrier fresh-unit race (96 threads x 120 rounds, exactly one winner), the barrier stale-takeover race (10 rounds, exactly one winner), and the capability / heartbeat / stale-reclaim / release / claimed_units checks all still pass unchanged; independent review confirmed 0 torn reads under an 8-writer + spinning-reader probe; part of selftest 1013 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the selftest churn clobber detector reproduces the claim-vs-claim race and asserts zero clobbers with the single-lock arbiter; it is non-tautological - reverting to the split fresh/takeover paths turns it RED (independent review measured 30-43 clobbers on the old code)."
+        },
+        {
+          "type": "unit",
+          "ref": "independent review confirmed the churn detector turns RED on the pre-fix code (git show 7dae767~1) and GREEN and not flaky on the fix over multiple full runs; the full gate is GREEN at selftest 1013 passed, 0 failed; both capabilities.yaml copies byte-identical"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/claim.py heartbeat() and release() now run their read-modify-write under the same _unit_lock arbiter: heartbeat re-reads under the lock and, if the claim was taken over (worker_id no longer ours) since we last saw it, returns False WITHOUT publishing (so it cannot overwrite the new holder's record); release re-reads under the lock and removes only if we are still the holder. So no write path (claim, heartbeat, release) can clobber a concurrent takeover."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest seeds a stale claim by W then fires W.heartbeat and T's takeover simultaneously (40 rounds) and asserts T's grant leaves T as the holder (W's heartbeat refuses under the lock); non-tautological - the pre-fix lock-free heartbeat clobbered the takeover in ~46% of rounds (measured), and it turns the assertion RED; part of selftest 1013 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1013 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "Standalone hardening of the WARP-0701 claim ledger, found by the independent reviews of WARP-0704 (the serialized lander). The fix is a pure-stdlib, Unix-only (fcntl) change confined to claim()/heartbeat()/release() plus two helpers (_unit_lock, _publish) in .warp/claim.py; the claims root lives outside git history. Every ledger WRITE path now serializes on one per-unit flock; readers stay lock-free and safe because publication is an atomic os.replace. The lander (WARP-0704) lands on top of this fix so its at-most-one-lander guarantee, which rests on this primitive, holds. Post-review one-line hardening (endorsed by the reviewer, concurrency-neutral, re-verified): _unit_lock now os.makedirs the claims root, so heartbeat/release on a cold root return False instead of raising FileNotFoundError (an unreachable-in-normal-flow behavior change, since claim always creates the directory first)."
+  ],
+  "rollback": "git revert; the change is confined to claim()/heartbeat()/release() and the _unit_lock/_publish helpers in .warp/claim.py, its docstrings, one claim_ledger capability note (both copies), the WARP-0710 spec, and a selftest block; the claims root lives outside git history, so reverting leaves no tracked residue."
+}

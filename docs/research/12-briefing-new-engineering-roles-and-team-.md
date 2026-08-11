@@ -1,0 +1,75 @@
+# BRIEFING: New engineering roles and team topology in small AI-native teams
+
+## Thesis (the one thing to internalize)
+The four "roles" you named (spec author, orchestrator/reviewer, verifier, product-taste owner) are not four hires. In a 3-6 person AI-native team they are four FUNCTIONS that collapse onto a few senior people, usually split by who owns which surface. The real reorganization is not a new org chart. It is that (1) every engineer becomes the orchestrator of their own fleet of agents, (2) verification, not code generation, becomes the binding constraint, and (3) "taste" (deciding what should exist) becomes the scarce, non-delegable skill that stays human. The most-cited primary source, Anthropic's own trends report, calls this the shift "from implementer to orchestrator."
+
+## The strongest primary evidence
+
+Anthropic, "2026 Agentic Coding Trends Report" (fetched the PDF directly) is the best single source and maps almost 1:1 onto your question:
+- Trend 1 names the role change explicitly: "Role transformation: From implementer to orchestrator." The engineer's value moves to "system architecture design, agent coordination, quality evaluation, and strategic problem decomposition." One engineer now "shepherds multiple features through development simultaneously."
+- Trend 2 "Single agents evolve into coordinated teams" shows the internal topology: a human developer sits above an Orchestrator agent (task decomposition, work distribution, result synthesis, quality control) that fans out to specialist agents (architecture/design, implementation/coding, testing/validation, review/docs). This is the orchestrator-worker pattern applied inside one person's workflow.
+- Trend 4 "Human oversight scales through intelligent collaboration" is the verifier story: the shift is "from reviewing everything to reviewing what matters." Engineers delegate tasks that are "easily verifiable" or low-stakes and keep "conceptually difficult or design-dependent" work for themselves. Direct quote from one of their engineers: "I'm primarily using AI in cases where I know what the answer should be or should look like."
+- The most important stat for a tiny team: developers use AI in roughly 60% of their work but report being able to "fully delegate" only 0-20% of tasks. AI is a "constant collaborator," not an autopilot. Plan headcount and process around supervision, not around replacement.
+Source: 2026 Agentic Coding Trends Report, https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf
+
+OpenAI/ChatGPT Learn, "Building an AI-Native Engineering Team" gives the cleanest operating framework I found, a three-bucket triage you can adopt verbatim:
+- Delegate: first-pass work (scaffolding, tests, summaries).
+- Review: validate against quality standards and conventions.
+- Own: strategic decisions and ambiguous problems (this is where taste lives).
+Plus concrete mechanics: start from well-specified tasks, use a PLAN.md so the agent's plan is inspectable before it writes code, and build "evaluation loops" where output is tested automatically against unit tests, latency targets, and style guides.
+Source: https://learn.chatgpt.com/guides/build-ai-native-engineering-team
+
+## The four roles, made concrete
+
+1. Spec author / intent owner. Spec-driven development (SDD) is the 2026 name for this. The best-articulated small-team model uses an Extreme-Programming pairing with three roles: a Leader (product/delivery), an Analyst (business analysis, UX, product ownership), and an Engineer (architecture, validating AI output, technical quality). The Analyst and Engineer pair to write the next feature spec and its test scenarios before the agent builds. Takeaway: the spec plus acceptance criteria is the new unit of work, and it is authored by a human before any agent runs.
+Sources: "AI SDD in 2026," https://medium.com/@ioneswalter/ai-sdd-in-2026-bdbe69f2eb04 ; Microsoft, "Spec-Driven Development: A Spec-First Approach to AI-Native Engineering," https://developer.microsoft.com/blog/spec-driven-development-ai-native-engineering
+
+2. Orchestrator/reviewer. This is now the DEFAULT mode for every engineer, not a specialist role. Pulumi's framing (widely quoted in 2026): "every engineer is effectively the lead of their own team of agents." The concrete enabling mechanic is git worktrees: each Claude Code session gets its own working dir and branch so parallel agents never collide. Field reports converge on 4-8 concurrent worktrees per developer as the reliable ceiling, and the ceiling is set by the human's review capacity, not by the tooling.
+Sources: Claude Code Docs, "Run parallel sessions with worktrees," https://code.claude.com/docs/en/worktrees ; "Git Worktrees + Claude Code: The 2026 Playbook," https://www.developersdigest.tech/blog/git-worktrees-claude-code-parallel-agents-guide ; The New Stack, "AI agents aren't just for solo developers anymore," https://thenewstack.io/coding-agents-team-infrastructure/
+
+3. Verifier. This is the genuinely new and under-staffed function. Two sub-patterns:
+- Agentic: a SEPARATE agent checks the implementer agent's work. SDD guidance is blunt that the most underused pattern is refusing to let the implementing agent self-verify; instead a Coordinator delegates to Implementor sub-agents and a distinct verifier agent checks output against the spec.
+- Human: verification is now the bottleneck of the whole SDLC. Hard numbers: AI-assisted devs merge 98% more PRs and complete 21% more tasks, but PR review time rises 91%, and agentic-AI PRs sit 5.3x longer before a reviewer even picks them up because the reviewer has to reconstruct intent from a finished diff. Separately, 96% of teams building with LLMs say they struggle with evals.
+Sources: TrueFoundry, "Spec-Driven Development for AI Agents," https://www.truefoundry.com/blog/spec-driven-development-ai-agents ; Daniel Keller, "Verification Is the New Bottleneck, Not Generation," https://danielkeller.com/tech/verification-not-generation/ ; Codacy, "AI Is Breaking Code Review," https://blog.codacy.com/ai-breaking-code-review-how-engineering-teams-survive-pr-bottleneck ; EvalEval Coalition, "AI evals are becoming the new compute bottleneck," https://evalevalai.com/research/2026/04/29/eval-costs-bottleneck/
+
+4. Product-taste owner. Consistent, loud 2026 consensus: when code is cheap, deciding what should exist is the scarce, defensible skill, and it does not parallelize across agents. Cat Wu (Head of Product, Claude Code) is the most-quoted voice: "taste is the scarce skill." The product work that gains value is upstream: what is worth building, what ships first, what to ignore.
+Sources: "Taste is the scarce skill in an AI-native team," https://abcodex.iamkesava.com/ins/ins_taste-as-scarce-skill/ ; Towards Data Science, "Code Is Cheap. Engineering Judgement Is Now the Scarce Resource," https://towardsdatascience.com/code-is-cheap-engineering-judgement-is-now-the-scarce-resource/
+
+## What actually changed in team topology
+
+- Teams shrink and go senior-heavy. Reported trend is 3-5 engineers per pod versus 8-12 traditionally, with end-to-end ownership. There is no room for a pure junior implementer; the entry-level role is being redefined around spec ownership and verification (some call it an "AI Reliability Engineer").
+Sources: Prommer, "Building AI-Native Engineering Teams," https://prommer.net/en/tech/guides/ai-native-engineering-team/ ; Augment Code, "How we hire AI-native engineers now," https://www.augmentcode.com/blog/how-we-hire-ai-native-engineers-now
+- Vertical ownership beats horizontal handoffs. The winning split is one person owns a surface (or repo) end to end plus their agent fleet, rather than passing work down a function chain. This is what kills coordination cost in a small team.
+- The human topology and the agent topology mirror each other. The orchestrator-worker pattern Anthropic uses for its research system is the same shape as one engineer directing sub-agents. Claude Code's Dynamic Workflows productizes this: Claude writes an orchestration script, fans work to parallel subagents, validates, then synthesizes. (Cited example: Bun's creator ported roughly 1M lines Zig to Rust in 6 days, a task previously scoped in quarters.)
+Sources: Anthropic, "How we built our multi-agent research system," https://www.anthropic.com/engineering/multi-agent-research-system ; Claude Code Docs, "Orchestrate subagents at scale with dynamic workflows," https://code.claude.com/docs/en/workflows
+- "Handover" is now a context-file quality problem, not a document or meeting. Shared context files (CLAUDE.md / AGENTS.md, plus a rolling HANDOVER.md updated at session end) are the actual handover artifact. Two consequences that matter for you: onboarding to a codebase collapses from weeks to hours (Augment Code reports a CTO's 4-8 month estimate done in 2 weeks), and one person's correction to a shared context file compounds across every teammate's agent sessions.
+Sources: JD Hodges, "Claude Handoff Prompt: How to Keep Context Across Sessions," https://www.jdhodges.com/blog/ai-session-handoffs-keep-context-across-conversations/ ; "Shared AI Context Files," https://leadershipinchange.com/p/shared-ai-context-the-one-file-that-saves-your-team-thousands-of-hours ; Claude Code Docs, "Best practices," https://code.claude.com/docs/en/best-practices
+
+## Concrete practices worth stealing
+
+1. Spec-then-plan-then-code gate. Human writes a short spec with acceptance criteria; agent produces a PLAN.md; human approves the plan before implementation. This is the cheapest quality lever and it makes the eventual diff reviewable.
+2. Never let the implementer self-certify. Run a distinct reviewer/verifier agent (or a second Claude Code session) against the spec, and back it with real CI: unit tests, latency budgets, lint/style as machine-checkable eval gates. Own the eval harness as deliberately as you own the code.
+3. Triage every task Delegate / Review / Own. Route easily-verifiable and low-stakes work to agents; keep design-dependent and org-context work human. Match your parallel agent count to your review bandwidth, not to how many terminals you can open.
+4. Parallelize with worktrees, cap at review capacity. 4-8 concurrent agents per person is the practical ceiling; above that the human reviewer is the bottleneck.
+5. Treat context files as the primary process artifact. Update CLAUDE.md and a rolling handover note at session end. The corrections you save become everyone's default.
+
+## What specifically applies to Bcengi (opinionated)
+
+- You already have the right topology by accident; formalize it. Frontend (frontend), Igor (backend), Infra (infra), Docs-eng (docs) are vertical owners; Dmitry is the taste/spec owner across surfaces. That IS the recommended 3-5 person senior-weighted, vertical-ownership pod. Make it explicit: each engineer owns their repo's CLAUDE.md and their own agent fleet (4-8 worktrees), and is accountable for verification of their surface. Do not reorganize by function or add a coordination layer.
+- Your "Jira feels too heavy" instinct is correct and the research backs it. The coordination artifact for AI-native work is the spec plus the repo context file, not the ticket. Recommendation: one Jira ticket per shippable human-meaningful outcome (the thing Dmitry cares whether it exists), with the spec/PLAN.md living in the repo. Do not create tickets for agent subtasks; that is where heaviness comes from. Let Jira track the human decision and verification gate only.
+- Verification is your real risk, not headcount. Five people each running multiple agents across Django companion, Kotlin mobile, PostGIS places, Rust core, and web/CMS means merged-but-unreviewed AI code is the failure mode (PR pickup 5.3x slower, review time up 91%). The Rust telecom core especially needs a named verifier discipline: reviewer-agent plus a strong automated eval/test gate per repo. This is the one place to invest process, and it is lightweight (a standard reviewer-agent prompt plus CI), not an army.
+- Your persistent file-memory and KB already redefine handover; lean into it. A context-switching or departing engineer's job is to leave excellent CLAUDE.md/KB entries, not to write a handoff doc or hold a meeting. Onboarding a new hire (Misha) to any repo should be: point Claude Code at the repo and its context file, expect hours not weeks.
+- Taste stays human and does not scale through agents. Dmitry (and each vertical owner for their surface) must remain the "what should exist / what ships / what we ignore" gate. Do not try to delegate product judgment to an agent; delegate execution against a judgment that a human already made.
+- The payoff, stated plainly. Five engineers each orchestrating 4-8 agents is effectively 20-40 developers of throughput with zero hiring. The scaling constraint you actively manage is review/verification bandwidth, which fits your "no heavy process, no army" goal exactly: invest in specs, context files, and a verifier discipline, not in people or ceremony.
+
+## Notable sources (consolidated)
+- Anthropic, 2026 Agentic Coding Trends Report: https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf
+- OpenAI/ChatGPT Learn, Building an AI-Native Engineering Team: https://learn.chatgpt.com/guides/build-ai-native-engineering-team
+- Anthropic, Multi-agent research system (orchestrator-worker): https://www.anthropic.com/engineering/multi-agent-research-system
+- Claude Code Docs, Dynamic workflows: https://code.claude.com/docs/en/workflows ; Worktrees: https://code.claude.com/docs/en/worktrees ; Best practices: https://code.claude.com/docs/en/best-practices
+- The New Stack, AI agents aren't just for solo developers anymore: https://thenewstack.io/coding-agents-team-infrastructure/
+- Spec-driven development roles (Iones Walter): https://medium.com/@ioneswalter/ai-sdd-in-2026-bdbe69f2eb04 ; separate verifier agent (TrueFoundry): https://www.truefoundry.com/blog/spec-driven-development-ai-agents ; Microsoft spec-first: https://developer.microsoft.com/blog/spec-driven-development-ai-native-engineering
+- Verification-is-the-bottleneck: Daniel Keller https://danielkeller.com/tech/verification-not-generation/ ; Codacy https://blog.codacy.com/ai-breaking-code-review-how-engineering-teams-survive-pr-bottleneck ; EvalEval https://evalevalai.com/research/2026/04/29/eval-costs-bottleneck/
+- Taste as scarce skill: https://abcodex.iamkesava.com/ins/ins_taste-as-scarce-skill/ ; Towards Data Science https://towardsdatascience.com/code-is-cheap-engineering-judgement-is-now-the-scarce-resource/
+- Team size / hiring shift: Prommer https://prommer.net/en/tech/guides/ai-native-engineering-team/ ; Augment Code hiring https://www.augmentcode.com/blog/how-we-hire-ai-native-engineers-now
+- Handover / context files: JD Hodges https://www.jdhodges.com/blog/ai-session-handoffs-keep-context-across-conversations/ ; Shared AI context https://leadershipinchange.com/p/shared-ai-context-the-one-file-that-saves-your-team-thousands-of-hours

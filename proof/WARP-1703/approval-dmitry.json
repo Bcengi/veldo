@@ -1,0 +1,20 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-1703-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-1703",
+    "commit": "08be793804aee012eba1240b35c6c3659d25df8d",
+    "paths": [
+      ".veldo/policy.yaml",
+      "engine/.veldo/policy_check.py",
+      "engine/scripts/veldo-guard.sh",
+      "engine/scripts/verify.sh"
+    ]
+  },
+  "basis": "Dmitry authorized WARP-1703 over Telegram on 2026-08-09. He was given the measured reason the plan sentence was wrong (17 Claude files against 237 shared base files, and no other pack carrying an engine copy), chose the split over the literal move with 'B', restated the model himself - 'There should be a plugin base and every plugin extends as needed, that is what was decided before' - and said 'Go'. The four paths are the intersection of the declared protected_paths with this commit's changed set, computed directly rather than read from the policy check, which returns on the first unapproved path. What they carry is the move of the base out of the Claude pack and nothing else: no gate rule, guard behaviour or policy was changed by it.",
+  "recorded_at": "2026-08-09T23:05:00Z",
+  "recorded_by": "claude-opus-5[1m] (recording Dmitry's Telegram authorization of 2026-08-09)",
+  "expires_at": "2026-09-30T00:00:00Z"
+}

@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1002",
+  "commit": "f6e1b9e4a579341d93893ea8cbbdeb84b57bd30a",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0010 W2, inbound bridge draft stage)",
+  "plan_hash": "sha256:f6a5cc8e425f566b",
+  "produced_at": "2026-07-20T22:05:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A new NON-LLM bridge module .warp/tracker_bridge.py: reconcile_drafts(adapter, config, store, owner) is pure control logic over the INJECTED WARP-0603 adapter seam and an injected SpecStore. It lists candidate tickets through the seam (adapter.list_intake_items) and for each candidate with no existing spec runs the SHIPPED intake (draft_spec_from_item from .warp/tracker_intake.py) to produce a warp.spec/v1 status:draft bound to the resolved repo, rendered by render_spec_markdown and written under that repo's specs/ via store.write_spec. The candidate rule draft_candidate is the two-leg pre-approval subset of the eligibility triple: assignee equals the single configured Agent user (config 'agent') AND the repo tag resolves via the REUSED WARP-0601 resolver (resolve_repo), fail-closed by name, INDEPENDENT of the ready status (drafting precedes the human promote). It imports and reuses is_eligible/resolve_repo (tracker.py) and draft_spec_from_item/render_spec_markdown (tracker_intake.py); it adds no second parser and calls no agent/LLM (the module only imports tracker.py + tracker_intake.py and drives the two injected seams). The SpecStore seam + FakeSpecStore keep the gate offline (no network, no filesystem)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (scripts/selftest.py, WARP-1002 block after the intake block) asserts over the FakeTracker + FakeSpecStore: the candidate is drafted bound to repo-a, the written draft is a VALID warp.spec/v1 parsed by V.check_spec with status: draft, tracker_repo: repo-a, and the source ticket linked (intake_source item: CAND). The draft-before-promote reuse of is_eligible is asserted directly: a non-ready Agent+repo ticket is a draft_candidate (True) but is_eligible is False, and the same ticket at the ready status flips is_eligible to True (the WARP-1003 promote leg)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The bridge is a RECONCILER idempotent by the durable intake_source link, not a processed-offset ledger and no second store. store.spec_id_for_source(repo, source) is the single idempotency oracle keyed on the (tracker, item) link that draft_spec_from_item records; a ticket whose spec already exists is not redrafted and its keyed surface comment is deduped, so a re-run creates no duplicate spec and no duplicate comment and leaves state byte-identical. A ticket listed twice in one batch is collapsed by the same guard (the first write registers the source, the second reuses it). The reference FilesystemSpecStore reads a written draft's intake_source back from disk with parse_yamlish (the nested-map reader, since front_matter collapses the nested intake_source), so the durable link is real, not only the fake."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts: a first pass drafts + surfaces the candidate, then a replay over the same tracker + store records drafted == [] and commented == [] and leaves both FakeSpecStore.digest() and FakeTracker.state_digest() byte-identical; a ticket monkeypatched to list twice in one batch yields exactly one spec and one comment; and a FilesystemSpecStore over a temp dir drafts once, then a FRESH FilesystemSpecStore over the same repo reads the intake_source link off disk and drafts nothing (exactly one spec file on disk)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Two-stage (PLAN-0010 D1, 2-stage): after drafting, the bridge posts the drafted spec back onto the ticket as a KEYED comment (adapter.comment(item, body, key=_comment_key(source)) where the key is warp-draft:<tracker>:<item>), so it posts at most once under re-run. The comment body carries the drafted spec itself plus the plain instruction that a draft is NOT claimable until the human moves the ticket to the ready-for-dev status and assigns the Agent user. The bridge NEVER promotes to ready (no set_status, no status write) - promotion is the human's tracker action wired in WARP-1003 - so a draft stays unclaimable and nothing builds."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts the candidate ticket carries exactly one comment after the first pass, keyed warp-draft:jira:CAND, and that the replay adds no new comment (keyed dedup). No set_status/transition is emitted by the bridge (the drafted spec front matter is status: draft, and the FakeTracker candidate shows no transitions)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "The gate-test drives the offline FakeTracker + FakeSpecStore with TEETH (scripts/selftest.py): a candidate (Agent + resolvable repo, no existing draft) is drafted and its spec surfaced exactly once, while three single-leg negatives each produce NO draft and NO comment - a non-Agent ticket, an unassigned ticket, and a ticket with no resolvable repo tag are all skipped; run alone, the non-Agent leg and the no-repo leg each leave the store empty and the adapter with ZERO writes (adapter.writes() == []), and the already-drafted leg (a replay) produces no new draft and no new comment. Non-tautology on every leg: restoring the Agent assignee, or restoring a resolvable repo tag, or drafting into a fresh store, each makes the SAME ticket draft. draft_candidate is asserted pure (config and ticket byte-unchanged) and fail-closed on a non-dict. No live network runs in the gate; the live Jira query and the FilesystemSpecStore per-repo roots are the same reference-wired shape used elsewhere (JiraCloudAdapter reference-wired in tracker_intake.py)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml gains an honest entry tracker_inbound_bridge (status mechanical, home .warp/tracker_bridge.py, scope: repo-only because its home ships in neither plugin/templates nor the packs, exactly like its siblings tracker_intake/tracker_adapter_seam/tracker_status_mirror whose deps it reuses), present byte-identical in both copies (.warp/capabilities.yaml and plugin/templates/.warp/capabilities.yaml) and re-synced byte-identical into all six packs (aider, antigravity, codex, copilot, cursor, opencode). The only edited ENGINE_GLOBS-matched file is .warp/capabilities.yaml (a .warp/*.yaml engine file), re-synced to plugin/templates and the six packs; .warp/tracker_bridge.py is repo-only build machinery (not laid into plugin/templates, so not an engine glob to sync) and scripts/selftest.py is repo-root-only. No protected path touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins are unmodified)."
+        },
+        {
+          "type": "unit",
+          "ref": "bash scripts/verify.sh -> GATE: GREEN at R (f6e1b9e4a579341d93893ea8cbbdeb84b57bd30a): 5 checks run, 18 na, 0 waived, 0 undeclared. selftest 1407 passed / 0 failed. check_template_sync.sh: pass. check_pack_drift.py: pass (7 packs, engine byte-identical to source). check_docs.sh: pass (dash sweep, non-ASCII sweep, genericity sweep over docs/ and plugin/ clean). The capabilities-honesty selftest passes: tracker_inbound_bridge's home exists in the repo and is exempt as scope: repo-only, and both capabilities.yaml copies are byte-identical. RULE #1 clean (no em-dash, no en-dash, no prose double-hyphen; the only '--' occurrences are YAML front-matter fences and the selftest's own '# ---' section dividers)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "python3 scripts/selftest.py -> 1407 passed, 0 failed at R, including the WARP-1002 bridge block (candidate drafts + surfaces exactly once; three single-leg negatives each no draft/no comment with zero adapter writes; replay and intra-batch duplicate byte-identical; FilesystemSpecStore reads the intake_source link off disk; draft_candidate pure; the draft-vs-promote boundary against is_eligible)."},
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated via python3 scripts/update_index.py (WARP-1002 now shipped); check_generated.sh reports the regeneration is a no-op."},
+    {"name": "docs", "status": "passed", "detail": "check_docs.sh pass: dash sweep, non-ASCII sweep, and genericity sweep (docs/ and plugin/) all clean; the new bridge module, selftest block, capability entry, and spec carry no company/product reference and no em/en dash."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh: pass (the paired engine files, incl. .warp/tracker.py, are byte-identical to plugin/templates; capabilities.yaml is intentionally not a template-sync pair)."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs, engine byte-identical to source; the updated .warp/capabilities.yaml is byte-identical across plugin/templates and all six packs)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all exit 0; the WARP-1002 spec is valid at status shipped with required_evidence [unit]; PLAN-0010 mirroring intact (W1 shipped, W2 now shipped)."}
+  ],
+  "assumptions": [
+    "WARP-1002 depends only on WARP-1001 (shipped); plan.py run-check PLAN-0010 WARP-1002 = clear to build. The bridge is additive and nothing runs it automatically yet (its unattended runner is WARP-1005 and the promote gate is WARP-1003), so its rollback has no downstream effect.",
+    "The draft trigger is Agent + resolvable repo (the two-leg pre-approval subset of the eligibility triple), independent of the ready status, per the spec Context and PLAN-0010 D1 (2-stage): drafting precedes the human ready-status promote, which WARP-1003 maps to the promote. is_eligible (the full three-leg triple) is reused to draw and test that boundary, not to gate the draft.",
+    "tracker_bridge.py is repo-only, consistent with its shipped siblings tracker_intake.py / tracker_adapter.py / tracker_mirror.py (all scope: repo-only and present only in the repo-root .warp, not in plugin/templates or the packs); it reuses their code, so shipping the bridge without shipping them would be dishonest. The single edited engine file that ships (.warp/capabilities.yaml) is re-synced byte-identical across plugin/templates and the six packs; .warp/tracker_bridge.py and scripts/selftest.py are repo-only and are not synced.",
+    "Idempotency is by the durable intake_source link on the drafted spec (matched by the SpecStore), with no processed-offset ledger and no second store, copying the tracker_mirror reconciler discipline; the keyed surface comment posts at most once. Determining already-drafted is by that link, not a side store.",
+    "This manifest is the canonical evidence artifact (required_evidence [unit], satisfied by the unit check and per-criterion unit evidence). It is bound to R and left uncommitted for the orchestrator's evidence step; no verdict is written here and nothing is pushed. .warp/last_verify (commit=R, green) and .warp/events.jsonl are left uncommitted."
+  ],
+  "rollback": "git revert the reviewed commit R. The change adds one repo-only module (.warp/tracker_bridge.py: draft_candidate, reconcile_drafts, the SpecStore seam + FakeSpecStore + reference FilesystemSpecStore), a selftest block, one honest capabilities.yaml entry (both copies + six pack re-syncs), and flips the WARP-1002 spec to shipped with a regenerated index. Nothing consumes the bridge yet (the promote gate is WARP-1003 and the live runner is WARP-1005), so removing it has no downstream effect; the drift and template-sync checks prove no pack forked."
+}

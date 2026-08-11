@@ -1,0 +1,30 @@
+{
+  "name": "token stream (well formed)",
+  "sequence_field": "i",
+  "expected_events": [
+    "token",
+    "token",
+    "token",
+    "done"
+  ],
+  "terminal": {
+    "event": "done"
+  },
+  "assemble_field": "text",
+  "final": [
+    {
+      "type": "contains",
+      "value": "Hello"
+    },
+    {
+      "type": "equals",
+      "value": "Hello!"
+    }
+  ],
+  "fake": [
+    "event: token\ndata: {\"i\": 0, \"text\": \"He\"}",
+    "event: token\ndata: {\"i\": 1, \"text\": \"llo\"}",
+    "event: token\ndata: {\"i\": 2, \"text\": \"!\"}",
+    "event: done\ndata: [DONE]"
+  ]
+}

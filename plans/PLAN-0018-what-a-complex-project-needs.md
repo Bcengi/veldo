@@ -1,0 +1,359 @@
+---
+schema: veldo.plan/v1
+id: PLAN-0018
+title: What a complex project needs and Veldo lacks - the organs this migration proved missing, and
+  the accumulating ledger of every finding it produced
+kind: mvp
+status: ready
+revision: 1
+owner: dmitry
+approved_by: dmitry
+approved_at: 2026-08-11
+
+# THIS PLAN IS TWO THINGS ON PURPOSE, and the second is why it exists.
+# It is a set of work items closing capability gaps. It is ALSO the LEDGER: every finding this
+# migration produced is recorded here, including the ones fixed elsewhere, with a pointer to where.
+# Dmitry 2026-08-11: "once completed and all working, the plan should include all the findings, as I
+# am sure between now and then you will find more." So the ledger is APPEND-ONLY and the plan is not
+# done while a finding is unrecorded. A finding that lives only in a chat message is a finding we
+# will rediscover.
+#
+# PROVENANCE. Every entry below is something that ACTUALLY BIT US between 2026-08-09 and 2026-08-11
+# while opening this method's source as a public repository. Nothing here is speculative, and that is
+# the entry requirement: a gap earns a place by having cost us something measurable.
+
+outcomes:
+  - id: O1
+    becomes_true: >
+      A complex project can be run through Veldo without the operator keeping the real state in
+      their head or in a shell. Work that was built is known to have been built, by the system,
+      across a session that died.
+    measure: >
+      Kill a session mid-flight with parallel work in progress, start a fresh one, and ask Veldo
+      what is done. It answers correctly without anyone grepping worktrees. That is the exact
+      failure of 2026-08-10, where four built items survived only because a human went looking.
+  - id: O2
+    becomes_true: >
+      Parallel work that is NOT construction (review, audit, authoring, investigation, migration)
+      has an organ. Today the fleet pulls ready specs from the frontier and builds them, and that
+      is the only kind of work it knows.
+    measure: >
+      The nine independent reviews, eight document audits and five plan critiques of this migration
+      could be dispatched and paced by Veldo rather than by the harness. Measured by running that
+      same job through it.
+  - id: O3
+    becomes_true: >
+      The method notices what nobody specified: a promise with no implementation, a design with no
+      descendants, a shipped document making a claim the tree does not support.
+    measure: >
+      Run it against this repository's own documents and the book. It finds the class of hole that
+      a book audit found in an hour on 2026-08-10 and every automated check missed.
+  - id: O4
+    becomes_true: >
+      A budget is not exceeded on the path an operator actually takes, and losing a window costs
+      pacing rather than work.
+    measure: >
+      Exhaust a window deliberately during parallel work and lose no completed work and no queue
+      position. On 2026-08-10 and 2026-08-11 two sessions hit limits and 85 agents died mid-flight.
+
+non_goals:
+  - id: NG1
+    text: >
+      This plan does NOT remediate PLAN-0014's 34 review findings. Those belong to that plan and
+      are recorded in the ledger below with a pointer, because mixing a capability build with
+      another plan's remediation would make both unreviewable.
+  - id: NG2
+    text: >
+      No daemons, no detached processes, no headless spawners. Every organ here runs in-session.
+      This is not a constraint to design around, it is the constraint: the fleet's own refusal to
+      spawn detached workers is a safety property, not a limitation to route past.
+  - id: NG3
+    text: >
+      Nothing here gates on a number. A completeness organ that BLOCKS on a heuristic verdict would
+      cut true sentences and stop real work. Advisory, loud, and human-resolved.
+
+constraints:
+  - id: C1
+    text: >
+      Every organ added here must be honest when it cannot answer. The disease this migration kept
+      finding is the confident zero: a module reporting 0.000 as a measurement when the input was
+      never recorded. An organ that cannot tell "no data" from "measured zero" is worse than none.
+  - id: C2
+    text: >
+      Every check added here must be able to fail, and the proof is a driven mutation with the
+      mutation asserted to have applied. Three checks shipped in this project could not fail, and
+      one of them was found only because a reviewer edited the module and watched the suite stay
+      green.
+  - id: C3
+    text: >
+      No hand-maintained list of what to verify. A curated list is a promise somebody will remember,
+      and the thing it protects is exactly what people forget: seven listed pairs guarded nine
+      modules that arrived later. Derive the domain, declare the exceptions with reasons.
+
+feature_tree:
+  - id: F1
+    title: Work state that survives a dead session
+    outcome_refs: [O1]
+  - id: F2
+    title: A fleet for work that is not construction
+    outcome_refs: [O2]
+  - id: F3
+    title: The completeness organ
+    outcome_refs: [O3]
+  - id: F4
+    title: Budget continuity on the path people take
+    outcome_refs: [O4]
+  - id: F5
+    title: The product actually runs, checked as a criterion
+    outcome_refs: [O3]
+  - id: F6
+    title: A running installation can say what it is
+    outcome_refs: [O3]
+
+work:
+  - item: W1
+    spec: WARP-1801
+    title: Recorded work state, derived not remembered, surviving a dead session
+    feature_refs: [F1]
+    depends_on: []
+    order: 10
+  - item: W2
+    spec: WARP-1802
+    title: A dispatch organ for review, audit and authoring work, paced by the governor
+    feature_refs: [F2]
+    depends_on: []
+    order: 20
+  - item: W3
+    spec: WARP-1803
+    title: The promise corpus - extract checkable claims from a document and settle each against the tree
+    feature_refs: [F3]
+    depends_on: []
+    order: 30
+  - item: W4
+    spec: WARP-1804
+    title: A design with no descendants and a capability with no home are named findings
+    feature_refs: [F3]
+    depends_on: [WARP-1803]
+    order: 40
+  - item: W5
+    spec: WARP-1805
+    title: Budget continuity - the governor covers the operator's path, and a spent window costs pacing not work
+    feature_refs: [F4]
+    depends_on: [WARP-1801]
+    order: 50
+  - item: W6
+    spec: WARP-1806
+    title: The install-and-run smoke criterion, proven from the artifact an adopter receives
+    feature_refs: [F5]
+    depends_on: []
+    order: 60
+  - item: W7
+    spec: WARP-1807
+    title: veldo version - the CLI can answer what it is, from one declaration
+    feature_refs: [F6]
+    depends_on: []
+    order: 70
+  - item: W8
+    spec: WARP-1808
+    title: init stamps the version into the repository it lays down, so substrate drift has a detector
+    feature_refs: [F6]
+    depends_on: [WARP-1807]
+    order: 80
+  - item: W9
+    spec: WARP-1809
+    title: The gate output and the proof bundle name the version that produced them
+    feature_refs: [F6]
+    depends_on: [WARP-1807]
+    order: 90
+
+regression:
+  journeys:
+    - id: RJ1
+      title: >
+        A flattened clone of the published tree initialises from a composed pack and its own gate
+        runs green. This is the journey whose absence shipped an uninstallable 1.0.
+      activation: {when: start}
+      suite: scripts/suites (the smoke criterion of W6, once it exists)
+    - id: RJ2
+      title: >
+        A session killed mid-flight during parallel work loses no record of what was built.
+      activation: {when: after:WARP-1801}
+      suite: scripts/suites
+
+release:
+  milestone: Veldo survives a complex project without a human holding its state
+  mode: continuous
+  require_all_work_shipped: true
+  require_full_regression: true
+  rollback: >
+    Every organ here is additive and adoption-safe. A repository that declares none of it is
+    byte-identically unaffected, which is the same posture the architecture contract took.
+  observation:
+    duration: >
+      The real observation is the next complex project. This plan is not proven by its own suite; it
+      is proven by running a migration-sized job through Veldo and not reaching for the harness.
+
+open_decisions:
+  - id: D1
+    text: >
+      Does the work-state record live in the event stream (already append-only, already the
+      corpus's ground truth) or in its own store? The event stream is my recommendation because a
+      second store would be a second truth, and this project's first principle is that the
+      repository is the operating truth. Who answers: Dmitry.
+    blocks: [WARP-1801]
+  - id: D2
+    text: >
+      Is the non-construction fleet the SAME organ as the construction fleet with a pluggable work
+      source, or a sibling? My recommendation is the same organ with a work-source seam, because the
+      governor, the claim ledger and the retirement logic are exactly what it needs and duplicating
+      them would create the second spelling this project keeps finding. Who answers: Dmitry.
+    blocks: [WARP-1802]
+  - id: D3
+    text: >
+      What is the authoritative statement of the promise for the completeness organ: the README, the
+      method document, the capability manifest, or the book? They can and do disagree with each
+      other, which is itself a finding the organ should report rather than resolve silently.
+    blocks: [WARP-1803]
+  - id: D4
+    text: >
+      Does the smoke criterion run in the gate on every change (slow, complete) or at release only
+      (fast, and blind between releases)? Gate-on-every-change is my recommendation despite the cost,
+      because "does it install" was green for the entire life of 1.0 while being false.
+    blocks: [WARP-1806]
+---
+
+# What a complex project needs and Veldo lacks
+
+This plan exists because the method was pointed at itself under load for the first time, and the
+load found things no single change ever would. Opening the source as a public repository is the
+largest, most coupled, least reversible piece of work this project has done, and it was run with
+four parallel builders, two sessions that died, and a book auditing every claim. That is what a
+complex project looks like, and it is the first time Veldo has been asked to be one.
+
+The findings are not a list of bugs. They share one shape. **Everything the method had a mechanism
+for, it caught. Everything it had no mechanism for, it missed, and every miss was an absence.**
+Nobody had written down that init must work from the artifact an adopter receives, so nothing
+checked it, and a 1.0 shipped that could not be installed while every check was green. Nobody had
+written down that the documents must describe a layout the readers can actually read, so the spine
+document sent adopters to a directory no shipped reader can see, and it failed by silence rather
+than by error. Nobody had written down that every engine module must be paired, so a hand-written
+list of seven guarded nine modules that arrived later.
+
+A verification system is exactly as complete as its specification set. That is the sentence this
+migration bought, and the organs below are what it costs to act on it.
+
+## The findings ledger
+
+Append-only. Every finding, including the ones fixed elsewhere, with where it was fixed. A finding
+recorded nowhere is a finding we will rediscover, which is the cheapest possible way to waste the
+price we already paid for it.
+
+### Fixed during the migration (2026-08-10 and 2026-08-11)
+1. **`/veldo:init` failed from every composed pack** with "gate template drift" and laid nothing
+   down, so Veldo 1.0.0 could not be initialised by anyone. The published template shipped its
+   slots pre-filled with exactly the text the scaffolder intended to write, and the scaffolder
+   demanded the blank form. Nothing had ever run init from a composed pack, because every test runs
+   against this repository, which is the one tree nobody installs. FIXED, proven end to end: 49
+   files laid into a fresh repository whose own gate then ran green.
+2. **The method document told adopters to file specs where no reader can see them.** Nine shipped
+   readers glob `specs/*.md` non-recursively and there is no recursive read anywhere in the
+   substrate, so a spec filed one directory down is invisible to the validator, the index, the
+   frontier and the push guard. Measured: the same file gives 0 index rows nested and 1 flat.
+   FIXED in three places plus one example, and the text now says why it is flat.
+3. **The template sync check was a hand-written list of seven pairs** and nine estimation modules
+   were never added, so the copy every adopter installs was guarded by nothing. Demonstrated by a
+   reviewer inverting `engine/.veldo/toe_corpus.py` so the corpus always reported itself usable as
+   ground truth, with template sync printing pass and 3942 tests passing. FIXED by deriving the
+   pairs: 113 compared, 7 declared per-repo exceptions with reasons, fails closed on an
+   implausible count. Reproduced the mutation to prove the fix, asserting the mutation applied first.
+4. **The redaction pass silently stripped every executable bit**, disarming every pack's git
+   pre-push hook, `veldo-guard.sh` and `bin/veldo`. Git skips a hook it cannot execute, so the tree
+   would have shipped LOOKING gated and been fail-open. No leak scan could ever see this; the gate
+   running INSIDE the produced tree caught all eleven. FIXED.
+5. **Withholding the private-name list broke the successor's honesty suite**, which refuses to scan
+   for nothing by design. FIXED by rewriting rather than withholding the file.
+6. **The publication scanner called `GET /api/v1/home/` a build path**, because a bare substring
+   cannot tell an absolute path from a route. FIXED with a not-nested requirement plus a negative
+   control proving real build paths still fail.
+7. **The publication negative control pinned one entry of the private-name list by name**, making
+   the only check proving the scanner has ever caught anything a hostage of the list's contents, and
+   putting a supplier's name in a shipped test. FIXED by deriving the seed from the list.
+8. **`WARP-1404`'s engine twin had drifted eleven lines**, the primary carrying a correctness fix the
+   shipped copy never got. Caught by its own acceptance criterion at merge. FIXED.
+9. **The tracker operator guide told an operator three untrue things** and the README repeated them:
+   that the mirror transitions the ticket you filed, that the inbound bridge can be turned on and
+   runs itself, and that the live adapters ship. FIXED in both.
+10. **The guard's capability entry and the README both asserted a rule that was deliberately
+    removed**: a passing commit-bound verdict required at push. Enforcement is real and arguably
+    stronger (a green gate, the owner's approval on protected paths, and an unresolved objection
+    blocking the push), but both documents described the removed rule and the capability was KEYED
+    on it. FIXED, key renamed.
+11. **`WARP-1401`'s acceptance criterion published stale figures**, 148 shipped specs and 95.3
+    percent cycle coverage, overstating by 14 points. Measured: 174 records, 141 with cycles, 81.03
+    percent, spend coverage zero, and the module's own verdict is NOT usable as ground truth. FIXED,
+    and the criterion now says these are dated evidence rather than a contract.
+12. **The verdict example had diverged into two formattings of the same JSON**, invisible to the old
+    hand list. FIXED by syncing to the engine canon.
+13. **Veldo shipped 1.0 without ever expanding its own acronym.** FIXED in the README, the method
+    document, and the first content sentence of veldo.dev.
+
+### Recorded here, fixed under another plan
+14. **PLAN-0014 failed independent review on all nine items: 34 findings, 14 blockers**, with 12
+    accusations refuted by the adversarial pass. Two are landmines that fire on first real use:
+    `WARP-1408`'s suite asserts against the live repository that zero estimates exist, no token
+    price is declared and `.veldo/estimates` does not exist, so the gate reddens the moment anyone
+    uses the feature; and `WARP-1404`'s real-repository measurement goes red when that item's own
+    status flips to shipped. One is a statistical error with a printed conclusion. Most of the rest
+    are checks that cannot fail. Belongs to PLAN-0014 per NG1.
+
+### Recorded here, awaiting an organ in this plan
+15. **Nothing tracked that four items had been built.** They survived a dead session only because a
+    human hunted through worktrees. PLAN-0014 sat ready with ten items and no record of which were
+    done. -> W1.
+16. **The fleet only knows how to build a ready spec.** Every parallel job of this migration was
+    review, audit, authoring or investigation, so the harness did all of it and the fleet did none.
+    Its own author routed around it for the largest parallel job in the project's history. -> W2.
+17. **The token governor never fired**, because it governs a worker pool that was never running. The
+    README promises the budget "is used without running out"; two sessions ran out and 85 agents
+    died. Even inside the fleet, resuming after token-out is an opt-in human act. -> W5.
+18. **A design can die with nothing noticing.** `docs/design/05-product-planning-layer-sol.md`
+    defined `child_plans` and never became a spec or a plan item, which is why a release still
+    cannot be scoped as a group of plans. -> W4.
+19. **Nothing compares a document's claims against the tree.** 64 false claims across 8 shipped
+    documents, found by an audit rather than by the gate, and the honesty suite is structurally
+    blind to it: marking a capability repo-only satisfies the gate while the documents go on
+    claiming it ships. -> W3.
+20. **No criterion says the product installs and runs.** The most expensive finding of the whole
+    migration, green for the entire life of 1.0. -> W6.
+
+21. **Two version lineages, each correct locally and wrong together.** The repository release is
+    tagged 1.0.0 while the plugin declares itself 3.10.0, consistently, in `.claude-plugin/marketplace.json`
+    and in every pack that declares a version. The 3.x lineage predates the project being public. Both
+    numbers are defensible alone; together a stranger installing "Veldo 1.0.0" receives something that
+    announces itself as 3.10.0, and cannot tell which number belongs in a bug report. RESOLVED
+    2026-08-11: keep the plugin lineage, abandon the repo release lineage, so there is one number and
+    it is the one attached to the artifact people install. Plugin bumped to 3.10.1 for the init fix.
+    CORRECTION to this finding as first written: I said nothing checks that the versions agree, and
+    that was wrong in a way worth recording. A check DID exist and pinned the literal "3.10.0" across
+    two hardcoded paths. It had two defects instead of being absent: it named 2 of the 3 sites that
+    declare a version, leaving `packs/antigravity/plugin.json` unwatched, and pinning a literal meant
+    every bump edited the test, so the check and the thing it checked were maintained by the same hand
+    in the same commit. Rewritten to DERIVE its sites and require agreement rather than a literal, so
+    a bump touches no test and a new pack is covered the moment it exists. Proven by drifting the
+    previously-unguarded site and watching it fail, with the mutation asserted to have applied.
+
+22. **Nothing reports the running version.** `bin/veldo` contains no version command and no version
+    string, zero hits. A user who wants to know what they are running has nowhere to ask. The number
+    exists only in the plugin manifest of the artifact they installed, which is not a place anyone
+    looks. -> W7.
+23. **Nothing records which version initialised a repository.** `init_scaffold.py` stamps no version
+    into the tree it lays down, so an adopter's repository holds no trace of what created it. This is
+    worse than a missing convenience: the plugin upgrades and the laid-down substrate does not, so a
+    repository can be running old substrate under a new plugin with nothing anywhere able to say so.
+    Drift with no detector, the same shape as the engine twins that were paired by nothing. -> W8.
+    And a proof bundle does not name the machinery that produced it, which for a method whose claim is
+    that a stranger can check the evidence is an incomplete artifact. -> W9.
+
+### Expected to grow
+Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
+as they are found, and this plan is not done while one is unrecorded.

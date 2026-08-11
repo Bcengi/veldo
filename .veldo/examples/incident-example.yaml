@@ -1,0 +1,20 @@
+# VELDO incident record (veldo.incident/v1): an incident is intent arriving from
+# production. This is an ILLUSTRATIVE EXAMPLE of the artifact format, not a real
+# VELDO incident: it shows the shape a record takes. What broke is the signal, the
+# affected behavior names the capability that regressed (and, softly, the spec it
+# traces to), the severity is drawn from the method's one tier ladder, and the
+# timeline carries the time-to-diagnosis (opened_at to diagnosed_at). The
+# remediation PROPOSAL that binds to this incident is remedy-example.yaml; the
+# compressed loop that closes an incident by reconciliation is WARP-1208 (W8).
+schema: veldo.incident/v1
+id: INC-0000
+title: Checkout latency regression on the payment confirmation path
+signal: p99 latency on the payment confirmation endpoint rose from 240ms to 3.1s starting at the deploy boundary, with no error-rate change, observed in the latency metric series.
+affected_behavior: The payment confirmation step returns within its latency budget after a successful charge.
+affected_spec: WARP-0000
+affected_area: loop
+severity: high
+timeline:
+  opened_at: 2026-07-23T02:14:00Z
+  diagnosed_at: 2026-07-23T02:31:00Z
+status: diagnosed

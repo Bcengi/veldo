@@ -1,0 +1,29 @@
+=== W7 (WARP-0107) live re-verification of the force-stop fix (commit 8c9cddb) ===
+Emulator: emulator-5554, profile sdk_gphone64_x86_64-api34. Run: 2026-07-16.
+
+=== AC1-AC3 pass journey on LIVE emulator ===
+pass exit: 0
+ profile: sdk_gphone64_x86_64-api34 | steps ok: 3/3
+ redrives: [('rotation', True), ('process_death', True), ('background_foreground', True), ('network_loss', True)]
+ video: True (journey.mp4, 10.9 MB, ISO Media MP4) | states: 5
+
+=== AC2 process_death is a REAL kill now (was the blocking finding) ===
+redrive_detail.process_death: pid_before=10923  pid_after=12575
+  -> am force-stop killed the foreground app (pidof empty), relaunch produced a DIFFERENT pid.
+  -> the prior verdict (against 47d5b6e) refuted this: am kill was a no-op on a foreground app, pid unchanged, recovery assertion passed vacuously. Fixed in 8c9cddb.
+screencaps are corroborating only, NOT load-bearing: Settings returns to the same home after
+  relaunch, so redrive-process_death.png may or may not differ from settings-home.png depending
+  on emulator state (distinct in this run, identical in the reviewer's run). The pid transition
+  above is the proof of the kill; the reviewer confirmed it live with a parallel pidof poller.
+
+=== AC3 fail journey ===
+fail exit: 1
+ passed: False | FAILURE state captured: FAILURE-step-1.png (1080x2400 8-bit RGBA)
+
+=== AC4 unit (fake driver, matrix, no emulator) ===
+selftest: 105 passed, 0 failed
+ includes the new no-op-kill negative: _StubbornDriver.force_stop does nothing -> process_death FAILS (no vacuous pass).
+
+=== gate (emulator-free) ===
+verify.sh: GATE GREEN (8c9cddbd756e0911cde23c1d0da32cc16d107f88), 5 run / 18 n-a / 0 undeclared
+ the android runner is a reference and is not wired into the gate; no emulator launched by the gate.

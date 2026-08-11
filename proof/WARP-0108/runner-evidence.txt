@@ -1,0 +1,12 @@
+=== AC1 event validation (existing events conform, bad rejected) ===
+existing events exit: 0
+=== AC2 emitter (make_event) + AC3 metrics: via selftest ===
+selftest: 94 passed, 0 failed
+=== AC3 live metrics from real event stream ===
+WARP metrics (derived from events.jsonl):
+  events: 41, changes tracked: 0
+  spec-to-ship avg: None h (0 shipped)
+  proof latency avg: None h
+  human minutes total: 0 {}
+  gate pass rate: 0.878 (36 pass / 5 fail)
+  open emergency debt: 0

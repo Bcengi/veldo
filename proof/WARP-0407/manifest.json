@@ -1,0 +1,123 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0407",
+  "commit": "47eb7c2f45f0b00f9346cdd2fe9c4ce3556fe2e2",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0004 wave A)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T14:48:12Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/release.py ships staged-rollout control logic: an ordered plan of stages (each a traffic percent, feature-flag hooks, and a health gate) promoted only when the stage health gate passes; the first failing gate halts and executes a rollback to the last-good stage (baseline when nothing promoted), reconciling feature flags back; the rollback is executable, idempotent, and observed; the deploy surface is a Deployer seam and the reference LiveDeployer fails loud rather than pretend a deployment happened"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives a FakeDeployer: a healthy canary promotes through to full and sets flags with no rollback; an UNhealthy canary halts and rolls back to baseline with the new flow disabled; a mid-stage failure rolls back to the last-good stage; rollback is idempotent; part of selftest 667 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/release.py ships staged-rollout control logic: an ordered plan of stages (each a traffic percent, feature-flag hooks, and a health gate) promoted only when the stage health gate passes; the first failing gate halts and executes a rollback to the last-good stage (baseline when nothing promoted), reconciling feature flags back; the rollback is executable, idempotent, and observed; the deploy surface is a Deployer seam and the reference LiveDeployer fails loud rather than pretend a deployment happened"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/release.py ships staged-rollout control logic: an ordered plan of stages (each a traffic percent, feature-flag hooks, and a health gate) promoted only when the stage health gate passes; the first failing gate halts and executes a rollback to the last-good stage (baseline when nothing promoted), reconciling feature flags back; the rollback is executable, idempotent, and observed; the deploy surface is a Deployer seam and the reference LiveDeployer fails loud rather than pretend a deployment happened"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/release.py ships staged-rollout control logic: an ordered plan of stages (each a traffic percent, feature-flag hooks, and a health gate) promoted only when the stage health gate passes; the first failing gate halts and executes a rollback to the last-good stage (baseline when nothing promoted), reconciling feature flags back; the rollback is executable, idempotent, and observed; the deploy surface is a Deployer seam and the reference LiveDeployer fails loud rather than pretend a deployment happened"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/release.py ships staged-rollout control logic: an ordered plan of stages (each a traffic percent, feature-flag hooks, and a health gate) promoted only when the stage health gate passes; the first failing gate halts and executes a rollback to the last-good stage (baseline when nothing promoted), reconciling feature flags back; the rollback is executable, idempotent, and observed; the deploy surface is a Deployer seam and the reference LiveDeployer fails loud rather than pretend a deployment happened"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/release.py ships staged-rollout control logic: an ordered plan of stages (each a traffic percent, feature-flag hooks, and a health gate) promoted only when the stage health gate passes; the first failing gate halts and executes a rollback to the last-good stage (baseline when nothing promoted), reconciling feature flags back; the rollback is executable, idempotent, and observed; the deploy surface is a Deployer seam and the reference LiveDeployer fails loud rather than pretend a deployment happened"
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/release.py ships staged-rollout control logic: an ordered plan of stages (each a traffic percent, feature-flag hooks, and a health gate) promoted only when the stage health gate passes; the first failing gate halts and executes a rollback to the last-good stage (baseline when nothing promoted), reconciling feature flags back; the rollback is executable, idempotent, and observed; the deploy surface is a Deployer seam and the reference LiveDeployer fails loud rather than pretend a deployment happened"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives a FakeDeployer: a healthy canary promotes through to full and sets flags with no rollback; an UNhealthy canary halts and rolls back to baseline with the new flow disabled; a mid-stage failure rolls back to the last-good stage; rollback is idempotent; part of selftest 667 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 667 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Reference: a real rollout needs a deploy target, flag store, and health endpoint the warp home repo lacks, so the control logic is gate-tested with a fake deployer; the live path fails loud."
+  ],
+  "rollback": "git revert; additive - .warp/release.py, a selftest block, and the spec; no protected path."
+}

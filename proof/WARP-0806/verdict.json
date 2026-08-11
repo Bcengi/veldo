@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0806",
+  "commit": "e56a048e68bec7895a792203a30e8929026e17ab",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-19T03:06:30Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:0a9e69aabc8486aa",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "packs/antigravity is a byte-identical, symlink-free copy of the 139-file engine + canonical AGENTS.md + thin agy driver; engine_drift == []. Targets agy, not the wound-down Gemini CLI."},
+    {"id": "AC2", "status": "confirmed", "note": "Push gate blocks - both the agy before-tool-call hook and the git pre-push hook feed the guard the JSON stdin payload; behaviorally proven exit 2 unproven / exit 0 proven / passthrough on non-push / injection-safe. W6 did NOT repeat the W3 fail-open."},
+    {"id": "AC3", "status": "confirmed", "note": "Declared in the manifest; drift-check spans 5 packs all byte-identical; teeth proven on the committed antigravity copy (differs/missing)."},
+    {"id": "AC4", "status": "confirmed", "note": "Engine/AGENTS.md/skills/agents identical to canonical; only 5 net-new authored driver files, matching agy's plugin model."},
+    {"id": "AC5", "status": "confirmed", "note": "Selftest asserts conformance + wrapper + enforcement, non-tautologically; the reviewer behaviorally verified the actual blocking."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review at e56a048: pass_with_notes, 0 blocking. The highest-risk check (did W6 repeat the W3 fail-open) was behaviorally cleared: in a synthetic unproven WARP repo, both the agy before-tool-call hook and the git pre-push hook feed scripts/warp-guard.sh the JSON stdin payload and EXIT 2 (block) unproven, EXIT 0 (allow) proven (green last_verify + proof + verdict bound to HEAD), EXIT 2 on a different commit; a non-push passes through; an injection command (touch pwned) was blocked with the file NOT created (json.dumps safe). Faithful engine copy, drift-free across 5 packs, reuse confirmed, gate GREEN, no pollution, caps byte-identical, dash-clean, and the Gemini->Antigravity retarget is correct (all Gemini mentions historical, the live target is consistently agy/Antigravity CLI)."},
+    {"severity": "note", "text": "Two non-blocking notes: (1) agy's plugin.json/hooks.json (beforeToolCall match:shell) schema is a plausible idiom but a fast-moving post-cutoff surface, unverifiable here - immaterial because the guaranteed gate is the git pre-push hook + CI required check, both verified working, and the spec states enforcement does not depend on the editor-hook format; (2) COSMETIC - the pack spec front matter depends_on [WARP-0802] (the true dependency: the pattern-setter that built the manifest + drift + option B) while the plan's W6 work item reads depends_on [WARP-0801] (the raw engine); validate does not enforce spec-vs-plan depends_on consistency (gate GREEN), and the plan's pack-item depends_on (W3-W8: 0801 -> 0802) will be reconciled in the plan text bundled into the W7 impl commit."},
+    {"severity": "note", "text": "Operational: faithful engine copy (139 files, real, no symlinks); gate GREEN, selftest 1240/0, no pollution; caps byte-identical; authored agy wrapper + spec dash-clean. Verified GREEN in a clean detached worktree."}
+  ],
+  "summary": "W6 of PLAN-0008 (the Antigravity CLI / agy pack, retargeted from the wound-down Gemini CLI) is correct. Independent adversarial review pass_with_notes, 0 blocking. packs/antigravity is a committed self-contained directory: the 139-file canonical engine copied byte-identical (held by the now-five-pack drift-check) + the canonical AGENTS.md + a thin agy plugin driver (plugin.json, hooks.json, the guard hook, rules/warp.md, git pre-push hook, reused skills/agents), matching agy's Claude-like plugin model researched at build. The WARP-0803 enforcement fix was applied from the start - both hooks feed the guard the JSON stdin payload, and the review behaviorally proved the push gate blocks the unproven (exit 2) and allows the proven (exit 0), injection-safe, so it does NOT repeat the W3 fail-open. Reuse is faithful. Gate GREEN (selftest 1240 passed, 0 failed), no pollution, no regression, caps byte-identical, no protected path. Two non-blocking notes (agy format uncertainty; a cosmetic spec-vs-plan depends_on mismatch to be reconciled in W7). proof_digest via validate.py."
+}

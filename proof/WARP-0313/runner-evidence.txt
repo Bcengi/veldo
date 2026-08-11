@@ -1,0 +1,3 @@
+well-behaved target: exit 0 (correct - spawn, signal, respawn, kill-tree hold)
+misbehaving target: exit 1 (correct - ignored SIGTERM and leaked child caught)
+process runner self-test: pass

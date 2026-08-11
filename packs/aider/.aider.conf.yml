@@ -1,0 +1,15 @@
+# VELDO configuration for the Aider pack.
+#
+# Aider is a thin editing tool with no agent-hook framework, and by DEFAULT it commits with
+# --no-verify (skipping git hooks). This config keeps the VELDO method in context and stops Aider
+# from bypassing verification. The load-bearing push gate is the git pre-push hook (hooks/pre-push,
+# enable with `git config core.hooksPath hooks`) plus the CI required status check; enforcement is
+# never weaker than a tool with a native hook.
+
+# Always load the VELDO method and this pack's conventions into context.
+read:
+  - AGENTS.md
+  - CONVENTIONS.md
+
+# Do NOT bypass git hooks on commit (Aider defaults this to false / --no-verify).
+git-commit-verify: true

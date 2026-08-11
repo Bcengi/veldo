@@ -1,0 +1,25 @@
+WARP-0311 negative demonstrations (drift a happy-path field check would miss)
+==============================================================================
+
+[1] a golden field (customer.vip) quietly removed:
+    passed: False | breaking: ['customer.vip:removed']
+
+[2] a field type quietly changed (total number -> string):
+    passed: False | breaking: ['total:type_changed']
+
+[3] an unexpected field added under a STRICT contract:
+    passed: False | breaking: ['secret:added']
+
+[4] same addition under a NON-strict contract (tolerated, reported):
+    passed: True | drifts: ['secret:added'] | breaking: []
+
+[5] a contract with an empty golden schema:
+    passed: False | error: contract asserts nothing: an empty golden schema is not proof
+
+[6] a producer that raises during capture:
+    passed: False | error: producer error: service down
+
+[7] an integer where the golden pins number (integer satisfies number, not drift):
+    passed: True | breaking: []
+
+Removals and type changes fail regardless of strict; additions fail only under strict; empty golden and producer errors fail loud; integer-under-number is honestly not drift.

@@ -1,0 +1,80 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0810",
+  "commit": "b5e3e532d9c524b6573bc110a173117b9925c775",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0008 W10, in-session single writer)",
+  "plan_hash": "sha256:a3c56074a8aa9102",
+  "produced_at": "2026-07-19T12:34:42Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "version bumped to 3.4.0 for the WARP multi-tool packs v1 milestone: plugin/.claude-plugin/plugin.json 3.3.0 -> 3.4.0, .claude-plugin/marketplace.json 2.0.0 -> 3.4.0 (correcting a pre-existing marketplace/plugin version drift), and PLAN-0008 release.version reads 'plugin 3.4.0'. The method document (method.md / AGENTS.md) is NOT in the release commit - seven packs run the same WARP loop, not a method change."},
+        {"type": "unit", "ref": "independent review (agent a619b0ca, bound to b5e3e53): confirmed all three read 3.4.0 and git show --stat proves method.md/AGENTS.md are not in the commit."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a multitool_packs entry AND the W9 pack_conformance entry are present in both .warp/capabilities.yaml and the shipped plugin/templates/.warp/capabilities.yaml, and .warp/packs.json declares all seven packs (claude, cursor, codex, copilot, antigravity, opencode, aider)."},
+        {"type": "unit", "ref": "independent review: both entries present in both capabilities.yaml files, the two files byte-identical (diff clean), all six copied-pack capabilities.yaml byte-identical to root, and packs.json declares exactly the seven."}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the release edited the canonical engine's capabilities.yaml, so W10 re-synced the six copied packs (139 engine files each) via the repo's own pack.py; pack_drift_report is then empty for all seven packs (content AND mode), and the cross-pack conformance harness passes in the selftest - the drop-in distributions ship with no drift."},
+        {"type": "unit", "ref": "independent review: pack_drift_report empty ([]) for all seven; teeth fired BOTH ways - a one-byte injection into packs/cursor/.warp/validate.py reported cursor [('.warp/validate.py','differs')] and chmod -x on packs/codex/.warp/validate.py reported codex [('.warp/validate.py','mode')]; both reverted clean."}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "packs/README.md describes the seven packs (a table of tool + native driver + local early gate), the one-engine byte-identical assembly, and the enforcement invariant (native hook where present + git pre-push everywhere + CI required status check); README.md and docs/plugin.md both point to packs/README.md."},
+        {"type": "unit", "ref": "independent review: packs/README.md documents all seven packs, the assembly, and the invariant; README.md (line 108) and docs/plugin.md (line 22) both link to packs/README.md."}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the plugin/ -> packs/claude rename and marketplace source repoint is DEFERRED as a separate human-approved change: it moves the protected enforcement files (plugin/templates/scripts/verify.sh, plugin/templates/scripts/warp-guard.sh, plugin/templates/.warp/policy_check.py) and rewrites the .warp/policy.yaml entries naming them (floor high). This release keeps plugin/ in place as the option-B Claude pack, marketplace source ./plugin, stated honestly in the capability notes. NO protected path is touched by this release, so policy_check requires no approval."},
+        {"type": "unit", "ref": "independent review: plugin/ still exists, packs/claude does NOT, marketplace source still ./plugin; deferral justified (the three enforcement files are floor:high protected and .warp/policy.yaml is itself floor:high, so the rename genuinely requires human-approved protected-path changes); all 16 changed files checked against the 7 protected_paths (exact + both-direction prefix) with ZERO hits."}
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "at the impl commit plan.py release-check PLAN-0008 reports NOT releasable with the single reason 'work not shipped: WARP-0810' (W1-W9 all shipped, W10 the frontier); PLAN-0008 status is set to released; releasability is achieved when this spec flips to shipped in the evidence commit (release-check then reports releasable)."},
+        {"type": "unit", "ref": "independent review: release-check single-reason not-releasable at the impl commit; simulating WARP-0810 status:shipped makes release-check report releasable; PLAN-0008 status is 'released'; W1-W9 (WARP-0801..0809) are all status:shipped."}
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "bash scripts/verify.sh prints GATE: GREEN at b5e3e53 with selftest 1270 passed, 0 failed; generated, docs hygiene (dash sweep, non-ASCII sweep, genericity sweep), template sync, secret scan, and contracts all pass."},
+        {"type": "unit", "ref": "independent review ran bash scripts/verify.sh in an isolated worktree at b5e3e53: GATE GREEN, selftest 1270 passed / 0 failed, all hygiene sweeps clean; zero em/en dashes and no prose double-hyphens in the changed docs."}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "selftest 1270 passed, 0 failed; GATE GREEN at b5e3e53, verified by the builder and independently by the reviewer (agent a619b0ca) in an isolated worktree."},
+    {"name": "generated", "status": "passed"},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "W10 of PLAN-0008, the release item (depends on W9). Two-commit release shape: this impl commit (b5e3e53) carries the version bump, the capability entries, the six re-synced packs, the docs, the plan flipped to released, and this spec at status ready, and holds its own independent commit-bound verdict; the evidence-only commit then adds proof/, .warp/, specs/ only (this spec flipped to shipped, the proof manifest, the verdict, last_verify, events, the regenerated index) and inherits this commit's verdict via the guard's parent rule. The plan flip lives in the impl commit because plans/ is not in the evidence-only allowlist (proof/*|.warp/*|specs/*).",
+    "AC6 release subtlety: because W10 is itself a gating work item of PLAN-0008 (unlike WARP-0708, PLAN-0007's standalone release), release-check requires WARP-0810 shipped. At the impl commit WARP-0810 is ready, so release-check reports not-yet-releasable (WARP-0810 pending); it becomes releasable when this spec flips to shipped in the evidence commit. Verified by simulation in the independent review.",
+    "The plugin/ -> packs/claude rename is deferred (a floor-high protected-path change requiring human approval) and per-tool native-marketplace publishing is deferral NG4. plan_hash sha256:a3c56074a8aa9102 is the canonical hash via plan.py. One independent adversarial review (agent a619b0ca, fresh-context Opus, L2 independence) bound to b5e3e53 returned pass with four non-blocking notes; it verified the gate GREEN in its own isolated worktree, all seven ACs by concrete probes (including drift teeth both ways and the no-protected-path check across all 16 changed files), and left the main repo untouched."
+  ],
+  "rollback": "git revert this release commit and its evidence; the version bump withdraws and the plan returns to ready (the ten work items stay shipped). Each pack is an additive self-contained directory assembled from the canonical engine; removing one leaves the source and the other packs intact."
+}

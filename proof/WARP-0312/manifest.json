@@ -1,0 +1,35 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0312",
+  "commit": "119fe7c9b6cf13eae9185fc108865eef74c96878",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B12)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T09:22:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/streaming/warp_streaming_runner.py exists: run(journey, source) reads a journey (name, optional sequence_field, optional ordered expected_events, required terminal matcher, optional final graders with assemble_field, fake frames) and drives a stream through a SOURCE seam (defaulting to the journey fake frames so it runs with no live server), parses each raw frame as strict SSE (parse_sse_frame), asserts framing/sequencing/terminal, exit 0 all-hold / exit 1 first failure named. Verified operationally: test_streaming_runner.sh drives both fixtures (well-formed exit 0, malformed exit 1), rc 0"},
+      {"type": "unit", "ref": "scripts/selftest.py streaming block: the happy stream driven through run() with the fake source returns passed True with 4 frames; 'streaming source seam supplies frames' confirms the adopting-repo source path drives run(). Part of selftest 345 passed / 0 failed"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py streaming block: a sequence gap fails ('expected index 1, got 2'), a reordered chunk fails ('expected index 0, got 1'), and an ordered expected_events mismatch fails naming the position ('event 0'). The sequence_field values must be contiguous and increasing from 0 in arrival order"},
+      {"type": "operational", "ref": "proof/WARP-0312/negative-tests.txt cases 1 and 2: dropped chunk (gap 0->2) -> passed False naming 'sequence i: frame 1 expected index 1, got 2'; reordered chunk (1 before 0) -> passed False naming 'frame 0 expected index 0, got 1'"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py streaming block: parse_sse_frame flags a colon-less line ('field separator'), a data-less frame ('no data'), and an unknown field ('unknown SSE field'); a malformed frame in the stream fails with a framing error; a missing terminal fails ('did not terminate'); a frame after the terminal fails ('after the terminal'); a failed final grader fails ('final contains'); an asserts-nothing journey is a journey error. The terminal is required and must be the LAST frame; the final graders concatenate the non-terminal frames' assemble_field"},
+      {"type": "operational", "ref": "proof/WARP-0312/negative-tests.txt cases 3, 4, 5, 6: malformed frame -> 'frame 1: framing error: line has no field separator'; no terminal -> 'stream did not terminate'; frame after terminal -> 'frame arrived after the terminal (terminal at frame 0, 1 frame(s) followed)'; asserts-nothing -> named journey error"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py streaming block (appended after the contract block) drives the control logic with a fake in-memory source and NO live stream: happy stream passes; parse_sse_frame for valid/colon-less/data-less/unknown-field; sequence gap, reorder, malformed-frame, missing-terminal, frame-after-terminal, failed-final-grader, asserts-nothing, and wrong-event-type each fail named; the source seam supplies frames; both shipped fixtures driven end to end (well-formed exit 0, dropped chunk exit 1 naming the gap). selftest 345 passed / 0 failed (was 328); all prior cases still pass and the gate stays GREEN at 119fe7c"},
+      {"type": "operational", "ref": "python3 scripts/selftest.py -> 345 passed, 0 failed; plugin/templates/scripts/runners/streaming/test_streaming_runner.sh -> well-formed exit 0, malformed exit 1 (dropped chunk caught), rc 0"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, wrapper, and README carry zero company/product names (case-insensitive scan of plugin/templates/scripts/runners/streaming/ returned no matches) and no em-dash/en-dash/double-hyphen. .warp/capabilities.yaml declares streaming_sse_runner status: reference (a shipped reference wired per repo to its own SSE or websocket reader; the warp home repo ships no streaming surface of its own to run), never mechanical, kept byte-identical with the plugin template copy (sha256 of both equal, single unique hash; template-sync gate passes). verify.sh prints GATE: GREEN (119fe7c...), 0 undeclared"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 345 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference (not mechanical). The warp home repository ships no streaming surface of its own, so the honest evidence is the fake-source control-logic unit tests, not a live-stream run. required_evidence is [unit]. The source is a seam so an adopting repo swaps in its real SSE response reader or websocket recv loop. Binary websocket framing and the RFC 6455 handshake are out of scope: the runner asserts an already-decoded text frame stream (what an adopting repo's recv loop yields). Framing is strict SSE (a colon-less or unknown-field line is a framing error), which is a deliberate contract for a drift-catching runner. capabilities.yaml states status: reference, never mechanical."],
+  "rollback": "git revert the impl; B12 adds a new runner file, a fixture pair, a wrapper and a README, a selftest block, and an honest capabilities entry (template and instance) under plugin/templates and scripts - it touches no protected gate script or enforcer, so reverting removes the reference artifact and its unit block with no effect on any running gate; the prior selftest cases are unchanged."
+}

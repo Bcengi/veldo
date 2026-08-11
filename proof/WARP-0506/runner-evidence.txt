@@ -1,0 +1,1 @@
+warp answer/steer/abort CLI over the run inbox, driven over a temp runs root: exact kind+payload posted, reject paths fail loud, front door not a divergent path. Gate GREEN, selftest 848 passed, 0 failed.

@@ -1,0 +1,23 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0713",
+  "commit": "a16e88c3331920a4ef17e7d520f43db0f63998c0",
+  "reviewer": "claude-opus-5[1m], agent ab9c1287aca1b9c47, workflow wf_df531bd8-fe5. INDEPENDENT of the builders and of the earlier reviewers, and it reviewed THE STATE ON MAIN rather than the branches. NOTE FOR A LATER READER: dispatched by the orchestrator inside a workflow, NOT through this repository's own review lane, so this is weaker evidence than a lane-dispatched review. It ran ./scripts/verify.sh and scripts/selftest.py itself and reported GATE: GREEN with 3319 passed / 0 failed.",
+  "reviewed_at": "2026-07-29T15:30:00Z",
+  "verdict": "pass",
+  "round": 2,
+  "summary": "YES, and this is the item I attacked hardest because it is the property the review's FAIL was about. Real waiting cannot be deleted from the shipped copies without the gate reddening, on all three routes I could construct. Route A, the reviewer's exact edit: replace bare SettleWaiter() with SettleWaiter(sleep=lambda s: None) in every tracked copy - 14 files, 42 SUBSTITUTIONS ASSERTED - selftest went to 3315 passed, 4 FAILED. Route B, fake the CLASS default rather than the call sites: sleep=time.sleep -> sleep=(lambda s: None) in 14 files, 14 SUBSTITUTIONS - 3316 passed, 3 FAILED. Route C, the one that survives an identity assertion: leave the default as the real time.sleep and delete the CALL from settle()'s body, 14 SUBSTITUTIONS - 3316 passed, 3 FAILED, caught by the production-path no-leak control. Constants: measured pre-change at e4b15dd^ as android 12 lines / 15 calls and iOS 9 lines / 10 calls (21 lines, 25 calls); the two raw condition waits survive at AdbDriver lines 160 and 169; all 23 routed constants equal their pre-change values (launch 2, tap 1, text/type 0.5, key 0.5, undeclared wait 1, and every redrive value), cross-checked against the gate's own printed settle order for both runners. Interception caveat: verified empirically rather than read - with a post-import patch of time.sleep installed, SettleWaiter()._sleep is the real time.sleep (True) and is the patch (False), _clock is time.monotonic, _record is None. The caveat is accurate.",
+  "criteria": {
+    "note": "Reviewed against the spec's own acceptance criteria on the landed state at a16e88c. See summary and findings."
+  },
+  "findings": {
+    "blocking": [],
+    "non_blocking": [
+      "AC4 headline: 'IT IS FASTER, THE PROCESS RUNNER IS UNTOUCHED, AND THE FIGURE IS THE REAL ONE.' There is no figure. The manifest marks AC4 not_measured_yet and names why (six concurrent selftests on the machine), which AC4's own body explicitly permits, so this is a headline claiming more than its body checks rather than a fabricated number. Delete 'IT IS FASTER' and 'THE FIGURE IS THE REAL ONE' from the headline, or land the A/B. My own datum, offered as a datum and not an A/B (the tree grew by this item's own ~800 lines): selftest 88.02 s wall, 3319 passed / 0 failed, against the 102.4 s self",
+      "AC2: '23 ROUTED CALLS ON 21 LINES' - the 23 routed calls occupy 19 lines. 21 is the total sleep-LINE count including the two raw condition waits the same sentence goes on to exclude. Loose rather than false on a charitable read; 'on 19 of the 21 sleep lines' is the measured phrasing."
+    ]
+  },
+  "must_fix_before_live": [],
+  "disposition": "shippable",
+  "notes": "Recorded AFTER the fact, on 2026-07-29, because this review - like four before it that day - returned structured data to the orchestrator and left no artifact. A review is not done until its verdict artifact exists."
+}

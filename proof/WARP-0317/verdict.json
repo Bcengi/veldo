@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0317",
+  "commit": "c0e167a34a748aa1be80bfe3ecc7bd56528a6aa0",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T13:10:17Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:49d03dcc59f05e67",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, fixtures driven, mutations caught, no rubber-stamp); see summary."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "The fail fixture's confinement breach is demonstrated via the FakeContainerDriver (the documented evidence path); a literal '/' mount would be rejected by real docker as a hard error rather than surfacing the breach. Non-blocking: grading is proven by fixtures plus selftest; a mount like /host covering /host/etc/shadow would be both a genuine breach and docker-runnable for a live demo."
+    },
+    {
+      "severity": "note",
+      "text": "Reference honesty rests on require_runtime being unit-tested to fail loud when no runtime is detected, which is deterministic regardless of docker presence on the build host."
+    }
+  ],
+  "summary": "B17 (WARP-0317, sandbox/isolation reference runner) is correct and honest. Independent adversarial review: gate GREEN, both fixtures correct (pass exit 0 with six checks both directions; fail exit 1 naming CONFINEMENT BREACH on /etc/shadow), 6/6 one-line mutations to classify/confine/grade caught, no rubber-stampable path (a no-checks journey and a malformed check are named errors), capabilities status reference is honest (no container surface in the warp gate; live path fails loud absent a runtime), generic, ASCII, stdlib-only, both capabilities.yaml copies byte-identical. Post-review closure applied before ship: removed a decorative '# ---' comment divider to comply with the no-double-hyphen house rule (no behavior change). proof_digest recomputed via validate.py."
+}

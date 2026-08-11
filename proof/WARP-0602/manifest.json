@@ -1,0 +1,63 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0602",
+  "commit": "7762684979184f6bed481fac8150a598f46bc7d5",
+  "producer": "claude-opus-4-8[1m] (build worker, PLAN-0006 W2)",
+  "plan_hash": "sha256:6dd3f98b5a0c1f68",
+  "produced_at": "2026-07-18T17:41:15Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/validate.py check_tracker_repo is invoked by both check_spec and check_plan, so an optional tracker_repo front-matter field is recognized on the spec and plan contracts; an absent field leaves every existing spec/plan valid."},
+        {"type": "unit", "ref": "independent review confirmed check_tracker_repo is called from both check_spec (validate.py:118) and check_plan (validate.py:479); part of selftest 1111 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/validate.py a present tracker_repo must be a non-empty string, else fail by name, on both contracts (plans use parse_yamlish so a real list is caught as non-string)."},
+        {"type": "unit", "ref": "independent review's 21/21 enforcement matrix confirmed bare/blank/non-string rejection on both contracts; accepted non-blocking note: a spec-parser edge (an inline-bracket value with NO config wired) is treated as a literal string and is allowed-not-enforced per AC4, and fails closed the moment a config exists; part of selftest 1111 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/validate.py when a .warp/trackers.json config exists, a declared tracker_repo must be a known repo (REUSES tracker.py load_tracker_config + _known_repo_ids - no reimplementation), else FAILS CLOSED by name; on both spec and plan."},
+        {"type": "unit", "ref": "independent review proved reuse by spying on the resolver functions (both called) and confirmed no path silently accepts an unknown repo when a config is present; part of selftest 1111 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/validate.py with no config the field is allowed-not-enforced (if not cfg: return 0); absent it is unconstrained; the check sits parallel to the lane-field checks (errs +=). The /warp:plan and /warp:spec skills note setting tracker_repo from the resolver (procedure)."},
+        {"type": "unit", "ref": "independent review confirmed the no-config and absent paths and the parallel-to-lane placement; part of selftest 1111 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest drives validate over temporary spec/plan fixtures and a temp tracker config - resolvable passes, unresolvable fails by name, non-string fails, absent passes, no-config allowed-not-enforced - non-tautologically."},
+        {"type": "unit", "ref": "independent review's mutation test (neutering check_tracker_repo to return 0) turned exactly the 6 tracker_repo assertions RED including both non-tautology teeth; gate GREEN, selftest 1111 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1111 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "W2 of PLAN-0006: per-repo routing enforcement in the spec and plan contracts, reusing the WARP-0601 resolver (no second config parser). Built by a build worker. The worker correctly went beyond the minimal design and the independent review judged each addition justified: it added the plugin/templates/.warp/tracker.py template twin that WARP-0601 omitted (validate.py now imports tracker.py at load, a hard runtime dependency - without the twin an adopting repo's validate crashes on FileNotFoundError; proven by the reviewer), STRENGTHENED scripts/check_template_sync.sh to cover that pair (proven teeth, not a weakening), and completed .warp/init_scaffold.py to lay the file down (substrate complete). The two capabilities.yaml copies are byte-identical. Accepted non-blocking note: a spec-parser edge in AC2's non-string clause (an inline-bracket tracker_repo with no config wired is a literal string, allowed-not-enforced per AC4, fails closed once a config exists) - a pre-existing parser limitation, harmless. OPERATIONAL NOTE: this item was built by a worker whose worktree isolation did not hold (it wrote to the main tree); the coordinator stopped it, separated its complete gate-green build from the concurrent WARP-0603 evidence, committed it as this self-consistent impl commit, and verified the commit passes the gate in a clean worktree."
+  ],
+  "rollback": "git revert; the change is confined to .warp/validate.py (a non-protected validator), its template twin, the tracker.py twin + template-sync + init-scaffold completion, the two skills, one capability entry (both copies), a selftest block, and the WARP-0602 spec; no protected path."
+}

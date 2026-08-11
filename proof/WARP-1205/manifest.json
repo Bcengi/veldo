@@ -1,0 +1,138 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1205",
+  "commit": "45534ba39b334d62ce3a32037b4fe700e3a4795c",
+  "producer": "claude-opus-4-8[1m] (WARP-1205 implementer agent, planned lane; W5 of PLAN-0012, the action whitelist - runbook actions as code: the warp.action/v1 contract, the whitelist STORE that admits an action to the machine path only after a recorded digest-bound review, and the reference trio against FAKE systems. HIGH RISK, the enforcement core on the execution side per C2; the executor W6 and the two-key rule W7 are NOT built here and this store runs nothing. Invention #3 / O2 / C4 / NG2)",
+  "produced_at": "2026-07-23T11:17:04Z",
+  "plan": "PLAN-0012",
+  "work": "W5",
+  "plan_revision": 2,
+  "plan_hash": "sha256:9c8616540899be1d",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The warp.action/v1 contract (schema warp.action/v1, module .warp/action.py, 602 lines under the 1000 module_lines budget) and its structural validator validate_action FAIL CLOSED by name on every malformation class. An action declares the FAKE system it acts against (NG1), typed parameter specs (name, a type from string/integer/number/boolean/enum, a required flag, and a validation constraint), a risk class, a reversibility analysis (class/analysis/data_mutating), a rollback plan, a canary declaration (supported and, when supported, a shape), and a recorded review. validate_action refuses a wrong schema, a missing id/title/system, an out-of-vocabulary risk_class/reversibility class/parameter type/review status/review verdict, a malformed parameter spec (no name, an enum with no values, an inverted min/max range, an uncompilable pattern, a duplicate parameter name), a missing rollback, a missing canary declaration or a supported canary with no shape, a missing or malformed review block, and a file outside the parser subset. It reuses validate.parse_yamlish and validate.fail (no second parser, no import cycle) exactly as incident.py and decision.py do. The reference TRIO per D3 ships as clearly-illustrative fake-system examples (.warp/examples/action-rollback-deploy-example.yaml against fake-deploy-controller, action-restart-service-example.yaml against fake-service-controller, action-scale-pool-example.yaml against fake-pool-controller); each validates clean via python3 .warp/action.py .warp/examples/action-<name>-example.yaml."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1205 block: 'a well-formed warp.action/v1 record validates' (positive control) plus the refusal battery over a GOOD_ACTION fixture (wrong schema, missing id/system, out-of-vocab risk_class/reversibility class, missing analysis/data_mutating, malformed parser subset, missing rollback, missing canary, supported canary with no shape, parameter spec with no name / bad type / enum with no values / inverted range / uncompilable pattern / duplicate name, no review block, out-of-vocab review status, missing reviewer/reviewed_digest, reviewed-with-rejected-verdict contradiction), and 'the shipped action example <trio> validates' for each of the three."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A RUNBOOK ACTION CARRIES A HIGH RISK FLOOR AND NOTHING LOWERS A CLASS (C2). risk_floor(data) returns high for a reversible non-data-mutating action and critical when data_mutating is true or the reversibility class is irreversible; validate_action REFUSES an action whose declared risk_class ranks below its floor with the reason named, while a declaration at or above the floor is accepted (anything may raise a class, nothing may lower it, the same one-tier-ladder posture as the decision-record D5 mapping and the remedy two-key binding). The reference trio are all reversible, non-data-mutating, whitelist-floor high, and validate."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'a data-mutating action declaring risk high is REFUSED (floor critical)'; 'an irreversible action declaring risk high is REFUSED (floor critical)'; 'an action declaring risk standard is REFUSED (below the high floor)'; positive controls 'a data-mutating action declaring critical validates' and 'a high-floor action declaring critical validates (a raise is allowed)'; and 'risk_floor is high for a reversible non-data-mutating action and critical for a data-mutating one'."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE STORE REJECTS AN ACTION WITHOUT A RECORDED, DIGEST-CURRENT REVIEW. An action is code, reviewed through the normal WARP loop and promoted by a human; the review is recorded on the artifact and BOUND BY A DIGEST to the exact content it vetted (the WARP-0109 verdict-proof digest binding applied to a runbook action). action_digest is the action's own canonical digest over its reviewable substance excluding the review block; action_reviewed admits only a reviewed, approved, digest-current action; review_stale detects a reviewed action edited afterward and check_actions FAILS CLOSED on it (a vetted action cannot be silently edited). A PROPOSED action is a valid draft but is NOT admitted (it does not exist to the machine path until reviewed). The store performs no review itself (that is the loop's fresh-context vetting and human promotion); it enforces the recorded, digest-bound outcome, so unlike the responder and the adversarial decision reviewer it ships no delegated reasoner."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'action_digest is deterministic and excludes the review block'; 'an action whose reviewed_digest matches its content is ADMITTED (action_reviewed True, review_stale False)'; 'the placeholder-digest action is NOT admitted'; THE STALE TOOTH 'editing a reviewed action (max 100 -> 200) makes the review STALE and it is NOT admitted'; 'a PROPOSED action is not stale but is NOT admitted (does not exist to the machine path)'; and the DRIFT GUARD 'the shipped action example <trio> is reviewed and digest-current' for each of the three."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "ANYTHING NOT IN THE WHITELIST DOES NOT EXIST TO THE MACHINE PATH (O2/C4, NG2). An action reference is a whitelist KEY, never command text: resolve_action of an unknown reference returns None with NO free-form fallback, require_action REFUSES by name, and a shell-looking reference is unresolvable, not run; a present-but-unreviewed (proposed) action is likewise unresolvable. build_whitelist admits exactly the reviewed/approved/digest-current actions; check_actions is ADOPTION SAFE (no .warp/actions/ directory stands down, the effective whitelist empty) and FAILS CLOSED on a malformed action, a stale review, a duplicate id, and a required-but-absent action. validate_parameters refuses an unknown parameter, a missing required parameter, a wrong type, and a value outside the declared range/enum/pattern, each NAMING the parameter. warp.action/v1 BINDS INTO warp.remedy/v1 (W1): bind_remedy_action resolves a remedy's proposed_action reference against the whitelist (unknown/unreviewed refuses) and validates its parameters (out of range refuses by name), reusing the remedy dict W1 already parsed (no second parser); it RESOLVES and VALIDATES only and runs NOTHING (the executor W6 binds the resolved action to a proposal digest on its own credentials)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests over a temp .warp/actions/ tree holding the trio: 'check_actions passes'; 'build_whitelist admits EXACTLY the reviewed trio'; 'resolve_action resolves rollback_deploy and returns None for an unknown ref'; 'require_action REFUSES an unknown ref by name'; 'an action reference is NEVER interpreted as command text (a shell-looking ref is unresolvable)'; 'a non-string reference is unresolvable'; the W1 BINDING 'the shipped remedy example binds to the whitelist (rollback_deploy resolves and its parameters validate)', 'a remedy naming an action NOT in the whitelist is REFUSED', 'a remedy with an out-of-pattern parameter is REFUSED by name'; PARAMETER teeth (above max / below min / wrong type / unknown / missing required / out-of-enum / pattern mismatch each refuse by name, with valid positive controls); and adoption-safe + fail-closed directory postures (absent dir stands down; a proposed action passes the scan but is not admitted; a stale reviewed action fails closed; a malformed action fails closed; a duplicate id refused; a required-but-absent action fails closed)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "TEETH proven by mutation over the shipped action-scale-pool-example.yaml (anti-vacuity C1), each observed RED then reverted byte-identical: stripping the review block, declaring the risk below the floor, making it data-mutating while declaring high, stripping the rollback, and editing a reviewed field (stale digest). IN-SESSION with no detached process (NG3): .warp/action.py imports pathlib, json, hashlib, and re at module top, starts no process/thread/timer, and a subprocess.Popen(..., start_new_session=True) mutation turns the no-detach check RED. .warp/action.py and .warp/capabilities.yaml are byte-identical across root, plugin/templates, and all 6 packs (aider, antigravity, codex, copilot, cursor, opencode) by cmp; the three example actions are byte-identical across plugin/templates (packs carry no examples). capabilities.yaml gains ONE honest mechanical entry (action_whitelist, home .warp/action.py) that defers honestly (the executor W6, the two-key rule W7, and the validate.py run_all wiring + init lay-down W11 are referenced not built). validate.py is NOT edited. No protected path is touched. RULE #1 clean (ASCII hyphen only; the section divider is the established engine convention)."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 2187 passed, 0 failed (84 new WARP-1205 assertions over the 2103 baseline). No-detach teeth ('action.py starts no detached/background process', 'imports no process/thread machinery at module scope', 'a detached subprocess.Popen(claude -p) mutation turns the check RED', 'the mutation is in-memory only'); byte-identity across root/plugin/6-packs for action.py + capabilities.yaml and across plugin/templates for the three examples; 'the action_whitelist capability is declared mechanical with home .warp/action.py'. Dogfood: 'the spec placement resolves and passes the mandatory placement gate (tier standard, no boundary crossing)' and 'HIGH RISK and human_approval REQUIRED (C2) and no protected path is touched'. ./scripts/verify.sh: GATE GREEN (catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared); index regenerated (WARP-1205 review, in the PLAN-0012 ready frontier)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 2187 passed, 0 failed. The WARP-1205 block adds 84 assertions: the warp.action/v1 structural validator and its refusal battery with positive controls (AC1); the C2 risk floor (high floor, critical for data-mutating/irreversible, nothing lowers a class) with positive controls (AC2); the digest-bound recorded review (action_digest / action_reviewed / review_stale) with the stale-edit tooth and the shipped-trio drift guard (AC3); the whitelist store, the C4/NG2 does-not-exist-to-the-machine-path property (unknown/unreviewed/command-text unresolvable), parameter validation refused by name, the warp.remedy/v1 binding reusing the one parser, and the adoption-safe + fail-closed directory postures (AC4); and the mutation teeth over the shipped example, the no-detach tooth, the byte-identical engine sync, the honest capability, and the HIGH-RISK dogfood (AC5)."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes, including check_plan over PLAN-0012 with WARP-1205 mirrored back (lane planned, plan PLAN-0012, work W5, plan_revision 2, depends_on [WARP-1201]) and the mandatory placement gate over the spec (placement [contracts] resolves, footprint tier standard). The action whitelist is a per-repo store that introduces no new gate wiring for W5; landing the check into validate.py run_all plus the init lay-down is WARP-1211 (W11). validate.py is unedited and stays under the module_lines budget. The module is exercised standalone (python3 .warp/action.py) and through the injected parser and the shipped examples in the selftest."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py (123 specs); the WARP-1205 row reads review/high/required, and the PLAN-0012 ready frontier shows WARP-1205 (W5). check_generated.sh reports no drift (regeneration is a no-op)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry no company or product references) all pass. The new engine material (.warp/action.py, the three example actions, and the capabilities entry) is generic; WARP is the method's own name and the fake systems are generic (fake-deploy-controller, fake-service-controller, fake-pool-controller). RULE #1 verified: no em/en dash, no prose double-hyphen (the section divider and the YAML front-matter fence are established conventions)."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "bash scripts/check_lint.sh: pass. .warp/action.py and every synced copy compiles under python3 -m py_compile."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: template sync pass (the PAIRS-tracked files are unchanged; validate.py is not edited). .warp/action.py and .warp/capabilities.yaml follow the byte-identical discipline across all engine copies."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pack drift pass (7 packs). .warp/action.py and .warp/capabilities.yaml are byte-identical between plugin/templates (canonical source) and every pack (cursor, codex, copilot, antigravity, opencode, aider); the claude pack is the source in-place. The example actions live under .warp/examples (not swept by the single-level .warp/*.yaml engine glob), so packs carry no examples, matching the incident/remedy examples."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. Footprint-versus-diff: WARP-1205 is the single footprinted spec in the change set and every changed source path is covered by its declared footprint (.warp/action.py and .warp/capabilities.yaml and their plugin/templates and packs copies, the three .warp/examples action files and their plugin/templates copies, scripts/selftest.py, and the spec; specs/index.md is an excluded derived artifact). No file_lines violation: .warp/action.py is 602 lines (under the 1000 module_lines budget) and resolves to no area (a placeless engine module like the sibling organs); .warp/validate.py is deliberately NOT edited. Placement [contracts] resolves; footprint tier standard (a single area, no boundary crossing)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass. The action store resolves no credentials and carries no secrets; the reference trio act against fake systems and open no connection."
+    }
+  ],
+  "assumptions": [
+    "WARP-1205 is a PLANNED spec (lane planned, W5 of PLAN-0012 revision 2, depends_on [WARP-1201], shipped). The manifest carries plan/work/plan_revision/plan_hash to bind the change to the plan state it was built against (plan_hash sha256:9c8616540899be1d, PLAN-0012 revision 2 unchanged).",
+    "This item is the action whitelist: the warp.action/v1 CONTRACT, the whitelist STORE (admission only after a recorded, digest-bound review; anything not in the whitelist does not exist to the machine path), and the reference trio against FAKE systems (D3). It is HIGH RISK per C2 (the whitelist is the enforcement core on the execution side) and ships at human_approval required. The EXECUTOR that would RUN an action (WARP-1206, W6, on its own credentials and code path, bound to a proposal digest, with the autonomy ladder, kill switch, budgets, and canary-first) and the TWO-KEY rule (WARP-1207, W7) are separate later items and are NOT built here; this store carries no execution capability and runs nothing (NG2, no free-form execution path). No part of this item is data-mutating: the store validates and resolves records and hashes content; it opens no connection and executes nothing, so nothing here reaches the critical tier (a data-mutating EXECUTION path would, and that is W6).",
+    "HONEST DEFERRAL of the gate wiring (not a dodge): the action whitelist is a per-repo store that introduces no mandatory new gate hook for W5, so there is nothing to wire into validate.py run_all here. Landing the action check into run_all and the init lay-down is WARP-1211 (W11). Because validate.py is not edited it stays under the module_lines budget; the module ships runnable standalone (python3 .warp/action.py) and exercised through the injected parser and the shipped examples in the selftest, matching how W1 through W4 shipped their organs unwired.",
+    "The impl is a single commit (action.py across all engine copies + one capabilities entry per copy + the three example actions in root and plugin/templates + the selftest block + the spec + the regenerated index). Per the review boundary: specs/WARP-1205 is flipped to review (not shipped), no verdict is written, this proof manifest and .warp/last_verify and .warp/events.jsonl are left uncommitted, and nothing is pushed. Because this is a HIGH-RISK safety-core spec the landing requires the L2 independent fresh-context review AND a separate recorded FOUNDER approval as the landing key; the builder does not review its own work and does not land."
+  ],
+  "rollback": "git revert 45534ba. The change adds one contract-validator and store module (.warp/action.py, synced byte-identical across plugin/templates and the 6 packs), three illustrative example actions (root and plugin/templates), and one capabilities entry, plus a selftest block and this spec. Nothing consumes action records for execution: the executor is WARP-1206 (W6) and the two-key rule WARP-1207 (W7), and gate wiring is WARP-1211 (W11), so the module is not wired into verify.sh or validate.py run_all and reverting returns the gate to its prior behavior with no migration and nothing to unwind. A repository with no .warp/actions/ directory is unaffected either way (the adoption-safe posture); action records are inert per-repo data the module owns no store for, and this module runs nothing.",
+  "proof_digest": "sha256:1691eec5ab47a8fb"
+}

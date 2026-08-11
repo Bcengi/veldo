@@ -1,0 +1,38 @@
+WARP-0902 runner evidence - in-session worker spawner + account model (W2 of PLAN-0009)
+Impl commit:  46ec33b52448e6844e9c76647966f15ae1241ad1
+plan_hash:    sha256:6b03ff568d65cd2f
+proof_digest: sha256:6d5db465ac794f97
+
+--- AC5: gate green with the WARP-0902 selftest block (fakes, no real login, no process spawned) ---
+$ bash scripts/verify.sh
+selftest: 1302 passed, 0 failed        (+15 for the WARP-0902 block: 1287 -> 1302)
+GATE: GREEN (46ec33b52448e6844e9c76647966f15ae1241ad1)
+
+--- AC3 (load-bearing): no detached-spawn path ---
+fleet.py imports: importlib.util, uuid, pathlib  (NO subprocess/Popen/os.fork/os.system/nohup/setsid/disown/systemd/cron)
+InSessionSpawner.spawn -> _assemble_env (CLAUDE_CONFIG_DIR + WARP_WORKER_ID/ACCOUNT/SCOPE/CAPABILITIES) -> handle = self._start(worker_id, env)  [injected only]
+reference in_session_start raises SpawnPrimitiveError (never fabricate/detach); points to the documented `CLAUDE_CONFIG_DIR=<profile> claude` per-account procedure
+(accounts.py's only subprocess is a read-only `git rev-parse --git-common-dir` path lookup, not a worker spawn)
+
+--- AC1/AC2: account model + CLAUDE_CONFIG_DIR ---
+registry: warp/accounts/registry.json under the git common dir (outside history, shared across worktrees), fcntl-locked + os.replace atomic
+account_add: mkdir + chmod 0700 + register + print the one-time human login step (NO login performed); resolve/list/get; duplicate/unknown fail by name
+CLAUDE_CONFIG_DIR verified via claude-code-guide vs current Claude Code auth docs: per-directory credential isolation + persistence, no relogin (Linux/Windows);
+  caveats: higher-precedence auth env vars override; macOS uses the Keychain (documented in the module docstring)
+
+--- AC4: account selection ---
+AccountSpreader: one account per worker, fails loud (NoAccountAvailableError) when exhausted
+make_in_session_spawner: pin (account=NAME) or spread; resolves every name up front so an unknown account raises BEFORE any spawn (exercised: 0 spawns)
+warp_account_fleet: caps max_workers at account capacity -> N one-account workers self-dividing the frontier
+
+--- teeth (reviewer exercised both mutants directly) ---
+drop CLAUDE_CONFIG_DIR from assembled env -> real assertion cfgs==wanted went False (RED)
+fabricating-start primitive returns a handle without raising -> would turn the fail-loud assertion RED; the reference primitive raises (GREEN)
+
+--- scope hygiene ---
+impl commit touches: .warp/accounts.py, .warp/fleet.py, scripts/selftest.py, specs/WARP-0902, specs/index.md
+NO protected path; NO plugin/templates/**; NO evidence files; NO plan file (bundled in W1); spec status ready; base WorkerSpawner/FleetLauncher/warp_fleet behaviorally unchanged (Y7 tests pass within 1302)
+
+--- independent review ---
+Agent ac0c2e43e25fd2edb (fresh-context Opus, distinct from builder a4df5259), isolated worktree (/tmp/warp-w2-rev, removed --force).
+Verdict: pass_with_notes, 0 blocking (3 non-blocking notes; the W4 accounts.py double-load exception-identity gotcha is the most substantive). Main repo untouched.

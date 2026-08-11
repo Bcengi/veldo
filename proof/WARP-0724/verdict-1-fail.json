@@ -1,0 +1,94 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0724",
+  "commit": "0f59d3345ae927a9531a06858f4fbbb64ca597d9",
+  "round": 1,
+  "reviewer": "claude-opus-5[1m], agent af1e8a9d58debdc95, workflow wf_885e853f-6f9. OFF-BOOK PROVENANCE, STATED FIRST BECAUSE IT IS THE THING A READER MUST NOT MISS. This review was run by an AGENT DISPATCHED BY THE ORCHESTRATOR INSIDE A WORKFLOW. It did NOT come through this repository's own review lane. Concretely, and each one checkable from the record rather than asserted: the spec was never transitioned to status 'review', so .warp/frontier.py never offered a review unit for it; no claim was taken in the claim ledger; the run did not go through the wrapper skill or plugin/agents/warp-reviewer.md; and no verdict artifact was produced at the time, which is why this one is written after the fact. WHAT INDEPENDENCE DID HOLD, because the weaker provenance is not the same as no independence: the reviewing agent was a separate process with fresh context that did not write this code, this spec, this manifest or any earlier review of this item; it worked in throwaway clones or a detached worktree; and it ran the gate and the suite ITSELF rather than reading the builder's numbers. But that independence is attested by the ORCHESTRATOR THAT DISPATCHED IT and by the agent's own transcript, not by the repository. TREAT THIS AS WEAKER EVIDENCE THAN A PROPERLY DISPATCHED REVIEW, and do not count it as one. The reviewed tree was the BRANCH state, not main: commits 027fea0 (the fix), 688e77d (the evidence) and 0f59d33 (the gate attestation) on branch warp-0724-frontier-honours-declared-dependencies, based on main 18e6ca8. The agent drove the real repository read-only and its own clones and temp repositories for everything else. TRANSCRIBED, NOT AUTHORED. This artifact was written on 2026-07-29 by the ORCHESTRATOR, after the fact, from the reviewing agent's own structured return recorded as the {\"type\":\"result\"} line for agent af1e8a9d58debdc95 in /path/to/repo/.claude/projects/-home-dmitry-projects-daybook/a6790af4-cb43-4a20-95c6-4726da07d545/subagents/workflows/wf_885e853f-6f9/journal.jsonl. The verdict, the criteria dispositions, the findings and every measurement below are that agent's, quoted or condensed without change of meaning. The orchestrator added no finding, removed none, and did NOT soften the verdict to a later, kinder one. Where this artifact says something the review did not say, it is marked ORCHESTRATOR NOTE.",
+  "reviewed_at": "2026-07-29T09:07:38Z",
+  "verdict": "fail",
+  "commit_note": "0f59d33 is the BRANCH COMMIT THE REVIEWER SAW (the gate attestation naming 688e77d), not main's head. Main was at 18e6ca8 at review time and is at a16e88c as this record is written. The manifest at the reviewed commit declared no round, so this is round 1.",
+  "criteria_note": "The spec declared AC1 to AC4 at the reviewed commit. AC5 and AC6 were added by the rework AFTER this review, so this record judges four criteria and not six.",
+  "headline": "THE PROMISE AS STATED IS DEFEATED BY ONE ROUTE NOBODY DROVE, AND THE FIX INTRODUCED A NEW CRASH. The promise ('claimable() never offers a build unit whose declared depends_on contains anything not at status shipped') fails for a PLAN-lane spec whose OWN front matter declares a dependency the plan work item does not repeat. Driven on the real repository: the module's own report function contradicts its own queue in the same process. Separately, a ready spec whose depends_on is a list of maps - a shape check_spec and check_ready both ACCEPT, because NO check types the spec-level depends_on field anywhere - makes claimable() raise TypeError, which kills `warp frontier` with zero output and takes down the worker fleet. The standalone half of the promise, which is what AC1 scopes itself to, DOES hold under every route driven.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "The standalone half holds under every route driven. The rule is asked at one point, the predicate is the one the plan loop already uses, and the reviewer independently drove every non-shipped status from the validator's own SPEC_STATUSES vocabulary: blocked, draft, in_progress, proven, ready and review all withhold, and only `shipped` releases. A missing depends_on key, an empty depends_on and a satisfied depends_on all stay claimable."
+    },
+    {
+      "id": "AC2",
+      "status": "failed",
+      "note": "The real-corpus measurement is honest and the reviewer reproduced it with both engines against the same index: BEFORE 12 claimable build units, 5 with an unshipped declared dependency (WARP-0712 needing WARP-0716 at ready, WARP-0714 needing WARP-0712, WARP-0715 needing WARP-0713, WARP-0717 needing WARP-0712, WARP-0718 needing WARP-0620 at draft); AFTER 7 build units, 0 with an unshipped declared dependency; removed = exactly those five, added = none. The spec's 'ten to five' is a dated a03d949 measurement and the manifest already says so. IT FAILS ANYWAY, on the assertion rather than the measurement: the selftest headline claims 'the DECISION and the REPORT agree at every dependency state ... a disagreement would withhold work the report calls ready or report work the queue offers', while its body only compares unmet_dependencies() to PL.item_state() on a hand-built one-dependency status map. It never drives claimable() against withheld() over a repository, and routes A and B both produce exactly the forbidden outcome."
+    },
+    {
+      "id": "AC3",
+      "status": "failed",
+      "note": "Non-starvation and cycle termination are REAL and the reviewer drove them rather than reading them: a 2-cycle, a self-dependency and a 3-cycle each withhold only their own members while unrelated ready work is still offered; a 60-MEMBER cycle plus one unrelated unit returns in 0.001 seconds with the unrelated unit offered and all 60 members reported withheld; no raise, no hang, no recursion. THE CRITERION FAILS ON THE REPORT, not on the queue: the claim that the withheld report is 'ALWAYS visible next to a short or empty queue' is false twice over, because withheld() covers standalone build work only so a queue shortened by the plan path's ordering is never explained, and because when the unhashable-dependency crash fires withheld() raises too and NOTHING at all is printed."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "The review lane is genuinely unaffected, and the reviewer proved it by driving rather than by reading the argument: a review spec with an unshipped dependency, with an absent dependency, inside a cycle, and on the plan lane is still offered as a review unit and never appears in withheld(). ONE HONEST QUALIFICATION the manifest already makes: the real-corpus half of AC4 is vacuous today because the corpus has zero specs at status review, so the review count is 0 before and 0 after; the fixture carries the non-vacuity."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "blocking",
+      "text": "ROUTE A, CONFIRMED, GATE-LEGAL, THE ROUTE NOBODY DROVE. A plan-lane spec's OWN declared depends_on is never read by the plan build path, which honours only the plan work item's depends_on. In a clone: patch specs/WARP-0620-live-sandbox-proof.md from draft to ready and its depends_on from [WARP-0619, WARP-0623] to [WARP-0619, WARP-0623, WARP-0712], where WARP-0712 is at status ready. Both validators accept it (check_spec 0 and check_plan 0, a fully accepted repository state), and then `python3 .warp/frontier.py` exits 0 printing 'build WARP-0620 PLAN-0016' while in the SAME PROCESS unmet_dependencies(WARP-0620) returns [('WARP-0712','ready')] and withheld() says nothing about it. THE SHAPE IS ALREADY LIVE, not hypothetical: WARP-0620's spec declares depends_on [WARP-0619, WARP-0623] while PLAN-0016 W7 declares [WARP-0619] only, and WARP-0623 is lane standalone so the plan item CANNOT legally name it (validate.py refuses a plan-item dependency outside the plan's own work set). Cross-plan spec-declared dependencies are therefore structurally unenforceable by the plan path. MITIGATION FOUND BY DRIVING IT: the selftest's AC2 corpus assertion IS a net in THIS repository (with the patch in place the suite reports 3252 passed, 1 failed, the failure being the AC2 corpus universal), so this repository's gate goes red - but the CODE does not enforce the promise, withheld() cannot see it, and the seven pack copies ship the engine WITHOUT that selftest to any adopter."
+    },
+    {
+      "severity": "blocking",
+      "text": "NEW CRASH REGRESSION, GATE-LEGAL, KILLS THE WHOLE DISPATCHER. A ready standalone spec whose depends_on is a LIST OF MAPS. Fixture written into a clone as a valid ready spec with 'depends_on:' then '  - id: WARP-0712' then '    why: needs the suite split first'. check_spec exits 0 AND check_ready exits 0 - the ready transition ACCEPTS it - because NOTHING in .warp/validate.py types a SPEC's depends_on; the only depends_on validation applies to PLAN work items. Then `python3 .warp/frontier.py` exits 1 with TypeError: unhashable type: 'dict' at .warp/plan.py:75 via frontier.py:139 standalone_frontier, printing NOTHING - no queue, no withheld report. Both claimable() and withheld() raise. The baseline engine at 18e6ca8 returns 12 units on the IDENTICAL tree with no crash, so this is a regression this item introduced by being the first code to read the spec-level field. BLAST RADIUS BEYOND THE CLI: .warp/work.py:117 iterates FR.claimable(...) inside _claim_next with no guard, so one malformed depends_on in one ready spec takes down every worker in the fleet rather than yielding an empty queue."
+    },
+    {
+      "severity": "blocking",
+      "text": "SAME CRASH CLASS, SECOND SHAPE: depends_on: [[WARP-Y0]] (a nested list) raises TypeError: unhashable type: 'list' at the same line. The class is 'any non-hashable member of the spec's depends_on', so the fix belongs at the CONTRACT (type the field in check_spec, where it is declared) and not only as a defensive coercion in the reader."
+    },
+    {
+      "severity": "blocking",
+      "text": "FALSE SENTENCES, EACH RE-MEASURED, TO DELETE RATHER THAN SOFTEN. (a) .warp/frontier.py:5-7 module docstring: this commit DELETED the qualifier that made the sentence true - the base at 18e6ca8 read 'a ready spec whose PLAN dependencies are all shipped'. Route A falsifies the version now in the tree. Restore the word 'plan' or delete the clause. (b) frontier.py:122-123 standalone_frontier docstring: 'Exactly as on the plan path, the question goes to PL.item_state, so what a dependency means is decided in ONE place and this lane cannot drift permissive against the other.' The two paths share the PREDICATE and are fed DIFFERENT INPUTS - the plan path passes the plan item's depends_on against a shipped set restricted to that plan's work items, the standalone path passes the spec's depends_on against the whole index. DELETE the 'decided in ONE place' claim. (c) frontier.py:110-112 unmet_dependencies docstring: same defect. (d) frontier.py:271-272: 'The withheld report goes to STDERR in both modes, so it is ALWAYS visible next to a short or empty queue' - delete 'always' and say 'standalone'. (e) the spec's 'Where the report lives' section and (f) the manifest's AC3 operational evidence carry the same overstatement. (g) the selftest assertion headline at scripts/selftest.py:23493 claims more than its body checks: either drive claimable() against withheld() over a repository, including a plan-lane spec, or delete the second sentence."
+    },
+    {
+      "severity": "note",
+      "text": "ROUTE C, CONFIRMED, GATE-LEGAL, CONTRIVED: two spec FILES sharing one id. Both _spec_index and validate.py resolve last-wins by sorted filename and nothing anywhere refuses a duplicate spec id across files (the only duplicate-id check is for plan work items). Driven: two files declaring id WARP-Q0, one ready and one shipped, plus WARP-Q1 depending on WARP-Q0, yields WARP-Q1 offered with an empty withheld report - an unshipped prerequisite read as shipped. Reversing the filenames withholds it correctly, so the outcome depends on filename sort order."
+    },
+    {
+      "severity": "note",
+      "text": "ROUTE B, CONFIRMED, NOT GATE-LEGAL, reported as a second demonstration that the decision and the report can disagree over a repository. A lane:standalone spec with an unshipped dependency that is also a work item of an active plan is added by the plan loop first and `seen` then suppresses standalone_frontier entirely: the queue offers the very unit the report calls withheld. HONEST CAVEAT recorded by the reviewer: check_plan's forward-mirroring refuses this state, so it needs an already red repository."
+    },
+    {
+      "severity": "note",
+      "text": "NOT A CRASH but the same untyped-field class, and it corrupts the diagnostic the item exists to add: depends_on written as a bare scalar iterates CHARACTERS, so `warp frontier` prints a unit 'waiting on W (absent), A (absent), R (absent), P (absent)' and six more. The direction is safe (the unit is withheld) but the operator is told the queue is waiting on nine prerequisites that do not exist."
+    },
+    {
+      "severity": "note",
+      "text": "ONE QUEUE CONSEQUENCE THE OWNER SHOULD SEE, correct semantics rather than a bug: of the five now-withheld units, four unblock through work that is itself claimable now, but WARP-0718 waits on WARP-0620, which is at DRAFT on the plan lane and whose own spec says it 'is deliberately not autonomous: it is the one item that needs the human in the room'. WARP-0718 is therefore unreachable by the fleet until the owner promotes and ships WARP-0620, and the new stderr report makes that visible. Also worth naming and not a defect: a dependency at `proven` withholds its dependents, so a lag between proven and shipped is a lag in the queue."
+    }
+  ],
+  "must_fix_before_land": [
+    "Close route A, or delete the promise's plan-lane half and say the rule is standalone only.",
+    "Type the spec-level depends_on field where it is DECLARED (check_spec), so the crash class cannot be reached by a gate-legal spec, rather than coercing in the reader.",
+    "Delete the seven false sentences named above rather than narrowing them."
+  ],
+  "disposition": "REWORK. That is the reviewer's own recommendation, recorded verbatim in the journal as 'rework'. The code half that AC1 scopes itself to is sound and the queue does not starve; the promise's plan-lane half and the untyped field are the failures.",
+  "gate_observed": {
+    "run_by": "the reviewing agent, not read from the record",
+    "how": "clean `git clone --no-hardlinks` of the worktree at 0f59d33, then nice -n 19 ./scripts/verify.sh",
+    "result": "EXIT=0, final line GATE: GREEN (0f59d3345ae927a9531a06858f4fbbb64ca597d9)",
+    "stages": "catalog 5 run / 18 not-applicable / 0 waived / 0 undeclared; every stage pass (unit, generated, docs hygiene, template sync, secret scan, contracts, shape gate)",
+    "and_the_point": "A GREEN GATE PROVES NOTHING ABOUT THE PROMISE HERE: route A is gate-legal in the code and only this repository's own selftest catches it, and the crash is reachable from a spec both validators accept.",
+    "engine_lockstep": "verified independently with cmp: plugin/templates/.warp/frontier.py and all six packs/*/.warp/frontier.py byte-identical to .warp/frontier.py"
+  },
+  "count_observed": {
+    "method": "RUN, twice, and read off the suite's own summary line: once inside the reviewer's own verify.sh run and again standalone in the clone",
+    "result": "selftest: 3253 passed, 0 failed - matching the expected 3253 exactly",
+    "delta": "3238 -> 3253 = 15 added assertions, consistent with the manifest",
+    "law_2": "The reviewer checked the new block for Law-2 violations and found none: no assertion counts specs, units, packs, statuses or files; the engine roster is derived from .warp/packs.json rather than a directory listing or a floor; the only fixed lists are fixture contents the test itself writes. The one moving-property risk was probed - check_ready on the item's own spec once it ships - and is safe, verified on two already-shipped specs."
+  },
+  "what_happened_after_this_review": {
+    "rework": "The orchestrator reworked the item in 156ae80 ('the dependency rule moves to the one point every offer passes through, the field it reads is typed where it is declared, and a spec id is unique across the corpus') with evidence in e3fe50d, attested GATE GREEN against e3fe50d in 4f24019, and merged it to main in 33ee175 with the attestation ecb1079. Route A and route B are closed by asking dependency_gate ONCE in _add() and DELETING standalone_frontier rather than keeping it as an alias; the crash class is closed at the contract by validate.check_depends_on reading with the same parser the readers use; route C is closed by validate.check_spec_ids. The spec grew AC5 and AC6 in that rework.",
+    "who_verified_the_rework": "THE ORCHESTRATOR, NOT A FRESH INDEPENDENT REVIEWER. No second review was dispatched for the rework and no verdict artifact exists for it. The rework's own commit message is written in the first person by the party that made the change. ORCHESTRATOR NOTE: this is recorded as a gap, not as evidence, and it is the reason a `fail` verdict plus this rework does not support `shipped`.",
+    "spec_status": "specs/WARP-0724-frontier-honours-declared-dependencies.md is at status `ready` and IS NOT CHANGED BY THIS RECORD. A sibling reviewer is independently reviewing the landed state; whatever it rules is what decides."
+  },
+  "process_defect": "See proof/REVIEW-RECORD-DEFECT-2026-07-29.md for the process defect this artifact exists to repair: a review that leaves no verdict artifact is off-book, and it happened four times on 2026-07-29."
+}

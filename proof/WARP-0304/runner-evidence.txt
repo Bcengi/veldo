@@ -1,0 +1,13 @@
+perf/load runner driven over its shipped fixtures (built-in workloads, no external target):
+
+pass.journey.json (fast sleep workload under concurrency 8, generous budgets, zero error budget):
+  requests 40  ok 40  errors 0  error_rate 0.000
+  exit 0 (expect 0)  -> "perf load PASSED"
+
+fail.journey.json (flaky workload, index-chosen error fraction, zero error budget):
+  requests 40  ok 30  errors 10  error_rate 0.250
+  FAIL budget - max_error_rate: 0.250 exceeds budget 0.0 (10/40 requests failed)
+  exit 1 (expect 1, error-rate breach named)  -> "perf load FAILED"
+
+Deterministic and timing-independent: failures are chosen by request index (i % every_n),
+not by wall-clock, so the pass/fail outcomes do not depend on machine speed.

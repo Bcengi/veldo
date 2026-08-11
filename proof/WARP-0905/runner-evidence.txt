@@ -1,0 +1,130 @@
+WARP-0905 independent-reviewer evidence
+commit: 2fb397f595010ae731380b2c0e543b0c762d8f87
+reviewer: claude-opus-4-8[1m] (independent reviewer)
+worktree: /tmp/warp-w5-rev (isolated checkout at 2fb397f), umask 0002
+
+=== AC6 / #1  GATE (isolated worktree) ===
+$ cd /tmp/warp-w5-rev && bash scripts/verify.sh
+  selftest: 1345 passed, 0 failed
+  catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+  GATE: GREEN (2fb397f595010ae731380b2c0e543b0c762d8f87)
+  (GATE line prints the reviewed commit -> run is on my checkout, not a stale cache)
+
+exec-bit umask-independence (the WARP-0904 lesson): GREEN on umask-002.
+  .warp/pack.py engine_drift mode check: (os.stat(src).st_mode & 0o111) != (os.stat(dst).st_mode & 0o111)
+  selftest exec checks: os.access(..., X_OK) and committed_hook_modes == "100755" (git index)
+  All umask-INDEPENDENT; no exec-bit assertion went RED.
+
+=== AC4 / #5  DRIFT TEETH (must bite) ===
+BASELINE pack_drift_report(repo_root=".") -- all 7 packs CLEAN:
+  claude: CLEAN  cursor: CLEAN  codex: CLEAN  copilot: CLEAN
+  antigravity: CLEAN  opencode: CLEAN  aider: CLEAN
+  (bin/warp in engine set: True; all 14 fleet modules in engine set: True)
+
+TEETH-1 append a byte to packs/aider/.warp/dispatch.py:
+  aider drift -> [('.warp/dispatch.py', 'differs')]      <- RED, content drift caught
+TEETH-2 chmod -x packs/cursor/bin/warp:
+  cursor drift -> [('bin/warp', 'mode')]                 <- RED, exec-bit drift caught
+  gate assertion all(not drift) now evaluates to False   <- gate would go RED
+AFTER RESTORE: aider clean=True, cursor clean=True        <- restored, no residue
+
+Cross-pack conformance (WARP-0809): selftest "cross-pack conformance passes for
+every declared pack (guard + policy + exec-bit + drift)" -> pass (part of 1345/0).
+
+=== AC1 / #2  CLOSURE SCAN (must be CLOSED, no repo-only reached) ===
+shipped plugin/templates/.warp/*.py = 21 modules (14 fleet + dashboard, events,
+  metrics, plan, policy_check, tracker, validate).
+repo-only .warp/*.py NOT shipped (11): budget, env_provision, init_scaffold,
+  lessons, pack, pack_conformance, release, tracker_adapter, tracker_conformance,
+  tracker_intake, tracker_mirror  -- ALL confirmed ABSENT from plugin/templates/.warp.
+
+fleet module _load/import edges (all resolve to a SHIPPED sibling):
+  accounts->[]  claim->[]  dispatch->[executor,frontier,lander,policy_check,work]
+  executor->[events,plan,runlog,validate]  fleet->[accounts]  fleet_env->[claim]
+  frontier->[claim,plan,validate]  governor->[metrics]  lander->[claim,policy_check]
+  runcmd->[]  runlog->[]  runstatus->[plan,runlog,runstatus,status_server]
+  status_server->[runstatus,status_server]  work->[claim,frontier]
+
+transitive closure from bin/warp = 19 modules:
+  accounts, claim, dispatch, events, executor, fleet, frontier, governor, lander,
+  metrics, plan, policy_check, runcmd, runlog, runstatus, status_server, tracker,
+  validate, work  -- any closure member NOT shipped: NONE (CLOSED).
+
+RUNTIME teeth (adopter-only tree /tmp/w5-adopter = copy of plugin/templates,
+no repo-only dogfood): all 14 fleet modules import standalone; ./bin/warp routes
+(usage, unknown-subcommand fail-loud, status) with NO ImportError on any module.
+status_server genuinely reached: runstatus.py:303 lazy-loads it for `warp watch`.
+
+=== AC2  bin/warp ===
+$ git show 2fb397f:bin/warp | cmp - <(git show 2fb397f:plugin/templates/bin/warp)
+  -> IDENTICAL
+$ git ls-tree 2fb397f bin/warp plugin/templates/bin/warp
+  100755 2508a67ba9dcb95aed0dff168a47830417dd8559  bin/warp
+  100755 2508a67ba9dcb95aed0dff168a47830417dd8559  plugin/templates/bin/warp
+.warp/pack.py ENGINE_GLOBS line 33: "bin/warp"
+scripts/check_template_sync.sh line 16: ["bin/warp"]="plugin/templates/bin/warp"
+
+=== AC3  events.py ===
+$ git show 2fb397f:.warp/events.py | cmp - <(git show 2fb397f:plugin/templates/.warp/events.py)
+  -> IDENTICAL
+account field present: "+ tokens=None, cost_usd=None, account=None" + attribution logic.
+
+=== AC4  byte-identity across all 7 packs ===
+bin/warp: blob 2508a67 + mode 100755 in template + aider/antigravity/codex/copilot/cursor/opencode.
+dispatch.py: single unique blob 52e2d68273b6d4402d5d4bac7c67107b50b4cf65 across template + all 6 packs.
+
+=== AC5  capabilities honest (13 fleet entries) ===
+$ git show 2fb397f:.warp/capabilities.yaml | cmp - <(git show 2fb397f:plugin/templates/.warp/capabilities.yaml)
+  -> IDENTICAL
+Fleet homes resolve in plugin/templates:
+  claim_ledger=.warp/claim.py  frontier_resolver=.warp/frontier.py  work_loop=.warp/work.py
+  serialized_lander=.warp/lander.py  fleet_env_provisioning=.warp/fleet_env.py
+  token_governor=.warp/governor.py  fleet_launcher=.warp/fleet.py
+  fleet_dispatcher=.warp/dispatch.py  account_registry=.warp/accounts.py
+  worker_spawner=.warp/fleet.py  per_account_governor=.warp/governor.py
+  in_session_waiter=.warp/fleet.py  warp_cli=bin/warp   -> 13/13 OK
+NOTE (non-blocking, pre-existing): ~17 NON-fleet dogfood/build-machinery entries
+  (budget_governance, lessons_store, warp_init_scaffold, tracker_* family,
+  pack_engine/pack_conformance/pack_drift_check/multitool_packs,
+  ephemeral_env_provisioning, release_rollback_automation) name homes that do NOT
+  ship in plugin/templates. Skill-homed (skills/*) and .github/docs entries DO
+  ship via the plugin (plugin/skills/, plugin/templates/.github). W5 added only the
+  6 fleet entries; the dogfood over-claim is pre-existing and deferred to W6.
+
+=== AC6  protected paths + evidence exclusion ===
+changed set has NO verify.sh / warp-guard.sh / policy.yaml / policy_check.py
+  (incl. plugin/templates twins and pack copies) -> NONE.
+impl commit has NO proof/ , .warp/last_verify , .warp/events.jsonl -> NONE.
+.warp/pack.py diff = only the ENGINE_GLOBS "bin/warp" entry (+ a comment); pack.py not protected.
+scripts/check_template_sync.sh diff = only + ["bin/warp"]="plugin/templates/bin/warp".
+
+=== RULE #1 ===
+No em-dash (U+2014) / en-dash (U+2013) in .warp/capabilities.yaml or the spec.
+No bare "--" in the 6 new capability entries.
+Spec "--" hits are the "---" YAML front-matter fences and one backtick `--`
+  reference (both allowed).
+
+VERDICT: pass_with_notes
+
+=== orchestrator ship-record (W5 of PLAN-0009) ===
+impl commit:  2fb397f595010ae731380b2c0e543b0c762d8f87 (WARP-0905: ship the fleet in the engine)
+plan_hash:    sha256:6b03ff568d65cd2f
+proof_digest: sha256:5ebd97e5c22c1d8e (over manifest {spec_id, commit, criteria, checks})
+
+closure shipped: 14 fleet modules (accounts, claim, dispatch, executor, fleet, fleet_env,
+  frontier, governor, lander, runcmd, runlog, runstatus, status_server, work) + bin/warp,
+  computed from bin/warp's transitive load graph and verified CLOSED. Non-fleet dogfood NOT shipped.
+delivery: every pack carries the complete working fleet (drift empty all 7); /warp:init stays the
+  minimal governance substrate by design (init_scaffold untouched) - the two-tier adoption model,
+  judged SOUND by the independent reviewer; W6 documents it + makes the manifest honest end to end.
+
+proof sequencing (transparency): the independent verdict (agent a5393ab7) was authored before this
+  manifest existed, so its proof_digest was first computed over the verdict's own criteria/checks
+  (sha256:d7fe24658481dc98). This manifest is the canonical evidence artifact (required_evidence:
+  [unit] is satisfied by the "unit" check). The verdict's proof_digest was reconciled to
+  proof_digest(this manifest) = sha256:5ebd97e5c22c1d8e and the reviewer field set to the actual
+  reviewing agent (a5393ab7438a3bcb3); the reviewer's judgment - verdict pass_with_notes, per-AC
+  confirmations, both findings, and summary - is preserved byte-for-byte. policy_check
+  valid_verdict_for(2fb397f) resolves to this verdict, so the binding is checkable.
+
+gate at ship: GATE GREEN, selftest 1345 passed / 0 failed, drift empty across all 7 packs.

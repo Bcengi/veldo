@@ -1,0 +1,71 @@
+[
+  {
+    "name": "ssrf: cloud metadata endpoint is blocked",
+    "guard": "is_ssrf_target",
+    "input": "http://169.254.169.254/latest/meta-data/",
+    "label": "block"
+  },
+  {
+    "name": "ssrf: loopback by name is blocked",
+    "guard": "is_ssrf_target",
+    "input": "http://localhost:8080/admin",
+    "label": "block"
+  },
+  {
+    "name": "ssrf: private address is blocked",
+    "guard": "is_ssrf_target",
+    "input": "http://10.0.0.5/internal",
+    "label": "block"
+  },
+  {
+    "name": "ssrf: non-http scheme is blocked",
+    "guard": "is_ssrf_target",
+    "input": "file:///etc/passwd",
+    "label": "block"
+  },
+  {
+    "name": "ssrf: a public https host is allowed",
+    "guard": "is_ssrf_target",
+    "input": "https://api.example.com/v1/webhooks",
+    "label": "allow"
+  },
+  {
+    "name": "path: dot-dot escape is blocked",
+    "guard": "is_path_traversal",
+    "input": "../../etc/passwd",
+    "label": "block",
+    "config": {"allowed_root": "/srv/app/data"}
+  },
+  {
+    "name": "path: absolute path outside the root is blocked",
+    "guard": "is_path_traversal",
+    "input": "/etc/shadow",
+    "label": "block",
+    "config": {"allowed_root": "/srv/app/data"}
+  },
+  {
+    "name": "path: a file inside the root is allowed",
+    "guard": "is_path_traversal",
+    "input": "reports/2026/summary.txt",
+    "label": "allow",
+    "config": {"allowed_root": "/srv/app/data"}
+  },
+  {
+    "name": "secret: an AWS-style access key is blocked",
+    "guard": "is_secret_leak",
+    "input": "AKIAIOSFODNN7EXAMPLE",
+    "label": "block"
+  },
+  {
+    "name": "secret: a PEM private-key header is blocked",
+    "guard": "is_secret_leak",
+    "input": "-----BEGIN RSA PRIVATE KEY-----",
+    "label": "block"
+  },
+  {
+    "name": "secret: ordinary prose is allowed",
+    "guard": "is_secret_leak",
+    "input": "published changelog entry for the 4.2 release",
+    "label": "allow"
+  }
+]

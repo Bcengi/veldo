@@ -1,0 +1,4 @@
+llm eval runner driven over its fixtures with the deterministic fake provider:
+
+pass.journey.json (new prompt holds): exit 0 (expect 0)
+fail.journey.json (prompt-change regression): exit 1 (expect 1, regression caught)

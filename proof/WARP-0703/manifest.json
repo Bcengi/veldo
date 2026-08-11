@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0703",
+  "commit": "16295d58e5ad7452b2f290317c3f58d0289f5f8e",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0007 Y3)",
+  "plan_hash": "sha256:c5ff657b05dd9b8f",
+  "produced_at": "2026-07-18T05:45:16Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/work.py WorkLoop: run() repeatedly calls step() until it returns None (the frontier is drained), bounded by a max_units runaway backstop that is not the normal stop; step() claims the next claimable unit via _claim_next (which draws from frontier.claimable, WARP-0702) and an atomic claim (WARP-0701), dispatches it through the injected Dispatcher, and releases the claim, returning the outcome; warp_work is the front door that allocates a worker id and runs the loop."
+        },
+        {
+          "type": "unit",
+          "ref": "single-worker selftest block over a temp repo + temp claims with a fake dispatcher: every claimable unit (a build with deps met, a second build, a review) is dispatched, and the loop drains via the EMPTY frontier not the backstop (exactly 3 outcomes); part of selftest 1011 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/work.py step() holds the claim across the dispatch (mutual exclusion) and releases it in a finally even if the dispatch raises (a crashed dispatch is a failed unit, not a stuck claim). Because frontier.claimable() is a snapshot and the claim gates ownership not done-ness, _claim_next re-checks _still_claimable (frontier.current_status: a build unit must still be 'ready', a review unit still 'review') after each successful claim and releases + skips the unit if another worker finished it in the claim-time window, so two workers never dispatch the same unit even across that window. The happens-before chain ship -> release -> next claim -> recheck guarantees the recheck observes the finished status on a single host / local FS."
+        },
+        {
+          "type": "unit",
+          "ref": "single-worker selftest asserts the claim is held (claim.holder == the worker id) during each dispatch; a barrier-synchronized multi-worker selftest (6 WorkLoops over one shared frontier + claims root, 24 standalone ready specs, atomic status flip on success) asserts every unit is dispatched EXACTLY once across the whole fleet and no claim is held at the end; the independent reviewer reproduced 0 double-dispatches (was 13-17 of 30 before the recheck) and 60/60 heavy-stress trials exactly-once with deliberately widened windows"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/work.py dispatch is a SEAM (an injected Dispatcher), not inlined agent work: the module imports only importlib, os, uuid, pathlib plus the frontier and claim helpers - no subprocess, socket, network, or agent - so building a spec (the executor / warp run) and reviewing one (a fresh-context reviewer) are delegated, and the dispatcher's durable outcome (a landed build flips the spec to shipped) is what removes the unit from the frontier; the loop only orchestrates."
+        },
+        {
+          "type": "unit",
+          "ref": "the whole loop is gate-tested with a fake dispatcher and no live agent (both selftest blocks); the independent reviewer confirmed the module is a pure seam with no live-agent imports; part of selftest 1011 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/work.py on a non-ok (or raised) dispatch, step() still releases the claim (finally) so the unit stays claimable for a human, another worker, or a later retry, but records it in self._failed so _claim_next does not re-claim it - so one worker never hot-loops its own failing unit and still drains the rest of the frontier."
+        },
+        {
+          "type": "unit",
+          "ref": "single-worker selftest: a failing unit is released (claim.is_claimed False afterwards) yet dispatched exactly once (no hot-loop), and the loop still drains the successful units; non-tautological - dropping the release leaves the unit claimed and dropping the self-skip hot-loops it; part of selftest 1011 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "two selftest blocks drive the WorkLoop over a temporary repo and a temporary claims root with a fake dispatcher and no live agent: a single-worker block and a barrier-synchronized multi-worker block."
+        },
+        {
+          "type": "unit",
+          "ref": "single-worker: every claimable unit dispatched, claim held across each dispatch, only successful units leave the frontier as shipped, drain via empty frontier not the backstop, failed unit released yet dispatched exactly once, no claim held after draining. multi-worker: every unit dispatched, each EXACTLY once across the fleet, no claim held after draining. Non-tautological - the independent reviewer confirmed dropping the release, dropping the self-skip, moving the release before the dispatch, and reverting the recheck each turn the selftest red (multi-worker exactly-once mutant failed 40/40, fixed 0/40). Part of selftest 1011 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1011 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "Mechanical control logic, no live agent: dispatch is an injected Dispatcher (the executor / warp run for a build, a fresh-context reviewer for a review), and the loop is gate-tested with a fake dispatcher over a temp repo + claims root. It reuses frontier.claimable / current_status and claim.claim / release / holder / is_claimed / claimed_units, reimplementing none. Unix-only via the claim ledger (fcntl). Exactly-once dispatch is guaranteed on a single host / local FS (and NFSv3+ close-to-open) by the happens-before chain ship -> release -> next claim -> recheck; a distributed FS with aggressive attribute caching is a WARP-0701 architectural caveat, not introduced here, and cross-host visibility is the Y4 serialized lander's concern. The serialized lander that turns a built unit into an evidence commit on main is Y4."
+  ],
+  "rollback": "git revert; additive - a new .warp/work.py, a current_status helper in frontier.py, two selftest blocks, one work_loop capability (both copies), and the WARP-0703 spec; no protected path; the loop is pure control logic with dispatch injected, so nothing runs a live agent by construction."
+}

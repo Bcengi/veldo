@@ -1,0 +1,22 @@
+{
+  "name": "confinement breach: an over-broad root mount exposes the host",
+  "image": "busybox:stable",
+  "allowed_mounts": [
+    {"path": "/data", "mode": "ro"},
+    {"path": "/", "mode": "ro"}
+  ],
+  "checks": [
+    {
+      "name": "read a declared input inside the data mount",
+      "kind": "read",
+      "path": "/data/input.json",
+      "expect": "allowed"
+    },
+    {
+      "name": "escape attempt: reading a host secret must be denied",
+      "kind": "read",
+      "path": "/etc/shadow",
+      "expect": "denied"
+    }
+  ]
+}

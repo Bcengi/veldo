@@ -1,0 +1,80 @@
+WARP-0717 THE FLAG SHAPES, before and after review 1's correction C3
+=====================================================================
+
+THE DEFECT. `_flag_values` looked for the exact strings `--suite` and `--upto`, so
+`--suite=<name>` was recognised by NOTHING: it fell through every selector test, through the
+ambiguity test and through the unknown-name refusal, and the run became a FULL run at exit 0
+with the aggregate line printed. It failed in the SAFE direction, because a genuine full run
+really did happen and the line it printed was true, which is why review 1 did not call it
+blocking. What it cost is the feature's whole point: a person chasing a fast inner loop
+silently paid the entire suite and then read a green aggregate line as their subset's.
+
+THE FIX. Every argument beginning with `--` is checked against ONE declared table, and one
+that is not in it exits 2 as UNRECOGNISED_FLAG. That closes the equals form for BOTH
+selectors at once, and every future flag typo with them, rather than one spelling at a time.
+
+METHOD, and the reason the BEFORE column is a fixture rather than the real suite. The four
+shapes are driven against a hermetic two-fragment fixture holding BYTE-IDENTICAL copies of
+scripts/selftest.py, scripts/run_scope.py and scripts/suites/shared.py, with .warp symlinked
+so the real validators load. That is the same fixture idiom fragment 14 already uses, and it
+is what lets a FULL run be observed in milliseconds: the pre-correction dispatcher's answer to
+`--suite=f1` is a full run of the fixture, which would be 96 seconds of the real suite per
+shape. The AFTER column is then re-driven against the REAL dispatcher as well, where a refusal
+costs nothing because nothing runs.
+
+BEFORE (the HEAD 1ada81a dispatcher, byte-identical copy, fixture of 2 fragments)
+---------------------------------------------------------------------------------
+no selector                                     exit=0   aggregate=selftest: 29 passed, 0 failed
+--list                                          exit=0   aggregate=NONE
+--suite f1            (space form)              exit=2   aggregate=NONE
+--upto f1             (space form)              exit=2   aggregate=NONE
+--suite=f1            (equals, REAL name)       exit=0   aggregate=selftest: 29 passed, 0 failed
+--suite=no_such_suite (equals, BOGUS name)      exit=0   aggregate=selftest: 29 passed, 0 failed
+--upto=f1             (equals, other selector)  exit=0   aggregate=selftest: 29 passed, 0 failed
+--only-the-fast-bits  (a flag nothing defines)  exit=0   aggregate=selftest: 29 passed, 0 failed
+
+AFTER (the corrected dispatcher, byte-identical copy, the SAME fixture)
+-----------------------------------------------------------------------
+no selector                                     exit=0   aggregate=selftest: 29 passed, 0 failed
+--list                                          exit=0   aggregate=NONE
+--suite f1            (space form)              exit=2   aggregate=NONE
+--upto f1             (space form)              exit=2   aggregate=NONE
+--suite=f1            (equals, REAL name)       exit=2   aggregate=NONE   UNRECOGNISED_FLAG
+--suite=no_such_suite (equals, BOGUS name)      exit=2   aggregate=NONE   UNRECOGNISED_FLAG
+--upto=f1             (equals, other selector)  exit=2   aggregate=NONE   UNRECOGNISED_FLAG
+--only-the-fast-bits  (a flag nothing defines)  exit=2   aggregate=NONE   UNRECOGNISED_FLAG
+
+THE FOUR RECOGNISED SHAPES ARE UNCHANGED, which is the half of this that could have been
+broken. Above: the no-selector run and both space-form selectors have identical exit codes and
+identical aggregate-line presence in both columns. On the REAL suite, driven at HEAD before
+the change and again after it:
+
+  --list                                    exit 0 both times, and the 14 output lines are
+                                            BYTE-IDENTICAL (sha256 5937697d475c30f6 both).
+  --suite 05_tracker_routing_resolver_warp   exit 2 both times, one banner, per-suite line and
+                                            partial verdict line, no aggregate line.
+  --upto 01_warp_0101_reviewer_notes         exit 2 both times, same shape.
+  no selector                                exit 0, aggregate line present. Re-measured whole
+                                            in proof/WARP-0717/timings.txt.
+
+AFTER, ON THE REAL DISPATCHER (each returns in about 40ms, because nothing runs)
+--------------------------------------------------------------------------------
+--suite=05_tracker_routing_resolver_warp    exit=2  aggregate lines matched: 0  UNRECOGNISED_FLAG
+--suite=no_such_suite                       exit=2  aggregate lines matched: 0  UNRECOGNISED_FLAG
+--upto=05_tracker_routing_resolver_warp     exit=2  aggregate lines matched: 0  UNRECOGNISED_FLAG
+--only-the-fast-bits                        exit=2  aggregate lines matched: 0  UNRECOGNISED_FLAG
+
+WHAT THIS DOES NOT COVER, DECLARED. A bare word that is not a flag's value is still ignored
+rather than refused (`python3 scripts/selftest.py nonsense` runs the whole suite), because
+that shape cannot be mistaken for a selector and refusing it was not measured. A flag's value
+is positional, so `--suite --list` treats `--list` as a suite NAME and refuses it as
+UNKNOWN_SUITE rather than listing; both outcomes are a refusal at exit 2.
+
+THE ASSERTION THAT HOLDS THIS, and the reason it is wall-clock bounded. Fragment 14 drives all
+four shapes through the real dispatcher and requires exit 2, the refusal by name, and no
+aggregate line. Each run is bounded at 30s, because a refusal removed in future would send
+those arguments back to starting a FULL run, and a full run CONTAINS fragment 14, which would
+drive them again: unbounded that is a recursion, and a hang prints no verdict line at all. The
+bound kills the child about 65s before a full run could reach this fragment, so the depth
+stops at one and the outcome is a RED. Witnessed: M15 and M15b in
+proof/WARP-0717/failing-witnesses.json, and M19 empties the shape list and reds it too.

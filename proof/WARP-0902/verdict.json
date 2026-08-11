@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0902",
+  "commit": "46ec33b52448e6844e9c76647966f15ae1241ad1",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent ac0c2e43e25fd2edb)",
+  "reviewed_at": "2026-07-19T16:05:01Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:6d5db465ac794f97",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "account_add/resolve/list_accounts; registry under the git common dir with fcntl-locked atomic writes; cross-invocation reuse with no relogin; duplicate/unknown fail by name; account_add performs no login."},
+    {"id": "AC2", "status": "confirmed", "note": "env var CLAUDE_CONFIG_DIR threaded into worker env; per-directory credential isolation + persistence verified via claude-code-guide against the official docs; macOS-Keychain and higher-precedence-auth-var caveats documented honestly."},
+    {"id": "AC3", "status": "confirmed", "note": "NO detached-spawn path: the new fleet code imports no process primitive (no subprocess/Popen/fork/system/nohup/setsid/disown/systemd/cron); the worker start goes solely through the injected _start and the reference primitive raises SpawnPrimitiveError rather than fabricate or detach."},
+    {"id": "AC4", "status": "confirmed", "note": "AccountSpreader gives one account per worker and fails loud when exhausted; make_in_session_spawner resolves names up front so an unknown account raises before any spawn (exercised: zero spawns); warp_account_fleet caps workers at account capacity; each worker carries its account's CLAUDE_CONFIG_DIR."},
+    {"id": "AC5", "status": "confirmed", "note": "gate green with no real login and no process spawned; both mutants fire by direct exercise - dropping CLAUDE_CONFIG_DIR turns the threading assertion red, and the fabricating primitive returns a handle where the reference raises."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "fleet.py double-loads accounts.py under a private module name (ACCT = _load('warp_accounts_fl', ...)), so ACCT.UnknownAccountError is a distinct class object from a separately-imported accounts.UnknownAccountError. A downstream W4 CLI that catches the exception from a different import will not match it; it must catch via the module instance fleet.py uses or via the AccountError base. Latent exception-identity gotcha for W4; no W2 AC or gate impact (behavior is still raise-a-named-error, spawn-nothing). Non-blocking."},
+    {"severity": "note", "text": "accounts.py imports subprocess only for a read-only 'git rev-parse --git-common-dir' path lookup (matching the claim-ledger pattern), not a worker spawn - consistent with AC3, called out for transparency. Non-blocking."},
+    {"severity": "note", "text": "the in-repo mutant selftest blocks self-assert the mutation took effect (e.g. the env has no CLAUDE_CONFIG_DIR) rather than re-running the real assertion against the mutant output; the standalone real assertions have genuine teeth and the reviewer independently confirmed both mutations turn them red, so the teeth requirement is met - the in-repo demonstration is just slightly indirect. Non-blocking."}
+  ],
+  "summary": "WARP-0902 (the in-session worker spawner + the account model, W2 of PLAN-0009) holds up under adversarial review at 46ec33b. GATE GREEN, selftest 1302 passed / 0 failed. All five ACs CONFIRMED by concrete probes in an isolated worktree. The load-bearing no-rogue-processes boundary (AC3) is genuinely sound: the new fleet code cannot spawn anything detached because it imports no process primitive at all and starts workers only through an injected seam whose reference fails loud. The account model persists correctly under the shared git common dir with locked atomic writes and no login side effects; account selection is strictly one-per-worker with an unknown account failing by name before any spawn; CLAUDE_CONFIG_DIR was verified against the real docs with honest macOS/precedence caveats; and both selftest mutants demonstrably fire (verified by direct exercise, not just trust). Three non-blocking notes; the most substantive is the accounts.py double-load exception-identity gotcha, flagged for the W4 CLI, not a W2 defect. Verdict: pass_with_notes, 0 blocking."
+}

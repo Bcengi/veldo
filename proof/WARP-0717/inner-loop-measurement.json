@@ -1,0 +1,479 @@
+{
+ "schema": "warp.measurement/v1",
+ "spec_id": "WARP-0717",
+ "produced_at_commit": "67a5678",
+ "producer": "claude-opus-5[1m] in an isolated worktree on branch warp-0717-subset-runner",
+ "question": "Does running `shared + the measured transitive prerequisite closure of a fragment` reproduce EXACTLY the labels that fragment produces in the full run, and how long does it take, against the prefix that --upto already runs?",
+ "method": [
+  "region-level prerequisite closures are READ from proof/WARP-0712/order-dependence.json (key `closures`, digest e8b70e982e750436c6e65e7874b5df7c8ed5cebd085ea68cfe9acbe109cdfa9d), not re-measured: producing them runs the suite once per region and is minutes.",
+  "region -> fragment from each fragment's declared region range in scripts/suites/manifest.json.",
+  "DIRECT demand of fragment F = the fragments owning the regions F's own regions were measured to need. TRANSITIVE closure = the fixpoint of that relation. The direct demand ALONE was measured INSUFFICIENT: see direct_demand_insufficient below.",
+  "one FULL run recording every assertion label tagged with the emitting fragment, by wrapping shared.expect; then one fresh process per fragment running shared + closure(F) in manifest order, recording the labels F emitted.",
+  "comparison is F's label MULTISET plus each label's pass/fail outcome, full versus closure.",
+  "per-fragment wall time is measured in ONE full run with a monotonic clock around each fragment's exec, so it is the real cost of the real run and not a per-fragment subprocess. closure_measured_s is the measured wall time of the closure run including shared.",
+  "WHICH FIGURES ARE MEASURED AND WHICH ARE MODELLED, corrected for review 1's C7. MEASURED: own_fragment_s (a monotonic clock around each fragment's exec inside one full run), closure_measured_s (the wall time of that fragment's closure run), and own_labels_full_run / own_labels_closure_run. MODELLED: prefix_modelled_s and closure_modelled_s, which are SUMS of the per-fragment measured times for the prefix and for the closure, plus shared, and NOT runs of `--upto` or `--suite`. saved_vs_prefix_s is the difference of two modelled numbers. Nothing here timed a shipped command: the artifact that does is proof/WARP-0717/timings.txt, and review 1's independent runs of the shipped commands landed within about 2 percent of these models. The MODELLED figures are what the AC1 amendment's `against the prefix` numbers come from, and it now says so."
+ ],
+ "direct_demand_insufficient": {
+  "outcome": "the DIRECT demand is NOT closed under its own relation and was measured to fail",
+  "measured": "with direct demand only, 8 of 13 fragments were CLOSED and 5 of 13 produced ZERO of their own labels because a fragment INSIDE the closure crashed first",
+  "witness": "13_warp_0623_codified_live's direct demand names 06_capabilities_manifest_honesty_warp but not 03 or 04, which 06's own demand names; the run died on NameError: name '_FakeLoop' is not defined inside 06, before 13 began",
+  "fragments_that_failed_on_direct_demand_only": [
+   "04_run_status_reader_warp",
+   "08_restoration_spec_generation_warp",
+   "09_action_whitelist_warp_1205",
+   "10_warp_0613_anti_vacuity",
+   "13_warp_0623_codified_live"
+  ]
+ },
+ "full_run": {
+  "pass": 3362,
+  "fail": 0,
+  "elapsed_s": 93.75,
+  "shared_s": 0.02
+ },
+ "outcomes": {
+  "CLOSED": 13
+ },
+ "per_fragment": {
+  "01_warp_0101_reviewer_notes": {
+   "closure": [
+    "01_warp_0101_reviewer_notes"
+   ],
+   "closure_len": 1,
+   "prefix_len": 1,
+   "direct_demand": [
+    "01_warp_0101_reviewer_notes"
+   ],
+   "regions": [
+    1,
+    22
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 252,
+   "own_labels_closure_run": 252,
+   "own_fragment_s": 1.11,
+   "closure_measured_s": 1.62,
+   "prefix_modelled_s": 1.13,
+   "closure_modelled_s": 1.13,
+   "saved_vs_prefix_s": 0.0,
+   "excluded_from_prefix": []
+  },
+  "02_mobile_ios_runner_b8": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "02_mobile_ios_runner_b8"
+   ],
+   "closure_len": 2,
+   "prefix_len": 2,
+   "direct_demand": [
+    "01_warp_0101_reviewer_notes",
+    "02_mobile_ios_runner_b8"
+   ],
+   "regions": [
+    23,
+    32
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 261,
+   "own_labels_closure_run": 261,
+   "own_fragment_s": 15.02,
+   "closure_measured_s": 16.64,
+   "prefix_modelled_s": 16.15,
+   "closure_modelled_s": 16.15,
+   "saved_vs_prefix_s": 0.0,
+   "excluded_from_prefix": []
+  },
+  "03_plugin_extension_loading_runner": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner"
+   ],
+   "closure_len": 2,
+   "prefix_len": 3,
+   "direct_demand": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner"
+   ],
+   "regions": [
+    33,
+    43
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 261,
+   "own_labels_closure_run": 261,
+   "own_fragment_s": 2.03,
+   "closure_measured_s": 3.62,
+   "prefix_modelled_s": 18.18,
+   "closure_modelled_s": 3.16,
+   "saved_vs_prefix_s": 15.02,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8"
+   ]
+  },
+  "04_run_status_reader_warp": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp"
+   ],
+   "closure_len": 3,
+   "prefix_len": 4,
+   "direct_demand": [
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp"
+   ],
+   "regions": [
+    44,
+    54
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 254,
+   "own_labels_closure_run": 254,
+   "own_fragment_s": 3.14,
+   "closure_measured_s": 6.93,
+   "prefix_modelled_s": 21.32,
+   "closure_modelled_s": 6.3,
+   "saved_vs_prefix_s": 15.02,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8"
+   ]
+  },
+  "05_tracker_routing_resolver_warp": {
+   "closure": [
+    "05_tracker_routing_resolver_warp"
+   ],
+   "closure_len": 1,
+   "prefix_len": 5,
+   "direct_demand": [
+    "05_tracker_routing_resolver_warp"
+   ],
+   "regions": [
+    55,
+    70
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 251,
+   "own_labels_closure_run": 251,
+   "own_fragment_s": 0.03,
+   "closure_measured_s": 0.04,
+   "prefix_modelled_s": 21.35,
+   "closure_modelled_s": 0.05,
+   "saved_vs_prefix_s": 21.3,
+   "excluded_from_prefix": [
+    "01_warp_0101_reviewer_notes",
+    "02_mobile_ios_runner_b8",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp"
+   ]
+  },
+  "06_capabilities_manifest_honesty_warp": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "06_capabilities_manifest_honesty_warp"
+   ],
+   "closure_len": 4,
+   "prefix_len": 6,
+   "direct_demand": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "06_capabilities_manifest_honesty_warp"
+   ],
+   "regions": [
+    71,
+    89
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 255,
+   "own_labels_closure_run": 255,
+   "own_fragment_s": 3.45,
+   "closure_measured_s": 10.21,
+   "prefix_modelled_s": 24.8,
+   "closure_modelled_s": 9.75,
+   "saved_vs_prefix_s": 15.05,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8",
+    "05_tracker_routing_resolver_warp"
+   ]
+  },
+  "07_warp_1103_completion_mandatory": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory"
+   ],
+   "closure_len": 5,
+   "prefix_len": 7,
+   "direct_demand": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory"
+   ],
+   "regions": [
+    90,
+    96
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 255,
+   "own_labels_closure_run": 255,
+   "own_fragment_s": 1.29,
+   "closure_measured_s": 11.29,
+   "prefix_modelled_s": 26.09,
+   "closure_modelled_s": 11.04,
+   "saved_vs_prefix_s": 15.05,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8",
+    "05_tracker_routing_resolver_warp"
+   ]
+  },
+  "08_restoration_spec_generation_warp": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp"
+   ],
+   "closure_len": 6,
+   "prefix_len": 8,
+   "direct_demand": [
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp"
+   ],
+   "regions": [
+    97,
+    103
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 288,
+   "own_labels_closure_run": 288,
+   "own_fragment_s": 1.02,
+   "closure_measured_s": 12.29,
+   "prefix_modelled_s": 27.11,
+   "closure_modelled_s": 12.06,
+   "saved_vs_prefix_s": 15.05,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8",
+    "05_tracker_routing_resolver_warp"
+   ]
+  },
+  "09_action_whitelist_warp_1205": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205"
+   ],
+   "closure_len": 8,
+   "prefix_len": 9,
+   "direct_demand": [
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205"
+   ],
+   "regions": [
+    104,
+    109
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 259,
+   "own_labels_closure_run": 259,
+   "own_fragment_s": 0.05,
+   "closure_measured_s": 12.42,
+   "prefix_modelled_s": 27.16,
+   "closure_modelled_s": 12.14,
+   "saved_vs_prefix_s": 15.02,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8"
+   ]
+  },
+  "10_warp_0613_anti_vacuity": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205",
+    "10_warp_0613_anti_vacuity"
+   ],
+   "closure_len": 9,
+   "prefix_len": 10,
+   "direct_demand": [
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205",
+    "10_warp_0613_anti_vacuity"
+   ],
+   "regions": [
+    110,
+    121
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 250,
+   "own_labels_closure_run": 250,
+   "own_fragment_s": 0.08,
+   "closure_measured_s": 12.49,
+   "prefix_modelled_s": 27.24,
+   "closure_modelled_s": 12.22,
+   "saved_vs_prefix_s": 15.02,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8"
+   ]
+  },
+  "11_inbound_command_receipt_reconcile": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205",
+    "10_warp_0613_anti_vacuity",
+    "11_inbound_command_receipt_reconcile"
+   ],
+   "closure_len": 10,
+   "prefix_len": 11,
+   "direct_demand": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205",
+    "10_warp_0613_anti_vacuity",
+    "11_inbound_command_receipt_reconcile"
+   ],
+   "regions": [
+    122,
+    126
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 263,
+   "own_labels_closure_run": 263,
+   "own_fragment_s": 0.46,
+   "closure_measured_s": 12.93,
+   "prefix_modelled_s": 27.7,
+   "closure_modelled_s": 12.68,
+   "saved_vs_prefix_s": 15.02,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8"
+   ]
+  },
+  "12_warp_1210_hardening_four": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205",
+    "10_warp_0613_anti_vacuity",
+    "11_inbound_command_receipt_reconcile",
+    "12_warp_1210_hardening_four"
+   ],
+   "closure_len": 11,
+   "prefix_len": 12,
+   "direct_demand": [
+    "01_warp_0101_reviewer_notes",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205",
+    "10_warp_0613_anti_vacuity",
+    "11_inbound_command_receipt_reconcile",
+    "12_warp_1210_hardening_four"
+   ],
+   "regions": [
+    127,
+    142
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 266,
+   "own_labels_closure_run": 266,
+   "own_fragment_s": 46.37,
+   "closure_measured_s": 59.42,
+   "prefix_modelled_s": 74.07,
+   "closure_modelled_s": 59.05,
+   "saved_vs_prefix_s": 15.02,
+   "excluded_from_prefix": [
+    "02_mobile_ios_runner_b8"
+   ]
+  },
+  "13_warp_0623_codified_live": {
+   "closure": [
+    "01_warp_0101_reviewer_notes",
+    "02_mobile_ios_runner_b8",
+    "03_plugin_extension_loading_runner",
+    "04_run_status_reader_warp",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "07_warp_1103_completion_mandatory",
+    "08_restoration_spec_generation_warp",
+    "09_action_whitelist_warp_1205",
+    "10_warp_0613_anti_vacuity",
+    "11_inbound_command_receipt_reconcile",
+    "13_warp_0623_codified_live"
+   ],
+   "closure_len": 12,
+   "prefix_len": 13,
+   "direct_demand": [
+    "01_warp_0101_reviewer_notes",
+    "02_mobile_ios_runner_b8",
+    "05_tracker_routing_resolver_warp",
+    "06_capabilities_manifest_honesty_warp",
+    "09_action_whitelist_warp_1205",
+    "11_inbound_command_receipt_reconcile",
+    "13_warp_0623_codified_live"
+   ],
+   "regions": [
+    143,
+    214
+   ],
+   "outcome": "CLOSED",
+   "own_labels_full_run": 221,
+   "own_labels_closure_run": 221,
+   "own_fragment_s": 19.38,
+   "closure_measured_s": 46.85,
+   "prefix_modelled_s": 93.45,
+   "closure_modelled_s": 47.08,
+   "saved_vs_prefix_s": 46.37,
+   "excluded_from_prefix": [
+    "12_warp_1210_hardening_four"
+   ]
+  }
+ }
+}

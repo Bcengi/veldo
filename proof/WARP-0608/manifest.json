@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0608",
+  "commit": "f753c72522535a8306c7ccef1717257845bd22c2",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0006 W8, in-session single writer)",
+  "plan_hash": "sha256:6dd3f98b5a0c1f68",
+  "produced_at": "2026-07-19T00:35:41Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker_conformance.py conformance_findings(GOOD_CONFIG) returns [] and the journey exercises all three edges over the FakeTracker offline - intake (ticket -> routing-resolved draft), the spec mirror (child reaches the mapped shipped status + closing comment), and the epic mirror (epic + children) - by COMPOSING the shipped sibling functions, adding no new behavior (C3)."},
+        {"type": "unit", "ref": "independent review call-count probe: intake_item called 2x, mirror_events 2x, mirror_plan_events 1x per journey (real functions, not stubs); draft_repo repo-a, unroutable refused, child status Done + closing comment, epic + 1 child; part of selftest 1205 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "RJ1 no-rubber-stamp - a broken routing prefix or a status_map missing shipped each produces a NAMED finding (non-empty), while the good config produces none, so the conformance has teeth rather than asserting success unconditionally."},
+        {"type": "unit", "ref": "independent review broken-config matrix: routing prefix nomatch -> IntakeError finding; status_map missing shipped -> named finding; empty status_map -> named finding; unknown repo -> IntakeError finding; mechanism field/component -> IntakeError finding; bogus status_map key -> MirrorError finding; good config -> []; the false-pass hunt found no broken routing/write-back config that returns [] (the self-referential shipped-name case is the documented offline boundary per C5); part of selftest 1205 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "RJ2 the tracker never writes a definition - the journey mutates ONLY the tracker (every write op is a seam write) and NEVER the repository (the spec and plan indices it reads, deep-copied for the guard, are byte-unchanged afterward); a projection that wrote back into a definition is surfaced by name."},
+        {"type": "unit", "ref": "independent review mutation test: patching mirror_events to write spec_index[sid]['status'] yields 'mutated the spec index - the tracker wrote back a definition (RJ2 violation)'; patching mirror_plan_events yields the plan-index equivalent; a rogue non-seam write op is caught as stray; the deep-copy and json-compare are real; part of selftest 1205 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "idempotency end to end - replaying the spec lifecycle stream records no new transition or comment and leaves the tracker state byte-identical (replay_idempotent computed from a real before/after state_digest), and a non-idempotent replay surfaces a named finding."},
+        {"type": "unit", "ref": "independent review confirmed replay_idempotent is a real state_digest comparison and spec_mirror_replay transitions/comments are 0 on the good config; part of selftest 1205 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "honest and non-tautological - the selftest binds each tracker capability name to its declared status (mechanical for gate-tested logic, reference for the live adapters) via a per-line regex, and drives conformance_findings so the good config conforms (empty) and each broken config fails by name; neutering conformance_findings to always-[] turns the RJ1 assertions red (mutation teeth)."},
+        {"type": "unit", "ref": "independent review (after the NOTE 1 fix): the capability-honesty check now binds name to status - honest declarations match, dishonest flips (jira reference->mechanical, tracker_routing mechanical->reference) fail while the old loose substring check would have rubber-stamped them; neutering conformance_findings turns both RJ1 assertions red; part of selftest 1205 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1205 passed, 0 failed (+17 for the WARP-0608 conformance block owning RJ1/RJ2)"}
+  ],
+  "assumptions": [
+    "W8 of PLAN-0006, the last item and the plan's release gate, built in-session by a single writer. It is a CONFORMANCE HARNESS (.warp/tracker_conformance.py) that COMPOSES the shipped pieces (WARP-0601 routing, WARP-0603 seam + FakeTracker, WARP-0604/0607 intake, WARP-0605/0606 mirror) into one end-to-end journey and asserts the invariants; it adds no new capability behavior (C3), proven by a call-count probe that it calls the real sibling functions. It owns regression journeys RJ1 (the conformance is real and FAILS by name on a broken mapping) and RJ2 (the tracker never writes a definition; the repository stays the single source of truth). No template twin (not a validate/policy_check load dependency). A REVIEW-DRIVEN test-strength fix was applied to the reviewed code and re-reviewed: the AC5 capability-honesty assertion now BINDS each capability name to its status via a per-line regex (the prior loose substring check would have rubber-stamped a live adapter mislabeled mechanical) and adds tracker_conformance to the checked set; the offline-conformance boundary (the self-referential shipped-status check, correct by design per C5) was documented in the spec Notes. Two independent adversarial reviews (the full pass on 3824944 and a scoped re-review bound to this commit f753c72) both PASS with 0 blocking; the full review could NOT make the conformance rubber-stamp a broken mapping (RJ1) or slip a repository write-back past it (RJ2).",
+    "The offline conformance proves the behavior the vendor-neutral seam owns (routing, the mirror transitions + closing comment, idempotent replay, the one-way guarantee); validating that a mapped status name exists in a live project is the reference-wired adapter's job, not the offline conformance (C5). The two accepted minor notes from the full review (an unreachable defensive branch behind the IntakeError raise; a subset-guard that fires only for a rogue adapter) were left as-is - a defensive branch and a correct subset-guard, not defects."
+  ],
+  "rollback": "git revert; additive - a new .warp/tracker_conformance.py that composes the shipped tracker pieces, a selftest block owning RJ1 and RJ2, one capability entry (both capabilities.yaml copies), and the WARP-0608 spec; no protected path; pure stdlib, no network."
+}

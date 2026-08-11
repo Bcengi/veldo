@@ -1,0 +1,33 @@
+# VELDO recorded readings (veldo.readings/v1): the in-session signal source that turns a
+# foundational decision's assumptions into LIVING TRIPWIRES. This is an ILLUSTRATIVE
+# EXAMPLE of the artifact format, not a real VELDO reading set: it records healthy readings
+# for the draft decision-example (DEC-0000, the cross-instance change-notification choice)
+# so an adopter sees the shape. A real readings file is updated in-session at the weekly
+# pass and homed per-repo under .veldo/readings/; it names the decision it measures and
+# records, for each assumption, either a MEASURED reading (a value plus a machine-comparable
+# breach_when, optionally an approaching_when early-warning) or a MANUAL_REVIEW reading (a
+# human attestation with an expiry). The in-session pass compares each signal against its
+# breach and fires a tripwire when the foundation is breached or the review lapses; nothing
+# runs detached. This example fires no tripwire: a1 is approaching its early-warning, a2 is
+# within limits, and a3's manual attestation is still valid.
+schema: veldo.readings/v1
+decision: DEC-0000
+recorded_at: 2026-07-22
+readings:
+  - assumption: a1
+    kind: measured
+    value: 30
+    breach_when: ">= 40"
+    approaching_when: ">= 25"
+    at: 2026-07-22
+  - assumption: a2
+    kind: measured
+    value: 1
+    breach_when: ">= 2"
+    at: 2026-07-22
+  - assumption: a3
+    kind: manual_review
+    reviewed_at: 2026-07-15
+    valid_days: 365
+    holds: "true"
+    at: 2026-07-15

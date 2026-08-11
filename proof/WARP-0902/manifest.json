@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0902",
+  "commit": "46ec33b52448e6844e9c76647966f15ae1241ad1",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0009 W2, orchestrator + builder agent a4df5259)",
+  "plan_hash": "sha256:6b03ff568d65cd2f",
+  "produced_at": "2026-07-19T16:05:01Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/accounts.py: account_add (:131), resolve (:161), list_accounts (:180); the registry is warp/accounts/registry.json under the git common dir (outside git history, shared across worktrees), fcntl-locked (_registry_lock:84) + os.replace atomic (_save:122); a registered account is reused with no relogin; DuplicateAccountError (:145) on a duplicate add, UnknownAccountError (:167) on an unknown resolve; account_add only mkdir/chmod-0700/registers and prints the documented one-time human login step, performs no login."},
+        {"type": "unit", "ref": "independent review (agent ac0c2e43, bound to 46ec33b): confirmed registry under the git common dir with locked atomic writes, cross-invocation reuse with no relogin, duplicate/unknown fail by name, and no login side effect."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the env var is CLAUDE_CONFIG_DIR (accounts.py:42), threaded into each worker's env (fleet.py:138). Verified via a claude-code-guide agent against the current Claude Code auth docs: pointing CLAUDE_CONFIG_DIR at a directory isolates that profile's persisted credentials (.credentials.json, Linux/Windows) so a session reuses the saved login with no prompt across invocations. Caveats recorded in the module docstring (lines 13-17): higher-precedence auth env vars (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, CLAUDE_CODE_OAUTH_TOKEN, Bedrock/Vertex) override; macOS stores credentials in the Keychain so per-directory isolation is a Linux/Windows mechanism (the fleet's stated target). The model matches the verified behavior."},
+        {"type": "unit", "ref": "independent review: confirmed CLAUDE_CONFIG_DIR is the exact env var and the per-directory-isolation + persistence claim is grounded (not assumed), and the macOS/precedence caveats are documented honestly, not silently broken."}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WorkerSpawner seam is filled by InSessionSpawner (fleet.py:114): spawn (:145) selects one account, assembles the env via _assemble_env (:131, sets CLAUDE_CONFIG_DIR + WARP_WORKER_ID/ACCOUNT/SCOPE/CAPABILITIES), and starts the worker ONLY through the injected primitive (:152) - the class never calls subprocess/Popen/fork, so it auto-spawns nothing detached; the reference primitive in_session_start (:66) raises SpawnPrimitiveError (:77) rather than fabricate or detach, pointing to the documented one-session-per-account procedure. Consistent with feedback_no_rogue_processes and PLAN-0007 NG1."},
+        {"type": "unit", "ref": "independent review PROVED no detached-spawn path exists: fleet.py imports only importlib.util/uuid/pathlib; a grep for subprocess/Popen/os.fork/os.system/nohup/setsid/disown/systemd/cron in the new fleet code finds none (the worker start goes solely through the injected _start); the reference primitive raises. (accounts.py's only subprocess is a read-only git rev-parse --git-common-dir path lookup, not a worker spawn.)"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "AccountSpreader (fleet.py:84) hands out one account per worker (assign/release), refuses to double an account, and fails loud (NoAccountAvailableError) when exhausted; make_in_session_spawner (:255) pins one account (account=NAME) or spreads across the passed/registered accounts, resolving every name up front so an unknown account fails by name BEFORE any spawn, returning (spawner, capacity); warp_account_fleet (:277) caps max_workers at that capacity so a multi-account fleet is N concurrent one-account workers self-dividing the frontier via the claim ledger, each carrying its account's CLAUDE_CONFIG_DIR."},
+        {"type": "unit", "ref": "independent review: exercised the unknown-account path (raised by name, zero spawns); confirmed one account per worker, the spreader refuses to double, and max_workers is capped at account capacity."}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WARP-0902 selftest block (+15, selftest 1287 -> 1302, 0 failed) runs over throwaway roots with a fake spawn primitive - NO real login, NO process spawned: add/resolve/list, duplicate + unknown fail by name, cross-invocation persistence, the spawner threads each account's CLAUDE_CONFIG_DIR and reconciles up/down/retire, one account per worker, a full FleetLauncher scale-drain-retire across accounts, and the reference primitive fails loud; two teeth mutants - _MutNoConfigDir (drops CLAUDE_CONFIG_DIR) and a fabricating-start primitive."},
+        {"type": "unit", "ref": "independent review directly exercised both mutants: dropping CLAUDE_CONFIG_DIR made the real cfgs==wanted assertion go False (RED); the fabricating primitive returned a handle without raising (would turn the fail-loud assertion RED) while the reference raised (GREEN). Gate green at 46ec33b with no real login and no process spawned."}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "selftest 1302 passed, 0 failed (+15 for the WARP-0902 block); GATE GREEN at 46ec33b, verified by the builder and independently by the reviewer (agent ac0c2e43) in an isolated worktree."},
+    {"name": "generated", "status": "passed"},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "W2 of PLAN-0009, depends on W1. The whole fleet (accounts, fleet, work, frontier, claim, lander, dispatcher) is repo-root dogfood machinery in .warp/, NOT the shipped engine plugin/templates/.warp - not copied into packs, no re-assembly; shipping the fleet into the engine is W5, the unified warp CLI front door is W4, per-account governor pacing + the resume-waiter is W3. No login is performed by code and no process is spawned in the gate; the real spawn primitive stays injected and fail-loud, never detached (the no-rogue-processes boundary).",
+    "Two commits: an impl commit (46ec33b) carrying its own independent verdict, then an evidence-only commit (proof/, .warp/, specs/ only) that inherits the impl verdict via the guard's parent rule.",
+    "One independent adversarial review (agent ac0c2e43, fresh-context Opus, distinct from the builder a4df5259) returned pass_with_notes, 0 blocking. Non-blocking notes: (1) fleet.py double-loads accounts.py under a private module name so ACCT.UnknownAccountError is a distinct class object from a separately-imported accounts.UnknownAccountError - a latent exception-identity gotcha the W4 CLI must handle by catching the AccountError base or the module instance fleet.py uses (flagged for W4, no W2 impact); (2) accounts.py's only subprocess is a read-only git rev-parse --git-common-dir path lookup (non-detached, matches the claim-ledger pattern); (3) the in-repo mutant blocks self-assert the mutation took effect rather than re-running the real assertion, but the standalone real assertions have genuine teeth and the reviewer independently confirmed both mutations turn them red. plan_hash sha256:6b03ff568d65cd2f is the canonical hash via plan.py."
+  ],
+  "rollback": "git revert the impl and evidence commits; additive - a new .warp/accounts.py (repo-root dogfood, not shipped engine, not copied into packs), the WorkerSpawner seam filled in fleet.py (the base seam and FleetLauncher unchanged), a selftest block, and this spec. No protected path; pure stdlib; no login performed and no detached process ever spawned; the real spawn primitive stays injected and fail-loud."
+}

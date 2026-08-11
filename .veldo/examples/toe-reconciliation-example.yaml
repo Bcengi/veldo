@@ -1,0 +1,22 @@
+schema: veldo.toe_reconciliation/v1
+spec: WARP-9402
+reconciled_at: 2026-08-14
+unit: tokens
+estimate_committed_at: 2026-08-10
+estimate_calibration: calibrated
+estimate_low: 190000
+estimate_high: 1400000
+actual: 1500000
+actual_source: corpus
+outcome: above
+error_pct: 7
+acceptance_criteria: 5
+risk: standard
+protected_touch: no
+regression_surface: 7
+expected_review_cycles: 2
+structural_weight_tenths: 190
+declared_scale: 25000
+implied_scale: 78947
+scale_error_pct: -68
+note: EXAMPLE RECORD for the fictional spec of the committed estimate example, showing the whole loop: the estimate as committed, the actual as recorded, the variance measured against the bound it missed (never against a midpoint this schema refuses to have), and the structural weight and both scales, so a refit can tell a wrong SCALE from a wrong STRUCTURE and correct only the one it has evidence about

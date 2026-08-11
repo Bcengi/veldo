@@ -1,0 +1,35 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0613",
+  "commit": "9651342",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context, distinct from the builder; adversarial on the snapshot's source-of-truth invariant, NG4, idempotency, and standalone-spec handling)",
+  "reviewed_at": "2026-07-24T01:30:00Z",
+  "verdict": "pass_with_notes",
+  "summary": "All seven ACs met, all four anti-vacuity teeth reproduced independently (both modules byte-unchanged), gate GREEN (selftest 2413 passed at HEAD; 2374 at the code commit 9651342 matching the manifest), proof validates. The snapshot is one-way (never mutates a spec/plan/index), NG4-safe (a declared status with no FILE_STATUS_TO_WARP entry leaves the board untouched, never inventing a transition), idempotent (byte-identical re-run), and reuses the mirror readers/status_map. Footprint exact (13 declared files, no protected path). Safe to push as-is; notes are optional polish.",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "Generic, by-reference: snapshot_from_repo reuses build_spec_index/build_plan_index/resolve_status_map/tracker_for_repo; dir resolution identical to run_from_repo; no-config is a clean reconciled:False; grep clean of company/board literals."},
+    {"id": "AC2", "status": "confirmed", "note": "Projects declared current state; scaffold ids filtered by _is_scaffold_id (load-bearing - TEMPLATE.md carries WARP-0000/PLAN-0000 and build_spec_index does not skip by filename); NG4 unset for unmapped declared statuses."},
+    {"id": "AC3", "status": "confirmed", "note": "FILE_STATUS_TO_WARP = dict(SPEC_STATUS_TO_WARP) then update with review->in_review, released->shipped (copy not mutation); the two added keys are absent from the shared constant so zero disagreement with the event mirror on shipped/blocked/ready; both extension values are in WARP_STATUSES."},
+    {"id": "AC4", "status": "confirmed", "note": "Standalone specs -> task:{sid} (no epic segment, no collision with child:{epic}:{key} or epic:{pid}); find_epic/find_child never call _record (write audit does not grow after finds)."},
+    {"id": "AC5", "status": "confirmed_with_note", "note": "Idempotent + one-way (C1): writes only through the seam; indices byte-identical after two runs; byte-identical re-run. NOTE (finding 1): 'declared state wins' holds only when the declared status maps; an unmapped current status leaves an earlier mirror-set status standing (correct NG4 choice, but not absolute convergence)."},
+    {"id": "AC6", "status": "confirmed", "note": "One command: snapshot sub-parser -> _snapshot_cli in the repo-only module bin/warp routes jira to (bin/warp not in the 9651342 footprint); --dry-run offline; live path builds the provisioner and fails closed; bootstrap runs snapshot as the final step."},
+    {"id": "AC7", "status": "confirmed", "note": "Selftest non-tautological; positive controls track the fixture (2 epics + 3 children incl 1 standalone, 3 transitions, 2 unset); four teeth reproduced RED with both modules sha256 unchanged, all non-vacuous."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Finding 1: 'declared state wins' (AC5 prose) is conditional by design - for an item whose current declared status has no FILE_STATUS_TO_WARP entry, the snapshot leaves the board status untouched (not cleared), so if the event mirror earlier set a mapped status the board keeps it rather than converging. This is the correct NG4-safe choice; worth stating explicitly so it is not read as absolute convergence."},
+    {"severity": "note", "text": "Finding 2: resolve_status_map is recomputed once per plan and once per spec (redundant, pure in-memory, far under the 500ms budget) and contributes to the review-lane cyclomatic-complexity note (24>20); hoisting it out of the loops would trim both. Optional."},
+    {"severity": "note", "text": "Finding 3: shape gate review-lane (non-blocking, disclosed): snapshot_from_repo complexity 24, tracker_adapter.py 15% duplication - consistent with the WARP-0612 precedent."},
+    {"severity": "note", "text": "Finding 4: the 'unset' counter conflates 'no file->WARP mapping' and 'WARP status not in the org status_map'; both are legitimately NG4-unset but the observability text attributes unset only to the former. Report-granularity nuance."},
+    {"severity": "note", "text": "Finding 5 (theoretical only): a spec whose plan pointed at a filtered scaffold plan (PLAN-0000) would create a child under a non-existent epic key (the scaffold filter applies to the item's own id, not its parent-plan reference). No real spec references the template plan, so it cannot occur in practice."}
+  ],
+  "must_fix_before_push": [],
+  "recommended": ["Finding 2 (hoist resolve_status_map)", "Finding 1 + 4 (tighten AC5/observability wording)"],
+  "checks": [
+    "python3 scripts/selftest.py -> 2413 passed, 0 failed at HEAD; 2374 at code commit 9651342 (matches the manifest claim).",
+    "./scripts/verify.sh -> GATE GREEN, catalog 5 run / 18 n-a / 0 waived / 0 undeclared.",
+    "python3 .warp/validate.py proof proof/WARP-0613/manifest.json -> exit 0.",
+    "Four teeth reproduced independently (T1 review->in_review, T2 released->shipped, T3 standalone top-level, T4 set_status no-op idempotency), each RED with tracker_jira_init.py + tracker_adapter.py sha256 unchanged; all non-vacuous.",
+    "Footprint exact: 9651342 touches only the 13 declared files (2 repo-only modules, 8 byte-identical capabilities.yaml copies sha256 d1979cfa, selftest, spec, index); no protected path.",
+    "RULE #1: no em-dash, en-dash, or double-hyphen prose separator in the reviewed modules."
+  ]
+}

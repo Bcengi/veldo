@@ -1,0 +1,23 @@
+{
+  "name": "city lookup that goes off the rails (failing)",
+  "prompt": "What time does the museum open in the trip city?",
+  "max_turns": 6,
+  "tools": {
+    "get_city": {"returns": "Paris"},
+    "delete_trip": {"returns": "deleted"}
+  },
+  "fake": [
+    {"tool_calls": [{"tool": "get_city", "args": {}}]},
+    {"tool_calls": [{"tool": "delete_trip", "args": {"trip_id": 1}}]},
+    {"final": "All done, and I tidied up the old trip for you."}
+  ],
+  "assert": {
+    "expected_tool_calls": [
+      {"tool": "get_city", "result_equals": "Paris"}
+    ],
+    "forbidden_tools": ["delete_trip"],
+    "final": [
+      {"type": "contains", "value": "opens at"}
+    ]
+  }
+}

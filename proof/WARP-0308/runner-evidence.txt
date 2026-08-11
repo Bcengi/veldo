@@ -1,0 +1,54 @@
+WARP-0308 iOS mobile runner (reference, macOS-gated) - operational evidence
+commit 8443c080aa184053ef1a71edb2d811ce7b878676
+
+This is a reference-honest, macOS-gated runner. The warp home repository is
+Linux with no macOS and no iOS simulator, so the honest evidence is the
+fake-driver control-logic test, NOT a live-simulator run. No simulator run is
+faked or claimed.
+
+CONTROL-LOGIC SELF-TEST (fake driver, no macOS)
+  $ python3 scripts/selftest.py
+  selftest: 284 passed, 0 failed
+  (was 275 before B8; the iOS block added 9 assertions, all prior cases intact)
+
+  The iOS block (scripts/selftest.py) drives run() against a FakeIosDriver and
+  asserts: happy journey passes; all three lifecycle re-drives run green;
+  recovery re-asserted after process death; the failing fixture exits with
+  passed=False, names the failing step, and records a FAILURE screenshot;
+  a two-profile matrix with one covered profile fails naming the missing one;
+  a no-op terminate (launch token unchanged) fails process_death (no vacuous
+  pass); a brittle recovery assertion fails the re-drive.
+
+WRAPPER SELF-TEST (fake driver, no macOS, runs on any host)
+  $ bash plugin/templates/scripts/runners/mobile/test_ios_runner.sh
+  pass journey: exit 0 (correct)
+  fail journey: exit 1 (correct - failure caught, screenshot captured)
+  ios runner self-test: pass
+  rc=0
+
+LIVE PATH ON THIS LINUX HOST FAILS LOUD (no faked run)
+  $ python3 plugin/templates/scripts/runners/mobile/warp_ios_runner.py \
+      plugin/templates/scripts/runners/mobile/fixtures/ios/pass.journey.ios.json /tmp/ios_live_try
+  -> exit 1; stderr: FileNotFoundError: [Errno 2] No such file or directory: 'xcrun'
+  With no macOS/xcrun the runner crashes at the first simctl call rather than
+  reporting a false pass. An adopting repo on macOS runs the same runner against
+  a booted simulator.
+
+GENERICITY (AC5)
+  case-insensitive scan of the runner, README, wrapper, and both fixtures for
+  company/product names returned zero matches; docs-hygiene genericity sweep
+  passes.
+
+CAPABILITIES (AC5)
+  .warp/capabilities.yaml declares ios_simulator_driving status: reference
+  (never mechanical: it REQUIRES macOS and a booted simulator to drive live, and
+  the Linux warp home repo does not run it). Template and repository instance
+  are byte-identical:
+    sha256 44e67ceacb99608e431755cf7f5055a78c589a0c48e9506d1f407f383614784d
+    (.warp/capabilities.yaml and plugin/templates/.warp/capabilities.yaml)
+  template-sync gate passes.
+
+GATE
+  $ ./scripts/verify.sh
+  catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+  GATE: GREEN (8443c080aa184053ef1a71edb2d811ce7b878676)

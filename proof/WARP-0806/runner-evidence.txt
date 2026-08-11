@@ -1,0 +1,42 @@
+WARP-0806 runner evidence - Antigravity CLI (agy) pack (W6 of PLAN-0008)
+Impl commit under proof: e56a048e68bec7895a792203a30e8929026e17ab
+
+== gate (clean detached worktree at e56a048) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (e56a048e68bec7895a792203a30e8929026e17ab)
+selftest: 1240 passed, 0 failed (+4 for the WARP-0806 antigravity-pack block)
+
+== self-contained pack ==
+packs/antigravity: 139-file engine copied byte-identical (engine_drift == []), real files,
+canonical AGENTS.md, agy plugin driver (plugin.json, hooks.json, warp-guard-hook.sh, rules/warp.md,
+hooks/pre-push, skills, agents). check_pack_drift.py: pass (5 packs).
+
+== AC2 enforcement (W3 fix applied from the start, behaviorally proven by review) ==
+synthetic unproven WARP repo, CLAUDE_PROJECT_DIR unset:
+  hooks/pre-push, unproven                         -> EXIT 2 (blocks)
+  hooks/pre-push, green last_verify+proof+verdict  -> EXIT 0 (allows)
+  hooks/pre-push, different commit                 -> EXIT 2 (blocks)
+  agy before-tool-call hook, push (env/stdin)      -> EXIT 2 (blocks)
+  agy hook, non-push (git status / ls -la)         -> EXIT 0 (passthrough)
+  injection command (touch pwned ...)              -> EXIT 2, pwned file NOT created (json.dumps safe)
+W6 did NOT repeat the W3 fail-open.
+
+== agy plugin model (researched at build, WebSearch) ==
+Antigravity CLI (agy) = Google's successor to Gemini CLI (shut down 2026-06-18). Plugin =
+plugin.json + optional hooks.json (before-tool-call/after-model-call/loop-stop) + skills/ + agents/ +
+rules/ - mirrors Claude's plugin model. The WARP agy pack maps directly onto it.
+
+== reuse ==
+diff -rq plugin/skills vs packs/antigravity/skills: identical
+diff -rq plugin/agents vs packs/antigravity/agents: identical
+AGENTS.md identical; only 5 net-new authored driver files.
+
+== review ==
+Independent adversarial review at e56a048: pass_with_notes, 0 blocking (push gate blocks; faithful
+copy; drift teeth; no pollution; caps byte-identical; dash-clean; retarget correct). Two notes:
+agy format fast-moving [git+CI guaranteed]; a cosmetic spec-vs-plan depends_on mismatch (spec 0802,
+plan W6 0801) to be reconciled in the plan bundled into W7.
+
+== proof binding ==
+plan_hash: sha256:837b26cb7db25a47 (PLAN-0008, revision 1)
+proof_digest: sha256:0a9e69aabc8486aa (validate.py over {spec_id, commit, criteria, checks})

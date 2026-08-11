@@ -1,0 +1,1 @@
+run registry driven over a temp runs root: create, atomic state, sequenced live append, heartbeat, block/resume/finish, classify (precedence + stale + closures), list_runs; vocabulary milestones present and high-volume types live-only. Non-tautology teeth. Gate GREEN, selftest 783 passed, 0 failed.

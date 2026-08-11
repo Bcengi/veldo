@@ -1,0 +1,149 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0725",
+  "commit": "d32fc35f48c1c55fae1cfa0129961b329be2c8b6",
+  "producer": "claude-opus-5[1m] (WARP-0725 implementer agent, standalone enforcement lane). THE ITEM'S OWN APPROVAL SAID THE HONEST OUTCOME MAY BE THAT THE PROPERTY CANNOT BE ENFORCED INSIDE THE MODULE. IT CAN, AND THIS IS WHY THAT IS NOT A CONTORTION: the projection already computes the enumeration it is the projection OF, so entitlement had only to be asked of the right repository - the one THE LOG belongs to - instead of being inferred from a relation between two paths. log_entitlement now takes the log and NOTHING ELSE, so there is no second path left for a stand-in to compare, and it returns the enumeration git reports as tracked under the declared proof root of that repository, read with `:(top)` and `--full-name` so a log in the .warp/ subdirectory still enumerates the whole domain. A derived key outside that set appends nothing, is named on the stage line, and exits non-zero. CRITICAL as declared, and the danger ran BOTH ways: the strict direction is worse than the defect, so the inverse harm is a first-class leg measured over the real 164-artifact corpus rather than an afterthought. Reproduced the live defect first, on 2593520, with documented flags and no code change. Built and gated; STOPPED AT REVIEW: no approval performed, nothing pushed, the spec's status is left where the owner set it.",
+  "produced_at": "2026-07-29T18:10:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "note": "ENTITLEMENT IS MEMBERSHIP IN THE PROJECTION'S OWN DOMAIN AND THE DOMAIN IS THE AUTHORITY. log_entitlement(log) returns the enumeration the repository THAT LOG belongs to produces; it is handed the log path and nothing else, so no relation between the artifacts and the log exists for it to consult. The set equality is asserted in BOTH directions over this repository's real corpus, because the assertion it replaces was `set(keys) <= (present | pending)` - coverage in one direction, which is exactly what admitted a key from outside the domain.",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MEASURED at d32fc35f48c1c55fae1cfa0129961b329be2c8b6: the entitled set computed from the real log alone equals the enumeration verdict_domain(ROOT) produces, both directions, over 164 tracked artifacts, and every member is (the projection's type, a non-empty spec id, a 40-hex blob the enumeration holds). The top-anchoring is what makes that true rather than empty: `git ls-files --full-name ':(top)proof/*/verdict*.json'` run from .warp/ returns the same 164 paths as `git ls-files 'proof/*/verdict*.json'` run from the root, byte for byte."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py, the WARP-0725 AC1 assertion. TEETH, with the substitution count asserted first: mutant M2 (the domain enumerated from the caller's directory instead of the repository's top - 8 substitutions, one per declared copy, applied and verified) takes the suite to 3309 passed / 19 failed, AC1 among them."
+        },
+        {
+          "type": "baseline",
+          "ref": "python3 scripts/selftest.py: 3322 passed / 0 failed at 2593520 (measured in a fresh clone of main), 3328 passed / 0 failed at d32fc35f48c1c55fae1cfa0129961b329be2c8b6 - seven assertions added, one deleted (the deleted one asserted the work-tree comparison this item removes)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "note": "THE MEASURED FORGERY IS REFUSED, DRIVEN EXACTLY AS IT WAS FOUND, and the variant that made it harmful is driven too. Refused with the log BYTE-UNCHANGED, read back off the bytes, at a NON-ZERO exit, having created nothing on the way to refusing.",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "BEFORE, on a fresh clone of 2593520 with no code change and documented flags only: `mkdir -p tools/qa/proof/WARP-0712`, commit a verdict-shaped file, `python3 .warp/events.py reconcile-verdicts --repo-root tools/qa --log .warp/events.jsonl` -> exit 0, `1 appended`, log md5 8bf6c261 -> be5d458c, the appended line a verdict.recorded declaring producer `events.py reconcile-verdicts` with verdict_blob 7da81ddb85979131563a3782107e23ea21d71126 (a real object) and verdict `pass`; `python3 .warp/validate.py all` exit 0; `python3 .warp/metrics.py` verdict tally pass 39 -> pass 40. Then `git rm -r tools && git commit`: `git ls-files 'proof/*/verdict*.json'` no longer contains the artifact, `git cat-file -e` still resolves the blob, and a FRESH CLONE carries the forged line and counts it (pass 40). AFTER, the identical sequence on a clone of d32fc35f48c1c55fae1cfa0129961b329be2c8b6: exit 2, `1 derivable but not appended, NOT appended: 1 derived key(s) are NOT MEMBERS of the domain this log's own repository tracks (tools/qa/proof/WARP-0712/verdict.json: qa)`, log md5 8bf6c261 UNCHANGED, metrics tally pass 39 UNCHANGED, validate.py all exit 0. The ordinary gate call in the same tree, with the forged folder still committed, is unaffected: 164 tracked, 164 already recorded, 0 derivable but not appended, exit 0."
+        },
+        {
+          "type": "unit",
+          "ref": "two WARP-0725 AC2 assertions in scripts/selftest.py, both driven against a COPY of the module in a fixture repository of its own, never against this repository's log: the CLI route (non-zero exit, log bytes identical, the refused path named in stdout, no line carrying the forged blob) and the deletion variant (the blob still reachable, the artifact no longer enumerated, the forged key NOT a member of the domain in the fixture and in a fresh clone of it, while the fixture's OWN genuine key IS a member of both - both halves in one leg, so a rule that entitled nothing could not satisfy it). TEETH, each with the substitution count asserted first and each applied to all eight declared copies: M1 entitle everything again (8 subs) 2 red; M3 the refusal computed and not acted on (8 subs) 2 red - the byte-level backstop in the writer then raises, so nothing lands but the exit code is 0, which is what the exit assertion is for; M4 the CLI always exits 0 (8 subs) 1 red; M6 the report stops naming what it refused (8 subs) 2 red. Every mutant printed a pass/fail summary - a crash is worse than a red, and the first draft of this leg called the reconciler bare and took the summary down under M1, which is why a reconciliation's exception is data here."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "note": "THE INVERSE HARM IS A REQUIRED LEG AND IT HOLDS. Not one genuine verdict is withheld: the rule is asked of the repository the log belongs to, and the real log lives in a SUBDIRECTORY, which is precisely how a rule like this stops recording silently.",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "MEASURED at d32fc35f48c1c55fae1cfa0129961b329be2c8b6: a FRESH log created inside this repository reconciles to `164 verdict artifact(s) tracked, 0 already recorded, 164 appended`, and the second run to `164 already recorded, 0 derivable but not appended`, exit 0 both times, with the real log untouched. The gate's own review-events stage over the real log reports `164 verdict artifact(s) tracked, 164 already recorded, 0 derivable but not appended` and refuses nothing (empty unentitled set). GATE GREEN against d32fc35f48c1c55fae1cfa0129961b329be2c8b6."
+        },
+        {
+          "type": "unit",
+          "ref": "the WARP-0725 AC3 assertion: keys read back off the fresh log EQUAL the enumeration in both directions, the second run appends zero and reports each already recorded, the stage line carries `0 derivable but not appended`, and the real log's dry run has an empty unentitled set. What it deliberately does NOT assert: any corpus count, and anything about what the real log holds today - the catalog runs BEFORE the review-events stage, so a verdict artifact committed after the last gate run would turn such a pin into a false red on the next unrelated change, which is the `== 139` class. TEETH: M2 (8 subs) reds this leg along with AC1, AC2 and fourteen WARP-0722/0723 assertions, because a domain enumerated from the wrong place withholds every genuine verdict in every fixture as well as here."
+        },
+        {
+          "type": "baseline",
+          "ref": "NEGATIVE CONTROL: an unmutated clone of d32fc35f48c1c55fae1cfa0129961b329be2c8b6 runs 3328 passed / 0 failed, so the reds above are the mutations and not the harness."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "note": "NO STAND-IN SURVIVES IN THE MODULE'S CODE OR PROSE. repo_toplevel is DELETED, not narrowed, and so is every sentence that related the artifacts to the log by work tree, toplevel or enclosure; `--show-toplevel` appears nowhere in the module. Every remaining sentence about what cannot land names a driven route, and the limits stay declared AS limits.",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "`grep -in 'work tree|worktree|toplevel|enclos' .warp/events.py` returns nothing, in all eight declared copies, which stay byte-identical (md5 one distinct digest across root, six packs and plugin/templates). The module keeps the three limits in log_entitlement's own docstring: a writer that never imports this module, arbitrary in-process Python, and a process environment that redirects what git ANSWERS (GIT_DIR, GIT_WORK_TREE), each already able to append to the file directly."
+        },
+        {
+          "type": "unit",
+          "ref": "the WARP-0725 AC4 assertion, quantified over EVERY declared copy as a property of each with no count of copies asserted: none of the stand-in words present, log_entitlement and VERDICT_PATHSPEC_FROM_TOP present, both limit sentences present, and repo_toplevel absent from the loaded module's namespace. TEETH: M5 re-adds one sentence containing `work tree` to all eight copies (8 subs, applied) and this is the ONLY red, 3327 / 1."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "note": "THE GUARD IS DRIVEN AGAINST COPIES AND EVERY ROUTE IS GENERATED FROM THE MODULE'S OWN CONSTANTS. No count of routes, copies, keys or corpus items is asserted anywhere in this item's assertions; each is a property of every member.",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Artifact paths are generated from VERDICT_PATHSPEC, so a future proof root or verdict file name is driven without editing a route. The placement routes are the four ways a derived key can be offered - a subdirectory of the log's own repository, a different repository, a repository containing the log's own, and a log in no repository - each refused with the log's bytes identical and each paired with the same repository against ITS OWN log appending its own review and zero on the second run. The door routes are every member of EVENT_TYPES crossed with every member of RESERVED_ENVELOPE_KEYS crossed with the projection's own producer and one that is not, each carrying a verdict_blob the REAL domain holds and each reserved key set to the value the module's OWN mint produces for it, driven on a module copy whose ROOT is a throwaway tree."
+        },
+        {
+          "type": "unit",
+          "ref": "two WARP-0725 AC5 assertions. WHAT DRIVING THEM TAUGHT, recorded because a first draft would have weakened a control to fit it: under the projection's own producer EVERY declared type is refused, not only the projection-owned one, because that producer name is entitled the same way the type is - by the line's own content key being one the projection derived in this pass. The types read back off the probe log EQUAL the declared vocabulary minus the projection-owned set in both directions, so the refusal is a refusal and not a fixture that cannot write."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 3328 passed, 0 failed (3322 -> 3328; seven assertions added, one deleted). THE BATTERY: six mutants, each applied to all eight declared copies with the substitution count asserted before the result was believed, each printing a pass/fail summary rather than a traceback - M1 entitle everything again, 8 subs, 3326/2; M2 domain not top-anchored, 8 subs, 3309/19; M3 refusal computed and not acted on, 8 subs, 3326/2; M4 the CLI always exits 0, 8 subs, 3327/1; M5 the stand-in prose returns, 8 subs, 3327/1; M6 the report stops naming what it refused, 8 subs, 3326/2 - plus a NEGATIVE CONTROL: the unmutated clone at 3328/0."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all: pass, exit 0 (this proof manifest included)."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "bash scripts/check_generated.sh: pass (specs/index.md; proof/WARP-0716/crossing-state.md regenerated for the new selftest line numbers and committed with the change)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "bash scripts/check_docs.sh: pass (dash sweep, non-ASCII sweep, genericity)."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: pass. .warp/events.py is byte-identical across the root, the six declared packs and plugin/templates - one distinct md5 over the eight files."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. .warp/events.py is 998 lines against the contract's 1000-line file_lines budget for the metrics area, DOWN from the 999 it was before this change: the deleted stand-in paid for the property."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "built-in secret scan: pass."
+    },
+    {
+      "name": "review_events",
+      "status": "passed",
+      "detail": "the gate's own stage: `164 verdict artifact(s) tracked, 164 already recorded, 0 derivable but not appended, 1 duplicate key(s) already in the log` - the duplicate is the pre-existing pair of old-form events WARP-0722 recorded and is untouched by this item."
+    },
+    {
+      "name": "gate",
+      "status": "passed",
+      "detail": "bash scripts/verify.sh: GATE GREEN (d32fc35f48c1c55fae1cfa0129961b329be2c8b6), catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared."
+    }
+  ],
+  "assumptions": [
+    "WARP-0725 is a STANDALONE enforcement spec (lane: standalone, depends_on: []), so this commit adds it to no plan's work list and moves no plan file.",
+    "WHAT --repo-root MEANS IS NARROWED ON PURPOSE, and it is the only behavioural change outside the refusal: the directory a caller names chooses which artifacts are OFFERED, never which are entitled, and the paths it reports are now repository-relative (`--full-name`), so a verdict offered from a subdirectory is named in full on the stage line. Reconciling one repository's artifacts into another repository's log was already refused; it is now refused by membership rather than by a path relation, and it exits non-zero instead of 0.",
+    "THE REFUSAL EXITS NON-ZERO AND THE GATE'S STAGE GUARDS THE CALL WITH `||` AND TOUCHES NO FAIL, so it is reported there and still cannot redden a build over bookkeeping. The fallback text that `||` prints says `reconciliation unavailable`, which would be the wrong words for a refusal; scripts/verify.sh and its eight copies are outside this item's declared footprint, so the wording is left alone and declared here.",
+    "THE ENUMERATION IS WHAT GIT REPORTS, NOT WHAT A FILESYSTEM HOLDS. A process environment that redirects git's answers (GIT_DIR, GIT_WORK_TREE) makes another repository's enumeration the domain. That is declared as a limit in the module, not defended against, and it needs the same control that already permits appending to the log directly.",
+    "A TRACKED VERDICT ARTIFACT ANYWHERE UNDER THE DECLARED PROOF ROOT IS IN THE DOMAIN, because git's pathspec `*` crosses `/` (measured: a file committed at proof/deep/WARP-9999/verdict.json is returned by `git ls-files 'proof/*/verdict*.json'`). Both sides of the membership test use the one pathspec, so that is consistent rather than a gap: committing a verdict artifact under the proof root IS this repository's review record, and who may write one is the review discipline's question, not this predicate's.",
+    "THE `.warp/capabilities.yaml` NOTE IN ALL EIGHT COPIES STILL DESCRIBES THE REMOVED COMPARISON. Its other measured claim (the environment redirection) stays true. That file is outside this item's declared footprint and the shape gate refuses a change to a path a spec did not declare, so the stale clause is declared here as a residual rather than smuggled in."
+  ],
+  "rollback": "git revert the fix commit. The behavioural change is one predicate: log_entitlement, which now takes only the log and returns the enumeration the repository that log belongs to produces; the pathspec parameter and `--full-name` on the two enumeration calls; the `unentitled` report field replacing `origin`; the non-zero exit on a refusal; and the deletion of repo_toplevel, re-synced byte-identical across plugin/templates and the six pack copies. Nothing persists: no migration, no state, no schema change. NOTE WHAT A REVERT CANNOT DO: any forged line already appended to a log cannot be rolled back by anything, in this repository or an adopter's, which is the reason this item exists - so a revert restores a projection that will import a forged pass out of any folder in the work tree and should be paired with re-queueing this item.",
+  "proof_digest": "sha256:f7fcf353d652a3e6"
+}

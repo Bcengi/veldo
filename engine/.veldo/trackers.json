@@ -1,0 +1,47 @@
+{
+  "schema": "veldo.tracker/v1",
+  "_comment": "Per-org tracker routing config. One tracker project can span many VELDO repos, so every ticket declares which repo it targets. Default mechanism is a label convention so it works on a stock Jira project with no custom fields. Fill in your repos and tracker/project mapping; auth is a scoped token resolved from your secrets store (token_ref), never a raw credential in this file.",
+  "routing": {
+    "mechanism": "label",
+    "label_prefix": "veldo-repo:"
+  },
+  "_routing_field_comment": "For the tracker-driven autonomous fleet (PLAN-0010), the repo tag is a VALIDATED custom field whose allowed values are exactly your repo ids (a Jira dropdown), resolved via the field mechanism and failing closed on any value not in 'repos'. To use it, replace the routing block above with {\"mechanism\": \"field\", \"field\": \"VELDO Repo\"} instead of the label convention.",
+  "_agent_comment": "The SINGLE shared Agent user the whole fleet acts as (PLAN-0010 C1). is_eligible takes a ticket ONLY when it is assigned to this exact account; the claim ledger, not the tracker, decides which worker runs it. Set it to the account name or id your tracker reports as the assignee. Optional: omit it and no ticket is eligible for automatic pickup.",
+  "agent": "veldo-agent",
+  "_ready_statuses_comment": "The ready-for-dev status set (PLAN-0010 C1): a ticket is eligible only when its status is one of these AND it is assigned to 'agent' AND its repo tag resolves. Optional; defaults to include 'Approved for dev' when omitted.",
+  "ready_statuses": ["Approved for dev"],
+  "_reviewer_comment": "The reviewer a ticket is reassigned to at the ready-to-test handoff (PLAN-0010 C7). When a spec enters review after a build, the mirror reassigns the ticket away from 'agent' to this person and posts the artifact links. Optional global default; add a per-repo 'reviewer' inside a repo entry to override. Omit both and the mirror falls back to the ticket's reporter; with no reporter either, it leaves the assignee untouched (never invents one).",
+  "reviewer": "veldo-reviewer",
+  "_status_map_comment": "Maps each VELDO spec status onto YOUR tracker project's own status names (the mirror only transitions within this set; an unmapped VELDO status is recorded as a comment, never an invented transition). Global default here; add a per-repo status_map inside a repo entry to override. Omit entirely and the mirror posts comments only. These names match the 'bootstrap' status set below, so `veldo jira init` stands up exactly the statuses the mirror maps onto.",
+  "status_map": {
+    "ready": "Ready",
+    "blocked": "Blocked",
+    "in_review": "In Review",
+    "shipped": "Shipped",
+    "merged": "Shipped"
+  },
+  "_bootstrap_comment": "The board bootstrap (`veldo jira init`): stand up this project's full lifecycle status set + workflow with CODE (not by hand in the UI), idempotently, then mirror every plan and spec onto it. Target a COMPANY-MANAGED Jira project: it exposes the full status + workflow REST API, whereas a team-managed project's workflow wiring is UI-only, so the bootstrap detects the type and FAILS LOUD on a team-managed project (recreate it as company-managed and re-run) rather than leave a half-provisioned board. Everything here is config: project_key, the required project type, the epic/child issue-type names statuses are wired into, and the status names + their categories (one of 'To Do' | 'In Progress' | 'Done'). Run `veldo jira init --dry-run` to preview offline, `veldo jira init` to apply live (auth is the jira-cloud tracker's token_ref, a secret reference, never a raw credential).",
+  "bootstrap": {
+    "project_key": "PROJ",
+    "required_project_type": "company-managed",
+    "issue_types": ["Epic", "Task"],
+    "statuses": [
+      {"name": "Backlog", "category": "To Do"},
+      {"name": "Ready", "category": "To Do"},
+      {"name": "In Progress", "category": "In Progress"},
+      {"name": "In Review", "category": "In Progress"},
+      {"name": "Awaiting Approval", "category": "In Progress"},
+      {"name": "Changes Requested", "category": "In Progress"},
+      {"name": "Shipped", "category": "Done"},
+      {"name": "Blocked", "category": "In Progress"},
+      {"name": "Rejected", "category": "Done"}
+    ]
+  },
+  "repos": [
+    {"id": "repo-a", "tracker": "jira", "project": "PROJ", "reviewer": "repo-a-reviewer"},
+    {"id": "repo-b", "tracker": "jira", "project": "PROJ"}
+  ],
+  "trackers": {
+    "jira": {"kind": "jira-cloud", "base_url": "https://your-org.atlassian.net", "token_ref": "env:JIRA_TOKEN"}
+  }
+}

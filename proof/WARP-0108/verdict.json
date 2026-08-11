@@ -1,0 +1,45 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0108",
+  "commit": "e8bb3631b397aace608b043c9f5457fd12216252",
+  "reviewer": "claude-opus-4-8[1m]",
+  "reviewed_at": "2026-07-16T22:03:16Z",
+  "verdict": "pass_with_notes",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "check_events (validate.py) rejected every malformed event-log file I wrote outside the repo: unknown type (exit 1), missing at (exit 1), missing schema and wrong schema warp.event/v2 (exit 1), non-JSON line (exit 1). A well-formed line with a real type passed (exit 0) and blank lines were skipped (exit 0). check_events runs in run_all (validate.py:647), which verify.sh invokes via `python3 .warp/validate.py all` in its contracts step; the real .warp/events.jsonl (42 events, all gate.*) passes. validate.py EVENT_TYPES and events.py EVENT_TYPES are identical (17 types each, no drift)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "make_event refuses an unknown type with ValueError; sets schema warp.event/v1, a non-empty 12-char id (unique over 50 calls), at, and correlation_id defaulting to the spec id (explicit correlation_id overrides). human_minutes is included only when given and coerced to int (0 is retained since it is not None). Emitting into a temp log (module LOG redirected to /tmp, repo events.jsonl untouched) produced a line that check_events accepts."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "On a synthetic stream I built outside the repo the math matched my hand calculation exactly: spec-to-ship 2.0h (from ready->shipped by correlation), proof latency 1.0h, human_minutes_total 25, gate_pass_rate 0.667 (2/3), open_emergency_debt 0, changes_tracked 4. Edge cases safe: an event with missing/bad at is excluded from averages without crashing; a correlation with ready but no shipped is excluded from spec-to-ship; two distinct correlation_ids are both counted; no gate events yields gate_pass_rate None (no division by zero) and empty stream yields all Nones/0."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "selftest (94 passed, 0 failed) exercises the envelope (make_event fields + unknown-type refusal), the validator (check_events accepts good, rejects unknown type / missing at / non-json) and metrics.compute (spec-to-ship 2h, human minutes 12, gate rate 0.5). status/SKILL.md surfaces `python3 .warp/metrics.py`. capabilities marks event_envelope_v1 and metrics_derivation mechanical and human_minutes_events procedure (skill-instructed emission, field and aggregation mechanical). No protected path touched: verify.sh (last changed by f67336e) and warp-guard.sh (last changed by 0de75f3) are not in this commit and both still emit warp.event/v1 lines; spec protected_paths is empty."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Cosmetic: scripts/selftest.py line 352 has a doubled comment header ('# --- design runners (W6):# --- design runners (W6): token lint ...'). It is a Python comment with zero functional impact; selftest still runs 94/0."
+    },
+    {
+      "severity": "note",
+      "text": "metrics.compute open_emergency_debt iterates events in list order (not sorted by at) and decrements on both emergency.closed and spec.shipped, clamped at >= 0. This matches the spec's stated intent ('push minus closed/shipped') but is an order-dependent heuristic that could mis-count if events arrive out of order relative to their timestamps. Not blocking."
+    },
+    {
+      "severity": "note",
+      "text": "Live changes_tracked is 0 (all 42 historical events are gate.* with no correlation_id/spec_id), so the metric machinery is proven only on the synthetic selftest stream, not on live data yet. This is honest and matches the manifest assumption; correlated lifecycle events (spec.ready->spec.shipped) are skill-emitted going forward per the out-of-scope note. The manifest runner-evidence figure 0.878 (36/5, 41 events) was accurate at capture; live is now 0.881 (37/5, 42 events) purely from verify.sh gate churn since capture."
+    }
+  ],
+  "summary": "Independent rerun (Opus reviewing Fable's implementation at e8bb363) reproduced every claim. Gate is green: selftest 94/0, validate.py all exit 0, verify.sh GREEN (5 run / 18 na / 0 undeclared). check_events rejects unknown type, missing timestamp, missing/wrong schema and non-JSON while accepting valid lines and skipping blanks; its vocabulary is identical to events.py (no drift). make_event/emit produce conforming, correlated envelopes and refuse unknown types; metrics.compute derives spec-to-ship, proof latency, human-minutes total, gate pass rate and emergency debt with correct math and safe edge-case handling (no crash, no divide-by-zero). Capabilities read honestly (mechanical for the code, procedure for skill-instructed human_minutes emission) and no protected path (verify.sh, warp-guard.sh) was touched. Three non-blocking notes; all four criteria confirmed."
+}

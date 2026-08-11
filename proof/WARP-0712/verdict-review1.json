@@ -1,0 +1,63 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0712",
+  "commit": "24ff8cb39cd2b20804a2473da97cb77cbaf2b662",
+  "reviewer": "claude-opus-5[1m] independent reviewer, did not build the item. Reviewed the whole 8-commit range f64821c..24ff8cb in throwaway /tmp clones; the item worktree and branch were never written to, no push, no merge, no git internals. Every number produced by the reviewer's own run and own comparator; the item's compare() was read but not relied on.",
+  "round": 1,
+  "verdict": "fail",
+  "disposition": "not_shippable",
+  "summary": "THE MACHINERY IS SOUND AND THE REVIEWER COULD NOT BREAK IT. THE PROSE DESCRIBING IT IS FALSE IN THREE PLACES, TWO IN SHIPPED SOURCE, ONE BEING THE LANDING CONDITION ITSELF. Every fix is a text edit against facts already measured.",
+  "criteria": {
+    "AC1": {
+      "status": "passed",
+      "ruling": "CONSUMED AND GENUINELY RE-DERIVED. WARP-0716's own figures confirmed verbatim from the pre-branch artifact (365 hoistable symbols, 67 of 206 regions, 632 of 2988 sites, FEASIBLE_WITH_PREPARATION). The driven re-measurement gives 143 names that actually stop a region: a real 2.5x overstatement found by driving rather than trusting."
+    },
+    "AC2": {
+      "status": "passed",
+      "ruling": "THE ENTRY POINT DID NOT MOVE. verify.sh diff EMPTY vs f64821c; none of the seven protected paths in the 30 changed files; dispatcher 88 lines with 0 expect( sites; exit 0 green, exit 1 with 'selftest: 3351 passed, 1 failed' on a planted failure. --upto NAME exits 2 on success INCLUDING on the last suite, so no invocation can be read as a pass. Reviewer timings 1.65s / 25.01s / 90.46s against claimed 1.63 / 24.95 / 89.8: confirmed. The coordinator's failed '--upto 1' was an unknown suite NAME rejected in 0.018s at exit 2, the guard working."
+    },
+    "AC3": {
+      "status": "passed",
+      "ruling": "EVERY FIGURE EXACT ON RECOUNT. 193 regions, 59 CLEAN, 134 CRASHES_ALONE all beginning NameError, 133 CLOSED + 1 CLOSED_PROVES_DIFFERENTLY which IS region 142 with one signature moving PASS+1 to FAIL+1 (loud, not silent). 13 markers inside statements, 12 statement-less regions. Both self-caught methodology errors real: PYTHONDONTWRITEBYTECODE=1 crash reproduced at selftest.py:20040 pre-split and suites/12:5553 post-split, inherited not caused."
+    },
+    "AC4": {
+      "status": "partial",
+      "ruling": "PARTIAL IS HONEST AND THE PROOF MANIFEST SAYS SO, BUT THE SHIPPED RUNTIME MANIFEST SAYS THE OPPOSITE (see B2). Driven: suite_equiv over the real manifest returns DEFECTIVE, 13 of 13 PASSES_IN_AGGREGATE_FAILS_ALONE, plus ORDER_DEPENDENT (reverse order gives NO_RECORDS). Standalone independence genuinely absent; whole-gate cost genuinely unchanged (monolith 94.5s, split 90.4 to 91.0s, gate 93.6s). Abandonment reason SUPPORTED: driving the shipped --mode statement to its fixed point died FileNotFoundError on a directory another statement created, verbatim the class claimed."
+    },
+    "AC5": {
+      "status": "passed",
+      "ruling": "THE CRITERION IS MET AND ITS REPORTED RESULT IS FALSE (see B1). Reviewer's own capture and comparator, 6c6f2b8 vs 24ff8cb: 3352 labels and 3352 records each side, 0 multiplicity changes, 0 delta-signature changes, 3 missing and 3 added. All three pairs traced to the same expect( sites, so NOT ONE ASSERTION IS LOST. CONTROLS ON THE REAL CORPUS: additive gives exactly 1 added / 0 missing; SUBTRACTIVE gives exactly 1 missing / 0 added WHILE THE SUITE STILL EXITED GREEN AT 3351 - the exit code cannot see the loss, the instrument can. 0 duplicate labels across four runs. Structural proof re-derived mechanically: 11 of 13 fragments plus dispatcher plus runtime manifest BYTE-IDENTICAL to a fresh cut; verify_partition refuses a dropped statement, a duplicated statement and non-tiling spans, accepts the real partition, and runs at main() line 576 BEFORE emit (578) and before any write (582, 591)."
+    },
+    "AC6": {
+      "status": "partial",
+      "ruling": "PARTIAL, DECLARED, AND ITS STATED REASON IS FACTUALLY WRONG IN THE ITEM'S OWN DISFAVOUR. `find . -name selftest.py` returns EXACTLY ONE file in the whole tree. plugin/templates/scripts/ has no selftest.py and every pack plus the template declares CHECK_unit empty deliberately, so the unit suite was never in the sync canon and check_template_sync.sh never listed it. The manifest's 'those instances still ship a monolithic selftest.py' describes files that DO NOT EXIST. Nothing can drift, so nothing will red. Non-blocking, but it invites a future item to copy a monolith into templates."
+    }
+  },
+  "blocking_findings": [
+    "B1 THE LANDING CONDITION IS OVERSTATED BY 3x IN THE PROOF MANIFEST. AC5 evidence says 'exactly ONE label missing paired with ONE added' and limits says 'ONE LABEL OF 3352 CHANGED TEXT... Every other label is byte-identical'. Measured: THREE missing, THREE added. (a) WARP-0716 AC1 REAL FILE, the declared one. (b) WARP-0712 AC5 THE MUTATION IS ASSERTED APPLIED, UNDECLARED, changed in the split commit 0aeab03. (c) WARP-0712 DOGFOOD, UNDECLARED, changed in caa0bdf which is AFTER the manifest's own recorded commit field of 0aeab03. Mitigation on the record: no assertion lost, all three trace to the same expect( sites, and (b) and (c) are this item's OWN round-1 assertions. THE DEFECT IS THE FALSE QUANTITY IN THE SENTENCE THAT IS THE LANDING CONDITION, and it is the THIRD self-count on this branch failing a recount (the builder also reported 6 commits where there are 8).",
+    "B2 THE SHIPPED RUNTIME MANIFEST ASSERTS THE EXACT PROPERTY THE ITEM DECLARES ABSENT. scripts/suites/manifest.json carries 'Every suite here runs standalone and inside the aggregate and is asserted by scripts/suite_equiv.py to prove the same thing both ways.' Measured DEFECTIVE, 13 of 13 PASSES_IN_AGGREGATE_FAILS_ALONE, and nothing in the gate runs suite_equiv over the real suites at all. Not 'incomplete but honestly declared' - it is the ONE ARTIFACT A READER CONSULTS claiming more than the item delivers.",
+    "B3 THE SHARED MODULE'S DOCSTRING DESCRIBES AN ABANDONED DESIGN AS IF IT SHIPPED. shared.py claims 'Every suite file starts with `from shared import *`, so each suite gets its own namespace... A suite that REBINDS a shared name therefore cannot leak'. Measured: NO fragment contains that import; the dispatcher execs every fragment into shared.__dict__, so all 13 share ONE namespace and a rebinding leaks to every later fragment. THE REPOSITORY NOW CONTRADICTS ITSELF ABOUT ITS OWN CORE MECHANISM, and a contributor believing in isolation could silently change what later fragments prove."
+  ],
+  "non_blocking_findings": [
+    "N1 MISCOUNTS: 'ELEVEN FIXTURE VARIANTS' against 12; Matrix B's 'nine own decisions' against 10; a source comment repeating the wrong nine; three stale dispatcher sizes typed in comments (85, 45, actual 88).",
+    "N2 THE RE-POINT ENUMERATION IS SHORT BY ONE AND INTERNALLY INCONSISTENT: limits says FOUR sites, lists four things, then calls WARP-0716's 'the fourth', and omits _w12_primitive_file whose label also changed. Six logical re-points, not four.",
+    "N3 TWO PUBLISHED DERIVED ARTIFACTS NAME A SUBJECT THAT NO LONGER EXISTS: crossing-state.md reads 'Measured from: scripts/selftest.py, 88 lines, 0 expect( sites, Verdict: NOT_FEASIBLE' - a cannot-be-split headline on a repo where it HAS been split. NOT the stale-artifact failure: check_generated.sh regenerates both and both pass, so each file matches its emitter; the emitter's SUBJECT was hollowed out. No red waiting, no false assertion. Cheap fix is one caveat sentence per emitter header.",
+    "N4 THE KEY ABANDONMENT EVIDENCE IS ONLY PARTLY RE-RUNNABLE: the statement-level death reproduced exactly in class; the region-level 89-region death could NOT be reproduced because shared_regions() now returns {0} and that variant is gone. The 89 figure was confirmed independently (union of the 134 closures = 89 regions, 3186 of 5452 statements). The 'seven module specs and two module loads' breakdown does not match the reviewer's run (3 spec bindings, 7 adjacent completions): narrative, not measurement.",
+    "N5 THE FRAGMENTS ARE NOT BALANCED AND THE TOOL CLAIMS THEY ARE: 766 lines against 5780 and 6910. Cause is mechanical and harmless: the budget came from a 26422-line ancestor stopping at region 206 while the cut file carries 214, so everything above 206 fell into the last group unbudgeted. The cut is still an exact partition.",
+    "N6 TWO COMMITS RECORD gate.failed (0aeab03, 56094d3) with green at caa0bdf and the tip attestation. Honest self-recording history; noted so no later reader mistakes it for a hidden red.",
+    "N7 WARP_SUITE_ORDER accepts a duplicated suite name, running it twice and inflating the count. It can never SHRINK the run, so it cannot hide a skipped suite or fabricate a pass."
+  ],
+  "must_fix_before_live": [
+    "B1: correct the AC5 evidence and limits to THREE changed labels, name all three, mark which two are this item's own round-1 assertions.",
+    "B2: rewrite the note in scripts/suites/manifest.json to state the one-namespace, original-order mechanism instead of standalone equivalence.",
+    "B3: delete the `from shared import *` paragraph from scripts/suites/shared.py and from SHARED_HEADER in scripts/suite_extract.py, and delete the dead EXPORT_ALL constant."
+  ],
+  "could_not_test": [
+    "The 'eleven false silent losses' from the first line-based attribution version: never committed, so unverifiable. The 13 straddled markers and 12 statement-less regions that make the story coherent are confirmed.",
+    "The region-level 89-region hoist death: the code path no longer exists in the shipped tool.",
+    "Order independence over all permutations: three are recorded and all three die on NameError, which falsifies independence rather than proving it. A dependency preserved by all three would not be caught, and the item declares this.",
+    "Whether any assertion's MEANING was weakened while its label was untouched: blind by construction and declared. Narrowed considerably: 11 of 13 fragments plus dispatcher and manifest are byte-identical to a fresh cut, so only the six re-pointed sites are outside that guarantee, and all six were read.",
+    "Pack and template behaviour after an adopter fills CHECK_unit: not reachable from this repository."
+  ],
+  "notes": "Attacks attempted and survived: additive control on the real corpus; subtractive control on the real corpus; the swap case; a duplicate-label collision sweep across four runs; a suite file planted on disk and absent from the manifest; a manifest entry naming a file not on disk; a forced failing assertion for exit semantics; --upto on the last suite as a would-be gate stamp; a mechanical re-derivation of the whole cut from the pre-split monolith; three mutations of the partition proof each with a negative control; a cardinality-pin sweep over every new integer comparison; a RULE #1 sweep over 30 files and 8 commit messages; and a recount of every quantity in the proof manifest. NOTHING IN THE CODE BROKE. THREE SENTENCES IN THE ARTIFACTS DID."
+}

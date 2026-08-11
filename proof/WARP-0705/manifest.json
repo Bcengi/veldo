@@ -1,0 +1,93 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0705",
+  "commit": "ad5bb86072f8e375e562e3d287af24e904a83ee6",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0007 Y5)",
+  "plan_hash": "sha256:c5ff657b05dd9b8f",
+  "produced_at": "2026-07-18T12:43:17Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet_env.py load_env_def reads the repo's .warp/fleet_env.json (deps -> {mode, capability?, write_layer?}); resolve_plan turns a build's needs into a plan honoring the modes: an ephemeral dep -> a fresh per-build env, a read use of a shared_ro dep -> attach_shared_ro, a MUTATING use of a shared_ro dep -> write_layer (schema|cow|fixture). The only actions emitted are ephemeral, attach_shared_ro, write_layer - there is deliberately no wholesale-copy action, so a heavy dataset is never duplicated."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts each mode resolves correctly (ephemeral -> fresh env; shared read -> read-only attach; mutating shared -> write_layer cow); independent review enumerated every mode x mutates combination and confirmed no copy/duplicate path exists; part of selftest 1038 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet_env.py SharedDepRegistry ref-counts a shared_ro dep across the whole fleet: acquire brings it up (backend.bring_up_shared) only when refs==0 and appends the holder, release drops the holder and tears it down (backend.teardown_shared) only when refs==0, deleting the count file. The read-modify-write runs inside the claim ledger's per-unit lock (CL._unit_lock) with an atomic publish (CL._publish / os.replace), so two workers never bring up two copies; refs is always len(holders)."
+        },
+        {
+          "type": "unit",
+          "ref": "a barrier-synchronized selftest (16 concurrent workers x 15 trials) asserts bring_up called exactly once and refs==16 on concurrent acquire, then teardown exactly once and refs==0 on release; independent review reproduced exactly-once under 24 threads and 20 REAL PROCESSES plus 10-process/300-round churn (bring-up count minus teardown count always in {0,1}, refs never negative, never two live); part of selftest 1038 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet_env.py resolve_plan refuses (FleetEnvError) a dep whose declared capability is not a subset of the worker's capabilities (reusing CL.capability_ok), so a capability-gated heavy dep only provisions on a worker that advertises the tag; with the capability the same dep resolves."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts the capability-gated places_db is refused on a worker without 'places-db' and granted with it (non-tautology teeth); independent review confirmed the gate cannot be bypassed for read or mutating uses; part of selftest 1038 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/fleet_env.py all infra ops are an injected FleetEnvBackend seam (bring_up_shared, teardown_shared, attach_ro, make_write_layer, provision_ephemeral, teardown); provision() calls resolve_plan first (validating before any side effect), then attaches/lays/provisions, returning an EnvLease whose teardown() releases the shared refs and tears down the per-build handles. A backend failure partway through is caught, the partial lease is torn down (releasing every ref acquired so far), and the exception re-raised - so a failed provision never leaks a fleet ref count (which has no TTL) or a per-build env."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest: a full provision brings up each shared dep once + provisions the ephemeral env + makes no copy, and teardown releases the shared deps and tears down the handles; a mid-provision backend failure (attach_ro raises) re-raises and leaves refs==0 (partial teardown). Independent review confirmed provision() calls no backend method when the plan is invalid, and reproduced the pre-fix leak (bring_up=1, teardown=0, refs=1) now closed; part of selftest 1038 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "the selftest drives fleet_env over a deterministic fake FleetEnvBackend with no external dependency: mode resolution, capability refuse-vs-grant, mutate-without-write-layer refusal, undeclared-dep refusal, mid-provision failure leaks no ref, the barrier-synchronized exactly-once ref-count, and a full provision + teardown lease."
+        },
+        {
+          "type": "unit",
+          "ref": "non-tautology proven by the independent review: mutating acquire to bring up on EVERY call (not just refs==0) turns the exactly-once selftest RED, and reverting the provision try/except turns the leak-no-ref selftest RED; gate GREEN, selftest 1038 passed, 0 failed; both capabilities.yaml copies byte-identical"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1038 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "Y5 extends the WARP-0406 single-env EnvProvisioner seam to the fleet, and reuses the claim ledger (WARP-0701, hardened by WARP-0710) twice: capability_ok to gate a heavy dep, and the per-unit lock (_unit_lock) plus atomic publish (_publish) to mutate the shared-dep ref count so two workers never bring up two copies. The CONTROL logic (env definition, resolve_plan, the ref count, provision/teardown lease, exception-safe partial teardown) is gate-tested over a deterministic fake FleetEnvBackend with no external dependency; the REAL infra ops (docker, a database, a copy-on-write clone, the write-layer strategies schema|cow|fixture, the ephemeral path) are the backend's to implement per repo. The env definition is .warp/fleet_env.json (structured stdlib-json config, nested per-dep objects) rather than YAML-ish prose front matter. The ref-count file has no heartbeat/TTL; a crashed worker mid-hold would leave a ref (mitigated for the in-process failure path by provision's partial teardown; a cross-crash TTL/reclaim, like the claim ledger's staleness, is a possible follow-up). Cross-host attach transport (a dep mounted on one machine only, expressed by the capability tag) is the backend's and the launcher's concern (Y7). Unix-only via the claim ledger lock."
+  ],
+  "rollback": "git revert; additive - a new .warp/fleet_env.py, a selftest block, one fleet_env_provisioning capability (both copies), and the WARP-0705 spec; no protected path; the control logic is a seam with the real infra ops in FleetEnvBackend, and the selftest runs over a fake backend."
+}

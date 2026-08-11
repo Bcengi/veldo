@@ -1,0 +1,21 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0901",
+  "commit": "f473a3443c3f59841065a614a26f59c78b347c0b",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent aa33cda682a843696)",
+  "reviewed_at": "2026-07-19T15:23:24Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:5ac0ba9cd7083ca4",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "dispatch.py fills the work.py Dispatcher seam; dispatch() routes build/review/unknown; ok False -> WorkLoop releases the claim and marks it failed (no re-claim, no stuck claim); a crashed dispatch is coerced to ok False."},
+    {"id": "AC2", "status": "confirmed", "note": "build path runs Executor.run(stop_after='proof') and stops at review; the 'built' state occurs only in that branch so the defaulted default path is byte-for-byte identical and existing executor selftests pass; clean built -> ready->review flip, halt -> ok False no flip."},
+    {"id": "AC3", "status": "confirmed", "note": "ships only on a passing verdict (pass/pass_with_notes, zero blocking, fails closed) AND a successful land; failing verdict -> ready, never shipped/landed; failed land stays review for retry; LiveReviewer and unwired lander fail loud."},
+    {"id": "AC4", "status": "confirmed", "note": "status-based handoff: claimable() surfaces build only for ready and review only for review, so a shipped spec leaves the frontier; _set_status is front-matter-fence scoped; claim-then-recheck holds."},
+    {"id": "AC5", "status": "confirmed", "note": "gate green with fakes and no live agent (selftest 1287/0); both mutants proven real by LIVE-SOURCE mutation - verdict-gate mutation turned the no-ship-on-fail assertion red, self-review mutation turned reviews-nothing + 2 related red."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Verdict commit-binding and the different-worker independence phrasing are enforced at the reviewer-seam / guard-at-land layer (the pre-push guard fails closed on an unproven push), not inside the dispatcher. This is defense-in-depth and architecturally consistent; independence is genuine at agent-context granularity - the build path performs zero reviews (fake reviewer .calls == 0) and review is always a separate fresh-context dispatch. Non-blocking."},
+    {"severity": "note", "text": "RESOLVED: the prior Note 1 (the `# -- section ----` divider comments in dispatch.py used a double-hyphen, violating the repo house rule and appearing nowhere else in the fleet modules) was fixed by amending 843fac1 -> f473a344, a comment-only, behaviorally inert change; no double-hyphen remains in dispatch.py except the functional YAML front-matter regex. The reviewer re-verified the exact delta and gate (1287/0) at f473a344."}
+  ],
+  "summary": "WARP-0901 (the real fleet dispatcher, W1 of PLAN-0009) holds up under adversarial testing at f473a344. GATE GREEN, selftest 1287 passed, 0 failed. All five ACs CONFIRMED by concrete probes in an isolated worktree: the dispatcher fills the work-loop seam and routes by kind (ok False releases the claim); the build path drives the executor with a DEFAULTED stop_after='proof' that provably cannot occur on the default path, stops at review reviewing nothing, and flips ready->review; the review path ships only on a passing verdict AND a successful land, flipping review->shipped, with the real reviewer/lander failing loud; the ready->review->shipped status is the durable frontier handoff; and the two mutants were proven to have teeth by mutating live source. The fleet stays repo-root dogfood (not shipped engine, no protected path), the impl commit bundles PLAN-0009, and the intelligent build/review remain delegated in-session procedures (no detached process). One remaining non-blocking architectural note (commit-binding enforced at the guard-at-land layer). Verdict: pass."
+}

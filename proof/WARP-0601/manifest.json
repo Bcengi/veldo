@@ -1,0 +1,63 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0601",
+  "commit": "3ef39a09ee48180faec3420035846d2bf7d8689b",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0006 W1)",
+  "plan_hash": "sha256:6dd3f98b5a0c1f68",
+  "produced_at": "2026-07-18T16:34:50Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker.py load_tracker_config reads a per-org .warp/trackers.json (warp.tracker/v1) or returns {} if absent, and _validate rejects (TrackerConfigError) a bad schema, a missing/bad routing mechanism, a label mechanism with no prefix, a field mechanism with no field, a repo missing id/tracker/project, and a duplicate repo id - a malformed config never silently no-ops."},
+        {"type": "unit", "ref": "selftest asserts the validation rejections and a disk load; independent review confirmed load returns {} when absent, raises on malformed JSON, and the shipped template validates; part of selftest 1068 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker.py resolve_repo(ticket, config) returns the exactly-one repo a ticket targets by the configured mechanism (a label with the prefix, a component, or a named field) and raises TrackerRoutingError when the signal is missing, ambiguous, or (for the explicit label/field mechanisms) names an unknown repo - it never guesses."},
+        {"type": "unit", "ref": "selftest asserts label/component/field resolution and missing/unknown/ambiguous refusals; independent review confirmed fail-closed across all three mechanisms and that the component asymmetry (unknown component filtered, but a ticket whose only component is unknown raises no-signal) lets no misroute slip through; part of selftest 1068 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker.py tracker_for_repo(repo_id, config) returns {tracker, project} for a declared repo and raises TrackerRoutingError by name for an undeclared repo."},
+        {"type": "unit", "ref": "selftest asserts the known-repo return and the undeclared-repo raise; part of selftest 1068 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/tracker.py imports only json and os, does a single file read, and never writes or hits the network - deterministic (config in, answer out). A template ships at plugin/templates/.warp/trackers.json."},
+        {"type": "unit", "ref": "independent review confirmed no network/writes/subprocess and determinism; the template validates; part of selftest 1068 passed, 0 failed"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest drives the resolver over temporary configs and tickets - label/component/field resolution and missing/unknown/ambiguous/malformed refusals plus a disk load - and asserts the non-tautology (the routing signal present resolves, removed it refuses)."},
+        {"type": "unit", "ref": "independent review proved the teeth: mutating resolve_repo to always return the first repo (a guesser) turns the refuses and non-tautology assertions RED; gate GREEN, selftest 1068 passed, 0 failed"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1068 passed, 0 failed"}
+  ],
+  "assumptions": [
+    "W1 of PLAN-0006: the routing contract and resolver only, pure stdlib and offline; the tracker adapter seam is W3, intake W4, the mirror W5+. The resolver is gate-tested over temp configs; the real per-org .warp/trackers.json is reference-wired per org (a template ships). This commit BUNDLES the approved PLAN-0006 with its first work item to satisfy the push guard. Reviewed independently across two passes: pass 1 confirmed AC1-AC5 (fail-closed, pure, exhaustively validated, non-tautological with teeth) but caught a BLOCKING commit-hygiene defect - the initial commit a097d51 shipped a stale specs/index.md carrying a phantom PLAN-0008 section (the index had been regenerated with uncommitted PLAN-0008 WIP in the tree), so a097d51 did not pass its own gate in isolation. Fixed: the two foundation commits were rebuilt so each is self-consistent; this proof binds to 3ef39a0, whose resolver is byte-identical to the reviewed code and whose index reflects only its committed content (zero PLAN-0008 references), and which passes the gate GREEN in a pristine isolated worktree (generated: pass). Accepted non-blocking note: PLAN-0006 prose says .warp/trackers.yaml in three places (the W1 title, constraint C6, and the release rollback) while the spec, resolver, and template use .warp/trackers.json; cosmetic plan-text drift, to fix on the next PLAN-0006 touch - the implementation is internally consistent on JSON."
+  ],
+  "rollback": "git revert; additive - a new .warp/tracker.py, a template, a selftest block, one capability entry (both copies), the WARP-0601 spec, and PLAN-0006; no protected path; pure stdlib, read-only, no network."
+}

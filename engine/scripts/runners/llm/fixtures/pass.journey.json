@@ -1,0 +1,26 @@
+{
+  "name": "support assistant eval (new prompt holds)",
+  "prompt_id": "v2",
+  "budgets": {"max_total_cost": 0.05, "max_total_seconds": 5, "min_pass_rate": 1.0},
+  "baseline": {"prompt_id": "v1", "passed_cases": ["greeting", "refund", "escalation"]},
+  "cases": [
+    {
+      "id": "greeting",
+      "input": "hi there",
+      "graders": [{"type": "contains", "value": "help"}, {"type": "not_contains", "value": "error"}],
+      "fake": {"output": "Hello, how can I help you today?", "cost": 0.01, "latency": 0.3}
+    },
+    {
+      "id": "refund",
+      "input": "I want a refund",
+      "graders": [{"type": "regex", "value": "refund|reimburse"}, {"type": "not_contains", "value": "no"}],
+      "fake": {"output": "I can start a refund for you right away.", "cost": 0.012, "latency": 0.4}
+    },
+    {
+      "id": "escalation",
+      "input": "this is urgent, get me a person",
+      "graders": [{"type": "contains", "value": "connect you"}],
+      "fake": {"output": "I will connect you with a specialist now.", "cost": 0.011, "latency": 0.35}
+    }
+  ]
+}

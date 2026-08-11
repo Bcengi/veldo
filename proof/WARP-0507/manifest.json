@@ -1,0 +1,74 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0507",
+  "commit": "23cad922a9a37ee49db21fd8c96f06ca0caf2029",
+  "producer": "claude-opus-4-8[1m] (implementing agent)",
+  "produced_at": "2026-07-18T00:45:22Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The release change is commit 23cad922a9a37ee49db21fd8c96f06ca0caf2029: PLAN-0005 status set to released and plugin bumped to 3.1.0. Operational evidence: python3 .warp/plan.py status reports released, 6/6 shipped, frontier none; python3 .warp/plan.py release-check reports releasable; each of WARP-0501..0506 is status shipped with proof/<id>/manifest.json + verdict.json and a passing verdict (WARP-0505 pass; 0501/0502/0503/0504/0506 pass_with_notes); docs/method.md is unchanged by the commit (the Run Lens is tooling that observes and steers the existing loop, not a change to the generic method); the plan release.version field is plugin 3.1.0; the full gate is GREEN with selftest 848 passed, 0 failed and the dash, non-ASCII, and genericity sweeps pass on the changed plan and this spec; no protected path is touched."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The release change is commit 23cad922a9a37ee49db21fd8c96f06ca0caf2029: PLAN-0005 status set to released and plugin bumped to 3.1.0. Operational evidence: python3 .warp/plan.py status reports released, 6/6 shipped, frontier none; python3 .warp/plan.py release-check reports releasable; each of WARP-0501..0506 is status shipped with proof/<id>/manifest.json + verdict.json and a passing verdict (WARP-0505 pass; 0501/0502/0503/0504/0506 pass_with_notes); docs/method.md is unchanged by the commit (the Run Lens is tooling that observes and steers the existing loop, not a change to the generic method); the plan release.version field is plugin 3.1.0; the full gate is GREEN with selftest 848 passed, 0 failed and the dash, non-ASCII, and genericity sweeps pass on the changed plan and this spec; no protected path is touched."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The release change is commit 23cad922a9a37ee49db21fd8c96f06ca0caf2029: PLAN-0005 status set to released and plugin bumped to 3.1.0. Operational evidence: python3 .warp/plan.py status reports released, 6/6 shipped, frontier none; python3 .warp/plan.py release-check reports releasable; each of WARP-0501..0506 is status shipped with proof/<id>/manifest.json + verdict.json and a passing verdict (WARP-0505 pass; 0501/0502/0503/0504/0506 pass_with_notes); docs/method.md is unchanged by the commit (the Run Lens is tooling that observes and steers the existing loop, not a change to the generic method); the plan release.version field is plugin 3.1.0; the full gate is GREEN with selftest 848 passed, 0 failed and the dash, non-ASCII, and genericity sweeps pass on the changed plan and this spec; no protected path is touched."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 848 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "A plan release plus version bump is a real change to trunk and is reviewed independently like any change (PLAN-0005 C1). The evidence is operational (release-check, plan status, plugin version, and gate all pass); no work item was regressed since all six were already shipped and reviewed."
+  ],
+  "rollback": "git revert the release commit and this evidence; set PLAN-0005 back to in_progress if the release must be withdrawn (the work items stay shipped)."
+}

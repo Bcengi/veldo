@@ -1,0 +1,103 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0610",
+  "commit": "a8b088c8aa654d2624e7b97e395eceb865b84265",
+  "producer": "claude-opus-4-8[1m] (WARP-0610 implementer agent, standalone spec, docs made true)",
+  "produced_at": "2026-07-20T12:00:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "README.md 'What the plugin ships' gained a first-class bullet 'Tracker integration (Jira and Confluence)' that documents both directions truthfully: the ONE-WAY, event-driven MIRROR (a spec's status plus a closing comment on its child issue, and a plan's work graph onto an epic and its child issues, one-directional, reconciled from the event stream and never polled, with the repository the single source of truth and winning any disagreement) and INTAKE (a Jira ticket or a structured Confluence requirements page becomes a routing-resolved WARP spec draft, fed to the intake skill, source linked, content treated as data). It states routing is first-class because one tracker project spans many repositories, and points to docs/plugin.md for turning it on. No operating metric and no credential appears; the capability is described by capability, not by any Bcengi instance."
+        },
+        {
+          "type": "unit",
+          "ref": "check_docs.sh dash + non-ASCII sweeps pass over the new README bullet (docs hygiene: pass in verify.sh at a8b088c). No operating metric (customer counts, MRR, growth) and no credential in the addition."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "docs/plugin.md gained section 12 'Tracker integration: Jira and Confluence', an operational 'how to turn it on' section. 12.2 names the four pieces an adopter wires: the per-org .warp/trackers.json config (warp.tracker/v1 - routing via the default warp-repo: label mechanism, and the status_map from each WARP spec status to the tracker project's own status names; template at plugin/templates/.warp/trackers.json, global or per-repo override, omit for comment-only); the OPTIONAL tracker_repo front-matter field on specs and plans (validated parallel to the lane fields, fails closed against a wired config if it names an unknown repo, single-repo default when absent); auth by reference token_ref (e.g. env:JIRA_TOKEN, default resolver reads the named env var, injectable for another secrets store, fails closed, a raw credential never in a file/prompt/proof/log); and the Confluence requirements template at plugin/templates/confluence-requirements-template.md (a person fills Outcomes and Acceptance Criteria and adds a warp-repo: label to route)."
+        },
+        {
+          "type": "unit",
+          "ref": "Every path, config schema, front-matter field, secret reference, and template named in section 12.2 exists in the shipped tree: .warp/trackers.json template (verified), tracker_repo enforced in .warp/validate.py check_tracker_repo, token_ref env: resolver in .warp/tracker_intake.py _default_secret_resolver, confluence-requirements-template.md template (verified). docs sweeps pass at a8b088c."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "docs/plugin.md section 12.3 'What is mechanical and what is reference' preserves the capabilities.yaml honesty exactly: it lists the vendor-neutral routing (.warp/tracker.py), routing enforcement (.warp/validate.py), adapter seam (.warp/tracker_adapter.py), spec + epic mirror (.warp/tracker_mirror.py), intake logic (.warp/tracker_intake.py), and conformance harness (.warp/tracker_conformance.py) as MECHANICAL (gate-tested offline against the in-memory FakeTracker, no network, no credentials), and the live JiraCloudAdapter and ConfluenceCloudAdapter in .warp/tracker_intake.py as REFERENCE (wired per repo, need a live instance, NOT run in the gate). It states the not-yet-live edge explicitly: epic/child creation against a live Jira instance is wired in a later increment (the mechanical epic mirror already reconciles that structure against the FakeTracker), the Jira reference adapter today reads issues, posts keyed comments, and transitions status, and the Confluence adapter reads pages and posts comments only (a wiki page has no status workflow). Every module/config/field/template named actually exists."
+        },
+        {
+          "type": "unit",
+          "ref": "The mechanical/reference statuses match .warp/capabilities.yaml verbatim in intent: tracker_routing/tracker_routing_enforcement/tracker_adapter_seam/tracker_status_mirror/tracker_epic_mirror/tracker_intake/confluence_requirements_intake/tracker_conformance = mechanical; jira_cloud_intake_adapter/confluence_cloud_intake_adapter = reference; the jira_cloud_intake_adapter note states 'epic/child creation against live Jira is wired in a later increment', reproduced in the docs as the not-yet-live edge. No capability entry was modified. selftest 1374/0 at a8b088c."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The governing principles are stated in both surfaces. docs/plugin.md 12.4 'The governing principles': the mirror is one-way and the repository wins if the index and the tracker disagree (consistent with the standing 'do not recreate Jira in Markdown' / index-is-a-navigation-layer rule), and tracker content is untrusted input, never instructions (a ticket or page is data, sanitized against front-matter injection, linked as a source, never executed). The README bullet also states the repository is the single source of truth and wins any disagreement, and that intake content is treated as data, never as instructions."
+        },
+        {
+          "type": "unit",
+          "ref": "The one-way / repository-wins wording is consistent with the pre-existing README principle (README 'if the index and any external tracker disagree, the repository wins. Do not recreate Jira in Markdown.') and setup.md section 3.6/8.2; no contradiction introduced. docs sweeps pass at a8b088c."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The full gate is GREEN at the reviewed commit a8b088c: verify.sh 'GATE: GREEN (a8b088c8aa654d2624e7b97e395eceb865b84265)' with selftest 1374 passed / 0 failed, generated pass, docs hygiene pass (dash + non-ASCII + genericity sweeps), extra/template sync pass, secret scan pass, contracts pass. RULE #1 is clean: zero em/en dashes in README.md, docs/plugin.md, and the spec (grep count 0 each), and no prose double-hyphen in the additions (the only -- sequences in plugin.md are pre-existing --- front-matter fences and |---| table separators, none inside section 12). No protected path is touched (README.md and docs/*.md are not engine files); the change is docs-only, so no ENGINE_GLOBS file was edited and no pack re-sync was needed (template sync still pass). specs/index.md was regenerated (python3 scripts/update_index.py, 94 specs). The warp name is unchanged."
+        },
+        {
+          "type": "unit",
+          "ref": "verify.sh at a8b088c: GATE GREEN; catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared. python3 scripts/selftest.py standalone: 1374 passed, 0 failed. Only README.md, docs/plugin.md, specs/WARP-0610-*.md, specs/index.md are in the reviewed commit; git shows no .warp/*.py, scripts/*.py, or template edited, confirming docs-only with no engine change."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "operational",
+      "status": "passed",
+      "detail": "The docs-made-true deliverables exist and are accurate: README.md 'What the plugin ships' tracker bullet (AC1), docs/plugin.md section 12 with the operational 12.2 turn-it-on subsection (AC2), the mechanical/reference honesty in 12.3 matching capabilities.yaml with the not-yet-live epic/child edge stated (AC3), and the one-way/repository-wins/untrusted-input principles in 12.4 and the README bullet (AC4). Every module (.warp/tracker.py, tracker_adapter.py, tracker_intake.py, tracker_mirror.py, tracker_conformance.py), config (.warp/trackers.json), field (tracker_repo), secret reference (token_ref env:), and template (confluence-requirements-template.md) named in the docs exists in the shipped engine."
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py at a8b088c: 1374 passed, 0 failed, including the tracker suite (routing, adapter seam + FakeTracker, intake for Jira tickets and Confluence pages, spec + epic mirror, conformance) and the tracker_repo contract checks over temp spec/plan fixtures. verify.sh GATE GREEN at a8b088c."
+    },
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated by scripts/update_index.py (94 specifications); generated check reports no drift; WARP-0610 now shows status shipped."},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, and genericity sweep all pass. RULE #1 hand-check of the README bullet, plugin.md section 12, and the spec: no em/en dash (grep count 0), no non-ASCII, and no prose double-hyphen in the additions (section 12 has none; the only -- in plugin.md are pre-existing --- fences and |---| table rows). Generic docs carry no company or product reference."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh pass; docs-only change touched no ENGINE_GLOBS file, so no pack re-sync was required and no pack forked."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all passes, including WARP-0610 now status shipped."}
+  ],
+  "assumptions": [
+    "WARP-0610 is a standalone spec (lane: standalone), not a numbered PLAN-0006 W item, so the manifest carries no plan_hash. required_evidence: [operational] is satisfied by the 'operational' check and the operational evidence entries on every criterion.",
+    "This is a docs-made-true pass with no code change: it surfaces the already-shipped PLAN-0006 tracker integration (WARP-0601 through WARP-0609) in README.md and docs/plugin.md, plus this spec and the regenerated index. capabilities.yaml was NOT modified - it is already honest and thorough (per the spec's out-of-scope), so the docs defer to it rather than restating a different status.",
+    "README.md and docs/*.md are not engine files (ENGINE_GLOBS covers .warp/*, scripts/*, runners, templates, bin/warp), so no pack re-sync was needed; template_sync and pack drift remain clean. No protected path (scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py or their plugin/templates twins) was touched.",
+    "The reviewed commit R is a8b088c8aa654d2624e7b97e395eceb865b84265; the gate wrote .warp/last_verify (commit = R) and appended .warp/events.jsonl, and this manifest is left uncommitted - all three belong to the evidence commit the orchestrator produces on top of R. This manifest is the canonical evidence artifact; an independent verdict binds to R with proof_digest set to proof_digest(this manifest)."
+  ],
+  "rollback": "git revert the reviewed commit and the evidence commit. The change is documentation (a README bullet and docs/plugin.md section 12) plus this spec (status shipped) and the regenerated index; it adds no behavior and needs no migration. No engine file, template, or protected path was touched, so no pack forked and nothing downstream must be reconciled."
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0809",
+  "commit": "3195da69bb24c0eeda4adaa04b32574a8bae9c7c",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent aa2bcd8f7e615db5e)",
+  "reviewed_at": "2026-07-19T06:42:23Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:be3f521496f23071",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "Table-driven harness reads .warp/packs.json, wired into the gate via the selftest, asserted == []; live run returned findings []; teeth proven (injected defect fires a finding that NAMES the pack)."},
+    {"id": "AC2", "status": "confirmed", "note": "Both directions per pack: unproven exit 2 (blocked), proven exit 0 (allowed), policy_check standalone agrees. Proven-state honesty load-bearing: corrupting any single required element (last_verify/manifest/verdict/proof_digest/finding) flips ALLOW->BLOCK. A state-blind gate cannot satisfy both."},
+    {"id": "AC3", "status": "confirmed", "note": "committed_hook_modes reports 12 entries all 100755; reviewer independently reproduced the load-bearing exec bit (644 lands, 755 blocks) via a real git push to a local bare remote; teeth: git update-index --chmod=-x fires a named index-mode finding."},
+    {"id": "AC4", "status": "confirmed", "note": "engine_drift asserted for all 7 declared packs, all empty; teeth proven (cursor injection). Claude drift empty by construction (option B, intended)."},
+    {"id": "AC5", "status": "confirmed", "note": "Selftest asserts findings empty + directional both-ways on a hook pack (copilot) and the guard-direct pack (claude) + real-git-push exec-bit + committed-index-mode over every pack; non-tautological; CLAUDE_PROJECT_DIR pinning proven safe by counterfactual."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "The proven fixture is a single-commit repo, so the guard/policy evidence-inheritance PARENT rule (an evidence-only commit inheriting its parent's verdict) is not exercised by W9's own fixture - the direct-HEAD match path is. The inheritance logic lives in the guard and policy_check and is covered by other selftest blocks. Non-blocking."},
+    {"severity": "note", "text": "For the Claude pack engine_src == pack_dir == plugin/templates (option B, canonical-in-place), so its drift is empty by construction and the drift TEETH are real only for the 6 copied packs. Correct and intended; informational."},
+    {"severity": "note", "text": "The harness proves whatever enforcement path a pack HAS works (blocks unproven / allows proven), but does not itself mandate that a non-Claude tool ship a committed git hook (a pack with none is driven guard-direct like Claude). That completeness belongs to each pack's own W2-W8 spec, which asserts the pack's specific wiring. Non-blocking scoping."}
+  ],
+  "summary": "W9 of PLAN-0008 (the cross-pack conformance harness, the join point) holds up under adversarial testing. GATE GREEN at 3195da6 in a clean isolated checkout (selftest 1270 passed, 0 failed). All five ACs CONFIRMED by concrete probes. The harness is a table-driven build-machinery module (.warp/pack_conformance.py, not shipped engine, not copied into packs, pure stdlib, no network) that drives EACH declared pack through a constructed WARP state and proves - by construction - that the push gate blocks an unproven push and allows a proven one (via the committed hook, or the guard directly for the option-B Claude pack), that policy_check.py agrees as CI runs it, that every committed hook + guard is executable in the git index (git ls-files -s, closing the WARP-0808 review note), and that no engine has drifted. Proven-state honesty is load-bearing (corrupting any required element flips ALLOW->BLOCK); the exec bit was independently reproduced (644 fails open, 755 blocks); CLAUDE_PROJECT_DIR pinning is safe by counterfactual; no protected path touched; the main repo left untouched. Three non-blocking notes (single-commit fixture doesn't exercise evidence-inheritance; claude drift empty by construction; per-tool committed-hook mandate belongs to W2-W8). proof_digest via validate.py. Verdict: pass_with_notes (recorded as pass, 0 blocking)."
+}

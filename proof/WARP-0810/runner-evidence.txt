@@ -1,0 +1,44 @@
+WARP-0810 runner evidence - release WARP multi-tool packs v1 (PLAN-0008 W10, plugin 3.4.0)
+Impl commit: b5e3e532d9c524b6573bc110a173117b9925c775
+plan_hash:   sha256:a3c56074a8aa9102
+proof_digest: sha256:fd9364cc84108041
+
+--- AC3: engine drift clean across all seven packs (after re-syncing the six copied packs) ---
+$ python3 -c "import sys; sys.path.insert(0,'.warp'); import pack; [print(pid, d) for pid,d in pack.pack_drift_report(repo_root='.')]"
+claude []
+cursor []
+codex []
+copilot []
+antigravity []
+opencode []
+aider []
+(six copied packs re-synced 139 engine files each from the canonical plugin/templates; claude is option-B canonical-in-place)
+
+--- AC1/AC6: version + release math ---
+$ python3 .warp/plan.py hash plans/PLAN-0008-multitool-packs.md
+sha256:a3c56074a8aa9102
+$ python3 .warp/plan.py status plans/PLAN-0008-multitool-packs.md
+status released, revision 1, 9/10 shipped   (W1-W9 shipped, W10 WARP-0810 ready frontier)
+$ python3 .warp/plan.py release-check plans/PLAN-0008-multitool-packs.md   # at impl (WARP-0810 ready)
+PLAN-0008: NOT releasable
+  - work not shipped: WARP-0810
+(single reason; flips to releasable when WARP-0810 ships in the evidence commit - independently confirmed by simulation)
+
+--- AC7: full gate GREEN at the impl commit ---
+$ bash scripts/verify.sh
+selftest: 1270 passed, 0 failed
+GATE: GREEN (b5e3e532d9c524b6573bc110a173117b9925c775)
+(generated, docs hygiene [dash/non-ASCII/genericity], template sync, secret scan, contracts all pass)
+
+--- AC5: no protected path touched by the release ---
+protected_paths (floor high): scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml,
+  plugin/templates/scripts/verify.sh, plugin/templates/scripts/warp-guard.sh,
+  .warp/policy_check.py, plugin/templates/.warp/policy_check.py
+16 changed files in b5e3e53 checked against all 7 protected paths (exact + both-direction prefix): ZERO hits.
+plugin/ still in place, packs/claude absent, marketplace source ./plugin (rename deferred, floor-high human-approved change).
+
+--- Independent adversarial review ---
+Agent a619b0ca6084f34ec (fresh-context Opus, L2 independence), bound to b5e3e53, ran in an isolated
+git worktree (/tmp/warp-w10-rev, removed --force). Verdict: pass. All seven ACs confirmed by concrete
+probes; drift teeth reproduced both ways (content 'differs' + mode 'mode'); no protected path touched;
+four non-blocking notes. Main repo left untouched.

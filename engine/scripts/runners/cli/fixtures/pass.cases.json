@@ -1,0 +1,33 @@
+[
+  {
+    "name": "echo writes to stdout and exits 0",
+    "cmd": ["echo", "hello"],
+    "expect": {"exit_code": 0, "stdout_contains": "hello"}
+  },
+  {
+    "name": "printf produces exact stdout",
+    "cmd": ["printf", "ready"],
+    "expect": {"exit_code": 0, "stdout_equals": "ready"}
+  },
+  {
+    "name": "false exits nonzero",
+    "cmd": ["false"],
+    "expect": {"exit_code": 1}
+  },
+  {
+    "name": "stdin is fed to the process",
+    "cmd": ["cat"],
+    "stdin": "piped input\n",
+    "expect": {"exit_code": 0, "stdout_contains": "piped input"}
+  },
+  {
+    "name": "diagnostics go to stderr",
+    "cmd": ["sh", "-c", "echo diagnostic 1>&2"],
+    "expect": {"exit_code": 0, "stderr_contains": "diagnostic"}
+  },
+  {
+    "name": "a fast command finishes within its time budget",
+    "cmd": ["true"],
+    "expect": {"exit_code": 0, "max_seconds": 10}
+  }
+]

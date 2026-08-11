@@ -1,0 +1,97 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1006",
+  "commit": "7aef325c486c92973c7136a43cdfb2e52bd752aa",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0010 W6, live epic and child creation)",
+  "plan_hash": "sha256:f6a5cc8e425f566b",
+  "produced_at": "2026-07-21T00:00:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "JiraCloudAdapter._create_or_update_epic and _create_or_update_child (.warp/tracker_intake.py) are completed against Jira Cloud REST via stdlib urllib (both raised 'later increment WARP-1006' before). An EPIC is keyed by the plan id and a CHILD by its work item id; each is created ONCE (POST /rest/api/3/issue with the project, the issue type, a summary, and the warp marker label) then updated in place thereafter (PUT /rest/api/3/issue/{key} touches only the summary so the marker survives). Each child is linked to its epic via the Jira parent field ({'parent': {'key': <epic issue key>}}); the child resolves (or shell-creates) its epic by the SAME marker _create_or_update_epic keys on, so the child is self-sufficient even if the epic mirror has not run first and both converge on one epic. Auth is the token_ref resolved by _default_secret_resolver at construction; the adapter FAILS CLOSED (TrackerAdapterError) when none resolves (unchanged from the other live writes), so no epic/child write is reached without a credential. _set_status is reused for the epic burn-down / child status transition; a create with no project wired fails loud by name."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest (scripts/selftest.py, the WARP-1006 block) drives the live adapter's OWN _create_or_update_epic and _create_or_update_child end to end over an INJECTED in-process transport (a fake Jira answering the search/create/update verbs, no network): an epic create makes exactly one issue and returns its key; a child create makes one new issue whose fields carry parent {'key': 'PROJ-1'} (the epic link); the source is asserted honest (the WARP-1006 deferral raise is gone; POST /rest/api/3/issue, the labels JQL find, and the parent link are present). The live REST instance itself stays reference and is not gate-run."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The live writes are UPSERTS by a stable warp MARKER LABEL (_warp_marker: 'warp-key-epic-<plan id>' for an epic, 'warp-key-child-<epic>-<work item>' for a child, label-sanitized). _find_by_marker runs a labels JQL search ordered by creation and returns the SAME (oldest) issue on a re-run, so _upsert_issue updates that issue in place and NEVER creates a second one: a re-run forks no second epic and no duplicate child. The marker is matched exactly and never parsed back, so it is a pure idempotency key, and it is never rewritten on update. An unresolvable write still fails loud rather than silently no-op: a create that returns no key raises TrackerAdapterError by name, a create with no project wired raises by name, and the base seam still raises TrackerItemNotFound for a set_status/comment/assign on an object the tracker does not hold."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest WARP-1006 block TEETH: the epic upsert re-run (same plan id, a revised title) returns the SAME key and adds NO new create (fake.creates stays 1) while the summary is updated in place; the child upsert re-run returns the same child and adds no create; NON-TAUTOLOGY: a different work item and a different plan each create a NEW distinct issue, so the upsert keys on the marker rather than always-creating or always-returning-the-same. The marker helper is proven a stable idempotency key (same key same marker, distinct keys distinct markers, a child marker carries both the epic and the work item, and it is label-safe with no whitespace). Fail loud is proven: create_or_update_epic with no project wired raises TrackerAdapterError by name."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The live edge is complete: with epic/child creation wired, the WARP-1005 mirror runner (reconcile / run_from_repo, driving mirror_events + mirror_plan_events) can project a plan's work graph onto a real epic and its child issues over a live Jira, in addition to the spec status / links / reassign already wired. This live path remains a REFERENCE implementation wired per repo to a live instance and is NOT run in the gate: the network REST calls need a real Jira, and the FakeTracker path is what the gate runs. The one live-target wiring change is build_live_adapter forwarding the connection block's optional project to the reference adapter (.warp/tracker_mirror_runner.py); the reconcile / run_from_repo / CLI mirror-driving logic, the reassign, and the links are untouched. The runner and module docstrings are updated to record epic/child as completed, matching the honesty of the other live adapters."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest asserts the reference honesty in the source: the WARP-1006 epic/child deferral raise string is gone from .warp/tracker_intake.py, and the completed live verbs are present (POST /rest/api/3/issue, the labels JQL find, the parent link). build_live_adapter still FAILS CLOSED on an unresolved token and constructs the reference JiraCloudAdapter when the secret resolves (WARP-1005 block, unchanged and still green). The completed upsert control logic is exercised only over an in-process transport seam (no network); the live instance stays reference."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The FakeTracker epic/child upsert semantics the gate already exercises still hold (one epic per plan id, one child per work item, idempotent re-run): the tracker_adapter_seam block (create_or_update_epic/child keyed by a stable identity, deterministic ids, no fork on a re-run) and the tracker_epic_mirror block (mirror_plan_events builds the epic + one child per work item, a replay forks nothing and leaves state byte-identical) are unchanged and green. The capability manifest is updated so the JiraCloud adapter no longer claims epic/child creation is deferred."
+        },
+        {
+          "type": "unit",
+          "ref": "selftest WARP-1006 block reaffirms AC4 with teeth over the FakeTracker (no network): mirror_plan_events over a fixture plan builds one epic and one child per work item, and a replay forks nothing and leaves state byte-identical (state_digest unchanged). The offline epic-mirror conformance stays green and non-tautological (a non-planning event builds no structure, asserted in the existing tracker_epic_mirror block). selftest asserts capabilities.yaml no longer carries the epic/child deferral phrase."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml is updated honestly: jira_cloud_intake_adapter (status stays reference) now records epic/child as wired (upsert by a stable warp marker label keyed on the plan id / the epic+work-item pair, the child linked via the Jira parent field, create fails loud with no project wired), removing the 'wired in a later increment (WARP-1006)' claim; the offline epic-mirror logic stays mechanical. The one edited ENGINE_GLOBS file that ships (.warp/capabilities.yaml) is re-synced BYTE-IDENTICAL across .warp, plugin/templates, and all six packs (a single md5 across the eight copies). The edited .warp/tracker_intake.py, .warp/tracker_mirror_runner.py and scripts/selftest.py are repo-only build machinery (not laid into plugin/templates or the packs), consistent with their shipped siblings, so they need no sync. No protected path is touched (policy_check.py, policy.yaml, verify.sh, warp-guard.sh and their plugin/templates twins are unmodified). The change lands in the canonical shape: one reviewed commit R plus this uncommitted proof and the orchestrator's later evidence step."
+        },
+        {
+          "type": "unit",
+          "ref": "bash scripts/verify.sh -> GATE: GREEN at R (7aef325c486c92973c7136a43cdfb2e52bd752aa): catalog 5 run, 18 not-applicable, 0 waived, 0 undeclared. selftest 1464 passed / 0 failed (was 1450 at WARP-1005; +15 WARP-1006 checks, -1 obsolete WARP-1005 deferral assertion). check_template_sync.sh: pass. check_pack_drift.py: pass (7 packs, engine byte-identical to source; capabilities.yaml byte-identical across plugin/templates and all six packs). check_docs.sh: pass (em/en dash sweep, non-ASCII sweep, genericity sweep clean). python3 .warp/validate.py all exit 0 (WARP-1006 valid at status shipped, required_evidence [operational]; PLAN-0010 mirroring intact). specs/index.md regenerated (today 2026-07-21 restamps its header; regeneration is a no-op afterward). RULE #1 clean (no em-dash, no en-dash, no prose double-hyphen in any edited or new file)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "python3 scripts/selftest.py -> 1464 passed, 0 failed at R, including the WARP-1006 block: the live adapter's own _create_or_update_epic/_create_or_update_child are driven over an injected in-process transport (create once, upsert-in-place, no fork, parent link, non-tautology across a different work item / plan, fail loud with no project); the warp marker is a stable idempotency key with teeth; the source is honest (deferral gone, POST create + labels find + parent present); the FakeTracker epic/child upsert conformance is reaffirmed (one epic + one child per work item, replay forks nothing byte-identical); and capabilities.yaml no longer claims epic/child deferred."},
+    {"name": "operational", "status": "passed", "detail": "The live JiraCloud epic/child upsert is completed and reference-wired (create once by a stable warp marker label, update in place, child linked to its epic via the parent field, fail closed on no token, fail loud on no project) and is NOT gate-run; the FakeTracker path is what the gate runs. The one live-target change is build_live_adapter forwarding the connection block's project; the mirror-driving reconcile/runner logic, reassign, and links are untouched."},
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated via python3 scripts/update_index.py (WARP-1006 now shipped; today 2026-07-21 restamps the header); regeneration is a no-op afterward."},
+    {"name": "docs", "status": "passed", "detail": "check_docs.sh pass: em/en dash sweep over all tracked text files, non-ASCII sweep, and genericity sweep all clean; the completed epic/child wiring, the selftest block, the capability entry, and the spec carry no company/product reference and no em/en dash."},
+    {"name": "template_sync", "status": "passed", "detail": "check_template_sync.sh: pass (capabilities.yaml is intentionally not a template-sync pair but is drift-checked across the packs; no template-sync pair drifted)."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs, engine byte-identical to source; .warp/capabilities.yaml byte-identical across plugin/templates and all six packs)."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all exit 0; the WARP-1006 spec is valid at status shipped with required_evidence [operational]; PLAN-0010 mirroring intact (W1-W5 shipped, W6 now shipped, W7/W8 pending)."}
+  ],
+  "assumptions": [
+    "WARP-1006 depends on WARP-1004 and the W5 runner (shipped); plan.py run-check PLAN-0010 WARP-1006 = clear to build. This increment completes only the live target: JiraCloudAdapter._create_or_update_epic and _create_or_update_child (both raised 'later increment WARP-1006' before). It adds no new mirror logic, no new event type, store, or offset ledger; the shipped mirror (mirror_events / mirror_plan_events) is unchanged.",
+    "The live JiraCloud epic/child upsert is a REFERENCE implementation wired per repo, authed by token_ref and failing closed on no token, and it fails loud with no project wired; it is NOT run in the gate (the FakeTracker path is). The completed upsert CONTROL LOGIC is exercised offline over an injected in-process transport seam (no network), the same honesty as the reference mobile/web/mcp runners; the network REST calls need a real Jira and stay reference.",
+    "The one live-target wiring change to the runner module is build_live_adapter forwarding the connection block's optional project to the reference adapter (a create needs a project). The reconcile / run_from_repo / CLI mirror-driving logic, the reassign, and the links are untouched. The edited .warp/tracker_intake.py, .warp/tracker_mirror_runner.py and scripts/selftest.py are repo-only build machinery (present only in the repo-root, not in plugin/templates or the packs), consistent with the shipped tracker_*.py siblings. The one edited engine file that ships (.warp/capabilities.yaml) is re-synced byte-identical across plugin/templates and the six packs.",
+    "required_evidence is [operational]; this manifest carries operational evidence on every criterion plus an operational check, and the unit check (selftest) is the executable gate proof. It is bound to R and left uncommitted for the orchestrator's evidence step; no verdict is written here and nothing is pushed. .warp/last_verify (commit=R, green) and .warp/events.jsonl are left uncommitted."
+  ],
+  "rollback": "git revert the reviewed commit R. The change completes the live JiraCloud epic/child upsert (.warp/tracker_intake.py: _create_or_update_epic / _create_or_update_child + the marker/find/upsert helpers and the project/issue-type constructor args), forwards the connection block's project in build_live_adapter (.warp/tracker_mirror_runner.py) with docstring updates, adds a WARP-1006 selftest block (and drops one obsolete WARP-1005 deferral assertion), updates the jira_cloud_intake_adapter capability note (both copies + six pack re-syncs, byte-identical), and flips the WARP-1006 spec to shipped with a regenerated index. The epic/child live writes are reference (never gate-run) and the offline mirror is unchanged, so removing this returns the JiraCloud adapter to raising 'later increment' for epic/child, with no migration and nothing to unwind on any instance."
+}

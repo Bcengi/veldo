@@ -1,0 +1,140 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1207",
+  "commit": "32d69111c45b59df97f2e427a4d75c5048e820dd",
+  "producer": "claude-opus-4-8[1m] (WARP-1207 implementer agent, planned lane; W7 of PLAN-0012, the two-key rule - the second key path on top of the execution organ through which an irreversible or data-mutating remediation may finally execute, behind two keys bound to the proposal digest: a recorded human authorization (warp.approval-style) AND an independent fresh-context confirmation (warp.verdict-style) that the diagnosis supports the action and the action does only what it claims. CRITICAL RISK per C2 because it OPENS the data-mutating/irreversible execution path that W6 fenced off (W6 was HIGH for building no such path); either key alone refuses, both keys self-separated and digest-bound execute on the fake system. The compressed loop W8, the numbers W10, and the run_all/init wiring W11 are NOT built here. Invention #3 / O3 / C1 / C2 / C3 / C4 / NG1 / NG3 / NG4)",
+  "produced_at": "2026-07-23T00:00:00Z",
+  "plan": "PLAN-0012",
+  "work": "W7",
+  "plan_revision": 2,
+  "plan_hash": "sha256:9c8616540899be1d",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The two-key rule (schema warp.two_key/v1, module .warp/two_key.py, 358 lines under the 1000 module_lines budget) exists as a GENERIC engine module and extends the execution organ path (.warp/action_executor.py, 823 lines). For an action classed irreversible or data-mutating, or a remedy requiring two_key, the executor's _two_key_status routes to _check_two_key -> two_key.authorize instead of dead-ending: execution requires BOTH keys BOUND TO THE PROPOSAL DIGEST (never command text, C4). KEY 1 is a warp.approval-style human authorization (decision approved, a human approver, the bound proposal_digest, an expiry); KEY 2 is a warp.verdict-style independent confirmation (a confirming verdict plus diagnosis_supports_action and action_does_only_what_it_claims, a confirmer, the bound proposal_digest, an expiry). The gate REUSES W6's proposal_digest (the executor computes it and passes it in; the two_key CLI imports it from the executor lazily - one truth, no second digest) and W5 risk/reversibility via the executor's re-validation (W1 incident.validate_remedy, W5 require_action/validate_parameters); it is a PURE function over already-parsed records, holds no credential, opens no connection. python3 .warp/two_key.py AUTHORIZES a demo data-mutating remedy with both keys; --one-key REFUSES (missing_independent_confirmation)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-1207 block: a critical data-mutating action is admitted to the whitelist (reviewed, digest-current); the two-key remedy validates clean through W1; POSITIVE CONTROL a data-mutating action EXECUTES end to end against the fake system with both keys bound to the digest; the gate raises TwoKeyError by name on a malformed call (no digest); TK.REQUIRES_TWO_KEY mirrors action_executor.REFUSE_REQUIRES_TWO_KEY and TK.MACHINE_ACTORS mirrors action_executor.MACHINE_ACTORS (drift guards)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "EITHER KEY ALONE REFUSES (fail closed, C3). Both keys absent returns REFUSE_REQUIRES_TWO_KEY, the EXACT value the W6 fence used (a selftest binds two_key.REQUIRES_TWO_KEY to action_executor.REFUSE_REQUIRES_TWO_KEY so they cannot drift), preserving W6's pre-two-key behavior byte-for-byte. A human authorization without the confirmation refuses (missing_independent_confirmation); a confirmation without the authorization refuses (missing_human_authorization); an ungranted authorization (decision not approved) refuses (authorization_not_granted); a confirmation not carrying a confirming verdict or not attesting BOTH facts refuses (confirmation_not_granted). CRITICAL DETERMINATION: reaching the run in this path means a data-mutating/irreversible action actually ran, so W7 opens the data-mutating execution path and is CRITICAL per C2 (two independent reviews plus a recorded founder approval), where W6 was HIGH for building no such path."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: 'HUMAN authorization ALONE REFUSES (missing_independent_confirmation)'; 'INDEPENDENT confirmation ALONE REFUSES (missing_human_authorization)'; 'NEITHER key REFUSES with requires_two_key (W6 value preserved)'; 'a not-approved authorization REFUSES (authorization_not_granted)'; 'a fail verdict REFUSES (confirmation_not_granted)'; 'a confirmation not attesting diagnosis_supports_action / action_does_only_what_it_claims REFUSES'; positive control pass_with_notes executes; dogfood CRITICAL + human_approval required."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "BINDING, FRESHNESS, SELF-SEPARATION each refuse by name. DIGEST BINDING (C4): a key bound to a different proposal digest refuses (foreign_authorization / foreign_confirmation); a proposal EDITED after the keys were signed changes its digest and the keys go STALE (refuse as foreign, the digest-binding tooth); a key naming a foreign incident refuses. FRESHNESS: an expired key refuses (authorization_expired / confirmation_expired); a key declaring no expiry refuses (fail closed). SELF-SEPARATION (NG4): KEY 1 must be a HUMAN so a machine-authored authorization refuses (self_authorization_refused) and a human authorization by the executor's own actor refuses; KEY 2 must be INDEPENDENT so a confirmer that is the remedy's proposer (proposed_by), the executor's own actor, the human authorizer, or a responder/executor organ identity each refuse (confirmation_not_independent)."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: foreign-digest human and confirmation refuse; the STALE-edit tooth refuses; foreign-incident human and confirmation refuse; expired human and confirmation refuse; no-expiry refuses; machine-authored and own-actor human authorizations refuse (self_authorization_refused); confirmer == proposer / executor actor / authorizer / organ each refuse (confirmation_not_independent). GUARD-MUTATION TEETH: neutralizing the self-separation guard, the human-authorization digest binding, and the KEY 1 machine-actor guard each lets a formerly-refused input AUTHORIZE (returns None), with the real .warp/two_key.py byte-unchanged before and after every mutation."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "BOTH KEYS EXECUTE and the success is REAL. With both keys present, granting, unexpired, self-separated, and bound to the SAME proposal digest, the executor runs the data-mutating action against the FAKE system: the FakeActionSystem ordered op log reads [canary, action] (canary-FIRST, the action declares a canary), and the executed result records two_key true, authorized_by the human approver, confirmed_by the independent confirmer, and the bound proposal_digest. Removing EITHER key reverts to a refusal (not vacuous). The standing safeguards still stand on this path (a tripped kill switch and an exhausted budget each refuse before the run). The L2 SINGLE-CONFIRMATION path is UNCHANGED (W6 preserved, zero regression): a strictly reversible non-data-mutating action still executes with one confirmation and records two_key false."
+        },
+        {
+          "type": "unit",
+          "ref": "selftests: the both-keys execution with the op-log reality [canary, action] and the two_key provenance; the either-key-missing revert to refusal; a tripped kill switch and an exhausted budget refuse the two-key path (kill_switch_tripped / action_budget_exhausted); the reversible L2 action still executes with a single confirmation and records two_key false. The committed selftest carries the full WARP-1207 conformance suite (RJ4)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "IN-SESSION, no detached process (NG3): .warp/two_key.py imports pathlib/json at module top (for the standalone demo) and importlib LAZILY in the demo, starts no process/thread/timer, and a subprocess.Popen(..., start_new_session=True) mutation turns the no-detach check RED; the executor edits add no process machinery. .warp/two_key.py, .warp/action_executor.py, and .warp/capabilities.yaml are byte-identical across root, plugin/templates, and all 6 packs (aider, antigravity, codex, copilot, cursor, opencode) by cmp. capabilities.yaml gains ONE honest mechanical entry (two_key_rule, home .warp/two_key.py) and the action_executor entry is updated truthfully now the two-key path exists, both deferring the compressed loop (W8), the numbers (W10), and the run_all/init wiring (W11). validate.py is NOT edited (gate wiring honestly deferred to W11). No protected path touched. RULE #1 clean."
+        },
+        {
+          "type": "unit",
+          "ref": "python3 scripts/selftest.py: 2294 passed, 0 failed (47 new WARP-1207 assertions over the 2247 baseline). No-detach teeth for two_key.py; byte-identity across root/plugin/6-packs for two_key.py (and for action_executor.py + capabilities.yaml over the W7-edited copies via the WARP-1206 block); the two_key_rule capability declared mechanical with home .warp/two_key.py. Dogfood: placement [contracts] resolves and passes the placement gate (tier standard, no boundary crossing), and the spec is CRITICAL RISK with human_approval required and no protected path touched. ./scripts/verify.sh: GATE GREEN at the implementation commit; python3 .warp/validate.py all exit 0 (zero regressions over the corpus); index regenerated (WARP-1207 review/critical/required, in the PLAN-0012 ready frontier)."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 2294 passed, 0 failed. The WARP-1207 block adds 47 assertions: the module and the executor routing plus the digest binding and reuse of W6 proposal_digest / W5 classes (AC1); the either-key-missing and not-granting refusals with the requires_two_key drift guard and the CRITICAL dogfood (AC2); the digest binding (foreign/stale/foreign-incident), freshness (expired/no-expiry), and self-separation (machine-authored KEY 1, self-authored KEY 2) refusals with three load-bearing guard mutations (AC3); the both-keys execution with the op-log reality, the provenance, the revert-on-key-removal, the safeguards-still-stand, and the unchanged L2 path (AC4); and the no-detach tooth, the byte-identical engine sync, the honest capability, and the CRITICAL dogfood (AC5)."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "python3 .warp/validate.py all passes (exit 0), including check_plan over PLAN-0012 with WARP-1207 mirrored back (lane planned, plan PLAN-0012, work W7, plan_revision 2, depends_on [WARP-1206]) and the mandatory placement gate over the spec (placement [contracts] resolves, footprint tier standard). The two-key rule introduces no new gate wiring for W7; landing a check into validate.py run_all plus the init lay-down is WARP-1211 (W11). validate.py is unedited and stays under the module_lines budget. The gate is exercised standalone (python3 .warp/two_key.py) and through fixtures in the selftest."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "specs/index.md regenerated via scripts/update_index.py (125 specs); the WARP-1207 row reads review/critical/required, and the PLAN-0012 ready frontier shows WARP-1207 (W7) with W11 waiting on it. check_generated.sh reports no drift (regeneration is a no-op)."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "dash sweep (no em/en dash), non-ASCII sweep, and genericity sweep (docs/ and plugin/ carry no company or product references) all pass. The new engine material (.warp/two_key.py, the executor edits, and the capabilities entry) is generic; WARP is the method's own name and the systems are generic fakes (fake-data-store, fake-deploy-controller). RULE #1 verified: no em/en dash, no prose double-hyphen (the section divider and the argparse-style --one-key flag are established engine conventions)."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "bash scripts/check_lint.sh: pass. .warp/two_key.py, .warp/action_executor.py, and every synced copy compile under python3 -m py_compile."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: template sync pass (the PAIRS-tracked files are unchanged; validate.py is not edited). .warp/two_key.py, .warp/action_executor.py, and .warp/capabilities.yaml follow the byte-identical discipline across all engine copies."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "python3 scripts/check_pack_drift.py: pack drift pass (7 packs). .warp/two_key.py, .warp/action_executor.py, and .warp/capabilities.yaml are byte-identical between plugin/templates (canonical source) and every pack (cursor, codex, copilot, antigravity, opencode, aider); the claude pack is the source in-place. The two-key gate uses no per-repo example artifacts (its conformance uses selftest fixtures)."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "python3 .warp/shape_gate.py: pass. Footprint-versus-diff: WARP-1207 is the single footprinted spec in the change set and every changed source path is covered by its declared footprint (.warp/two_key.py, .warp/action_executor.py, and .warp/capabilities.yaml and their plugin/templates and packs copies, scripts/selftest.py, and the spec; specs/index.md is an excluded derived artifact). No file_lines violation: .warp/two_key.py is 358 lines and .warp/action_executor.py is 823 lines (both under the 1000 module_lines budget) and resolve to no area (placeless engine modules like the sibling organs); .warp/validate.py is deliberately NOT edited. Placement [contracts] resolves; footprint tier standard (a single area, no boundary crossing)."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "verify.sh built-in secret scan: pass. The two-key gate holds no credential and no secret; it is a pure function over already-parsed records and opens no connection."
+    }
+  ],
+  "assumptions": [
+    "WARP-1207 is a PLANNED spec (lane planned, W7 of PLAN-0012 revision 2, depends_on [WARP-1206] which shipped). The manifest carries plan/work/plan_revision/plan_hash to bind the change to the plan state it was built against (plan_hash sha256:9c8616540899be1d, PLAN-0012 revision 2 unchanged).",
+    "This item is the TWO-KEY RULE: the second key path on top of the execution organ. It is CRITICAL RISK per C2 because it OPENS the irreversible/data-mutating execution path that W6 deliberately fenced off. W6 (the executor) shipped HIGH precisely because it built NO data-mutating execution path (anything irreversible or data-mutating REFUSED with requires_two_key); W7 builds the path THROUGH that fence, behind two keys bound to the proposal digest, so a reachable data-mutating execution path now exists in the executor and C2 puts that at the CRITICAL tier (nothing may lower a class). CRITICAL means TWO independent fresh-context reviews plus a recorded founder approval as the landing key (policy risk_tiers critical -> reviews 2, human_approval true, prepare_and_execute).",
+    "THE TWO KEYS extend two shipped record shapes to bind to a PROPOSAL DIGEST rather than a commit. KEY 1 is the warp.approval-style human authorization (a machine-authored key 1 refuses, NG4). KEY 2 is the warp.verdict-style independent fresh-context confirmation (a self-authored key 2 refuses; the confirmer cannot be the proposer/producer, the executor, the human authorizer, or a responder/executor organ - the independent-review self-separation extended to remediation). The proposer identity for the self-separation is read from the remedy's optional proposed_by; the genuinely-fresh-context nature of the confirmation is a procedural guarantee the artifact cannot fully mechanize (honestly review-lane), while the always-checkable distinctness (confirmer != authorizer, != executor actor, not an organ identity; authorizer != executor actor) holds regardless. This is the same self-declared-review residual trust WARP-1205 and WARP-1206 disclosed and their founder approvals accepted.",
+    "THE BINDING HAS ONE TRUTH: the gate is a PURE function over already-parsed records and computes no digest - the executor computes the proposal digest with W6's proposal_digest and passes it in, and the two_key standalone CLI imports proposal_digest from the executor (lazily) so even the demo reuses the one function. There is no second parser and no second digest; the both-absent fence value (requires_two_key) and the human-key machine-actor set mirror the executor's, drift-guarded by selftest.",
+    "HONEST DEFERRAL (not a dodge): the compressed loop and reconciliation WARP-1208 (W8) that would DRIVE an incident through this gate, the support metrics WARP-1210 (W10), and landing a check into validate.py run_all plus the init lay-down WARP-1211 (W11) are separate later items and are NOT built here. Because validate.py is not edited it stays under the module_lines budget; the module ships runnable standalone and exercised through fixtures in the selftest, matching how W1 through W6 shipped their organs unwired. No live target is wired (a separate per-system human-approved enablement act, NG1).",
+    "The impl is a single commit (two_key.py + the action_executor.py extension + one capabilities entry and a truthful action_executor note update, across all engine copies, plus the selftest block, the spec, and the regenerated index). Per the review boundary: specs/WARP-1207 is flipped to review (not shipped), no verdict is written, this proof manifest and .warp/last_verify and .warp/events.jsonl are left uncommitted, and nothing is pushed. Because this spec OPENS the data-mutating execution path (CRITICAL), the landing requires TWO independent fresh-context reviews AND a separate recorded FOUNDER approval as the landing key; the builder does not review its own work and does not land."
+  ],
+  "rollback": "git revert 32d6911. The change adds one engine module (.warp/two_key.py), extends the execution organ (.warp/action_executor.py) with the two-key branch and an optional lazily-loaded two-key module, and adds one capabilities entry (plus a truthful action_executor note update), all synced byte-identical across plugin/templates and the 6 packs, plus a selftest block and this spec. Reverting returns the executor to the W6 behavior exactly: an irreversible or data-mutating action REFUSES with requires_two_key. Nothing consumes the gate on the gate path: it is not wired into verify.sh or validate.py run_all (that is WARP-1211, W11), the compressed loop that would drive it is WARP-1208 (W8), and no live target is wired (NG1), so reverting changes no gate behavior and there is no migration and nothing to unwind. A repository that never configures the responder is unaffected either way.",
+  "proof_digest": "sha256:5107352b94e8f8c1"
+}

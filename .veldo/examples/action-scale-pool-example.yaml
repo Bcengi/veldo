@@ -1,0 +1,39 @@
+# VELDO runbook action (veldo.action/v1): a pre-vetted, parameterized action the executor
+# may run ONLY by whitelist reference, never as command text. This is an ILLUSTRATIVE
+# EXAMPLE of the action format against a FAKE system (no live access, NG1); it describes
+# no real pool controller. It is one of the reference trio per D3 (restart a service,
+# roll back a deploy, scale a pool). The action carries NO execution capability: nothing
+# here runs anything. The executor that would run it is a separate organ on separate
+# credentials (WARP-1206, W6). The replicas parameter is an integer with a declared range,
+# so a value outside it is refused by name. This action honestly declares canary.supported
+# false: not every action canaries, and its safety comes from reversibility and the
+# executor's budgets rather than a canary.
+schema: veldo.action/v1
+id: scale_pool
+title: Scale a worker pool to a target replica count
+description: Set the replica count of a worker pool on the fake pool controller.
+system: fake-pool-controller
+risk_class: high
+reversibility:
+  class: reversible
+  analysis: Scaling sets the pool to a target replica count and can be scaled back to the prior count; it mutates no persistent data.
+  data_mutating: false
+parameters:
+  - name: pool
+    type: string
+    required: true
+    pattern: "^[a-z][a-z0-9-]{1,62}$"
+  - name: replicas
+    type: integer
+    required: true
+    min: 1
+    max: 100
+rollback: Scale the pool back to its prior replica count (recorded before the change); the operation is symmetric and involves no data migration.
+canary:
+  supported: false
+review:
+  status: reviewed
+  reviewer: illustrative fresh-context review (example only; a real action is vetted through the normal VELDO loop and promoted by a human)
+  verdict: approved
+  reviewed_at: 2026-07-23T00:00:00Z
+  reviewed_digest: sha256:0d61164a1a3598bf

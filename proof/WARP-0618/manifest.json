@@ -1,0 +1,124 @@
+{
+ "schema": "warp.proof/v1",
+ "spec_id": "WARP-0618",
+ "commit": "dbdfc91125c87d3fae6ce37502829c586064adeb",
+ "producer": "claude-opus-4-8[1m] (build, WARP-0618 W4 of PLAN-0016, fresh-context single writer, in-session; build the request Telegram doorbell - a repo-only tracker-family sibling that turns a warp.request/v1 into a concise signal-only notice + the tracker link, hands it to an INJECTED sink reference-wired like the live tracker adapter and driven by a deterministic FakeSink offline, idempotent per (request_id, status), redacted with the reused W3 redactor, and fail-safe so a delivery problem never blocks or advances a request)",
+ "produced_at": "2026-07-24T10:17:39Z",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "build_notice in .warp/request_doorbell.py is a PURE function warp.request/v1 -> (notice_text, jira_link): it assembles a concise notice carrying a title ('[Doorbell] <touchpoint>: a decision is needed'), the tier ('Tier <tier>'), a one-line what (_what maps each touchpoint to a plain-words line), and the tracker link from record.tracker.url, and returns (None, None) when the request has no tracker link yet so the caller SKIPS it (nothing to link to), not errored. It is a SIGNAL only: the notice points at the tracker where the decision is made and recorded ('Decide in the tracker (the decision is made and recorded there): <link>'), carries NO approve/decide action, and the module has NO inbound path at all - there is no code that reads a reply as a decision (Telegram is the doorbell; the decision lives in the tracker, the W3 Decision issue). ring/ring_all read the record read-only (record.get(...)) and write nothing back into it or to disk."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0618 block, offline (no network) over the FakeSink: each of the six touchpoints rings exactly one signal-only notice keyed 'REQ-<tp>:needs_decision' carrying '[Doorbell]', 'Tier standard', the touchpoint's one-line what (RD._what), 'Decide in the tracker', and the tracker link; the doorbell rings once per new request (notified 6, suppressed/skipped/failed 0); the notice carries no approve/reply-with-a-decision call to action; a request with no tracker link is SKIPPED (outcome skipped, nothing sent), not errored; and the request records are byte-unchanged after a run (json.dumps identical) - it reads read-only and writes nothing back. Part of selftest 2544 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The send is an INJECTED sink seam (ring(record, sink, terms) calls sink.send(text, link, key=key)), reference-wired exactly like the W3 projection injects the live tracker adapter: the gate drives a deterministic in-module FakeSink (pure Python, no network) and the real TelegramSink is a reference implementation that resolves a SECRET-REFERENCE bot token at the seam (token_ref, e.g. env:TELEGRAM_BOT_TOKEN, via the lazily-loaded shipped tracker_intake._default_secret_resolver, never a raw credential) and FAILS CLOSED (DoorbellError) with no token; it uses stdlib urllib against the Telegram Bot API and is NEVER constructed or run in the gate (the FakeSink is what runs there). FAIL-SAFE: ring wraps sink.send in try/except Exception and, on a delivery failure, returns outcome 'failed' with the error string, NEVER raising into the caller - a doorbell that cannot deliver must not block or advance a request; the request is untouched (the record dict is byte-identical after a failed send). ring_all is fail-safe end to end: one request's failure never stops the rest."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0618 block: a FailingSink (send always raises RuntimeError) driven through ring returns outcome 'failed' with an 'error' key and attempts == 1, and the request record is byte-unchanged (json.dumps identical) - the error is swallowed, never raised. Tooth T2 proves the fail-safe wrap is load-bearing (below). The module selfcheck (python3 .warp/request_doorbell.py selfcheck) drives the fixture end to end over the FakeSink offline including the swallowed-failure case. Part of selftest 2544 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "IDEMPOTENT per (request_id, status): notice_key(record) is '<id>:<status>', and ring hands that key to the sink, which is keyed-idempotent like FakeTracker.comment - a chat channel gives NO read-back (the Telegram Bot API exposes no history), so the delivery channel owns the 'already rung' marker keyed by request+status: a keyed send delivers AT MOST ONCE per key (a repeat returns False, no delivery), so a re-run or a re-projection at the same status is suppressed and a genuine status change is a new key that rings again. No second offset ledger (the reconciler posture). REDACTED (RULE #3): build_notice passes the whole notice through redact(body, terms) - REUSED verbatim from .warp/request_projection.py (redact + _safe, never re-implemented) - before it is returned, so every secret reference (env:/keychain:) and every org-declared operating term (the injected declared terms) is masked to [redacted]; the tracker link is _safe'd and dropped fail-closed if a residue still matches a secret scheme (which skips the request). No secret reference or declared operating datum can reach the chat channel."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0618 block: a re-run of all six requests at the same status is fully suppressed (suppressed 6, notified 0) and the sink is byte-stable; the same requests at a changed status (changes_requested) all ring again (notified 6, sink grows by six); a decision_choice request whose bound_artifact.ref carries a secret reference (env:PROD_DB_PASSWORD) and a declared operating datum (MRR 45000, passed as terms) projects a notice with BOTH masked and NEVER in the clear ('[redacted]' present) while the tracker link is preserved clean. Teeth T1 (idempotency key) and T3 (redactor) prove both are load-bearing (below). Part of selftest 2544 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The WARP-0618 selftest drives the WHOLE doorbell over the deterministic FakeSink offline (no network, the real Telegram send never run) and is NON-TAUTOLOGICAL: a new request rings once with the correct title/tier/one-line-what/link; the same request at the same status does NOT ring again (idempotent); a status change DOES ring again; a send failure is swallowed and the request untouched (fail-safe); a notice carrying a secret reference and an operating datum is redacted. Each load-bearing behavior carries an in-memory source-mutation TOOTH that turns its assertion RED while the on-disk .warp/request_doorbell.py sha256 stays unchanged: T1 neutralizes the idempotency key (key = notice_key(record) -> key = None) so a re-run at the same status double-notifies (real suppresses the repeat); T2 neutralizes the fail-safe wrap (except Exception as exc -> except KeyboardInterrupt as exc) so a send error escapes the caller (real catches it and reports outcome failed); T3 neutralizes the redactor call (return redact(body, terms), link -> return body, link) so the secret and the operating datum are emitted in the clear (real masks both). None of the teeth is vacuous: each mutant flips exactly its target assertion while the real path holds, and the module sha256 is byte-unchanged on disk after each."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0618 block: T1 the mutant double-notifies (sink length 2) while the real re-run suppresses (sink length 1), module sha256 byte-unchanged; T2 the mutant lets a RuntimeError escape while the real ring reports outcome failed, module sha256 byte-unchanged; T3 the mutant emits env:PROD_DB_PASSWORD and MRR 45000 in the clear while the real masks them, module sha256 byte-unchanged. Plus the WARP-0618 dogfood front-matter checks (standalone lane, standard risk + human_approval not_required + no protected path, placement [tracker] with a footprint, behavior_bearing with observability, .warp/request_doorbell.py declared in the tracker area of the architecture contract, the placement gate passing with no tier elevation) and the engine-sync / honesty checks (capabilities.yaml byte-identical across root + plugin/templates + 6 packs; the tracker_request_doorbell capability declared mechanical, repo-only, home .warp/request_doorbell.py; the module REPO-ONLY like the tracker family, not shipped to plugin/templates or packs). Part of selftest 2544 passed, 0 failed."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "lint",
+   "status": "passed"
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "python3 scripts/selftest.py: 2544 passed, 0 failed (the WARP-0618 block adds 29 checks: six per-touchpoint positive controls, rings-once-per-new, signal-only, idempotent re-run, status-change re-ring, one-way read-only, fail-safe swallowed failure, skip-when-no-link, redaction, the three anti-vacuity teeth T1-T3 with their byte-unchanged assertions, and the dogfood + engine-sync checks; baseline before this spec was 2515)"
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "specs/index.md regenerated by scripts/update_index.py with WARP-0618 (status review); check_generated green"
+  },
+  {
+   "name": "docs",
+   "status": "passed",
+   "detail": "no em/en dash, no non-ASCII in the authored files (.warp/request_doorbell.py, the spec, the capability entry, the selftest block); no double-hyphen prose separator; genericity sweep clean (the capability entry in plugin/ carries no company/product term; the module hardcodes no company/board value)"
+  },
+  {
+   "name": "template_sync",
+   "status": "passed",
+   "detail": "check_template_sync green; .warp/request_doorbell.py is REPO-ONLY (a tracker-family sibling like request_projection.py / tracker_mirror.py - the whole tracker family lives only at root .warp/, only tracker.py is engine-synced), so it has no template/pack twin; only the tracker_request_doorbell capability ENTRY is synced, byte-identical across all eight capabilities.yaml copies"
+  },
+  {
+   "name": "pack_drift",
+   "status": "passed",
+   "detail": "engine byte-identical across all packs; the only engine-relevant change is the capabilities.yaml entry, propagated to all eight copies (root + plugin/templates + 6 packs) sha256 identical (verified by cmp); .warp/request_doorbell.py and the .warp/architecture.yaml edit are repo-only tracker-family artifacts, not part of the shipped engine set"
+  },
+  {
+   "name": "shape_gate",
+   "status": "passed",
+   "detail": "mechanizable rules enforced; .warp/request_doorbell.py is ~290 lines, well under the 1000-line module budget, no function over budget; footprint-versus-diff passes (WARP-0618 is the single footprinted spec in the change set and every changed source path is covered by its footprint globs); .warp/request_doorbell.py resolves to the tracker area (placement [tracker], no cross-area edge, no tier elevation). Review-lane rules are reviewer guidance, not gate-blocking"
+  },
+  {
+   "name": "secret_scan",
+   "status": "passed"
+  },
+  {
+   "name": "contracts",
+   "status": "passed",
+   "detail": "python3 .warp/validate.py all exit 0; the WARP-0618 spec validates (status review), and this proof passes check_required_evidence (unit) and check_criteria_coverage (AC1-AC4 exactly)"
+  },
+  {
+   "name": "teeth_reproduced",
+   "status": "passed",
+   "detail": "T1 idempotency key neutralized: a re-run at the same status double-notifies (real suppresses the repeat). T2 fail-safe wrap neutralized: a send error escapes the caller (real catches it and reports outcome failed). T3 redactor neutralized: the secret reference and the operating datum are emitted in the clear (real masks both). Each mutant flips only its target; .warp/request_doorbell.py sha256 byte-unchanged on disk after each"
+  }
+ ],
+ "assumptions": [
+  "COMMIT BINDING: the gate ran GREEN at dbdfc91125c87d3fae6ce37502829c586064adeb (the WARP-0618 code commit this proof binds to), exactly as scripts/verify.sh stamped .warp/last_verify. This proof is committed in a second evidence commit on top, so the manifest binds to the commit it proves (the WARP-0613/0614/0615/0617 pattern, not an in-commit-proof deviation). STOPPED AT REVIEW: no push, no self-review; an independent fresh-context reviewer records the verdict.",
+  "WARP-0618 is a STANDALONE tracker-lineage spec (W4 of PLAN-0016) composing on the shipped W2 request envelope (warp.request/v1, WARP-0615) as the trigger and the shipped W3 projection (WARP-0617) for the tracker link and the redactor it REUSES (redact/_safe imported from .warp/request_projection.py, never re-implemented). It reads the request and rings a doorbell outward only; it writes no record and reads no reply as a decision. The authorization/quorum logic (W6, WARP-0616) and the inbound command-and-receipt edge (W5, WARP-0619) are separate, not-yet-built items - honestly out of scope here.",
+  "REPO-ONLY, NOT ENGINE-SYNCED: .warp/request_doorbell.py is a tracker-family module. The whole tracker family (tracker_adapter, tracker_mirror, tracker_intake, request_projection, and siblings) lives ONLY at root .warp/ and is marked scope: repo-only in the capabilities manifest; only tracker.py (the routing resolver) is engine-synced across plugin/templates + the six packs. So request_doorbell.py stays repo-only like its siblings (a selftest asserts it is NOT present under plugin/templates or any pack), and ONLY the tracker_request_doorbell capability ENTRY is synced byte-identical across all eight capabilities.yaml copies. The footprint (which lists request_doorbell.py only at root, and capabilities.yaml at all eight locations) encodes the repo-only decision.",
+  "THE SEND IS AN INJECTED REFERENCE SEAM NEVER GATE-RUN: ring takes the sink as a parameter; the gate drives the deterministic FakeSink (pure Python, no network). The real TelegramSink resolves a SECRET-REFERENCE bot token at the seam and FAILS CLOSED with no token, uses stdlib urllib against the Telegram Bot API, and is NEVER constructed in the gate. Idempotency is keyed by (request_id, status): because a chat channel gives no read-back, the marker lives with the delivery channel (the FakeSink models it as a keyed set; a real deployment pairs the send with a durable keyed marker the adopter wires, or drives it only from the reconciler). It lays no timer, no daemon, and spawns nothing detached (NG1): a doorbell is rung by an explicit call, never a hidden mechanism.",
+  "REDACTION COMPLETENESS (a point for the reviewer to scrutinize): the notice's leak surface is the request's own reference strings (the bound_artifact kind/ref, the id, the tracker link). The tracker link is _safe'd (dropped fail-closed if a residue still matches a secret scheme, which skips the request), and the WHOLE notice passes through redact before it is returned - secret-reference schemes (env:/keychain:) always masked, org-declared operating terms masked case-insensitively (DECLARED per RULE #3, passed in as terms, not heuristically detected). There is NO write-back path: ring/ring_all only read the record and call the injected sink.",
+  "GATE bookkeeping (.warp/events.jsonl, .warp/last_verify) is stamped by verify.sh on every run and was NOT staged; only the WARP-0618 footprint was committed (git add with explicit paths). bin/warp, policy.yaml, the frozen safety-core readers (policy_check.py, two_key.py, decision.py), .gitignore, tracker_adapter.py, and the other proof directories were not touched."
+ ],
+ "rollback": "git revert; purely additive - a new repo-only doorbell module .warp/request_doorbell.py (a tracker-family sibling that REUSES the shipped W3 redactor and injects the send seam, never reimplementing either), one tracker_request_doorbell capability entry (all eight capabilities.yaml copies byte-identical, marked repo-only), the module declared in the tracker area of .warp/architecture.yaml, a selftest block, and this spec; no protected path; the real Telegram send is an injected reference seam never run in the gate; pure stdlib."
+}

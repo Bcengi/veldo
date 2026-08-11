@@ -1,0 +1,48 @@
+base: 3362 passed, 0 failed   (67a5678, before anything was built)
+head: 3389 passed, 0 failed   (this commit, after review 1's corrections)
+delta: +27
+
+fragments added: ['14_warp_0717_subset_runner']
+fragments removed: []
+
+EVERY PRE-EXISTING FRAGMENT'S LABEL LIST IS IDENTICAL, IN ORDER: no existing assertion added, moved or removed.
+
+assertions contributed by the new fragment(s): 27
+outcome deltas on pre-existing labels: 0
+
+VERDICT: CLEAN
+
+METHOD, IN TWO PARTS, BECAUSE THIS ROUND ADDED TO THE FRAGMENT AND THE BUILD'S MEASUREMENT
+ALONE WOULD NO LONGER BE THE MEASUREMENT.
+
+PART ONE, the label comparison, unchanged from the build and still the instrument for label
+IDENTITY. Every assertion label is recorded tagged with the fragment that emitted it, by
+wrapping shared.expect, once at the base commit 67a5678 before anything was built and once
+at HEAD. The comparison is per fragment AND IN ORDER, not a flat set, so a label that
+changed owner or position would show up rather than cancel out. Review 1 re-measured the
+same property with its own independent instrument: 14 of 14 fragments identical in order in
+both directions, 0 missing, 0 extra, 0 outcome deltas.
+
+PART TWO, COUNTED THIS ROUND, because review 1's corrections changed fragment 14 and nothing
+else, and that claim needs a measurement rather than an argument. Three numbers, all from
+the shipped selector:
+
+  `--upto 13_warp_0623_codified_live` runs every fragment EXCEPT this item's own and reports
+  3362 passed, 0 failed. That is the base commit's full-run figure to the assertion, so the
+  13 pre-existing fragments contribute exactly what they contributed before.
+
+  The same run prints each fragment's OWN count, and all 13 are identical to the per-fragment
+  counts recorded at the base commit in inner-loop-measurement.json (own_labels_full_run): 13
+  of 13 identical, 0 deltas. 252, 261, 261, 254, 251, 255, 255, 288, 259, 250, 263, 266, 221,
+  summing to 3336, plus shared.py's own 26, which is the 3362.
+
+  The FULL run reports 3389 passed, 0 failed at exit 0. 3389 minus 3362 is 27, which is
+  fragment 14's own count as the partial run reports it, so this item's whole delta is inside
+  its own fragment and nowhere else.
+
+The delta grew from the build's +25 to +27 for exactly two assertions, both added by review
+1's corrections and both in fragment 14: the named refusal of an unrecognised argument
+beginning with `--` (C3), and the no-regression check that `--list` still prints one line per
+enumerated fragment and exits 0. The other correction to that file, C8, changed no count: it
+BOUND two existing all() assertions to the length of their own literal sources, and the
+witnesses that empty those sources are M16, M17, M18 and M19 in failing-witnesses.json.

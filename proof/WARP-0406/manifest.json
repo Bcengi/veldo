@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0406",
+  "commit": "05f04830d0fa401271ce8bf9bc6759f2caf856be",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0004 wave A)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T14:48:12Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/env_provision.py ships an EnvProvisioner seam (create -> handle, seed, observe, paths, teardown) with the four guarantees a runner leans on: clean on create, seeding applied and observable, teardown idempotent and leaves nothing, and a create-without-teardown detectable as a NAMED leak by re-observing real surface liveness; a live ContainerEnvProvisioner reference fails loud (EnvProvisionUnavailable) when no container runtime is on PATH, and a deterministic in-memory FakeProvisioner gate-tests the control logic with no external dependency"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the FakeProvisioner through create -> seed -> observe seeded -> teardown -> observe gone (EnvStateError), plus idempotent double teardown and leaked-env detection; part of selftest 667 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/env_provision.py ships an EnvProvisioner seam (create -> handle, seed, observe, paths, teardown) with the four guarantees a runner leans on: clean on create, seeding applied and observable, teardown idempotent and leaves nothing, and a create-without-teardown detectable as a NAMED leak by re-observing real surface liveness; a live ContainerEnvProvisioner reference fails loud (EnvProvisionUnavailable) when no container runtime is on PATH, and a deterministic in-memory FakeProvisioner gate-tests the control logic with no external dependency"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/env_provision.py ships an EnvProvisioner seam (create -> handle, seed, observe, paths, teardown) with the four guarantees a runner leans on: clean on create, seeding applied and observable, teardown idempotent and leaves nothing, and a create-without-teardown detectable as a NAMED leak by re-observing real surface liveness; a live ContainerEnvProvisioner reference fails loud (EnvProvisionUnavailable) when no container runtime is on PATH, and a deterministic in-memory FakeProvisioner gate-tests the control logic with no external dependency"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/env_provision.py ships an EnvProvisioner seam (create -> handle, seed, observe, paths, teardown) with the four guarantees a runner leans on: clean on create, seeding applied and observable, teardown idempotent and leaves nothing, and a create-without-teardown detectable as a NAMED leak by re-observing real surface liveness; a live ContainerEnvProvisioner reference fails loud (EnvProvisionUnavailable) when no container runtime is on PATH, and a deterministic in-memory FakeProvisioner gate-tests the control logic with no external dependency"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/env_provision.py ships an EnvProvisioner seam (create -> handle, seed, observe, paths, teardown) with the four guarantees a runner leans on: clean on create, seeding applied and observable, teardown idempotent and leaves nothing, and a create-without-teardown detectable as a NAMED leak by re-observing real surface liveness; a live ContainerEnvProvisioner reference fails loud (EnvProvisionUnavailable) when no container runtime is on PATH, and a deterministic in-memory FakeProvisioner gate-tests the control logic with no external dependency"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/env_provision.py ships an EnvProvisioner seam (create -> handle, seed, observe, paths, teardown) with the four guarantees a runner leans on: clean on create, seeding applied and observable, teardown idempotent and leaves nothing, and a create-without-teardown detectable as a NAMED leak by re-observing real surface liveness; a live ContainerEnvProvisioner reference fails loud (EnvProvisionUnavailable) when no container runtime is on PATH, and a deterministic in-memory FakeProvisioner gate-tests the control logic with no external dependency"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives the FakeProvisioner through create -> seed -> observe seeded -> teardown -> observe gone (EnvStateError), plus idempotent double teardown and leaked-env detection; part of selftest 667 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 667 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Reference: a real ephemeral env needs a container runtime and the adopting repo's own image and fixtures the warp home repo lacks, so the home gate runs only the fake-driver control logic; the live path fails loud when the surface is absent."
+  ],
+  "rollback": "git revert; additive - .warp/env_provision.py, a selftest block, and the spec; no protected path."
+}

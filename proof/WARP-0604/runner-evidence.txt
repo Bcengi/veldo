@@ -1,0 +1,39 @@
+WARP-0604 runner evidence - Jira intake (W4 of PLAN-0006)
+Impl commit under proof: 58ad5ecda89ff5f42223664e9f8c805311e7e58e
+
+== gate (clean detached worktree at 58ad5ec) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (58ad5ecda89ff5f42223664e9f8c805311e7e58e)
+
+== unit (selftest.py) ==
+selftest: 1176 passed, 0 failed
+(+19 for the WARP-0604 intake block including the injection-defense assertions;
+baseline was 1157)
+
+== module smoke check (.warp/tracker_intake.py selfcheck) ==
+passed: true - resolvable ticket drafts bound to the repo (AC1 reproduction, ticket
+linked), a ticket with no routing signal is refused by name, the pure Jira mapping
+reads key/summary/labels/components and flattens the ADF description, and a rendered
+draft carries the resolved repo.
+
+== front-matter injection fix verification (review-driven) ==
+Malicious title "pwn\nid: WARP-HIJACK\nschema: attacker/v9\nowner: mallory":
+  WITH _fm_safe    -> parsed id=WARP-9605, schema=warp.spec/v1 (injection neutralized)
+  WITHOUT _fm_safe -> the injected duplicate id makes parse_yamlish reject it
+                      ("duplicate key 'id'"), and the primary selftest assertion goes RED
+The independent re-review tried 10 attack families (title/body/labels/components/owner/
+tab/Unicode line separators U+2028/U+2029/U+0085, and injections of id/schema/owner/
+status/plan/work/protected_paths/human_approval/acceptance_criteria); none injected a
+structural key or escalated any field. No over-mangle of legitimate content.
+
+== reviews ==
+Full independent adversarial review at 4223f0b: pass_with_notes, 0 blocking (all 5 ACs
+confirmed by spies + a mutation matrix + robust-mapping fixtures; one should-fix note =
+front-matter injection). Fixed -> commit 58ad5ec.
+Scoped independent re-review bound to 58ad5ec: PASS, 0 blocking (delta is exactly the
+injection fix + its test, intake logic/mapping/adapter byte-unchanged, 10 attack families
+all contained, teeth confirmed, gate GREEN 1176/0, no regression, caps byte-identical).
+
+== proof binding ==
+plan_hash: sha256:6dd3f98b5a0c1f68 (PLAN-0006, revision 1)
+proof_digest: sha256:2e186e6128f57c3a (validate.py over {spec_id, commit, criteria, checks})

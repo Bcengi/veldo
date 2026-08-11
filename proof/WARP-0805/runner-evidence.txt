@@ -1,0 +1,38 @@
+WARP-0805 runner evidence - GitHub Copilot pack, hook-less enforcement (W5 of PLAN-0008)
+Impl commit under proof: 7544b142380bf4c0b8cc650e7de3e6768d7e3f50
+
+== gate (clean detached worktree at 7544b14) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (7544b142380bf4c0b8cc650e7de3e6768d7e3f50)
+selftest: 1236 passed, 0 failed (+5 for the WARP-0805 copilot-pack block)
+
+== self-contained pack ==
+packs/copilot: 139-file engine copied byte-identical (engine_drift == []), real files (no symlinks),
+canonical AGENTS.md + .github/workflows/warp-gate.yml (engine CI), Copilot driver
+(.github/copilot-instructions.md always-injected, .github/prompts/warp-loop.prompt.md, hooks/pre-push,
+skills, .github/agents). check_pack_drift.py: pass (4 packs).
+
+== AC2 hook-less enforcement (behaviorally proven by review) ==
+synthetic unproven WARP repo, CLAUDE_PROJECT_DIR unset, git ref line on stdin:
+  hooks/pre-push, unproven                       -> EXIT 2 (blocks)
+  hooks/pre-push, green last_verify + proof/HEAD -> EXIT 0 (allows)
+  hooks/pre-push, green but wrong commit         -> EXIT 2 (commit-bound)
+  hooks/pre-push, guard missing                  -> EXIT 1 (fail-closed)
+  env CMD + empty stdin (W3 fail-open)           -> EXIT 0 (proves stdin-JSON is the only live channel)
+copilot-instructions.md documents enabling the git hook (core.hooksPath hooks) AND making
+.github/workflows/warp-gate.yml a REQUIRED status check; warp-gate.yml runs verify.sh + policy_check.
+Enforcement NOT weaker than a local-hook tool.
+
+== reuse ==
+diff -rq plugin/skills vs packs/copilot/skills: identical
+diff -rq plugin/agents vs packs/copilot/.github/agents: identical
+AGENTS.md identical; only the thin Copilot driver is net-new authored.
+
+== review ==
+Independent adversarial review at 7544b14: pass_with_notes, 0 blocking (hook-less enforcement holds,
+no fail-open; faithful copy; drift teeth; no pollution; caps byte-identical; dash-clean). Notes all
+non-blocking (Copilot format fast-moving; one-time human enablement inherent to git; selftest style).
+
+== proof binding ==
+plan_hash: sha256:837b26cb7db25a47 (PLAN-0008, revision 1)
+proof_digest: sha256:5126ac0f9538dfdd (validate.py over {spec_id, commit, criteria, checks})

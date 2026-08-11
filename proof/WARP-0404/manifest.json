@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0404",
+  "commit": "1517a69fd2f76c04243d290d251c3badd5ea082d",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0004 wave A)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T14:48:12Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/dashboard.py reads .warp/events.jsonl only through .warp/metrics.py compute() and renders cycle time, proof latency, human_minutes, gate pass rate, verdict counts, emergency debt, and regression health as a text report or a self-contained HTML page (inline CSS only, no external asset/script/link/network); metrics.compute() was extended once (verdict_counts, regression_health) so the reader and the dashboard share one calculation"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block builds a synthetic events stream, calls metrics.compute() and the dashboard figure function, and asserts the dashboard numbers EQUAL compute() for cycle time, human_minutes, gate pass rate, verdict counts, and regression health (no drift), plus a red-standing case proving current_gate is red when the latest gate event failed (isolating the current-gate computation); part of selftest 667 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/dashboard.py reads .warp/events.jsonl only through .warp/metrics.py compute() and renders cycle time, proof latency, human_minutes, gate pass rate, verdict counts, emergency debt, and regression health as a text report or a self-contained HTML page (inline CSS only, no external asset/script/link/network); metrics.compute() was extended once (verdict_counts, regression_health) so the reader and the dashboard share one calculation"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/dashboard.py reads .warp/events.jsonl only through .warp/metrics.py compute() and renders cycle time, proof latency, human_minutes, gate pass rate, verdict counts, emergency debt, and regression health as a text report or a self-contained HTML page (inline CSS only, no external asset/script/link/network); metrics.compute() was extended once (verdict_counts, regression_health) so the reader and the dashboard share one calculation"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/dashboard.py reads .warp/events.jsonl only through .warp/metrics.py compute() and renders cycle time, proof latency, human_minutes, gate pass rate, verdict counts, emergency debt, and regression health as a text report or a self-contained HTML page (inline CSS only, no external asset/script/link/network); metrics.compute() was extended once (verdict_counts, regression_health) so the reader and the dashboard share one calculation"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/dashboard.py reads .warp/events.jsonl only through .warp/metrics.py compute() and renders cycle time, proof latency, human_minutes, gate pass rate, verdict counts, emergency debt, and regression health as a text report or a self-contained HTML page (inline CSS only, no external asset/script/link/network); metrics.compute() was extended once (verdict_counts, regression_health) so the reader and the dashboard share one calculation"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/dashboard.py reads .warp/events.jsonl only through .warp/metrics.py compute() and renders cycle time, proof latency, human_minutes, gate pass rate, verdict counts, emergency debt, and regression health as a text report or a self-contained HTML page (inline CSS only, no external asset/script/link/network); metrics.compute() was extended once (verdict_counts, regression_health) so the reader and the dashboard share one calculation"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block builds a synthetic events stream, calls metrics.compute() and the dashboard figure function, and asserts the dashboard numbers EQUAL compute() for cycle time, human_minutes, gate pass rate, verdict counts, and regression health (no drift), plus a red-standing case proving current_gate is red when the latest gate event failed (isolating the current-gate computation); part of selftest 667 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 667 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: both the control logic and its real surface (reading events.jsonl through metrics.compute and rendering text/HTML) run in the gate here via stdlib only, no product surface lacking. metrics.py and dashboard.py ship byte-identical in .warp/ and plugin/templates/.warp/."
+  ],
+  "rollback": "git revert; additive - .warp/dashboard.py (both copies), a metrics.py extension (both copies), a selftest block, and the spec; no protected path."
+}

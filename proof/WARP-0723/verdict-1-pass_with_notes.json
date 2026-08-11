@@ -1,0 +1,95 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0723",
+  "commit": "26b6c3467f70aa4e643542a8259b35576cfcbe35",
+  "round": 1,
+  "reviewer": "claude-opus-5[1m], agent ae89bd59f5ac03970, workflow wf_885e853f-6f9. OFF-BOOK PROVENANCE, STATED FIRST BECAUSE IT IS THE THING A READER MUST NOT MISS. This review was run by an AGENT DISPATCHED BY THE ORCHESTRATOR INSIDE A WORKFLOW. It did NOT come through this repository's own review lane. Concretely, and each one checkable from the record rather than asserted: the spec was never transitioned to status 'review', so .warp/frontier.py never offered a review unit for it; no claim was taken in the claim ledger; the run did not go through the wrapper skill or plugin/agents/warp-reviewer.md; and no verdict artifact was produced at the time, which is why this one is written after the fact. WHAT INDEPENDENCE DID HOLD, because the weaker provenance is not the same as no independence: the reviewing agent was a separate process with fresh context that did not write this code, this spec, this manifest or any earlier review of this item; it worked in throwaway clones or a detached worktree; and it ran the gate and the suite ITSELF rather than reading the builder's numbers. But that independence is attested by the ORCHESTRATOR THAT DISPATCHED IT and by the agent's own transcript, not by the repository. TREAT THIS AS WEAKER EVIDENCE THAN A PROPERLY DISPATCHED REVIEW, and do not count it as one. The reviewed tree was the BRANCH state, not main: commits 1dd1c6a (the fix) plus 26b6c34 (the gate attestation) on branch warp-0723-reserved-envelope-keys-refused, based on main 18e6ca8. The agent read the worktree and the main checkout and wrote nothing outside its own throwaway clones. TRANSCRIBED, NOT AUTHORED. This artifact was written on 2026-07-29 by the ORCHESTRATOR, after the fact, from the reviewing agent's own structured return recorded as the {\"type\":\"result\"} line for agent ae89bd59f5ac03970 in /path/to/repo/.claude/projects/-home-dmitry-projects-daybook/a6790af4-cb43-4a20-95c6-4726da07d545/subagents/workflows/wf_885e853f-6f9/journal.jsonl. The verdict, the criteria dispositions, the findings and every measurement below are that agent's, quoted or condensed without change of meaning. The orchestrator added no finding, removed none, and did NOT soften the verdict to a later, kinder one. Where this artifact says something the review did not say, it is marked ORCHESTRATOR NOTE.",
+  "reviewed_at": "2026-07-29T09:09:37Z",
+  "verdict": "pass_with_notes",
+  "commit_note": "26b6c34 is the BRANCH COMMIT THE REVIEWER SAW (the gate attestation naming 1dd1c6a), not main's head. Main was at 18e6ca8 at review time and is at a16e88c as this record is written; neither is the reviewed tree.",
+  "headline": "THE HARM IS CLOSED; THE WORDING IS NOT. Every documented-flag route that puts an ILLEGAL value on a reserved key is refused at exit 2 with the log byte-identical before and after, both measured defect invocations are dead in all eight byte-identical copies, the refusal is proven against a COPY and not only the root, and the inverse harm does not occur. BUT the promise as handed to the reviewer, that the five reserved envelope keys cannot be SET by a caller on a line that lands, is FALSE as measured: four documented flag invocations land at exit 0 carrying the caller's value. What was built is SHAPE enforcement, not non-settability. And one in-process route still lands the exact harmful bytes.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed_with_note",
+      "note": "The guard runs on each assembled event inside the one function that writes bytes, after every merge, extra, override and --field has been applied. Driven, not reasoned: schema=nope, schema=warp.event/v2, at=, at=2026-1-2T3:4:5Z, id=deadbeef, id=DEADBEEFCAFE, id=aaaaaaaaaaa, producer=, producer=123, producer with spaces, --producer 'events.py reconcile-verdicts', --field producer=<reconciler>, --field type=verdict.recorded, the positional verdict.recorded, case and spacing variants of the key names, in-process extra dicts for all five keys, the at= and event_id= constructor arguments, and the writer poked after assembly. All refused, log md5 byte-identical before and after each route. THE NOTE: AC1's own sentence 'a selftest drives EVERY route that can set them' is false, which is finding F4."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "NO INVERSE HARM, driven four ways rather than reasoned. (1) The projection's own entitled append over the real corpus: 157 verdict artifacts tracked, 157 appended into a fresh log, rc 0, validate.py events rc 0, and the second run appends nothing (idempotent). (2) The gate's own path over the real log: rc 0 with the review-events stage reporting 157 tracked and 157 already recorded. (3) A hand-emitted ALLOWED event with no reserved key lands at exit 0 and validates. (4) NO POISON PILL: a fixture whose committed verdict.json carries schema=nope, id=zz, type=verdict.invented, producer=attacker and at= still reconciles at rc 0, because verdict_event copies only a closed set of fields and date-validates reviewed_at. No committed artifact can make one refused line withhold a whole batch."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "The defect was reproduced FIRST on the shipped tree at 18e6ca8 in two throwaway clones with documented flags and no code change: --field schema=nope lands at exit 0 and then validate.py all exits 1 on 'bad or missing schema', with the gate RED; --field at= lands and reds it the same way. Both permanent, because the log is append-only. On the reviewed tree both invocations are refused with the log byte-unchanged, and the reading is proven NOT BLIND: the same harmful line placed in a log of its own by a plain file append still makes that validator exit 1."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "The refusal is genuinely driven against each declared COPY, not assumed from the root. Independently reproduced by mutation: deleting the guard call in ALL EIGHT copies (byte-identity preserved so drift cannot carry the red) gives 3238 passed and 3 failed, no traceback; deleting it in packs/cursor ONLY gives 3229 passed and 12 failed, which is exactly the case AC4 exists to catch. All eight copies byte-identical, md5 9059619a."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "blocking",
+      "text": "F1 HARMFUL, THE ROUTE NOBODY DROVE, and the one real defect in this review. An in-process `extra` dict keyed by a str SUBCLASS that overrides only __hash__ and __eq__ lands a line with DUPLICATE \"schema\" keys through emit() into _append_events, and json.loads takes the LAST one. Driven in a clone: no exception, exit 0, log md5 069a1276 -> 0804ee53; a second variant also landed (dcf3ae75 -> 069a1276). Why the guard misses it: the dict keeps BOTH keys (different __hash__), the confusable test `alias != key` is answered by the INHERITED str.__ne__ because only __eq__ was overridden, and the value test ev.get('schema') finds the genuine entry. MEASURED CONSEQUENCE: validate.py events exits 1 on 'bad or missing schema' and validate.py all exits 1, PERMANENTLY, because the log is append-only. AC1 explicitly enumerates 'an in-process extra or override dict' as a route that must be refused. Mitigating and stated honestly by the reviewer: it needs arbitrary in-process Python, which can already append to the file directly, so it grants no new capability. What was NOT stated anywhere in the item is that its consequence for `schema` is strictly WORSE than for `type`: a permanent gate RED rather than a forged verdict."
+    },
+    {
+      "severity": "blocking",
+      "text": "F2 THE PROMISE AS WORDED IS FALSE, four times over, each measured with the log md5 moving: --field at=1970-01-01T00:00:00Z (exit 0, 58897e7f -> 607719ac), --field id=aaaaaaaaaaaa (exit 0, 607719ac -> 0cea0036, any twelve lowercase hex passes), --field producer=totally-not-me (exit 0, 0cea0036 -> fac3ef8a), and --field type=gate.passed (exit 0, 26baa39e -> dc445086). A caller DID set a reserved key on a landing line in all four. The harm of each is small or nil and the reviewer says so, but the sentences claiming non-settability must be DELETED rather than softened."
+    },
+    {
+      "severity": "blocking",
+      "text": "F3 FALSE SENTENCES TO DELETE, each re-measured by the reviewer. (a) events.py module docstring and all seven copies: 'every RESERVED key must hold the envelope's OWN value' - replace with what the code does, a value the envelope's own invariants admit. (b) _is_event_id docstring, all eight copies, and the same overstatement in the manifest's AC1 evidence: 'an id THIS MODULE MINTED' - it cannot know that and id=aaaaaaaaaaaa passes; it tests the SHAPE. (c) refuse_reserved_envelope's docstring HEADLINE: 'carry the envelope's OWN values' - the body below it is already accurate, so the headline is the only thing claiming more than the body checks."
+    },
+    {
+      "severity": "blocking",
+      "text": "F4 SPEC AC1: 'A selftest drives EVERY route that can set them' is FALSE. The four landing routes of F2 set them and are neither driven nor refused, and the in-process str-subclass extra dict of F1 is a member of the very class AC1 names. The selftest's own headline is correctly qualified ('ON EVERY ROUTE DRIVEN HERE'), so it is the SPEC sentence that needs deleting, not the assertion."
+    },
+    {
+      "severity": "blocking",
+      "text": "F5 MANIFEST AC2 evidence: 'The GIT_DIR/GIT_WORK_TREE redirect and the in-process str-subclass route are both out of scope per the spec and untouched.' The 'per the spec' attribution is FALSE - the spec's Out of scope names the type, the GIT_DIR redirect and writers that never import the module; it does not name the str-subclass route, which imports the module and rides emit(). Replace with the measured consequence."
+    },
+    {
+      "severity": "note",
+      "text": "N1 OUT OF SCOPE BUT REAL AND THE SAME CLASS, reachable on the shipped tree with a documented flag: --field human_minutes=abc exits 0 and LANDS (md5 58897e7f -> 2bed11eb), validate.py all stays 0 and the gate stays green because metrics is not a gate stage, but .warp/metrics.py then dies FOREVER on 'invalid literal for int() with base 10: abc'. Lines doing the same for tokens and cost_usd are one and three lines away. The log is append-only, so one documented invocation permanently breaks the log's declared reader, its dashboard and the governor's spend law. The manifest dismisses these keys as 'caller-settable payload, which is what they are for'; it should name this crash and queue the reader-side coercion, or WARP-0722's 'harmless payload' mistake has just moved one key-ring over."
+    },
+    {
+      "severity": "note",
+      "text": "N2 LAW-3 HAZARD IN THE NEIGHBOURHOOD, honestly pre-disclosed by the builder as a residual and confirmed by the reviewer: refusing the projection's producer UNCONDITIONALLY, which is the literal inverse failure mode, CRASHES the suite rather than reddening it, because WARP-0722's fixture calls reconcile_verdicts bare. The run ends in a ValueError traceback with NO 'selftest: N passed' line at all. The shipped guard does not do this and AC2's teeth are shown by a mutant that DOES red legibly, so this is a robustness residual of that other block's fixture, correctly queued rather than smuggled into this footprint."
+    },
+    {
+      "severity": "note",
+      "text": "N3 DECLARED AND VERIFIED HARMLESS: a homoglyph key (a Cyrillic character at code point U+0455 in place of the leading 's' of schema) exits 0 and lands as ordinary payload beside the genuine schema; validate stays green. Also a case variant of the reconciler's producer string lands at exit 0 and is harmless, because the unresolvable-classifier compares exactly, so such a line is reported by name and withholds nothing."
+    },
+    {
+      "severity": "note",
+      "text": "N4 SHAPE-GATE HEADROOM, accurate as declared: .warp/events.py sits at 999 lines against the 1000-line module_lines budget, so the next two lines added to that module red the shape gate by name. Measured by the builder with a seven-line additive helper."
+    }
+  ],
+  "must_fix_before_land": [
+    "Delete the sentences named in F3, F4 and F5 rather than narrowing them.",
+    "Either close the str-subclass route of F1 or state its measured consequence (a PERMANENT gate RED, worse than the type case) where the module declares its limits."
+  ],
+  "disposition": "LAND AFTER DELETING THE LISTED SENTENCES. That is the reviewer's own recommendation, recorded verbatim in the journal as 'land_after_deleting_listed_sentences'. The verdict is pass_with_notes, and it is recorded here as pass_with_notes.",
+  "gate_observed": {
+    "run_by": "the reviewing agent, not read from the record",
+    "how": "./scripts/verify.sh, nice -n 19, in a fresh clone of 26b6c34, about 2 minutes",
+    "result": "GATE: GREEN (26b6c3467f70aa4e643542a8259b35576cfcbe35), EXIT=0",
+    "stages": "lint pass (694 python, 172 shell, 0.84s), unit, contracts, generated, docs, template sync, shape gate, catalog 5 run / 18 not-applicable / 0 waived / 0 undeclared, review events 157 tracked / 157 already recorded / 0 appended / 1 duplicate key already in the log (pre-existing)",
+    "crashes": "NONE. No traceback anywhere in the 290-line gate log."
+  },
+  "count_observed": {
+    "method": "python3 scripts/selftest.py RUN BY THE REVIEWER and read off the suite's own summary line, never inferred from a green gate",
+    "result": "selftest: 3241 passed, 0 failed, exit 0 - exactly the claimed count",
+    "mutants": "(a) guard call deleted in ALL EIGHT copies -> 3238 passed, 3 FAILED, no traceback; (b) guard deleted in packs/cursor ONLY -> 3229 passed, 12 FAILED; (c) ADDITIVE GROWTH CONTROL, the class that killed WARP-0722's rounds: one FURTHER verdict artifact written and COMMITTED, corpus 157 -> 158, reconcile seeing '158 tracked, 157 already recorded, 1 derivable but not appended' -> selftest: 3241 passed, 0 failed, 0 tracebacks",
+    "law_2": "Nothing in this item is pinned to a cardinality the repository can grow: the route set is generated from RESERVED_ENVELOPE_KEYS and the copy roster from .warp/packs.json. Checked by the reviewer, not assumed."
+  },
+  "what_happened_after_this_review": {
+    "rework": "The orchestrator reworked the item as round 2 in 3fcb696 ('the guard says SHAPE instead of ownership, and a str-subclass key can no longer land duplicate reserved keys'), attested GATE GREEN against 3fcb696 in 8569a8f, and merged it to main in 33ee175 with the attestation ecb1079. Round 2 deleted the F3/F4/F5 sentences after re-measuring each claim, and closed F1 at the layer that declares the contract.",
+    "who_verified_the_rework": "THE ORCHESTRATOR, NOT A FRESH INDEPENDENT REVIEWER. No second review was dispatched for round 2 and no verdict artifact exists for it. The rework's own commit message is written in the first person by the party that made the change, which is exactly the self-verification the review lane exists to prevent. ORCHESTRATOR NOTE: this is recorded as a gap, not as evidence.",
+    "spec_status": "specs/WARP-0723-reserved-envelope-keys-refused.md is at status `ready` and IS NOT CHANGED BY THIS RECORD. A pass_with_notes on round 1 plus an orchestrator-verified round 2 is not a basis for `shipped`, and a sibling reviewer is independently reviewing the landed state; whatever it rules is what decides."
+  },
+  "process_defect": "See proof/REVIEW-RECORD-DEFECT-2026-07-29.md for the process defect this artifact exists to repair: a review that leaves no verdict artifact is off-book, and it happened four times on 2026-07-29."
+}

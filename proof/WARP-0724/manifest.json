@@ -1,0 +1,146 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0724",
+  "commit": "156ae80309cc747ca2f9a7f12dab180d1d443824",
+  "producer": "claude-opus-5[1m] (WARP-0724 implementer agent, STANDALONE enforcement lane), REWORK after an independent review returned FAIL. The first build fixed one of two build paths. This one fixes the DEFECT CLASS at the layer that declares the contract: a spec's declared depends_on now gates EVERY build offer at the single point every offer passes through (_add, via dependency_gate), the same function explains it (withheld), the field is TYPED by the spec contract (validate.check_depends_on) so no reader can meet a shape that crashes or corrupts the report, and a spec id is unique across the corpus (validate.check_spec_ids) so a duplicate cannot make an unshipped prerequisite read as shipped. Three routes were driven and measured before the change and every one is closed. HIGH risk as declared: it decides what work the programme may pick up, and the danger runs both ways, which is why non-starvation is measured on the real corpus (7 units claimable before and after, 0 with an unmet dependency) and why every fixture carries a unit that must stay offered. No protected path, no safety core, no gate stage. Built and gated; STOPPED AT REVIEW: no approval performed, nothing pushed, the spec's status is left where the owner set it.",
+  "produced_at": "2026-07-29T13:00:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE ROUTE THE REVIEW DROVE, REPRODUCED AND CLOSED. Before: setting specs/WARP-0620 to status ready with depends_on including WARP-0712 (at ready) left check_spec and check_ready both at 0 and the frontier offered `build WARP-0620 PLAN-0016` - 8 claimable, 1 of them contradicting the module's own report, because plan.item_state reads the PLAN WORK ITEM's depends_on and never the spec's front matter. After, on the identical mutated tree: 7 claimable, 0 contradictions, and WARP-0620 named in the withheld report as waiting on WARP-0712 (ready). The fix is one dependency_gate() call in _add(), the one point every offer passes through, so the standalone loop no longer carries a rule of its own and neither loop can be permissive against the other. _plan_build_candidates() was extracted so the plan lane's ordering question stays separate and legible; claimable() measures at cyclomatic complexity 18 against the contract's budget of 20, down from 22 when the gate was first inlined."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py WARP-0724 block. STANDALONE LANE: over a temporary repository, a ready standalone spec is absent from claimable() while its declared dependency sits at EVERY non-shipped status AND when the dependency file is deleted entirely (the absent case), and present the moment it is shipped; the statuses come from V.SPEC_STATUSES minus 'shipped', so a status added later is enumerated automatically. PLAN LANE, a second and GATE-LEGAL fixture: a plan the plan contract accepts (check_plan 0) at status ready, whose work item's own dependencies are satisfied, naming a ready spec whose front matter declares an unshipped prerequisite (check_spec 0, check_ready 0). The planned unit is not offered while the prerequisite is unshipped and is offered once it ships, with the prerequisite itself offered before as the negative control against a fix that empties the queue. m2 (gate only the standalone lane) is red on exactly this assertion, which is the measurement that the plan lane is really covered."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The five misdispatched units are named and gone, and the queue did not move under the rework. Measured with the dispatcher's own reader at 18e6ca8, BEFORE the first fix: 12 claimable, of which WARP-0712 (needs WARP-0716 at ready), WARP-0714 (needs WARP-0712 at ready), WARP-0715 (needs WARP-0713 at ready), WARP-0717 (needs WARP-0712 at ready) and WARP-0718 (needs WARP-0620 at draft) each had an unshipped declared dependency. AFTER this rework, re-measured on the real corpus: 7 claimable, 0 with an unshipped declared dependency, the same 5 withheld and named on stderr with the prerequisite and its state. Widening the gate to the plan lane withholds NOTHING that was being offered, because every ready spec in the corpus today is in the standalone lane. The spec measured ten units at a03d949; the five are the same five and the total is twelve because WARP-0723 and WARP-0724 were promoted to ready in between."
+        },
+        {
+          "type": "unit",
+          "ref": "Two domains. FIXTURE: the five are replayed in a temporary repository at the dependency statuses they were measured at, each absent from claimable() while every unit the same measurement showed correctly claimable (WARP-0626, WARP-0713, WARP-0716, WARP-0719, WARP-0722, WARP-0723, WARP-0724) is still offered; shipping the prerequisites in two stages (WARP-0712 is itself a prerequisite) then makes each of the five appear. REAL CORPUS: no claimable build unit on this repository's own spec index has an unshipped declared dependency, read with an EMPTY claims root so a live claim cannot move a property of the corpus and with the capability set derived from the corpus itself. The live statements about the five are IMPLICATIONS guarded by their own antecedents, because shipping WARP-0716 is an ordinary future change that should return WARP-0712 to the frontier; the fixture carries the non-vacuity. The withheld report is asserted to name each of the five with its exact prerequisite and state on the fixture, and to name the PLANNED unit on the plan-lane fixture: m4 (report standalone-only) and m5 (report ignores the spec's own plan under a plan scope) are each red on that second assertion."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The queue does not starve and the rule explains itself. Seven units remain claimable on the real index. A cycle needs no special case: unmet_dependencies reads each dependency's status and never traverses, so every member of a cycle simply has an unshipped prerequisite, with nothing to recurse into. A dependency naming a spec that does not exist is DEP_ABSENT, hence unshipped, and is REPORTED; DEP_ABSENT is proven not to be a member of the status vocabulary, so an absent spec can never be read as a spec with a status. withheld() now covers EVERY ready spec rather than the standalone lane only, because the gate withholds every ready spec and a report narrower than the rule it explains is the same defect one layer up; it passes the spec's own declared plan to the scope predicate, so scoping to a plan no longer hides every spec the report exists to name. `warp frontier` writes the report to STDERR in both output modes, so a short queue is always distinguishable from a waiting one while STDOUT stays exactly the payload existing callers parse."
+        },
+        {
+          "type": "unit",
+          "ref": "claimable() is asserted non-empty in build work on this repository's own index - the assertion that catches a fix which got strictness right by offering nothing - and every fixture in the block carries a unit that must stay offered. A cycle fixture (two specs on each other, one on itself, plus unrelated ready work with no dependency and with a shipped dependency) yields nothing for the cycle members and every unrelated unit. EVERY read of the dispatcher in the block - the claimable set, the review set, the withheld report and unmet_dependencies over the real corpus - now goes through _d724_drive(), ONE CHILD INTERPRETER under a 60 second ceiling, and THE BATTERY IS WHAT PUT IT THERE, twice. Round one, recorded by the previous build: the cycle fixture was read in process and a mutant resolving dependencies transitively hung the whole run with no summary line. Round two, found by m13 in THIS battery: a mutant making the dependency GATE non-terminating killed the run at exit 137 on the block's FIRST in-process read, before the cycle fixture was reached at all, so a ceiling around one fixture was guarding the wrong thing. That is a defect the battery found in the proof rather than in the product, and it is fixed here rather than argued away. THEN THE SAME MUTANT FOUND A SECOND, SMALLER ONE: with a ceiling per read and no memory of having hit one, m13 paid the ceiling on every read - the suite reddened every assertion legibly but took half an hour, and the battery run observing it was killed by its own outer timeout with no summary line again. The first timeout is now remembered and every later read returns it immediately, so the whole block costs one ceiling; m13 re-measured on the final tree is 3243 passed, 16 failed, every red a WARP-0724 read. A spurious timeout on a loaded machine would redden the rest of the block, which is a false red and never a false green."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Review units are exempt BY AN EXPLICIT TEST, not by routing. dependency_gate() returns False for any kind other than 'build', and it is called from _add(), where every offer passes. The previous build claimed the exemption held 'by construction, not by exception' because the rule lived in a function the review loop did not call; that claim is WITHDRAWN - it described the old shape and is not true of this one, and an exemption a mutant can remove and a test can catch is the better shape anyway. A review is of an already-built spec, so its prerequisites cannot bear on whether it can be reviewed. withheld() reports build-shaped specs (status ready) only, so no spec at status review appears in it."
+        },
+        {
+          "type": "unit",
+          "ref": "A spec at status review is still offered as a review unit with an unshipped declared dependency (waiting on a cycle member) and with a dependency naming a spec that does not exist, and neither appears in the withheld report. Teeth MEASURED: m6 removes the kind test from dependency_gate, so the rule covers every kind, and this assertion is the one that goes red."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "THE FIELD IS TYPED WHERE IT IS DECLARED, which is one fix for four crashes and two corrupted diagnostics. MEASURED at 0f59d33, each shape gate-legal (check_spec returned 0) and each driven through the dispatcher: depends_on as a list of mappings, block form and inline form, raises TypeError: unhashable type: 'dict'; [[X]] raises unhashable type: 'list'; [9001] raises TypeError: sequence item 0: expected str instance, int found; a bare scalar iterates its CHARACTERS and reports a spec waiting on W (absent), A (absent), R (absent); a block list mis-indented into 'ID: status' pairs yields the member 'WARP-D0: ready', which no spec can match, so the direction is safe and the diagnostic is a lie; and `depends_on:` with no value parses to None. validate.check_depends_on refuses all seven, reading the front matter with parse_yamlish - the SAME parser every reader uses, because a check that typed the field as the cruder front_matter reader sees it would type a different value than the one that reaches the code. The two new checks live in .warp/validate_checks.py, the sibling module that exists so validate.py stays under the module_lines budget the architecture contract ENFORCES: putting them in validate.py was measured to take it to 1055 lines against a 1000-line budget and turned the shape gate red."
+        },
+        {
+          "type": "unit",
+          "ref": "A table of seven measured bad shapes and four good ones, driven through check_spec AND through claimable() over one temporary repository. The assertion is a PAIR and neither half claims the other's ground: every bad shape is REFUSED by check_spec, and every shape the contract ADMITS - including one naming a spec that does not exist, which AC3 requires to stay legal - is read by the dispatcher without raising. It does NOT claim the reader cannot crash: it cannot crash on input the contract admits, which is what typing at the declaring layer buys and all it buys. A second assertion sweeps the REAL corpus file by file, plus the example spec the validator also gates, with no count, no floor and nothing an added spec can make stale. m9 (the check returns 0 again) and m10 (accept any member shape) are red on the table; m11 (refuse an empty list) is red on the corpus sweep, which is the measurement that the corpus assertion is not vacuous."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "A SPEC ID NAMES EXACTLY ONE FILE, refused in the corpus contract. Nothing refused duplicate spec ids across files before this (the only duplicate-id rule was for a plan's work items), and every reader of the corpus - frontier._spec_index, plan.spec_status_by_id, validate.run_all's own spec_by_id, scripts/update_index.py - resolves {id: spec} last-wins by sorted filename. MEASURED in a fixture: two files declaring one id, one at draft and one at shipped, resolve to shipped, which is exactly how an unshipped prerequisite releases the work AC1 withholds. validate.check_spec_ids is called from run_all, the same sweep that validates every spec, and is directory-scoped so it is testable over a temporary tree. The readers are deliberately left last-wins: the contract layer refuses the input, and a defensive patch in six readers is the shape this repository has already paid for. This repository's own corpus passes: `python3 .warp/validate.py all` exits 0."
+        },
+        {
+          "type": "unit",
+          "ref": "One assertion that measures the harm rather than arguing it: the duplicate is refused (errs > 0), the reader every consumer shares is shown resolving the same tree last-wins to 'shipped', removing the duplicate makes the same check pass (so it refuses the duplication and not the id), and this repository's own specs directory passes. m12 (allow duplicates) is red on it."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 3259 passed, 0 failed, 3253 -> 3259 (seven assertions added and one deleted: the deleted one compared unmet_dependencies against plan.item_state on dicts the assertion built itself, and is exactly why the plan-lane route survived a green suite). THE BATTERY: fifteen mutants each RED with a pass/fail summary line on every run, and eight ADDITIVE changes each GREEN at 3259, alongside a control that carries this item's own diff and nothing else and reaches 3259/0 - m1 restore the standalone blindness 9 red; m2 gate only the standalone lane 1 red (the plan lane); m3 gate in the standalone loop only 2 red; m4 report standalone-only 1 red; m5 report ignores the spec's own plan 1 red; m6 gate review units too 1 red (AC4); m7 an absent dependency satisfies 3 red; m8 'proven' also satisfies 8 red; m9 depends_on untyped again 1 red (AC5); m10 accept any member shape 1 red; m11 refuse an empty list 6 red (four of them unrelated intake assertions, which is how far the check reaches); m12 duplicate ids allowed 1 red (AC6); m13 a non-terminating dependency gate 16 red; m14 one pack keeps the old dispatcher 7 red; m15 the report drops the absent state 2 red. Additive: a new claimable standalone spec; a new withheld one; one whose dependency names no spec; two forming a cycle; a new status in SPEC_STATUSES; a new global and function in the dispatcher; a new ready PLANNED spec with its plan and work item; a new contract check in the sibling module. VERIFIED BY RUNNING selftest and reading its own summary line, never inferred from a green gate. Nothing in the block asserts a cardinality of anything this repository can grow: no count of specs, units, statuses, packs or files. The engine roster is derived from .warp/packs.json and the module list is declared once, so a newly declared pack widens the covered set instead of making it vacuous."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "warp contracts (built-in): pass. python3 .warp/validate.py all exits 0 with both new refusals in the sweep, so both are adoption-safe over the existing corpus - measured, not assumed: every spec's depends_on is absent or a list of clean id strings, and no spec id is declared twice."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "scripts/check_generated.sh: pass. python3 scripts/update_index.py was run and reported no diff, because no spec status moved."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "scripts/check_docs.sh: pass (dash sweep, non-ASCII sweep, genericity sweep). ASCII hyphens only in every file this item touches."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "scripts/check_template_sync.sh: pass. .warp/validate.py is byte-identical to plugin/templates/.warp/validate.py."
+    },
+    {
+      "name": "pack_drift",
+      "status": "passed",
+      "detail": "scripts/check_pack_drift.py: pass, all seven declared packs byte-identical to the canonical source, asserted again inside the WARP-0724 block over each declared pack root crossed with each of the three engine modules this item changes. m14 reverts the gate in ONE pack copy only and that assertion is the one that goes red."
+    },
+    {
+      "name": "shape_gate",
+      "status": "passed",
+      "detail": "shape gate: pass. The footprint-versus-diff rule binds here and every changed source path is covered, which is why the footprint was widened to name the validator and its copies. MEASURED with the gate's own analyzer: the mechanizable module_lines budget (1000 lines, ENFORCED) is why the two new checks live in validate_checks.py - validate.py went to 1055 lines and the gate went RED before they were moved, and it is 979 after. claimable() is at cyclomatic complexity 18 against a budget of 20, having measured 22 with the gate inlined; that complexity budget sits in the contract's REVIEW lane and nothing here promotes it."
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed",
+      "detail": "secret scan (built-in): pass."
+    }
+  ],
+  "assumptions": [
+    "WARP-0724 is a STANDALONE enforcement spec (lane: standalone, depends_on: []), so this commit adds it to no plan's work list and moves no plan file.",
+    "A PLANNED SPEC IS NOW DOUBLE-GATED, by its plan's work graph and by its own front matter, and this REVERSES the previous build's stated assumption. That build declared front-matter depends_on deliberately not gated onto plan work; the review confirmed it as the defect, because unmet_dependencies(WARP-0620) returned a waiting prerequisite in the same process in which claimable() offered the unit. The two questions are different - the plan says when the plan is ready for an item, the spec says what the item cannot start without, frequently about work outside the plan - so both must hold, and measured on the real corpus the strict direction withholds nothing that was being offered.",
+    "The withheld report is a DIAGNOSTIC and goes to stderr; claimable()'s return shape and the --json payload on stdout are unchanged, so .warp/work.py, .warp/fleet.py and .warp/dispatch.py, which call claimable() directly, see exactly the same contract. standalone_frontier() was REMOVED rather than kept as an alias, because a function named for a rule it no longer applies is worse than a rename; nothing outside this module called it.",
+    "THREE THINGS ARE OUT OF SCOPE WITH THEIR REASONS, recorded in the spec and not only here: duplicate PLAN ids (plan_registry is last-wins too, the same class on a different surface); a spec with no declared lane, which the standalone loop never offers at all (the conservative direction); and the readers staying last-wins now that the gate refuses a duplicate id, which leaves a repository whose gate has never run readable-wrong.",
+    "This spec carries SIX acceptance criteria, above the three-or-four this programme holds itself to. Recorded rather than hidden: the review required the plan-lane route, the untyped field and the duplicate-id hole closed together as one defect class, and if this were sized from scratch AC5 and AC6 would be their own items.",
+    "The battery ran on REAL WORKTREES of this tree, not filesystem copies. Measured twice why: a copy with no git died in pack_conformance (`git archive failed`), and a copy with a fresh git init and one commit died in WARP-1210 AC6, which resolves a pre-change revision out of git HISTORY. Both produced no summary line at all, which is why control_no_change is the first battery item and why its result is reported next to the mutants.",
+    "The spec's status is left exactly where the owner set it (ready). The builder records evidence; it does not transition the item or approve it, and nothing is pushed."
+  ],
+  "rollback": "git revert the fix commit. The behavioural change is one dependency_gate() call in .warp/frontier.py claimable()._add(), the withheld() report widened to every ready spec, _plan_build_candidates() extracted from claimable(), and two contract checks in .warp/validate_checks.py wired into check_spec and run_all, re-synced byte-identical across plugin/templates and the six pack copies. Nothing persists: no migration, no state, no schema change. Reverting restores a dispatcher that offers work whose prerequisites are unshipped and a field no gate types, so a revert should be paired with re-queueing this item.",
+  "proof_digest": "sha256:eb2bb7edb9a1addb"
+}

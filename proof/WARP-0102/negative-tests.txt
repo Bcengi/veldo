@@ -1,0 +1,17 @@
+=== AC1/AC2: lane + promotion (selftest excerpt) ===
+selftest: 63 passed, 0 failed
+
+=== AC2 negative: half-promotion is red both directions ===
+half-promoted exit: 1
+  /path/to/repo/plans/PLAN-0001-warp-one-point-zero.md: mirroring: WARP-0102-plan-skill-and-lanes.md exists but does not declare plan: PLAN-0001 / work: W2 (declares plan: PLAN-0001 / work: W3)
+  /path/to/repo/specs/WARP-0102-plan-skill-and-lanes.md: plan PLAN-0001 work W3 is spec WARP-0103, not WARP-0102
+restored exit: 0
+
+=== AC3: plan.py live against PLAN-0001 ===
+PLAN-0001: NOT releasable
+  - work not shipped: WARP-0102, WARP-0103, WARP-0104, WARP-0105, WARP-0106, WARP-0107, WARP-0108, WARP-0109, WARP-0110, WARP-0111, WARP-0112
+  - open decision D1 still blocks WARP-0112
+release-check exit: 1
+impact of WARP-0105 in PLAN-0001:
+  WARP-0107 (unknown)
+  WARP-0112 (unknown)

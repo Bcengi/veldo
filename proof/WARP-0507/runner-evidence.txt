@@ -1,0 +1,1 @@
+PLAN-0005 released at 6/6: plan status released, release-check releasable, all six work items shipped with passing verdicts, plugin 3.1.0, method unchanged, gate GREEN (selftest 848 passed, 0 failed).

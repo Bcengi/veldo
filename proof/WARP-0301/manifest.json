@@ -1,0 +1,29 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0301",
+  "commit": "fa1be4052a321ea8877df3bbf550e6751e47d9d0",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 wave 1)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T01:55:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/api/warp_api_runner.py exists: a generic stdlib (urllib) HTTP/API journey runner reading a JSON journey (base_url + steps of method/path/headers/body and an expect block: status, json_keys, json_equals, json_path_present, json_path_equals, max_seconds), asserting each step, exiting 0 all-pass else 1 with the failing step named"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "proof/WARP-0301/runner-evidence.txt: test_api_runner.sh stands up the stdlib mock server and drives both fixtures - pass.journey.json exits 0, fail.journey.json exits 1 (failure caught)"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py api-runner block: imports the runner + mock server, exercises every expect kind and the JSON-path resolver (true and false outcomes), drives the runner over its fixtures against an in-process ephemeral-port stdlib server (pass -> exit 0, fail -> exit 1 with the failure named). Part of selftest 161 passed / 0 failed"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner and fixtures carry zero company/product names (docs-hygiene genericity sweep passes); .warp/capabilities.yaml marks http_api_runner status: reference (a shipped artifact an adopting repo wires to its gate slot; the warp repo has no HTTP surface and does not run it), kept byte-identical with the plugin template copy"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 161 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference runner: generic, stdlib only, driven against an in-process mock server for the selftest so the control logic is gate-tested with no external dependency. An adopting repo points it at its own endpoint. Shipped under plugin/templates/scripts/runners/api/; not wired into the warp repo's own gate (capabilities: reference)."],
+  "rollback": "git revert the impl; the runner is additive under plugin/templates/scripts/runners/api/, touches no protected path, and its selftest cases sit within the 161."
+}

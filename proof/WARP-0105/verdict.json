@@ -1,0 +1,46 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0105",
+  "commit": "da6a96f145e42997457aa875250f13eddd38cf3c",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, fresh context)",
+  "reviewed_at": "2026-07-16T21:46:32Z",
+  "verdict": "pass",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "note": "Reran the real Playwright chromium runner myself: pass.journey.json against app.html exits 0 with 7/7 steps ok on a driven flow. Refutation attempt failed to break it - a journey I authored outside the repo asserting expect_text #status 'Deleted' (actual 'Saved') exits 1 with detail 'expected \"Deleted\" in #status, got \"Saved\"', and expect_visible on a nonexistent selector exits 1. A journey with correct assertions exits 0. Not a rubber stamp: exit 0 requires every asserted step to genuinely pass."
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "note": "landing.png and after-save.png are real 1024x768 PNGs (verified magic bytes + dimensions, non-empty) captured by driving the flow (after-save is larger, reflecting the revealed #status). fail.journey.json against broken.html stops at step 2:expect_visible #status (times out at 1500ms because status is never revealed), writes a real 1280x800 FAILURE-step-2.png, and exits 1. Also confirmed a click on a missing selector times out at its declared timeout (~2s wall) and fails rather than hanging."
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "note": "Broken fixture a11y scan fires exactly four real violations (img-alt, input-label, control-name, html-lang); good fixture is clean (0). Scan is genuinely DOM-driven, not hardcoded: a clean copy of app.html outside the repo scans empty, and injecting <img src=x> into a copy fires img-alt with the exact injected element as the sample. Independently verified the fifth rule required by AC3 - injecting a duplicate id=q fires duplicate-id (the shipped fixture triggers four as the spec states, not five). a11y_fail_on:true makes violations fatal (exit 1) while a11y_fail_on:false reports the same violations non-fatally (exit 0). The scan is dependency-free (pure DOM querySelector via page.evaluate, no axe-core)."
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "note": "test_web_runner.sh exits 0 (pass fixture exit 0, fail fixture exit 1). README is accurate (Node + playwright + chromium required; harness resolves Playwright from global npm root or NODE_PATH; action list matches the code). Portable resolver works (ran via run.sh which sets NODE_PATH from npm root -g). capabilities.yaml (both live and template copy) marks journeys_runner, ui_state_runner, and accessibility_scan as 'reference' with accurate notes; none claimed mechanical. The warp gate marks CHECK_journeys/ui_states/accessibility 'na:no user interface in this repository' and the runner is absent from verify.sh (grep count 0). Confirmed ./scripts/verify.sh is GREEN with 5 run / 18 na / 0 undeclared and launches no browser; selftest 77 passed 0 failed (unchanged); validate.py all exits 0."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "[advisory] The runner exits 0 for a journey that contains only actions (state/click/fill) and no expect_* assertion steps - a journey that asserts nothing 'passes' green. This is inherent to journey runners and is the journey author's responsibility; the shipped and per-repo fixtures do assert, and the spec does not require the runner to enforce assertion presence. Non-blocking; consuming repos should ensure their journeys carry real assertions."
+    },
+    {
+      "severity": "note",
+      "text": "[info] AC3's fifth scan rule (duplicate-id) is claimed by capabilities.yaml and README but is not exercised by the shipped broken.html (which triggers four rules). This is honest, not an overclaim: spec AC3 explicitly says the broken fixture triggers 'four real violations', and I independently confirmed the duplicate-id rule fires against a temp fixture. Non-blocking."
+    },
+    {
+      "severity": "note",
+      "text": "[info] The proof manifest's AC1 evidence phrases the pass run as '7/7 asserted steps', but only three of the seven steps are assertions (expect_hidden/expect_visible/expect_text); the rest are state/fill/click actions. The '7/7 steps ok' count is accurate; the word 'asserted' is slightly loose. Cosmetic, non-blocking. Every other manifest claim reproduced exactly - the committed proof PNGs are byte-identical in size to the screenshots my independent reruns produced (landing 9908, after-save 11268, FAILURE-step-2 9751), confirming they are genuine driven-flow output."
+    }
+  ],
+  "summary": "All four acceptance criteria independently verified by rerunning the gate and, critically, running the real Playwright chromium runner myself and attempting to defeat its honesty. The runner is not a rubber stamp: false assertions fail (exit 1), true assertions pass (exit 0), unknown actions error, missing-selector clicks time out rather than hang, the a11y scan is real DOM analysis (proven by injection - all five AC3 rules fire, good fixture clean), a11y_fail_on toggles fatality correctly, and the fail flow captures a real FAILURE screenshot. The gate itself launches no browser, correctly marks the UI slots na, and the runner is honestly declared 'reference' (not mechanical) and absent from verify.sh. Selftest 77/0 unchanged, verify GREEN 5 run/0 undeclared, validate exit 0. Zero blocking findings; three non-blocking observations. PASS.",
+  "_conformance_note": "Reviewer used severities advisory/info; normalized to the contract's non-blocking 'note' (label preserved in text). Verdict value and blocking count unchanged. Follow-up: recognize a richer non-blocking severity vocabulary in the findings contract (touches protected policy_check.py, own spec)."
+}

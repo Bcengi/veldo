@@ -1,0 +1,57 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0100",
+  "commit": "0de75f3ee243249a6161a5a606d713c4eeb8456e",
+  "producer": "claude-opus-4-8[1m] (implementing agent)",
+  "produced_at": "2026-07-16T19:30:30Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "gate built-in 'warp contracts' step: python3 .warp/validate.py all exit 0 (see .warp/last_verify for this commit)"}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/last_verify: status green, checks_run 5, checks_na 18, 0 waived, 0 undeclared, commit 0de75f3"}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "specs/index.md row: WARP-0100 | Adopt WARP in the WARP home repository | ready"}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "proof/WARP-0100/negative-tests.txt AC4 section: planted em-dash + company reference fails all three sweeps (exit 1), restore passes (exit 0)"}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "proof/WARP-0100/negative-tests.txt AC5 section: drifted .warp/validate.py fails template sync (exit 1), resync passes (exit 0)"}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed", "detail": "scripts/check_lint.sh: py_compile + bash -n over every tracked script including plugin templates"},
+    {"name": "unit", "status": "passed", "detail": "scripts/selftest.py: 9 passed, 0 failed; all 8 planted-bad contract artifacts rejected"},
+    {"name": "docs", "status": "passed", "detail": "scripts/check_docs.sh: dash, non-ASCII, genericity sweeps clean"},
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerates to identical content"},
+    {"name": "template_sync", "status": "passed", "detail": "scripts/check_template_sync.sh: 4 instance files byte-identical to plugin/templates"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "python3 .warp/validate.py all"}
+  ],
+  "assumptions": [
+    "The PreToolUse guard registered in .claude/settings.json activates for sessions opened in this repository; this adoption was driven from an external session, so gate-before-push discipline was applied manually and is visible in the commit order."
+  ],
+  "rollback": "git revert the adoption commits; all changes are additive files plus one two-character ASCII fix in docs/method.md."
+}

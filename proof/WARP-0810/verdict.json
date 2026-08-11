@@ -1,0 +1,25 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0810",
+  "commit": "b5e3e532d9c524b6573bc110a173117b9925c775",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer, agent a619b0ca6084f34ec)",
+  "reviewed_at": "2026-07-19T12:34:42Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:fd9364cc84108041",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "plugin.json == 3.4.0, marketplace.json == 3.4.0, PLAN-0008 release.version reads 'plugin 3.4.0'; git show --stat proves method.md/AGENTS.md are not in the commit."},
+    {"id": "AC2", "status": "confirmed", "note": "multitool_packs and pack_conformance entries in both capabilities.yaml files, the two byte-identical (diff clean), all six pack copies byte-identical to root, and packs.json declares exactly the seven packs."},
+    {"id": "AC3", "status": "confirmed", "note": "pack_drift_report empty for all seven; teeth fired both ways (one-byte injection -> cursor 'differs'; chmod -x -> codex 'mode'), both reverted clean."},
+    {"id": "AC4", "status": "confirmed", "note": "packs/README.md documents all seven packs, the one-engine assembly, and the enforcement invariant; README.md and docs/plugin.md both link to it."},
+    {"id": "AC5", "status": "confirmed", "note": "plugin/ present, packs/claude absent, marketplace source ./plugin; deferral justified by floor:high protected files and policy.yaml; all 16 changed files checked vs 7 protected_paths with ZERO hits - no protected path touched."},
+    {"id": "AC6", "status": "confirmed", "note": "release-check single-reason not-releasable at the impl commit (WARP-0810 pending); simulating WARP-0810 shipped makes it releasable; PLAN-0008 status is released; W1-W9 all shipped."},
+    {"id": "AC7", "status": "confirmed", "note": "verify.sh GREEN at b5e3e53 in an isolated worktree, selftest 1270 passed / 0 failed, all hygiene sweeps clean."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "marketplace.json version was stale at 2.0.0 before this commit while plugin.json was at 3.3.0; this release syncs both to 3.4.0, correcting a pre-existing version drift. Not blocking (AC1 only requires both read 3.4.0 after this commit, which holds)."},
+    {"severity": "note", "text": "At the impl commit exactly, PLAN-0008 status reads 'released' while release-check reports not-yet-releasable. This is the documented, intentional two-commit release shape: the plan flip must live in the impl commit because the evidence-only allowlist in warp-guard.sh is proof/*|.warp/*|specs/* (excludes plans/), and the spec flips to shipped in the evidence commit at which point release-check passes (verified by simulation). Transparent in AC6/Notes."},
+    {"severity": "note", "text": "Impl commit correctly contains NO evidence files (no proof/, .warp/last_verify, or .warp/events.jsonl among the 16 changed files); the spec (status:ready) and specs/index.md ride in the impl commit legitimately since it is already a full-verdict commit. Two-commit shape is sound."},
+    {"severity": "note", "text": "Dash discipline clean: zero em-dashes and zero en-dashes in all changed docs; every double-hyphen occurrence is a markdown table separator or a YAML/horizontal-rule delimiter, no prose double-hyphens."}
+  ],
+  "summary": "The WARP-0810 release holds up under adversarial testing. All seven acceptance criteria are independently confirmed at commit b5e3e53: the version bump is consistent across plugin/marketplace/plan, the seven-pack manifest and capability entries are honest and byte-consistent, the drift-check has real teeth for both content and mode, the deferral of the plugin/ -> packs/claude rename is genuinely justified by protected-path floors, and no protected path is touched by this commit. The gate is GREEN with 1270 selftests passing and all hygiene sweeps clean. The only observations are non-blocking (a corrected pre-existing marketplace version drift and the intentional, well-documented two-commit release shape). Verdict: pass."
+}

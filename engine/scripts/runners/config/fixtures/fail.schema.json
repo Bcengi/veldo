@@ -1,0 +1,23 @@
+{
+  "name": "service config (one sample is deliberately mislabeled)",
+  "schema": {
+    "allow_unknown": false,
+    "fields": {
+      "host": {"type": "string",  "required": true},
+      "port": {"type": "integer", "required": true, "min": 1, "max": 65535},
+      "mode": {"type": "string",  "enum": ["dev", "staging", "prod"]}
+    }
+  },
+  "samples": [
+    {
+      "name": "a genuinely valid config",
+      "label": "valid",
+      "config": {"host": "cache.internal", "port": 8080, "mode": "prod"}
+    },
+    {
+      "name": "mislabeled valid: the port is above the maximum, so the runner rejects it and the verdict mismatches the label",
+      "label": "valid",
+      "config": {"host": "cache.internal", "port": 70000}
+    }
+  ]
+}

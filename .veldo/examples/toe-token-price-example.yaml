@@ -1,0 +1,19 @@
+# veldo.toe_token_price/v1: the declared rate a Tokens of Effort range is converted to money
+# at. EXAMPLE ONLY. A repository that wants dollar ranges copies this to
+# .veldo/toe_token_price.yaml and puts its own numbers in it; a repository that declares no
+# rate reads UNPRICED everywhere, which is a different fact from free and is never a zero.
+#
+# The rate is in INTEGER micro-USD per 1000 tokens, because the front-matter subset has no
+# float and money derived from an uncalibrated range has no business carrying binary rounding
+# on top of the uncertainty it already has. 3000 micro-USD per 1000 tokens is 3.00 USD per
+# million tokens.
+#
+# model, source and observed_at are REQUIRED. A rate is the one number in this chain that
+# comes from outside the repository entirely, so it does not get to arrive without saying
+# which model it is for, where it came from, and when it was true.
+schema: veldo.toe_token_price/v1
+usd_micros_per_1k_tokens: 3000
+model: the model identity this rate was observed for
+source: the vendor published price list, read and typed by hand on the date below
+observed_at: 2026-08-10
+note: 3000 micro-usd per 1k tokens is 3.00 usd per million tokens

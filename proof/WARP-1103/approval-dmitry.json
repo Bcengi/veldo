@@ -1,0 +1,34 @@
+{
+  "schema": "warp.approval/v1",
+  "id": "APPROVAL-1103-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-1103",
+    "commit": "84fc55da679213e256473b95695377cabcde347e",
+    "paths": [
+      ".warp/arch.py",
+      ".warp/validate.py",
+      ".warp/plan.py",
+      ".warp/frontier.py",
+      ".warp/capabilities.yaml",
+      "plugin/templates/.warp/arch.py",
+      "plugin/templates/.warp/validate.py",
+      "plugin/templates/.warp/plan.py",
+      "plugin/templates/.warp/frontier.py",
+      "plugin/templates/.warp/capabilities.yaml",
+      "packs/*/.warp/arch.py",
+      "packs/*/.warp/validate.py",
+      "packs/*/.warp/plan.py",
+      "packs/*/.warp/frontier.py",
+      "packs/*/.warp/capabilities.yaml",
+      "plugin/skills/spec/SKILL.md",
+      "packs/*/skills/spec/SKILL.md",
+      "specs/TEMPLATE.md"
+    ]
+  },
+  "basis": "The founder (Dmitry) explicitly approved WARP-1103 on 2026-07-22 via Telegram: 'approve and refine the rule for later'. WARP-1103 self-elevated to risk high with human_approval required because its footprint spans two declared architecture areas (contracts and fleet - it edits .warp/frontier.py) and, under the spec's own new footprint-to-tier rule (a boundary-crossing footprint floors the tier at least high, and the machine never lowers a tier), a two-area footprint forces high plus approval. PLAN-0011 was founder-approved, so this W3 unit runs under that plan authorization; the placement and footprint gate this spec ships is exactly the plan's O3.measure / W3 / RJ2 mandate. The founder also directed refining the tier rule as a later change so that mere breadth (an allow-listed, correctly-layered two-area edit) does not by itself force approval - recorded here as a follow-up, not a condition of this approval. Agent-recorded with provenance under the founder's explicit approval; this is not a fresh auth-gateway verified identity, which remains honestly out of scope and tracked for a later platform iteration.",
+  "recorded_at": "2026-07-22T19:45:00Z",
+  "recorded_by": "claude-opus-4-8[1m] (Ava, recording the founder's explicit Telegram approval with provenance; the recording scribe, not the approver). Self-separation holds because the authorizing approver is the human dmitry, not any model: the proof producer for WARP-1103 is claude-opus-4-8[1m] (the WARP-1103 completion agent), and the approver 'dmitry' is inherently distinct from that producer, so the model never approves its own work.",
+  "expires_at": "2026-08-21T00:00:00Z"
+}

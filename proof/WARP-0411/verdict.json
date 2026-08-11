@@ -1,0 +1,46 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0411",
+  "commit": "8de881fff7a0540e89f0cb172d8d34ec85c60e3f",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T21:49:13Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:8eef55fb448a8611",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, guard mutated to prove non-tautology, fixtures and real-failure paths confirmed)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, guard mutated to prove non-tautology, fixtures and real-failure paths confirmed)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, guard mutated to prove non-tautology, fixtures and real-failure paths confirmed)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, guard mutated to prove non-tautology, fixtures and real-failure paths confirmed)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "All three guards proven non-tautological by mutation: removing the empty-interactions guard, or reverting check_invariant / check_budget to their is-not-None form, each turns exactly one named selftest case red (integration empty-interactions; db missing-expect_rows; db missing-max_seconds), 762/1 in each case."
+    },
+    {
+      "severity": "note",
+      "text": "Guards use is None (not truthiness) so expect_rows:[] and max_seconds:0.0 remain legitimate strict assertions; real row mismatches, SQL errors, and budget overruns are still caught. The pre-existing SQL-error selftest was given an expect_rows so it still exercises the real SQL path rather than tripping the new guard - an honest adjustment, not a weakening."
+    },
+    {
+      "severity": "note",
+      "text": "Fixtures unaffected: db pass/fail and integration pass/fail behave as before (db fail still fails at reversibility, empty budgets:[] legitimate, a no-invariants-no-budgets journey still passes). Web runner exclusion is honest (Node .mjs, not exercised in the gate)."
+    }
+  ],
+  "summary": "WARP-0411 closes three silent-pass gaps in two mechanical runners: the integration runner now fails loud on empty/missing interactions, and the db runner's check_invariant and check_budget fail loud with named malformed errors when their assertion is under-declared. Independent adversarial review: pass_with_notes, 0 blocking, gate GREEN (763/0). Each guard is genuinely non-tautological (mutation flips its dedicated selftest case), well-formed checks still pass, and real mismatches/SQL errors/budget overruns are still caught. Proportionate, generic, ASCII, no protected path."
+}

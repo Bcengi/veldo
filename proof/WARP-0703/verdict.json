@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0703",
+  "commit": "16295d58e5ad7452b2f290317c3f58d0289f5f8e",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T05:45:16Z",
+  "verdict": "pass",
+  "proof_digest": "sha256:36f350225aa5f84b",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Independent review reproduced the claim/dispatch/release/drain loop over its own temp repo + claims: the loop drains via the empty frontier (a dependency-gated unit was dispatched only after its dep succeeded, proving the frontier is re-queried each step), not the max_units backstop."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Claim held across the dispatch and released in a finally even on a raise (verified). Claim-then-recheck closes the done-ness TOCTOU the first review found: the reproducer that gave 13-17 double-dispatches per 30 units now shows 0 across 8 trials, and 60/60 heavy-stress trials (up to 16 workers, widened windows, mixed build+review) are exactly-once. Happens-before ship -> release -> next claim -> recheck leaves no residual window on a local FS."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Pure seam: work.py imports only importlib, os, uuid, pathlib plus the frontier and claim helpers - no subprocess, socket, network, or agent; building and reviewing are delegated to the injected Dispatcher, and the durable outcome removes the unit from the frontier."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "A failed unit is released (finally) yet recorded in _failed so the failing worker does not re-claim it - dispatched exactly once, no hot-loop, and the rest of the frontier still drains. Non-tautology teeth confirmed red under the two mutations."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Both selftest blocks reproduced independently. The new multi-worker block is non-tautological and not flaky-green: exactly-once failed 0/40 on the fix and 40/40 on the recheck-removed mutant (the every-unit assertion passing in both isolates the failure to the double-dispatch). Torn / missing / garbage spec reads fail SAFE to skip (never a false 'ready'), so the recheck introduces no new defect."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Independent Opus review across two passes. Pass 1 (a419727) was pass_with_notes, 0 blocking: all 5 ACs reproduced over the reviewer's own temp trees, all three mutation teeth (drop release, drop self-skip, release-before-dispatch) confirmed red, pure seam and genuine reuse of claim.py/frontier.py confirmed - but it found a real done-ness TOCTOU (a unit another worker finished between the frontier snapshot and this worker's claim was re-claimed and re-dispatched, 13-17 of 30 units under 4 workers). Rather than defer (AC2/AC5 as-worded held, but it conflicted with plan O1 'never the same one' and leaned on dispatcher idempotency - a RULE #6 shortcut), the fix was implemented pre-ship: claim-then-recheck (frontier.current_status + WorkLoop._still_claimable), plus a barrier-synchronized multi-worker selftest that reproduces the window and asserts exactly-once fleet-wide."
+    },
+    {
+      "severity": "note",
+      "text": "Pass 2 (16295d5, this verdict) re-verified the fix and is PASS, 0 blocking: the reproducer now shows 0 double-dispatches, 60/60 heavy-stress trials exactly-once, the multi-worker selftest is non-tautological (mutant fails 40/40) and not flaky-green (0/40), torn/missing/garbage reads fail safe to skip, current_status reuses _spec_index (no duplicated parsing), the module is a pure seam, both capabilities.yaml copies are byte-identical, and the gate is GREEN at selftest 1011. One standing note: the exactly-once guarantee rests on the happens-before chain being visible to the next claimer, which holds on a single host / local FS and NFSv3+ close-to-open; a distributed FS with aggressive attribute caching is an inherent WARP-0701 architectural caveat (not introduced here), and cross-host visibility is governed by the Y4 serialized lander. A minor perf observation: each passing claim triggers an O(specs) _spec_index re-parse, consistent with claimable() already parsing all specs per step, fine at current scale."
+    }
+  ],
+  "summary": "Y3 (WARP-0703, the warp work loop) is correct and honest. Two-pass independent adversarial review; final verdict PASS, 0 blocking; gate GREEN (selftest 1011). The WorkLoop claims the next claimable unit (frontier WARP-0702) via an atomic claim (WARP-0701), dispatches it through an injected seam (build/review delegated, no live agent in the loop), and releases - draining via the empty frontier with a max_units backstop; the claim is held across the dispatch and always released after (no stuck claims on a crash), a failed unit is released but not re-claimed by the failing worker (no hot-loop), and claim-then-recheck makes dispatch exactly-once fleet-wide even when another worker finishes a unit in the claim-time window (the first review's TOCTOU, reproduced and now closed: 0 double-dispatches, 60/60 heavy-stress clean). It reuses the frontier and claim ledger rather than reimplementing, and the control logic is gate-tested with a fake dispatcher over a temp repo + claims root, single-worker and barrier-synchronized multi-worker, both non-tautological. proof_digest via validate.py."
+}

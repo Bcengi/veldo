@@ -1,0 +1,40 @@
+schema: veldo.estimate/v1
+spec: WARP-9402
+unit: tokens
+committed_at: 2026-08-10
+calibration: calibrated
+combination: envelope
+low: 190000
+high: 1400000
+note: EXAMPLE RECORD for a fictional spec, carrying two layers so the DERIVED fields are visible at work: low and high are the ENVELOPE of the layers (the lowest low and the highest high, never an average), and calibration reads calibrated only because one layer is grounded in recorded actuals
+layers:
+  - layer: structural_proxy
+    basis: uncalibrated_prior
+    low: 190000
+    high: 1188000
+    note: the deterministic first layer: mechanical spec features times expected review cycles times a DECLARED token scale. Wide on purpose, and the scale it used is in inputs so a reconciliation can separate a wrong structure from a wrong scale
+    inputs:
+      acceptance_criteria: 5
+      expected_review_cycles: 2
+      gate_depth: full
+      gate_rework: 1
+      protected_rework: 0
+      protected_touch: no
+      regression_surface: 7
+      reviews_declared: 1
+      reviews_source: policy
+      risk: standard
+      spread_pct: 250
+      structural_weight_tenths: 190
+      tokens_per_structural_unit: 25000
+  - layer: historical_analogy
+    basis: corpus_analogy
+    low: 240000
+    high: 1400000
+    note: the strongest layer, present here to show the shape W4 writes: predicted from the recorded actuals of matched shipped specs, windowed to one model identity (D5). NO RECORD IN THIS REPOSITORY CARRIES THIS LAYER TODAY, because the actuals corpus has 0 percent spend coverage (WARP-1401); this file illustrates the schema and records no measurement
+    inputs:
+      corpus_records: 148
+      match_features: acceptance_criteria,risk,protected_touch,regression_surface
+      matched_specs: 12
+      model_identity: example-model-id
+      same_model_records: 41

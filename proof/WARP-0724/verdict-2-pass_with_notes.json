@@ -1,0 +1,28 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0724",
+  "commit": "a16e88c3331920a4ef17e7d520f43db0f63998c0",
+  "reviewer": "claude-opus-5[1m], agent ab9c1287aca1b9c47, workflow wf_df531bd8-fe5. INDEPENDENT of the builders and of the earlier reviewers, and it reviewed THE STATE ON MAIN rather than the branches. NOTE FOR A LATER READER: dispatched by the orchestrator inside a workflow, NOT through this repository's own review lane, so this is weaker evidence than a lane-dispatched review. It ran ./scripts/verify.sh and scripts/selftest.py itself and reported GATE: GREEN with 3319 passed / 0 failed.",
+  "reviewed_at": "2026-07-29T15:30:00Z",
+  "verdict": "pass_with_notes",
+  "round": 2,
+  "summary": "YES on the core promise. I drove ten routes against the state on main at a16e88c, each in a temporary repo through the shipped .warp/frontier.py, and no build unit with an unshipped declared prerequisite was offered on any of them. (1) A PLAN-LANE ready spec whose own front matter declares an unshipped dependency is withheld and is released the instant the prerequisite flips to shipped. (2) A spec BOTH build loops reach is withheld whatever order they run in - seen.add is after every gate, so the single application point in _add holds. (3) Duplicate spec ids: I reproduced the last-wins harm (a draft prerequisite reading as shipped from a second file, releasing dependent work) and check_spec_ids refuses it (1 error); the residual that readers stay last-wins is declared in the spec. (4) A dependency naming a spec that does not exist resolves to DEP_ABSENT, is named in the withheld report, and unrelated work is still offered. (5) Six depends_on shapes: every shape that crashes the reader (list-of-mappings, nested list) is refused by check_depends_on, as are a bare scalar, None, a mapping and an integer member; the one shape the contract admits reads without raising. (6) NON-STARVATION: a three-member dependency cycle plus a self-cycle plus an unrelated ready spec returned in 0.001s with no hang and no exception - each cycle member withheld individually, the unrelated unit still offered. (7) Review units with an unshipped dependency and with an absent dependency are both still offered as review work and appear in no withheld report, on the standalone and the planned lane. On the live corpus: 154 specs, 13 at ready, 7 claimable, 5 dependency-withheld (exactly the five AC2 names, at the states it names), and zero claimable build units with an unmet dependency.",
+  "criteria": {
+    "note": "Reviewed against the spec's own acceptance criteria on the landed state at a16e88c. See summary and findings."
+  },
+  "findings": {
+    "blocking": [
+      "depends_on is ALSO declared on a PLAN WORK ITEM and is NOT typed there. Measured on a gate-legal plan (PLAN-0016 with one substitution, count asserted =1 each time): work[0].depends_on: [{id: WARP-Q}] and [[WARP-Q]] make validate.check_plan ITSELF raise TypeError: unhashable type inside `if d not in spec_set`, and make frontier.claimable() raise the same. [9001] and a bare scalar are refused cleanly (1 error). So a gate-legal-looking corpus turns the validator into a traceback instead of a legible red - a crash, which this programme holds is worse than a red - and warp frontier crashes on a corpus whose gate has never run. This defeats AC5's stated universal, not the dependency gate itself: no unsafe unit is ever OFFERED by this route, because the run dies instead."
+    ],
+    "non_blocking": [
+      "AC5 headline: 'DEPENDS_ON IS TYPED WHERE IT IS DECLARED, so no reader can meet a shape it cannot survive or report honestly.' - measurably false for the plan work item's depends_on, which is a place the field IS declared and where check_plan cannot report honestly. Delete the 'so no reader can meet a shape it cannot survive or report honestly' clause, or extend the typing to the plan work item and keep it.",
+      "'Why the field is typed rather than guarded': 'The field is declared in the spec contract, so its shape is decided there' - the field is declared in TWO contracts and its shape is decided in one. Narrow to 'the SPEC contract'.",
+      "Two things a reviewer should attack: 'MEASURED on the real corpus the strict direction withholds nothing that was being offered.' - true but VACUOUS on the plan lane: all 13 ready specs are lane standalone, so on the real corpus there is no planned ready unit to withhold. The plan-lane half is proven only in the gate-legal fixture (which does exist, and which I drove independently). Say so rather than letting 'MEASURED on the real corpus' carry the plan lane."
+    ]
+  },
+  "must_fix_before_live": [
+    "depends_on is ALSO declared on a PLAN WORK ITEM and is NOT typed there. Measured on a gate-legal plan (PLAN-0016 with one substitution, count asserted =1 each time): work[0].depends_on: [{id: WARP-Q}] and [[WARP-Q]] make validate.check_plan ITSELF raise TypeError: unhashable type inside `if d not in spec_set`, and make frontier.claimable() raise the same. [9001] and a bare scalar are refused cleanly (1 error). So a gate-legal-looking corpus turns the validator into a traceback instead of a legible red - a crash, which this programme holds is worse than a red - and warp frontier crashes on a corpus whose gate has never run. This defeats AC5's stated universal, not the dependency gate itself: no unsafe unit is ever OFFERED by this route, because the run dies instead."
+  ],
+  "disposition": "shippable_after_deleting_listed_sentences",
+  "notes": "Recorded AFTER the fact, on 2026-07-29, because this review - like four before it that day - returned structured data to the orchestrator and left no artifact. A review is not done until its verdict artifact exists."
+}

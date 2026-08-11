@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0809",
+  "commit": "3195da69bb24c0eeda4adaa04b32574a8bae9c7c",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0008 W9, in-session single writer)",
+  "plan_hash": "sha256:b86504755d842c46",
+  "produced_at": "2026-07-19T06:42:23Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a table-driven cross-pack conformance harness (.warp/pack_conformance.py, build machinery driven from .warp/packs.json) is wired into the gate via the selftest (scripts/selftest.py WARP-0809 block); run over the repo it reports every declared pack conformant as a single findings list, empty when all hold and naming the pack+failure otherwise."},
+        {"type": "unit", "ref": "independent review (agent aa2bcd8f, bound to 3195da6): the module reads .warp/packs.json, is asserted == [] in the selftest, and a live run returned findings []; teeth proven by injecting a defect -> a finding fires and NAMES the pack (e.g. 'pack cursor: engine drift [(.warp/validate.py, differs)]'). Part of selftest 1270 passed, 0 failed; GATE GREEN at 3195da6."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "for EACH pack the harness extracts the pack's own assembled engine (git archive, mode-preserving), commits a throwaway repo, and drives the push gate against a constructed state: the copied guard (via the committed git pre-push hook where present, else the guard directly for the option-B Claude pack) BLOCKS an unproven HEAD (exit 2) and ALLOWS a proven HEAD (green last_verify + proof manifest + passing commit-bound verdict), and policy_check.py run standalone as CI runs it agrees (unproven 1, proven 0). Both directions per pack is intrinsic teeth."},
+        {"type": "unit", "ref": "independent review ran gate_exit_for_state for every pack both directions (all correct) and proved PROVEN-STATE HONESTY: corrupting any single required element flips ALLOW->BLOCK (no last_verify -> block; last_verify=red -> block; no manifest -> block; no verdict -> block; WRONG proof_digest -> block via policy; a blocking finding -> block; verdict=fail -> block). The proven fixture builds the true shape; the guard's three checks + policy's commit-bound verdict + proof_digest match are genuinely load-bearing, not stubbed. A state-blind gate provably cannot satisfy both directions. Part of selftest 1270 passed, 0 failed."}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the harness closes the WARP-0808 review note at the git INDEX: committed_hook_modes (git ls-files -s) asserts the committed mode of every pack's hooks/pre-push and copied scripts/warp-guard.sh is executable (100755), stronger than a working-tree os.access check that can diverge from the index; and real_push_exec_bit proves the exec bit is load-bearing via a real git push to a local bare remote (a committed non-executable hook fails OPEN, git silently skips it, an unproven push lands; an executable one blocks)."},
+        {"type": "unit", "ref": "independent review: committed_hook_modes reports 12 entries (6 hook-shipping packs x hook+guard), all 100755. The reviewer reproduced the load-bearing claim FULLY INDEPENDENTLY (not via the harness): git archive HEAD:packs/copilot | tar -x, git config core.hooksPath hooks, real git push to a local bare remote -> at 644 the ref LANDED (fail-open reproduced), at 755 the push was BLOCKED (nothing landed). The harness's real_push_exec_bit returns {nonexec_landed: True, exec_blocked: True}; exec-bit teeth proven by git update-index --chmod=-x -> 'pack codex: committed packs/codex/hooks/pre-push not executable in the index (mode 100644)'. Part of selftest 1270 passed, 0 failed."}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the engine drift-check (byte-identical content AND mode) holds across all seven packs, asserted by the harness for every declared pack, so portability and no-drift are gate-enforced by construction - the join point converting 'ported' into a property."},
+        {"type": "unit", "ref": "independent review: engine_drift asserted for every declared pack; an instrumented run confirmed all 7 (claude, cursor, codex, copilot, antigravity, opencode, aider) iterated with empty drift; teeth proven (a cursor engine-file injection fires a named drift finding). Note (informational, accepted): claude's engine_src == pack_dir == plugin/templates (option B, canonical-in-place) so its drift is empty by construction and the drift teeth are real for the 6 copied packs. Part of selftest 1270 passed, 0 failed."}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "a selftest asserts the harness passes (pack_conformance() == [], would flip FAIL>0 on any finding) and is non-tautological: directional gate_exit_for_state both ways on a hook-shipping pack (copilot) AND the guard-direct pack (claude, option B), the real-git-push exec-bit case, and the committed-index-mode over every pack's hook+guard (len>=12 and all==100755)."},
+        {"type": "unit", "ref": "independent review confirmed non-tautological and would-flip-on-defect (demonstrated). CLAUDE_PROJECT_DIR pinning proven safe by counterfactual: an unproven fixture with CLAUDE_PROJECT_DIR pointed at a genuinely-proven repo would false-pass, but _git_env pins CLAUDE_PROJECT_DIR=<fixture> on every invocation so the unproven fixture correctly blocks - an inherited session value cannot redirect the guard. Part of selftest 1270 passed, 0 failed."}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 1270 passed, 0 failed (+8 for the WARP-0809 block); GATE GREEN at 3195da6, verified in a clean detached worktree by the builder and independently by the reviewer"}
+  ],
+  "assumptions": [
+    "W9 of PLAN-0008, the join point (depends on all seven packs W2-W8), built in-session by a single writer. The harness (.warp/pack_conformance.py) is build machinery in the repo-root .warp/ (like pack.py and tracker_conformance.py), NOT shipped engine: ENGINE_GLOBS globs plugin/templates/.warp/*.py (the 7 shipped modules), not the repo-root .warp/, so the module is not copied into packs and forces no re-assembly (engine_files == 139, the module unmatched). It reads .warp/packs.json so a new pack is covered the moment declared. The gate is driven locally with no network: each pack is extracted via git archive (mode-preserving) into a throwaway repo, committed, and its committed pre-push hook (or the guard directly, for the option-B Claude pack that ships no committed hook of its own) is invoked against a constructed unproven vs proven state; one real git-push-to-a-local-bare-remote case proves the exec bit is load-bearing end to end. This spec also closes the WARP-0808 non-blocking robustness note (the per-pack selftest blocks asserted working-tree os.access, which can diverge from the git index; W9 asserts the COMMITTED index mode via git ls-files -s). One independent adversarial review (agent aa2bcd8f) bound to 3195da6 returned pass_with_notes, 0 blocking; it verified the gate GREEN in its own isolated worktree/clone, all 5 ACs by concrete probes, and left the main repo untouched.",
+    "Accepted non-blocking review notes (not defects): (1) the proven fixture is a single-commit repo, so the guard/policy evidence-inheritance PARENT rule is not exercised by W9's own fixture (the direct-HEAD match path is); the inheritance logic lives in the guard and policy_check and is covered by other selftest blocks. (2) the Claude pack's drift is empty by construction (engine_src == pack_dir == plugin/templates, option B canonical-in-place, intended); the drift teeth are real for the 6 copied packs. (3) the harness proves whatever enforcement path a pack HAS works, but does not itself mandate that a non-Claude tool ship a committed git hook (a pack with none is driven guard-direct like Claude); that completeness belongs to each pack's own W2-W8 spec, which asserts the pack's specific wiring. Pre-existing advisory (not a WARP-0809 defect): specs/index.md embeds a 'Generated <date>' line, a date-sensitivity of update_index.py; it did not trigger the clean-worktree runs. plan_hash here (sha256:b86504755d842c46) is the CANONICAL hash via plan.py (parse_yamlish, capturing the work DAG)."
+  ],
+  "rollback": "git revert; additive - a new .warp/pack_conformance.py build-machinery module (not shipped engine, not copied into packs), a selftest block, and this spec; no protected path; pure stdlib, the per-pack gate driven locally (no network) plus one local-bare-remote push for the exec-bit teeth."
+}

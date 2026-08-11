@@ -1,0 +1,35 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0311",
+  "commit": "c14e406667290db2cc0145f8b4bd0ac42bbf4a49",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 B11)",
+  "plan_hash": "sha256:5d596cdb1c9a6547",
+  "produced_at": "2026-07-17T09:09:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/scripts/runners/contract/warp_contract_runner.py exists: run(contract, payload, producer) reads a contract (name, version, strict flag, golden schema of dotted paths to JSON types) and captures a payload through a PRODUCER seam (defaulting to the contract's captured fixture block so it is replayable with no live producer), derives the payload's actual schema (derive_schema recurses objects by key and derives list element shapes under a path[] segment), diffs it against the golden, and exits 0 with no breaking drift / exit 1 with each drift named. Verified operationally: test_contract_runner.sh drives both fixtures (conforming exit 0, drifted exit 1), rc 0; proof/WARP-0311/negative-tests.txt case 6 shows a producer that raises is a named capture error"},
+      {"type": "unit", "ref": "scripts/selftest.py contract block: derive_schema of a nested payload records id integer, total number, customer object, items array, and recurses customer.name/customer.vip and items[]/items[].sku/items[].qty; 'contract producer seam supplies the payload' confirms the adopting-repo producer path drives run(). Part of selftest 328 passed / 0 failed"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py contract block: a removed golden field is a removed drift, a type change (total number -> string) is a type_changed drift, an added field is an added drift; type derivation is JSON-honest (json_type: null own type, bool is boolean not integer, int integer, float number; type_satisfies: integer satisfies golden number True, number satisfies golden integer False, boolean satisfies golden integer False); an integer under a golden number is not drift"},
+      {"type": "operational", "ref": "proof/WARP-0311/negative-tests.txt: case 1 removed (customer.vip), case 2 type_changed (total number->string), case 3 added under strict fails, case 4 same addition under non-strict is tolerated (reported not breaking), case 7 integer under golden number is not drift. Removals and type changes fail regardless of strict; additions fail only under strict"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py contract block: 'contract result records the version' confirms the pinned golden version is recorded in the result; 'contract empty golden schema is a contract error' confirms an empty golden is a contract error not a vacuous pass; 'contract producer error is a named capture error' confirms a producer that raises fails loud"},
+      {"type": "operational", "ref": "proof/WARP-0311/negative-tests.txt case 5: empty golden schema -> passed False, error 'contract asserts nothing: an empty golden schema is not proof'; case 6: producer raises -> passed False, error 'producer error: service down'. The result carries name/version so grading is always against a pinned golden"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "unit", "ref": "scripts/selftest.py contract block (appended after the agent block) drives the control logic with a captured fixture payload and NO live producer: json_type honesty (7 cases), type_satisfies (integer satisfies number, not the reverse, bool satisfies neither), derive_schema for nested objects and list element shapes and root-not-recorded, the diff for clean/removed/type_changed/integer-under-number/added, run() for strict-fails-addition / non-strict-tolerates-addition / non-strict-still-fails-removal / version-recorded, empty golden error, producer error, producer seam, and both fixtures end to end. selftest 328 passed / 0 failed (was 298); all prior cases still pass and the gate stays GREEN at c14e406"},
+      {"type": "operational", "ref": "python3 scripts/selftest.py -> 328 passed, 0 failed; plugin/templates/scripts/runners/contract/test_contract_runner.sh -> conforming exit 0, drifted exit 1 (drift caught), rc 0"}]},
+    {"id": "AC5", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "the runner, fixtures, wrapper, and README carry zero company/product names (case-insensitive scan of plugin/templates/scripts/runners/contract/ returned no matches) and no em-dash/en-dash/double-hyphen. .warp/capabilities.yaml declares contract_schema_runner status: reference (a shipped reference wired per repo to its own producer and versioned goldens; the warp home repo ships no versioned payload contract of its own to run), never mechanical, kept byte-identical with the plugin template copy (both sha256 cf8367b3dfdc361e2c1eb5aa5e9d658a4116ba2fdf7ec5e6bd9e7bfeff2dc6a1; template-sync gate passes). verify.sh prints GATE: GREEN (c14e406...), 0 undeclared"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 328 passed, 0 failed"},
+    {"name": "docs", "status": "passed"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": ["Reference (not mechanical). The warp home repository ships no versioned payload contract of its own to freeze and diff, so the honest evidence is the captured-fixture control-logic unit tests, not a live-producer run. required_evidence is [unit]. The producer is a seam so an adopting repo swaps in its real service call. The distinctive property versus the integration/contract runner (WARP-0307) is that this is a GOLDEN SNAPSHOT: the full expected shape is a stored, versioned golden, and the runner detects ANY drift from it (removed, type_changed, added), including removals and additions a hand-written required-field list never enumerated, whereas WARP-0307 asserts a hand-written per-interaction contract at a live boundary. capabilities.yaml states status: reference, never mechanical."],
+  "rollback": "git revert the impl; B11 adds a new runner file, a fixture pair, a wrapper and a README, a selftest block, and an honest capabilities entry (template and instance) under plugin/templates and scripts - it touches no protected gate script or enforcer, so reverting removes the reference artifact and its unit block with no effect on any running gate; the prior selftest cases are unchanged."
+}

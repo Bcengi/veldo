@@ -1,0 +1,23 @@
+# VELDO configuration for the Codex CLI pack.
+#
+# Codex reads AGENTS.md before any work (walking up from the cwd, layered root-down). AGENTS.md at
+# the pack root carries the VELDO method and the operating contract; this file wires Codex's own
+# knobs: the lifecycle hook that enforces the push gate, and a pointer to the skills.
+#
+# The VELDO invariant (no push to trunk without a passing commit-bound verdict + protected-path
+# approval) is enforced by this hook AND, as the guaranteed backstop, the git pre-push hook
+# (hooks/pre-push) plus the CI required status check (.github/workflows/veldo-gate.yml). Enforcement
+# is never weakened to fit the tool.
+
+[project]
+instructions_file = "AGENTS.md"
+
+# Lifecycle hooks: run the VELDO guard before a shell command so a push or merge is gated in-session.
+# The script feeds the shared engine guard (scripts/veldo-guard.sh) the JSON payload it parses.
+[hooks]
+before_shell = ".codex/veldo-guard-hook.sh"
+
+# The VELDO workflows ship as skills (SKILL.md) under skills/; the VELDO roles as agents under
+# .codex/agents/. Both are reused verbatim from the canonical source.
+[skills]
+path = "skills"

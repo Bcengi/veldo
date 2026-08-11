@@ -1,0 +1,21 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0601",
+  "commit": "3ef39a09ee48180faec3420035846d2bf7d8689b",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-18T16:45:00Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:95d93ed003d0c4b5",
+  "criteria": [
+    {"id": "AC1", "status": "confirmed", "note": "load + _validate reject every malformed config by name; load returns {} when absent, raises on malformed JSON; the template validates."},
+    {"id": "AC2", "status": "confirmed", "note": "resolve_repo fails closed across label/component/field on missing, unknown, and ambiguous signals; never guesses. The component filter asymmetry lets no misroute slip through."},
+    {"id": "AC3", "status": "confirmed", "note": "tracker_for_repo returns {tracker, project} for a known repo, raises by name for an undeclared one."},
+    {"id": "AC4", "status": "confirmed", "note": "Pure stdlib (json+os), one file read, no writes, no network, deterministic; template ships."},
+    {"id": "AC5", "status": "confirmed", "note": "Non-tautological: mutating resolve_repo into a guesser turns the refuses and non-tautology assertions RED. Gate GREEN, selftest 1068."}
+  ],
+  "findings": [
+    {"severity": "note", "text": "Independent adversarial review across two passes. Pass 1 (a097d51): AC1-AC5 all confirmed (fail-closed, pure, exhaustively validated, non-tautological with real teeth, two-way mirror intact) but a BLOCKING commit-hygiene defect - a097d51 shipped a stale specs/index.md with a phantom PLAN-0008 section (WARP-0801..0810 rows) with no backing files, because the index was regenerated with uncommitted PLAN-0008 WIP in the tree, so the commit did not pass its own gate in isolation. Pass 2 (this verdict, 3ef39a0): the defect is fully remediated - git show 3ef39a0 touches only WARP-0601's files, specs/index.md at 3ef39a0 has ZERO PLAN-0008/WARP-08xx references, the resolver is byte-identical to the reviewed code (empty diff), and 3ef39a0 passes ./scripts/verify.sh GREEN in a pristine isolated worktree (generated: pass, the exact check that was red). PASS, 0 blocking."},
+    {"severity": "note", "text": "Accepted non-blocking note: PLAN-0006's prose says .warp/trackers.yaml in three places (the W1 title, constraint C6, and the release rollback) while the spec, resolver, and template use .warp/trackers.json. Cosmetic plan-text drift; the implementation is internally consistent on JSON. To fix on the next PLAN-0006 touch."}
+  ],
+  "summary": "W1 of PLAN-0006 (the tracker routing contract and resolver) is correct. Independent adversarial review across two passes; final verdict pass_with_notes, 0 blocking; gate GREEN in isolation (selftest 1068). resolve_repo answers which repo a ticket targets and tracker_for_repo which tracker serves a repo, failing closed by name on a missing, unknown, or ambiguous signal rather than guessing, over a validated per-org config; pure stdlib, offline, deterministic, with a non-tautological selftest. Pass 1 caught a commit-hygiene defect (a stale index referencing the uncommitted packs plan); the two foundation commits were rebuilt so each passes its own gate in isolation, and this verdict binds to the fixed, self-consistent 3ef39a0. proof_digest via validate.py."
+}

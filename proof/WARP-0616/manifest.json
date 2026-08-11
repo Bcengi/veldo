@@ -1,0 +1,138 @@
+{
+ "schema": "warp.proof/v1",
+ "spec_id": "WARP-0616",
+ "commit": "50087bdd3bb1136af50f6acd558c9d84a0a955ff",
+ "producer": "claude-opus-4-8[1m] (FAIL-CLOSED HARDENING after round-1 independent adversarial review returned FAIL, fresh-context single writer, in-session; WARP-0616 W6 of PLAN-0016. The engine was provably INERT and gate-green at build, but the safety-critical logic that activates at VEL-3 switch-on had fail-OPEN paths a fail-closed module must not have. This pass closes all five: (1) SEPARATION OF DUTIES now compares each approver against a VERIFIED proposer identity SUPPLIED BY THE CALLER (the W5 inbound edge derives it from the attributed changelog), no longer req.get('producer') which was always None on a real warp.request/v1 record, and is_authorized REFUSES proposer_identity_required when it is absent rather than skipping the check - the verified proposer is also passed to the frozen two_key gate as proposed_by; (2) a NON-LIST / malformed impact fails closed to two-key-required instead of coercing to [] and dropping the second key; (3) a request with NO id is refused no_request_id, killing the None==None per-request match; (4) risk_acceptance is normalized through _as_bool and a value resolving to False - a bool False or the string 'false' - is refused; (5) an UNDECLARED independence group is never silently treated as independent (one shared sentinel group, refused when min_independence > 1). Stays INERT and fail-closed, no policy.yaml edit, no frozen reader touched, 8 copies byte-identical)",
+ "produced_at": "2026-07-24T17:20:00Z",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "A new engine module .warp/authorization.py provides the PURE functions required_roles(touchpoint, tier) -> a sorted list of required roles, quorum(tier) -> {count, min_independence}, and is_authorized(request, attestations, approver_registry) -> a structured decision {authorized (bool), reason (a named reason from the closed taxonomy), detail, request_id, touchpoint, tier, required_roles, quorum, approvers, independence, two_key_required, two_key_satisfied}. It reads the approver policy read-only (load_policy reads .warp/policy.yaml ROOT-relative the way policy_check.py reads that same file, extracts only the human_decisions block, and reuses the ONE front-matter parser validate.parse_yamlish loaded by path - no second parser) and writes nothing anywhere (no file write, no record mutation; the input dicts are read via .get()). It is distributed across all 8 engine copies (root + plugin/templates + 6 packs) byte-identical, like request.py / two_key.py, verified by sha256 (one unique hash across the 8 copies) in the WARP-0616 selftest block."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0616 block, offline (no network): required_roles reads roles per touchpoint plus tier_roles (risky_action at critical -> [approver, founder]); quorum reads {count, min_independence} per tier; is_authorized is callable and returns the structured decision; and the 8-copy byte-identity of .warp/authorization.py and .warp/capabilities.yaml is asserted across root + plugin/templates + 6 packs, with authorization.py present as a FULL engine module under plugin/templates and every pack (not a repo-only tracker-family module). Part of selftest 2599 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The approver policy is a human_decisions block in .warp/policy.yaml. That block is ABSENT from every shipped policy.yaml, so the module ships INERT: load_policy() returns None over the real repository policy.yaml, and is_authorized returns authorized=False (reason no_human_decisions_policy) for EVERY request. The single fail-closed config gate `if not (isinstance(pol, dict) and pol and q)` catches an absent block, an empty block, and a block that declares no well-formed quorum for the tier - each authorizes NOTHING (never open). This spec does NOT edit policy.yaml (git shows .warp/policy.yaml untouched; the switch-on is the separate protected-path approval VEL-3). The on-disk path is exercised too: a temp policy.yaml that DOES carry a human_decisions block is read, its block extracted and parsed (via the one parser, and identically via an injected parse), and required_roles / quorum read from it."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0616 block: load_policy() over the real policy.yaml is None (INERT); is_authorized is denied with reason no_human_decisions_policy for all six touchpoints under policy=None; required_roles / quorum stand down to [] / None with no block; an empty policy block and a block with roles but no quorum for the tier each fail closed; and a temp policy.yaml carrying a human_decisions block is loaded from disk (block extracted and parsed) with required_roles == [approver] and quorum == {count: 1, min_independence: 1}, matching the injected-parse result. Part of selftest 2599 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "Anti-rubber-stamp: _attestation_ok admits an approval only when it carries a STRUCTURED attestation - a non-empty rationale AND a risk_acceptance that resolves to a GENUINE affirmative AND, for a review_disposition touchpoint, a finding_disposition - never a bare yes (reason unstructured_attestation otherwise). HARDENING: risk_acceptance is now normalized through _as_bool - a value resolving to False (a real bool False, or the string 'false' the one parser leaves for an unquoted false) is refused, so only a real True, the string 'true', or a non-empty free-text acceptance passes (the round-1 gap where the string 'false' was accepted via _is_str is closed). Attestation is PER-REQUEST: is_authorized considers only attestations whose request_id names THIS request, and if attestations were supplied but none names it the request is denied not_per_request (no bulk or blanket approve). HARDENING: a request with NO id is refused no_request_id BEFORE any per-request match, killing the None==None case where a blanket attestation with an absent request_id matched an idless request. A MATERIAL CHANGE to the bound artifact digest invalidates a prior attestation: an attestation whose bound_digest does not equal the request's current bound_artifact.digest is refused stale_attestation (denied until re-attested)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0616 block: a bare yes with no rationale is refused unstructured; an attestation with no explicit risk_acceptance is refused unstructured; a review_disposition approval with no finding_disposition is refused unstructured while one WITH a finding_disposition and a reviewer role authorizes; an attestation naming a DIFFERENT request is refused not_per_request; and an attestation whose bound_digest no longer matches the request bound artifact digest is refused stale_attestation. HARDENING negatives: risk_acceptance 'false' and a real bool False are each refused unstructured (a genuine affirmative string still authorizes, a non-vacuous control); an idless request with a blanket (request_id None) attestation is refused no_request_id. Tooth T3 proves the digest-invalidation is load-bearing (below). Part of selftest 2612 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "Separation of duties + quorum: an authorizing approver identity MUST differ from the VERIFIED PROPOSER (reason separation_of_duties on a self-approval) and can NEVER be the agent or a service account (reason machine_approver_refused; the machine-actor set is a SUPERSET of two_key.MACHINE_ACTORS, bound by a selftest so the two cannot drift, and is matched on both the approver id and the registry actor kind). HARDENING: the verified proposer is an EXPLICIT INPUT to is_authorized (the `proposer` argument) supplied by the caller / the W5 inbound edge that derives it from the attributed changelog - it is NO LONGER read from req.get('producer') (warp.request/v1 carries no producer field, so that was always None and a self-approval by the actual proposer authorized). When no verified proposer is supplied, separation cannot be proven, so is_authorized REFUSES proposer_identity_required rather than skipping the check; the verified proposer is also passed to the frozen two_key gate as proposed_by so a KEY 2 confirmation authored by the proposer is refused. quorum(tier).count DISTINCT approvers are required (the same identity attesting twice counts once, so a duplicated identity is still a short quorum) and min_independence distinct independence groups are enforced (two approvers in the same declared independence group is a faked independence, refused). HARDENING: an approver whose registry entry declares NO independence group joins ONE shared undeclared sentinel group (never its own per-identity group), and an undeclared group is refused independence_not_met whenever min_independence > 1 - undeclared independence is never silently treated as independent. For a request whose impact is irreversible / money / external the FROZEN two_key.authorize contract (KEY 1 a recorded human authorization plus KEY 2 an independent fresh-context confirmation, each bound to the proposal digest) MUST additionally be satisfied or the request is denied two_key_not_satisfied; HARDENING: a NON-LIST or malformed impact fails closed to two-key-required (it is not coerced to [] and the second key is not dropped), while an absent impact (None) needs no second key. two_key.py is loaded by path and reused UNCHANGED (git shows it untouched), and either key alone refuses through the frozen gate."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0616 block: an approver who IS the verified proposer (a caller input, not a request field) is refused separation_of_duties; an agent/service-account approver is refused machine_approver_refused; a short high-tier quorum (one approver, two required) is refused quorum_not_met; the SAME identity attesting twice is still quorum_not_met (counted once); two approvers in the same independence group are refused independence_not_met while two distinct independent in-role approvers authorize; a required role held by no valid approver is refused role_not_satisfied; an irreversible request with NO two-key material is refused two_key_not_satisfied and with only KEY 1 (no independent confirmation) is not authorized, while an irreversible request with BOTH keys bound to the proposal digest is authorized (two_key_required and two_key_satisfied both true); and authorization.MACHINE_ACTORS is a superset of two_key.MACHINE_ACTORS (bound, cannot drift). HARDENING negatives: a request with NO verified proposer is refused proposer_identity_required (the same request WITH a differing proposer authorizes, a non-vacuous control); a SCALAR impact 'irreversible' keeps two_key_required True and is refused two_key_not_satisfied (a mapping impact also fails closed; a list impact with no two-key flag needs no second key, a control); two approvers with NO declared independence group are refused independence_not_met at min_independence 2 (the same two WITH distinct declared groups authorize, a control). Part of selftest 2612 passed, 0 failed."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "operational",
+     "ref": "The WARP-0616 selftest drives authorization.py offline (no network) over deterministic fixtures and is NON-TAUTOLOGICAL: authorized when roles + quorum + independence + separation + attestations all hold against a FIXTURE policy (and, separately, an irreversible request with both keys); fail-closed (INERT) when the block is absent; denied when the approver == the VERIFIED proposer (separation, exercised through the real caller-supplied proposer input, not a synthetic request field); denied when the quorum is short or the independence is faked; denied when an irreversible request lacks a satisfied two-key; and denied when the bound digest changed after attestation. Each load-bearing behavior carries an in-memory source-mutation TOOTH that turns its assertion RED while the on-disk .warp/authorization.py sha256 stays unchanged: T1 neutralizes the fail-closed config gate so an unconfigured request authorizes (real is INERT); T2 neutralizes the separation check so a self-approval by the verified proposer authorizes (real refuses); T3 neutralizes the digest-invalidation so a stale attestation authorizes (real refuses); T4 neutralizes the quorum count so a short quorum authorizes (real refuses); T5 neutralizes the two-key requirement so an irreversible action authorizes without the second key (real refuses); T6 (new, the fail-closed separation) neutralizes the proposer-absent refusal so a proposerless self-approval authorizes (real refuses proposer_identity_required). None of the teeth is vacuous: each mutant flips exactly its target while the real path holds and the module sha256 is byte-unchanged on disk after each. HARDENING negatives (round-1 fixes) prove the module now REFUSES each fail-OPEN case, each with a non-vacuous authorizing control: proposer-absent, scalar/malformed impact, idless request, risk_acceptance resolving to false, and undeclared independence at min_independence > 1."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/selftest.py WARP-0616 block: T1 the mutant authorizes an unconfigured request while the real path is INERT, module sha256 byte-unchanged; T2 the mutant authorizes a self-approval by the verified proposer while the real refuses, sha256 unchanged; T3 the mutant authorizes a stale attestation while the real refuses, sha256 unchanged; T4 the mutant authorizes a short quorum while the real refuses (quorum_not_met), sha256 unchanged; T5 the mutant authorizes an irreversible action without the second key while the real refuses (two_key_not_satisfied), sha256 unchanged; T6 the mutant authorizes a proposerless self-approval while the real refuses (proposer_identity_required), sha256 unchanged. Plus the fail-closed hardening negatives (proposer-absent, scalar/mapping impact, idless request, risk_acceptance 'false' and bool False, undeclared independence at min_independence 2, each with an authorizing control), the WARP-0616 dogfood front-matter checks (standalone lane, standard risk + human_approval not_required + no protected path, placement [engine] with a footprint, behavior_bearing with observability, .warp/authorization.py declared in the ENGINE area of the architecture contract, the placement gate passing with no tier elevation) and the engine-sync checks (authorization.py + capabilities.yaml byte-identical across all 8 copies; the human_decision_authorization capability declared mechanical with home .warp/authorization.py; the frozen readers untouched). Part of selftest 2612 passed, 0 failed."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "lint",
+   "status": "passed"
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "python3 scripts/selftest.py: 2612 passed, 0 failed (the WARP-0616 block now adds 68 checks: the three PURE functions and their policy reads, the positive controls including the two-key positive, the INERT / fail-closed cases over the real and a temp policy.yaml, the anti-rubber-stamp attestation cases, separation via the verified-proposer input + quorum + independence + role coverage + the two-key negative cases, the machine-actor drift guard, the six anti-vacuity teeth T1-T6 with their byte-unchanged assertions, the fail-closed hardening negatives with their authorizing controls, and the dogfood + engine-sync + frozen-readers-untouched checks; the count rose from 2599 to 2612 with the T6 tooth and the hardening negatives)"
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "specs/index.md regenerated by scripts/update_index.py with WARP-0616 (status review); check_generated green"
+  },
+  {
+   "name": "docs",
+   "status": "passed",
+   "detail": "no em/en dash, no non-ASCII, no double-hyphen prose separator in the authored files (.warp/authorization.py and its 7 copies, the spec, the capability entry, the selftest block); genericity sweep clean (the plugin/templates copy of authorization.py and the capability entry carry no company/product term; the module hardcodes no company value)"
+  },
+  {
+   "name": "template_sync",
+   "status": "passed",
+   "detail": "check_template_sync green; the fixed template PAIRS (validate.py, tracker.py, policy_check.py, update_index.py, warp-guard.sh, bin/warp) are byte-identical; capabilities.yaml is intentionally per-repo and not in the PAIRS set, and its byte-identity across the 8 copies is asserted separately in selftest"
+  },
+  {
+   "name": "pack_drift",
+   "status": "passed",
+   "detail": "engine byte-identical across all packs; the new .warp/authorization.py plus the edited .warp/capabilities.yaml propagated to all eight copies (root + plugin/templates + 6 packs) sha256 identical (verified by sha256sum yielding one unique hash and by the selftest engine-sync assertions); authorization.py is a full engine module under the .warp/*.py glob, so the drift-check covers it"
+  },
+  {
+   "name": "shape_gate",
+   "status": "passed",
+   "detail": "mechanizable rules enforced; .warp/authorization.py is 475 lines (well under the 1000-line module budget) and no function is over the function-length or cyclomatic-complexity budget (is_authorized was refactored to extract _evaluate / _tally / _decide, bringing complexity under the review-lane 20 budget); footprint-versus-diff passes (WARP-0616 is the single footprinted spec in the change set and every changed source path is covered by its footprint globs); .warp/authorization.py resolves to the engine area (placement [engine], engine-to-contracts is an allow-listed edge, no tier elevation)"
+  },
+  {
+   "name": "secret_scan",
+   "status": "passed"
+  },
+  {
+   "name": "contracts",
+   "status": "passed",
+   "detail": "python3 .warp/validate.py all exit 0; the WARP-0616 spec validates (status review), the architecture contract validates with the new engine area and the engine-to-contracts edge, and this proof passes check_required_evidence (unit) and check_criteria_coverage (AC1-AC5 exactly)"
+  },
+  {
+   "name": "teeth_reproduced",
+   "status": "passed",
+   "detail": "T1 fail-closed config gate neutralized: an unconfigured request authorizes (real is INERT). T2 separation check neutralized: a self-approval by the verified proposer authorizes (real refuses). T3 digest-invalidation neutralized: a stale attestation authorizes (real refuses). T4 quorum count neutralized: a short quorum authorizes (real refuses). T5 two-key requirement neutralized: an irreversible action authorizes without the second key (real refuses). T6 proposer-absent refusal neutralized: a proposerless self-approval authorizes (real refuses proposer_identity_required). Each mutant flips only its target; .warp/authorization.py sha256 byte-unchanged on disk after each"
+  }
+ ],
+ "assumptions": [
+  "COMMIT BINDING: this is the FAIL-CLOSED HARDENING pass after round-1 independent review returned FAIL (verdict-1-fail.json, alongside this manifest). The gate ran GREEN at 50087bdd3bb1136af50f6acd558c9d84a0a955ff (the WARP-0616 fix commit this proof binds to), exactly as scripts/verify.sh stamped .warp/last_verify. This proof is committed in a second evidence commit on top, so the manifest binds to the fix commit it proves (the WARP-0615/0617/0618 pattern, not an in-commit-proof deviation). STOPPED AT REVIEW: no push, no self-review; an independent fresh-context RE-review records the next verdict.",
+  "WARP-0616 is a STANDALONE engine-lineage spec (W6 of PLAN-0016) composing on the shipped W2 request envelope (warp.request/v1, WARP-0615) as the thing being authorized and REUSING the shipped safety core UNCHANGED: two_key.py (WARP-1207) for the irreversible/money/external second key, loaded by path and reused as a pure gate, and the same .warp/policy.yaml that policy_check.py reads. It decides authorization and writes nothing. The inbound command-and-receipt edge that DRIVES a request through this matrix and records the settlement is WARP-0619 (W5), honestly out of scope here; the outbound projection (WARP-0617) and doorbell (WARP-0618) are already shipped.",
+  "IT SHIPS INERT AND FAILS CLOSED: no shipped policy.yaml carries a human_decisions block, so is_authorized returns authorized=False for EVERY request in the committed state (proven by the selftest asserting load_policy() is None and every touchpoint is denied no_human_decisions_policy under policy=None). The hardening PRESERVES the INERT posture: the config gate is still the first guard, so the no-id / proposer-absent / risk_acceptance / impact / independence refusals are only reachable once a block is configured (post VEL-3). Adding the block is the separate protected-path approval VEL-3 and is NOT done here; this spec does not edit policy.yaml. An absent OR malformed block, a request with no id, an absent verified proposer, a short quorum, a faked or undeclared independence, a self-approval, a machine approver, a bare yes, a risk_acceptance resolving to false, a blanket approval, a stale attestation, a non-list/malformed impact, or a missing two-key each fail closed with a named reason.",
+  "ENGINE SYNC: .warp/authorization.py is a FULL engine module (like request.py and two_key.py), distributed byte-identical across all eight copies (root + plugin/templates + 6 packs); a correct build MUST propagate it or check_pack_drift / the byte-identical selftest fails. The .warp/*.py engine glob covers it, so pack_drift holds it to the canonical source. Only ONE capability entry per copy was added (human_decision_authorization, all eight capabilities.yaml byte-identical). .warp/architecture.yaml (a per-repo artifact, root only, not engine-synced) gained a new engine area declaring .warp/authorization.py and an engine-to-contracts allow-listed dependency edge; the contract stays version 1, approved (adding areas/edges follows the WARP-0615 precedent of editing the includes without a re-approval). check_template_sync does not track capabilities.yaml or architecture.yaml (per-repo), so no template twin drift.",
+  "RISK STANDARD, NO PROTECTED PATH, NO FROZEN READER MODIFIED: the change touches no protected path (policy.yaml, verify.sh, warp-guard.sh, policy_check.py and their template twins untouched) and modifies none of the frozen settlement readers (git shows .warp/two_key.py, .warp/policy_check.py, .warp/decision.py untouched, and none references authorization.py); the footprint touches the single engine area (root .warp/authorization.py), so the footprint tier floor does not elevate it. The logic correctness is safety-critical and gets a full independent adversarial review even though the mechanical footprint is standard-tier. Pure stdlib (pathlib and json at module top; importlib lazily, only when a policy block is present or the two-key path is reached); starts no process, thread, or timer (NG3).",
+  "GATE bookkeeping (.warp/events.jsonl, .warp/last_verify) is stamped by verify.sh on every run and was NOT staged; only the WARP-0616 footprint was committed (git add with explicit paths, 20 files). policy.yaml, the frozen safety-core readers, .gitignore, and the other proof directories were not touched."
+ ],
+ "rollback": "git revert; purely additive - a new engine module .warp/authorization.py (engine-synced byte-identical across the eight copies like request.py / two_key.py, reusing the frozen two_key.py UNCHANGED and reading policy.yaml read-only), one human_decision_authorization capability entry (all eight capabilities.yaml copies byte-identical), the module declared in a new engine area of .warp/architecture.yaml with an engine-to-contracts allow-listed edge, a selftest block, and this spec; no protected path; policy.yaml not edited (the engine ships INERT and authorizes nothing until the block is separately approved under VEL-3); no change to the frozen settlement readers; pure stdlib; so the change cannot alter any authorization outcome on its own."
+}

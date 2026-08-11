@@ -1,0 +1,83 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1210",
+  "commit": "34cbc292fcf81e6b61854da097755880b359199c",
+  "reviewer": "claude-opus-5[1m] (independent adversarial fresh-context reviewer, distinct from the builder and the orchestrating session; instructed to default to REFUTED, to attack the NUMBERS rather than look for crashes, and to treat a suite written by the implementer as weak evidence)",
+  "reviewed_at": "2026-07-24T23:45:00Z",
+  "verdict": "fail",
+  "round": 1,
+  "proof_digest": "sha256:a615493d445a89f5",
+  "must_fix_before_live": [
+    {
+      "id": "F1",
+      "criterion": "AC1/AC6",
+      "severity": "blocking, the worst of the three",
+      "summary": "A CONTRACT-VALID incident record kills the whole metrics CLI and the whole dashboard. _incident_hours subtracts two parsed timestamps with no guard, and WARP-1201's _iso_or_none returns the raw string and compares LEXICOGRAPHICALLY, so a naive opened_at with an aware diagnosed_at passes the shipped validator with ZERO errors and then raises TypeError: can't subtract offset-naive and offset-aware datetimes. Proven to take down support_numbers, support_figures, render_text and render_html, i.e. EVERY pre-existing number is destroyed by the new section, in all eight shipped copies (pre-existing compute() alone still returns 24.0). This refutes _incident_hours's own docstring, AC6's adoption safety, and plan constraint C3 (fail closed, degrade down)."
+    },
+    {
+      "id": "F2",
+      "criterion": "AC3",
+      "severity": "blocking",
+      "summary": "The diagnosability score DEPENDS on the architecture contract, while both the criterion and the manifest claim the four measures are byte-identical with and without one. An incident resolvable only through affected_area scores 100 percent (2 of 2) with a contract and 50 percent (1 of 2) without. Worse and operationally reachable: with a TRUNCATED architecture.yaml the same artifacts score 0.0 percent (0 of 1) with no exclusion, no stand-down and the map reporting the FALSE reason EMPTY_DENOMINATOR when the truth is that the contract could not be read. The selftest's byte-identity assertion is exhibited over a single spec-resolvable fixture, so it does not enforce the property: the WARP-1208 F4 pattern exactly."
+    },
+    {
+      "id": "F3",
+      "criterion": "AC2",
+      "severity": "blocking",
+      "summary": "Two receipts for one incident produce an ARBITRARY number and the second receipt is silently dropped. Reachable through the SHIPPED pass with no hand-written files (re-settlement with a different remedy, since WARP-1208 never transitions the record). backing.setdefault makes the winner the first content-addressed hash in FILENAME ORDER: flipping the filenames flips recurrence rate between 100.0 and 0.0 percent for identical substance. The header then reports '2 receipt(s) read, 1 authenticated, 0 excluded', arithmetic that does not close, against the spec's own observability promise that nothing is dropped silently."
+    }
+  ],
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "refuted",
+      "note": "The four measures are derived as specified and purity is genuine (identical model digest across four PYTHONHASHSEED values), the trend keeps recorded order, no mean or average key exists, and the recurrence signal is read from the receipt rather than the event. Refuted by F1: the interval helper crashes on a record the shipped validator accepts. Note also that support_vocabulary reads the filesystem and caches in a module global, so AC1's literal 'no filesystem beyond the injected readers' should name that edge."
+    },
+    {
+      "id": "AC2",
+      "status": "refuted",
+      "note": "THE AUTHENTICATION SPINE IS REAL and survived every attack: the seeded lifecycle with receipts counts, the same stream with receipts removed counts nothing and names every exclusion, a forged incident.closed is excluded and named while genuine incidents still count, receipts with null, empty or whitespace incident ids are all named, a receipt for a different incident is named, a nested-subdirectory receipt is not read and its incident is named, and six corrupt receipt shapes on disk (truncated JSON, a bare list, null, empty, a DIRECTORY named f.json, and mode-000) are all skipped without the reader dying. Refuted only by F3, the duplicate-receipt case. The declared schema gap was ruled an acceptable limitation but is WIDER than the manifest states: all four measures are forgeable from a three-key JSON file plus one appended event with zero exclusions reported."
+    },
+    {
+      "id": "AC3",
+      "status": "refuted",
+      "note": "Attribution behaves as specified in the ordinary paths: an undeclared area is never invented, an unattributable incident is listed by id and never given a default, and the with-cost, no-cost and no-contract render paths each behave and stand down by name. Refuted by F2: the no-contract byte-identity claim is false for the diagnosability score, and a corrupt contract produces a false stand-down reason."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Fully confirmed in BOTH directions, which is the part reviewers usually skip. A zero population renders zero percent signs and none of 0%, 0.0, 100, n/a, a double dash or a bare dash, across three routes plus the vocabulary-absent path, in both the text and HTML surfaces. And the inverse holds: a GENUINE zero over a real population renders as a real 0.0 percent with its numerator and denominator, so no true zero is swallowed as a stand-down."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Independently reproduced with the reviewer's OWN five mutations (two at DIFFERENT sites than the selftest's) and its OWN five fixtures: exactly diagonal, 5 of 25 green, zero off-diagonal, zero exceptions, both modules sha256-unchanged after all runs, every mutation target appearing exactly once, and no vacuous tooth. It also established that the zero-denominator and no-cost-data guards are genuinely independent, and that a PURE neutralization of _population raises ZeroDivisionError rather than fabricating, which confirms the implementer's max(count, 1) was the correct and necessary tooth site: the same pattern WARP-1208 round 2 recorded."
+    },
+    {
+      "id": "AC6",
+      "status": "refuted",
+      "note": "The no-existing-number-changed claim is TRUE in the ordinary case and the reviewer verified it independently against git over six streams (compute() byte-identical, key set 17 both sides, dashboard text prefix and HTML prefix-and-suffix confirmed), and engine sync, purity, scope, protected paths and assertion integrity (783 insertions, 0 deletions) all hold. Refuted by F1: in the presence of a validator-accepted mixed-awareness record the new section destroys every pre-existing number in eight copies. Also: the two byte-identity assertions sit inside a branch that does NOT fire at the recorded commit, so the shipped suite enforces a pinned digest rather than the git comparison the manifest describes."
+    }
+  ],
+  "schema_gap_ruling": "ACCEPTABLE DECLARED LIMITATION, NOT BLOCKING, but the gap is wider than the manifest says and the one-line fix should land with F1 to F3. Ten probes through the shipped load_receipts: a bare {'incident': 'INC-9'} authenticates a forged close event; a grocery list with a schema key of grocery/v1 authenticates; a symlink pointing outside the store authenticates; a three-key hand file plus one appended event forges time-to-diagnosis AND a 100 percent diagnosability score with zero exclusions reported; and recurrence_of naming phantom incident ids yields 100 percent. Not blocking because the manifest declared it first and named the correct fix, and because the residual needs write access inside .warp/ where an actor could equally rewrite metrics.py. The fix needs no import of the owner: check the schema literal and bind it to incident_reconcile.SCHEMA with a selftest, the repository's own drift-binding idiom.",
+  "manifest_overstatements": [
+    "AC3 evidence: 'with no contract at all the join stands down and NOTHING ELSE CHANGES, proven by the four measures being byte-identical to the with-contract run.' False as a property (F2); true only for the single spec-resolvable fixture.",
+    "Assumption 5: 'A negative interval is dropped silently. Unreachable through the validated contract (WARP-1201 refuses it).' False. The validator's check is a LEXICOGRAPHIC string compare, so a mixed-awareness pair validates with zero errors and yields a negative absolute interval.",
+    "The SHIPPED _incident_hours docstring, in eight adopter-facing copies, repeats that same false claim about reading a validated non-negative interval.",
+    "AC6 evidence describes a git-comparison assertion that does NOT fire at the recorded commit; the else-branch (a pinned digest) runs instead. The pinned value is genuinely correct, so this is a wording overstatement about what the suite enforces, not a false number.",
+    "AC2 evidence: 'the authenticated-versus-excluded counts are asserted to render beside every measure.' The excluded count renders once on the header line; each measure carries only its own samples-over-population or numerator-over-denominator.",
+    "Assumption 4 declares the missing-record gap for the TREND only, not for the diagnosability score it silently zeroes."
+  ],
+  "notes": [
+    "Ranked by six-month impact. 1. The receipt schema string is unchecked (see the ruling); one literal plus one drift-binding selftest, and it should land before WARP-1211 wires any caller. 2. An authenticated incident with NO record silently scores 0 in the diagnosability numerator where the truth is unknown, unnamed, with no records-read figure on the share. 3. A corrupt architecture.yaml reads as a contract with zero areas, so the map stands down with a FALSE reason instead of naming the unreadable contract. 4. 'latest' is the last close EVENT rather than the chronologically latest incident, so a backfilled settlement mislabels it. 5. support_share accepts a numerator outside its population and returns 300 percent; unreachable today but public, and WARP-1211 will call it. 6. Half a corrupt record is counted: a negative diagnosis interval is dropped while the same record's restore interval still feeds the restore trend and both share denominators. 7. A two-area placement counts one incident once per area, so row counts sum above the population with no note. 8. An area with cost data but no incidents never appears while the map-level cost stand-down reads None. 9. A sub-36-second interval renders 0.0 h, a value-shaped zero for real elapsed time. 10. support_vocabulary reads the filesystem and caches in a module global. 11. A caller-supplied cost cell without samples renders None sample(s). 12. metrics.py is now 863 lines hosting two derivations plus the wired readers; the next extension should split it into core, support and readers."
+  ],
+  "gate_observed": {
+    "verify": "GATE: GREEN (34cbc29)",
+    "selftest": "2915 passed, 0 failed",
+    "baseline": "2816 at c37e833, measured by the reviewer in a throwaway clone; delta +99 across 90 call sites, fully accounted for as 101 static sites minus 2 branches that do not fire",
+    "assertion_integrity": "git diff --numstat on selftest.py: 783 insertions, 0 deletions. Nothing removed or weakened.",
+    "engine_sync": "metrics.py, dashboard.py and capabilities.yaml each reduce to one distinct md5 across all 8 locations",
+    "html_safety": "HTML injection through an incident id and an area name both neutralized; _card escapes label, value and sub"
+  },
+  "disposition": "NOT LANDED. The implementation and evidence commits stay local and unpushed. F1 to F3 plus the schema-literal check go into a hardening pass, the six manifest overstatements are corrected, and a SECOND independent adversarial review runs in a distinct fresh context. The twelve notes carry to a follow-up item. F1 is the priority: it is the only defect that destroys numbers a human is already relying on."
+}

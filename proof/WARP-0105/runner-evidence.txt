@@ -1,0 +1,15 @@
+=== AC1/AC2 journeys: pass fixture ===
+pass journey exit: 0 (expect 0)
+ passed: True steps ok: 7 / 7 states: ['landing', 'after-save'] a11y: 0
+
+=== AC2 fail fixture (deliberately broken) ===
+fail journey exit: 1 (expect 1)
+ passed: False | failing step: 2:expect_visible #status | FAILURE shot: True
+
+=== AC3 a11y on broken fixture ===
+ violations: ['img-alt', 'input-label', 'control-name', 'html-lang']
+
+=== AC4 self-test ===
+pass journey: exit 0 (correct)
+fail journey: exit 1 (correct - failure caught)
+web runner self-test: pass

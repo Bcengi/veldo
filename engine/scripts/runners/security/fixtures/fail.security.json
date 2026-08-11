@@ -1,0 +1,21 @@
+[
+  {
+    "name": "ssrf: a public https host is allowed",
+    "guard": "is_ssrf_target",
+    "input": "https://api.example.com/v1/webhooks",
+    "label": "allow"
+  },
+  {
+    "name": "secret: an AWS-style access key is blocked",
+    "guard": "is_secret_leak",
+    "input": "AKIAIOSFODNN7EXAMPLE",
+    "label": "block"
+  },
+  {
+    "name": "ssrf: metadata endpoint slips through an allowlist hole",
+    "guard": "is_ssrf_target",
+    "input": "http://169.254.169.254/latest/meta-data/",
+    "label": "block",
+    "config": {"allow_hosts": ["169.254.169.254"]}
+  }
+]

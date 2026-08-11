@@ -1,0 +1,73 @@
+# Veldo gate, server-side.
+#
+# This is the SAME gate a developer runs locally, run in CI so it holds for
+# every change even when a local hook has been edited away. It does not
+# reimplement any check: it invokes the exact commands the local pipeline uses.
+#
+#   ./scripts/verify.sh        the canonical gate catalog. Its unit slot IS
+#                              scripts/selftest.py, so CI runs the same self
+#                              test the developer runs; there is no divergence
+#                              between what the agent ran and what CI runs.
+#   python3 .veldo/policy_check.py
+#                              the mechanical policy reader the pre-push guard
+#                              calls: a passing commit-bound verdict must
+#                              exist, protected paths need live path-scoped
+#                              approvals, and open emergency debt blocks.
+#
+# To make this the enforced gate (a change that fails cannot merge), turn the
+# job below into a REQUIRED status check on the protected branch. The recipe
+# is in the plugin guide, section 4.1 (server-side enforcement).
+#
+# Drop-in: /veldo:init copies this to .github/workflows/veldo-gate.yml in your
+# repository. Adjust the branch name and the dependency install to match your
+# repository; nothing else needs to change.
+
+name: veldo-gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege: the gate reads the repository, it does not write to it.
+permissions:
+  contents: read
+
+concurrency:
+  group: veldo-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: Veldo gate (verify + policy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          # Full history so the policy check's commit-range and parent-commit
+          # logic resolves the same way it does on the developer machine.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install gate dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # The Veldo enforcement scripts are stdlib-only, but a repository's
+          # own gate may need runtime dependencies (for example, the shipped
+          # design baseline runner needs Pillow). Pin them in a requirements
+          # file and they install here, exactly as they do locally.
+          for req in requirements-dev.txt requirements.txt; do
+            if [ -f "$req" ]; then pip install -r "$req"; fi
+          done
+          echo "gate dependencies ready"
+
+      - name: Run the canonical gate
+        run: ./scripts/verify.sh
+
+      - name: Run the policy check
+        run: python3 .veldo/policy_check.py

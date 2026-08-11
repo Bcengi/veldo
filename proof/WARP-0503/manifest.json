@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0503",
+  "commit": "7960213ba3608de53054a4cae77c1422fcb562c8",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0005)",
+  "plan_hash": "sha256:48ebdb0410a49b25",
+  "produced_at": "2026-07-17T23:40:53Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runstatus.py is a READ-ONLY status reader: status() assembles a read model from git (HEAD, branch), the plan/index burn-down (reusing .warp/plan.py functions, not a second implementation), the live runs (runlog.list_runs + classify, each with current phase, blocked question, heartbeat age, and blocked-elapsed shown SEPARATELY from human_minutes), and a tail of recent durable events and verdicts; tokens are shown as unknown when absent, never 0 or estimated. warp status --json prints the model; warp watch renders a compact terminal view. It writes nothing to the registry, the events stream, or the repo."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block builds synthetic runs in a temp runs root (active, blocked with a question, stale, done) plus a synthetic events tail, calls status(), and asserts every run is listed with the correct classification, the blocked question and blocked-elapsed (separate from human_minutes) are surfaced, tokens read unknown, the repo and burn-down sections are present, and a full snapshot of the runs root and events file is byte-identical after status() (read-only); part of selftest 817 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runstatus.py is a READ-ONLY status reader: status() assembles a read model from git (HEAD, branch), the plan/index burn-down (reusing .warp/plan.py functions, not a second implementation), the live runs (runlog.list_runs + classify, each with current phase, blocked question, heartbeat age, and blocked-elapsed shown SEPARATELY from human_minutes), and a tail of recent durable events and verdicts; tokens are shown as unknown when absent, never 0 or estimated. warp status --json prints the model; warp watch renders a compact terminal view. It writes nothing to the registry, the events stream, or the repo."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runstatus.py is a READ-ONLY status reader: status() assembles a read model from git (HEAD, branch), the plan/index burn-down (reusing .warp/plan.py functions, not a second implementation), the live runs (runlog.list_runs + classify, each with current phase, blocked question, heartbeat age, and blocked-elapsed shown SEPARATELY from human_minutes), and a tail of recent durable events and verdicts; tokens are shown as unknown when absent, never 0 or estimated. warp status --json prints the model; warp watch renders a compact terminal view. It writes nothing to the registry, the events stream, or the repo."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runstatus.py is a READ-ONLY status reader: status() assembles a read model from git (HEAD, branch), the plan/index burn-down (reusing .warp/plan.py functions, not a second implementation), the live runs (runlog.list_runs + classify, each with current phase, blocked question, heartbeat age, and blocked-elapsed shown SEPARATELY from human_minutes), and a tail of recent durable events and verdicts; tokens are shown as unknown when absent, never 0 or estimated. warp status --json prints the model; warp watch renders a compact terminal view. It writes nothing to the registry, the events stream, or the repo."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runstatus.py is a READ-ONLY status reader: status() assembles a read model from git (HEAD, branch), the plan/index burn-down (reusing .warp/plan.py functions, not a second implementation), the live runs (runlog.list_runs + classify, each with current phase, blocked question, heartbeat age, and blocked-elapsed shown SEPARATELY from human_minutes), and a tail of recent durable events and verdicts; tokens are shown as unknown when absent, never 0 or estimated. warp status --json prints the model; warp watch renders a compact terminal view. It writes nothing to the registry, the events stream, or the repo."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/runstatus.py is a READ-ONLY status reader: status() assembles a read model from git (HEAD, branch), the plan/index burn-down (reusing .warp/plan.py functions, not a second implementation), the live runs (runlog.list_runs + classify, each with current phase, blocked question, heartbeat age, and blocked-elapsed shown SEPARATELY from human_minutes), and a tail of recent durable events and verdicts; tokens are shown as unknown when absent, never 0 or estimated. warp status --json prints the model; warp watch renders a compact terminal view. It writes nothing to the registry, the events stream, or the repo."
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block builds synthetic runs in a temp runs root (active, blocked with a question, stale, done) plus a synthetic events tail, calls status(), and asserts every run is listed with the correct classification, the blocked question and blocked-elapsed (separate from human_minutes) are surfaced, tokens read unknown, the repo and burn-down sections are present, and a full snapshot of the runs root and events file is byte-identical after status() (read-only); part of selftest 817 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 817 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: the reader control logic and its real surface (reading git, events, and the registry and building the model) run in the gate over a temp runs root, stdlib. It is a read-only projection; the burn-down reuses plan.py so there is no drift from the index."
+  ],
+  "rollback": "git revert; additive - .warp/runstatus.py, a status SKILL.md note, a selftest block, one capability (both copies), the spec; no protected path."
+}

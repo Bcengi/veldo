@@ -1,0 +1,96 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0101",
+  "commit": "af68c60a655349deea03cf40636b2bd1c651a674",
+  "producer": "claude-fable-5 (implementing agent)",
+  "produced_at": "2026-07-16T19:55:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "gate built-in 'warp contracts': python3 .warp/validate.py all exit 0 with plans/PLAN-0001 validated (mode 'plan' also exits 0 on it directly) and .warp/examples/plan-example.md validated in run_all"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/selftest.py: 26 passed, 0 failed; plan negatives all red - cycle, dangling dep, unknown outcome ref, unknown feature ref, undeclared depends_on, ready-without-approval, decision-without-blocks, decision-blocks-unknown-spec, duplicate work specs, bad release mode, forward mirror mismatch, reverse binding to wrong plan / missing work item / plan-without-work"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "specs/index.md 'Product Plans' section at this commit: PLAN-0001 in_progress, 0/12 shipped, ready frontier WARP-0101 (W1), WARP-0105 (W5), WARP-0106 (W6), WARP-0108 (W8); W2-W4, W7, W9-W12 waiting on named deps; gate 'generated' check keeps it derived"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "this spec declares plan: PLAN-0001 / work: W1 and validate.py all is green (two-way mirroring live); negative demonstration in proof/WARP-0101/negative-tests.txt: work: W1 -> W2 flips validate.py all red with both mirroring errors, restore is green"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml (plugin/templates and .warp instance, template-sync-checked where applicable): plan_contract_validation mechanical, plan_index mechanical, plan_dialogue absent (W2), plan_run_integration absent (W3), plan_regression_mechanics absent (W4); plugin/.claude-plugin/plugin.json version 2.1.0"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 26 passed, 0 failed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "index regenerates identically at this commit"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "detail": "validate.py all incl. plans and plan example"
+    }
+  ],
+  "assumptions": [
+    "The parser accepts the documented front-matter subset only; full YAML is deliberately out of contract. The independent review confirmed malformed input nets RED, with two lenient parse behaviors on the edge (duplicate keys last-wins, tab indentation demoting children to siblings) that can mask a semantic error behind a still-red or, for duplicated depends_on, a green result - both are tightened to hard parse errors in WARP-0113 together with the reviewer's three other notes (traceability chain enforcement, spec-id format check, open-decision line in the index)."
+  ],
+  "rollback": "git revert af68c60; additive to the validator and index generator; no existing contract behavior changed (the 9 pre-existing selftest cases still pass unmodified)."
+}

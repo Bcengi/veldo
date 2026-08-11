@@ -1,0 +1,113 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0316",
+  "commit": "336972408c019c11289d26d1c8659dc8cf6ebc31",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 wave 5)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T13:22:41Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/extension-loading runner ships at plugin/templates/scripts/runners/plugin/ (runner + pass/fail fixtures built into real zips at runtime + README + test wrapper); drives a loader seam install(archive, target) through a reference SAFE loader and a deliberately-unsafe naive loader, sends zip-slip/absolute-path/escaping-symlink attacks, and scans the whole private workspace after every install so a file outside the target is a PLUGIN ESCAPE even when the loader returned no error"
+        },
+        {
+          "type": "unit",
+          "ref": "control logic (grade_case both verdicts and directions, scan_escapes confinement, asserts-nothing config error, fails-closed on unknown loader / empty corpus) plus both shipped fixtures and a DEEP multi-level traversal case driven end to end in scripts/selftest.py; part of selftest 565 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/extension-loading runner ships at plugin/templates/scripts/runners/plugin/ (runner + pass/fail fixtures built into real zips at runtime + README + test wrapper); drives a loader seam install(archive, target) through a reference SAFE loader and a deliberately-unsafe naive loader, sends zip-slip/absolute-path/escaping-symlink attacks, and scans the whole private workspace after every install so a file outside the target is a PLUGIN ESCAPE even when the loader returned no error"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/extension-loading runner ships at plugin/templates/scripts/runners/plugin/ (runner + pass/fail fixtures built into real zips at runtime + README + test wrapper); drives a loader seam install(archive, target) through a reference SAFE loader and a deliberately-unsafe naive loader, sends zip-slip/absolute-path/escaping-symlink attacks, and scans the whole private workspace after every install so a file outside the target is a PLUGIN ESCAPE even when the loader returned no error"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/extension-loading runner ships at plugin/templates/scripts/runners/plugin/ (runner + pass/fail fixtures built into real zips at runtime + README + test wrapper); drives a loader seam install(archive, target) through a reference SAFE loader and a deliberately-unsafe naive loader, sends zip-slip/absolute-path/escaping-symlink attacks, and scans the whole private workspace after every install so a file outside the target is a PLUGIN ESCAPE even when the loader returned no error"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/extension-loading runner ships at plugin/templates/scripts/runners/plugin/ (runner + pass/fail fixtures built into real zips at runtime + README + test wrapper); drives a loader seam install(archive, target) through a reference SAFE loader and a deliberately-unsafe naive loader, sends zip-slip/absolute-path/escaping-symlink attacks, and scans the whole private workspace after every install so a file outside the target is a PLUGIN ESCAPE even when the loader returned no error"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "plugin/extension-loading runner ships at plugin/templates/scripts/runners/plugin/ (runner + pass/fail fixtures built into real zips at runtime + README + test wrapper); drives a loader seam install(archive, target) through a reference SAFE loader and a deliberately-unsafe naive loader, sends zip-slip/absolute-path/escaping-symlink attacks, and scans the whole private workspace after every install so a file outside the target is a PLUGIN ESCAPE even when the loader returned no error"
+        },
+        {
+          "type": "unit",
+          "ref": "control logic (grade_case both verdicts and directions, scan_escapes confinement, asserts-nothing config error, fails-closed on unknown loader / empty corpus) plus both shipped fixtures and a DEEP multi-level traversal case driven end to end in scripts/selftest.py; part of selftest 565 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 565 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Mechanical: pure stdlib zipfile; real archives are built and loaded in a throwaway temp workspace in the gate on this Linux box, no external surface needed. The confinement scan covers the private workspace (target nested deep, whole workspace walked, so multi-level ../ escapes are caught); an escape beyond the workspace root, for example a loader that writes to an absolute path, is outside a portable filesystem scan and is documented as requiring an OS sandbox."
+  ],
+  "rollback": "git revert the impl; additive under plugin/templates/scripts/runners/plugin/, no protected path, selftest cases within the suite."
+}

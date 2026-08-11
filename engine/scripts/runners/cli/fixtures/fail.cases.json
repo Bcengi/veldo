@@ -1,0 +1,12 @@
+[
+  {
+    "name": "asserts stdout the command never prints",
+    "cmd": ["echo", "hello"],
+    "expect": {"exit_code": 0, "stdout_contains": "goodbye"}
+  },
+  {
+    "name": "asserts the wrong exit code",
+    "cmd": ["true"],
+    "expect": {"exit_code": 3}
+  }
+]

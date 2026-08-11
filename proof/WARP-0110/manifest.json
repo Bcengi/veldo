@@ -1,0 +1,31 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0110",
+  "commit": "14c7dab804a25547b300404b43b15f25190da943",
+  "producer": "claude-opus-4-8[1m] (implementing agent, W10 build)",
+  "plan_hash": "sha256:f1bea3833572c104",
+  "produced_at": "2026-07-16T23:45:00Z",
+  "criteria": [
+    {"id": "AC1", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "plugin/templates/.github/workflows/warp-gate.yml parses as valid YAML (yaml.safe_load); its gate steps invoke the real commands ./scripts/verify.sh (line 70) then python3 .warp/policy_check.py (line 73) with no reimplementation; fetch-depth: 0 present so the guard's commit-range logic resolves server-side. Ran that exact sequence locally: verify.sh GATE GREEN, policy_check runs and blocks pre-review with its standard message"}]},
+    {"id": "AC2", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "grep for company/product references (bcengi/travelpass/workpass/dejitech) in the workflow returns 0; docs-hygiene, secret scan, and lint gates pass unchanged (verify.sh GREEN at 14c7dab, 0 undeclared)"}]},
+    {"id": "AC3", "status": "passed", "evidence": [
+      {"type": "operational", "ref": "docs/plugin.md gains a server-side enforcement subsection (9 references to server-side/branch-protection/required-status) with the required-status-check recipe that makes a policy_check failure unmergeable and mirrors the local pre-push guard; the plugin contents reference lists warp-gate.yml (3 mentions). Docs hygiene stays green"}]},
+    {"id": "AC4", "status": "passed", "evidence": [
+      {"type": "operational", "ref": ".warp/capabilities.yaml (and its byte-identical template copy, md5 b73980637f3a85e0c8) replaces server_side_enforcement=absent with ci_gate_check: reference (a shipped runnable artifact) and branch_protection_recipe: procedure (a host setting the owner applies once); neither claims the repository self-enforces server-side"}]}
+  ],
+  "checks": [
+    {"name": "lint", "status": "passed"},
+    {"name": "unit", "status": "passed", "detail": "selftest 121 passed, 0 failed (no new enforced rule)"},
+    {"name": "docs", "status": "passed", "detail": "dash/non-ASCII/genericity sweeps clean incl the new workflow + docs"},
+    {"name": "generated", "status": "passed"},
+    {"name": "template_sync", "status": "passed", "detail": "the four sync-checked files untouched; capabilities.yaml kept identical across both copies anyway"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "W10 ships the server-side gate as a reference artifact (a drop-in CI workflow template under plugin/templates/.github/workflows/) plus a documented branch-protection procedure. It deliberately does NOT add a repo-root .github/workflows to the warp repo itself: warp does not self-enforce server-side (the merge queue stays deferred per the plan), and GitHub only reads workflows from a repo-root .github/workflows, so the template is a drop-in artifact, not a live home-repo workflow. The workflow runs verify.sh (whose unit slot already runs selftest) then policy_check, avoiding a duplicate selftest step and honoring the one-canonical-gate rule. No protected path is touched (new files + docs + capabilities + plugin version), so risk is standard and no approval is required."
+  ],
+  "rollback": "git revert 14c7dab; all changes are additive (a new CI template, a docs subsection, two honest capabilities entries, a plugin minor bump); no code/contract/policy change, gate and selftest unaffected."
+}

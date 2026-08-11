@@ -1,0 +1,38 @@
+WARP-0607 runner evidence - Confluence requirements intake (W7 of PLAN-0006)
+Impl commit under proof: 09200df169f10639e5d77ebc210977fdd058b184
+
+== gate (clean detached worktree at 09200df) ==
+catalog: 5 run, 18 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (09200df169f10639e5d77ebc210977fdd058b184)
+
+== unit (selftest.py) ==
+selftest: 1188 passed, 0 failed
+(+12 for the WARP-0607 Confluence intake block including the None-page guard test;
+baseline was 1176)
+
+== module smoke check (.warp/tracker_intake.py selfcheck) ==
+passed: true - confluence page mapping reads labels for routing, requirements parse
+extracts the acceptance criteria, a requirement drafts with the page's ACs plus a
+no-regression AC, and a page with no routing signal is refused by name.
+
+== end-to-end (fixture Confluence storage-format page) ==
+A page with labels [warp-repo:repo-a] and an <h2>Acceptance Criteria</h2><ul> body
+maps -> item, parse -> [valid CSV, streams large data], draft -> repo-a with ACs
+AC1/AC2/AC3, rendered -> check_spec == 0 (valid warp.spec/v1).
+
+== review-driven None-guard fix (mutation-adjacent) ==
+_confluence_page_to_item(None): OLD raised AttributeError; NEW returns a benign item
+(id None, labels []). Behavior preserved for all real inputs (NEW == OLD on a normal
+page and on {}). Covered by a new selftest assertion.
+
+== reviews ==
+Full independent adversarial review at 5ecd808: pass_with_notes, 0 blocking (all 5 ACs
+confirmed by spies + robust-parse/mapping fixtures + mutation teeth + injection defeated
+on 3 vectors; one non-blocking None-guard note). Fixed -> commit 09200df.
+Scoped independent re-review bound to 09200df: PASS, 0 findings (delta is exactly the
+None-guard + its test, core byte-identical, behavior preserved, gate GREEN 1188/0, no
+regression, caps byte-identical).
+
+== proof binding ==
+plan_hash: sha256:6dd3f98b5a0c1f68 (PLAN-0006, revision 1)
+proof_digest: sha256:c2e856ca0dc70302 (validate.py over {spec_id, commit, criteria, checks})

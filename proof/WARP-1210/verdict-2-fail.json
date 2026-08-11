@@ -1,0 +1,104 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-1210",
+  "commit": "ffc3bd635715d7761483c40e115a9589fa0036e7",
+  "reviewer": "claude-opus-5[1m] (ROUND-2 independent adversarial reviewer, a distinct fresh context from the builder, the round-1 reviewer, the hardener and the orchestrating session; told to attack the NUMBERS and to verify the ORIGINAL properties rather than only the fixes)",
+  "reviewed_at": "2026-07-25T01:20:00Z",
+  "verdict": "fail",
+  "round": 2,
+  "supersedes": "proof/WARP-1210/verdict-1-fail-round1.json",
+  "proof_digest": "sha256:4298a22dfd61b00f",
+  "headline": "F1 to F4 are all GENUINELY CLOSED, each reproduced independently. The failure is two defects the reviewer found itself, and they are THE SAME TWO DEFECT CLASSES ROUND 1 BLOCKED ON, present on SIBLING INPUTS the hardening did not reach. The hardening fixed each defect on the input it was reported on and did not generalize to the other input of the same shape.",
+  "must_fix_before_live": [
+    {
+      "id": "R2-B1",
+      "criterion": "AC3/AC1",
+      "severity": "blocking",
+      "summary": "F2's absent-versus-unreadable defect is UNFIXED ON THE CORPUS HALF, and the corpus is far more reachable than the contract. load_corpus_areas reads the corpus inside a bare except and returns an empty index with no problem name. In a clone at the reviewed commit, ONE malformed .md in specs/ drops the index from 136 entries to 0 (a tab in front matter, an empty file, a binary file, a mode-000 file, or specs/ not being a directory each do it). The diagnosability score then moves 100.0 percent (1 of 1) to 0.0 percent (0 of 1) with zero exclusions, and the map reports the FALSE reason EMPTY_DENOMINATOR when the truth is that the corpus could not be read. That is round-1 F2 verbatim, with one aggravation the hardening ADDED: the new contract_dependence card affirmatively tells the reader the area half IS available. Fix is the mirror of the one already applied: return a corpus_problem, give it the ninth name, and never report EMPTY_DENOMINATOR when a half failed to read."
+    },
+    {
+      "id": "R2-B2",
+      "criterion": "AC1/AC2",
+      "severity": "blocking",
+      "summary": "F3's duplicate-key-by-filename-order defect is UNFIXED ON THE RECORDS SIDE. support_numbers does records.setdefault(rid, record), so two incident records carrying one id give an arbitrary number by filename order: identical substance yields a time-to-diagnosis median and latest of 1.0 hours or 9.0 hours depending on which file sorts first, with records_read reporting 1 when 2 were read, no exclusion and no name. This is round-1 F3's exact wording. Aggravating: .warp/incident.py ALREADY KNOWS this is corruption (check_records reports a duplicate incident id across records) but that check is NOT WIRED INTO THE GATE, and commit ffc3bd6 exists precisely because this item already relied once on an unwired validator's guarantee. Fix mirrors the receipts path: detect, exclude, name both."
+    }
+  ],
+  "defect_rulings": [
+    {
+      "id": "F1",
+      "ruling": "CLOSED, with a named residual",
+      "note": "The trap survives as a trap (the shipped validator still reports zero errors on the mixed-awareness record) and the crash is gone: the record read off disk through the shipped readers now renders a complete text report and a complete HTML page with the dropped input NAMED. Twelve timestamp shapes checked: mixed awareness named, a validator-clean negative interval named, an unsubtractable restored_at named while the diagnosis half still computes, and a genuinely absent timestamp NOT named (no over-fire). RESIDUAL: a present-but-unparseable timestamp (yesterday, not-a-date, a leap-shaped 12:00:60Z) validates with zero errors and is dropped with NO name, indistinguishable from absent - the same absent-versus-unreadable conflation F2 fixed on the contract side, and the docstring's claim about unreadable timestamps is false for that case."
+    },
+    {
+      "id": "F2",
+      "ruling": "CLOSED as stated; the defect CLASS is not",
+      "note": "Dependence is reported rather than claimed away, and all eleven contract states the reviewer built are named as themselves and never as EMPTY_DENOMINATOR. A corpus failure was never reported as a contract failure. But see R2-B1: the corpus half of the same distinction was never made. One exotic misclassification: a DIRECTORY named .warp/architecture.yaml reports as absent rather than unreadable."
+    },
+    {
+      "id": "F3",
+      "ruling": "CLOSED for receipts",
+      "note": "Numbers identical under both filename orders, three receipts over all six permutations yield one distinct digest, byte-identical-apart-from-id both excluded and named, the control (two receipts two incidents) unaffected, a mixed genuine-plus-schema-failing group produces no false conflict, and the receipt arithmetic closes in every one of about twenty models the reviewer derived. See R2-B2 for the records side of the same class."
+    },
+    {
+      "id": "F4",
+      "ruling": "CLOSED",
+      "note": "The literal appears exactly once, equals incident_reconcile.SCHEMA, and every round-1 forgery shape is now excluded and named with zero measures resting on it. WHAT A RIGHT-SCHEMA HAND-WRITTEN FILE STILL BUYS AN ATTACKER, enumerated: everything - a three-key file declaring the correct schema yields a 100 percent diagnosability score and, with a phantom recurrence_of, a 100 percent recurrence rate, with zero exclusions reported. Specifically: validated_by is any non-empty string, bound_digest is never required though the store writes one, the receipt id is never checked against the content address the store derives, and recurrence_of ids are never checked to exist."
+    }
+  ],
+  "matrix_result": "Reproduced with the reviewer's OWN eleven sites and OWN eleven fixtures: 11 of 11 diagonal green, all four modules sha256-unchanged, NO VACUITY - no guard decorative and none shadowed. Its three off-diagonal cells are artifacts of ITS sites being coarser than the shipped ones (a wholesale replacement of the authenticated list necessarily also admits a bad-schema and a conflicted incident; bypassing the interval reader from its caller takes the negative guard with it because both live inside that function), not code defects. HONEST GENERAL FINDING WORTH KEEPING: 'exactly diagonal' is a property of the CHOSEN SITES, not an invariant; what makes a badly chosen mutation fail loudly is the uniqueness assertion plus the off-diagonal being asserted as an EMPTY LIST. The two-site claim for schema-versus-resolution was verified TRUE rather than asserted: each site independently refuses and only losing BOTH lets the forgery through. And 'a raise counts as green' hides nothing: exactly one cell went green by raising, the diagonal cell whose guard exists to prevent that raise, with zero off-diagonal raises. The reviewer also proved the safety net works, having accidentally lit a whole row green with a broken mutation and seen it surface as ten off-diagonal cells rather than a silent pass.",
+  "spec_premise_ruling": "ACCEPTED, PLAINLY, and the reviewer supplied the right test: whether the bar moved DOWN. It moved UP. The original sentence assumed the input was already sane and demanded nothing of the implementation; the replacement imposes three new obligations (fail closed on any unsubtractable pair, fail closed on a negative, name the dropped input and render the rest) which eight new assertions now enforce. What was removed is a FALSE STATEMENT ABOUT A THIRD MODULE'S BEHAVIOUR, which round 1 itself listed as defect material. It landed as a separate commit by the spec's owner with the reasoning on the record and the hardener's refusal preserved, and the reviewer endorses the distinction drawn: a hardener must never edit the criteria it is measured by, and the author must fix a premise that is untrue. Two cosmetic complaints: AC1 now narrates its own correction history inline rather than simply stating the behaviour, and a selftest still asserts prose repeating the refuted premise.",
+  "manifest_overstatements": [
+    "Assumption 2 states the split as core 306, support 648, readers 201; the actual files are 656 and 202, and the AC1 and AC6 evidence say 656/202, so the manifest contradicts itself.",
+    "checks.unit says twelve assertions were RESTATED; sixteen expect sites were removed. The substance holds (the reviewer audited all sixteen) but the count is wrong by four.",
+    "AC1 claims the sibling-load list proves the PURE module loads NOTHING; it execs .warp/metrics.py at import, as the same sentence's own parenthetical admits.",
+    "REPEATED IN AC1, AC6 AND BOTH MODULE DOCSTRINGS: 'the ONE renderer, so the two surfaces can never disagree about a number, its evidence base, or a stand-down name.' FALSE FOR HTML: dashboard._support_cards is a second renderer and it names ZERO excluded inputs. With four exclusions live, the text surface names each one and the HTML names none of them, only a total. This is round-1 overstatement 5's exact shape, corrected for text and left standing on the other surface.",
+    "The assumption that 'no in-process check can prevent' the F4 residual is too strong: recomputing the content address the store derives, and cross-checking recurrence_of against known incident ids, are both in-process and both catch shapes waved through today.",
+    "Assumption 2 frames not editing the architecture contract as pure restraint and omits the cost: both new modules resolve to NO area, and the shape gate treats a file outside the declared shape as outside every budget, so 858 lines of the derivation moved from gate-governed to gate-UNGOVERNED and their budgets now live only in this item's own selftest."
+  ],
+  "notes": [
+    "Ranked by six-month impact. 1. The HTML dashboard names no excluded input, counts only, so a surprising number is not diagnosable from the surface a human actually looks at. 2. recurrence_of is never cross-referenced: one string yields 100 percent recurrence, and it fires on genuine receipts with stale or typo'd ids, which matters because the missing-specification signal is what drives spec work. 3. A present-but-unparseable timestamp is dropped with no name. 4. Both new modules are outside every declared area and therefore outside every mechanizable shape budget; W11 should declare them, which is a human-approved contract edit. 5. An authenticated incident with no record scores 0 in the diagnosability numerator where the truth is unknown. 6. latest is the last close event, not the chronologically latest. 7. A two-area incident makes per-area rows sum above the population with no note. 8. support_share returns 300 percent for a numerator outside its population, and the F2 fix added a second unenforced-invariant footgun of the same shape; both are public and W11 will call them. 9. An area with cost data but no incident is invisible while every visible row reads NO_AREA_COST_DATA. 10. validated_by of '0' satisfies the human-validation half and bound_digest is never required though the store writes one. 11. Rounding: one hour and one hour seventeen seconds both render 1.0 h, and sub-eighteen-second renders 0.0 h. 12. A caller-supplied empty cost cell renders None samples. 13. metrics.py executes three times per CLI run and the pure module cannot load without it at a fixed relative path. 14. A selftest asserts prose repeating the refuted premise. 15. A directory named architecture.yaml reports as absent.",
+    "ROUND-1 NOTES: note 5 (support_share out-of-population numerator) got marginally WORSE - the function moved into a module the CLI, the dashboard and W11 all import, and the F2 fix introduced a second unenforced-invariant footgun of the same shape. Note 12 (the 863-line module) was FIXED by the split, but the fix carried 858 lines outside shape-gate coverage, a new consequence rather than a worsening. Note 6 improved (now named). Notes 1 and 3 are fixed. No other round-1 note regressed."
+  ],
+  "gate_observed": {
+    "verify": "GATE: GREEN (ffc3bd6)",
+    "selftest": "2955 passed, 0 failed",
+    "baselines_measured_by_reviewer": "2816 at c37e833, 2915 at 34cbc29, 2955 at 2ba8350 and at ffc3bd6; all three claimed figures confirmed",
+    "assertion_integrity": "42 expect sites added and 16 removed; the reviewer audited all sixteen and every one is a restatement or a STRENGTHENING, including one that added a positive control fixing a vacuity round 1 had named, and two branch halves collapsing into one unconditional git-resolved assertion",
+    "no_existing_number_changed": "Independently verified from git at 7f63236: compute() byte-identical over SIX streams including the real 576-event repository stream, key set 17 both sides, dashboard text a byte-exact prefix and HTML byte-exact head and tail on all six. The two-marker claim was verified NECESSARY: with one marker the history walk resolves to the hardening commit itself, a tautology.",
+    "engine_sync": "5 files across 8 locations reduce to 5 distinct md5s; pack drift and template sync pass",
+    "housekeeping": "no source file edited; the gate-stamped files restored byte-identically by md5; probes deleted; the WARP-0623 worktree never entered"
+  },
+  "disposition": "NOT LANDED. The two new blockers go to a third hardening pass with an explicit instruction to fix the defect CLASS across every input of the same shape rather than the reported instance, since that is exactly how round 2 came to fail. The six manifest items are corrected, and the two most substantive notes (the HTML surface naming no exclusions, and recurrence_of never being cross-referenced) are candidates to fold in rather than defer, because both make a number wrong on the surface a human reads.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "refuted",
+      "note": "F1 is closed and the trap is preserved, and the twelve timestamp shapes behave. Refuted by R2-B2: two incident records carrying one id give an arbitrary time-to-diagnosis by filename order with records_read concealing the drop. Residual also recorded: a present-but-unparseable timestamp is dropped with no name."
+    },
+    {
+      "id": "AC2",
+      "status": "refuted",
+      "note": "F3 is closed for receipts and F4 for the schema identity, both verified across permutations and every round-1 forgery shape. Refuted by R2-B2 (the records side of the same duplicate-key class) and by the enumerated residual: a hand-written file declaring the CORRECT schema still forges all four measures with zero exclusions, because validated_by is any non-empty string, bound_digest is never required, the receipt id is never checked against the store's content address, and recurrence_of ids are never checked to exist."
+    },
+    {
+      "id": "AC3",
+      "status": "refuted",
+      "note": "The contract half of the absent-versus-unreadable distinction is closed across eleven states and the dependence is reported rather than claimed away. Refuted by R2-B1: the CORPUS half of the same distinction was never made, one malformed spec file drops the index from 136 to 0, and the score moves to 0.0 percent under the FALSE reason EMPTY_DENOMINATOR while the new dependence card affirmatively says the area half is available."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Honest denominators hold in both directions and the reviewer could not make a stand-down swallow a genuine zero. Rounding coarseness is recorded as a note rather than a defect."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "The eleven-guard matrix was reproduced with the reviewer's own sites and fixtures: 11 of 11 diagonal, no vacuity, all four modules unchanged on disk. The two-site schema-versus-resolution claim was verified true rather than asserted. The reviewer's own three off-diagonal cells are artifacts of coarser mutation sites, and it established the general point that exact diagonality is a property of the chosen sites while the uniqueness assertion plus the empty-off-diagonal list is what makes a badly chosen mutation fail loudly."
+    },
+    {
+      "id": "AC6",
+      "status": "refuted",
+      "note": "No existing number changed, verified independently from git over six streams including the real repository stream, and the two-marker history walk was verified necessary. Engine sync, assertion integrity (all sixteen removals audited as restatements or strengthenings) and housekeeping all hold. Refuted on the honesty half: six manifest statements are untrue or self-contradictory, the most substantive being the repeated claim of ONE renderer when the HTML surface is a second renderer that names zero excluded inputs, which is round-1 overstatement five corrected on one surface and left standing on the other."
+    }
+  ]
+}

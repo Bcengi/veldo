@@ -1,0 +1,46 @@
+{
+  "name": "confinement: scoped mounts, read-only root, escape denied",
+  "image": "busybox:stable",
+  "allowed_mounts": [
+    {"path": "/data", "mode": "ro"},
+    {"path": "/work", "mode": "rw"}
+  ],
+  "checks": [
+    {
+      "name": "read a declared input inside the read-only data mount",
+      "kind": "read",
+      "path": "/data/input.json",
+      "expect": "allowed"
+    },
+    {
+      "name": "read a nested file inside the read-write work mount",
+      "kind": "read",
+      "path": "/work/cache/state.bin",
+      "expect": "allowed"
+    },
+    {
+      "name": "write an output inside the read-write work mount",
+      "kind": "write",
+      "path": "/work/out/result.txt",
+      "expect": "allowed"
+    },
+    {
+      "name": "write into the read-only data mount is refused",
+      "kind": "write",
+      "path": "/data/input.json",
+      "expect": "denied"
+    },
+    {
+      "name": "escape attempt: read a host secret outside every mount is denied",
+      "kind": "read",
+      "path": "/etc/shadow",
+      "expect": "denied"
+    },
+    {
+      "name": "escape attempt: write to a host path outside every mount is denied",
+      "kind": "write",
+      "path": "/etc/cron.d/backdoor",
+      "expect": "denied"
+    }
+  ]
+}

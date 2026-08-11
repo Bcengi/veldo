@@ -1,0 +1,99 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0313",
+  "commit": "9486749bfc47c8b4c53e34c9dfae9b9b0fccd4ea",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0003 wave 2)",
+  "plan_hash": "sha256:ae7a800d5ee670f5",
+  "produced_at": "2026-07-17T05:40:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "a generic process/daemon lifecycle runner ships at plugin/templates/scripts/runners/process/ (runner + fixtures pair + README + test wrapper), stdlib only"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "spawn (live pid), graceful_signal (SIGTERM within grace, else force-kill reported), respawn (a DIFFERENT live pid), and kill_tree (a child-of-child reported via a WARP_PIDFILE seam; the group is killed; any survivor is named an orphan) are all observed from the real process, never narrated"
+        },
+        {
+          "type": "operational",
+          "ref": "proof/WARP-0313/runner-evidence.txt: the well-behaved fixture passes all four (exit 0); the misbehaving target (ignores SIGTERM, setsid-escapes a grandchild) fails graceful_signal (force-kill reported) and kill_tree (orphan named), exit 1"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "a fixture that declares no assertions is a fixture error (cannot rubber-stamp); unknown assertion and no-argv are named fixture errors; a missing command is a named spawn failure, not a crash (covered in scripts/selftest.py; part of selftest 426 passed / 0 failed)"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "the control logic is unit-tested in scripts/selftest.py with no external dependency (fixture/fake-driver block driving both shipped fixtures and edge cases); part of selftest 426 passed / 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/capabilities.yaml marks the runner status: reference (a shipped artifact an adopting repo wires to its gate slot), byte-identical with the plugin template copy; runner + fixtures generic (docs-hygiene genericity sweep passes, zero company/product names)"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 426 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "Reference runner: generic, stdlib only, driven over its fixture pair (and edge cases) in the selftest so the control logic is gate-tested with no external dependency. Shipped under plugin/templates/scripts/runners/process/; capabilities: reference; not run in the warp repo's own gate."
+  ],
+  "rollback": "git revert the impl; additive under plugin/templates/scripts/runners/process/, no protected path, selftest cases within the 426."
+}

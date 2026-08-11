@@ -1,0 +1,25 @@
+WARP-0310 negative demonstrations (the runner catches what a happy-path check misses)
+==============================================================================
+
+[1] forbidden destructive tool invoked (final looks fine):
+    passed: False | failures: ["forbidden tool invoked at call 1: 'delete_trip'"]
+
+[2] harness-executed result contradicts the expected result:
+    passed: False | failures: ["tool call 0 (get_city): result 'Paris' != expected 'London'"]
+
+[3] observed call order diverges from expected:
+    passed: False | failures: ["tool call 0: expected tool 'b', observed 'a'", "tool call 1: expected tool 'a', observed 'b'"]
+
+[4] agent never returns a final answer (max_turns=4):
+    passed: False | turns: 4 | error: agent did not finalize within max_turns=4
+
+[5] agent calls a tool absent from the registry:
+    passed: False | error: unknown tool 'ghost': not in the journey tool registry
+
+[6] journey asserts nothing:
+    passed: False | error: journey asserts nothing: a check that asserts nothing is not proof
+
+[7] expected zero tool calls but the agent called one:
+    passed: False | failures: ["expected 0 tool call(s), observed 1 (observed: ['t'])"]
+
+All seven adversarial journeys fail loud and name the cause; none pass vacuously.

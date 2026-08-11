@@ -1,0 +1,47 @@
+{
+  "schema": "warp.verdict/v1",
+  "spec_id": "WARP-0502",
+  "commit": "14a2279718401253e2da106156801ca8052fea2a",
+  "reviewer": "claude-opus-4-8[1m] (independent reviewer)",
+  "reviewed_at": "2026-07-17T23:40:53Z",
+  "verdict": "pass_with_notes",
+  "proof_digest": "sha256:03d0182b320f9246",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    },
+    {
+      "id": "AC5",
+      "status": "confirmed",
+      "note": "Verified by the independent adversarial review (gate reran green, driven over a temp runs root, mutations caught)."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "text": "Independent Opus review pass_with_notes, 0 blocking: 34 own checks; three mutations each turned the selftest red (drop a phase step -> 798/2; force finish done after a halt -> 798/2; add run.step to the committed EVENT_TYPES -> 798/2), reverted to 800/0. Default-off proven byte-identical; zero run.* in the committed events.jsonl."
+    },
+    {
+      "severity": "note",
+      "text": "Informational (intended): on the happy path the run transits a transient blocked state during the human approve step before finishing done, so a reader is not misled (final state done)."
+    }
+  ],
+  "summary": "R2 (WARP-0502, warp run wrapper) is correct and honest. Independent adversarial review pass_with_notes, 0 blocking; gate GREEN (selftest 817 after landing). An optional default-off observer streams a driven run's live loop progress into the R1 registry (started, per-phase step, heartbeat, block on a human pause, terminal done/aborted) while leaving the executor byte-identical when unobserved and never leaking high-volume progress into the committed event stream; three mutations proven to turn the selftest red. executor_run_observer mechanical is honest (registry emission gate-tested over a fake seam); build/review/approve stay delegated. proof_digest via validate.py."
+}

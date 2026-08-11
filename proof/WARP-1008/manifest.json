@@ -1,0 +1,105 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-1008",
+  "commit": "ab692f6c8262f62492f76cd39b186f3c00c14538",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0010 W8, tracker-driven autonomous fleet v1 release)",
+  "plan_hash": "sha256:dea837b0e399ba81",
+  "produced_at": "2026-07-21T05:33:00Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Version bumped to 3.6.0 for the tracker-driven autonomous fleet v1 milestone: plugin/.claude-plugin/plugin.json 3.5.0 -> 3.6.0, .claude-plugin/marketplace.json 3.5.0 -> 3.6.0, and README.md reads 'Current plugin version: 3.6.0.'. The generic method documents are NOT in the release commit; this ships a capability, not a change to the WARP method. git grep confirms the only remaining 3.5.0 in non-historical tracked files is the specs/index.md WARP-0908 row, which is the prior milestone and correctly stays at 3.5.0."
+        },
+        {
+          "type": "unit",
+          "ref": "git show --stat ab692f6 lists exactly eight files: the two version files (.claude-plugin/marketplace.json, plugin/.claude-plugin/plugin.json), README.md, the two docs (docs/plugin.md, docs/tracker-operator-guide.md), plans/PLAN-0010, the new specs/WARP-1008-release-tracker-driven-fleet.md, and the regenerated specs/index.md; no method document and no engine file. The three version surfaces all read 3.6.0."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "The docs are made true for the autonomous loop against the shipped WARP-1001..1007 code. docs/plugin.md gains section 12.5 'The tracker-driven autonomous fleet': the single shared Agent user and the fail-closed eligibility triple (is_eligible in .warp/tracker.py, the three ANDed legs agent assignee + ready_statuses + resolvable repo); the non-LLM inbound bridge (reconcile_drafts drafts on the two-leg pre-approval subset and posts the draft back on the ticket, reconcile_promotions flips draft -> ready only on the full triple, in .warp/tracker_bridge.py) with the human promote gate in Jira; the assign(obj_id, assignee) seam op and the ready-to-test round-trip (artifact links commit/PR/proof never fabricated, and reassignment to resolve_reviewer's per-repo/global/reporter reviewer at verdict.recorded, in .warp/tracker_mirror.py); the opt-in off-by-default 'warp mirror' live runner (.warp/tracker_mirror_runner.py + bin/warp, one poll-when-run reconcile pass, spawns nothing, build_live_adapter fails closed on an unresolved token); and draft_plan_from_requirements feeding live epic/child creation (JiraCloudAdapter in .warp/tracker_intake.py). docs/tracker-operator-guide.md gains the autonomous-loop section (the three moves: tag repo, assign Agent, move to ready-for-dev), the ready-to-test handoff subsection, the requirements-page-to-plan paragraph, and the opt-in 'warp mirror' note. The README tracker bullet is extended with the same loop. Every command, config field (agent, ready_statuses, reviewer, token_ref), and behavior named exists in the shipped code; the live Jira edge is described as reference wired per repo, not turnkey, and the two services as opt-in and off by default."
+        },
+        {
+          "type": "unit",
+          "ref": "The docs hygiene sweeps (dash, non-ASCII, genericity) pass over README and docs/ in the GREEN gate at R. Each named symbol resolves in the shipped engine: grep confirms is_eligible + resolve_repo (.warp/tracker.py), reconcile_drafts + reconcile_promotions + draft_candidate (.warp/tracker_bridge.py), resolve_reviewer + assign (.warp/tracker_mirror.py, .warp/tracker_adapter.py), reconcile + run_from_repo + build_live_adapter (.warp/tracker_mirror_runner.py) and the 'warp mirror' subcommand (bin/warp), and draft_plan_from_requirements (.warp/tracker_intake.py). The config field names (agent, ready_statuses, reviewer, token_ref) match plugin/templates/.warp/trackers.json."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "capabilities.yaml is confirmed accurate and complete for the whole PLAN-0010 surface, so R does not edit it (not in git show --stat ab692f6). The eight-item surface is present and each entry matches the shipped code: tracker_eligibility (W1), tracker_inbound_bridge (W2), tracker_promote_gate (W3), tracker_assign_op + tracker_ready_to_test_handoff (W4), tracker_mirror_runner (W5), jira_cloud_intake_adapter carrying the live epic/child creation (W6) and the live assign write (W5), and doc_to_plan_generator (W7). No capability is claimed that an adopter's tree does not carry; the live-Jira items are marked reference/scope: repo-only and the mechanical items are gate-tested offline against the FakeTracker."
+        },
+        {
+          "type": "unit",
+          "ref": "cmp confirms .warp/capabilities.yaml is byte-identical to all seven engine copies (plugin/templates and the six packs cursor/codex/copilot/antigravity/opencode/aider). check_pack_drift.py reports 'pack drift: pass (7 pack(s))' with every engine byte-identical to source, and the selftest capabilities-honesty check passes in the GREEN gate, proving every capability home resolves in the shipped engine."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "Because W8 is itself a gating work item of PLAN-0010, release-check requires WARP-1008 shipped. Verified both directions: at HEAD before the flips, python3 .warp/plan.py release-check PLAN-0010 reported 'NOT releasable - work not shipped: WARP-1008' (sole reason). R sets WARP-1008 status to shipped and all of W1 through W7 were already shipped, so at R python3 .warp/plan.py release-check PLAN-0010 reports 'releasable' at 8/8 (open_decisions carries only D2 which does not block, release.milestone set, RJ1-RJ5 defined). PLAN-0010 status is set to released in R."
+        },
+        {
+          "type": "unit",
+          "ref": "At R, python3 .warp/plan.py release-check PLAN-0010 reports releasable (exit 0) and the plan front matter reads a single 'status: released'. Independently re-verifiable at R by re-running release-check on the checked-out tree; simulating WARP-1008 shipped is unnecessary because R already carries it shipped."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "bash scripts/verify.sh at R -> GATE: GREEN (ab692f6c8262f62492f76cd39b186f3c00c14538); selftest 1476 passed / 0 failed; generated, docs hygiene (dash / non-ASCII / genericity), template sync, secret scan, and contracts all pass; .warp/last_verify records status green at ab692f6. RULE #1 hand-check of R's eight files clean (no em or en dash; the only double-hyphens are Markdown table separators, YAML front-matter fences, and real CLI flags). The change lands in the canonical release two-commit shape: this reviewed commit R carries the version bump, the WARP-1008 spec at status shipped, PLAN-0010 at status released, and the docs; the evidence-only commit (proof/, .warp/) is added on top by the orchestrator. The plan flip lives in R, not an evidence commit."
+        },
+        {
+          "type": "unit",
+          "ref": "R (ab692f6) changed exactly eight files; none matches any protected_paths pattern (scripts/verify.sh, scripts/warp-guard.sh, .warp/policy.yaml, .warp/policy_check.py and their plugin/templates twins) by exact or both-direction prefix. No engine file (ENGINE_GLOBS: scripts, bin/warp, .warp/*.py, .warp/*.yaml, workflow, templates) is edited, so all seven packs stay byte-identical with no re-sync required."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "operational",
+      "status": "passed",
+      "detail": "Release math verified: two version files plus the README line at 3.6.0 with no stale 3.5.0 outside the historical WARP-0908 index row; the docs (plugin.md 12.5, the operator guide autonomous-loop material, the README bullet) are made true against the shipped WARP-1001..1007 code with the live edge described as reference and the two services as opt-in; capabilities.yaml is confirmed accurate and complete and left byte-identical across all seven copies; because W8 gates PLAN-0010, release-check reports NOT releasable (sole reason WARP-1008) at HEAD and releasable at 8/8 at R, and PLAN-0010 status is released in R; no protected path and no engine file in the 8-file release commit."
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "python3 scripts/selftest.py: 1476 passed, 0 failed at R (ab692f6). GATE GREEN, last_verify status green at ab692f6. Tracker suites (eligibility, inbound bridge draft + promote, assign op, ready-to-test handoff, mirror runner, doc-to-plan, epic/child) included in the selftest."
+    },
+    {"name": "generated", "status": "passed", "detail": "specs/index.md regenerated (scripts/update_index.py), dated 2026-07-21; WARP-1008 row present at status shipped and the PLAN-0010 W8 row shows shipped; check_generated.sh reports no drift."},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass over README and docs/; RULE #1 hand-check of R's eight files clean (no em or en dash; every double-hyphen is a Markdown table separator, a YAML fence, or a real CLI flag such as --dry-run)."},
+    {"name": "template_sync", "status": "passed", "detail": "template sync: pass (the shared engine instances match the plugin/templates canon); no engine file changed by R."},
+    {"name": "pack_drift", "status": "passed", "detail": "check_pack_drift.py: pass (7 packs), every engine byte-identical to source; nothing re-synced because no engine file changed. capabilities.yaml byte-identical across all seven copies."},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed", "detail": "warp contracts pass, including PLAN-0010 (status released), the WARP-1008 spec (status shipped, planned lane bound to PLAN-0010 W8, required_evidence operational), and this manifest (criteria AC1-AC5, required_evidence operational satisfied)."}
+  ],
+  "assumptions": [
+    "Single reviewed release commit shape (canonical): R (ab692f6) is the one reviewed release commit and carries the version bump to 3.6.0 across the two version files and the README line, the docs made true (docs/plugin.md section 12.5 + version 2.6 history entry, docs/tracker-operator-guide.md version 1.1 autonomous-loop material, the README tracker bullet), the new WARP-1008 spec at status shipped, PLAN-0010 flipped to released, and the regenerated specs/index.md, eight files total. The evidence-only commit added on top of R by the orchestrator carries ONLY proof/ and .warp/ files (this manifest, the independent verdict, last_verify, events); it changes no spec, plan, or implementation file, because the spec flip to shipped and the plan flip to released already live in R (plans/ is not in the evidence-only allowlist).",
+    "capabilities.yaml is NOT edited by this release (not in git show --stat ab692f6): the eight PLAN-0010 tracker capabilities were recorded honestly per item across W1 through W7 and are confirmed accurate and complete for the release, so marking anything additionally mechanical or adding a claim would be over-claiming. Because no engine file changed, no pack re-sync was needed and pack drift stays empty for all seven packs, with capabilities.yaml byte-identical across all copies.",
+    "AC4 release subtlety: because W8 is itself a gating work item of PLAN-0010, release-check requires WARP-1008 shipped. At HEAD before the flips release-check reports NOT releasable with the sole reason WARP-1008; R sets WARP-1008 to shipped and all of W1 through W7 are already shipped, so at R release-check reports releasable at 8/8 directly with no simulation required, and PLAN-0010 status is released in R.",
+    "Proof sequencing: this manifest is the canonical evidence artifact (required_evidence [operational] satisfied by the operational evidence entries and the operational check); the independent verdict the orchestrator writes binds to the same reviewed commit ab692f6 and its proof_digest is set to proof_digest(this manifest). plan_hash sha256:dea837b0e399ba81 is PLAN-0010 (status released) via plan.py hash. This build writes no verdict and does not push."
+  ],
+  "rollback": "git revert this release commit (ab692f6) and its evidence commit; the version bump withdraws, the WARP-1008 spec returns to its pre-release state, and PLAN-0010 returns to in_progress (the eight work items stay shipped). The release is additive - a version bump, a confirmed honest capability record (no capabilities.yaml edit), the fleet docs made true, the WARP-1008 spec, and the plan flip - so reverting it leaves the shipped W1-W7 tracker capabilities and the seven packs intact."
+}

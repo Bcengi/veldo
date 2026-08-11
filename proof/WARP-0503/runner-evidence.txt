@@ -1,0 +1,1 @@
+R3 (WARP-0503, warp status and warp watch) is correct and honest. Gate GREEN, selftest 817 passed, 0 failed.

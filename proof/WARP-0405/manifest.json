@@ -1,0 +1,123 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0405",
+  "commit": "06ee38f12f8b6b9db9ff73e9ad2d8bbb3913a99f",
+  "producer": "claude-opus-4-8[1m] (implementing agent, PLAN-0004 X5)",
+  "plan_hash": "sha256:fdd514afad1b45c4",
+  "produced_at": "2026-07-17T18:28:50Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/budget.py is a stdlib reader and enforcer of cost and token budgets over the single existing event stream: spend rides the .warp/events.jsonl envelope as optional tokens and cost_usd fields attributed by the existing correlation_id (backward compatible - old events with no spend parse and aggregate to zero); budgets are declared in a light warp.plan/v1 budgets block (plan-level tokens and cost_usd caps plus optional per-spec caps) whose shape is validated as a named BudgetError; the module computes spend per plan (the plan id plus its work-item spec correlations, not the global total) and per spec, reports OVER or UNDER, and exits non-zero naming the plan or spec and the overage on any breach, exit 0 when within budget or no budgets are declared; .warp/metrics.py compute() was extended ONCE to aggregate spend (spend_tokens_total, spend_cost_usd_total, spend_by_correlation) so the enforcer, the reader, and any dashboard read the same numbers with no drift; events.py and metrics.py ship byte-identical in .warp/ and plugin/templates/.warp/"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives .warp/budget.py over synthetic event streams and crafted plans: a stream under budget passes, a stream over a plan cap fails loud naming the plan and overage, a stream over a per-spec cap fails loud naming the spec, a no-budgets plan passes, old events with no spend still parse, a no-drift assertion that the budget module's spend EQUALS metrics.compute(), and 13 malformed budgets shapes each raise a named BudgetError; two live mutations (a cap-ignoring check and a plan-spend misattribution) are proven to make assertions fail; part of selftest 760 passed, 0 failed"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/budget.py is a stdlib reader and enforcer of cost and token budgets over the single existing event stream: spend rides the .warp/events.jsonl envelope as optional tokens and cost_usd fields attributed by the existing correlation_id (backward compatible - old events with no spend parse and aggregate to zero); budgets are declared in a light warp.plan/v1 budgets block (plan-level tokens and cost_usd caps plus optional per-spec caps) whose shape is validated as a named BudgetError; the module computes spend per plan (the plan id plus its work-item spec correlations, not the global total) and per spec, reports OVER or UNDER, and exits non-zero naming the plan or spec and the overage on any breach, exit 0 when within budget or no budgets are declared; .warp/metrics.py compute() was extended ONCE to aggregate spend (spend_tokens_total, spend_cost_usd_total, spend_by_correlation) so the enforcer, the reader, and any dashboard read the same numbers with no drift; events.py and metrics.py ship byte-identical in .warp/ and plugin/templates/.warp/"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/budget.py is a stdlib reader and enforcer of cost and token budgets over the single existing event stream: spend rides the .warp/events.jsonl envelope as optional tokens and cost_usd fields attributed by the existing correlation_id (backward compatible - old events with no spend parse and aggregate to zero); budgets are declared in a light warp.plan/v1 budgets block (plan-level tokens and cost_usd caps plus optional per-spec caps) whose shape is validated as a named BudgetError; the module computes spend per plan (the plan id plus its work-item spec correlations, not the global total) and per spec, reports OVER or UNDER, and exits non-zero naming the plan or spec and the overage on any breach, exit 0 when within budget or no budgets are declared; .warp/metrics.py compute() was extended ONCE to aggregate spend (spend_tokens_total, spend_cost_usd_total, spend_by_correlation) so the enforcer, the reader, and any dashboard read the same numbers with no drift; events.py and metrics.py ship byte-identical in .warp/ and plugin/templates/.warp/"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/budget.py is a stdlib reader and enforcer of cost and token budgets over the single existing event stream: spend rides the .warp/events.jsonl envelope as optional tokens and cost_usd fields attributed by the existing correlation_id (backward compatible - old events with no spend parse and aggregate to zero); budgets are declared in a light warp.plan/v1 budgets block (plan-level tokens and cost_usd caps plus optional per-spec caps) whose shape is validated as a named BudgetError; the module computes spend per plan (the plan id plus its work-item spec correlations, not the global total) and per spec, reports OVER or UNDER, and exits non-zero naming the plan or spec and the overage on any breach, exit 0 when within budget or no budgets are declared; .warp/metrics.py compute() was extended ONCE to aggregate spend (spend_tokens_total, spend_cost_usd_total, spend_by_correlation) so the enforcer, the reader, and any dashboard read the same numbers with no drift; events.py and metrics.py ship byte-identical in .warp/ and plugin/templates/.warp/"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/budget.py is a stdlib reader and enforcer of cost and token budgets over the single existing event stream: spend rides the .warp/events.jsonl envelope as optional tokens and cost_usd fields attributed by the existing correlation_id (backward compatible - old events with no spend parse and aggregate to zero); budgets are declared in a light warp.plan/v1 budgets block (plan-level tokens and cost_usd caps plus optional per-spec caps) whose shape is validated as a named BudgetError; the module computes spend per plan (the plan id plus its work-item spec correlations, not the global total) and per spec, reports OVER or UNDER, and exits non-zero naming the plan or spec and the overage on any breach, exit 0 when within budget or no budgets are declared; .warp/metrics.py compute() was extended ONCE to aggregate spend (spend_tokens_total, spend_cost_usd_total, spend_by_correlation) so the enforcer, the reader, and any dashboard read the same numbers with no drift; events.py and metrics.py ship byte-identical in .warp/ and plugin/templates/.warp/"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/budget.py is a stdlib reader and enforcer of cost and token budgets over the single existing event stream: spend rides the .warp/events.jsonl envelope as optional tokens and cost_usd fields attributed by the existing correlation_id (backward compatible - old events with no spend parse and aggregate to zero); budgets are declared in a light warp.plan/v1 budgets block (plan-level tokens and cost_usd caps plus optional per-spec caps) whose shape is validated as a named BudgetError; the module computes spend per plan (the plan id plus its work-item spec correlations, not the global total) and per spec, reports OVER or UNDER, and exits non-zero naming the plan or spec and the overage on any breach, exit 0 when within budget or no budgets are declared; .warp/metrics.py compute() was extended ONCE to aggregate spend (spend_tokens_total, spend_cost_usd_total, spend_by_correlation) so the enforcer, the reader, and any dashboard read the same numbers with no drift; events.py and metrics.py ship byte-identical in .warp/ and plugin/templates/.warp/"
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": ".warp/budget.py is a stdlib reader and enforcer of cost and token budgets over the single existing event stream: spend rides the .warp/events.jsonl envelope as optional tokens and cost_usd fields attributed by the existing correlation_id (backward compatible - old events with no spend parse and aggregate to zero); budgets are declared in a light warp.plan/v1 budgets block (plan-level tokens and cost_usd caps plus optional per-spec caps) whose shape is validated as a named BudgetError; the module computes spend per plan (the plan id plus its work-item spec correlations, not the global total) and per spec, reports OVER or UNDER, and exits non-zero naming the plan or spec and the overage on any breach, exit 0 when within budget or no budgets are declared; .warp/metrics.py compute() was extended ONCE to aggregate spend (spend_tokens_total, spend_cost_usd_total, spend_by_correlation) so the enforcer, the reader, and any dashboard read the same numbers with no drift; events.py and metrics.py ship byte-identical in .warp/ and plugin/templates/.warp/"
+        },
+        {
+          "type": "unit",
+          "ref": "a selftest block drives .warp/budget.py over synthetic event streams and crafted plans: a stream under budget passes, a stream over a plan cap fails loud naming the plan and overage, a stream over a per-spec cap fails loud naming the spec, a no-budgets plan passes, old events with no spend still parse, a no-drift assertion that the budget module's spend EQUALS metrics.compute(), and 13 malformed budgets shapes each raise a named BudgetError; two live mutations (a cap-ignoring check and a plan-spend misattribution) are proven to make assertions fail; part of selftest 760 passed, 0 failed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "status": "passed"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "secret_scan",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "status": "passed"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "selftest 760 passed, 0 failed"
+    }
+  ],
+  "assumptions": [
+    "budget_governance is mechanical: the reader and enforcer control logic AND its real surface (reading events.jsonl through metrics.compute and enforcing declared plan and per-spec caps) run end to end in the gate here over synthetic streams, stdlib only, no absent surface. Spend rides the single existing event stream via correlation_id, not a second store. events.py and metrics.py were each extended once and stay byte-identical across .warp/ and plugin/templates/.warp/; validate.py was not touched (budgets shape validation lives in budget.py). budget.py has no template copy by design, matching the sibling PLAN-0004 modules."
+  ],
+  "rollback": "git revert; additive - .warp/budget.py, an events.py extension (both copies), a metrics.py extension (both copies), a selftest block, a PLAN-0004 budgets block, one capabilities entry (both copies), and the spec; no protected path."
+}

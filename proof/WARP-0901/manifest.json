@@ -1,0 +1,64 @@
+{
+  "schema": "warp.proof/v1",
+  "spec_id": "WARP-0901",
+  "commit": "f473a3443c3f59841065a614a26f59c78b347c0b",
+  "producer": "claude-opus-4-8[1m] (build, PLAN-0009 W1, orchestrator + builder agent ab8981e1)",
+  "plan_hash": "sha256:6b03ff568d65cd2f",
+  "produced_at": "2026-07-19T15:23:24Z",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": ".warp/dispatch.py Dispatcher(work.Dispatcher) fills the work.py seam; dispatch(unit) routes build/review/unknown (dispatch.py:172) and returns {ok: bool,...}; a failed dispatch returns ok False so the WorkLoop releases the claim in its finally and marks it _failed (work.py:112-116), never a stuck claim; a crashed dispatch is coerced to ok False (work.py:109-110)."},
+        {"type": "unit", "ref": "independent review (agent aa33cda6, bound to f473a344): confirmed the seam is filled, routing correct, unknown kind returns ok False, and the WorkLoop honors ok False (claim released, unit marked failed, not re-claimed by the same worker)."}
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the BUILD path drives Executor.run(sid, stop_after='proof') (dispatch.py:193) through resolve, plan run-check, build, gate, proof and STOPS at review (the distinct 'built' state, one cycle, no review), then flips the spec ready->review (dispatch.py:198); a red gate / failed build / invalid proof returns ok False and does NOT flip. stop_after is DEFAULTED on Executor.run (executor.py:346) and the 'built' state is produced ONLY in the stop_after=='proof' branch (executor.py:475), so the default path is behaviorally identical and every existing executor selftest still passes."},
+        {"type": "unit", "ref": "independent review: confirmed 'built' cannot occur when stop_after is None (default path byte-for-byte identical), build path stops at review reviewing nothing, and the ready->review flip / no-flip-on-halt both hold; all existing executor selftests pass (1287/0)."}
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the REVIEW path runs a fresh-context reviewer seam over the built commit for a verdict and ships ONLY on _verdict_passes (verdict in executor.PASSING_VERDICTS AND zero policy_check.blocking_findings, failing closed) AND a successful land via the serialized lander, then flips review->shipped (dispatch.py:160,214-224); a failing verdict returns the spec to ready, never landed/shipped; a failed land leaves the spec in review for retry. The reference LiveReviewer and unwired lander fail LOUD rather than fabricate (dispatch.py:83-87,231-234)."},
+        {"type": "unit", "ref": "independent review: confirmed ship requires a passing verdict AND land ok; failing verdict -> ready (never shipped/landed); pass_with_notes ships only with zero blocking findings; the real reviewer/lander fail loud."}
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the ready->review->shipped on-disk status is the only handoff between the two unit kinds; claimable() surfaces build units only for status ready and review units only for status review (frontier.py:132,136,140), so a shipped spec leaves the frontier; _set_status edits only the first status line inside the front-matter fence (dispatch.py:143-149), never a body token; the WorkLoop re-checks _still_claimable after the atomic claim (work.py:70-78)."},
+        {"type": "unit", "ref": "independent review: confirmed the status-based handoff removes a shipped spec from claimable(), the status regex is fence-scoped (not a body token), and claim-then-recheck plus the split means no two workers both build or both review the same unit."}
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {"type": "operational", "ref": "the WARP-0901 selftest block drives the dispatcher over a throwaway git repo with a fake build hook, a fake reviewer, and a fake lander (no live agent), +17 assertions (selftest 1270 -> 1287, 0 failed); two non-tautological mutants prove teeth: _MutShipNoVerdict (always-pass _verdict_passes) turns the no-ship-on-fail assertion red, and _MutBuildReviews (build path also reviews) turns the reviews-nothing assertion red."},
+        {"type": "unit", "ref": "independent review PROVED the teeth by mutating the LIVE dispatch.py source (not just the in-test mutants): the verdict-gate mutation turned 'does NOT ship on fail' red (1286/1) and the self-review mutation turned 'reviews nothing' + 2 related assertions red (1284/3); the fakes drive all paths with no live agent and the real LiveLoop/LiveReviewer/unwired-lander each fail loud."}
+      ]
+    }
+  ],
+  "checks": [
+    {"name": "unit", "status": "passed", "detail": "selftest 1287 passed, 0 failed (+17 for the WARP-0901 block); GATE GREEN at f473a344, verified by the builder and independently by the reviewer (agent aa33cda6) in an isolated worktree."},
+    {"name": "generated", "status": "passed"},
+    {"name": "docs", "status": "passed", "detail": "dash sweep, non-ASCII sweep, genericity sweep all pass"},
+    {"name": "template_sync", "status": "passed"},
+    {"name": "secret_scan", "status": "passed"},
+    {"name": "contracts", "status": "passed"}
+  ],
+  "assumptions": [
+    "W1 of PLAN-0009, no dependencies. The whole fleet (executor, work, frontier, claim, lander, and this dispatcher) is repo-root dogfood machinery in .warp/, NOT the shipped engine plugin/templates/.warp - so dispatch.py is not copied into packs and forces no re-assembly; shipping the fleet into the engine is W5. The intelligent build and review remain DELEGATED procedures performed by the in-session agent through seams (the references fail loud rather than fabricate), consistent with the no-rogue-processes rule and PLAN-0007 NG1; no detached process is spawned.",
+    "Two commits: an impl commit (f473a344) BUNDLING the approved PLAN-0009 plan file (plan-entry pattern like WARP-0801) plus this spec (status ready) and the selftest, carrying its own independent verdict; then an evidence-only commit (proof/, .warp/, specs/ only) that inherits the impl verdict via the guard's parent rule. The impl was AMENDED once from 843fac1 (the reviewed commit) to f473a344 to strip `--` from four comment dividers in dispatch.py per the review's Note 1 - a comment-only, behaviorally inert change; the reviewer re-verified the exact delta and re-issued the verdict bound to f473a344 (gate still 1287/0).",
+    "One independent adversarial review (agent aa33cda6, fresh-context Opus, distinct from the builder agent ab8981e1) returned pass with one non-blocking note: verdict commit-binding and the different-worker independence phrasing are enforced at the reviewer-seam / guard-at-land layer (the pre-push guard fails closed on an unproven push), not inside the dispatcher - defense-in-depth, architecturally consistent; independence is genuine at agent-context granularity (the build path performs zero reviews and review is always a separate fresh-context dispatch). plan_hash sha256:6b03ff568d65cd2f is the canonical hash via plan.py."
+  ],
+  "rollback": "git revert the impl and evidence commits; additive - a new .warp/dispatch.py (repo-root dogfood machinery, not shipped engine, not copied into packs), a defaulted Executor.run stop_after leaving existing executor selftests unchanged, a selftest block, this spec, and the bundled PLAN-0009. No protected path; pure stdlib; the intelligent build/review remain delegated procedures, never a detached process."
+}
