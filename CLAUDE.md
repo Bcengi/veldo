@@ -26,3 +26,18 @@ Always-true facts:
   scripts/render_pdfs.py after doc changes and commit pdf/.
 - Product plans live flat in plans/, contract veldo.plan/v1, validated by
   .veldo/validate.py; the specs index carries the plan status section.
+
+## Specification identifiers: existing ones stay WARP, new ones are VELDO
+
+Every specification, plan and proof bundle in this repository is keyed `WARP-nnnn`, because the method
+was built under that internal name before it was published. **Those ids do not get renamed, and new
+work is issued as `VELDO-nnnn` starting at VELDO-0001.**
+
+This is a decision rather than an oversight, and the reason is the evidence. A proof bundle's identity
+is bound to its content by digest, so renaming its id rewrites the bundle, which changes the digest,
+which breaks the binding that made it evidence in the first place. Doing that across 147 bundles and
+every cross-reference between them would produce records asserting that work happened under names it
+never had. One visible seam, explainable in a sentence, is worth more than 12,700 edits that damage the
+receipts they are tidying.
+
+So: read a `WARP-nnnn` id as historical. Write `VELDO-nnnn`.
