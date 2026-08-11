@@ -240,6 +240,20 @@ REASONS = {
 EXCLUSIONS = ("self", "no_spend", "zero_tokens", "unreadable_era", "other_era",
               "unreadable_features")
 
+# THE ONE WORD FOR "windowed by no era at all". Reported in every place an era is reported, so a
+# reader of the text and a consumer of the JSON can never see the same fact spelled two ways. It
+# used to be `None` in the report and this word in the layer's inputs, which rendered as the
+# literal text "era None" beside a record that said "unwindowed".
+UNWINDOWED = "unwindowed"
+
+
+def era_label(window):
+    """The era to REPORT: the one actually windowed by, or the one word for none.
+
+    The single place that spelling is decided, so no report path can invent a second one."""
+    return window if window is not None else UNWINDOWED
+
+
 _MODS = {}
 
 
@@ -563,12 +577,18 @@ def analogy(target_spec, target_vector, corpus, era_of=None, era=None,
     # merely told about. An era name with no reader behind it would put a model identity into a
     # committed record that nothing had checked a single actual against, which is the same
     # species of dishonesty as a declared prior presented as a measurement.
+    #
+    # `window` IS THEREFORE THE ONLY ERA ANY PATH BELOW MAY REPORT - all six of them, the two
+    # early stand-downs, the two evidence stand-downs, the layer's own inputs and the success
+    # report - because the one whose output gets COMMITTED is the success path, and a rule applied
+    # to the paths that commit nothing is not a rule. `era` is read exactly once more, in the
+    # `era_of is not None` test on the next line, and never reported.
     window = era if era_of is not None else None
     empty = {k: 0 for k in EXCLUSIONS}
     if target_vector is None:
-        return None, _standdown(UNREADABLE_TARGET, len(corpus), empty, 0, window)
+        return None, _standdown(UNREADABLE_TARGET, len(corpus), empty, 0, era_label(window))
     if not corpus:
-        return None, _standdown(NO_CORPUS, 0, empty, 0, window)
+        return None, _standdown(NO_CORPUS, 0, empty, 0, era_label(window))
     matched, excluded, candidates = evidence(
         corpus, target_spec, target_vector, era_of=era_of, era=window, radius=radius)
     if candidates == 0:
@@ -587,12 +607,13 @@ def analogy(target_spec, target_vector, corpus, era_of=None, era=None,
         else:
             code = NO_CORPUS
         return None, _standdown(
-            code, len(corpus), excluded, 0, era,
+            code, len(corpus), excluded, 0, era_label(window),
             detail="not one of %d record(s) is usable as a comparable: %s"
                    % (len(corpus), ", ".join("%s=%d" % (k, excluded[k]) for k in EXCLUSIONS)))
     if len(matched) < min_matches:
         return None, _standdown(
-            TOO_FEW_MATCHES, len(corpus), excluded, candidates, era, matched=len(matched),
+            TOO_FEW_MATCHES, len(corpus), excluded, candidates, era_label(window),
+            matched=len(matched),
             detail=("%d comparable change(s) inside a match radius of %d, and %d are required; "
                     "%d recorded actual(s) were available but describe work too far from this "
                     "spec to reason from" % (len(matched), radius, min_matches, candidates)))
@@ -615,7 +636,7 @@ def analogy(target_spec, target_vector, corpus, era_of=None, era=None,
             "min_matches_required": min_matches,
             "candidates": candidates,
             "corpus_records": len(corpus),
-            "era": era if era is not None else "unwindowed",
+            "era": era_label(window),
             "observed_low": int(obs_low),
             "observed_high": int(obs_high),
             "sample_widening_pct": widen,
@@ -638,7 +659,7 @@ def analogy(target_spec, target_vector, corpus, era_of=None, era=None,
         "matched_specs": specs,
         "min_matches_required": min_matches,
         "match_radius": radius,
-        "era": era,
+        "era": era_label(window),
         "excluded": dict(excluded),
         "low": low,
         "high": high,

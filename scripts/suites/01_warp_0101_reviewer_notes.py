@@ -951,6 +951,52 @@ expect("WARP-1401 AC5: one footprint reader handles a spec with no footprint blo
        TOE.footprint_of(_TOE_NOFP) == []
        and TOE.footprint_of(_TOE_SPEC) == ["scripts/verify.sh", "docs/method.md"])
 
+# AC2 AND AC4 IN THE COPY EVERY ADOPTER INSTALLS, which is where this item was inverted with the
+# whole gate green. Every assertion above drives ROOT/.veldo/toe_corpus.py, but .veldo/pack.py
+# ships engine/.veldo/toe_corpus.py (ENGINE_GLOBS covers .veldo/*.py) and the engine copy is the
+# one an adopting repository actually runs. A review edited ONLY the engine twin so coverage()
+# always answered usable_as_ground_truth True: check_template_sync.sh printed pass, because its
+# pairs were a hand-written list nobody had extended to this module, and the suite printed 3942
+# passed, because nothing anywhere had ever read the shipped bytes. So AC4's whole point, that the
+# corpus refuses to call itself ground truth when no spend was ever recorded, held only in the copy
+# nobody installs.
+#
+# TWO TEETH, DELIBERATELY INDEPENDENT. The first is this repository's standing convention, byte
+# identity, which is what makes every assertion above an assertion about the shipped file. The
+# second LOADS AND DRIVES the shipped file itself over the same seeded corpus, with its own
+# control, so the inversion reds this suite even if the identity leg is loosened or the derived
+# pair list in check_template_sync.sh ever grows an exception for this path.
+expect("WARP-1401 AC2/AC4: the SHIPPED engine twin is byte-identical to the copy every assertion "
+       "above drives, so those assertions are assertions about what pack.py lays into an adopter",
+       (ROOT / ".veldo/toe_corpus.py").read_bytes()
+       == (ROOT / "engine/.veldo/toe_corpus.py").read_bytes())
+_toeespec = importlib.util.spec_from_file_location(
+    "veldo_toe_corpus_engine", ROOT / "engine/.veldo/toe_corpus.py")
+TOE_ENGINE = importlib.util.module_from_spec(_toeespec)
+_toeespec.loader.exec_module(TOE_ENGINE)
+with tempfile.TemporaryDirectory() as _toe_ed:
+    tmpfile(_toe_ed, "WARP-9401-seed.md", _TOE_SPEC)
+    _toe_ec = TOE_ENGINE.build(specs_dir=_toe_ed, events=_toe_ev, protected=["scripts/verify.sh"])
+    _toe_ecov = TOE_ENGINE.coverage(_toe_ec)
+    _toe_ea = {r["spec"]: r for r in _toe_ec}["WARP-9401"]
+    expect("WARP-1401 AC4: the ENGINE copy, loaded and DRIVEN rather than trusted, reports the "
+           "spend gap as a NUMBER and refuses to call a spend-free corpus ground truth",
+           _toe_ea["spend"]["spend_recorded"] is False
+           and _toe_ea["spend"]["tokens"] == 0
+           and _toe_ecov["records"] == 1
+           and _toe_ecov["spend_known"] == 0
+           and _toe_ecov["spend_coverage"] == 0.0
+           and _toe_ecov["usable_as_ground_truth"] is False)
+    # ... and the shipped copy's OWN control, because a file that answers False to everything is
+    # not honest either: the same bytes must report spend when the log carries it.
+    _toe_ec2 = TOE_ENGINE.build(specs_dir=_toe_ed, protected=[],
+                                events=_toe_ev + [{"type": "gate.passed", "spec_id": "WARP-9401",
+                                                   "tokens": 1200}])
+    expect("WARP-1401 AC4 control: the ENGINE copy is not a function that always says False - with "
+           "spend in the log the shipped bytes report it and coverage rises above zero",
+           {r["spec"]: r for r in _toe_ec2}["WARP-9401"]["spend"]["tokens"] == 1200
+           and TOE_ENGINE.coverage(_toe_ec2)["usable_as_ground_truth"] is True)
+
 # --- WARP-1501 (W1 of PLAN-0015): substrate declarations and their validator ----------------
 _subspec = importlib.util.spec_from_file_location("veldo_substrate", ROOT / ".veldo/substrate.py")
 SUB = importlib.util.module_from_spec(_subspec); _subspec.loader.exec_module(SUB)

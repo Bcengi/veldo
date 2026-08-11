@@ -58,7 +58,13 @@ acceptance_criteria:
       direction a reader would quote. The suite asserts the SHAPE and the honesty of the report,
       never these numbers; they are dated evidence, not a contract.** A selftest
       requires that a corpus built from events carrying no spend reports exactly that rather than a
-      confident zero.
+      confident zero. IT REQUIRES IT OF BOTH HOMES OF THE MODULE, the copy this repository runs and
+      the engine copy `pack.py` lays into every adopting repository: a review inverted the engine
+      twin alone so `coverage()` always answered `usable_as_ground_truth` True and the whole gate
+      stayed green, because the sync check's pairs were then a hand-written list nobody had extended
+      to this module and no assertion had ever read the shipped bytes. The selftest now asserts the
+      twins are byte-identical AND loads and drives the shipped copy over the same seeded corpus,
+      with its own control, so neither leg alone is what carries the guarantee.
   - id: AC5
     text: >
       ONE FOOTPRINT READER. `spec_features` counts the declared footprint and `build` tests it against
@@ -82,8 +88,11 @@ corpus of what changes actually cost. This is that corpus.
 
 **PLAN-0014 W1 says "every input is already recorded today". For spend, that is false.**
 
-Measured over this repository's own event log: **904 events - 658 `gate.passed`, 171
+Measured 2026-08-02 over this repository's own event log: **904 events - 658 `gate.passed`, 171
 `verdict.recorded`, 75 `gate.failed` - and not one carries `tokens`, `cost_usd` or `human_minutes`.**
+The event counts move with every gate run and that figure is dated evidence rather than a contract:
+re-measured 2026-08-11 the log holds 1123 events (798 `gate.passed`, 176 `verdict.recorded`, 149
+`gate.failed`) and **still not one carries any spend field**, which is the part that is structural.
 
 The capability has been there the whole time and is not the problem. The envelope has always allowed
 those fields. `events.py` accepts `--tokens` and `--cost-usd`. Three separate readers aggregate them:

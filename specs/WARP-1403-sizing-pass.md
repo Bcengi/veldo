@@ -73,7 +73,11 @@ acceptance_criteria:
       carries over a thousand events and NOT ONE with a spend field, so the brief reports
       anchor_available no and OMITS the numeric anchor keys rather than reporting zero - paired
       with the seeded control where the same function reports the recorded total, which is what
-      makes the standdown a measurement instead of a hardcoded answer. An agent's judgement never
+      makes the standdown a measurement instead of a hardcoded answer. Each numeric anchor is
+      gated on ITS OWN field and never on spend having been recorded in some other one, so a
+      ledger carrying cost_usd or human_minutes and no tokens reports token_anchor_available no
+      and omits the token keys, asserted as a THIRD control over the part of the domain where
+      carrying spend and carrying tokens stop coinciding. An agent's judgement never
       makes an estimate calibrated: agent_judgement is not one of W2's grounded bases, the record
       reads uncalibrated, and moving that basis into the grounded set makes this module REFUSE to
       write the layer at all (driven, not asserted). The pass's own token cost is recorded through
@@ -181,7 +185,9 @@ supports (NG6).
 
 ## Delivery notes, including the reds
 
-THE TEETH. 30 deliberate mutations of the module were applied one at a time, each restored before
+THE TEETH AS DELIVERED, over the 37 assertions this fragment carried then. It carries 40 now; the
+remediation note below records what changed and why. 30 deliberate mutations of the module were
+applied one at a time, each restored before
 the next, plus two targeted probes; **35 of the 37 assertions were watched failing from a module
 mutation, and the remaining two from the probes: the AC5 negative control (planting a spec that is
 not actually broken) and the gate-naming sweep (a throwaway module naming this one, since
@@ -213,6 +219,54 @@ attributed to the wrong mutation until the batch was re-run with bytecode writin
 own walk excludes `__pycache__` and `.pyc` for the same species of reason, and the suite asserts
 it: a brief's digest must not depend on what was imported recently.
 
+## Remediation after independent review, 2026-08-11
+
+An independent review applied 22 mutations of its own and four left all 37 assertions green. Three
+of those four were LABELS rather than measurements, and one honest-omission property was asserted
+only over the convenient half of its domain. What changed, and the mutation that now reds each of
+them (every one applied to a scratch copy under /tmp, diffed to confirm it applied, and the suite
+run after it):
+
+- **The ledger's omission is now per FIELD, not per ledger** (`ledger_state`). `spend.validate`
+  accepts a record carrying any ONE of `tokens`, `cost_usd`, `human_minutes` and its writer defaults
+  `tokens` to None, so a ledger can hold real recorded cost and no token history. The old gate was
+  "any spend field present", which reported `tokens_recorded: 0` beside `anchor_available: yes` -
+  the zero-that-reads-like-a-measurement this AC exists to prevent, and the one shape the seeded
+  control never used, since both its events carried tokens. The token keys are now omitted unless an
+  event carries a numeric `tokens`, `token_spend_events` states the basis of the total, and
+  `token_anchor_available` answers for the keys it licenses. A third control asserts it over a
+  ledger carrying cost_usd and human_minutes only. Driven: gating the token keys on `carrying`
+  again, 1 RED (the new per-field control); pinning `token_anchor_available` to yes, 2 RED (it and
+  the real-log assertion).
+- **All three declared vocabulary refusals are driven.** `layer_vocabulary` says it fails closed by
+  name on three things; only the calibrated-basis one was driven, so `if LAYER_ID not in E.LAYERS:`
+  and `if LAYER_BASIS not in E.BASES:` could both be deleted with every assertion green. The suite
+  now removes each name from W2's table and watches the refusal, restoring it in a finally. Driven:
+  each check neutered to `if False:`, 1 RED each.
+- **The unit refusal is driven instead of described.** The old assertion observed that
+  `E.UNITS` names exactly one unit, which is a fact about estimate.py that is true whether this
+  module checks it or not, under a label claiming the brief REFUSES on two. The suite now makes that
+  vocabulary declare two units and asserts `brief()` refuses naming the count. Driven:
+  `if len(units) != 1:` neutered to `if False:`, 1 RED.
+- **The reach claim is a set equality over parsed imports**, not four forbidden greps. The top-level
+  name of every import statement in the module (ast.walk, so function-local ones count) is asserted
+  EQUAL to a declared allowlist, and the two dynamic spellings an import set cannot see
+  (`__import__`, `import_module`) are named absent. Driven: `from subprocess import run as _run`,
+  1 RED; `__import__("socket")`, 1 RED. Both were invisible to the old grep.
+- **The naming sweep covers four domains**, `.veldo/*.py`, `engine/.veldo/*.py`, `scripts/*.py` and
+  `scripts/*.sh`, guarded on each glob being non-empty and on the domain provably containing both
+  engine homes and the gate script. The spellings are path-shaped and import-shaped rather than the
+  bare stem, because the bare stem is also the LAYER ID W2 declares in both engine homes. A release
+  disposition list may name the path; nothing may import or execute it. Driven with three throwaway
+  probes, each 1 RED where the old sweep was green: `.veldo/zz_probe_a.py` containing
+  `import sizing_pass`, `engine/.veldo/zz_probe_c.py` and `scripts/zz_probe_d.py` naming the path.
+  A fourth probe adding this module to publish.py's hold-back list stays GREEN at 40, so the sweep
+  is not a trap for the publish.py fix the bullet below still needs.
+
+The fragment reports 40 passed, 0 failed. `scripts/suites/manifest.json` still records the delivered
+figure of 37 in its `requires_note`; that file is outside this item's footprint and the note is
+stale by exactly the three assertions above.
+
 ## Out of scope
 
 - Any enforcement. Nothing here gates, blocks, deprioritizes or delays work on an estimate (NG1,
@@ -228,8 +282,19 @@ it: a brief's digest must not depend on what was imported recently.
   validated example whose digest is honestly of no brief in this repository.
 - Committing an estimate for this spec itself, which would have to be dated before a build that
   had already happened.
-- The capability manifest entry and the release hold list. `.veldo/capabilities.yaml` is
-  integrated separately, and `engine/.veldo/sizing_pass.py` belongs in scripts/publish.py's
-  deliberate hold-back list beside the other PLAN-0014 modules until this item has had its own
-  independent review; both lines are recorded with this item's delivery notes rather than edited
-  here.
+- The capability manifest entry. `.veldo/capabilities.yaml` is integrated separately.
+- OPEN, AND THIS ITEM DOES NOT CLOSE IT: the release hold-back. An earlier revision of this bullet
+  said `engine/.veldo/sizing_pass.py` "belongs in scripts/publish.py's deliberate hold-back list
+  beside the other PLAN-0014 modules" and that "both lines are recorded with this item's delivery
+  notes rather than edited here". No delivery-notes artifact carried them and no check looked, so
+  that sentence claimed a mechanism that does not exist. Measured 2026-08-11 by evaluating
+  publish.py's own glob compiler against its own INCLUDE and EXCLUDE tuples: `estimate.py`,
+  `toe_normalize.py`, `judgment_load.py`, `cost_to_change.py` and
+  `engine/.veldo/examples/estimate-example.yaml` are held back, while `engine/.veldo/sizing_pass.py`
+  and `engine/.veldo/examples/sizing-judgement-example.yaml` SHIP. That is worse than an unreviewed
+  module shipping: every entry point here loads `engine/.veldo/estimate.py` through `_estimate()`
+  (layer_vocabulary, _bounds_rule, brief, layer_from and both CLI commands), so the module a public
+  tree receives today raises FileNotFoundError on `vocab` while `check` still exits 0. The two
+  EXCLUDE lines are edits to scripts/publish.py, which is outside this item's footprint, and no
+  assertion in this item's suite can be honest about the hold until they land - the invariant worth
+  asserting is that a SHIPPING engine module never loads a HELD-BACK one, and it is red today.

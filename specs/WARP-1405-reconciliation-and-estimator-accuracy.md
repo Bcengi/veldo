@@ -204,7 +204,7 @@ control failing, not by review.
 
 ## A note on module size
 
-`.veldo/toe_reconcile.py` is 1310 lines, over the architecture contract's 1000-line `module_lines`
+`.veldo/toe_reconcile.py` is 1401 lines, over the architecture contract's 1000-line `module_lines`
 budget, which is declared `enforcement: review` by an explicit founder decision (2026-08-01)
 precisely because module length is a reviewer's judgement rather than a fact a gate can settle. It
 is stated here rather than left for a reviewer to discover. The item is three jobs the plan

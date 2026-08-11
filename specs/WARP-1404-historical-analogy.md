@@ -22,7 +22,7 @@ placement: [metrics]
 footprint:
   - ".veldo/toe_analogy.py"
   - "engine/.veldo/toe_analogy.py"
-  - "scripts/suites/16_warp_1404_historical_analogy.py"
+  - "scripts/suites/15_warp_1404_historical_analogy.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/WARP-1404-historical-analogy.md"
@@ -85,8 +85,11 @@ acceptance_criteria:
       with no actuals changes nothing that gets committed. When the layer IS present the committed
       range is the envelope of both layers, never narrower than the proxy's own on either bound,
       and the record's calibration flips to `calibrated` only because a corpus-grounded basis is
-      present. Nothing in scripts/verify.sh names this module, the module writes no file and starts
-      no process, a malformed corpus is REFUSED BY NAME while a merely unusable record is counted,
+      present. Nothing in scripts/verify.sh names this module, the module writes no file at all -
+      measured by driving it under a CPython audit hook, not by grepping its source for forbidden
+      spellings - and the only process any path of it spawns is the read-only `git log` and
+      `git show` that WARP-1401's corpus reader runs to assemble a real repository's corpus. A
+      malformed corpus is REFUSED BY NAME while a merely unusable record is counted,
       and the real validate.check_spec returns the identical result for a spec with and without
       this layer's record beside it. Paired with the negative control that the same validator does
       refuse a genuinely broken spec under the same root.

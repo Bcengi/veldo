@@ -15,7 +15,8 @@ mutation of the same input is refused.
 
 THE ASSERTIONS WERE WATCHED FAILING, one mutation at a time, in BOTH copies of the module so the
 byte-identity assertion is never the thing that reds, each restored before the next. Measured
-2026-08-10 against this fragment's 37 passed, 0 failed:
+2026-08-11 against this fragment's 38 passed, 0 failed (2026-08-10: 37 passed, before the era
+honesty assertion below was added):
 
   1. `_standdown` given `"low": 0, "high": 0` alongside its reason: 5 RED, which is the whole
      spread of the property - the three zero-evidence shapes, the below-minimum stand-down, the
@@ -50,6 +51,32 @@ byte-identity assertion is never the thing that reds, each restored before the n
   6. `refuse_malformed` made to skip a record of the wrong schema instead of refusing: 1 RED, the
      fail-closed assertion, while its partner (a well-formed but unusable record is COUNTED, not
      refused) stayed GREEN. Absence stands down; breakage speaks up; those are different facts.
+
+ADDED 2026-08-11, driven the same way, each of these a review finding that this file was GREEN
+under before the assertion beside it existed:
+
+  7. the layer's own `inputs.era` made to record the era it was TOLD about rather than the one it
+     WINDOWED by (`"era": era if era is not None else "unwindowed"` at the inputs dict): 1 RED, the
+     era-honesty assertion. This mutation was 37 passed, 0 failed before that assertion existed,
+     and it is the one that matters most, because `inputs` is what gets COMMITTED beside a spec.
+  8. the same substitution on the SUCCESS REPORT's `era` instead: 1 RED, the same assertion. Both
+     halves of the pair are covered, which is the point of driving the layer and the report apart.
+  9. a real writer inserted into `analogy()` - `open(str(ROOT / '.veldo' / 'analogy_audit.log'),
+     'a')`, `.write(...)`, `.close()`: 1 RED, the no-writer measurement, and the file appeared in
+     the scratch tree at 738 bytes as the proof the mutation was live. The check this replaced was
+     a token blacklist ("write_text", '"w"', "import subprocess", ...) and it was GREEN under this
+     exact writer, which is why the check is now an audit hook and not a list of spellings.
+ 10. `import os as _os` added to the module head: 1 RED, the import SET EQUALITY inside the same
+     assertion. An aliased import is invisible to every blacklist and this is the class the
+     blacklist could never close.
+
+AND ONE MUTATION DRIVEN THE OTHER WAY, because the defect there was a check that would go RED on a
+correct change rather than one that could not go red: this item's own spec front matter flipped to
+`status: shipped`, which is what LANDING does. It puts this spec's own record into the corpus (175
+records, `self` 1, `no_spend` 174) and the earlier spelling of the real-repository measurement,
+`no_spend == len(corpus)`, went RED on it. The assertion now states the PARTITION, and under the
+flip the fragment is 38 passed, 0 failed. Its teeth were checked in the other direction too: an
+exclusion made to skip a no-spend record WITHOUT counting it takes the partition RED.
 
 WHAT IS DELIBERATELY MEASURED RATHER THAN ARGUED. Two things. The stand-down over THIS repository
 is driven through the real `repo_basis` over the real corpus and the real event log, and it is
@@ -86,6 +113,118 @@ _w1404_mspec = importlib.util.spec_from_file_location(
     "w1404_metrics", ROOT / ".veldo" / "metrics.py")
 M1404 = importlib.util.module_from_spec(_w1404_mspec)
 _w1404_mspec.loader.exec_module(M1404)
+
+
+def _w1404_tree_bytes(base):
+    """{relative path: file CONTENT} for a whole subtree.
+
+    Content and not a name listing, and recursive and not one directory deep: a writer that
+    appended to an existing file, or wrote into a subdirectory, changes neither the top-level
+    names nor the file count, and a check that watched only those would report nothing."""
+    return {str(p.relative_to(base)): p.read_bytes()
+            for p in sorted(base.rglob("*")) if p.is_file()}
+
+
+# The audit-hook driver, run as a FRESH PROCESS over this repository's module. It asks CPython what
+# the module actually did rather than asking the source what it says: `sys.addaudithook` sees every
+# write-mode open by any spelling, every mkdir, rename and unlink, every process spawn and every
+# socket, at any depth and under any alias. The hook records into a list and refuses nothing, so
+# this measures and never gates. `watching` gates the hook to the drive window only, so loading the
+# module and reading the payload are not mistaken for the module's own behaviour.
+#
+# THE DRIVE IS IN TWO WINDOWS, and the reason is a fact this measurement found rather than a
+# convenience: the PURE surface (the layer, the refusals, the rendering, augment through W2's seam)
+# must produce NO event of any kind, while `repo_basis` legitimately delegates to WARP-1401's corpus
+# reader, which shells out to git per spec to read what a change touched. So the pure window is
+# required to be EMPTY, and the repo window is required to write nothing and to spawn NOTHING BUT
+# `git log` and `git show`, asserted as a set equality on the argv rather than as a tolerance.
+_W1404_NO_WRITER_DRIVER = r'''
+import ast, importlib.util, json, os, sys
+
+ROOT = sys.argv[1]
+payload = json.loads(sys.stdin.read())
+pure, repo_writes, repo_spawn = [], [], set()
+watching = [None]
+WRITE_FLAGS = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT | os.O_TRUNC
+SPAWN = ("subprocess.Popen", "os.system", "os.exec", "os.posix_spawn", "os.spawn", "os.fork",
+         "os.forkpty", "pty.spawn", "os.startfile", "webbrowser.open")
+WRITES = ("os.mkdir", "os.rmdir", "os.remove", "os.rename", "os.replace", "os.link",
+          "os.symlink", "os.truncate", "os.chmod", "os.chown", "os.putenv", "os.unsetenv",
+          "os.kill", "tempfile.mkstemp", "shutil.copyfile", "shutil.copymode",
+          "shutil.copystat", "shutil.move", "shutil.rmtree", "shutil.chown", "socket.socket",
+          "socket.connect", "socket.bind", "socket.getaddrinfo", "urllib.Request",
+          "ftplib.connect", "smtplib.connect", "sqlite3.connect", "signal.pthread_kill")
+
+
+def hook(event, args):
+    where = watching[0]
+    if where is None:
+        return
+    seen = None
+    if event == "open":
+        mode = args[1] if len(args) > 1 else None
+        flags = args[2] if len(args) > 2 else 0
+        if mode is not None and any(c in str(mode) for c in "wax+"):
+            seen = "open %s mode %s" % (args[0], mode)
+        elif mode is None and isinstance(flags, int) and flags & WRITE_FLAGS:
+            seen = "os.open %s flags %d" % (args[0], flags)
+    elif event in WRITES:
+        seen = event
+    elif event in SPAWN:
+        argv = args[1] if len(args) > 1 and isinstance(args[1], (list, tuple)) else args[:1]
+        seen = " ".join(str(a) for a in list(argv)[:2])
+        if where == "repo":
+            repo_spawn.add(seen)
+            return
+    if seen is None:
+        return
+    (pure if where == "pure" else repo_writes).append(seen)
+
+
+sys.addaudithook(hook)
+_spec = importlib.util.spec_from_file_location(
+    "w1404_driven", os.path.join(ROOT, ".veldo", "toe_analogy.py"))
+A = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(A)
+
+# THE IMPORT SURFACE, from the parsed AST rather than from a search for forbidden spellings, and
+# reported as a set for the caller to assert an EQUALITY over. `import os as _o`, `from shutil
+# import copy` and a dotted `import urllib.request` all appear here under their top-level name.
+_tree = ast.parse(open(os.path.join(ROOT, ".veldo", "toe_analogy.py")).read())
+imports, named_calls = set(), set()
+for _node in ast.walk(_tree):
+    if isinstance(_node, ast.Import):
+        imports.update(_a.name.split(".")[0] for _a in _node.names)
+    elif isinstance(_node, ast.ImportFrom):
+        imports.add((_node.module or "").split(".")[0])
+    elif isinstance(_node, ast.Call) and isinstance(_node.func, ast.Name):
+        named_calls.add(_node.func.id)
+
+corpus, vec = payload["corpus"], A.vector(payload["features"])
+reports, drives, repo_records = [], 0, 0
+watching[0] = "pure"
+try:
+    for _c, _v in ((corpus, vec), (corpus, None), ([], vec),
+                   (payload["nospend"], vec), (corpus[:2], vec)):
+        _layer, _report = A.analogy(payload["target"], _v, _c)
+        A.render_lines(_report)
+        reports.append(_report)
+        drives += 1
+    A.augment(payload["spec"], payload["at"], corpus)
+    drives += 1
+    watching[0] = "repo"
+    _basis = A.repo_basis()
+    A.analogy("WARP-1404", vec, _basis[0], era_of=_basis[1], era=_basis[2])
+    repo_records = len(_basis[0])
+    drives += 1
+finally:
+    watching[0] = None
+sys.stdout.write(json.dumps({
+    "pure": pure, "repo_writes": repo_writes, "repo_spawn": sorted(repo_spawn),
+    "drives": drives, "repo_records": repo_records, "imports": sorted(imports),
+    "named_calls": sorted(named_calls),
+    "predicted": [bool(r.get("predicted")) for r in reports]}))
+'''
 
 
 def _w1404_raises(fn, *a, **kw):
@@ -559,6 +698,38 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1404_l is not None and _w1404_no_l is not None
            and _w1404_l["inputs"]["era"] == "m5")
 
+    # THE ERA A REPORT NAMES IS THE ONE IT WINDOWED BY, ON ALL SIX PATHS THAT NAME ONE. `era` is a
+    # name and `era_of` is the reader that windows by it, so a name with no reader is a name
+    # nothing checked an actual against. The five drives below hand a name and NO reader, over the
+    # unreadable target, the empty corpus, the no-spend corpus, a below-minimum corpus and a corpus
+    # that DOES produce a range - which is the sixth path, the layer's own inputs, and the only one
+    # whose output gets committed beside a spec.
+    _W1404_TOLD = "m5"
+    _w1404_told = [
+        A1404.analogy(_W1404_TARGET, None, _W1404_SEEDED, era=_W1404_TOLD),
+        A1404.analogy(_W1404_TARGET, _W1404_SMALL, [], era=_W1404_TOLD),
+        A1404.analogy(_W1404_TARGET, _W1404_SMALL, _W1404_NOSPEND, era=_W1404_TOLD),
+        A1404.analogy(_W1404_TARGET, _W1404_SMALL, _W1404_CHEAP[:2], era=_W1404_TOLD),
+        A1404.analogy(_W1404_TARGET, _W1404_SMALL, _W1404_SEEDED, era=_W1404_TOLD),
+    ]
+    expect("WARP-1404 AC4 THE ERA-HONESTY PROPERTY, ASSERTED ON EVERY PATH THAT REPORTS AN ERA: "
+           "handed an era NAME with no era READER, all five reports and the committed layer's own "
+           "inputs say `unwindowed`, and the name appears NOWHERE in the layer or the report. A "
+           "model identity in a committed record that nothing windowed a single actual by is a "
+           "fabricated measurement, and the path that commits is exactly the path a rule applied "
+           "only to the refusals would miss. ITS PAIR, so no module satisfies this by hardcoding "
+           "the one word: the real-ledger drive above, where a reader DID window, reports m5 in "
+           "the report and in the inputs, spelled the same way in both",
+           len(_w1404_told) == 5
+           and [r["reason_code"] for _l, r in _w1404_told]
+           == [A1404.UNREADABLE_TARGET, A1404.NO_CORPUS, A1404.NO_RECORDED_ACTUALS,
+               A1404.TOO_FEW_MATCHES, None]
+           and all(r["era"] == A1404.UNWINDOWED == "unwindowed" for _l, r in _w1404_told)
+           and _w1404_told[-1][0] is not None
+           and _w1404_told[-1][0]["inputs"]["era"] == "unwindowed"
+           and _W1404_TOLD not in json.dumps(list(_w1404_told[-1]))
+           and _w1404_r["era"] == _w1404_l["inputs"]["era"] == "m5")
+
     # ---------------------------------------------------------------------------------------
     # AC5. ADOPTION SAFE, ADVISORY, AND IT CAN ONLY EVER WIDEN WHAT W2 COMMITTED.
     # ---------------------------------------------------------------------------------------
@@ -604,20 +775,73 @@ with tempfile.TemporaryDirectory() as _d:
            and E1404.calibration_of(_w1404_bothrec["layers"]) == "calibrated"
            and E1404.parse_record(E1404.render_record(_w1404_bothrec)) == _w1404_bothrec)
 
-    _w1404_before = sorted(p.name for p in Path(_d).iterdir())
+    # THIS MODULE HAS NO WRITER, MEASURED THREE WAYS AND NOT ONE OF THEM A TOKEN BLACKLIST.
+    # A hand-picked list of forbidden spellings ("write_text", '"w"', "import subprocess") is a
+    # claim about code asserted over an unenumerated set of spellings: `open(p, 'a')`, `.write(`,
+    # `os.makedirs`, `os.replace`, `shutil.copy` and every aliased or dynamic import walk straight
+    # through it. So instead: the interpreter is asked what actually happened, the tempdir is
+    # compared by CONTENT recursively, and the import surface is asserted as a SET EQUALITY.
+    _w1404_before = _w1404_tree_bytes(Path(_d))
     A1404.augment(_w1404_fix, _W1404_AT, _W1404_SEEDED)
     A1404.analogy(_W1404_TARGET, _W1404_SMALL, _W1404_SEEDED)
-    _w1404_after = sorted(p.name for p in Path(_d).iterdir())
-    _w1404_src = (ROOT / ".veldo/toe_analogy.py").read_text()
-    expect("WARP-1404 AC5: THIS MODULE HAS NO WRITER AT ALL, measured as a behaviour and stated "
-           "as a text property. Driving the whole surface leaves the working directory "
-           "unchanged, and the source names no write_text, no open-for-write, no mkdir, no "
-           "subprocess, no socket and no urllib, so it cannot write, spawn a process or open a "
-           "connection, and it declares no daemon or timer (NG5)",
-           _w1404_before == _w1404_after
-           and all(tok not in _w1404_src for tok in (
-               "write_text", "mkdir(", "import subprocess", "import socket", "import urllib",
-               "Popen(", '"w"', "'w'")))
+    _w1404_after = _w1404_tree_bytes(Path(_d))
+
+    # MEASUREMENT ONE: a fresh interpreter with a CPython audit hook installed, driving the whole
+    # surface (five analogy paths, augment through W2's real writer-free seam, and repo_basis over
+    # this repository) and reporting every write-mode open, every process spawn and every socket
+    # the interpreter saw. A subprocess rather than this process on purpose: an audit hook cannot
+    # be removed once added, and a permanent interpreter-wide hook installed by one suite fragment
+    # would be a side effect on every fragment after it.
+    _w1404_wdir = Path(_d) / "auditcwd"
+    _w1404_wdir.mkdir()
+    _w1404_writerun = subprocess.run(
+        [sys.executable, "-c", _W1404_NO_WRITER_DRIVER, str(ROOT)],
+        input=json.dumps({"corpus": list(_W1404_SEEDED), "nospend": list(_W1404_NOSPEND),
+                          "features": {"risk": "standard", "acceptance_criteria": 2,
+                                       "footprint_declared": 2, "protected_touch": False},
+                          "target": _W1404_TARGET, "spec": str(_w1404_fix), "at": _W1404_AT}),
+        capture_output=True, text=True, cwd=str(_w1404_wdir))
+    _w1404_audited = (json.loads(_w1404_writerun.stdout) if _w1404_writerun.stdout.strip()
+                      else {"pure": ["DRIVER DID NOT REPORT: " + _w1404_writerun.stderr[-400:]],
+                            "repo_writes": [], "repo_spawn": [], "drives": 0,
+                            "repo_records": 0, "predicted": [], "imports": [],
+                            "named_calls": []})
+
+    # MEASUREMENT TWO, reported by the same driver from the parsed AST: what the module IMPORTS, as
+    # a set to be asserted by EQUALITY rather than searched for four forbidden spellings. `import os
+    # as _o`, `from shutil import copy` and `import urllib.request` all show up in it; a blacklist
+    # sees none of them. Both allowlists are declared here, beside the assertion that uses them.
+    _W1404_READONLY_GIT = {"git log", "git show"}   # all WARP-1401's corpus reader may spawn
+    _W1404_IMPORTS = {"argparse", "importlib", "json", "sys", "pathlib"}
+    expect("WARP-1404 AC5: THIS MODULE WRITES NOTHING AND SPAWNS NOTHING, MEASURED BY THE "
+           "INTERPRETER RATHER THAN GREPPED FOR SPELLINGS. A fresh process with an audit hook "
+           "installed drives the whole surface and reports what CPython saw. The PURE window - the "
+           "range, four refusals, the rendering and augment through W2's seam - is required to be "
+           "EMPTY: not one write-mode open by any spelling, no mkdir, rename, remove, spawn or "
+           "socket, at any depth, including a file rewritten in place. The repo_basis window is "
+           "required to write NOTHING and to spawn a NON-EMPTY set of processes drawn only from two "
+           "READ-ONLY git argvs, because that leg delegates to WARP-1401's corpus reader which "
+           "reads git per spec, and a claim of no process at all would be false there. The subset "
+           "is over an argv allowlist rather than a pinned set, so a clone whose history does name "
+           "its specs (adding `git show`) still passes while any non-git process, or a git "
+           "subcommand that WRITES, reds. The tempdir is driven in this process too and compared "
+           "by CONTENT recursively rather than by top-level NAME, and the import "
+           "surface is a set equality over the parsed AST, so an aliased, dotted or dynamic route "
+           "to os, shutil, subprocess, socket or urllib reds this whatever it is spelled. Bound to "
+           "a non-trivial drive: seven calls, the success path plus its four refusals, over a real "
+           "corpus of more than 100 records, so a driver that drove nothing cannot pass",
+           _w1404_writerun.returncode == 0
+           and _w1404_audited["pure"] == []
+           and _w1404_audited["repo_writes"] == []
+           and _w1404_audited["repo_spawn"] != []
+           and set(_w1404_audited["repo_spawn"]) <= _W1404_READONLY_GIT
+           and _w1404_audited["drives"] == 7
+           and _w1404_audited["predicted"] == [True, False, False, False, False]
+           and _w1404_audited["repo_records"] > 100
+           and _w1404_before == _w1404_after and _w1404_before != {}
+           and set(_w1404_audited["imports"]) == _W1404_IMPORTS
+           and set(_w1404_audited["named_calls"]) & {"open", "__import__", "eval", "exec",
+                                                     "compile", "input", "breakpoint"} == set())
 
     _W1404_MALFORMED = (
         ("not a list", "not a list"),
@@ -698,16 +922,23 @@ with tempfile.TemporaryDirectory() as _d:
     expect("WARP-1404 AC5 MEASURED OVER THIS REPOSITORY: the corpus is NOT empty (%d shipped "
            "records) and yet this layer stands down as no_recorded_actuals with NO bound of any "
            "kind, because not one record carries recorded token spend - WARP-1401 measured 0 "
-           "percent spend coverage and .veldo/spend.py has never been used. AND THE CONTROL THAT "
-           "MAKES THAT ATTRIBUTABLE: planting spend on records of this repository's OWN corpus "
-           "makes the SAME call produce a range, so the stand-down is the missing emitter and not "
-           "something else about this repository's specs"
+           "percent spend coverage and .veldo/spend.py has never been used. STATED AS THE "
+           "PARTITION and not as one term: EVERY record is unusable, and the only reasons are "
+           "missing spend or this spec's own record excluding itself, at most one of which can "
+           "exist. `no_spend == the whole corpus` was the earlier spelling and it was a landmine - "
+           "it holds only while this item's own spec is not yet shipped, so it would have gone RED "
+           "the moment this item landed, which is the one thing landing does. AND THE CONTROL THAT "
+           "MAKES THE MEASUREMENT ATTRIBUTABLE: planting spend on records of this repository's OWN "
+           "corpus makes the SAME call produce a range, so the stand-down is the missing emitter "
+           "and not something else about this repository's specs"
            % len(_w1404_real[0]),
            len(_w1404_real[0]) > 100
            and _w1404_realrep["predicted"] is False
            and _w1404_realrep["reason_code"] == "no_recorded_actuals"
            and "low" not in _w1404_realrep and "high" not in _w1404_realrep
-           and _w1404_realrep["excluded"]["no_spend"] == len(_w1404_real[0])
+           and _w1404_realrep["excluded"]["self"] in (0, 1)
+           and (_w1404_realrep["excluded"]["no_spend"]
+                + _w1404_realrep["excluded"]["self"]) == len(_w1404_real[0])
            and _w1404_realrep["candidates"] == 0
            and len(_w1404_plant_ids) == 6
            and _w1404_plantedrep["predicted"] is True

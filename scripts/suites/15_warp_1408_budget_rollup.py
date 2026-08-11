@@ -13,9 +13,28 @@ does produce a number when the data is there, and the advisory claim is DRIVEN t
 real surfaces that could delay work - validate.check_spec and frontier.claimable - instead of
 being grepped for.
 
+WHAT IS ASSERTED OVER *THIS* REPOSITORY, AND WHAT IS ASSERTED OVER A FIXTURE. THIS FRAGMENT IS A
+REQUIRED GATE CHECK: scripts/verify.sh:19 declares CHECK_unit="required:python3
+scripts/selftest.py", so every assertion here can turn the gate red. An assertion that pinned this
+repository's EMPTY estimate ledger, its ABSENT price record or its spend-free event stream would
+therefore go red the first time somebody committed an estimate, declared a rate or recorded a
+token - a number from this item stopping work, which is the exact NG1 failure AC5 exists to close,
+arriving through the suite rather than through the module. It was that: `coverage["estimated"] ==
+0`, `not (ROOT/".veldo"/"estimates").exists()`, `len(_read_events(ROOT)) > 1000` with "empty
+ledger" pinned beside it, PLAN-0004's `token_position is None`, and the real view's pacing window
+pinned empty. MEASURED: with one estimate written for WARP-1401 through the real writer, one rate
+declared and one spend event appended, the PRE-FIX fragment went `40 passed, 2 failed` while the
+tree was doing nothing wrong, and this one reports 45 passed over that same tree.
+
+So the rule here is: over ROOT, assert only that a reading TRACKS the records on disk (an equality
+against a recount, or a biconditional against the state that decides it), bound to a non-empty work
+list and a non-empty stream so a failed parse still reds; over FIXTURE trees, assert the SHAPES -
+the empty ledger, the unpriced money block, the standdown reasons - where they keep their teeth
+whatever this repository later contains.
+
 THE ASSERTIONS WERE WATCHED FAILING. Nine mutations were driven into BOTH copies of
 .veldo/toe_budget.py, one at a time, each reverted before the next, and the reds below are what
-was actually observed (baseline for this fragment: 42 passed, 0 failed):
+was actually observed (baseline for this fragment: 45 passed, 0 failed):
 
   1. combine_ranges summing the lows changed to taking the MIN low: 7 RED (the sum identity, the
      mediant sandwich, monotonicity, the program sum, the pacing position, all four pacing
@@ -46,6 +65,31 @@ was actually observed (baseline for this fragment: 42 passed, 0 failed):
      assertions, which is what proves the marker is carried by the shapes and not only declared
      once at the top of the module. Coverage's `complete` forced True reddened 3 (partial,
      program, pacing-window standdown), and program partiality not propagating reddened 1.
+
+AND THE REMEDIATION ROUND, driven the same way (both twins edited together, each mutation diffed
+before the run so a replace that matched nothing could not pass for a check that cannot fail):
+
+ 10. `spread_pct` inverted to `low * 100 // high`: 1 RED, the false-confidence guard. The mediant
+     sandwich alone was blind to it - reciprocals preserve the sandwich - and so was the strictness
+     clause. `high * 1000 // low`, percent silently rescaled to per-mille, is the other member of
+     that class and it reds the same assertion. Controls from the earlier round still hold:
+     `return 200` and `return high - low` each red 1.
+ 11. the money HIGH bound wired to round DOWN (`up=True` -> `up=False`): 1 RED, the directional
+     assertion, which now pins the REPORTED strings on the inexact view ("<0.01" and "0.01") where
+     the two directions differ. The LOW bound wired UP reds the same one, and neither was
+     observable while only render_usd's own literals and the micro-USD integers were checked.
+ 12. `program_rollup`'s weakest-link calibration forced to "calibrated": 1 RED, the program
+     calibration pair. `all` -> `any` reds it too, which the previous fixture set could not do
+     because every contributor in it was uncalibrated.
+ 13. the PARTIAL standdown in `pacing_windows` reverted to the plan-shaped format string: 1 RED,
+     the program-seam assertion, naming `RAISED KeyError: 'estimated'` through _w1408_pace rather
+     than taking the whole fragment down with a traceback. Dropping the no-range guard reds 2 (the
+     plan seam and the program seam).
+ 14. and the adaptive real-tree readings, each reddened by one edit TODAY, on the empty ledger, so
+     that dropping the pinned zeros did not buy a set of checks that cannot fail: `missing` forced
+     to [] reds 3, no-range returning 0 instead of None reds 9 (including the fixture-tree shape),
+     the recorded flag forced True reds 2, the declared cap rescaled reds the PLAN-0004 reading,
+     and the neither-shape refusal turned into a silent string reds the program seam.
 """
 import re as _w1408_re
 import shutil as _w1408_shutil
@@ -157,8 +201,17 @@ expect("WARP-1408 AC1, THE FALSE-CONFIDENCE GUARD: a WIDE range (625 percent) an
        "weighted mediant of the item spreads, so it is SANDWICHED between the tightest and the "
        "widest item - it can never be tighter than the narrowest thing inside it - and both "
        "sides of that sandwich are asserted, on two different item sets, with the exact sums "
-       "asserted separately above so the sandwich cannot be reached by fudging the bounds",
-       min(_w1408_spreads) <= _W1408_FULL["tokens"]["spread_pct"] <= max(_w1408_spreads)
+       "asserted separately above so the sandwich cannot be reached by fudging the bounds. "
+       "AND THE DEFINITION IS PINNED BY VALUE, not only by relation: spread is HIGH OVER LOW as "
+       "a percent, asserted on two literals and recomputed for the total from the bound sums. "
+       "The sandwich alone cannot tell high/low from low/high, because taking the reciprocal of "
+       "every term preserves it and rescaling percent into per-mille preserves it too - both "
+       "mutations were green before these three clauses, and an inverted definition would print "
+       "a 6.25x range to a human as spread 16%",
+       T1408.spread_pct(100000, 625000) == 625
+       and T1408.spread_pct(200000, 220000) == 110
+       and _W1408_FULL["tokens"]["spread_pct"] == 845000 * 100 // 300000
+       and min(_w1408_spreads) <= _W1408_FULL["tokens"]["spread_pct"] <= max(_w1408_spreads)
        and _W1408_FULL["tokens"]["spread_pct"] > min(_w1408_spreads)
        and min(r["spread_pct"] for r in _w1408_three["items"])
        <= _w1408_three["tokens"]["spread_pct"]
@@ -262,21 +315,86 @@ expect("WARP-1408 AC2: A PARTIAL ROLL-UP SAYS PARTIAL, NAMES THE MISSING ITEMS A
        and _W1408_FULL["coverage"]["missing"] == []
        and _W1408_FULL["reason"] is None)
 
-# MEASURED OVER THIS REPOSITORY'S OWN BYTES, not over a fixture.
+# MEASURED OVER THIS REPOSITORY'S OWN BYTES, not over a fixture - AND ADAPTIVE BY CONSTRUCTION.
+# THIS FRAGMENT RUNS UNDER THE GATE'S REQUIRED CHECK_unit SLOT (scripts/verify.sh:19), so an
+# assertion here that pinned today's empty estimate ledger, absent price record or spend-free
+# stream would turn a REQUIRED gate slot red the first time somebody committed an estimate,
+# declared a rate or recorded a token - a number from this item stopping work, which is exactly
+# the NG1 failure AC5 exists to close. Every reading over ROOT is therefore asserted as TRACKING
+# the records on disk; every empty-ledger SHAPE is asserted over a FIXTURE tree instead.
 _W1408_REAL = T1408.build_view("PLAN-0014")
-expect("WARP-1408 AC2 MEASURED OVER THE REAL PLAN-0014: it declares 10 work items and this "
-       "repository has no .veldo/estimates directory at all, so the roll-up over real bytes "
-       "reads 0 of 10 estimated with NO range, and the dollar range reads UNPRICED because no "
-       "token price is declared either. The item count is cross-checked against the plan read "
-       "through budget.plan_work_specs, so a parse that found nothing reds this instead of "
-       "passing over an empty set",
-       _W1408_REAL["coverage"]["items"] == 10
-       and _W1408_REAL["coverage"]["items"] == len(B1408.plan_work_specs(
-           V.plan_registry(ROOT / "plans")["PLAN-0014"]["fm"]))
-       and _W1408_REAL["coverage"]["estimated"] == 0
-       and _W1408_REAL["tokens"]["low"] is None
-       and _W1408_REAL["money"]["priced"] is False
-       and not (ROOT / ".veldo" / "estimates").exists())
+_W1408_REAL_FM = V.plan_registry(ROOT / "plans")["PLAN-0014"]["fm"]
+_W1408_REAL_WORK = B1408.plan_work_specs(_W1408_REAL_FM)
+_W1408_REAL_ESTS = E1408.load_dir(ROOT / E1408.ESTIMATES_DIR)[0]
+# The roll-up's own admission test, recomputed here from the bytes on disk: a record must be
+# PRESENT for that item, VALID under the estimate module's own validator, and in TOKENS to be
+# summable. Anything else is unestimated, which is what `missing` must then list.
+_W1408_REAL_SUMMABLE = [_s for _s in _W1408_REAL_WORK
+                        if _s in _W1408_REAL_ESTS
+                        and E1408.validate_record(_W1408_REAL_ESTS[_s], spec_id=_s) == []
+                        and _W1408_REAL_ESTS[_s].get("unit") == T1408.UNIT_TOKENS]
+_W1408_REAL_PRICE = T1408.read_price(root=ROOT, parse=V.parse_yamlish)
+expect("WARP-1408 AC2 MEASURED OVER THE REAL PLAN-0014, AS TRACKING AND NEVER AS A PINNED ZERO: "
+       "the view's item list IS the plan's own work list read through budget.plan_work_specs, "
+       "the estimated count EQUALS the summable records found on disk for those items, `missing` "
+       "is exactly the rest in the plan's own order, a range exists IF AND ONLY IF something is "
+       "estimated, and money is priced IF AND ONLY IF a rate is declared and there is a range. "
+       "Bound to a NON-EMPTY work list, so a parse that found nothing reds instead of passing "
+       "over an empty set. MEASURED 2026-08-10 that reads 10 items, 0 estimated, no range, "
+       "unpriced - and not one clause here asserts that zero, because this fragment is a "
+       "REQUIRED gate check and the first committed estimate must move it, not break it",
+       [_r["spec"] for _r in _W1408_REAL["items"]] == _W1408_REAL_WORK
+       and _W1408_REAL_WORK != []
+       and _W1408_REAL["coverage"]["items"] == len(_W1408_REAL_WORK)
+       and _W1408_REAL["coverage"]["estimated"] == len(_W1408_REAL_SUMMABLE)
+       and _W1408_REAL["coverage"]["missing"] == [_s for _s in _W1408_REAL_WORK
+                                                  if _s not in _W1408_REAL_SUMMABLE]
+       and (_W1408_REAL["tokens"]["low"] is None) == (_W1408_REAL_SUMMABLE == [])
+       and (_W1408_REAL["money"]["priced"] is True)
+       == (_W1408_REAL_PRICE is not None and _W1408_REAL["tokens"]["low"] is not None))
+
+_W1408_EMPTY_PLANFILE = """---
+schema: veldo.plan/v1
+id: PLAN-9430
+title: empty-ledger fixture plan
+status: in_progress
+revision: 1
+owner: selftest
+work:
+  - item: W1
+    spec: WARP-9401
+    depends_on: []
+  - item: W2
+    spec: WARP-9402
+    depends_on: []
+---
+body
+"""
+
+with tempfile.TemporaryDirectory() as _w1408_emptyd:
+    _w1408_emptyroot = Path(_w1408_emptyd) / "repo"
+    (_w1408_emptyroot / "plans").mkdir(parents=True)
+    (_w1408_emptyroot / ".veldo").mkdir()
+    (_w1408_emptyroot / "plans" / "PLAN-9430.md").write_text(_W1408_EMPTY_PLANFILE)
+    _w1408_emptyview = T1408.build_view("PLAN-9430", root=_w1408_emptyroot)
+    expect("WARP-1408 AC2 THE EMPTY-LEDGER SHAPE, ASSERTED OVER A FIXTURE TREE RATHER THAN OVER "
+           "THIS REPOSITORY'S EMPTINESS: over a root carrying a plan and a .veldo with NO "
+           "estimates directory in it, build_view reads 0 of 2 estimated, NAMES both items still "
+           "waiting, has NO range (None on both bounds, never 0), refuses the confident zero BY "
+           "NAME and reads UNPRICED with the word where a figure would go. The tree is the "
+           "fixture's, so this keeps its teeth on the day this repository commits its first "
+           "estimate - which is precisely what the same claim asserted against ROOT turned into: "
+           "a REQUIRED gate slot that goes red the first time the feature is used",
+           not (_w1408_emptyroot / ".veldo" / "estimates").exists()
+           and _w1408_emptyview["coverage"]["items"] == 2
+           and _w1408_emptyview["coverage"]["estimated"] == 0
+           and _w1408_emptyview["coverage"]["missing"] == ["WARP-9401", "WARP-9402"]
+           and _w1408_emptyview["tokens"]["low"] is None
+           and _w1408_emptyview["tokens"]["high"] is None
+           and "confident zero" in _w1408_emptyview["reason"]
+           and _w1408_emptyview["money"]["priced"] is False
+           and _w1408_emptyview["money"]["usd_low"] == "unpriced"
+           and _w1408_emptyview["money"]["usd_micros_high"] is None)
 
 _w1408_prog = T1408.program_rollup([_W1408_FULL, _w1408_partial, _w1408_none])
 expect("WARP-1408 AC2 PROGRAM ROLL-UP: a program's range is the sum of its plans' ranges under "
@@ -368,12 +486,42 @@ _w1408_odd = T1408.rollup(_w1408_plan("PLAN-9426", ["WARP-9401"]),
                           {"WARP-9401": _w1408_est("WARP-9401", 333, 1667)},
                           price=dict(_W1408_PRICE, usd_micros_per_1k_tokens=3001),
                           E=E1408, B=B1408)
+def _w1408_cents(shown):
+    """A DISPLAYED dollar figure back to whole cents, or None when the figure names no cent
+    count at all ("<0.01", "unpriced"). Containment is a claim about the printed interval and a
+    string is not a number, so something has to convert one: without this the display side of
+    the directional rule could only be checked against the helper's own literals."""
+    if not _w1408_re.match(r"^-?\d+\.\d\d$", shown or ""):
+        return None
+    _whole, _frac = shown.lstrip("-").split(".")
+    _c = int(_whole) * 100 + int(_frac)
+    return -_c if shown.startswith("-") else _c
+
+
 expect("WARP-1408 AC3: THE MONEY ROUNDING IS DIRECTIONAL, SO IT CAN ONLY WIDEN. The low bound "
        "FLOORS and the high bound CEILS in integer arithmetic, so the money interval CONTAINS "
        "the exact one - driven on a range and a rate where the division is deliberately inexact "
        "(333 and 1667 tokens at 3001 micro-USD per 1k) as well as on the round fixture - and the "
-       "bounds stay strictly apart, so rounding never collapses money into a point either",
-       _W1408_FULL["money"]["usd_micros_low"]
+       "bounds stay strictly apart, so rounding never collapses money into a point either. AND "
+       "THE ASSERTION IS ABOUT THE FIGURES THE VIEW REPORTS, not only about the micro-USD "
+       "integers and not only about render_usd in isolation: the two REPORTED strings are pinned "
+       "on the inexact view, where the two directions differ ('<0.01' and '0.01'), and the "
+       "printed cents are held to the same containment as the micros on both views. Wiring the "
+       "high bound to round DOWN - or the low bound UP - was green while only the helper and the "
+       "micros were checked, and it ships a money range NARROWER than the exact one",
+       _w1408_odd["money"]["usd_low"] == "<0.01"
+       and _w1408_odd["money"]["usd_high"] == "0.01"
+       and _W1408_FULL["money"]["usd_low"] == "0.90"
+       and _W1408_FULL["money"]["usd_high"] == "2.54"
+       and all(_w1408_cents(_v["money"]["usd_high"]) is not None
+               and _w1408_cents(_v["money"]["usd_high"]) * T1408.MICROS_PER_CENT
+               >= _v["money"]["usd_micros_high"]
+               and ((_w1408_cents(_v["money"]["usd_low"]) * T1408.MICROS_PER_CENT
+                     <= _v["money"]["usd_micros_low"])
+                    if _w1408_cents(_v["money"]["usd_low"]) is not None
+                    else _v["money"]["usd_micros_low"] < T1408.MICROS_PER_CENT)
+               for _v in (_W1408_FULL, _w1408_odd))
+       and _W1408_FULL["money"]["usd_micros_low"]
        <= _W1408_FULL["tokens"]["low"] * 3000 / 1000.0
        and _W1408_FULL["money"]["usd_micros_high"]
        >= _W1408_FULL["tokens"]["high"] * 3000 / 1000.0
@@ -424,6 +572,30 @@ expect("WARP-1408 AC3: CALIBRATION TRAVELS WITH THE SUM AND THE WEAKEST LINK GOV
        and "fixture-model-a" in _W1408_FULL["money"]["caveat"]
        and "no model stamp" in _W1408_FULL["money"]["caveat"])
 
+_w1408_cal_a = _w1408_roll(
+    fm=_w1408_plan("PLAN-9431", ["WARP-9401"]),
+    ests={"WARP-9401": _w1408_est("WARP-9401", 100000, 625000, basis="corpus_analogy",
+                                  layer="historical_analogy")},
+    price=_W1408_PRICE)
+_w1408_prog_cal = T1408.program_rollup([_w1408_calibrated, _w1408_cal_a])
+_w1408_prog_mixed = T1408.program_rollup([_w1408_calibrated, _W1408_FULL])
+expect("WARP-1408 AC2 AND AC3: THE WEAKEST LINK GOVERNS A PROGRAM TOTAL TOO, AND THAT WORD RIDES "
+       "INTO THE PROGRAM MONEY CAVEAT. A program over two FULLY CALIBRATED plan views reads "
+       "calibrated and its caveat says the range is calibrated; swap ONE contributor for an "
+       "uncalibrated plan and both flip. It takes a MIXED program to observe this at all - in a "
+       "program where every contributor is uncalibrated, inverting all() to any() is invisible - "
+       "which is why a PAIR is built here rather than a pin added: before it, forcing every "
+       "program total to read `calibrated` was green while that word travelled into a dollar "
+       "caveat over uncalibrated inputs, and a dollar figure that reads as measured when its "
+       "range is not is the honesty failure this whole item is shaped around",
+       [_v["calibration"] for _v in (_w1408_calibrated, _w1408_cal_a)]
+       == ["calibrated", "calibrated"]
+       and _w1408_prog_cal["calibration"] == "calibrated"
+       and "the range is calibrated" in _w1408_prog_cal["money"]["caveat"]
+       and _w1408_prog_mixed["calibration"] == "uncalibrated"
+       and "the range is uncalibrated" in _w1408_prog_mixed["money"]["caveat"]
+       and _w1408_prog["calibration"] == "uncalibrated")
+
 # -----------------------------------------------------------------------------------
 # AC4. PACING READS RECORDED SPEND THROUGH ITS OWNER, AND STANDS DOWN ON AN EMPTY LEDGER.
 # -----------------------------------------------------------------------------------
@@ -462,15 +634,25 @@ expect("WARP-1408 AC4, THE ZERO THAT WOULD BE A LIE: an empty ledger reads NOT R
        and _W1408_FULL["pacing"]["available"] is True
        and _W1408_FULL["pacing"]["position"] == "under_low")
 
-expect("WARP-1408 AC4 MEASURED OVER THIS REPOSITORY: more than a thousand events on the real "
-       "stream and NOT ONE carries tokens, cost_usd or human_minutes, so PLAN-0014's pacing "
-       "stands down on real data rather than on a fixture. Bound to the real stream being "
-       "non-empty, so a log nobody could read would red this instead of passing as an honest "
-       "absence - which is the difference between measuring a gap and failing to look",
-       len(T1408._read_events(ROOT)) > 1000
-       and _W1408_REAL["pacing"]["spend_recorded"] is False
-       and _W1408_REAL["pacing"]["available"] is False
-       and "empty ledger" in _W1408_REAL["pacing"]["reason"])
+_W1408_REAL_EVS = T1408._read_events(ROOT)
+_W1408_REAL_RECORDED = any(
+    C1408.spend_for(_W1408_REAL_EVS, _c)["spend_recorded"]
+    for _c in [_W1408_REAL_FM.get("id")] + _W1408_REAL_WORK if _c)
+expect("WARP-1408 AC4 MEASURED OVER THIS REPOSITORY'S REAL STREAM, AS TRACKING AND NEVER AS A "
+       "PINNED ABSENCE: the pacing block's recorded flag EQUALS toe_corpus.spend_for recomputed "
+       "by this fragment over the SAME events and the SAME correlations, a position is available "
+       "IF AND ONLY IF spend is recorded and a range exists, and the empty-ledger REASON appears "
+       "exactly when nothing is recorded and not otherwise. Bound to a NON-EMPTY stream, so a log "
+       "nobody could read reds this instead of passing as an honest absence - the difference "
+       "between measuring a gap and failing to look. MEASURED 2026-08-10: over a thousand events "
+       "and not one carrying tokens, cost_usd or human_minutes; the first recorded token moves "
+       "every clause with the data instead of reddening a REQUIRED gate slot",
+       len(_W1408_REAL_EVS) > 0
+       and _W1408_REAL["pacing"]["spend_recorded"] == _W1408_REAL_RECORDED
+       and _W1408_REAL["pacing"]["available"] == (_W1408_REAL_RECORDED
+                                                 and _W1408_REAL["tokens"]["low"] is not None)
+       and ("empty ledger" in (_W1408_REAL["pacing"]["reason"] or ""))
+       == (not _W1408_REAL_RECORDED))
 
 _w1408_pos = [T1408._pacing(300000, 845000,
                             {"tokens": n, "recorded": True, "source": "fixture"})["position"]
@@ -501,7 +683,50 @@ expect("WARP-1408 AC4: THE PACING SEAM OFFERS THE HIGH BOUND AND NEVER THE LOW, 
        and _w1408_win_why is None
        and _w1408_nowin == [] and "no range" in _w1408_nowin_why
        and _w1408_partwin == [] and "PARTIAL" in _w1408_partwin_why
-       and _W1408_REALWIN[0] == [] and _W1408_REALWIN[1] is not None)
+       and (_W1408_REALWIN[0] != []) == (_W1408_REAL["tokens"]["high"] is not None
+                                         and _W1408_REAL["coverage"]["complete"])
+       and (_W1408_REALWIN[1] is None) == (_W1408_REALWIN[0] != [])
+       and all(_w["tokens"] == _W1408_REAL["tokens"]["high"] and _w["bound"] == "high"
+               for _w in _W1408_REALWIN[0]))
+
+def _w1408_pace(view):
+    """(windows, reason), or (None, the RAISED message) when the seam raises.
+
+    A CRASH ON THIS SEAM MUST BE A NAMED RED, not a traceback that takes the whole fragment
+    down before any assertion is reached: that is the difference between a report naming the
+    branch that broke and a stack dump somebody has to attribute by hand. The shape this
+    guards against is not hypothetical - the seam raised KeyError('estimated') on a PARTIAL
+    program view, which is the branch that exists to stand down safely."""
+    try:
+        return T1408.pacing_windows(view, [("session", 14400)])
+    except BaseException as e:
+        return None, "RAISED %s: %s" % (type(e).__name__, e)
+
+
+_w1408_progwin, _w1408_progwin_why = _w1408_pace(
+    T1408.program_rollup([_W1408_FULL, _w1408_one]))
+_w1408_progpart, _w1408_progpart_why = _w1408_pace(_w1408_prog)
+_w1408_progempty, _w1408_progempty_why = _w1408_pace(T1408.program_rollup([_w1408_none]))
+_w1408_badshape = _w1408_raises(T1408.pacing_windows,
+                                {"tokens": {"high": 5}, "coverage": {"complete": False}},
+                                [("session", 14400)])
+expect("WARP-1408 AC4: THE PACING SEAM STANDS DOWN ON A PROGRAM ROLL-UP EXACTLY AS IT DOES ON A "
+       "PLAN'S, AND IT NO LONGER DIES ON ONE. program_rollup is a public surface producing the "
+       "same tokens block, so a caller reaching this seam with one is ordinary - and a PARTIAL "
+       "program view used to reach a plan-shaped message and raise KeyError('estimated'), which is "
+       "a CRASH on the safety-critical branch while the complete case sailed through and emitted a "
+       "window. Now: a partial program returns no window with PARTIAL and the partial plans NAMED, "
+       "a program with no contributing range returns no window naming that, a COMPLETE program "
+       "returns the program's HIGH bound recomputed here as the sum of its plans' highs, and a "
+       "view whose coverage block is NEITHER shape is refused BY NAME rather than by traceback",
+       _w1408_progpart == [] and "PARTIAL" in _w1408_progpart_why
+       and "PLAN-9425" in _w1408_progpart_why and "PLAN-9424" in _w1408_progpart_why
+       and _w1408_progempty == [] and "no range" in _w1408_progempty_why
+       and _w1408_progwin is not None and len(_w1408_progwin) == 1
+       and _w1408_progwin[0]["tokens"] == (_W1408_FULL["tokens"]["high"]
+                                           + _w1408_one["tokens"]["high"])
+       and _w1408_progwin[0]["bound"] == "high" and _w1408_progwin_why is None
+       and _w1408_badshape[0] and "NEITHER" in _w1408_badshape[1])
 
 _w1408_gov_windows = [G1408.Window(w["name"], w["seconds"], w["tokens"]) for w in _w1408_win]
 _w1408_burnt = [{"schema": "veldo.event/v1", "type": "spec.shipped",
@@ -548,15 +773,24 @@ expect("WARP-1408 AC4: THE DECLARED CAP IS READ THROUGH budget.parse_budgets AND
        and _w1408_raises(B1408.parse_budgets, {"budgets": {"tokens": "lots"}})[0])
 
 _W1408_REAL_0004 = T1408.build_view("PLAN-0004")
+_W1408_CAPS_0004 = B1408.parse_budgets(V.plan_registry(ROOT / "plans")["PLAN-0004"]["fm"])
 expect("WARP-1408 AC4 MEASURED OVER THE ONE PLAN IN THIS REPOSITORY THAT DECLARES A BUDGET: "
-       "PLAN-0004 declares 20,000,000 tokens, read here through budget.py from real bytes, and "
-       "the roll-up still reports NO range against it because none of its work items carries an "
-       "estimate. A cap that is read and a range that is absent is exactly the state this "
-       "repository is in, and the report says both rather than filling the gap with a zero",
+       "PLAN-0004's cap is read through budget.parse_budgets from real bytes and travels into the "
+       "view UNMODIFIED - asserted against that module's OWN answer rather than against a literal, "
+       "so a rescale or a dropped field reds while a founder legitimately changing the cap does "
+       "not - and the cap's POSITION is None if and only if there is nothing to place against it. "
+       "MEASURED 2026-08-10: 20,000,000 tokens declared and NO range, because none of its work "
+       "items carries an estimate. A cap that is read and a range that is absent is the state this "
+       "repository is in, and the report says both rather than filling the gap with a zero; the "
+       "biconditional is what keeps that honest once an estimate exists, instead of pinning the "
+       "absence into a REQUIRED gate check",
        _W1408_REAL_0004["cap"]["declared"] is True
-       and _W1408_REAL_0004["cap"]["tokens"] == 20000000
-       and _W1408_REAL_0004["cap"]["token_position"] is None
-       and _W1408_REAL_0004["tokens"]["low"] is None)
+       and _W1408_REAL_0004["cap"]["tokens"] == _W1408_CAPS_0004.get("tokens")
+       and _W1408_REAL_0004["cap"]["tokens"] > 0
+       and _W1408_REAL_0004["cap"]["cost_usd"] == _W1408_CAPS_0004.get("cost_usd")
+       and (_W1408_REAL_0004["cap"]["token_position"] is None)
+       == (_W1408_REAL_0004["tokens"]["low"] is None
+           or _W1408_REAL_0004["cap"]["tokens"] is None))
 
 # -----------------------------------------------------------------------------------
 # AC5. ADVISORY BY DESIGN, AND ADOPTION SAFE. The load-bearing pair of this item.

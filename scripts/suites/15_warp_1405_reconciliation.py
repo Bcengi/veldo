@@ -13,22 +13,29 @@ once corrected, because a validator that refuses everything satisfies every nega
 and is worthless. The derivations get the same treatment in the other direction: every claim
 that recalibration HELPS is paired with a control where it must NOT claim to help.
 
-THE ASSERTIONS WERE WATCHED FAILING, not assumed to bite. Six properties of the module were
+THE ASSERTIONS WERE WATCHED FAILING, not assumed to bite. THIRTEEN properties of the module were
 broken on purpose and the reds recorded, one mutation at a time, both copies of the module
 mutated together so every red is attributable to BEHAVIOUR rather than to engine drift, each
-restored before the next (49 of 49 green restored):
+restored before the next (53 of 53 green restored). Mutations 1 to 6 were driven when this
+fragment was built; 7 to 13 were driven at the review that found four of the assertions below
+green under mutation, and the counts for 1, 2 and 3 were RE-MEASURED then rather than carried
+over:
 
-  1. `error_pct_of` returning 0 always: 5 RED. The derived-variance refusal, the three-case
-     variance property, the planted-bias accuracy, the bias-reduction claim, and the EXAMPLE
+  1. `error_pct_of` returning 0 always: 8 RED. The derived-variance refusal, the three-case
+     variance property, the planted-bias accuracy, the bias-versus-counts ledger, the
+     bias-reduction claim, the population pairing and its negative control, and the EXAMPLE
      RECORD on disk. That last one is the instructive red: a mutation which makes the builder
      and the validator agree with each other is invisible to any in-memory fixture, and what
      catches it is a real file whose numbers were computed and committed by the unmutated code.
-  2. `outcome_of` calling everything `in_range`: 8 RED, the widest blast radius in the fragment,
+  2. `outcome_of` calling everything `in_range`: 10 RED, the widest blast radius in the fragment,
      including the anti-vacuity control that three DISTINCT outcomes appear, the trailing
-     window, both curve assertions and the example record. The bounds refusals stayed GREEN,
-     which is what makes those attributable to the bounds rule rather than to this derivation.
+     window, both curve assertions, the bias direction and the example record. The bounds
+     refusals stayed GREEN, which is what makes those attributable to the bounds rule rather
+     than to this derivation.
   3. dropping the MIN_FITTED_SPREAD_PCT floor from `recalibrated_range`: 2 RED, the floor
-     assertion and the layer-inputs assertion that records whether the floor was applied.
+     assertion and the layer-inputs assertion, the latter through the `spread_floor_applied`
+     flag it pins rather than through the bounds (the recomputation below follows the RECORDED
+     flag, so it reproduces the unfloored bounds correctly and the flag is what disagrees).
      Nothing else moved, so the floor is measured rather than incidental: it is the check that
      stops five records which happen to agree from licensing a range one rounding step wide.
   4. `fit` ignoring its `exclude` argument: 1 RED, the leave-one-out assertion, and NOTHING
@@ -43,6 +50,33 @@ restored before the next (49 of 49 green restored):
      the idempotence assertion (identical bytes report `unchanged`) stayed GREEN. The pair
      separates two things one flag would confuse: writing the same measurement twice is free,
      and rewriting a recorded measurement is refused.
+  7. `compare` scoring the prior over the WHOLE ledger instead of over the records the refit
+     actually scored (`paired_before = accuracy(records)`): 1 RED, the population assertion.
+     That mutation is the code AS SHIPPED before this remediation, and it is why that assertion
+     exists: over a ledger mixing records that carry a structural proxy with records that do
+     not, it published "mean absolute error 300 to 0 percent" and `improved: True` between two
+     different populations, on a ledger where the refit provably changed nothing.
+  8. `holdout` dropping a never-fittable record instead of skipping it with a reason: 1 RED, the
+     same population assertion, through the unpaired list and the scored-plus-skipped count. A
+     record in NEITHER list is a population nobody can see the size of.
+  9. the refitted layer recording an envelope 3x and 7x wrong
+     (`fitted_scale_low * 3, fitted_scale_high * 7`): 1 RED, the layer-inputs assertion. This
+     mutation was GREEN before this remediation, because that assertion recomputed the bounds by
+     CALLING the function that produced them, handed the same fit object.
+ 10. the layer recording a widening ratio 25 points too high (`half_spread_pct + 25`): 1 RED,
+     the same assertion. That number was recorded NOWHERE before this remediation, and without
+     it a floored layer's own inputs reproduced a POINT against real bounds hundreds of
+     thousands of tokens apart.
+ 11. `bias` derived from the sign of the mean error instead of from the counts: 1 RED, the
+     bias-versus-counts assertion. GREEN before this remediation, because the only ledger bias
+     was asserted over had every actual on one side, where the counts and the mean cannot
+     disagree.
+ 12. `check_dir`'s validation loop replaced by `pass`: 1 RED, the present-but-broken check
+     assertion. GREEN before this remediation, when the only directory check_dir was ever
+     pointed at was an ABSENT one.
+ 13. `fit`'s own reason appended with "VERDICT: the structure is WRONG and no scale will fix
+     it": 1 RED, the never-labels assertion. GREEN before this remediation, when that assertion
+     read the fit dict's KEY NAMES and never a string a reader sees.
 
 WHAT IS MEASURED RATHER THAN ARGUED. Two things. First, that this repository has NO measured
 estimator accuracy: the live event log is read and required to carry no spend field at all,
@@ -441,6 +475,59 @@ with tempfile.TemporaryDirectory() as _d:
            and _W1405_ACC["mean_error_pct"] > 0
            and _W1405_ACC["bias"] == "under_estimating")
 
+    def _w1405_rescored(rec, low, high, actual):
+        """One record moved onto a new committed range and a new actual with ALL FOUR derived
+        fields recomputed, so a fixture built here is a record the validator calls VALID rather
+        than a dict shaped like one. Every assertion using it asserts that too."""
+        out = dict(rec, estimate_low=low, estimate_high=high, actual=actual)
+        out["outcome"] = R1405.outcome_of(low, high, actual)
+        out["error_pct"] = R1405.error_pct_of(low, high, actual)
+        out["implied_scale"] = R1405.implied_scale_of(actual, out["structural_weight_tenths"])
+        out["scale_error_pct"] = R1405._pct(out["declared_scale"] - out["implied_scale"],
+                                           out["implied_scale"])
+        return out
+
+    # THE LEDGER WHERE THE COUNTS AND THE MEAN ERROR POINT OPPOSITE WAYS. Two actuals land far
+    # BELOW one committed range and one lands far above it, and because the variance is measured
+    # against the bound the actual missed, an undershoot can never pass -99 percent while an
+    # overshoot is unbounded: errors -66, -66 and +200, a mean of +23 over a majority that came
+    # in LOW.
+    _W1405_SKEW = [_w1405_rescored(_W1405_LEDGER[_i], 300000, 600000, _a)
+                   for _i, _a in enumerate((100000, 100000, 1800000))]
+    _w1405_sacc = R1405.accuracy(_W1405_SKEW)
+    # ONE MISS EACH WAY: the directions cancel while the mean does not, which is the third branch.
+    _w1405_bacc = R1405.accuracy(_W1405_SKEW[1:])
+    _w1405_vocab_cli = subprocess.run(
+        [sys.executable, str(ROOT / ".veldo/toe_reconcile.py"), "vocabulary"],
+        capture_output=True, text=True, cwd=str(ROOT))
+    expect("WARP-1405 AC3: THE REPORTED BIAS IS THE DIRECTION ITS OWN SHIPPED VOCABULARY SAYS IT "
+           "IS, MEASURED WHERE THE COUNTS AND THE MEAN DISAGREE. Over a ledger of three valid "
+           "records with two actuals BELOW the range and one above, the mean bound-relative error "
+           "is POSITIVE (+23, because an undershoot is floored at -99 percent while an overshoot "
+           "is unbounded, so the two directions are not on one scale) and the reported bias is "
+           "over_estimating, which is what the counts say. Bound to the sentence a READER is "
+           "handed: the CLI's vocabulary subcommand prints the BIAS table, and the entry for the "
+           "reported key must be the one that names the direction the counts show. The identity is "
+           "asserted over three different ledgers, so it is a property of the derivation and not "
+           "of this fixture. Read off the mean instead, this ledger would be published as "
+           "under_estimating: the exact opposite of what its own table says the word means",
+           all(R1405.validate_record(_r, spec_id=_r["spec"]) == [] for _r in _W1405_SKEW)
+           and _w1405_sacc["counts"] == {"above": 1, "below": 2, "in_range": 0}
+           and [_r["error_pct"] for _r in _W1405_SKEW] == [-66, -66, 200]
+           and _w1405_sacc["mean_error_pct"] > 0
+           and _w1405_sacc["bias"] == "over_estimating"
+           and _w1405_bacc["counts"] == {"above": 1, "below": 1, "in_range": 0}
+           and _w1405_bacc["bias"] == "balanced" and _w1405_bacc["mean_error_pct"] != 0
+           and all(_acc["bias"] == ("balanced" if _acc["counts"]["above"]
+                                    == _acc["counts"]["below"] else
+                                    "under_estimating" if _acc["counts"]["above"]
+                                    > _acc["counts"]["below"] else "over_estimating")
+                   for _acc in (_w1405_sacc, _w1405_bacc, _W1405_ACC))
+           and R1405.BIAS[_w1405_sacc["bias"]].startswith("MORE actuals landed below")
+           and R1405.BIAS["under_estimating"].startswith("MORE actuals landed above")
+           and _w1405_vocab_cli.returncode == 0
+           and R1405.BIAS[_w1405_sacc["bias"]].split(",")[0] in _w1405_vocab_cli.stdout)
+
     # A mixed ledger: two in range, one below, two above, built by moving the actuals only.
     _w1405_mixed_actuals = {}
     for _i, _s in enumerate(_W1405_SPECS):
@@ -604,17 +691,110 @@ with tempfile.TemporaryDirectory() as _d:
            and "mean range width" in _w1405_wcmp["reason"]
            and _w1405_ccmp["width_delta_pct"] < _w1405_wcmp["width_delta_pct"])
 
+    # A MIXED-FITTABILITY LEDGER, which is the ordinary steady state and not a contrived one:
+    # build_record omits the structure-and-scale block for every estimate with no structural proxy
+    # layer, which is exactly what a sizing-pass or historical-analogy estimate produces. Four
+    # records the refit provably changes nothing on (every actual already exactly on its point),
+    # plus two the prior missed by 10x that carry NO block, so the refit can never score them.
+    _W1405_CALIB_BY = {_r["spec"]: _r for _r in _W1405_CALIB}
+    _W1405_MIXFIT = [dict(_W1405_CALIB_BY[_s]) for _s in _W1405_SPECS[:4]]
+    for _i, _s in enumerate(_W1405_SPECS[:2]):
+        _r = dict(_W1405_CALIB_BY[_s], spec="WARP-944%d" % (_i + 1))
+        for _k in R1405.DECOMP_KEYS:
+            del _r[_k]
+        _r["actual"] = _r["estimate_high"] * 10
+        _r["outcome"] = R1405.outcome_of(_r["estimate_low"], _r["estimate_high"], _r["actual"])
+        _r["error_pct"] = R1405.error_pct_of(_r["estimate_low"], _r["estimate_high"], _r["actual"])
+        _W1405_MIXFIT.append(_r)
+    _w1405_mixcmp = R1405.compare(_W1405_MIXFIT)
+    _w1405_mixview = R1405.render({
+        "records": len(_W1405_MIXFIT), "dir": "(fixture)", "problems": [],
+        "accuracy": R1405.accuracy(_W1405_MIXFIT),
+        "window_accuracy": R1405.accuracy(_W1405_MIXFIT), "curve": [],
+        "fit": R1405.fit(_W1405_MIXFIT), "compare": _w1405_mixcmp, "pending": []})
+    expect("WARP-1405 AC4, THE POPULATION THE CLAIM IS MADE OVER: A DELTA IS ONLY EVER TAKEN "
+           "BETWEEN TWO FIGURES OVER THE SAME RECORDS. Over a ledger of six valid records where "
+           "the four the refit can touch were ALREADY EXACTLY RIGHT and the other two carry no "
+           "structure-and-scale block and were missed by 10x, the refit changes nothing and must "
+           "say so: every delta is 0 and `improved` is False, and the rendered line reads that the "
+           "refit does NOT improve on the prior. Scored against the WHOLE ledger instead, the same "
+           "run would publish mean absolute error 300 to 0 percent, hit rate 67 to 100 and "
+           "`improved: True`, and that entire 300 is the two records present in one figure and "
+           "absent from the other - which is asserted here as the arithmetic this refuses. Every "
+           "record is accounted for: scored plus skipped equals the ledger, and each unpaired "
+           "record is named with the reason the refit could not score it, so the count is honest "
+           "rather than quietly smaller",
+           all(R1405.validate_record(_r, spec_id=_r["spec"]) == [] for _r in _W1405_MIXFIT)
+           and _w1405_mixcmp["measured"] is True and _w1405_mixcmp["improved"] is False
+           and _w1405_mixcmp["before"]["n"] == 6 and _w1405_mixcmp["after"]["scored"] == 4
+           and _w1405_mixcmp["paired_before"]["n"] == 4
+           and (_w1405_mixcmp["hit_rate_delta_pct"], _w1405_mixcmp["mean_abs_error_delta_pct"])
+           == (0, 0)
+           # The unpaired arithmetic, spelled out: this is what the module must NOT publish.
+           and _w1405_mixcmp["after"]["mean_abs_error_pct"] \
+           - _w1405_mixcmp["before"]["mean_abs_error_pct"] == -300
+           and _w1405_mixcmp["after"]["hit_rate_pct"] \
+           - _w1405_mixcmp["before"]["hit_rate_pct"] == 33
+           and _w1405_mixcmp["after"]["scored"] + len(_w1405_mixcmp["after"]["skipped"]) == 6
+           and [_u["spec"] for _u in _w1405_mixcmp["unpaired"]] == ["WARP-9441", "WARP-9442"]
+           and all("structural_weight_tenths" in _u["reason"]
+                   for _u in _w1405_mixcmp["unpaired"])
+           and "in NEITHER figure" in _w1405_mixcmp["reason"]
+           and any("the refit does NOT improve on the prior" in _ln for _ln in _w1405_mixview)
+           and sorted(_ln.split()[1] for _ln in _w1405_mixview
+                      if _ln.startswith("  unpaired:")) == ["WARP-9441", "WARP-9442"])
+
+    expect("WARP-1405 AC4 NEGATIVE CONTROL ON THAT PAIRING: the SAME six-record ledger with the "
+           "two unfittable records REMOVED is a ledger of four the refit still cannot improve, and "
+           "the WHOLE-ledger figures then agree with the paired ones because there is only one "
+           "population left. So the zero deltas above are the pairing being right and not a "
+           "comparison that reports zero whatever it is handed: over the planted-bias ledger, "
+           "where every record is fittable, the same code still reports a real improvement",
+           R1405.compare(_W1405_MIXFIT[:4])["improved"] is False
+           and R1405.compare(_W1405_MIXFIT[:4])["before"]["mean_abs_error_pct"]
+           == R1405.compare(_W1405_MIXFIT[:4])["paired_before"]["mean_abs_error_pct"]
+           and R1405.compare(_W1405_MIXFIT[:4])["unpaired"] == []
+           and _W1405_CMP["improved"] is True
+           and _W1405_CMP["paired_before"]["n"] == _W1405_CMP["before"]["n"] == 5
+           and _W1405_CMP["mean_abs_error_delta_pct"] < 0)
+
     _w1405_agree_range = R1405.recalibrated_range(100, _W1405_FIT)
     _w1405_wild_range = R1405.recalibrated_range(100, _w1405_wfit)
-    expect("WARP-1405 AC4: DISAGREEMENT WIDENS THE RANGE INSTEAD OF HIDING IN IT. Over a ledger "
-           "whose implied scales span 16x, the dispersion is reported as a large percentage and "
-           "the refitted range is far wider than over the ledger that agrees. The module NEVER "
-           "labels the structure right or wrong, because that threshold is nobody's measurement; "
-           "what it does is carry the disagreement into the range, so a reader sizing work sees "
-           "the uncertainty rather than reading a footnote about it",
+    # THE TEXT A READER ACTUALLY SEES about the fit, every branch of it: the fitted reason, the
+    # dispersed reason, and all three stand-downs, plus the layer note this module writes into an
+    # estimate and the refit and recalibration lines the report prints.
+    _W1405_VERDICT_RE = _w1405_re.compile(
+        r"\b(wrong|right|correct|correctly|incorrect|explains?|explained|fault|faulty|verdict|"
+        r"broken|invalid|useless)\b", _w1405_re.I)
+    _w1405_fit_prose = [
+        _W1405_FIT["reason"], _w1405_wfit["reason"], R1405.fit([])["reason"],
+        R1405.fit(_W1405_LEDGER[:2])["reason"],
+        R1405.fit([dict(_r, era="era-a" if _i % 2 else "era-b")
+                   for _i, _r in enumerate(_W1405_LEDGER)])["reason"],
+        R1405.recalibrated_layer(100, _W1405_FIT)["note"],
+        R1405.recalibrated_layer(100, _w1405_wfit)["note"],
+    ] + [_ln for _ln in _w1405_lines
+         if _ln.startswith("refit:") or _ln.startswith("recalibration:")]
+    expect("WARP-1405 AC4: DISAGREEMENT WIDENS THE RANGE INSTEAD OF HIDING IN IT, AND THE MODULE "
+           "NEVER LABELS THE STRUCTURE RIGHT OR WRONG, asserted over the STRINGS A READER SEES "
+           "and not over the fit dict's key names. Over a ledger whose implied scales span 16x the "
+           "dispersion is reported as a large percentage and the refitted range is far wider than "
+           "over the ledger that agrees; and not one verdict word (wrong, right, correct, "
+           "explains, fault, verdict, broken, invalid) appears in any fit reason, in either "
+           "stand-down, in the layer note this module writes into an estimate or in the refit and "
+           "recalibration lines the report prints. Bound to a POSITIVE CONTROL that the same "
+           "pattern DOES fire on the sentence this claim forbids, because an absence assertion "
+           "whose matcher matches nothing is a pass earned by looking nowhere. The word "
+           "`structure` itself is legal (a stand-down names the block it needs), so the match is "
+           "on the VERDICT and never on the noun; the key-name clause is kept as the second half",
            _w1405_wfit["fitted"] is True and _w1405_wfit["dispersion_pct"] > 1000
            and _w1405_wild_range[1] - _w1405_wild_range[0]
            > (_w1405_agree_range[1] - _w1405_agree_range[0]) * 5
+           and _w1405_fit_prose != [] and len(_w1405_fit_prose) >= 9
+           and not any(_W1405_VERDICT_RE.search(_t) for _t in _w1405_fit_prose)
+           and _W1405_VERDICT_RE.search(
+               "VERDICT: the structure is WRONG and no scale will fix it") is not None
+           and any("structure" in _t for _t in _w1405_fit_prose)
            and "structure" not in " ".join(sorted(_w1405_wfit)))
 
     expect("WARP-1405 AC4: THE FLOOR UNDER A FITTED RANGE, which is false precision arriving "
@@ -702,17 +882,64 @@ with tempfile.TemporaryDirectory() as _d:
            == ["structural_proxy", "recalibrated"])
 
     _w1405_lin = _w1405_layer["inputs"]
+    _w1405_wlayer = R1405.recalibrated_layer(_w1405_weights[_W1405_SPECS[0]], _w1405_wfit)
+    _w1405_wlin = _w1405_wlayer["inputs"]
+
+    def _w1405_bounds_from_inputs(ins):
+        """One layer's bounds recomputed FROM ITS RECORDED INPUTS ALONE, with the arithmetic
+        written out here rather than borrowed from the module.
+
+        THIS IS THE WHOLE POINT OF THE ASSERTION BELOW AND IT IS WHY IT IS SPELLED TWICE. Calling
+        `recalibrated_range` with the same fit object would recompute the bounds with the very
+        call that produced them: both sides would move together for any change to that arithmetic
+        or to any number the record claims it was fitted from, so the record could lie about its
+        own envelope and nothing would notice. Every value read here comes out of the layer, so a
+        recorded input that does not support the recorded bounds reds this."""
+        lo_scale, hi_scale = ins["fitted_scale_low"], ins["fitted_scale_high"]
+        if ins["spread_floor_applied"] == E1405.YES:
+            mid = ins["fitted_scale"]
+            lo_scale = min(lo_scale, mid * 100 // ins["half_spread_pct"])
+            hi_scale = max(hi_scale, mid * ins["half_spread_pct"] // 100)
+        weight = ins["structural_weight_tenths"]
+        low = E1405._round_tokens(weight * lo_scale // 10)
+        high = E1405._round_tokens(weight * hi_scale // 10)
+        return low, (high if high > low else low + E1405.ROUND_STEP)
+
+    def _w1405_input_is_load_bearing(layer, key):
+        """Whether one recorded input actually decides the recorded bounds: tripling it must move
+        the recomputation. An assertion over inputs the arithmetic ignores is an assertion that
+        cannot fail, which is what this pair of layers is here to rule out."""
+        return _w1405_bounds_from_inputs(dict(layer["inputs"], **{key: layer["inputs"][key] * 3})) \
+            != (layer["low"], layer["high"])
+
     expect("WARP-1405 AC4: THE REFITTED LAYER'S RECORDED INPUTS REPRODUCE ITS OWN BOUNDS, "
-           "recomputed here from the layer alone, exactly as WARP-1402 requires of the proxy. So "
-           "the next reconciliation can attribute THIS layer's error the same way this one "
-           "attributed the prior's, and the ledger keeps improving instead of keeping score. The "
-           "inputs also say whether the spread floor was applied, so a range wider than the "
-           "sample looked is visible rather than mysterious",
+           "recomputed here FROM THE LAYER ALONE with the arithmetic written out, in BOTH "
+           "branches: the floored layer (five records agreeing, so the declared widening ratio "
+           "runs) and the unfloored one (implied scales spanning 16x, so the measured envelope "
+           "runs). The ratio the floor widens by is one of the recorded inputs, because without it "
+           "a floored layer's inputs reproduce the fitted point twice over, a POINT, which is the "
+           "one shape NG6 refuses. Bound to a sensitivity control on every input the arithmetic "
+           "reads, so this cannot be satisfied by numbers nothing depends on: tripling any of them "
+           "moves the recomputed pair. So the next reconciliation can attribute THIS layer's error "
+           "the same way this one attributed the prior's, and a record that lied about the "
+           "envelope it was fitted from would red here",
            (_w1405_layer["low"], _w1405_layer["high"])
-           == R1405.recalibrated_range(_w1405_lin["structural_weight_tenths"], _W1405_FIT)[:2]
+           == _w1405_bounds_from_inputs(_w1405_lin)
+           and (_w1405_wlayer["low"], _w1405_wlayer["high"])
+           == _w1405_bounds_from_inputs(_w1405_wlin)
+           and _w1405_layer["high"] > _w1405_layer["low"] + E1405.ROUND_STEP
+           and all(_w1405_input_is_load_bearing(_w1405_layer, k)
+                   for k in ("fitted_scale", "fitted_scale_high", "half_spread_pct",
+                             "structural_weight_tenths"))
+           and all(_w1405_input_is_load_bearing(_w1405_wlayer, k)
+                   for k in ("fitted_scale_low", "fitted_scale_high",
+                             "structural_weight_tenths"))
+           and _w1405_lin["half_spread_pct"] == R1405.HALF_SPREAD_PCT
+           and _w1405_lin["min_fitted_spread_pct"] == R1405.MIN_FITTED_SPREAD_PCT
            and _w1405_lin["fitted_scale"] == _W1405_FIT["scale"]
            and _w1405_lin["declared_scale_replaced"] == E1405.TOKENS_PER_STRUCTURAL_UNIT
            and _w1405_lin["spread_floor_applied"] == E1405.YES
+           and _w1405_wlin["spread_floor_applied"] == E1405.NO
            and _w1405_lin["dispersion_pct"] == 0
            and _w1405_lin["fitted_from_records"] == 5)
 
@@ -762,6 +989,26 @@ with tempfile.TemporaryDirectory() as _d:
            "coverage report exists to prevent",
            sorted(_w1405_loaded) == [_W1405_ONE["spec"]]
            and len(_w1405_loadprobs) == 1 and "WARP-9499" in _w1405_loadprobs[0])
+
+    _w1405_mixcheck = R1405.check_dir(_w1405_mixdir)
+    _w1405_broken_cli = subprocess.run(
+        [sys.executable, str(ROOT / ".veldo/toe_reconcile.py"), "check",
+         "--dir", str(_w1405_mixdir)], capture_output=True, text=True, cwd=str(ROOT))
+    expect("WARP-1405 AC5: THE OPERATOR-FACING check IS THE SURFACE THAT EXISTS TO NAME A BROKEN "
+           "RECORD, SO IT IS MEASURED OVER ONE. Over the same directory holding one VALID record "
+           "and one MALFORMED one, check_dir reports BOTH records checked and a non-zero problem "
+           "count, and the CLI driven as a real process EXITS 1 and prints the malformed file's "
+           "path while never naming the valid one. Paired with the absence assertion above, that "
+           "keeps two facts distinguishable which one exit code would blur: nothing recorded is a "
+           "stand-down at 0, and something recorded and broken is a finding at 1. Without this the "
+           "whole subcommand could be replaced by `pass` and every check_dir assertion would still "
+           "pass, because the only directory it was ever pointed at was empty",
+           _w1405_mixcheck[0] == 2 and _w1405_mixcheck[1] > 0
+           and _w1405_broken_cli.returncode == 1
+           and "2 record(s) checked" in _w1405_broken_cli.stdout
+           and "0 problem(s)" not in _w1405_broken_cli.stdout
+           and "WARP-9499.yaml" in _w1405_broken_cli.stdout
+           and "%s.yaml" % _W1405_ONE["spec"] not in _w1405_broken_cli.stdout)
 
     # A hermetic repository root: the real contract and policy, a fixture spec, and a
     # reconciliations directory we control. check_spec accepts repo_root, so the REAL validator

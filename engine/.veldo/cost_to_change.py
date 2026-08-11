@@ -31,10 +31,21 @@ THE COST FIELDS ARE UNKNOWN IN THIS REPOSITORY AND THE REPORT SAYS SO RATHER THA
 ZERO. WARP-1401 measured it: 904 events, not one carrying `tokens`, `cost_usd` or
 `human_minutes`, because a token count is not knowable from inside a repository. So an area
 whose records carry no recorded spend reports its cost fields as None with `cost_known` false
-and `spend_coverage` 0.0, NEVER as a confident zero. Cycles are different and are real today:
-gate passes, gate FAILURES (the rework signal) and review verdicts come from the lifecycle
-events, so cost-to-change per area is usable as a CYCLES map now and becomes a token map the
-day something records spend (.veldo/spend.py).
+and `spend_coverage` 0.0, NEVER as a confident zero.
+
+AND THE SAME DISCIPLINE APPLIES TO THE GATE CYCLES, BECAUSE THEY ARE UNRECORDED HERE TOO. The
+two cycle signals are NOT one signal and are not equally available: review verdicts carry the
+spec they belong to, but scripts/verify.sh writes its gate.passed and gate.failed events with a
+COMMIT and no spec id or correlation id, and toe_corpus.cycles_for joins on exactly those ids,
+so no gate run in this repository can reach a spec. `gate_passes=0` for every area would
+therefore be an ABSENCE printed as a measurement, and a reader quoting "this area had zero gate
+failures" would be quoting the emitter gap. So gate_passes and gate_failures are None with
+`gate_basis` unrecorded and `gate_coverage` 0.0 when no record in the set carried a gate event,
+review verdicts are counted separately with their own basis and coverage, and the report carries
+a `cycle_notice` naming the emitter gap. That makes this map a per-area REVIEW-CYCLE map today,
+a REWORK map the day the gate's own events name the spec they ran for, and a token map the day
+something records spend (.veldo/spend.py). All three gaps are numbers in the data here, and
+none of them is closed here.
 
 THE SEAM TO THE ARCHITECTURE ORGAN IS PROSE, NEVER A DEPENDENCY EDGE (PLAN-0014 C6). This
 module does not import .veldo/entropy.py and entropy.py does not import this one. Nothing in
@@ -53,8 +64,13 @@ no process. The CLI at the bottom is the only place the real corpus, the real co
 real git reader are wired together.
 
 ADOPTION SAFE, AND THE STAND-DOWN IS SILENT. No architecture contract stands the whole
-derivation down; no actuals records stands it down too. Nothing in the gate calls this module,
-so a repository that never uses it is byte-identically unaffected.
+derivation down; no actuals records stands it down too. NO GATE STAGE CONSUMES THIS MODULE'S
+OUTPUT, so nothing the gate runs can fail because a per-area cost map was unavailable, malformed
+or slow, and a repository that never calls it is byte-identically unaffected. Said precisely,
+because the earlier wording ("nothing in the gate calls this module") was not true: the one gate
+stage that LOADS it is scripts/selftest.py, which executes this item's own suite, and a test
+asserting a module's behaviour is the opposite of a stage trusting its numbers. The claim is
+asserted over a domain DERIVED from scripts/verify.sh, not over a hand-typed file list.
 
 FAIL CLOSED AND BY NAME. A malformed actuals record is REFUSED with a message naming the
 record, the field and what is wrong with it, because a corpus that is quietly skipped produces
@@ -102,9 +118,17 @@ BASIS_LABELS = {
 }
 
 # The recorded spend fields, which are UNKNOWN rather than zero in a repository whose loop
-# emits none of them, and the cycle fields, which are real today.
+# emits none of them, and the cycle fields, which are TWO SIGNALS rather than one.
 COST_FIELDS = ("tokens", "cost_usd", "human_minutes")
-CYCLE_FIELDS = ("gate_passes", "gate_failures", "review_verdicts")
+# The gate half comes from an emitter that names no spec (verify.sh writes a commit), so it is
+# separately knowable-or-not from the review half, whose emitter does name the spec. Splitting the
+# groups here is what lets one of them be None while the other is a real number: a single
+# CYCLE_FIELDS tuple could only be all-known or all-unknown, and that is how a confident zero got
+# printed for every area in the first place.
+GATE_CYCLE_FIELDS = ("gate_passes", "gate_failures")
+REVIEW_CYCLE_FIELDS = ("review_verdicts",)
+# The union, in its established order: the record validator and every consumer read this name.
+CYCLE_FIELDS = GATE_CYCLE_FIELDS + REVIEW_CYCLE_FIELDS
 
 
 def _is_num(v):
@@ -254,20 +278,57 @@ def attribute(rec, contract, arch, fm=None, paths=None):
             "basis_label": BASIS_LABELS[UNATTRIBUTED], "paths_considered": len(paths)}
 
 
+def _has_cycle_signal(cycles, fields):
+    """Whether ONE record's cycles carried any of `fields` as a positive count. This is the only
+    evidence available that the signal reached this record at all: the corpus record cannot
+    distinguish a gate run that happened and named no spec from a gate run that never happened, so
+    "some record in this set carried one" is what separates a measured zero from an absence."""
+    return any(_is_num(cycles.get(f)) and cycles[f] > 0 for f in fields)
+
+
 def _sum_cycles(records):
-    """Recorded cycles for a set of records, plus how many of them had ANY cycle data. Gate
-    failures stay separate from passes: a change that went red three times before green cost
-    three gate runs, and a map that merged them could not show rework at all."""
-    out = {f: 0 for f in CYCLE_FIELDS}
+    """Recorded cycles for a set of records, PER SIGNAL, with the unrecorded signal reported as
+    None rather than as zero.
+
+    Gate failures stay separate from passes: a change that went red three times before green cost
+    three gate runs, and a map that merged them could not show rework at all. But the two of them
+    together are separate from review verdicts for a different and harder reason, and it is the same
+    reason _sum_cost returns None: THE GATE EMITTER NAMES NO SPEC. scripts/verify.sh appends
+    gate.passed and gate.failed carrying a commit, and toe_corpus.cycles_for joins on spec_id or
+    correlation_id, so in this repository every record's gate counts are 0 because the join found
+    nothing - not because the gate never ran. Printing that 0 would be a confident zero with full
+    coverage, which is exactly what this module refuses to do for spend.
+
+    So each group is a number only when at least one record in the set actually carried that
+    signal, `gate_basis` and `review_basis` say which of the two happened, and gate_coverage and
+    verdict_coverage are counted separately from cycles_coverage - which a verdict alone satisfies,
+    and which therefore read 1.0 for an area with no gate-cycle data at all."""
+    sums = {f: 0 for f in CYCLE_FIELDS}
     known = 0
+    gate_known = 0
+    review_known = 0
     for r in records:
         c = r.get("cycles") or {}
         if _is_num(c.get("events_seen")) and c["events_seen"] > 0:
             known += 1
+        if _has_cycle_signal(c, GATE_CYCLE_FIELDS):
+            gate_known += 1
+        if _has_cycle_signal(c, REVIEW_CYCLE_FIELDS):
+            review_known += 1
         for f in CYCLE_FIELDS:
-            out[f] += c.get(f, 0)
+            sums[f] += c.get(f, 0)
+    out = {}
+    for fields, count in ((GATE_CYCLE_FIELDS, gate_known), (REVIEW_CYCLE_FIELDS, review_known)):
+        for f in fields:
+            out[f] = sums[f] if count else None
     out["cycles_known"] = known
     out["cycles_coverage"] = round(known / len(records), 4) if records else 0.0
+    out["gate_events_known"] = gate_known
+    out["gate_coverage"] = round(gate_known / len(records), 4) if records else 0.0
+    out["gate_basis"] = "recorded" if gate_known else "unrecorded"
+    out["verdicts_known"] = review_known
+    out["verdict_coverage"] = round(review_known / len(records), 4) if records else 0.0
+    out["review_basis"] = "recorded" if review_known else "unrecorded"
     return out
 
 
@@ -305,7 +366,9 @@ def standdown(reason):
             "git_path_attributed": False,
             "coverage": {"records": 0, "attributed": 0, "area_memberships": 0,
                          "cost_known_records": 0, "cost_coverage": 0.0,
-                         "usable_as_cost_ground_truth": False}}
+                         "usable_as_cost_ground_truth": False,
+                         "gate_event_records": 0,
+                         "usable_as_rework_ground_truth": False}}
 
 
 def report(corpus, contract, arch, fm_of=None, paths_of=None):
@@ -366,6 +429,8 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
             "cost": _sum_cost(recs),
         }
     cost_known = sum(1 for r in corpus if (r.get("spend") or {}).get("spend_recorded"))
+    gate_known = sum(1 for r in corpus
+                     if _has_cycle_signal(r.get("cycles") or {}, GATE_CYCLE_FIELDS))
     out = {
         "schema": SCHEMA,
         "standdown": False,
@@ -387,6 +452,10 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
             "cost_known_records": cost_known,
             "cost_coverage": round(cost_known / len(corpus), 4) if corpus else 0.0,
             "usable_as_cost_ground_truth": cost_known > 0,
+            # The rework half of the same honesty: how many records carried a gate event at all,
+            # and the blunt boolean that says whether a gate figure in this map means anything.
+            "gate_event_records": gate_known,
+            "usable_as_rework_ground_truth": gate_known > 0,
         },
     }
     if out["git_path_attributed"]:
@@ -399,6 +468,16 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
                               "None rather than zero: this map is a CYCLES map today and "
                               "becomes a token map when something records spend "
                               "(.veldo/spend.py). WARP-1401 measured the gap.")
+    if not out["coverage"]["usable_as_rework_ground_truth"]:
+        out["cycle_notice"] = ("NO RECORD IN THIS CORPUS CARRIES A GATE PASS OR A GATE FAILURE, "
+                               "so gate_passes and gate_failures are None per area rather than "
+                               "zero and the cycle half of this map is REVIEW VERDICTS ONLY. THE "
+                               "EMITTER IS THE GAP: scripts/verify.sh appends gate.passed and "
+                               "gate.failed carrying a COMMIT and no spec id or correlation id, "
+                               "and toe_corpus.cycles_for joins on exactly those ids, so no gate "
+                               "run can reach a spec. A zero here would be that absence printed "
+                               "as a measurement. The emitter is out of scope for WARP-1409 and "
+                               "this map reports the gap rather than closing it.")
     return out
 
 
@@ -418,15 +497,22 @@ def render_text(rep):
         lines.append("  NOTICE: %s" % rep["notice"])
     if rep.get("cost_notice"):
         lines.append("  COST: %s" % rep["cost_notice"])
+    if rep.get("cycle_notice"):
+        lines.append("  CYCLES: %s" % rep["cycle_notice"])
     for area in sorted(rep["areas"]):
         a = rep["areas"][area]
         c, cost = a["cycles"], a["cost"]
         lines.append("  area %s: %d change(s), attribution %s"
                      % (area, a["records"], a["attribution_basis"]))
-        lines.append("    cycles: gate_passes=%d gate_failures=%d review_verdicts=%d "
-                     "(cycle data on %d of %d)"
-                     % (c["gate_passes"], c["gate_failures"], c["review_verdicts"],
-                        c["cycles_known"], a["records"]))
+        # %s, not %d, and that is the whole point: an unrecorded gate signal prints None here the
+        # same way an unrecorded token count does, so the text surface cannot show a confident zero
+        # the JSON does not carry.
+        lines.append("    cycles: gate_passes=%s gate_failures=%s (%s, gate events on %d of %d) "
+                     "review_verdicts=%s (%s, verdicts on %d of %d); any cycle data on %d of %d"
+                     % (c["gate_passes"], c["gate_failures"], c["gate_basis"],
+                        c["gate_events_known"], a["records"],
+                        c["review_verdicts"], c["review_basis"], c["verdicts_known"],
+                        a["records"], c["cycles_known"], a["records"]))
         lines.append("    cost: tokens=%s cost_usd=%s human_minutes=%s (%s, spend on %d of %d)"
                      % (cost["tokens"], cost["cost_usd"], cost["human_minutes"],
                         cost["cost_basis"], cost["spend_known"], a["records"]))
@@ -450,19 +536,29 @@ def _load(name, rel):
     return mod
 
 
-def repo_report(root=None):
+def repo_report(root=None, load=None):
     """This repository's own cost-to-change map: the CLI's one wiring point.
 
     The corpus comes from toe_corpus.build over the recorded event stream, the contract and the
     parser from validate (load_repo_contract is the single place a consumer obtains the parsed
     contract), the front matter through validate.parse_yamlish, and the touched paths from
     toe_corpus.git_touched, which is the ONE reader of what git says a spec's change touched.
-    Nothing here is a second implementation of any of it."""
+    Nothing here is a second implementation of any of it.
+
+    `load` is the module loader, defaulting to _load and injected for exactly one reason: THIS IS
+    THE FUNCTION THAT PRODUCES EVERY NUMBER ANYBODY QUOTES, and every join it makes is invisible to
+    a suite that can only drive report() over hand-built fixtures. A review severed each of the two
+    joins here in turn - the front-matter lookup and the touched-paths lookup - and the suite stayed
+    green while the live map lost, respectively, every declared-placement attribution and every
+    git-path attribution. Injecting the loader keeps this the one wiring point and makes the wiring
+    itself drivable: the loader is asked for the four sibling paths BY NAME, so a stub can answer
+    with known inputs and the composition below becomes observable rather than trusted."""
     base = Path(root or ROOT)
-    V = _load("veldo_validate_ctc", ".veldo/validate.py")
-    TC = _load("veldo_toe_corpus_ctc", ".veldo/toe_corpus.py")
-    M = _load("veldo_metrics_ctc", ".veldo/metrics.py")
-    PC = _load("veldo_policy_check_ctc", ".veldo/policy_check.py")
+    load = load if load is not None else _load
+    V = load("veldo_validate_ctc", ".veldo/validate.py")
+    TC = load("veldo_toe_corpus_ctc", ".veldo/toe_corpus.py")
+    M = load("veldo_metrics_ctc", ".veldo/metrics.py")
+    PC = load("veldo_policy_check_ctc", ".veldo/policy_check.py")
     arch, contract = V.load_repo_contract(repo_root=str(base))
     corpus = TC.build(specs_dir=base / "specs", events=M.load(),
                       protected=PC.protected_patterns())

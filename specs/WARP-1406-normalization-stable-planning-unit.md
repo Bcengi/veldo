@@ -30,13 +30,33 @@ acceptance_criteria:
     text: >
       A NORMALIZED POINT, WITH THE RAW TOKENS STILL ON THE ROW. `normalize` renders every corpus
       record as a point against the peg (`tokens / peg_tokens`), the peg's own change being exactly
-      1.000, and carries the RECORDED tokens and cost on the same row, unrounded and unrescaled, so
-      the ground truth is always one field away from the planning number (D2: both units, the point
-      primary). A record whose spend was never recorded gets NO POINT and a stated reason, never a
-      zero, because a confident zero and an unmeasured change are indistinguishable once a zero is
-      printed. Selftests: the five seeded changes come out at the expected points; the raw columns
-      are asserted EQUAL to the corpus's own spend block for every row; and the no-spend row is
-      required to have no point and a reason naming the confident zero it refuses to print.
+      1.000, and every view ROW carries the RECORDED tokens and the RECORDED cost, unrounded and
+      unrescaled, so the ground truth is always one field away from the planning number (D2: both
+      units, the point primary). THE RENDERED LINE SHOWS THE TOKENS AND, ONLY WHEN A PRICE IS
+      SUPPLIED, A DOLLAR COLUMN DERIVED FROM THOSE TOKENS; it deliberately does NOT print the
+      recorded cost, because two different dollar figures in one column invite a reader to take a
+      price projection for a recorded actual. The recorded cost is on the row for a consumer of the
+      view, which is where the "same row" claim above is discharged.
+      A record whose TOKEN spend was never recorded gets NO POINT and a stated reason, never a zero,
+      because a confident zero and an unmeasured change are indistinguishable once a zero is printed.
+      The gate is a POSITIVE RECORDED TOKEN COUNT and not the corpus's `spend_recorded` flag: that
+      flag is true when ANY spend field carries a number, so a change costed only in dollars or only
+      in human minutes would otherwise print 0.000 pt and be counted as a measured change. Such a
+      change gets no point either, with a reason NAMING the spend field that was recorded and saying
+      the token count was not, which is a third fact distinct from nothing being recorded at all. One
+      named predicate (`recorded_tokens`) serves the display and the peg derivation, so the two paths
+      cannot disagree about which changes were measured in tokens.
+      Selftests: the five seeded changes come out at the expected points; the raw token AND recorded
+      cost columns are asserted EQUAL to the corpus's own spend block for every row of two corpora,
+      the second carrying deliberately non-round values (3137 and 41 tokens, 12.37 and 0.0137 usd)
+      so a rounding at any granularity or a 100x rescale of the money column reds it; the no-spend
+      row is required to have no point and a reason naming the confident zero it refuses to print; a
+      cost-only change and a human-minutes-only change are required to have no point, distinct named
+      reasons, and no `0.000 pt` anywhere in the render, with the control that adding a token count
+      turns the point on and that neither can become the derived peg; the rendered dollar column is
+      asserted to be the price-derived figure and NOT the recorded cost; and the summary roll-up is
+      asserted as ONE whole-dict equality over three fixtures together with the printed bottom line,
+      because points_total, tokens_total and eras_present are the numbers a planner sizes work with.
   - id: AC2
     text: >
       THE PEG IS A CORPUS STATISTIC AND IT NAMES THE CHANGE IT IS PEGGED TO (D1). The derived peg is

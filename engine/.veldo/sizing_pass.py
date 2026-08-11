@@ -58,7 +58,11 @@ record in the ledger.** W1 measured the same gap at 904 events and shipped the e
 anchor on, and the brief says exactly that: `anchor_available: no`, with the numeric anchor
 fields OMITTED rather than reported as zero. A zero because nothing was spent and a zero
 because nothing was ever recorded are different facts, and an agent handed the second as a
-measurement would calibrate against nothing while feeling informed.
+measurement would calibrate against nothing while feeling informed. The rule holds FIELD BY
+FIELD and not only over an empty log: `spend.py` accepts a record carrying cost or human
+minutes and no `tokens`, so the token keys are gated on a numeric `tokens` and the brief
+carries `token_anchor_available` beside the wider flag. A token total summed over records that
+never carried one is the same false measurement in a narrower place.
 
 The consequence for this layer's own cost: recording it is, today, the FIRST spend record
 this repository would ever write. That is recorded through `spend.py`'s writer, against the
@@ -386,6 +390,19 @@ def ledger_state(events):
     is none. `anchor_available: no` is the honest answer and the ask above tells the agent what
     to do with it.
 
+    EACH NUMERIC ANCHOR IS GATED ON ITS OWN FIELD, never on spend having been recorded in some
+    OTHER field. `spend.validate` accepts a record carrying any ONE of the three declared spend
+    fields and its writer defaults `tokens` to None, so a ledger can hold real recorded cost
+    (`cost_usd`, `human_minutes`) and no token history at all. Summing tokens over those records
+    would report `tokens_recorded: 0` beside `anchor_available: yes` - a zero because tokens
+    were never recorded, printed as a measurement, next to a flag saying there IS an anchor,
+    which is the precise defect this block exists to prevent. So the token keys are omitted
+    unless some event carries a numeric `tokens`, `token_spend_events` states how many events
+    the total was summed over (a sum without its basis is not a measurement), and
+    `token_anchor_available` answers for the keys it licenses while `anchor_available` answers
+    the wider question of whether ANY spend was ever recorded. The estimate record's unit is
+    tokens, so the narrower flag is the one a range can be anchored on.
+
     It is a PRESENCE report and never an analogy: matching this spec to similar shipped specs
     and predicting from their actuals is W4, on a different basis. Reuses W1's declared spend
     field names, so the two cannot disagree about what recorded spend means."""
@@ -393,14 +410,17 @@ def ledger_state(events):
     fields = _corpus().SPEND_FIELDS
     evs = [e for e in (events or ()) if isinstance(e, dict)]
     carrying = [e for e in evs if any(_is_num(e.get(k)) for k in fields)]
+    with_tokens = [e for e in carrying if _is_num(e.get("tokens"))]
     out = {"events": len(evs), "spend_events": len(carrying),
-           "anchor_available": E.YES if carrying else E.NO}
+           "anchor_available": E.YES if carrying else E.NO,
+           "token_anchor_available": E.YES if with_tokens else E.NO}
     if carrying:
-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in carrying
-                                     if _is_num(e.get("tokens")))
         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
                                        for e in carrying
                                        if e.get("spec_id") or e.get("correlation_id")})
+    if with_tokens:
+        out["token_spend_events"] = len(with_tokens)
+        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
     return out
 
 

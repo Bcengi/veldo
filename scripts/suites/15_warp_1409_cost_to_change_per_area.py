@@ -27,17 +27,42 @@ exactly one input and requires the answer to CHANGE:
   the refusals are asserted BY MESSAGE for eight planted-bad shapes, and the well-formed corpus
   is asserted to raise nothing - so the validator is not simply always refusing.
 
-TEETH, MEASURED RATHER THAN CLAIMED. Four mutations were driven through .veldo/cost_to_change.py
-and every one of them turned assertions here RED, from a clean 30 passed 0 failed:
+AND THE WIRING IS DRIVEN, NOT ONLY THE PURE CORE. repo_report() produces every number the spec
+publishes and every number a reader will quote, and for a while nothing called it: a review severed
+each of its two joins in turn and this file stayed at 30 passed while the live map lost, in turn,
+every git-path attribution and then every declared-placement attribution. It is now driven twice -
+over an INJECTED LOADER with known inputs, which runs everywhere, and over the REAL repository,
+where the whole-corpus partition is a set equality against an independently built corpus. Its
+git-path half over live history is SPLIT OUT and stands down here for the WARP-1711 reason.
 
-  1. _sum_cost returning 0 instead of None for an area with no recorded spend: 2 red (the
-     unknown-cost assertion and the rendered-text assertion that reads tokens=None).
-  2. attribute() stamping BY_PLACEMENT on the git-path case: 4 red. THE INSTRUCTIVE ONE, because
-     every per-area TOTAL stayed identical and only the basis assertions caught it, which is
-     exactly the failure this item exists to prevent.
-  3. attribute() defaulting an unattributable record into the first declared area: 5 red (the
-     never-fabricate pair, the partition set equality, the coverage figures and the cycle sums).
-  4. front_matter_index returning {} so no placement is ever seen: 6 red.
+TEETH, MEASURED RATHER THAN CLAIMED. THIRTEEN mutations were driven one at a time in a scratch copy
+of this repository, each one DIFFED to prove it applied - a replacement that matched nothing looks
+exactly like a check that cannot fail - from a clean 38 passed 0 failed. Every one of them turned
+assertions here RED. (The four mutations the original item drove against the earlier revision of
+this file are recorded in the spec's Notes; these thirteen are the remediation's own, and they target
+the properties that were previously asserted by nothing. Every mutation of .veldo/cost_to_change.py
+also reds the engine-twin comparison, because it touched one copy of a pair that must stay
+byte-identical.)
+
+  1. repo_report's front-matter lookup severed (fm_of -> None): 5 red. This is the mutation that
+     replaced every declared-placement attribution in the live map with the weaker join and left
+     the suite green before.
+  2. repo_report's touched-paths lookup severed (paths_of -> []): 2 red. Ditto for the git-path
+     join, the stand-down that is this item's whole stated point.
+  3. repo_report handing the corpus builder no events (events=[]): 3 red.
+  4. an importlib load of the module inserted into scripts/secret_inventory.py, a REQUIRED gate
+     stage: 1 red. It was green against the hand-typed gate-file list this replaced.
+  5. CHECK_security downgraded from required to na in scripts/verify.sh: 1 red, which is what makes
+     the gate domain derived rather than described.
+  6. engine/.veldo/cost_to_change.py report() gutted to `return {}`: 1 red. Also green before.
+  7. engine/.veldo/toe_corpus.py git_touched gutted to empty lists: 1 red. Also green before, and
+     that copy is the one publish.py ships to adopters.
+  8. _sum_cycles summing an unrecorded gate signal to 0 instead of None: 4 red.
+  9. gate_basis hardcoded to 'recorded': 4 red.
+ 10. the cycle_notice suppressed: 3 red.
+ 11. "gate_event_records" dropped from the stand-down's coverage block: 2 red.
+ 12. a second suite fragment naming the module: 1 red.
+ 13. repo_report loading .veldo/entropy.py instead of .veldo/metrics.py, the C6 edge: 6 red.
 """
 import re as _w1409_re
 
@@ -299,11 +324,20 @@ with tempfile.TemporaryDirectory() as _d:
            "FROM PASSES, because failures are the rework signal and a map that merged them could "
            "not show rework at all. Three records in alpha at 1 pass and 2 failures each sum to "
            "3 and 6, and cycles_known counts the records that had ANY cycle data rather than "
-           "assuming every record did",
+           "assuming every record did. THIS IS ALSO THE POSITIVE CONTROL FOR THE GATE BASIS: these "
+           "records DO carry gate events, so gate_basis reads 'recorded', gate_coverage is 1.0, "
+           "usable_as_rework_ground_truth is true and there is no cycle notice - which is what "
+           "makes the None asserted below the absence of the signal and not a hardcoded value",
            _w1409_rep["areas"]["alpha"]["cycles"]["gate_passes"] == 3
            and _w1409_rep["areas"]["alpha"]["cycles"]["gate_failures"] == 6
            and _w1409_rep["areas"]["alpha"]["cycles"]["cycles_known"] == 3
-           and _w1409_rep["areas"]["alpha"]["cycles"]["cycles_coverage"] == 1.0)
+           and _w1409_rep["areas"]["alpha"]["cycles"]["cycles_coverage"] == 1.0
+           and _w1409_rep["areas"]["alpha"]["cycles"]["gate_basis"] == "recorded"
+           and _w1409_rep["areas"]["alpha"]["cycles"]["gate_events_known"] == 3
+           and _w1409_rep["areas"]["alpha"]["cycles"]["gate_coverage"] == 1.0
+           and _w1409_rep["coverage"]["gate_event_records"] == 4
+           and _w1409_rep["coverage"]["usable_as_rework_ground_truth"] is True
+           and "cycle_notice" not in _w1409_rep)
 
     expect("WARP-1409 AC3 NEGATIVE CONTROL FOR cycles_known: a record whose event stream held "
            "NOTHING (events_seen 0) is counted as having NO cycle data, so cycles_coverage drops "
@@ -316,6 +350,62 @@ with tempfile.TemporaryDirectory() as _d:
                                                  "review_verdicts": 0, "events_seen": 0})],
                              _W1409_CONTRACT, _W1409ARCH, fm_of=lambda _s: None,
                              paths_of=lambda _s: [".veldo/alpha.py"])))
+
+    # -----------------------------------------------------------------------------------
+    # AC4. THE UNRECORDED GATE CYCLE IS None AND NOT ZERO EITHER, which is the same discipline
+    # applied to the signal that was printing a confident zero with FULL COVERAGE. Measured over
+    # this repository's log: every gate.passed and gate.failed event carries a commit and no spec
+    # id or correlation id, and toe_corpus.cycles_for joins on those ids, so gate_passes and
+    # gate_failures were structurally 0 for every record and could never be anything else - while
+    # cycles_coverage read 1.0, because a review verdict alone satisfies events_seen. A reader
+    # quoting "this area had zero gate failures" was quoting the emitter gap.
+    # -----------------------------------------------------------------------------------
+    _W1409_NO_GATE = [
+        _w1409_rec("WARP-9408", cycles={"gate_passes": 0, "gate_failures": 0,
+                                        "review_verdicts": 3, "events_seen": 3}),
+        _w1409_rec("WARP-9409", cycles={"gate_passes": 0, "gate_failures": 0,
+                                        "review_verdicts": 1, "events_seen": 1}),
+    ]
+    _w1409_rep_nogate = _W1409.report(_W1409_NO_GATE, _W1409_CONTRACT, _W1409ARCH,
+                                      fm_of=lambda _s: None,
+                                      paths_of=lambda _s: [".veldo/alpha.py"])
+    _w1409_nogate_cycles = _w1409_rep_nogate["areas"]["alpha"]["cycles"]
+    expect("WARP-1409 AC4: AN AREA WHOSE RECORDS CARRY NO GATE EVENT REPORTS gate_passes AND "
+           "gate_failures AS None WITH gate_basis 'unrecorded', NEVER AS A CONFIDENT ZERO - and it "
+           "does so in the DATA, which is AC2's own stated principle, not in the spec prose where "
+           "this gap used to live. THE FIXTURE IS THE PRODUCTION SHAPE: records that carry review "
+           "verdicts and no gate events, so cycles_coverage is 1.0 while gate_coverage is 0.0, "
+           "which is exactly the trap - full cycle coverage beside a gate figure that measures "
+           "nothing. The two signals are separate: review_verdicts is the REAL sum 4 with "
+           "review_basis 'recorded' and verdicts_known 2, because that emitter does name the spec. "
+           "usable_as_rework_ground_truth is false and the report carries a cycle_notice naming the "
+           "emitter gap by name, and all of it survives json.dumps",
+           _w1409_nogate_cycles["gate_passes"] is None
+           and _w1409_nogate_cycles["gate_failures"] is None
+           and _w1409_nogate_cycles["gate_basis"] == "unrecorded"
+           and _w1409_nogate_cycles["gate_events_known"] == 0
+           and _w1409_nogate_cycles["gate_coverage"] == 0.0
+           and _w1409_nogate_cycles["review_verdicts"] == 4
+           and _w1409_nogate_cycles["review_basis"] == "recorded"
+           and _w1409_nogate_cycles["verdicts_known"] == 2
+           and _w1409_nogate_cycles["cycles_coverage"] == 1.0
+           and _w1409_rep_nogate["coverage"]["gate_event_records"] == 0
+           and _w1409_rep_nogate["coverage"]["usable_as_rework_ground_truth"] is False
+           and "verify.sh" in _w1409_rep_nogate.get("cycle_notice", "")
+           and "no spec id" in _w1409_rep_nogate.get("cycle_notice", "")
+           and "unrecorded" in json.dumps(_w1409_rep_nogate, sort_keys=True))
+
+    expect("WARP-1409 AC4: THE RENDERED TEXT PRINTS gate_passes=None RATHER THAN 0 for the same "
+           "records, so the human surface cannot show a confident zero the JSON does not carry, and "
+           "it names the basis and the gate-event coverage beside the figure. NEGATIVE CONTROL IN "
+           "THE SAME ASSERTION: the mixed fixture, whose records DO carry gate events, renders the "
+           "real numbers and never the None, so this is the absence of the signal rather than a "
+           "renderer that always prints None",
+           "gate_passes=None" in _W1409.render_text(_w1409_rep_nogate)
+           and "gate_failures=None" in _W1409.render_text(_w1409_rep_nogate)
+           and "unrecorded, gate events on 0 of 2" in _W1409.render_text(_w1409_rep_nogate)
+           and "gate_passes=3" in _W1409.render_text(_w1409_rep)
+           and "gate_passes=None" not in _W1409.render_text(_w1409_rep))
 
     # -----------------------------------------------------------------------------------
     # AC4. THE UNKNOWN COST IS None AND NOT ZERO. This is the assertion the mutation teeth
@@ -475,6 +565,11 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1409_sd_records["areas"] == _w1409_sd_contract["areas"] == {}
            and sorted(_w1409_sd_records) == sorted(_w1409_sd_contract)
            and set(_w1409_rep) - {"notice", "cost_notice"} <= set(_w1409_sd_records)
+           # The same shape claim ONE LEVEL DOWN, where the coverage figures live: a consumer
+           # reading coverage.gate_event_records off a stand-down must not get a KeyError, and a
+           # key added to the live coverage block and forgotten in the stand-down is exactly the
+           # drift the top-level comparison cannot see.
+           and sorted(_w1409_sd_records["coverage"]) == sorted(_w1409_rep["coverage"])
            and _w1409_sd_records["coverage"]["records"] == 0)
 
     expect("WARP-1409 AC6 NEGATIVE CONTROL: A POPULATED CORPUS WITH A CONTRACT DOES NOT STAND "
@@ -504,6 +599,120 @@ with tempfile.TemporaryDirectory() as _d:
                                        paths_of=lambda s: _W1409_PATHS.get(s, [])),
                          sort_keys=True))
 
+    # -----------------------------------------------------------------------------------
+    # AC1 + AC2, THE WIRING ITSELF. repo_report() is the function that produces every number
+    # the spec publishes and every number a reader will quote, and it composes FIVE things: the
+    # contract, the corpus, the front-matter lookup, the touched-paths lookup and the parser.
+    # A review severed each of the two JOINS in it separately and this suite stayed green while
+    # the live map lost, in turn, every git-path attribution and then every declared-placement
+    # attribution - because everything above drives report() over hand-built lookups and nothing
+    # drove the composition. It is driven here through the injected loader, over KNOWN inputs, so
+    # both joins and every wired argument are observable. This runs everywhere: it needs no
+    # history, unlike the live git-path leg further down.
+    # -----------------------------------------------------------------------------------
+    class _W1409Mod:
+        """A stand-in for one loaded sibling. Answers only the attributes repo_report actually
+        uses, so a rewiring that reaches for something else raises AttributeError here rather than
+        passing."""
+
+        def __init__(self, **kw):
+            self.__dict__.update(kw)
+
+    _W1409_STUB_EVENTS = [{"schema": "veldo.event/v1", "type": "sentinel"}]
+    _W1409_STUB_PROTECTED = ["fixture/protected/**"]
+    _W1409_STUB_CORPUS = [_w1409_rec("WARP-9401"),      # declares placement alpha in the specs dir
+                          _w1409_rec("WARP-9421"),      # no spec file, so paths decide
+                          _w1409_rec("WARP-9422")]      # no spec file and paths outside the contract
+    _W1409_STUB_TOUCHED = {"WARP-9421": [".veldo/beta.py"],
+                           "WARP-9422": ["outside/everything.py"]}
+    _w1409_asked = []
+    _w1409_build_kw = {}
+    _w1409_contract_root = []
+
+    def _w1409_build(specs_dir=None, events=None, protected=None):
+        _w1409_build_kw.update({"specs_dir": specs_dir, "events": events, "protected": protected})
+        return list(_W1409_STUB_CORPUS)
+
+    def _w1409_stub_load(name, rel):
+        """The loader repo_report is handed. It records WHICH PATHS the wiring asks for, and it
+        KeyErrors on anything else, so a module that started reaching for a fifth sibling cannot be
+        silently accepted here. The caller below turns that into a RED rather than letting it abort
+        the fragment: a raise at module scope would take every assertion after it with it, and a
+        mutation that silently deletes coverage is the failure this whole remediation is about."""
+        _w1409_asked.append(rel)
+        return {
+            ".veldo/validate.py": _W1409Mod(
+                load_repo_contract=lambda repo_root=None: (
+                    _w1409_contract_root.append(repo_root) or (_W1409ARCH, _W1409_CONTRACT)),
+                parse_yamlish=V.parse_yamlish),
+            ".veldo/toe_corpus.py": _W1409Mod(
+                build=_w1409_build,
+                git_touched=lambda s: {"commits": ["deadbeef"] if s in _W1409_STUB_TOUCHED else [],
+                                       "files": _W1409_STUB_TOUCHED.get(s, [])}),
+            ".veldo/metrics.py": _W1409Mod(load=lambda: _W1409_STUB_EVENTS),
+            ".veldo/policy_check.py": _W1409Mod(
+                protected_patterns=lambda: _W1409_STUB_PROTECTED),
+        }[rel]
+
+    def _w1409_wire(load):
+        """(report, error) for ONE wiring run over an injected loader. The error is returned rather
+        than raised so a rewiring reds the assertion that names it instead of aborting the
+        fragment."""
+        try:
+            return _W1409.repo_report(root=_d, load=load), ""
+        except BaseException as _e:                                            # noqa: BLE001
+            return {"areas": {}, "attribution": {}, "coverage": {},
+                    "unattributed": {"specs": []}}, "%s: %s" % (type(_e).__name__, _e)
+
+    _w1409_wired, _w1409_wired_err = _w1409_wire(_w1409_stub_load)
+    _w1409_wired_members = {m["spec"]: m["basis"] for _a in _w1409_wired["areas"].values()
+                            for m in _a["members"]}
+    expect("WARP-1409 AC1 AND AC2, THE WIRING: repo_report COMPOSES BOTH JOINS AND EVERY ARGUMENT IS "
+           "OBSERVABLE. Driven with a loader that answers the four sibling paths from known data. It "
+           "asks for exactly .veldo/validate.py, .veldo/toe_corpus.py, .veldo/metrics.py and "
+           ".veldo/policy_check.py; it hands the corpus builder the specs directory under the root "
+           "it was given, the events metrics.load returned and the patterns policy_check returned, "
+           "all three by identity rather than by resemblance; and it obtains the contract through "
+           "validate.load_repo_contract for that same root. The RESULT proves both joins fired at "
+           "once: WARP-9401, which declares a resolving placement in the specs directory, comes back "
+           "basis 'placement'; WARP-9421, which has no spec file and whose only evidence is the "
+           "paths git_touched returned, comes back basis 'git_path' in the area those paths fall "
+           "into; WARP-9422, with neither, is unattributed. Severing either lookup in the wiring "
+           "moves a record and reds this, which is what nothing asserted before, and a wiring that "
+           "reaches for a fifth sibling or misuses one reds here too, by name, rather than raising",
+           _w1409_wired_err == ""
+           and _w1409_asked == [".veldo/validate.py", ".veldo/toe_corpus.py", ".veldo/metrics.py",
+                            ".veldo/policy_check.py"]
+           and _w1409_contract_root == [str(_d)]
+           and _w1409_build_kw["specs_dir"] == Path(_d) / "specs"
+           and _w1409_build_kw["events"] is _W1409_STUB_EVENTS
+           and _w1409_build_kw["protected"] is _W1409_STUB_PROTECTED
+           and _w1409_wired_members == {"WARP-9401": _W1409.BY_PLACEMENT,
+                                        "WARP-9421": _W1409.BY_GIT_PATH}
+           and sorted(_w1409_wired["areas"]) == ["alpha", "beta"]
+           and _w1409_wired["unattributed"]["specs"] == ["WARP-9422"]
+           and _w1409_wired["attribution"] == {_W1409.BY_PLACEMENT: 1, _W1409.BY_GIT_PATH: 1,
+                                               _W1409.UNATTRIBUTED: 1}
+           and _w1409_wired["coverage"]["records"] == len(_W1409_STUB_CORPUS) == 3)
+
+    expect("WARP-1409 AC2 NEGATIVE CONTROL ON THE WIRING: WITH THE GIT READER ANSWERING NOTHING, THE "
+           "SAME COMPOSITION LOSES ITS GIT-PATH ATTRIBUTION AND FABRICATES NOTHING IN ITS PLACE. One "
+           "input differs - git_touched returns no files for any spec - and WARP-9421 moves out of "
+           "beta into the unattributed list while WARP-9401, whose join is a declaration rather than "
+           "a path, does not move at all. That is the pair which proves the git-path areas in the "
+           "wired report came from the reader, and it is the mutation (paths_of severed) that used "
+           "to leave this suite at 30 passed",
+           (lambda r, err: err == ""
+            and r["attribution"] == {_W1409.BY_PLACEMENT: 1, _W1409.BY_GIT_PATH: 0,
+                                     _W1409.UNATTRIBUTED: 2}
+            and sorted(r["areas"]) == ["alpha"]
+            and r["unattributed"]["specs"] == ["WARP-9421", "WARP-9422"]
+            and r["git_path_attributed"] is False)(
+               *_w1409_wire(lambda n, rel: (
+                   _W1409Mod(build=_w1409_build,
+                             git_touched=lambda _s: {"commits": [], "files": []})
+                   if rel == ".veldo/toe_corpus.py" else _w1409_stub_load(n, rel)))))
+
 # -----------------------------------------------------------------------------------
 # AC7. THE SEAM TO THE ARCHITECTURE ORGAN IS PROSE, NOT A DEPENDENCY EDGE. Asserted over
 # the text of BOTH files, with a positive control so the absence is not passing for a
@@ -512,14 +721,16 @@ with tempfile.TemporaryDirectory() as _d:
 _W1409_SRC = (ROOT / ".veldo/cost_to_change.py").read_text()
 _W1409_ENTROPY_SRC = (ROOT / ".veldo/entropy.py").read_text()
 # THE MODULE'S WHOLE DEPENDENCY SURFACE, enumerated from the source rather than described: every
-# sibling it can reach comes through one `_load(name, rel)` call with a literal path, so this
-# regex is the complete list of files it can pull in. Asserting the SET makes the absence of
-# entropy.py a measurement over a known-non-empty list instead of a grep that would also pass on
-# a module that loaded nothing at all.
-_W1409_LOADS = sorted(set(_w1409_re.findall(r'_load\("[^"]+",\s*"([^"]+)"\)', _W1409_SRC)))
+# sibling it can reach is NAMED BY A LITERAL PATH at a loader call, whether that call is the
+# module's own `_load` or the injected `load` repo_report takes, so this regex is the complete list
+# of files it can pull in. Asserting the SET makes the absence of entropy.py a measurement over a
+# known-non-empty list instead of a grep that would also pass on a module that loaded nothing at
+# all. The loader being injectable does not widen the surface: what a caller may substitute is HOW
+# these four paths are turned into modules, and the paths themselves are literals right here.
+_W1409_LOADS = sorted(set(_w1409_re.findall(r'_?load\("[^"]+",\s*"([^"]+)"\)', _W1409_SRC)))
 expect("WARP-1409 AC7: THE CROSS-PLAN SEAM IS SOFT (PLAN-0014 C6), ASSERTED AS THE MODULE'S WHOLE "
        "DEPENDENCY SURFACE. Every sibling .veldo/cost_to_change.py can reach arrives through a "
-       "_load call with a literal path, and that set is exactly validate, toe_corpus, metrics and "
+       "loader call with a literal path, and that set is exactly validate, toe_corpus, metrics and "
        "policy_check: .veldo/entropy.py is NOT in it, and entropy.py names cost_to_change nowhere "
        "either. So PLAN-0011's organ and this aggregation are joined by prose and by a shared "
        "RESOLVER, never by an import either one could break. The set is non-empty and pinned to "
@@ -555,23 +766,98 @@ expect("WARP-1409 AC7: THE MODULE STARTS NOTHING. Its source contains no spawn p
        and _w1409_spawn_hits("x = subprocess.Popen(['sh'])") == ["subprocess", "Popen"])
 
 # -----------------------------------------------------------------------------------
-# AC6. NOTHING IN THE GATE CALLS THIS MODULE, which is what makes "a repository that never
-# uses it is byte-identically unaffected" a property rather than a promise.
+# AC6. NO GATE STAGE CONSUMES THIS MODULE'S OUTPUT, which is what makes "a repository that
+# never uses it is byte-identically unaffected" a property rather than a promise.
+#
+# THE DOMAIN IS DERIVED FROM scripts/verify.sh, NOT TYPED. What stood here was nine hand-typed
+# literals, and a universal claim over a hand-typed list is a claim about the list. That one
+# OMITTED three executables verify.sh runs as REQUIRED stages (scripts/selftest.py,
+# scripts/secret_inventory.py, .veldo/events.py) and INCLUDED two it never invokes directly
+# (.veldo/validate_checks.py, .veldo/policy_check.py), so wiring the module into
+# scripts/secret_inventory.py - a required stage - left the assertion green. The stage set is now
+# parsed out of the catalog and the always-run body, and then closed transitively over what each
+# member EXECUTES or LOADS, so a new stage or a new load edge enters the domain by itself.
 # -----------------------------------------------------------------------------------
-_W1409_GATE_FILES = ["scripts/verify.sh", "scripts/check_lint.sh", "scripts/check_docs.sh",
-                     "scripts/check_generated.sh", "scripts/check_template_sync.sh",
-                     ".veldo/validate.py", ".veldo/validate_checks.py", ".veldo/shape_gate.py",
-                     ".veldo/policy_check.py"]
-_w1409_gate_texts = {f: (ROOT / f).read_text() for f in _W1409_GATE_FILES}
-expect("WARP-1409 AC6: NO GATE STAGE INVOKES THIS MODULE. The string cost_to_change appears in "
-       "none of the nine files the gate actually runs, so nothing can fail because a per-area "
-       "cost map was unavailable, malformed or slow, and a repository that never calls it is "
-       "byte-identically unaffected. POSITIVE CONTROL: the same scan over the same files DOES "
-       "find shape_gate.py inside scripts/verify.sh, so it is capable of finding a wiring that "
-       "exists. BOUND to the length of its own file list, so emptying that list reds this",
-       len(_w1409_gate_texts) == len(_W1409_GATE_FILES) == 9
-       and all("cost_to_change" not in t for t in _w1409_gate_texts.values())
-       and "shape_gate.py" in _w1409_gate_texts["scripts/verify.sh"])
+_W1409_VERIFY_SRC = (ROOT / "scripts/verify.sh").read_text()
+_W1409_PATH_RE = r"(?:\.veldo|scripts)/[\w./-]+\.(?:py|sh)"
+_W1409_RUN_RE = r"(?:python3|bash|sh)\s+(%s)" % _W1409_PATH_RE
+# Every catalog item DECLARED required, with the command it declares, plus every direct
+# invocation in the always-run body below the catalog (contracts, shape gate, review events).
+_W1409_REQUIRED = _w1409_re.findall(r'^CHECK_(\w+)="required:(.+)"$', _W1409_VERIFY_SRC,
+                                    _w1409_re.M)
+_W1409_STAGES = sorted(
+    {p for _n, _cmd in _W1409_REQUIRED for p in _w1409_re.findall(_W1409_PATH_RE, _cmd)}
+    | set(_w1409_re.findall(_W1409_RUN_RE, _W1409_VERIFY_SRC)))
+
+
+def _w1409_invokes(rel):
+    """What ONE gate file EXECUTES or LOADS: the shell commands it runs and the sibling modules it
+    hands to importlib. An EXECUTES/LOADS edge, deliberately not a MENTIONS edge - a comment naming
+    scripts/publish.py, or publish.py's own hold-back list of engine paths, is not a gate
+    dependency, and a closure built on mentions would drag half the repository in and make the
+    absence below unfalsifiable in the other direction."""
+    p = ROOT / rel
+    if not p.is_file():
+        return set()
+    t = p.read_text()
+    out = set(_w1409_re.findall(_W1409_RUN_RE, t))
+    for _grp in _w1409_re.findall(r'(?:ROOT|root|base|BASE)\s*/\s*((?:"[^"]+"\s*/\s*)*"[^"]+")', t):
+        _cand = "/".join(_w1409_re.findall(r'"([^"]+)"', _grp))
+        if _cand.endswith((".py", ".sh")):
+            out.add(_cand)
+    return {o for o in out if o != rel}
+
+
+_W1409_GATE_CLOSURE = set(_W1409_STAGES)
+_w1409_frontier = list(_W1409_STAGES)
+while _w1409_frontier:
+    for _w1409_edge in _w1409_invokes(_w1409_frontier.pop()):
+        if _w1409_edge not in _W1409_GATE_CLOSURE:
+            _W1409_GATE_CLOSURE.add(_w1409_edge)
+            _w1409_frontier.append(_w1409_edge)
+_W1409_GATE_TEXTS = {f: (ROOT / f).read_text() for f in sorted(_W1409_GATE_CLOSURE)
+                     if (ROOT / f).is_file()}
+
+expect("WARP-1409 AC6: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the precondition for "
+       "any claim of the form 'no gate stage does X'. Parsed out of scripts/verify.sh: every "
+       "catalog item declared required contributes at least one repository path, the required set "
+       "covers lint, unit, security, generated, docs and extra, and the stage set contains all six "
+       "of those scripts plus the three the always-run body invokes directly (.veldo/validate.py, "
+       ".veldo/shape_gate.py, .veldo/events.py) - the last three being exactly what the hand-typed "
+       "list this replaces got wrong. The transitive closure is STRICTLY LARGER than the stage set "
+       "and every member of it is a file that exists, and it reaches .veldo/validate_checks.py "
+       "through validate.py and .veldo/secret_inventory.py through scripts/secret_inventory.py, so "
+       "both edge forms (a shell invocation and an importlib load) are proven to work",
+       len(_W1409_REQUIRED) >= 6
+       and {n for n, _c in _W1409_REQUIRED} >= {"lint", "unit", "security", "generated", "docs",
+                                                "extra"}
+       and all(_w1409_re.findall(_W1409_PATH_RE, _cmd) for _n, _cmd in _W1409_REQUIRED)
+       and set(_W1409_STAGES) >= {"scripts/check_lint.sh", "scripts/selftest.py",
+                                  "scripts/secret_inventory.py", "scripts/check_generated.sh",
+                                  "scripts/check_docs.sh", "scripts/check_template_sync.sh",
+                                  ".veldo/validate.py", ".veldo/shape_gate.py",
+                                  ".veldo/events.py"}
+       and _W1409_GATE_CLOSURE > set(_W1409_STAGES)
+       and sorted(_W1409_GATE_TEXTS) == sorted(_W1409_GATE_CLOSURE)
+       and ".veldo/validate_checks.py" in _W1409_GATE_CLOSURE
+       and ".veldo/secret_inventory.py" in _W1409_GATE_CLOSURE)
+
+expect("WARP-1409 AC6: NO GATE STAGE CONSUMES THIS MODULE'S OUTPUT. The string cost_to_change "
+       "appears in NONE of the files in the derived gate closure asserted above, so nothing the "
+       "gate runs can fail because a per-area cost map was unavailable, malformed or slow, and a "
+       "repository that never calls it is byte-identically unaffected. THE ONE STAGE THAT DOES "
+       "LOAD THE MODULE IS NAMED RATHER THAN GLOSSED: scripts/selftest.py is a required stage "
+       "(CHECK_unit) and it executes this fragment, which loads the module under test. That is a "
+       "test dependency and not a consumer - a suite fragment asserting a module's behaviour is "
+       "the opposite of a gate stage trusting its numbers - and it is bounded here rather than "
+       "assumed, by requiring that THIS FILE is the only suite fragment in the repository that "
+       "names the module at all. So a second fragment starting to read the report, or any stage "
+       "implementation acquiring it, reds this",
+       "cost_to_change" not in "".join(_W1409_GATE_TEXTS.values())
+       and "scripts/selftest.py" in _W1409_STAGES
+       and sorted(p.name for p in (ROOT / "scripts/suites").glob("*.py")
+                  if "cost_to_change" in p.read_text())
+       == ["15_warp_1409_cost_to_change_per_area.py"])
 
 # -----------------------------------------------------------------------------------
 # AC8. ONE GIT READER. The stand-down needs the PATHS git says a change touched, and the
@@ -633,4 +919,137 @@ expect("WARP-1409 AC2: THE RENDERED TEXT CARRIES THE GIT-PATH WARNING AND THE SA
        and "area alpha" in _w1409_text and "tokens=None" in _w1409_text
        and "standing down" in _W1409.render_text(_w1409_sd_records))
 
-del _w1409_cspec, _w1409_tspec, _w1409_re
+# -----------------------------------------------------------------------------------
+# THE REAL REPOSITORY, THROUGH repo_report(), ONCE. Everything above drives the pure core over
+# fixtures or the wiring over a stub; this is the function the CLI runs and the source of every
+# figure the spec publishes. The invariants asserted here are ones that hold however the corpus
+# grows, so they cannot rot into a red: a set equality against an independently built corpus, the
+# partition identity, and the two honesty gaps as they actually read today.
+# -----------------------------------------------------------------------------------
+_w1409_mspec = importlib.util.spec_from_file_location("w1409_metrics", ROOT / ".veldo/metrics.py")
+_W1409M = importlib.util.module_from_spec(_w1409_mspec)
+_w1409_mspec.loader.exec_module(_W1409M)
+_w1409_pspec = importlib.util.spec_from_file_location("w1409_policy_check",
+                                                     ROOT / ".veldo/policy_check.py")
+_W1409PC = importlib.util.module_from_spec(_w1409_pspec)
+_w1409_pspec.loader.exec_module(_W1409PC)
+
+# The error is CAPTURED rather than allowed to abort, for the same reason as in the wired block: a
+# raise here would take every assertion below it with it, and a mutation that silently deletes
+# coverage is the failure mode this suite exists to rule out. Every live assertion reads the error
+# FIRST, so an exception reds by name and the assertions after it still run.
+try:
+    _W1409_LIVE = _W1409.repo_report()
+    _W1409_LIVE_ERR = ""
+except BaseException as _w1409_live_exc:                                       # noqa: BLE001
+    _W1409_LIVE = {"areas": {}, "attribution": {_b: 0 for _b in _W1409.BASES},
+                   "coverage": {"records": -1}, "unattributed": {"specs": []}}
+    _W1409_LIVE_ERR = "%s: %s" % (type(_w1409_live_exc).__name__, _w1409_live_exc)
+# The corpus built INDEPENDENTLY of repo_report, from the same three readers it names, so the
+# comparison below is a set equality between two derivations and not a count against itself.
+_W1409_LIVE_CORPUS = _W1409TC.build(specs_dir=ROOT / "specs", events=_W1409M.load(),
+                                    protected=_W1409PC.protected_patterns())
+_w1409_live_members = {m["spec"]: m["basis"] for _a in _W1409_LIVE["areas"].values()
+                       for m in _a["members"]}
+_w1409_live_areas_of = {}
+for _an, _a in _W1409_LIVE["areas"].items():
+    for _m in _a["members"]:
+        _w1409_live_areas_of.setdefault(_m["spec"], set()).add(_an)
+
+expect("WARP-1409 AC1 AND AC3 OVER THE REAL REPOSITORY: repo_report() AGGREGATES THE WHOLE ACTUALS "
+       "CORPUS AND PARTITIONS IT, asserted as a SET EQUALITY against a corpus built independently "
+       "from the same three readers (toe_corpus.build over metrics.load and "
+       "policy_check.protected_patterns) rather than as one count compared with itself. Every spec "
+       "in the live corpus is in an area or in the unattributed list, never both and never neither; "
+       "the three attribution counts sum to coverage.records; and the DECLARED-PLACEMENT JOIN IS "
+       "NON-EMPTY, with the named pair that makes the basis a measurement in the live map rather "
+       "than a constant: WARP-1401, which declares placement metrics, comes back basis 'placement' "
+       "in the metrics area, and WARP-0100, the first spec in this repository and one that declares "
+       "no placement at all, comes back unattributed. Blinding the front-matter lookup in the "
+       "wiring - the mutation that used to leave this suite at 30 passed - moves all 66 of those "
+       "declarations out of 'placement' and reds this",
+       _W1409_LIVE_ERR == ""
+       and set(_w1409_live_members) | set(_W1409_LIVE["unattributed"]["specs"])
+       == {r["spec"] for r in _W1409_LIVE_CORPUS}
+       and set(_w1409_live_members) & set(_W1409_LIVE["unattributed"]["specs"]) == set()
+       and sum(_W1409_LIVE["attribution"][b] for b in _W1409.BASES)
+       == _W1409_LIVE["coverage"]["records"] == len(_W1409_LIVE_CORPUS)
+       and _W1409_LIVE["attribution"][_W1409.BY_PLACEMENT] > 0
+       and _w1409_live_members.get(_W1409_REAL_SPEC) == _W1409.BY_PLACEMENT
+       and "metrics" in _w1409_live_areas_of.get(_W1409_REAL_SPEC, set())
+       and "WARP-0100" in _W1409_LIVE["unattributed"]["specs"])
+
+expect("WARP-1409 AC4 OVER THE REAL REPOSITORY: THE TWO GAPS ARE NUMBERS IN THE LIVE MAP AND NOT "
+       "PROSE IN THE SPEC. Not one record in this repository's corpus carries spend, so every cost "
+       "field of every area is None with cost_basis 'unrecorded' and the report carries the cost "
+       "notice; and not one gate.passed or gate.failed event carries a spec id or a correlation id, "
+       "so gate_passes and gate_failures are None for EVERY area with gate_basis 'unrecorded', "
+       "usable_as_rework_ground_truth is false and the report carries the cycle notice naming the "
+       "emitter. Review verdicts are real: at least one area reports a positive verdict count with "
+       "review_basis 'recorded', which is what keeps the None above an absence of one signal rather "
+       "than a module that reports nothing. This is the assertion that reds if either honesty is "
+       "ever quietly replaced by a zero",
+       _W1409_LIVE_ERR == ""
+       and _W1409_LIVE["coverage"]["usable_as_cost_ground_truth"] is False
+       and "cost_notice" in _W1409_LIVE
+       and all(a["cost"][f] is None for a in _W1409_LIVE["areas"].values()
+               for f in _W1409.COST_FIELDS)
+       and all(a["cost"]["cost_basis"] == "unrecorded" for a in _W1409_LIVE["areas"].values())
+       and _W1409_LIVE["coverage"]["gate_event_records"] == 0
+       and _W1409_LIVE["coverage"]["usable_as_rework_ground_truth"] is False
+       and "verify.sh" in _W1409_LIVE.get("cycle_notice", "")
+       and all(a["cycles"][f] is None for a in _W1409_LIVE["areas"].values()
+               for f in _W1409.GATE_CYCLE_FIELDS)
+       and all(a["cycles"]["gate_basis"] == "unrecorded"
+               for a in _W1409_LIVE["areas"].values())
+       # The basis is read FIRST and the count second, in that order: when the basis is
+       # 'unrecorded' the count is None, and a comparison against None would raise TypeError -
+       # which is a crash rather than a red, and a suite that crashes reports nothing.
+       and any(a["cycles"]["review_basis"] == "recorded" and a["cycles"]["review_verdicts"] > 0
+               for a in _W1409_LIVE["areas"].values())
+       and "gate_passes=None" in _W1409.render_text(_W1409_LIVE))
+
+# SPLIT, for the same reason WARP-1711 split the git-reader control below: the GIT-PATH half of the
+# live wiring needs commits that name a spec id, and this history's one commit names none, so
+# git_touched honestly reads nothing for every spec and the live map's git_path count is 0. The half
+# that runs everywhere is above (the placement join non-empty, and the partition), and the wiring's
+# git-path join is driven behaviourally over the injected loader inside the fixture block, where the
+# reader's answer is an input rather than this repository's history.
+if not no_history([("the commits naming any spec of the live actuals corpus",
+                    _W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] and "live git-path join")],
+                  "the LIVE half of the git-path join in repo_report",
+                  "The git-path join is proven BEHAVIOURALLY in the wiring assertion above, where "
+                  "the touched-paths reader is injected and severing it moves a record out of its "
+                  "area, and the placement join plus the whole-corpus partition are asserted over "
+                  "this repository's own live map immediately above.", "WARP-1409 AC2"):
+    expect("WARP-1409 AC2 OVER THE REAL REPOSITORY: BOTH JOINS ARE NON-EMPTY IN THE LIVE MAP, so "
+           "neither lookup in the wiring can be severed without a red. The git-path count is "
+           "positive, the report carries the notice counting those records and the bases entry that "
+           "spells the weakness out, and at least one live spec comes back basis 'git_path'",
+           _W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] > 0
+           and _W1409_LIVE["git_path_attributed"] is True
+           and "BY GIT PATH" in _W1409_LIVE.get("notice", "")
+           and _W1409.BY_GIT_PATH in _W1409_LIVE["bases"]
+           and _W1409.BY_GIT_PATH in set(_w1409_live_members.values()))
+
+# -----------------------------------------------------------------------------------
+# THE ENGINE TWINS THE FOOTPRINT DECLARES. Both were asserted by nothing and guarded by
+# nothing: scripts/check_template_sync.sh's PAIRS map lists neither, so gutting either engine
+# copy left the 1409 suite, the full selftest and the template-sync check all green. It matters
+# most for engine/.veldo/toe_corpus.py, which scripts/publish.py does NOT hold back, so the
+# engine copy of the git reader this item modified is what an adopter gets.
+# -----------------------------------------------------------------------------------
+expect("WARP-1409: BOTH MODULES THIS ITEM TOUCHED LAND IN THE ENGINE HOME BYTE-IDENTICALLY "
+       "(PLAN-0014 C5), asserted as a byte comparison plus is_file on the engine side so a MISSING "
+       "twin reds as loudly as a drifted one. A copy that has drifted is worse than a copy that is "
+       "missing: the missing one is obvious and the drifted one ships a different answer, and "
+       "engine/.veldo/toe_corpus.py is not on publish.py's hold-back list, so it is the copy an "
+       "adopter actually runs. Nothing else in this repository compares either pair",
+       (ROOT / "engine/.veldo/cost_to_change.py").is_file()
+       and (ROOT / ".veldo/cost_to_change.py").read_bytes()
+       == (ROOT / "engine/.veldo/cost_to_change.py").read_bytes()
+       and (ROOT / "engine/.veldo/toe_corpus.py").is_file()
+       and (ROOT / ".veldo/toe_corpus.py").read_bytes()
+       == (ROOT / "engine/.veldo/toe_corpus.py").read_bytes())
+
+del _w1409_cspec, _w1409_tspec, _w1409_mspec, _w1409_pspec, _w1409_re

@@ -305,6 +305,47 @@ def era_of(spec_id, events, era_list, corpus_mod, parse_iso):
     return uniq[0], None
 
 
+def recorded_tokens(spend):
+    """The RECORDED token count for one corpus record, or None when this change was never measured
+    IN TOKENS. ONE predicate, used by the peg derivation and by the display alike.
+
+    WHY THIS IS A NAMED FUNCTION AND NOT AN INLINE TEST IN TWO PLACES. `spend_recorded` from the
+    corpus is true when ANY spend field carries a number (tokens, cost_usd or human_minutes), and
+    that is the right answer to ITS question: did anybody record anything. It is the WRONG gate for a
+    point, because a point is tokens divided by tokens: a change that recorded only a dollar cost or
+    only human minutes has spend_recorded true and a token count of zero, so gating on it prints
+    0.000 pt as a measurement of a change nobody measured in tokens. That is exactly the confident
+    zero this item exists to refuse, and it is reachable from the shipped emitter, whose token,
+    cost and human-minute flags are independent and optional. Two spellings of one predicate, with
+    the more permissive one on the display path, is how the peg path and the display path start
+    disagreeing about which changes were measured, so there is only one spelling and it lives here.
+    """
+    spend = spend or {}
+    if not spend.get("spend_recorded"):
+        return None
+    t = spend.get("tokens")
+    if isinstance(t, bool) or not isinstance(t, (int, float)) or t <= 0:
+        return None
+    return t
+
+
+def spend_fields_recorded(spend):
+    """The spend fields this record actually carries a number in, sorted, so a refusal can NAME what
+    WAS recorded instead of saying only what was not. "spend was recorded, but not in tokens" is a
+    third fact, distinct from "nothing was recorded at all", and a reader told which field does carry
+    a number knows where to look. The field names are read off the record rather than listed here,
+    because the field set is the corpus module's decision (`toe_corpus.SPEND_FIELDS`) and a second
+    list of it here would be a second answer to what spend is."""
+    out = []
+    for k, v in sorted((spend or {}).items()):
+        if k == "spend_recorded" or isinstance(v, bool):
+            continue
+        if not isinstance(v, (int, float)) or v == 0:
+            continue
+        out.append(k)
+    return out
+
+
 def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RISK):
     """The provisional peg, DERIVED (D1): the median shipped change of the given risk tier that
     carries recorded token spend, within one era.
@@ -323,10 +364,8 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
         if (r.get("features") or {}).get("risk") != risk:
             continue
         spend = r.get("spend") or {}
-        if not spend.get("spend_recorded"):
-            continue
-        tokens = spend.get("tokens")
-        if isinstance(tokens, bool) or not isinstance(tokens, (int, float)) or tokens <= 0:
+        tokens = recorded_tokens(spend)
+        if tokens is None:
             continue
         era, _why = era_of(r["spec"], events, era_list, corpus_mod, parse_iso)
         if era is None:
@@ -383,20 +422,35 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
     appended; re-running with a different peg produces a different view over identical data, which
     is the whole property this item exists to hold.
 
-    A row gets NO POINT, with the reason named, when its spend was never recorded (a point there
-    would be a confident zero), when there is no peg at all, when its era cannot be read, or when
-    its era is not the peg's era."""
+    A row gets NO POINT, with the reason named, when its TOKEN spend was never recorded (a point
+    there would be a confident zero), when there is no peg at all, when its era cannot be read, or
+    when its era is not the peg's era.
+
+    THE POINT GATE IS `recorded_tokens`, THE SAME PREDICATE THE PEG DERIVATION USES, and it is a
+    positive recorded TOKEN count rather than the corpus's `spend_recorded` flag. A change that
+    recorded only a dollar cost or only human minutes has spend recorded and no token measurement,
+    and dividing its zero by the peg would print 0.000 pt: a confident zero, counted in the pointed
+    denominator, contributing a zero to the total. Its row says which spend field WAS recorded and
+    that the token count was not, because that is a third fact and not the same silence as a change
+    nobody recorded anything for."""
     rows = []
     for r in corpus:
         spend = r.get("spend") or {}
         era, why = era_of(r["spec"], events, era_list, corpus_mod, parse_iso)
+        tokens = recorded_tokens(spend)
         row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
                "cost_usd": spend.get("cost_usd", 0),
                "spend_recorded": bool(spend.get("spend_recorded")),
                "era": era, "points": None, "reason": None}
-        if not row["spend_recorded"]:
-            row["reason"] = ("no recorded spend, so a point here would be a confident zero rather "
-                             "than a measurement")
+        if tokens is None:
+            recorded = spend_fields_recorded(spend)
+            if recorded:
+                row["reason"] = ("spend was recorded in %s but NOT in tokens, and a point is a "
+                                 "ratio of tokens to tokens, so a point here would be a confident "
+                                 "zero rather than a measurement" % ", ".join(recorded))
+            else:
+                row["reason"] = ("no recorded spend, so a point here would be a confident zero "
+                                 "rather than a measurement")
         elif not peg.get("pegged"):
             row["reason"] = "no peg in force: %s" % peg.get("reason")
         elif era is None:
@@ -406,7 +460,7 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
                              "different work per token makes these different units, so they are "
                              "reported apart rather than blended" % (era, peg.get("era")))
         else:
-            row["points"] = round(row["tokens"] / float(peg["tokens"]), POINT_DIGITS)
+            row["points"] = round(tokens / float(peg["tokens"]), POINT_DIGITS)
         rows.append(row)
     return {"peg": peg, "eras": era_list, "rows": rows, "summary": summary(rows, era_list)}
 

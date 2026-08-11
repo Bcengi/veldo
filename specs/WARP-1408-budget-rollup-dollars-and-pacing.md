@@ -47,7 +47,10 @@ acceptance_criteria:
       sandwich cannot be reached by fudging the bounds, requires strict monotonicity in the item
       count with the anti-vacuity control that three item sets give three DISTINCT totals, and
       requires that a record which is malformed or in another unit is EXCLUDED and NAMED rather
-      than silently added or silently dropped.
+      than silently added or silently dropped. It pins the spread DEFINITION by value as well as by
+      relation, because the sandwich alone cannot tell high-over-low from low-over-high: taking the
+      reciprocal of every term preserves the sandwich, and so does rescaling percent into
+      per-mille.
   - id: AC2
     text: >
       A PARTIAL SUM IS NEVER PRESENTED AS A PLAN'S RANGE, AND AN EMPTY ONE IS NOT A ZERO. A
@@ -57,11 +60,18 @@ acceptance_criteria:
       is wrong in, because a partial sum read as a plan's range is not merely incomplete, it is
       biased low. Calibration travels with the sum and the weakest link governs it: a total is
       `calibrated` only when every contributing estimate is. The program roll-up is the same rule
-      over plan ranges, propagates partiality upward, and refuses to blend money across two
-      different rates. MEASURED over this repository: PLAN-0014 declares 10 work items and
-      `.veldo/estimates/` does not exist, so the roll-up over real bytes reads 0 of 10 with no
-      range; a selftest asserts that against the item count read from the plan itself, so a parse
-      that found nothing reds instead of passing over an empty set.
+      over plan ranges, propagates partiality upward, refuses to blend money across two different
+      rates, and carries the weakest-link calibration rule with a MIXED program in the selftest,
+      since in a program whose every contributor is uncalibrated the rule cannot be observed at
+      all. MEASURED 2026-08-10: PLAN-0014 declared 10 work items and `.veldo/estimates/` did not
+      exist, so the roll-up over real bytes read 0 of 10 with no range. THE SELFTEST ASSERTS THE
+      TRACKING AND NOT THAT MEASUREMENT: over real bytes the item list equals the plan's own work
+      list, the estimated count equals the summable records found on disk, `missing` is exactly the
+      rest, and a range exists if and only if something is estimated - bound to a non-empty work
+      list, so a parse that found nothing still reds. The empty-ledger SHAPE is asserted over a
+      FIXTURE tree instead, because this fragment runs under the gate's REQUIRED unit slot and an
+      assertion pinning this repository's emptiness would turn that slot red the first time
+      somebody committed an estimate.
   - id: AC3
     text: >
       THE DOLLAR RANGE NEEDS A DECLARED RATE WHOSE PROVENANCE IS RECORDED, AND AN UNPRICED RANGE
@@ -75,8 +85,9 @@ acceptance_criteria:
       default. The conversion and the display both round DIRECTIONALLY (floor the low, ceil the
       high), so the money interval contains the exact one and a non-zero amount under a cent
       renders `<0.01` rather than `0.00`. A selftest drives each refusal with its positive
-      control, drives containment on a deliberately inexact rate, and requires the money caveat
-      to name both the rate's model and the range's calibration.
+      control, drives containment on a deliberately inexact rate ON THE FIGURES THE VIEW REPORTS
+      and not only on the micro-USD integers or on the rounding helper in isolation, and requires
+      the money caveat to name both the rate's model and the range's calibration.
   - id: AC4
     text: >
       PACING READS RECORDED SPEND THROUGH ITS OWNER AND STANDS DOWN ON AN EMPTY LEDGER, AND THE
@@ -85,14 +96,20 @@ acceptance_criteria:
       to a plan) and the recorded FLAG from `toe_corpus.spend_for`; nothing is recomputed here and
       a selftest asserts the two agree on one seeded event set. With nothing recorded the position
       is None with a reason, because "0 percent consumed" would read as a measurement of being on
-      track: MEASURED, this repository's stream carries over a thousand events and not one token,
-      so the standdown is driven on real data. The declared cap is read through
-      `budget.parse_budgets`, never parsed a second way, and a malformed block is reported with
-      that module's own refusal. The pacing seam emits PLAIN DICTS carrying the HIGH bound only,
-      emits NOTHING when there is no range or the roll-up is partial, and this module never
-      imports or calls the governor; a selftest builds the real `governor.Window` from what it
-      emits, drives the real `desired_workers` both under and over the window, asserts the loader
-      cache contains no governor, and asserts the four pacing boundaries exactly.
+      track: MEASURED 2026-08-10, this repository's stream carried over a thousand events and not
+      one token, so the standdown was driven on real data - and what the selftest asserts over that
+      stream is that the recorded flag EQUALS `toe_corpus.spend_for` recomputed over the same
+      events and correlations, so the first recorded token moves the reading instead of reddening a
+      required gate slot. The declared cap is read through `budget.parse_budgets`, never parsed a
+      second way, asserted against that module's own answer rather than against a literal, and a
+      malformed block is reported with that module's own refusal. The pacing seam emits PLAIN DICTS
+      carrying the HIGH bound only, emits NOTHING when there is no range or the roll-up is partial
+      - for a PLAN view and for a PROGRAM view alike, since `program_rollup` is a public surface
+      producing the same tokens block, and a view whose coverage block is neither shape is refused
+      BY NAME rather than by traceback - and this module never imports or calls the governor; a
+      selftest builds the real `governor.Window` from what it emits, drives the real
+      `desired_workers` both under and over the window, asserts the loader cache contains no
+      governor, and asserts the four pacing boundaries exactly.
   - id: AC5
     text: >
       ADVISORY BY DESIGN, PROVEN AS A MEASUREMENT, AND ADOPTION SAFE - the AC that matters most,
@@ -105,7 +122,11 @@ acceptance_criteria:
       negative control on a genuinely broken spec. The report CLI, driven as a real process over a
       plan hundreds of times over its cap, exits 0 and prints ADVISORY, paired with the control
       that the pre-existing `budget.check` over the same plan front matter with recorded spend
-      past the same cap DOES return a violation. Nothing in scripts/verify.sh names this module.
+      past the same cap DOES return a violation. Nothing in scripts/verify.sh names this module -
+      but this item's SUITE FRAGMENT does run under the gate's REQUIRED unit slot, so that fragment
+      asserts every empty-ledger shape over fixture trees and asserts only TRACKING over this
+      repository: a required check pinning today's emptiness would be NG1 arriving through the
+      suite the moment somebody used the feature.
       Every shape the module produces carries the advisory marker as a FIELD. And it is adoption
       safe on both axes: over a root holding only a plan every reader stands down and the tree is
       unchanged afterwards (no directory, no record, no log created), the view is deterministic
@@ -217,8 +238,17 @@ rules close it:
   repository wires the two together, so whoever hands an advisory number to an enforcing consumer
   does it in the open. That is D4.
 
-Measured on this repository: PLAN-0014 carries no estimates, so `pacing_windows` over it returns
-nothing, and today's data cannot reach a pacer even by accident.
+The seam takes a PLAN view and a PROGRAM view alike, and stands down identically on both. That is
+not a convenience: `program_rollup` is a public surface producing the same `tokens` block, so a
+caller arriving with one is ordinary, and the shape that used to raise was the PARTIAL one - the
+unsafe branch - while the complete one passed through and emitted a window. A view whose coverage
+block is neither shape is refused by name rather than by a `KeyError` from inside a message.
+
+Measured 2026-08-10 on this repository: PLAN-0014 carried no estimates, so `pacing_windows` over it
+returned nothing and that day's data could not reach a pacer even by accident. The selftest asserts
+the biconditional rather than that emptiness - a window is offered if and only if there is a range
+and the roll-up is complete - so the first committed estimate moves the reading instead of
+reddening a required gate slot.
 
 ## The advisory proof, driven rather than argued
 
@@ -241,16 +271,32 @@ measured side by side.
 
 ## The measured findings of this item
 
-**This repository can produce no range and no dollar figure today, and says so.** PLAN-0014
-declares 10 work items and `.veldo/estimates/` does not exist; `.veldo/toe_token_price.yaml` does
-not exist either. So the roll-up reads 0 of 10 estimated with NO range and UNPRICED money. That is
-the honest output of a working module over an empty input, and the selftest asserts it against the
-item count read from the plan itself so an empty result cannot come from a failed parse.
+**This repository could produce no range and no dollar figure on 2026-08-10, and said so.**
+PLAN-0014 declares 10 work items and on that date `.veldo/estimates/` did not exist and
+`.veldo/toe_token_price.yaml` did not either, so the roll-up read 0 of 10 estimated with NO range
+and UNPRICED money. That is the honest output of a working module over an empty input.
+
+**And that measurement is not what the selftest pins, deliberately.** The fragment runs under the
+gate's required unit slot, so a check asserting `estimated == 0`, `.veldo/estimates` absent, or a
+spend-free stream would have turned a REQUIRED slot red the first time anybody committed an
+estimate, declared a rate or recorded a token - the feature working would have blocked the landing,
+which is NG1 arriving through the suite instead of through the module. Measured: with one estimate
+written for WARP-1401 through the real writer, one rate declared and one spend event appended, the
+version of the fragment that pinned those zeros reported `40 passed, 2 failed`. So over this
+repository the fragment asserts only TRACKING - the item list equals the plan's own work list, the
+estimated count equals the summable records on disk, `missing` is the rest, a range exists if and
+only if something is estimated, money is priced if and only if a rate is declared and there is a
+range, the recorded flag equals `toe_corpus.spend_for` recomputed over the same stream - each bound
+to a non-empty work list and a non-empty stream so a failed parse still reds. The empty-ledger
+SHAPES are asserted over fixture trees, where they keep their teeth whatever this repository later
+contains.
 
 **Exactly one plan in this repository declares a budget at all.** PLAN-0004, at 20,000,000 tokens
-and 400.0 USD. It is read here through `budget.py` from real bytes, and the roll-up still reports
-no range against it, because none of its work items carries an estimate either. A cap that is read
-and a range that is absent is the state this repository is actually in, and the report prints both
+and 400.0 USD as measured 2026-08-10. It is read here through `budget.py` from real bytes and
+asserted against `budget.parse_budgets`'s own answer rather than against a literal, so a rescale or
+a dropped field reds while a founder legitimately changing the cap does not. The roll-up still
+reported no range against it, because none of its work items carries an estimate either; a cap that
+is read and a range that is absent is the state this repository was in, and the report prints both
 rather than filling the gap.
 
 **The engine canon ships no `budget.py`.** Measured 2026-08-10: `engine/.veldo` carries 83 modules

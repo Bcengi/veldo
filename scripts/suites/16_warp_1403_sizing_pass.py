@@ -29,7 +29,27 @@ next. The reds are recorded in the spec's delivery notes; the four that shaped t
   4. re-spelling the point refusal locally instead of fetching W2's bounds rule: 1 RED, the
      one-spelling assertion, while the point refusal itself stayed green - which is the point:
      the behaviour survives a duplicated rule, and only the source-level assertion sees it.
+
+AND THREE ASSERTIONS ADDED 2026-08-11, after an independent review found four of its own mutations
+left all 37 assertions green. Three of the four are closed here: two declared refusals nothing
+drove, and a reach claim that was four forbidden greps rather than a set. The fourth, an identity
+check on the ONE glob compiler, is not among the findings that review's challenger confirmed and is
+untouched. Beside them, one honest-omission property that was asserted only over the half of its
+domain where 'carrying spend' and 'carrying tokens' coincide is now asserted over the half where
+they do not:
+
+  5. gating the ledger's token keys on ANY spend field again (a record with cost_usd and no tokens
+     reporting tokens_recorded: 0 beside anchor_available: yes): 1 RED, the per-field control.
+  6. neutering layer_vocabulary's layer-id check, its basis check, or _brief_unit's unit-count
+     check, one at a time: 1 RED each. All three were declared refusals nothing drove.
+  7. importing subprocess under an alias, or __import__("socket"): 1 RED each, on the parsed
+     import set. Both were invisible to the four forbidden spellings the old grep listed.
+
+The naming sweep's own reds come from probes rather than module mutations, since no module names
+this one: a throwaway file in .veldo, in engine/.veldo and in scripts/ each red it now, and the
+first two of those three were green before. The full log is in the spec's remediation note.
 """
+import ast as _w1403_ast
 import hashlib as _w1403_hashlib
 import re as _w1403_re
 import shutil as _w1403_shutil
@@ -416,15 +436,54 @@ with tempfile.TemporaryDirectory() as _d:
            _w1403_esc[0] and "escapes the repository root" in _w1403_esc[1]
            and _w1403_abs[0] and "refusing the absolute footprint entry" in _w1403_abs[1])
 
-    expect("WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY. Its source "
-           "names no subprocess, socket or urllib import and no Popen, so nothing written here "
-           "spawns a process or opens a connection (NG5) - the event log is reached through the "
-           "event module's ONE reader, which reads that file and nothing else - and it takes the "
-           "estimate's unit from W2's "
-           "declared vocabulary rather than spelling one - refusing outright if that vocabulary "
-           "ever stops naming exactly one, because a brief cannot choose a unit for an agent",
-           all(tok not in (ROOT / ".veldo/sizing_pass.py").read_text()
-               for tok in ("import subprocess", "import socket", "import urllib", "Popen("))
+    # THE IMPORT SET, PARSED RATHER THAN GREPPED. A list of forbidden spellings is a list of the
+    # spellings somebody thought of: `from subprocess import run`, `__import__("socket")` and
+    # `import http.client` all evade "import subprocess". So the top-level module names of EVERY
+    # import statement anywhere in the file (ast.walk, so nested and function-local ones count too)
+    # are asserted EQUAL to the declared allowlist, which is a claim about the whole set and cannot
+    # be evaded by respelling. The two dynamic-import spellings that an ast import set cannot see
+    # are asserted absent beside it.
+    _w1403_src = (ROOT / ".veldo/sizing_pass.py").read_text()
+    _W1403_IMPORTS_ALLOWED = {"argparse", "hashlib", "importlib", "json", "os", "re", "sys",
+                              "pathlib"}
+    _w1403_imports = set()
+    for _w1403_node in _w1403_ast.walk(_w1403_ast.parse(_w1403_src)):
+        if isinstance(_w1403_node, _w1403_ast.Import):
+            _w1403_imports.update(_a.name.split(".")[0] for _a in _w1403_node.names)
+        elif isinstance(_w1403_node, _w1403_ast.ImportFrom):
+            _w1403_imports.add((_w1403_node.module or "").split(".")[0])
+    expect("WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as a "
+           "SET EQUALITY over its parsed imports and not as a grep for four forbidden spellings. "
+           "The top-level name of every import statement in the file is exactly the declared "
+           "allowlist - argparse, hashlib, importlib, json, os, re, sys, pathlib - so subprocess, "
+           "socket, urllib, http.client and every alias or respelling of them are refused by the "
+           "equality rather than by having been thought of, and the two spellings an import set "
+           "cannot see (__import__ and importlib.import_module) are named absent. Nothing here "
+           "spawns a process or opens a connection (NG5); the event log is reached through the "
+           "event module's ONE reader, which reads that file and nothing else",
+           _w1403_imports == _W1403_IMPORTS_ALLOWED
+           and all(tok not in _w1403_src
+                   for tok in ("__import__(", "import_module(", "Popen(", "os.system(")))
+
+    # THE UNIT REFUSAL, DRIVEN. The claim is that the brief REFUSES when W2's vocabulary stops
+    # naming exactly one unit; observing that it names one today is a fact about estimate.py that
+    # is true whether this module checks it or not, which is a label and not a measurement.
+    _w1403_saved_units = E1403.UNITS
+    try:
+        E1403.UNITS = dict(_w1403_saved_units,
+                           points="a second unit veldo.estimate/v1 does not declare")
+        _w1403_two_units = _w1403_raises(SP1403.brief, _w1403_fix)
+    finally:
+        E1403.UNITS = _w1403_saved_units
+    expect("WARP-1403 AC3: A BRIEF REFUSES RATHER THAN CHOOSING A UNIT FOR AN AGENT, AND THAT IS "
+           "DRIVEN. With W2's unit vocabulary made to declare TWO units, brief() refuses and names "
+           "the count instead of picking the first; with the vocabulary restored it names the one "
+           "declared unit again. A brief that chose on the agent's behalf would get back a range "
+           "in a unit nobody agreed on, and the estimate record would combine it with the "
+           "structural prior as though the two were the same quantity",
+           _w1403_two_units[0] and "declares 2 units" in _w1403_two_units[1]
+           and "cannot tell an agent which one to predict in" in _w1403_two_units[1]
+           and _w1403_value(SP1403._brief_unit, E1403) == (sorted(E1403.UNITS)[0], "")
            and _W1403_BRIEF["unit"] in E1403.UNITS and len(E1403.UNITS) == 1)
 
     # -----------------------------------------------------------------------------------
@@ -444,7 +503,9 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1403_real_ledger["events"] > 900
            and _w1403_real_ledger["spend_events"] == 0
            and _w1403_real_ledger["anchor_available"] == E1403.NO
+           and _w1403_real_ledger["token_anchor_available"] == E1403.NO
            and "tokens_recorded" not in _w1403_real_ledger
+           and "token_spend_events" not in _w1403_real_ledger
            and "specs_with_spend" not in _w1403_real_ledger)
 
     _w1403_seed = [{"type": "spec.shipped", "spec_id": "WARP-9001", "tokens": 1000},
@@ -458,10 +519,39 @@ with tempfile.TemporaryDirectory() as _d:
            "being empty and not a hardcoded no - without this control that assertion would pass "
            "on a function that could never say anything else",
            _w1403_seeded_ledger["anchor_available"] == E1403.YES
+           and _w1403_seeded_ledger["token_anchor_available"] == E1403.YES
            and _w1403_seeded_ledger["spend_events"] == 2
            and _w1403_seeded_ledger["tokens_recorded"] == 3500
+           and _w1403_seeded_ledger["token_spend_events"] == 2
            and _w1403_seeded_ledger["specs_with_spend"] == 2
            and _w1403_seeded_ledger["events"] == 3)
+
+    # THE THIRD CONTROL, over the part of the domain the pair above never reached: spend recorded
+    # in a field that is NOT tokens. spend.validate requires only ONE of the three declared spend
+    # fields and its writer defaults tokens to None, so this record shape is ordinary rather than
+    # hypothetical, and it is the one where "carrying spend" and "carrying tokens" stop coinciding.
+    _w1403_no_tok = [{"type": "spec.shipped", "spec_id": "WARP-9101", "cost_usd": 12.5,
+                      "human_minutes": 30},
+                     {"type": "spec.shipped", "spec_id": "WARP-9102", "human_minutes": 45},
+                     {"type": "gate.passed", "spec_id": "WARP-9103"}]
+    _w1403_no_tok_ledger = SP1403.ledger_state(_w1403_no_tok)
+    expect("WARP-1403 AC4 THE OMISSION IS PER FIELD AND NOT PER LEDGER: over a ledger whose spend "
+           "events carry cost_usd and human_minutes but NO tokens, the token keys are ABSENT and "
+           "token_anchor_available reads no, while anchor_available still reads yes and "
+           "spend_events counts both records. Gating the token total on 'some spend field is "
+           "present' would hand an agent tokens_recorded: 0 next to anchor_available: yes - a zero "
+           "because tokens were never recorded, dressed as a measurement, which is the exact "
+           "defect AC4 exists to prevent and which the empty-log half of this pair cannot see "
+           "because there the two definitions coincide",
+           _w1403_no_tok_ledger["anchor_available"] == E1403.YES
+           and _w1403_no_tok_ledger["token_anchor_available"] == E1403.NO
+           and "tokens_recorded" not in _w1403_no_tok_ledger
+           and "token_spend_events" not in _w1403_no_tok_ledger
+           and _w1403_no_tok_ledger["spend_events"] == 2
+           and _w1403_no_tok_ledger["specs_with_spend"] == 2
+           and _w1403_no_tok_ledger["events"] == 3
+           and SP1403.brief(_w1403_fix, events=_w1403_no_tok)["ledger"]
+           == _w1403_no_tok_ledger)
 
     expect("WARP-1403 AC4: AN AGENT'S JUDGEMENT NEVER MAKES AN ESTIMATE CALIBRATED. The record "
            "carrying this layer reads calibration uncalibrated and validates clean, because "
@@ -484,6 +574,35 @@ with tempfile.TemporaryDirectory() as _d:
            "comment about a promise, it is a live refusal that fires when the promise breaks",
            _w1403_cal_refusal[0]
            and "grounded in recorded actuals" in _w1403_cal_refusal[1]
+           and _w1403_value(SP1403.layer_vocabulary)
+           == ((SP1403.LAYER_ID, SP1403.LAYER_BASIS), ""))
+
+    # THE OTHER TWO OF THE THREE DECLARED REFUSALS, driven the same way the calibrated one above
+    # already is. layer_vocabulary says it "fails closed by name on three things"; before this the
+    # third was driven and the first two were only described, so deleting either check left every
+    # assertion in this fragment green.
+    _w1403_saved_layers = E1403.LAYERS
+    try:
+        E1403.LAYERS = {k: v for k, v in _w1403_saved_layers.items() if k != SP1403.LAYER_ID}
+        _w1403_no_layer = _w1403_raises(SP1403.layer_vocabulary)
+    finally:
+        E1403.LAYERS = _w1403_saved_layers
+    _w1403_saved_bases = E1403.BASES
+    try:
+        E1403.BASES = {k: v for k, v in _w1403_saved_bases.items() if k != SP1403.LAYER_BASIS}
+        _w1403_no_basis = _w1403_raises(SP1403.layer_vocabulary)
+    finally:
+        E1403.BASES = _w1403_saved_bases
+    expect("WARP-1403 AC4: ALL THREE OF THE VOCABULARY REFUSALS ARE DRIVEN, not one of three. With "
+           "this layer id removed from W2's LAYERS the module refuses and NAMES the id; with this "
+           "basis removed from W2's BASES it refuses and names the basis; each goes back to "
+           "returning the pair the moment the vocabulary is restored. The sizing pass EXTENDS that "
+           "vocabulary and never widens it, so a typo in a layer id, or a basis W2 stopped "
+           "declaring, must be a refusal rather than a contribution nothing downstream recognises",
+           _w1403_no_layer[0] and "is not one of the layers" in _w1403_no_layer[1]
+           and SP1403.LAYER_ID in _w1403_no_layer[1]
+           and _w1403_no_basis[0] and "is not one of the bases" in _w1403_no_basis[1]
+           and SP1403.LAYER_BASIS in _w1403_no_basis[1]
            and _w1403_value(SP1403.layer_vocabulary)
            == ((SP1403.LAYER_ID, SP1403.LAYER_BASIS), ""))
 
@@ -676,16 +795,57 @@ with tempfile.TemporaryDirectory() as _d:
 
     _w1403_gate_text = (ROOT / "scripts/verify.sh").read_text()
     _w1403_slots = _w1403_re.findall(r"CHECK_\w+=\"[^\"]*\"", _w1403_gate_text)
-    expect("WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE. scripts/verify.sh declares no "
-           "slot mentioning sizing_pass.py, neither does the contract validator it runs, and no "
-           "engine module reads it either - so no path through the gate and no organ of the loop "
-           "can refuse, block or delay work over a sizing pass. Bound to a non-empty slot list, "
-           "so a parse that found no slots reds this rather than passing over nothing",
+    # THE SWEEP'S DOMAIN IS EVERY TREE THIS CLAIM IS ABOUT, not the one directory this repository
+    # happens to run from: the private engine, the CANONICAL engine an adopter is handed, and
+    # scripts/, which is where a gate stage would actually live. A probe naming this module from
+    # engine/.veldo or from scripts/ used to leave the sweep green.
+    #
+    # THE SPELLINGS ARE PATH-SHAPED AND IMPORT-SHAPED, deliberately, because the bare stem
+    # `sizing_pass` is ALSO the LAYER ID that W2's vocabulary declares (estimate.py names it, in
+    # both engine homes, and must): a bare-stem sweep would red on W2 declaring its own layer and
+    # would then be relaxed until it measured nothing.
+    _W1403_NAME_SPELLINGS = ("sizing_pass.py", "import sizing_pass", "from sizing_pass",
+                             'sizing_pass")')
+    _W1403_LOAD_SPELLINGS = ("import sizing_pass", "from sizing_pass", 'sizing_pass")')
+    # A release DISPOSITION list may NAME this file's path - shipping it or holding it back is a
+    # decision about the module, not a use of it. Nothing anywhere may IMPORT or EXECUTE it.
+    _W1403_MAY_NAME = ("scripts/publish.py",)
+    _W1403_SWEEP = {
+        ".veldo/*.py": sorted((ROOT / ".veldo").glob("*.py")),
+        "engine/.veldo/*.py": sorted((ROOT / "engine/.veldo").glob("*.py")),
+        "scripts/*.py": sorted((ROOT / "scripts").glob("*.py")),
+        "scripts/*.sh": sorted((ROOT / "scripts").glob("*.sh")),
+    }
+    _W1403_SELVES = (".veldo/sizing_pass.py", "engine/.veldo/sizing_pass.py")
+    _w1403_domain, _w1403_namers, _w1403_loaders = set(), [], []
+    for _w1403_paths in _W1403_SWEEP.values():
+        for _w1403_p in _w1403_paths:
+            _w1403_rel = str(_w1403_p.relative_to(ROOT))
+            _w1403_domain.add(_w1403_rel)
+            if _w1403_rel in _W1403_SELVES:
+                continue
+            _w1403_txt = _w1403_p.read_text()
+            if any(_s in _w1403_txt for _s in _W1403_NAME_SPELLINGS):
+                _w1403_namers.append(_w1403_rel)
+            if any(_s in _w1403_txt for _s in _W1403_LOAD_SPELLINGS):
+                _w1403_loaders.append(_w1403_rel)
+    expect("WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE AND NOTHING ANYWHERE LOADS IT, "
+           "swept over FOUR domains rather than one: scripts/verify.sh declares no slot mentioning "
+           "it, the contract validator it runs does not name it, and across .veldo/*.py, "
+           "engine/.veldo/*.py, scripts/*.py and scripts/*.sh no file names its path and none "
+           "imports or executes it, except that a release disposition list is allowed to name the "
+           "path it holds back or ships. So no path through the gate and no organ of the loop can "
+           "refuse, block or delay work over a sizing pass. Bound to a non-empty slot list and to "
+           "four non-empty domains that provably contain both engine homes and the gate script, so "
+           "a glob that matched nothing reds this rather than passing over nothing",
            _w1403_slots != [] and all("sizing" not in s for s in _w1403_slots)
            and "sizing_pass" not in _w1403_gate_text
            and "sizing_pass" not in (ROOT / ".veldo/validate.py").read_text()
-           and [_p.name for _p in sorted((ROOT / ".veldo").glob("*.py"))
-                if "sizing_pass.py" in _p.read_text() and _p.name != "sizing_pass.py"] == [])
+           and all(len(_v) > 0 for _v in _W1403_SWEEP.values())
+           and {".veldo/estimate.py", "engine/.veldo/estimate.py", "engine/.veldo/sizing_pass.py",
+                "scripts/verify.sh", "scripts/publish.py"} <= _w1403_domain
+           and sorted(set(_w1403_namers) - set(_W1403_MAY_NAME)) == []
+           and _w1403_loaders == [])
 
     _w1403_example = ROOT / ".veldo/examples/sizing-judgement-example.yaml"
     _w1403_example_rec = SP1403.parse_judgement(_w1403_example.read_text())
@@ -711,4 +871,4 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1403_example_rec["brief_digest"] == _w1403_hashlib.sha256(
                b"example").hexdigest())
 
-del _w1403_hashlib, _w1403_re, _w1403_shutil
+del _w1403_ast, _w1403_hashlib, _w1403_re, _w1403_shutil

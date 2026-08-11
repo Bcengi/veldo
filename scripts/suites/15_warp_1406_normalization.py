@@ -9,8 +9,19 @@ WHAT IS OBSERVED HERE, AND WHY EACH POSITIVE HAS A NEGATIVE BESIDE IT. Every ass
 block is paired with a control that would pass if the code under test did nothing at all, so a
 green line here is a measurement and not an absence:
 
-  - a point is produced for a record that HAS recorded spend, and withheld with a NAMED reason for
-    one that does not, so the point generator is neither always-a-number nor always-a-null;
+  - a point is produced for a record whose TOKEN spend was recorded, and withheld with a NAMED
+    reason for one whose was not, so the point generator is neither always-a-number nor
+    always-a-null. Driven over the three distinct shapes rather than one: nothing recorded at all, a
+    change costed only in DOLLARS, and a change costed only in HUMAN MINUTES. The last two arrive
+    with the corpus's `spend_recorded` flag TRUE and no token count, which is how a confident 0.000
+    reached the surface, and the control beside them adds a token count and requires the point to
+    come ON;
+  - the recorded columns are asserted against the corpus's own spend block over values that are
+    deliberately NOT round, because every value in the first fixture is a multiple of 100 and a
+    display that rounded the recorded actual to the nearest 100 passed the whole fragment;
+  - the summary roll-up, which is the bottom line of every rendered report and the number a planner
+    sizes work with, is asserted as ONE whole-dict equality per fixture rather than key by key, so a
+    silently added key reds too, and the PRINTED total line is asserted beside it;
   - the derived peg is shown to MOVE when the corpus moves, so the median is computed rather than
     the first or the last element being picked;
   - the byte-identity of the actuals across a re-peg is asserted with a COMPARATOR THAT IS ITSELF
@@ -66,9 +77,20 @@ def _w1406_seed_specs(d, entries):
     return d
 
 
-def _w1406_ev(sid, tokens, at):
-    return {"schema": "veldo.event/v1", "type": "spec.shipped", "spec_id": sid,
-            "tokens": tokens, "at": at}
+def _w1406_ev(sid, tokens=None, at=None, cost_usd=None, human_minutes=None):
+    """One shipped event carrying whatever spend fields this fixture names, and ONLY those.
+
+    A field left None is ABSENT from the envelope rather than present as a zero, because "never
+    recorded" and "recorded as zero" are the two facts this whole item exists to keep apart, and a
+    fixture that cannot express the first one cannot test the refusal. The shipped emitter declares
+    the token, dollar and human-minute flags independently and optionally (.veldo/events.py), so an
+    event carrying a cost and no token count is the ordinary case and not a hostile one."""
+    e = {"schema": "veldo.event/v1", "type": "spec.shipped", "spec_id": sid}
+    for _k, _v in (("tokens", tokens), ("cost_usd", cost_usd),
+                   ("human_minutes", human_minutes), ("at", at)):
+        if _v is not None:
+            e[_k] = _v
+    return e
 
 
 def _w1406_capture():
@@ -142,6 +164,51 @@ _w1406_view_a = NORM.normalize(_W1406_A, _w1406_peg_a, _w1406_a_events, _w1406_n
                                CORP, _W1406_ISO)
 
 # ---------------------------------------------------------------------------------------
+# FIXTURE H: HOSTILE NUMBERS, AND SPEND THAT IS NOT TOKEN SPEND.
+#
+# Two changes whose recorded token counts and recorded dollar costs are deliberately NOT round
+# (3137 tokens at 12.37 usd, 41 tokens at 0.0137 usd). Every value in fixture A is a multiple of
+# 100, which is enough for a display layer that rounded the recorded actual to the nearest 100 to
+# pass every assertion in this fragment, so the rounding leg of AC1 is driven here instead.
+#
+# Plus the two shapes the point gate has to refuse WITHOUT printing a zero: a change whose only
+# recorded spend is a DOLLAR COST, and one whose only recorded spend is HUMAN MINUTES. Both come out
+# of the corpus with spend_recorded TRUE and a token count of zero, because `spend_recorded` answers
+# "did anybody record anything" and not "was this measured in tokens".
+# ---------------------------------------------------------------------------------------
+_W1406_H_IDS = ("WARP-9421", "WARP-9422", "WARP-9423", "WARP-9424")
+_W1406_H_EVENTS = [
+    _w1406_ev("WARP-9421", 3137, "2026-02-01T00:00:00Z", cost_usd=12.37),
+    _w1406_ev("WARP-9422", 41, "2026-02-02T00:00:00Z", cost_usd=0.0137),
+    _w1406_ev("WARP-9423", None, "2026-02-03T00:00:00Z", cost_usd=7.5),
+    _w1406_ev("WARP-9424", None, "2026-02-04T00:00:00Z", human_minutes=90),
+]
+with tempfile.TemporaryDirectory() as _w1406_dh:
+    _w1406_seed_specs(_w1406_dh, [(sid, "standard") for sid in _W1406_H_IDS])
+    _W1406_H = CORP.build(specs_dir=_w1406_dh, events=_W1406_H_EVENTS)
+
+# A DECLARED peg of 1000 tokens, so every expected point below is readable by eye from the recorded
+# count and a rounding at any granularity moves it.
+_W1406_H_DECL = {"schema": NORM.SCHEMA_PEG, "basis": NORM.PEG_DECLARED, "tokens": 1000,
+                 "era": NORM.ERA_UNSTAMPED, "spec": "WARP-9421"}
+_w1406_peg_h = NORM.resolve_peg(_W1406_H, _W1406_H_EVENTS, _w1406_no_eras, CORP, _W1406_ISO,
+                                declared=_W1406_H_DECL)
+_w1406_view_h = NORM.normalize(_W1406_H, _w1406_peg_h, _W1406_H_EVENTS, _w1406_no_eras,
+                               CORP, _W1406_ISO)
+# The DERIVED peg over the same corpus, to show ONE predicate governs the peg path and the display
+# path: neither token-less change can become the reference change either.
+_w1406_peg_h_derived = NORM.resolve_peg(_W1406_H, _W1406_H_EVENTS, _w1406_no_eras, CORP, _W1406_ISO)
+# The same corpus with a token count added to the cost-only change, deep-copied so the fixture every
+# other assertion reads is provably untouched. This is the control for the token predicate: the point
+# comes ON when a token measurement exists, so the refusal is a rule and not a blanket.
+_W1406_H_TOKENED = json.loads(json.dumps(_W1406_H))
+for _w1406_r in _W1406_H_TOKENED:
+    if _w1406_r["spec"] == "WARP-9423":
+        _w1406_r["spend"]["tokens"] = 2000
+_w1406_view_h_tokened = NORM.normalize(_W1406_H_TOKENED, _w1406_peg_h, _W1406_H_EVENTS,
+                                       _w1406_no_eras, CORP, _W1406_ISO)
+
+# ---------------------------------------------------------------------------------------
 # AC1. THE NORMALIZED POINT, WITH RAW TOKENS ON THE SAME ROW.
 # ---------------------------------------------------------------------------------------
 expect("WARP-1406 AC1: every corpus record with recorded spend renders as a NORMALIZED POINT "
@@ -153,13 +220,75 @@ expect("WARP-1406 AC1: every corpus record with recorded spend renders as a NORM
        and [_w1406_points(_w1406_view_a).get(s) for s, _t in _W1406_A_SPEND]
        == [0.333, 0.667, 1.0, 1.333, 1.667])
 
-expect("WARP-1406 AC1: THE RAW TOKENS RIDE ON THE SAME ROW AS THE POINT, byte for byte the number "
-       "the corpus recorded (D2: both units, the point primary on a planning surface and the raw "
-       "ground truth one field away). Asserted as EQUALITY against the corpus's own spend block for "
-       "EVERY row rather than for a sample, so a display layer that quietly rounded or rescaled the "
-       "recorded number would red this",
+expect("WARP-1406 AC1: THE RAW TOKENS AND THE RECORDED COST RIDE ON THE SAME ROW AS THE POINT, byte "
+       "for byte the numbers the corpus recorded (D2: both units, the point primary on a planning "
+       "surface and the raw ground truth one field away). Asserted as EQUALITY against the corpus's "
+       "own spend block for EVERY row of TWO corpora rather than for a sample, and the second one "
+       "carries deliberately NON-ROUND values - 3137 and 41 tokens, 12.37 and 0.0137 recorded usd - "
+       "with the expected pairs PINNED to literals beside the equality. Both legs are needed: with "
+       "fixture A alone every token value was a multiple of 100, so rounding the recorded actual to "
+       "the nearest 100 passed, and every recorded cost was 0.0, so hard-coding the cost column to "
+       "zero or scaling it by 100 passed as well. A rounded actual and a 100x money column are the "
+       "two ways this display could look exactly like a working one while every plan built on it "
+       "was wrong",
        [(r["spec"], r["tokens"], r["cost_usd"]) for r in _w1406_view_a["rows"]]
-       == [(r["spec"], r["spend"]["tokens"], r["spend"]["cost_usd"]) for r in _W1406_A])
+       == [(r["spec"], r["spend"]["tokens"], r["spend"]["cost_usd"]) for r in _W1406_A]
+       and [(r["spec"], r["tokens"], r["cost_usd"]) for r in _w1406_view_h["rows"]]
+       == [(r["spec"], r["spend"]["tokens"], r["spend"]["cost_usd"]) for r in _W1406_H]
+       and [(r["spec"], r["tokens"], r["cost_usd"]) for r in _w1406_view_h["rows"]]
+       == [("WARP-9421", 3137, 12.37), ("WARP-9422", 41, 0.0137),
+           ("WARP-9423", 0, 7.5), ("WARP-9424", 0, 0.0)])
+
+expect("WARP-1406 AC1, THE CONFIDENT ZERO THIS ITEM EXISTS TO REFUSE, ON THE PATH THAT ACTUALLY "
+       "REACHES IT: a change whose spend WAS recorded but NOT IN TOKENS gets NO POINT, and its "
+       "reason NAMES the field that was recorded and says the token count was not. The corpus sets "
+       "spend_recorded for ANY of tokens, cost_usd or human_minutes and the shipped emitter's three "
+       "spend flags are independent and optional, so a change costed in dollars or in human minutes "
+       "arrives here with spend recorded and a token count of zero. Gating the point on that flag "
+       "printed 0.000 pt as a measurement, counted the change in the POINTED denominator and added "
+       "its zero to the total - the exact shape AC1 forbids in its own words. Driven over both "
+       "shapes, and both reasons are DIFFERENT TEXT from the nothing-recorded reason, because "
+       "'recorded, but not in tokens' is a third fact and not the same silence",
+       _w1406_points(_w1406_view_h) == {"WARP-9421": 3.137, "WARP-9422": 0.041,
+                                       "WARP-9423": None, "WARP-9424": None}
+       and "cost_usd" in _w1406_reason(_w1406_view_h, "WARP-9423")
+       and "NOT in tokens" in _w1406_reason(_w1406_view_h, "WARP-9423")
+       and "human_minutes" in _w1406_reason(_w1406_view_h, "WARP-9424")
+       and "NOT in tokens" in _w1406_reason(_w1406_view_h, "WARP-9424")
+       and _w1406_reason(_w1406_view_h, "WARP-9423")
+       != _w1406_reason(_w1406_view_h, "WARP-9424")
+       and _w1406_reason(_w1406_view_h, "WARP-9423")
+       != _w1406_reason(_w1406_view_a, "WARP-9416")
+       and "0.000 pt" not in "".join(NORM.render_lines(_w1406_view_h))
+       and "- pt" in _w1406_line(NORM.render_lines(_w1406_view_h), "WARP-9423"))
+
+expect("WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows DO carry recorded "
+       "spend and their recorded dollars are on the view, so the withheld points above are the "
+       "TOKEN test firing and not the corpus having nothing to show; ADDING a token count to the "
+       "cost-only change turns its point ON at 2.000 against the 1000-token peg, so the refusal is "
+       "a rule rather than a blanket; and the SAME predicate governs the PEG, which derives to "
+       "WARP-9422 over a sample of 2 rather than pulling a token-less change into the median. One "
+       "predicate on both paths is the fix: the peg path already required a positive token count "
+       "while the display path required only the flag, which is how two readers of one corpus "
+       "disagreed about which changes were measured",
+       all(r["spend_recorded"] is True for r in _w1406_view_h["rows"])
+       and [r["cost_usd"] for r in _w1406_view_h["rows"] if r["spec"] == "WARP-9423"] == [7.5]
+       and _w1406_points(_w1406_view_h_tokened)["WARP-9423"] == 2.0
+       and _w1406_points(_w1406_view_h)["WARP-9423"] is None
+       and _w1406_peg_h_derived["pegged"] is True
+       and _w1406_peg_h_derived["spec"] == "WARP-9422"
+       and _w1406_peg_h_derived["tokens"] == 41
+       and _w1406_peg_h_derived["sample"] == 2)
+
+expect("WARP-1406 AC1: THE RENDERED DOLLAR COLUMN IS DERIVED FROM RAW TOKENS AND THE SUPPLIED "
+       "PRICE, AND IT IS NOT THE RECORDED COST, which rides on the view ROW where a consumer reads "
+       "it. On a 3137-token change carrying a recorded 12.37 usd, at 0.50 per 1k the rendered line "
+       "shows 1.57 usd and the string 12.37 appears NOWHERE in the render. That is the decision, "
+       "asserted rather than left to a reader's assumption: two different dollar figures side by "
+       "side in one column would let a recorded actual be read as a price projection and back again",
+       " 1.57 usd" in _w1406_line(NORM.render_lines(_w1406_view_h, 0.5), "WARP-9421")
+       and "12.37" not in "".join(NORM.render_lines(_w1406_view_h, 0.5))
+       and [r["cost_usd"] for r in _w1406_view_h["rows"] if r["spec"] == "WARP-9421"] == [12.37])
 
 expect("WARP-1406 AC1 NEGATIVE CONTROL: a record whose spend was NEVER RECORDED gets NO POINT AT "
        "ALL and a reason that says why, so the row generator is not simply a function that always "
@@ -452,6 +581,32 @@ with tempfile.TemporaryDirectory() as _w1406_d4:
            and _w1406_view_a["summary"]["pointed"] == 6
            and _w1406_view_e["summary"]["pointed"] == 3)
 
+expect("WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, "
+       "and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets "
+       "work with, and it was the one part of the module no assertion touched: probing single keys "
+       "left points_total, tokens_total and eras_present free, so all three could be replaced with "
+       "garbage while this suite stayed green. A whole-dict equality also reds when a key is silently "
+       "ADDED, which per-key probing cannot see. Both units are present in every one: a normalized "
+       "total with no raw total underneath is a number nobody can audit, and the token-less rows are "
+       "counted as UNPOINTED rather than diluting the pointed denominator",
+       _w1406_view_a["summary"] == {"rows": 7, "pointed": 6, "unpointed": 1, "points_total": 8.0,
+                                    "tokens_total": 24000, "eras_present": ["pre-ledger"],
+                                    "eras_declared": ["pre-ledger"]}
+       and _w1406_view_h["summary"] == {"rows": 4, "pointed": 2, "unpointed": 2,
+                                        "points_total": 3.178, "tokens_total": 3178,
+                                        "eras_present": ["pre-ledger"],
+                                        "eras_declared": ["pre-ledger"]}
+       and _w1406_view_e["summary"] == {"rows": 7, "pointed": 3, "unpointed": 4,
+                                        "points_total": 4.5, "tokens_total": 24000,
+                                        "eras_present": ["era-second-model", "pre-ledger"],
+                                        "eras_declared": ["pre-ledger", "era-second-model"]}
+       and NORM.render_lines(_w1406_view_a)[-1]
+       == ("total: 8.0 pt over 6 change(s), 24000 raw tokens, 1 row(s) with no point, "
+           "eras ['pre-ledger']")
+       and NORM.render_lines(_w1406_view_h)[-1]
+       == ("total: 3.178 pt over 2 change(s), 3178 raw tokens, 2 row(s) with no point, "
+           "eras ['pre-ledger']"))
+
 # A change whose OWN spend straddles a shift, and a change whose spend carries no readable
 # timestamp: two different facts, each reported by name rather than folded into one silence.
 _w1406_straddle_events = _w1406_a_events + [
@@ -598,15 +753,50 @@ expect("WARP-1406: the module lands in BOTH engine homes byte-identically, so wh
 _w1406_live_log = ROOT / ".veldo/events.jsonl"
 _w1406_live_before = _w1406_live_log.stat().st_mtime_ns
 _w1406_live = NORM.build_view(root=ROOT, report=_w1406_capture()[1])
-expect("WARP-1406: OVER THIS REPOSITORY'S OWN CORPUS AND LOG, NO ROW EVER CARRIES A POINT WITHOUT "
-       "RECORDED SPEND, and reading the view does not touch the log (mtime_ns unchanged). Stated as "
-       "an INVARIANT rather than as today's figure on purpose: WARP-1401 measured 0 percent spend "
-       "coverage here, so today every row stands down with a reason, and the day an agent records "
-       "its first spend this assertion must still hold rather than turning red for having been "
-       "written as a snapshot",
+
+# THE SAME LIVE CORPUS WITH A PEG FORCED IN. Today's live peg stands down for want of any recorded
+# token spend, and a view with no peg gives every row a null for THAT reason, which would leave the
+# invariant below unable to fail whatever this module did. Forcing a valid declared peg over the real
+# corpus removes that excuse, and it is pegged against an EMPTY ledger so an era mismatch cannot be
+# the reason either: the only thing left that can withhold a point is the token predicate.
+_w1406_live_events = NORM.read_events(_w1406_live_log)
+_w1406_live_corpus = CORP.build(specs_dir=ROOT / "specs", events=_w1406_live_events)
+_w1406_live_forced = NORM.normalize(
+    _w1406_live_corpus,
+    NORM.resolve_peg(_w1406_live_corpus, _w1406_live_events, _w1406_no_eras, CORP, _W1406_ISO,
+                     declared=dict(_W1406_DECLARED, tokens=1000, spec=None)),
+    _w1406_live_events, _w1406_no_eras, CORP, _W1406_ISO)
+
+
+def _w1406_measured_in_tokens(r):
+    """The invariant's own predicate, spelled once: a point is only ever printed for a row whose
+    RECORDED TOKEN count is a positive number. `spend_recorded` is not that test - it is true for a
+    change costed only in dollars or only in human minutes - and the display divides tokens, so the
+    flag is the wrong invariant to assert here."""
+    return (r["spend_recorded"] and isinstance(r["tokens"], (int, float))
+            and not isinstance(r["tokens"], bool) and r["tokens"] > 0)
+
+
+expect("WARP-1406: OVER THIS REPOSITORY'S OWN CORPUS AND LOG, NO ROW EVER CARRIES A POINT WITHOUT A "
+       "POSITIVE RECORDED TOKEN COUNT, and reading the view does not touch the log (mtime_ns "
+       "unchanged). The invariant is the TOKEN count and not the spend_recorded flag, because the "
+       "flag is true for a change costed only in dollars or only in minutes while the display "
+       "divides tokens: asserting the flag here would have passed on the confident zero this item "
+       "forbids. ASSERTED TWICE OVER THE REAL DATA, once through the shipped build_view and once "
+       "with a valid peg FORCED IN, because today's live peg stands down for want of recorded token "
+       "spend and a standing-down peg nulls every row for its own reason, which would make this leg "
+       "unfalsifiable. Stated as an INVARIANT rather than as today's figure on purpose: WARP-1401 "
+       "measured 0 percent spend coverage here, so today every row stands down with a reason, and "
+       "the day an agent records its first spend this assertion must still hold rather than turning "
+       "red for having been written as a snapshot",
        _w1406_live["rows"] != []
-       and all(r["points"] is None or r["spend_recorded"] for r in _w1406_live["rows"])
+       and all(r["points"] is None or _w1406_measured_in_tokens(r) for r in _w1406_live["rows"])
        and all(r["points"] is not None or r["reason"] for r in _w1406_live["rows"])
+       and _w1406_live_forced["peg"]["pegged"] is True
+       and [r["spec"] for r in _w1406_live_forced["rows"]] == [r["spec"] for r in _w1406_live["rows"]]
+       and all(r["points"] is None or _w1406_measured_in_tokens(r)
+               for r in _w1406_live_forced["rows"])
+       and all(r["points"] is not None or r["reason"] for r in _w1406_live_forced["rows"])
        and _w1406_live_log.stat().st_mtime_ns == _w1406_live_before
        and (not (ROOT / NORM.ERAS_DIR).is_dir()
             or NORM.load_ledger(ROOT / NORM.ERAS_DIR, V.parse_yamlish,

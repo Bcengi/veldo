@@ -16,8 +16,8 @@ shape must be named, and once over seeded data where it does not and the shape m
 check that passed because nothing was there would fail the first half; a check that always found
 something would fail the second.
 
-TEETH, MEASURED RATHER THAN CLAIMED. Six deliberate breaks were driven and watched go red on
-`--suite 15_warp_1407_judgment_load`, which is 54 passing assertions unmodified:
+TEETH, MEASURED RATHER THAN CLAIMED. Sixteen deliberate breaks were driven and watched go red on
+`--suite 15_warp_1407_judgment_load`, which is 61 passing assertions unmodified:
   1. Disabling the missing-axis branch in `classify`, so a missing axis falls through to the median
      comparison and an unrecorded zero reads as a low figure: 49 passed, 1 FAILED - the AC3 row.
      WARP-9406, three review episodes and not one recorded minute, came back labelled
@@ -37,9 +37,34 @@ TEETH, MEASURED RATHER THAN CLAIMED. Six deliberate breaks were driven and watch
      a different floor, which is the only shape that tells them apart.
   6. Relaxing the median comparison from `>` to `>=`: 1 FAILED, the row for a record sitting exactly
      at both medians, which then reads as expensive on both.
+Ten more were driven after a review measured that four properties the ACs name were asserted
+NOWHERE, so the module could be inverted with this suite green. Each is one edit to
+.veldo/judgment_load.py, applied in a scratch clone, DIFFED to prove the edit landed, and run:
+  7. Appending one JSON line to `ROOT/".veldo/judgment_load_state.jsonl"` inside `build()` - a real
+     state writer, which the previous write-nothing check could not see because it digested the
+     tmp INPUT tree that build() holds no path to: 1 FAILED, the AC5 ROOT-tree row. That row now
+     points JL.ROOT at a seeded hermetic repository, which is the tree every path in the module is
+     built from.
+  8. `"minutes_coverage": 1.0` hardcoded, which makes the report print "judgment minutes known on 0
+     (100.0%)" over an axis with nothing on it: 3 FAILED (both coverage tuples and the rendered
+     coverage line).
+  9. `"episodes_known": 0` hardcoded, the figure AC3's headline coverage rests on: the same 3 FAILED.
+ 10. The plan line's `"(not declared)"` denominator fallback replaced with the plan's own spec count,
+     so a partial roll-up reads as complete: 1 FAILED, the rendered plan line.
+ 11. The plan line's token column fed the minutes figure and its known-count fed the spec count:
+     1 FAILED, the same rendered plan line, which is why that line is pinned whole rather than by
+     the denominator alone.
+ 12. Deleting the "NOT CLASSIFIABLE YET" banner: 1 FAILED, the bare-report banner row.
+ 13. `approval_required` inverted to `== "not_required"`: 1 FAILED, the AC1 approval-surface row.
+ 14. `protected_touch` replaced with the constant False: 1 FAILED, the AC1 protected-touch row.
+ 15. The `reference:` line of the report blanked: 2 FAILED (the bare-report banner row and its
+     positive control), where before it was measured green.
+ 16. `"split_known": 0` hardcoded in the coverage block: 2 FAILED (the seeded coverage tuple and the
+     rendered coverage line).
 Each was reverted; what is here is the file that goes green over the unmodified module.
 """
 import hashlib as _jl_hashlib
+import sys as _jl_sys
 
 _jl_spec_mod = importlib.util.spec_from_file_location(
     "veldo_judgment_load_suite", ROOT / ".veldo/judgment_load.py")
@@ -160,6 +185,34 @@ expect("WARP-1407 AC1 NEGATIVE CONTROL: a spec with no events carries both axes 
         _JL_ROWS["WARP-9405"]["split_known"], _JL_ROWS["WARP-9405"]["episodes"])
        == (0, False, 0, False, False, 0))
 
+# THE APPROVAL SURFACE, which AC1 requires the pair to carry and which is the mechanical reason a
+# change costs a human anything at all. Asserted in BOTH directions and over the WHOLE seeded set,
+# so neither an inverted comparison in pair() nor a constant in its place can pass: WARP-9402 is the
+# one fixture declaring `human_approval: required` and every other fixture declares not_required.
+expect("WARP-1407 AC1: the pair carries the approval surface the spec declared, true for the one "
+       "fixture that declared it and false for every fixture that did not",
+       _JL_ROWS["WARP-9402"]["approval_required"] is True
+       and _JL_ROWS["WARP-9401"]["approval_required"] is False
+       and [s for s in _JL_IDS if _JL_ROWS[s]["approval_required"]] == ["WARP-9402"])
+# The other surface field the pair carries. The seeded corpus is built with NO protected patterns,
+# so the true half needs its own fixture pair through the SAME corpus reader: one footprint inside
+# the protected pattern and one outside it.
+with tempfile.TemporaryDirectory() as _jl_dir_prot:
+    _jl_prot_dir = Path(_jl_dir_prot) / "specs"
+    _jl_prot_dir.mkdir()
+    (_jl_prot_dir / "WARP-9420.md").write_text(
+        _jl_spec_text("WARP-9420", footprint=(".veldo/policy.yaml",)))
+    (_jl_prot_dir / "WARP-9421.md").write_text(
+        _jl_spec_text("WARP-9421", footprint=("docs/notes.md",)))
+    _JL_PROT_ROWS = {r["spec"]: r for r in JL.build(
+        JLTC.build(specs_dir=_jl_prot_dir, events=[], protected=(".veldo/*",)), [])["rows"]}
+expect("WARP-1407 AC1: the pair carries protected_touch from the corpus - true for a footprint "
+       "inside the protected pattern, false for one outside it, and false everywhere when the "
+       "corpus was built with no protected patterns at all",
+       _JL_PROT_ROWS["WARP-9420"]["protected_touch"] is True
+       and _JL_PROT_ROWS["WARP-9421"]["protected_touch"] is False
+       and all(_JL_ROWS[s]["protected_touch"] is False for s in _JL_IDS))
+
 expect("WARP-1407 AC1: the pair line carries both axes, the split and the shape",
        all(s in JL.pair_line(_JL_ROWS["WARP-9402"])
            for s in ("WARP-9402", "toe 50 tok", "judgment 60 min", "[review 20, approval 40]",
@@ -194,6 +247,18 @@ expect("WARP-1407 AC1 NEGATIVE CONTROL: a plan the item map does not declare rep
        "denominator as unknown rather than inventing one",
        _JL_REPORT["plans"][JL.NO_PLAN]["work_items"] is None
        and _JL_REPORT["plans"][JL.NO_PLAN]["specs"] == 1)
+# THE RENDERED plan line, not only the dict behind it. AC1's denominator promise is a promise about
+# what a READER sees, and a fallback printing the plan's own spec count where the declared count
+# goes would make a partial roll-up read as complete with every dict assertion above still green.
+# Pinned as the WHOLE line, so a swapped column (minutes rendered in the tokens place, the spec
+# count rendered as the known-count) reds here too rather than only the denominator.
+expect("WARP-1407 AC1: the rendered plan line carries the declared denominator and every column in "
+       "its own place, and a plan the item map does not declare renders '(not declared)' rather "
+       "than a number of its own",
+       "  PLAN-9400        3 of 4 work item spec(s) in the corpus  toe 1150 tok (3 known)  "
+       "judgment 75 min (3 known)  episodes 5" in _JL_TEXT
+       and "  (no plan)        1 of (not declared) work item spec(s) in the corpus  toe 0 tok "
+       "(0 known)  judgment 0 min (0 known)  episodes 3" in _JL_TEXT)
 
 # plan_items_from_registry reads the declared items THROUGH the one plan registry (which parses with
 # validate.parse_yamlish); it is the only front-matter reading this module does, and it stands down
@@ -212,21 +277,50 @@ expect("WARP-1407 AC1 NEGATIVE CONTROL: a work item declaring no spec id contrib
 # AC2. AN UNRECORDED AXIS IS "NOT RECORDED", NEVER A ZERO, AND THE GAP IS A NUMBER.
 # ---------------------------------------------------------------------------------------
 _JL_COV, _JL_BARE_COV = _JL_REPORT["coverage"], _JL_BARE_REPORT["coverage"]
-expect("WARP-1407 AC2: coverage counts what is measured on the seeded log",
-       (_JL_COV["records"], _JL_COV["minutes_known"], _JL_COV["tokens_known"],
-        _JL_COV["pair_known"], _JL_COV["usable_as_second_axis"], _JL_COV["classifiable"])
-       == (6, 4, 4, 4, True, True))
+# EVERY FIGURE THE COVERAGE BLOCK PUBLISHES, counts AND percentages, pinned as ONE tuple against
+# the same fixture. The percentages are the half a reader acts on and they were the half nothing
+# asserted: a hardcoded 1.0 would print "judgment minutes known on 0 (100.0%)", a confident
+# full-coverage claim over an empty axis. Pinned in both directions, and the fixture is designed so
+# they are not all the same number: with the figures stripped, minutes/tokens/pair coverage go to
+# 0.0 while episodes coverage stays 0.6667, so one percentage substituted for another also reds.
+expect("WARP-1407 AC2: coverage counts AND percentages over the seeded log, every published figure",
+       (_JL_COV["records"], _JL_COV["minutes_known"], _JL_COV["minutes_coverage"],
+        _JL_COV["tokens_known"], _JL_COV["tokens_coverage"],
+        _JL_COV["pair_known"], _JL_COV["pair_coverage"],
+        _JL_COV["split_known"], _JL_COV["episodes_known"], _JL_COV["episodes_coverage"],
+        _JL_COV["usable_as_second_axis"], _JL_COV["classifiable"])
+       == (6, 4, 0.6667, 4, 0.6667, 4, 0.6667, 1, 4, 0.6667, True, True))
 expect("WARP-1407 AC2 NEGATIVE CONTROL: with no figure anywhere the same six rows are produced "
-       "and coverage reports zero known, not zero cost",
-       (_JL_BARE_COV["records"], _JL_BARE_COV["minutes_known"], _JL_BARE_COV["tokens_known"],
-        _JL_BARE_COV["pair_known"], _JL_BARE_COV["usable_as_second_axis"],
-        _JL_BARE_COV["classifiable"]) == (6, 0, 0, 0, False, False))
+       "and coverage reports zero known and zero percent, not zero cost - while the episode "
+       "coverage, which IS recorded, stays where it was",
+       (_JL_BARE_COV["records"], _JL_BARE_COV["minutes_known"], _JL_BARE_COV["minutes_coverage"],
+        _JL_BARE_COV["tokens_known"], _JL_BARE_COV["tokens_coverage"],
+        _JL_BARE_COV["pair_known"], _JL_BARE_COV["pair_coverage"],
+        _JL_BARE_COV["split_known"], _JL_BARE_COV["episodes_known"],
+        _JL_BARE_COV["episodes_coverage"], _JL_BARE_COV["usable_as_second_axis"],
+        _JL_BARE_COV["classifiable"]) == (6, 0, 0.0, 0, 0.0, 0, 0.0, 0, 4, 0.6667, False, False))
+# And the percentages AS RENDERED, because the coverage line is where a reader meets them. The whole
+# line is pinned in both reports, so a percentage that is right in the dict and wrong on the way to
+# the page reds here.
+_JL_BARE_TEXT = JL.render(_JL_BARE_REPORT)
+expect("WARP-1407 AC2: the rendered coverage line carries every count with its own percentage, and "
+       "on the log carrying no figure it reads 0.0 percent rather than a confident full coverage",
+       "coverage: 6 record(s); judgment minutes known on 4 (66.7%), tokens on 4 (66.7%), both on 4 "
+       "(66.7%); judgment split known on 1; episodes on 4" in _JL_TEXT
+       and "coverage: 6 record(s); judgment minutes known on 0 (0.0%), tokens on 0 (0.0%), both on "
+       "0 (0.0%); judgment split known on 0; episodes on 4" in _JL_BARE_TEXT)
 expect("WARP-1407 AC2: the report SAYS the axis is unusable when nothing is recorded, in words, "
-       "rather than printing zeros",
-       "NOT USABLE AS A SECOND AXIS YET" in JL.render(_JL_BARE_REPORT)
-       and "not recorded" in JL.render(_JL_BARE_REPORT))
-expect("WARP-1407 AC2 NEGATIVE CONTROL: that banner is absent when minutes ARE recorded",
-       "NOT USABLE AS A SECOND AXIS YET" not in _JL_TEXT)
+       "rather than printing zeros, and says the same about the labels it therefore withholds",
+       "NOT USABLE AS A SECOND AXIS YET" in _JL_BARE_TEXT
+       and "not recorded" in _JL_BARE_TEXT
+       and "NOT CLASSIFIABLE YET" in _JL_BARE_TEXT
+       and "reference: 0 record(s) carry both axes" in _JL_BARE_TEXT
+       and _JL_BARE_REPORT["reference"]["reason"] in _JL_BARE_TEXT)
+expect("WARP-1407 AC2 NEGATIVE CONTROL: both banners are absent when minutes ARE recorded and the "
+       "population carries the labels, so neither is a banner that always prints",
+       "NOT USABLE AS A SECOND AXIS YET" not in _JL_TEXT
+       and "NOT CLASSIFIABLE YET" not in _JL_TEXT
+       and "reference: medians over the 4 record(s) carrying both axes" in _JL_TEXT)
 
 # The four shapes, which is what a second axis buys: the first label is the class no single-axis
 # unit could ever show.
@@ -431,6 +525,12 @@ expect("WARP-1407 AC5: every field this module reads off an event is a field the
 # AC5 (second half). ADOPTION SAFE: the derivation WRITES NOTHING. Asserted behaviourally over a
 # tree digest rather than by grepping the source for the absence of a write, because an absent call
 # is a fact about today's text while an unchanged tree is a fact about the run.
+#
+# TWO TREES, AND ONLY THE SECOND ONE COULD EVER MOVE. The first block below digests the tree the
+# FIXTURES were seeded into, which is a READ-ONLY-INPUT check and is labelled as one: build() is
+# handed parsed records and holds no path at all, so no edit to the module could turn that digest
+# red. The tree the write-nothing property is actually about is the one every path in this module is
+# built from - JL.ROOT, resolved at call time - and that is the second block.
 # ---------------------------------------------------------------------------------------
 def _jl_digest(root):
     h = _jl_hashlib.sha256()
@@ -453,13 +553,62 @@ with tempfile.TemporaryDirectory() as _jl_dir2:
     _jl_r = JL.build(_jl_c, _JL_EVENTS, _JL_PLAN_ITEMS)
     JL.render(_jl_r)
     _jl_after = _jl_digest(_jl_dir2)
-    expect("WARP-1407 AC5: building and rendering the pair leaves the tree it read "
-           "byte-identical (it writes nothing)", _jl_before == _jl_after)
+    expect("WARP-1407 AC5 READ-ONLY INPUTS: building and rendering the pair leaves the INPUT tree "
+           "the fixtures were seeded into byte-identical", _jl_before == _jl_after)
     # POSITIVE CONTROL on the instrument itself: the digest DOES move when a byte changes, so the
     # equality above is a measurement rather than a digest that cannot notice anything.
     (Path(_jl_dir2) / "events.jsonl").write_text("changed\n")
     expect("WARP-1407 AC5 CONTROL: the tree digest notices a single changed file, so the "
            "unchanged result above is evidence", _jl_digest(_jl_dir2) != _jl_after)
+
+# THE TREE THE MODULE RESOLVES AGAINST. A hermetic repository is seeded at a temp path - the
+# package's own modules, a specs directory, an event log - JL.ROOT is pointed at it for the duration,
+# and the WHOLE tree is digested around the full repo-shaped call: _repo_report(), which reaches for
+# the log, the corpus, the protected set and the plan registry through ROOT, and render(). A writer
+# anywhere under ROOT, which is the only shape a state file in this package could take, moves the
+# digest. The call is asserted to have really run over that tree in the same breath as the digest,
+# so an exception or an empty corpus cannot be what kept the tree unchanged.
+with tempfile.TemporaryDirectory() as _jl_dir3:
+    _jl_root3 = Path(_jl_dir3)
+    (_jl_root3 / ".veldo").mkdir()
+    (_jl_root3 / "specs").mkdir()
+    (_jl_root3 / "plans").mkdir()
+    for _jl_mod in sorted((ROOT / ".veldo").glob("*.py")):
+        (_jl_root3 / ".veldo" / _jl_mod.name).write_bytes(_jl_mod.read_bytes())
+    for _sid, _opts in sorted(_JL_SPECS.items()):
+        (_jl_root3 / "specs" / ("%s.md" % _sid)).write_text(_jl_spec_text(_sid, **_opts))
+    (_jl_root3 / ".veldo" / "events.jsonl").write_text(
+        "\n".join(json.dumps(e, sort_keys=True) for e in _JL_EVENTS) + "\n")
+    _jl_root_saved, _jl_pyc_saved = JL.ROOT, _jl_sys.dont_write_bytecode
+    try:
+        # The ONE thing suppressed for the duration, and it is the interpreter writing rather than
+        # the derivation: loading the sibling modules by path caches their bytecode, which would put
+        # a .veldo/__pycache__ into the seeded tree (measured: seven .pyc files, and nothing else).
+        # Suppressing it is what lets the digest cover the WHOLE tree with no exclusion list, which
+        # is a list a real writer could hide behind.
+        JL.ROOT, _jl_sys.dont_write_bytecode = _jl_root3, True
+        _jl_root_before = _jl_digest(_jl_root3)
+        _jl_repo = JL._repo_report()
+        _jl_repo_text = JL.render(_jl_repo)
+        _jl_root_after = _jl_digest(_jl_root3)
+    finally:
+        JL.ROOT, _jl_sys.dont_write_bytecode = _jl_root_saved, _jl_pyc_saved
+    expect("WARP-1407 AC5: reporting over the tree the module RESOLVES against leaves that tree "
+           "byte-identical, and the derivation demonstrably ran over it (six rows, six records, a "
+           "rendered report) rather than standing down",
+           _jl_root_before == _jl_root_after
+           and len(_jl_repo["rows"]) == 6 and _jl_repo["coverage"]["records"] == 6
+           and "EFFORT IS A PAIR" in _jl_repo_text
+           and sorted(_jl_repo["plans"]) == [JL.NO_PLAN, "PLAN-9400", "PLAN-9401"])
+    expect("WARP-1407 AC5 CONTROL: ROOT is restored afterwards, so the assertions below read the "
+           "real repository and not the fixture tree",
+           JL.ROOT == ROOT and _jl_sys.dont_write_bytecode == _jl_pyc_saved)
+    # POSITIVE CONTROL on this digest call site: ONE new file under .veldo/, which is the shape a
+    # state writer in this package would take, moves it.
+    (_jl_root3 / ".veldo" / "judgment_load_state.jsonl").write_text("{}\n")
+    expect("WARP-1407 AC5 CONTROL: the digest over the ROOT tree notices one new file under "
+           ".veldo/, so the byte-identical result above is a measurement",
+           _jl_digest(_jl_root3) != _jl_root_after)
 
 # ---------------------------------------------------------------------------------------
 # LIVE, over this repository's real corpus and real log. Two properties that must hold whatever the

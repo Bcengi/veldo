@@ -49,10 +49,13 @@ labels the structure right or wrong, because that threshold is nobody's measurem
 the refitted layer's range IS the observed envelope of implied scales, so disagreement widens
 the range rather than hiding in it.
 
-THE REFIT IS SCORED OUT OF SAMPLE. Fitting on a set and then scoring that same set measures
-nothing: the fit has already seen the answers. `holdout` refits for each record from all the
-OTHERS and scores that record against the range it would have been given, and `compare` puts
-the ledger's own accuracy (the prior estimator) beside it.
+THE REFIT IS SCORED OUT OF SAMPLE, AND AGAINST THE SAME POPULATION IT WAS SCORED OVER. Fitting on
+a set and then scoring that same set measures nothing: the fit has already seen the answers.
+`holdout` refits for each record from all the OTHERS and scores that record against the range it
+would have been given, and every record it could NOT refit for is a named skip rather than an
+absence. `compare` then puts the prior estimator's accuracy OVER EXACTLY THE RECORDS THE REFIT
+SCORED beside it, because a delta between two different populations is an improvement nobody
+measured: the whole-ledger accuracy is still reported, and it never enters a delta.
 
 WHY A NEW LAYER AND NOT A NEW RANGE. The committed range is the ENVELOPE of its layers and an
 envelope only widens (WARP-1402 AC2, which is NG6 in arithmetic). So nothing here narrows a
@@ -102,12 +105,26 @@ ACTUAL_SOURCES = {
                 "repository) rather than read from the log",
 }
 
-# WHICH WAY THE ESTIMATOR IS WRONG WHEN IT IS WRONG. A mean error above zero means actuals
-# landed above the committed highs, so the ESTIMATOR was too low.
+# WHICH WAY THE ESTIMATOR IS WRONG WHEN IT IS WRONG, and it is COUNTED rather than averaged.
+# The direction is decided by how many actuals landed above the committed range against how many
+# landed below it, because those two are the same kind of thing and can be compared.
+#
+# THE MEAN ERROR CANNOT DECIDE THIS, and that is a measured fact about `error_pct_of` rather than
+# a stylistic preference: the denominator is THE BOUND THE ACTUAL MISSED, so an undershoot can
+# never pass -99 percent (the actual cannot be less than zero) while an overshoot is unbounded.
+# The two directions are therefore not on one scale, and the sign of their mean can be the exact
+# OPPOSITE of the counts: three records against 300000..600000 with actuals 100000, 100000 and
+# 1800000 give errors -66, -66 and +200, a mean of +23, while TWO landed below and one above.
+# `mean_error_pct` is still reported, as the mean of the bound-relative errors it is, and it is
+# never read as a direction.
 BIAS = {
-    "under_estimating": "actuals land above the committed range more than below it",
-    "over_estimating": "actuals land below the committed range more than above it",
-    "balanced": "the mean error is zero: the misses cancel, which is not the same as no misses",
+    "under_estimating": "MORE actuals landed above the committed range than below it, so the "
+                        "estimator was too low more often than it was too high",
+    "over_estimating": "MORE actuals landed below the committed range than above it, so the "
+                       "estimator was too high more often than it was too low",
+    "balanced": "as many actuals landed above the committed range as below it, which includes "
+                "none of either when every actual was in range: the DIRECTIONS cancel, which is "
+                "not the same as no misses",
 }
 
 # The trailing window the accuracy line is quoted over, so a long-stale history cannot flatter
@@ -150,6 +167,9 @@ FEATURE_KEYS = ("acceptance_criteria", "risk", "protected_touch", "regression_su
 # for a sharper reason: `fit` reads exactly these, so a record missing one of them contributes
 # nothing to a refit and has to say so by being refused rather than by being quietly dropped.
 DECOMP_KEYS = ("structural_weight_tenths", "declared_scale", "implied_scale", "scale_error_pct")
+# The three of those a refit actually divides by, named once so the predicate that SELECTS the
+# fittable records and the reason handed to a record that is not one read the same list.
+FIT_KEYS = ("structural_weight_tenths", "declared_scale", "implied_scale")
 RECORD_OPTIONAL = ("era", "note") + FEATURE_KEYS + DECOMP_KEYS
 RECORD_ORDER = ("schema", "spec", "reconciled_at", "unit", "estimate_committed_at",
                 "estimate_calibration", "estimate_low", "estimate_high", "actual",
@@ -774,8 +794,12 @@ def accuracy(records, window=None):
     # THE WIDTH THE HIT RATE WAS BOUGHT WITH, always beside it, because a hit rate on its own is
     # gameable by widening: "between one token and a billion" never misses.
     out["mean_width_pct"] = _mean_int([w for _o, _e, w in triples])
-    out["bias"] = ("balanced" if out["mean_error_pct"] == 0 else
-                   "under_estimating" if out["mean_error_pct"] > 0 else "over_estimating")
+    # THE DIRECTION IS COUNTED, NEVER AVERAGED. See the BIAS table: the mean of the
+    # bound-relative errors is not a direction, because an undershoot is floored at -99 percent
+    # while an overshoot is unbounded, so its sign can contradict the counts it would be read as.
+    out["bias"] = ("balanced" if out["counts"]["above"] == out["counts"]["below"] else
+                   "under_estimating" if out["counts"]["above"] > out["counts"]["below"]
+                   else "over_estimating")
     out["first"], out["last"] = rows[0].get("reconciled_at"), rows[-1].get("reconciled_at")
     out["reason"] = ("%d of %d record(s) in range%s"
                      % (hits, len(rows),
@@ -823,6 +847,13 @@ def curve(records, window=WINDOW):
 # The refit: correcting the one number in the estimator that was never measured.
 # ---------------------------------------------------------------------------------------
 
+def _fittable_one(rec):
+    """Whether ONE record carries the numbers a scale can be fitted from. The ONE spelling of
+    that predicate: `fittable` selects with it and `holdout` explains a skip with it, so the set
+    that gets refitted and the set that gets a reason can never disagree about who is in it."""
+    return all(_is_int(rec.get(k)) and rec[k] > 0 for k in FIT_KEYS)
+
+
 def fittable(records, exclude=None):
     """The records a scale can be fitted from: those carrying the whole structure-and-scale
     block. `exclude` drops one spec, which is what makes the held-out scoring below possible."""
@@ -830,8 +861,7 @@ def fittable(records, exclude=None):
     for r in ordered(records):
         if exclude is not None and r.get("spec") == exclude:
             continue
-        if all(_is_int(r.get(k)) and r[k] > 0
-               for k in ("structural_weight_tenths", "declared_scale", "implied_scale")):
+        if _fittable_one(r):
             out.append(r)
     return out
 
@@ -959,6 +989,14 @@ def recalibrated_layer(weight_tenths, fitted, note=None):
         # knows this range is not as tight as the records looked.
         "spread_floor_applied": EST.YES if floored else EST.NO,
         "min_fitted_spread_pct": MIN_FITTED_SPREAD_PCT,
+        # THE RATIO THE FLOOR WIDENS BY, and it is here because without it these inputs do NOT
+        # reproduce these bounds. MIN_FITTED_SPREAD_PCT is the TEST the floor applies; the
+        # widening itself is HALF_SPREAD_PCT each way about the fitted scale (recalibrated_range),
+        # so a floored layer recording only the test reproduced the fitted point twice over: a
+        # POINT, the one shape NG6 refuses, against real bounds that were hundreds of thousands of
+        # tokens apart. Recorded in both branches, because a reader recomputing these bounds
+        # should not have to know which arithmetic ran to know it has every number it ran on.
+        "half_spread_pct": HALF_SPREAD_PCT,
     }
     if fitted.get("era"):
         ins["era"] = fitted["era"]
@@ -1010,9 +1048,24 @@ def holdout(records, min_sample=MIN_REFIT_SAMPLE):
 
     A record whose remaining set is too small to fit from is SKIPPED AND COUNTED, never scored
     as a miss and never as a hit. The figures are computed by the same `accuracy` function the
-    ledger's own headline uses, so before and after are the same measurement."""
+    ledger's own headline uses, so before and after are the same measurement.
+
+    EVERY RECORD OF THE LEDGER IS IN EXACTLY ONE OF `rows` AND `skipped`, which is what makes the
+    count honest. A record carrying no structure-and-scale block can never be refitted at all,
+    and it used to appear in NEITHER list: the population `after` was scored over was then
+    quietly smaller than the ledger, with nothing on the page saying whose absence it was. It is
+    now a skip WITH ITS REASON, so `scored + skipped == len(records)` and `compare` below can
+    pair its two figures over one population rather than two."""
     rows, skipped = [], []
-    for r in fittable(records):
+    for r in ordered(records):
+        if not _fittable_one(r):
+            skipped.append({"spec": r.get("spec"), "reason":
+                            "this record carries no usable structure-and-scale block (%s), so "
+                            "there is no structural weight to apply a refitted scale to and no "
+                            "range the refit would have given it: it is skipped and COUNTED, "
+                            "never scored as a miss and never as a hit"
+                            % ", ".join(FIT_KEYS)})
+            continue
         f = fit(records, exclude=r["spec"], min_sample=min_sample)
         if not f["fitted"]:
             skipped.append({"spec": r["spec"], "reason": f["reason"]})
@@ -1028,6 +1081,9 @@ def holdout(records, min_sample=MIN_REFIT_SAMPLE):
     out["skipped"] = skipped
     out["rows"] = rows
     out["min_sample"] = min_sample
+    # THE LEDGER IS THE LEDGER, not the part of it this scored: `accuracy` was handed the scored
+    # rows, so its own `ledger` figure would be the scored count wearing the ledger's name.
+    out["ledger"] = len(records)
     if not rows:
         out["reason"] = ("no record could be scored out of sample: %s"
                          % (skipped[0]["reason"] if skipped else
@@ -1039,12 +1095,24 @@ def holdout(records, min_sample=MIN_REFIT_SAMPLE):
 def compare(records, min_sample=MIN_REFIT_SAMPLE):
     """The prior estimator and the refitted one, side by side, and the deltas between them.
 
-    THIS IS THE CLAIM THE ITEM HAS TO BE ABLE TO MAKE AND HAS TO BE ABLE TO REFUSE. `before` is
-    the accuracy of the estimates as they were actually committed; `after` is the held-out
-    accuracy of the refitted estimator. A negative `mean_abs_error_delta_pct` with a hit rate
-    that did not fall is recalibration measurably reducing bias. When either side is unmeasured,
-    `measured` is False and no delta is reported, because a comparison against nothing is the
-    most flattering number an estimator could publish.
+    THIS IS THE CLAIM THE ITEM HAS TO BE ABLE TO MAKE AND HAS TO BE ABLE TO REFUSE. `after` is
+    the held-out accuracy of the refitted estimator, and it can only be measured over the records
+    a scale can be refitted for. `paired_before` is the accuracy of the estimates as they were
+    actually committed OVER EXACTLY THOSE SAME RECORDS, and it is the ONLY thing a delta is taken
+    against. A negative `mean_abs_error_delta_pct` with a hit rate that did not fall is
+    recalibration measurably reducing bias, on one population.
+
+    EVERY DELTA HERE IS LIKE FOR LIKE, and it was not always: `before` used to be the accuracy of
+    the WHOLE ledger while `after` covered only the fittable part of it, so a ledger mixing
+    records that carry a structural proxy with records that do not published a delta between TWO
+    DIFFERENT POPULATIONS. That is not a subtle case: build_record omits the structure-and-scale
+    block for every analogy-only or sizing-only estimate, so a mixed ledger is the ordinary state.
+    A ledger where the refit provably changed nothing on the records it touched, plus two records
+    the prior missed by 10x and the refit never saw, reported "mean absolute error 300 to 0
+    percent" and `improved: True`. The 300 was the two records that were only ever in one of the
+    two figures. `before`, the whole-ledger accuracy, is still reported because it is the honest
+    headline for the ledger, but it is UNPAIRED: it never enters a delta, and `unpaired` names
+    every record that is in it and not in `after`, with the reason the refit could not score it.
 
     AND THE WIDTH DELTA IS ON THE SAME LINE, because an improvement bought by widening the range
     is not the same achievement as one bought by centring it. A refit over records that disagree
@@ -1052,7 +1120,10 @@ def compare(records, min_sample=MIN_REFIT_SAMPLE):
     `width_delta_pct` is what makes that visible instead of letting it read as calibration."""
     before = accuracy(records)
     after = holdout(records, min_sample=min_sample)
-    out = {"before": before, "after": after, "measured": False,
+    scored = [r["spec"] for r in after["rows"]]
+    paired_before = accuracy([r for r in records if r.get("spec") in set(scored)])
+    out = {"before": before, "after": after, "paired_before": paired_before,
+           "population": scored, "unpaired": after["skipped"], "measured": False,
            "hit_rate_delta_pct": None, "mean_abs_error_delta_pct": None,
            "mean_error_delta_pct": None, "width_delta_pct": None, "improved": None,
            "reason": ""}
@@ -1063,20 +1134,35 @@ def compare(records, min_sample=MIN_REFIT_SAMPLE):
     if not after["measured"]:
         out["reason"] = "the refit scored nothing out of sample: %s" % after["reason"]
         return out
+    if not paired_before["measured"] or paired_before["n"] != after["scored"]:
+        # FAIL CLOSED ON THE POPULATION ITSELF. The two sides are built from one spec list, so
+        # this can only differ if the ledger carries a spec twice, and a delta between a
+        # population of 5 and a population of 6 is the exact defect this function refuses.
+        out["reason"] = ("the prior could not be scored over the same %d record(s) the refit "
+                         "scored (%d paired): no delta is reported, because a delta between two "
+                         "different populations is an improvement nobody measured"
+                         % (after["scored"], paired_before["n"]))
+        return out
     out["measured"] = True
-    out["hit_rate_delta_pct"] = after["hit_rate_pct"] - before["hit_rate_pct"]
+    out["hit_rate_delta_pct"] = after["hit_rate_pct"] - paired_before["hit_rate_pct"]
     out["mean_abs_error_delta_pct"] = (after["mean_abs_error_pct"]
-                                      - before["mean_abs_error_pct"])
-    out["mean_error_delta_pct"] = abs(after["mean_error_pct"]) - abs(before["mean_error_pct"])
-    out["width_delta_pct"] = after["mean_width_pct"] - before["mean_width_pct"]
+                                      - paired_before["mean_abs_error_pct"])
+    out["mean_error_delta_pct"] = (abs(after["mean_error_pct"])
+                                   - abs(paired_before["mean_error_pct"]))
+    out["width_delta_pct"] = after["mean_width_pct"] - paired_before["mean_width_pct"]
     out["improved"] = (out["mean_abs_error_delta_pct"] < 0
                        and out["hit_rate_delta_pct"] >= 0)
-    out["reason"] = ("held-out refit over %d of %d record(s): mean absolute error %d to %d "
-                     "percent, hit rate %d to %d percent, mean range width %d to %d percent"
-                     % (after["scored"], before["n"], before["mean_abs_error_pct"],
-                        after["mean_abs_error_pct"], before["hit_rate_pct"],
-                        after["hit_rate_pct"], before["mean_width_pct"],
-                        after["mean_width_pct"]))
+    out["reason"] = ("held-out refit over %d of %d record(s), scored against the prior over "
+                     "THOSE SAME %d: mean absolute error %d to %d percent, hit rate %d to %d "
+                     "percent, mean range width %d to %d percent%s"
+                     % (after["scored"], before["n"], after["scored"],
+                        paired_before["mean_abs_error_pct"], after["mean_abs_error_pct"],
+                        paired_before["hit_rate_pct"], after["hit_rate_pct"],
+                        paired_before["mean_width_pct"], after["mean_width_pct"],
+                        "" if after["scored"] == before["n"] else
+                        "; the other %d record(s) of the ledger are in NEITHER figure and are "
+                        "listed unpaired, so no part of this delta is theirs"
+                        % (before["n"] - after["scored"])))
     return out
 
 
@@ -1153,6 +1239,11 @@ def render(view):
                       else "the refit does NOT improve on the prior out of sample"))
     else:
         out.append("recalibration: NOT COMPARABLE. %s" % cmp_["reason"])
+    # THE RECORDS THE DELTA IS NOT ABOUT, BY NAME. The comparison above is over one population,
+    # and the honest way to say a record was left out of both figures is to name it here rather
+    # than to leave a reader subtracting two counts.
+    for s in cmp_.get("unpaired") or []:
+        out.append("  unpaired: %-14s %s" % (s["spec"], s["reason"]))
     for s in view["pending"]:
         out.append("pending: %-14s %s" % (s["spec"], s["reason"]))
     return out

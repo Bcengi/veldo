@@ -96,7 +96,18 @@ acceptance_criteria:
       how many that was. POSITIVE CONTROL: a record carrying real spend produces the real numbers
       and flips `usable_as_cost_ground_truth`, so the None is the absence of data and not a
       hardcoded value. MEASURED OVER THIS REPOSITORY: 0 of 174 records carry any spend, so every
-      cost field in the live map is None and the map is a CYCLES map today.
+      cost field in the live map is None and the map is a REVIEW-CYCLE map today.
+      AND THE SAME DISCIPLINE APPLIES TO THE GATE CYCLES, IN THE DATA RATHER THAN IN THIS SPEC'S
+      PROSE. The gate emitter names no spec: `scripts/verify.sh` appends gate.passed and gate.failed
+      carrying a commit, and `toe_corpus.cycles_for` joins on spec_id or correlation_id, so no gate
+      run can reach a record. `gate_passes` and `gate_failures` are therefore None with `gate_basis`
+      unrecorded and `gate_coverage` 0.0 whenever no record in a set carried a gate event, review
+      verdicts are counted separately with their own basis and coverage because THAT emitter does
+      name the spec, `coverage.usable_as_rework_ground_truth` is the blunt boolean, and the report
+      carries a `cycle_notice` naming the emitter gap. cycles_coverage alone was not enough: a
+      review verdict satisfies events_seen, so it read 1.0 for areas with no gate-cycle data at all.
+      POSITIVE CONTROL: seeded records that DO carry gate events yield the real sums with
+      `gate_basis` recorded and no notice.
   - id: AC5
     text: >
       FAIL CLOSED AND BY NAME, THROUGH ONE ENUMERATION. A malformed actuals record is REFUSED with a
@@ -117,10 +128,19 @@ acceptance_criteria:
       empty, and neither raises. The report is byte-identical across repeated runs AND across a
       REVERSED corpus, so it is a function of the record set and not of harvest order; nothing reads
       a clock, mints an id or writes a file. NEGATIVE CONTROL: a populated corpus with a contract
-      does NOT stand down, so the stand-downs are the missing inputs' doing. And no gate stage
-      invokes this module: a selftest scans the nine files the gate actually runs and requires the
-      module's name to be absent from all of them, with a positive control requiring the same scan
-      to find `shape_gate.py` inside `scripts/verify.sh`.
+      does NOT stand down, so the stand-downs are the missing inputs' doing. AND NO GATE STAGE
+      CONSUMES THIS MODULE'S OUTPUT, over a domain DERIVED rather than typed: a selftest parses
+      `scripts/verify.sh` for every catalog item declared required and every direct invocation in the
+      always-run body, closes that set transitively over what each member executes or loads, and
+      requires the module's name to be absent from every file in the closure. The domain is asserted
+      to be real before the absence is claimed over it (every required declaration contributes a
+      path, the stage set covers the six required scripts plus validate.py, shape_gate.py and
+      events.py, the closure is strictly larger than the stage set and every member exists), because
+      a universal claim over a hand-typed list is a claim about the list. `scripts/selftest.py` IS a
+      required stage and it DOES load this module, because it executes this item's own suite: that is
+      a test dependency rather than a consumer, it is named here rather than glossed, and it is
+      bounded by requiring that this item's fragment is the only suite fragment in the repository
+      that names the module at all.
   - id: AC7
     text: >
       THE CROSS-PLAN SEAM IS PROSE AND A SHARED RESOLVER, NEVER A DEPENDENCY EDGE (PLAN-0014 C6).
@@ -174,22 +194,35 @@ item is the other half of that sentence, and the difference is the point:
 
 ## The finding, measured over this repository
 
-Run over this repository's own corpus and contract on 2026-08-10:
+Run over this repository's own corpus and contract on 2026-08-11, and EACH FIGURE IS LABELLED WITH
+WHICH REPOSITORY IT WAS MEASURED IN, because the two differ for a structural reason rather than a
+drifting one:
 
-- **174 shipped-spec records, 137 (record, area) memberships, 107 attributed, 67 unattributed.**
-- **66 attributed by DECLARED placement, 41 by GIT PATH.** So 38 percent of what this map can
-  attribute at all rests on the weaker join, which is exactly why the basis is a field rather than
-  a footnote. The git-path records land almost entirely in two areas: docs (39) and enforcement (8),
-  which is what a corpus of pre-placement history looks like.
+- **174 shipped-spec records, 90 (record, area) memberships, 66 attributed, 108 unattributed, ALL 66
+  by DECLARED placement and 0 by git path.**
+- **THE GIT-PATH JOIN READS NOTHING HERE, AND THAT IS THE FLATTENED HISTORY RATHER THAN A DEFECT.**
+  In the predecessor repository, whose history this one does not carry, the same derivation produced
+  137 memberships with 107 attributed: 66 by declared placement and 41 by git path, landing almost
+  entirely in docs (39) and enforcement (8), which is what a corpus of pre-placement history looks
+  like. This repository begins at one root commit that names no spec id, so `toe_corpus.git_touched`
+  honestly reads no commits for every spec, the stand-down has nothing to stand down to, and those
+  41 records are unattributed instead. The join itself is asserted BEHAVIOURALLY over an injected
+  reader in the selftest, which runs everywhere; its live half is split out and stands down by name
+  (WARP-1711). The basis being a field rather than a footnote is what makes the difference between
+  the two repositories legible at all.
 - **0 of 174 records carry any spend. cost_coverage 0.0, usable_as_cost_ground_truth false.** Every
   cost field in the live map is None. WARP-1401 measured why and it has not changed: nothing in the
   loop emits tokens, because a token count is not knowable from inside a repository.
 - **AND A SECOND GAP THIS ITEM MEASURED, WHICH IS NEW: THE GATE CYCLES ARE UNATTRIBUTABLE TOO.**
-  1077 events in the log: 771 `gate.passed`, 135 `gate.failed`, 171 `verdict.recorded`. **Not one
-  of the 906 gate events carries a spec id or a correlation id** - `scripts/verify.sh` writes a
-  COMMIT and nothing else - so `gate_passes` and `gate_failures` are 0 for every spec in the corpus
-  and the cycle half of this map is REVIEW VERDICTS ONLY. WARP-1401's AC3 (failures counted
-  separately from passes) is real in its seeded selftest and structurally empty in production.
+  1123 events in the log: 798 `gate.passed`, 149 `gate.failed`, 176 `verdict.recorded`. **Not one
+  of the 947 gate events carries a spec id or a correlation id** - `scripts/verify.sh` writes a
+  COMMIT and nothing else - so no gate run can reach a spec and the cycle half of this map is
+  REVIEW VERDICTS ONLY. WARP-1401's AC3 (failures counted separately from passes) is real in its
+  seeded selftest and structurally empty in production. **THE MAP NOW SAYS THAT IN THE DATA:** those
+  fields are None with `gate_basis` unrecorded, not 0, and a `cycle_notice` names the emitter. They
+  printed as `gate_passes=0 gate_failures=0` beside `cycles: 1.0` coverage until 2026-08-11, which
+  is a confident zero of exactly the kind this module refuses to print for spend, and the disclosure
+  lived in this paragraph rather than in the report a consumer reads.
 
 What that means for the plan, stated rather than left for whoever first trusts a number: this map
 is usable TODAY as a per-area REVIEW-CYCLE map with an honest attribution basis. It becomes a
@@ -205,8 +238,13 @@ and neither is guessed at here.
 - Any change to `.veldo/entropy.py`, to PLAN-0011's contract, or to the architecture contract. The
   seam is prose and a shared resolver by construction (C6), and adding an edge would be the exact
   thing that constraint forbids.
-- Any enforcement. Nothing gates on these numbers (NG1). No gate stage calls this module, which
-  AC6 asserts rather than promises.
+- Any enforcement. Nothing gates on these numbers (NG1). No gate stage consumes this module's
+  output, which AC6 asserts over a derived domain rather than promises. The one gate stage that
+  LOADS it is `scripts/selftest.py`, which runs this item's suite.
+- Adding either engine twin to `scripts/check_template_sync.sh`'s PAIRS map. That file belongs to
+  another item's footprint, so the byte comparison for both pairs is asserted in this item's suite
+  instead, which is where the 1406 sibling asserts its own. The gate-level enforcement for every
+  later edit is a one-line-per-pair change to that script and is recorded here rather than made.
 - A capability entry. `.veldo/capabilities.yaml` is integrated by another process; the line to add
   is recorded in this item's handover notes.
 
@@ -214,10 +252,26 @@ and neither is guessed at here.
 
 - Write the label before the fallback. If git-path attribution exists for an afternoon without the
   basis field, somebody quotes a per-area figure that no human ever declared, and the habit starts.
-- Every assertion in the suite has a negative control beside it, and FOUR mutations were driven to
-  see reds from a clean 30 passed, 0 failed: unknown cost summing to zero (2 red), git-path
-  attribution mislabelled as a placement join (4 red), an unattributable record defaulted into the
-  first declared area (5 red), and the front-matter index blinded so no placement is ever seen
-  (6 red). The second is the instructive one: it left every per-area TOTAL identical and was caught
-  only by the basis assertions, which is the failure mode this item exists to prevent.
+- Every assertion in the suite has a negative control beside it, and FOUR mutations were driven
+  against the first revision of it to see reds from a clean 30 passed, 0 failed: unknown cost summing
+  to zero (2 red), git-path attribution mislabelled as a placement join (4 red), an unattributable
+  record defaulted into the first declared area (5 red), and the front-matter index blinded so no
+  placement is ever seen (6 red). The second is the instructive one: it left every per-area TOTAL
+  identical and was caught only by the basis assertions, which is the failure mode this item exists
+  to prevent.
+- BUT THOSE FOUR ALL LANDED IN THE PURE CORE, AND AN INDEPENDENT REVIEW FOUND THE HOLE THAT LEFT:
+  `repo_report()`, the function that produces every figure above, was called by nothing. Severing
+  either of its two joins left the suite at 30 passed while the live map lost every git-path
+  attribution and then every declared-placement attribution. The listed mutation 4 above reds only
+  because the suite calls `front_matter_index` directly; the identical change one call site later was
+  invisible. Fixed on 2026-08-11: the loader is injected so the wiring is drivable, `repo_report` is
+  driven over known inputs and over the real repository, the gate-domain claim is derived from
+  verify.sh instead of typed over nine literals that omitted three required stages, both engine twins
+  are byte-compared, and the gate cycles report None instead of a confident zero. THIRTEEN mutations
+  were driven one at a time in a scratch copy, each DIFFED to prove it applied, from a clean 38
+  passed, 0 failed; every one went red, and the list with its red counts is in the suite's docstring.
+- The suite's own crash-versus-red discipline is part of the fix: every live and wired call captures
+  its exception and reds the assertion that names it, because a raise at module scope takes every
+  assertion below it with it, and a mutation that silently deletes coverage is the failure this whole
+  remediation is about. Two of the thirteen mutations aborted the fragment before that was fixed.
 - RULE #1 clean (ASCII hyphen only, no em dash, no en dash, no prose double-hyphen).

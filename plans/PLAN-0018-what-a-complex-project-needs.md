@@ -354,6 +354,16 @@ price we already paid for it.
     And a proof bundle does not name the machinery that produced it, which for a method whose claim is
     that a stranger can check the evidence is an incomplete artifact. -> W9.
 
+24. **A duplicate plan id vanishes silently.** `plan_registry` in `.veldo/validate.py` is a plain
+    `reg[fm["id"]] = ...` with no duplicate check, so two plan files declaring the same id leave the
+    validator reporting zero errors while one of them disappears from every derived view. Found by five
+    plan critiques at once: all five drafts had been written declaring this plan's own id, and nothing
+    objected. A registry that silently drops a member is the same class as a check that cannot fail.
+25. **A release close receipt binds a member by front matter only.** `.veldo/plan.py` hashes front
+    matter with volatile keys dropped, so a member plan's entire body can be rewritten after the
+    receipt is written and the close still passes. The hole is exactly the size of a plan body. Found
+    while critiquing the release-layer draft, but it is a property of the shipped hasher.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

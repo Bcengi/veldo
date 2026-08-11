@@ -22,6 +22,14 @@ read, which is a refusal to REPORT and never a refusal of work; nothing in
 scripts/verify.sh names this module, so no exit code of mine reaches the gate. If a cap
 ever enforces anything, that is D4 and a separate spec with its own review.
 
+WHAT DOES REACH THE GATE IS THIS MODULE'S SUITE FRAGMENT, under the REQUIRED CHECK_unit
+slot, and that is the back door NG1 arrives through if nobody watches it: an assertion
+pinning this repository's EMPTY estimate ledger, its absent price record or its
+spend-free event stream would turn a required gate slot red the first time somebody
+committed an estimate, declared a rate or recorded a token - a number from this item
+stopping work. So the fragment asserts every empty-ledger SHAPE over FIXTURE trees, and
+over this repository it asserts only that the readings TRACK the records on disk.
+
 ***
 
 WHAT THIS IS NOT, AND THE DIVISION OF LABOUR WITH .veldo/budget.py, WHICH ALREADY EXISTS.
@@ -83,9 +91,10 @@ A PARTIAL SUM IS NOT A PLAN'S RANGE, and this is the honesty that matters most h
 plan with ten items and three estimates has a range for THREE ITEMS, and printing that as
 the plan's number understates it by however much the other seven cost. So coverage is
 counted, `complete` is a field, the unestimated items are NAMED, and a plan with NO
-estimates gets NO range at all: None, never 0. MEASURED over this repository: PLAN-0014
-has 10 work items and `.veldo/estimates/` does not exist, so today every roll-up here
-stands down and says so.
+estimates gets NO range at all: None, never 0. MEASURED 2026-08-10 over this repository:
+PLAN-0014 has 10 work items and `.veldo/estimates/` did not exist, so every roll-up here
+stood down and said so. That is a measurement carrying its date, not an invariant: the
+suite asserts that coverage TRACKS the records on disk, never that there are none.
 
 CALIBRATION TRAVELS WITH THE SUM. A total is `calibrated` only when EVERY contributing
 estimate is (the weakest link governs a sum, because one uncalibrated item is enough to
@@ -137,9 +146,11 @@ PACING, AND THE ZERO THAT WOULD BE A LIE.
 Pacing compares the range to `budget.plan_spend`. With nothing recorded, "0 percent of
 the estimate consumed" reads as a measurement of being on track, when the truth is that
 nobody has recorded anything. So `spend_recorded` is a field, and when it is false the
-position is None with the reason. MEASURED over this repository: 1095 events, 0 tokens, 0
-cost_usd, 0 human_minutes, and 0 correlations carrying spend at all, so pacing here stands
-down on real data rather than on a fixture.
+position is None with the reason. MEASURED 2026-08-10 over this repository: over a thousand
+events, 0 tokens, 0 cost_usd, 0 human_minutes, and 0 correlations carrying spend at all, so
+pacing here stood down on real data rather than on a fixture. The suite asserts that the
+recorded flag EQUALS toe_corpus.spend_for recomputed over the same stream, so the first
+recorded token moves the reading instead of reddening a required gate slot.
 
 THE PACING SEAM, AND THE FAILURE MODE IT REFUSES. `.veldo/governor.py` paces workers
 against rolling `Window(name, seconds, tokens)` budgets, and it returns ZERO WORKERS when
@@ -768,6 +779,26 @@ def program_rollup(views, rule=SUM_BOUNDS):
 # The pacing seam. Data, never a Window, and never the low bound.
 # ---------------------------------------------------------------------------------------
 
+def _coverage_detail(cov):
+    """How partial a roll-up is, IN THE WORDS OF WHICHEVER SHAPE IT IS.
+
+    Both public surfaces here produce a `coverage` block and the two blocks count different
+    things: a PLAN view counts work items (`items` / `estimated`) and a PROGRAM view counts
+    plans (`plans` / `with_range` / `partial_plans`). Discriminated on the declared key rather
+    than duck-typed, and a THIRD shape is refused BY NAME, because the alternative shipped
+    once: a plan-shaped format string reached with a program view raised KeyError from inside
+    a message, on the one branch that exists to stand down safely."""
+    if "items" in cov:
+        return "%s of %s work items estimated" % (cov.get("estimated"), cov.get("items"))
+    if "plans" in cov:
+        return ("%s of %s plan(s) carry a range and these are themselves partial: %s"
+                % (cov.get("with_range"), cov.get("plans"),
+                   ", ".join(cov.get("partial_plans") or []) or "none"))
+    raise ValueError("pacing_windows was handed a view whose coverage block is NEITHER a plan's "
+                     "(items) nor a program's (plans), so how partial it is cannot be stated: "
+                     "keys %r" % (sorted(cov),))
+
+
 def pacing_windows(view, horizons=()):
     """([window shapes], reason). PLAIN DICTS a caller may hand to .veldo/governor.py's
     Window(name, seconds, tokens), which is unmodified and not imported here.
@@ -783,14 +814,23 @@ def pacing_windows(view, horizons=()):
       - DATA, not a Window. Constructing the governor's object here would make this module
         the thing that paces; handing over numbers leaves that decision where it belongs,
         in the open, with whoever wires it (D4).
-    """
+
+    A PLAN VIEW AND A PROGRAM VIEW ARE BOTH ACCEPTED, and that is not a convenience: a
+    program roll-up is a public surface producing the same `tokens` block, so a caller
+    reaching the seam with one is ordinary. Both stand down identically, which is the whole
+    point - the shape that used to raise here was the PARTIAL one, the unsafe branch, while
+    the complete one passed through and emitted a window."""
     high = view.get("tokens", {}).get("high")
     if high is None:
-        return [], ("no range to pace against: %s" % (view.get("reason") or "no estimates"))
-    if not view["coverage"]["complete"]:
-        return [], ("the roll-up is PARTIAL (%d of %d items estimated), and pacing a whole pool "
-                    "against part of a plan's range would throttle on a number known to be too "
-                    "small" % (view["coverage"]["estimated"], view["coverage"]["items"]))
+        why = view.get("reason")
+        if not why:
+            why = ("no contributing plan carries a range"
+                   if "plans" in (view.get("coverage") or {}) else "no estimates")
+        return [], ("no range to pace against: %s" % why)
+    if not (view.get("coverage") or {}).get("complete"):
+        return [], ("the roll-up is PARTIAL (%s), and pacing a whole pool against part of a "
+                    "roll-up's range would throttle on a number known to be too small"
+                    % _coverage_detail(view.get("coverage") or {}))
     out = []
     for name, seconds in horizons:
         if seconds <= 0:
