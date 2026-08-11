@@ -330,12 +330,23 @@ def recorded_tokens(spend):
 
 
 def spend_fields_recorded(spend):
-    """The spend fields this record actually carries a number in, sorted, so a refusal can NAME what
-    WAS recorded instead of saying only what was not. "spend was recorded, but not in tokens" is a
-    third fact, distinct from "nothing was recorded at all", and a reader told which field does carry
-    a number knows where to look. The field names are read off the record rather than listed here,
-    because the field set is the corpus module's decision (`toe_corpus.SPEND_FIELDS`) and a second
-    list of it here would be a second answer to what spend is."""
+    """The spend fields this record actually carries a NON-ZERO number in, sorted, so a refusal can
+    NAME what WAS recorded instead of saying only what was not. "spend was recorded, but not in
+    tokens" is a third fact, distinct from "nothing was recorded at all", and a reader told which
+    field does carry a number knows where to look. The field names are read off the record rather
+    than listed here, because the field set is the corpus module's decision
+    (`toe_corpus.SPEND_FIELDS`) and a second list of it here would be a second answer to what spend
+    is.
+
+    WHY A RECORDED ZERO IS NOT NAMEABLE HERE, AND WHY THAT MAKES A FOURTH FACT RATHER THAN A GAP.
+    `toe_corpus.spend_for` initialises every field to 0 and then adds what the log carries, so a
+    zero in this dict is the DEFAULT for a field nobody recorded and is indistinguishable from a
+    zero somebody recorded on purpose. `spend.validate(spec, basis, tokens=0)` returns no problems,
+    so `veldo spend record --tokens 0` through the sanctioned writer produces exactly that: a record
+    whose `spend_recorded` flag is TRUE while every figure in it is zero. This function therefore
+    returns EMPTY for it, deliberately, because naming a field would be inventing the one the zero
+    came from - and the caller must say "recorded, and every figure is zero" instead of "nothing was
+    recorded", which is the one thing that shape is not."""
     out = []
     for k, v in sorted((spend or {}).items()):
         if k == "spend_recorded" or isinstance(v, bool):
@@ -432,7 +443,15 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
     and dividing its zero by the peg would print 0.000 pt: a confident zero, counted in the pointed
     denominator, contributing a zero to the total. Its row says which spend field WAS recorded and
     that the token count was not, because that is a third fact and not the same silence as a change
-    nobody recorded anything for."""
+    nobody recorded anything for.
+
+    FOUR SHAPES REACH THIS BRANCH, NOT THREE, AND THE FOURTH IS THE SANCTIONED WRITER'S OWN. A spend
+    record of `tokens=0` is accepted by `spend.validate` and comes out of the corpus with
+    `spend_recorded` TRUE and every figure zero, so no field can be named for it. It gets its OWN
+    reason, because telling that reader "no recorded spend" would be a false statement about a change
+    whose spend IS in the log: they would go looking for a missing record that is sitting right
+    there, recorded as a zero. The reason a message here is worth this much care is that it is the
+    ONLY thing the surface says about the row: the point is withheld either way."""
     rows = []
     for r in corpus:
         spend = r.get("spend") or {}
@@ -448,6 +467,11 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
                 row["reason"] = ("spend was recorded in %s but NOT in tokens, and a point is a "
                                  "ratio of tokens to tokens, so a point here would be a confident "
                                  "zero rather than a measurement" % ", ".join(recorded))
+            elif spend.get("spend_recorded"):
+                row["reason"] = ("spend WAS recorded for this change and every recorded figure is "
+                                 "zero, so there is no field to name and nothing was measured: a "
+                                 "point here would divide a recorded zero by the peg and present it "
+                                 "as a measurement")
             else:
                 row["reason"] = ("no recorded spend, so a point here would be a confident zero "
                                  "rather than a measurement")
@@ -486,7 +510,15 @@ def render_lines(view, price_per_1k_tokens=None):
 
     THE DOLLAR COLUMN IS DERIVED FROM RAW TOKENS AND THE POINT IS NOT. That is the design: a point
     is a ratio of tokens to tokens, so a price change moves the money and cannot move a single
-    point, and neither one touches a stored actual."""
+    point, and neither one touches a stored actual.
+
+    THE RECORDED COST IS NEVER PRINTED HERE, AND THAT IS A DECISION RATHER THAN AN OMISSION. Every
+    figure on a rendered row is either the recorded token count or something derived from it and the
+    supplied price; the recorded dollar cost rides on the view ROW, where a consumer of the view
+    reads it. Two different dollar figures in one column would let a price projection be read as a
+    recorded actual and back again, and the reader has no way to tell which one they are looking at.
+    The selftest asserts this POSITIVELY, as the exact set of numbers each line prints, because the
+    absence of one spelling of a recorded cost is not the absence of the recorded cost."""
     peg = view["peg"]
     if peg.get("pegged"):
         out = ["peg: %s tokens = 1.000 pt (%s, era %s, spec %s, sample %s)"

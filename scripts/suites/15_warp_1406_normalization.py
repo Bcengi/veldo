@@ -11,11 +11,17 @@ green line here is a measurement and not an absence:
 
   - a point is produced for a record whose TOKEN spend was recorded, and withheld with a NAMED
     reason for one whose was not, so the point generator is neither always-a-number nor
-    always-a-null. Driven over the three distinct shapes rather than one: nothing recorded at all, a
-    change costed only in DOLLARS, and a change costed only in HUMAN MINUTES. The last two arrive
-    with the corpus's `spend_recorded` flag TRUE and no token count, which is how a confident 0.000
-    reached the surface, and the control beside them adds a token count and requires the point to
-    come ON;
+    always-a-null. Driven over the FOUR distinct shapes that reach that branch rather than one:
+    nothing recorded at all, a change costed only in DOLLARS, a change costed only in HUMAN MINUTES,
+    and a spend record of `tokens=0` that the SANCTIONED WRITER accepts. The last three arrive with
+    the corpus's `spend_recorded` flag TRUE and no usable token count, which is how a confident 0.000
+    reached the surface, the four reasons are asserted to be four DISTINCT strings, and the control
+    beside them adds a token count and requires the point to come ON;
+  - the RENDERED LINE is asserted as the COMPLETE ORDERED LIST OF FIGURES IT PRINTS, at two prices,
+    rather than by the absence of a literal. The decision that the line does not print the RECORDED
+    cost cannot be guarded by an absent spelling: a render that appends the recorded cost rounded, or
+    that puts the recorded cost in the money column of the row whose tokens were never recorded,
+    prints it while every spelling checked for is still absent;
   - the recorded columns are asserted against the corpus's own spend block over values that are
     deliberately NOT round, because every value in the first fixture is a multiple of 100 and a
     display that rounded the recorded actual to the nearest 100 passed the whole fragment;
@@ -37,6 +43,8 @@ THE NON-NEGOTIABLE PROPERTY IS DRIVEN ON DISK, NOT ARGUED. The re-peg leg seeds 
 real event log file, hashes the corpus and the log bytes and mtime, re-pegs and re-prices twice, and
 requires the bytes and the mtime to be unchanged while the displayed numbers move.
 """
+import re as _w1406_re  # noqa: E402 - the figure reader below; the fragment IS the module body
+
 _w1406_nspec = importlib.util.spec_from_file_location(
     "veldo_toe_normalize_suite", ROOT / ".veldo/toe_normalize.py")
 NORM = importlib.util.module_from_spec(_w1406_nspec)
@@ -130,6 +138,26 @@ def _w1406_pt_cells(lines):
     """The point cell of every rendered line that carries one, so two renders can be compared on
     their POINTS alone while their money columns differ."""
     return [line.split(" pt")[0].split()[-1] for line in lines if " pt" in line and " tok" in line]
+
+
+_W1406_FIGURE = _w1406_re.compile(r"\d+(?:\.\d+)?")
+
+
+def _w1406_figures(line, with_reason=False):
+    """Every FIGURE one rendered row line PRINTS, in order, as the exact strings it printed.
+
+    THIS IS THE INSTRUMENT THE "DOES NOT PRINT THE RECORDED COST" DECISION NEEDS, and the reason it
+    reads a whole list rather than searching for a value is that a search can only be run for
+    spellings somebody thought of: `12.37` rounded to `12.4`, or moved into another row's column, is
+    the same recorded cost reaching the same reader past the same check. A complete list has no
+    spellings in it - anything printed is either in the list or reds it.
+
+    The leading spec field is dropped because a spec id carries digits of its own, and the trailing
+    parenthesised reason is dropped unless it is asked for, because a reason is prose the module put
+    on the ROW while the claim under test is about what the COLUMNS say."""
+    body = line if with_reason else line.partition("  (")[0]
+    parts = body.split(None, 1)
+    return _W1406_FIGURE.findall(parts[1]) if len(parts) > 1 else []
 
 
 def _w1406_raised(fn, *a, **kw):
@@ -280,15 +308,159 @@ expect("WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows D
        and _w1406_peg_h_derived["tokens"] == 41
        and _w1406_peg_h_derived["sample"] == 2)
 
-expect("WARP-1406 AC1: THE RENDERED DOLLAR COLUMN IS DERIVED FROM RAW TOKENS AND THE SUPPLIED "
-       "PRICE, AND IT IS NOT THE RECORDED COST, which rides on the view ROW where a consumer reads "
-       "it. On a 3137-token change carrying a recorded 12.37 usd, at 0.50 per 1k the rendered line "
-       "shows 1.57 usd and the string 12.37 appears NOWHERE in the render. That is the decision, "
-       "asserted rather than left to a reader's assumption: two different dollar figures side by "
-       "side in one column would let a recorded actual be read as a price projection and back again",
-       " 1.57 usd" in _w1406_line(NORM.render_lines(_w1406_view_h, 0.5), "WARP-9421")
-       and "12.37" not in "".join(NORM.render_lines(_w1406_view_h, 0.5))
-       and [r["cost_usd"] for r in _w1406_view_h["rows"] if r["spec"] == "WARP-9421"] == [12.37])
+# WHAT EVERY RENDERED ROW OF FIXTURE H MUST PRINT, AT TWO PRICES, AS THE COMPLETE ORDERED LIST OF ITS
+# FIGURES. Pinned to literals because the fixture is fully known: the point cell where there is one,
+# the RECORDED token count, and the money column, which is the price applied to those tokens and
+# nothing else. The recorded costs on these rows are 12.37, 0.0137 and 7.50, and NONE of the three is
+# in either list at either price - not because a spelling of them was searched for and not found, but
+# because every figure the line prints is enumerated here and there is no room left for a fourth.
+#
+# THE 4.00 PRICE IS CHOSEN SO THE DERIVED FIGURE LANDS NEXT DOOR TO THE RECORDED ONE: 3137 tokens at
+# 4.00 per 1k is 12.55 against a recorded 12.37. A reader eyeballing that column cannot tell the two
+# apart, which is exactly why the column has to be the derived one by assertion.
+_W1406_H_FIGS_050 = [("WARP-9421", ["3.137", "3137", "1.57"]),
+                     ("WARP-9422", ["0.041", "41", "0.02"]),
+                     ("WARP-9423", ["0", "0.00"]),
+                     ("WARP-9424", ["0", "0.00"])]
+_W1406_H_FIGS_400 = [("WARP-9421", ["3.137", "3137", "12.55"]),
+                     ("WARP-9422", ["0.041", "41", "0.16"]),
+                     ("WARP-9423", ["0", "0.00"]),
+                     ("WARP-9424", ["0", "0.00"])]
+
+
+def _w1406_h_figs(price, with_reason=False):
+    """(spec, every figure its rendered line prints) for every row of fixture H, in corpus order."""
+    _lines = NORM.render_lines(_w1406_view_h, price)
+    return [(sid, _w1406_figures(_w1406_line(_lines, sid), with_reason)) for sid in _W1406_H_IDS]
+
+
+expect("WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED "
+       "TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on "
+       "the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each "
+       "line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own "
+       "length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, "
+       "because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 "
+       "is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money "
+       "column that shows the recorded 7.50 on the very row whose tokens were never recorded, and "
+       "both of those print the recorded cost to the reader. The 4.00 price puts the derived figure "
+       "at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. "
+       "The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost "
+       "appended anywhere on a row reds this; and because a per-row check can only see rows, the "
+       "render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced "
+       "and unpriced, and the line count is the rows plus exactly those two, so the price adds one "
+       "COLUMN and there is nowhere else in the render for a dollar figure to sit",
+       _w1406_h_figs(0.5) == _W1406_H_FIGS_050
+       and _w1406_h_figs(4.0) == _W1406_H_FIGS_400
+       and len(_W1406_H_FIGS_050) == len(_W1406_H_FIGS_400) == len(_W1406_H_IDS) == 4
+       and " 1.57 usd" in _w1406_line(NORM.render_lines(_w1406_view_h, 0.5), "WARP-9421")
+       and " 12.55 usd" in _w1406_line(NORM.render_lines(_w1406_view_h, 4.0), "WARP-9421")
+       and [r["cost_usd"] for r in _w1406_view_h["rows"] if r["spec"] == "WARP-9421"] == [12.37]
+       and [r["cost_usd"] for r in _w1406_view_h["rows"] if r["spec"] == "WARP-9423"] == [7.5]
+       and _w1406_h_figs(0.5, True) == _W1406_H_FIGS_050
+       and "NOT in tokens" in _w1406_line(NORM.render_lines(_w1406_view_h, 0.5), "WARP-9423")
+       and NORM.render_lines(_w1406_view_h, 4.0)[0] == NORM.render_lines(_w1406_view_h)[0]
+       and NORM.render_lines(_w1406_view_h, 4.0)[-1] == NORM.render_lines(_w1406_view_h)[-1]
+       and len(NORM.render_lines(_w1406_view_h, 4.0)) == len(NORM.render_lines(_w1406_view_h))
+       == len(_W1406_H_IDS) + 2)
+
+# ---------------------------------------------------------------------------------------
+# FIXTURE Z: THE FOURTH SHAPE THAT REACHES THE NO-POINT BRANCH, AND THE SANCTIONED WRITER MAKES IT.
+#
+# `spend.validate(spec, "harness_reported", tokens=0)` returns NO problems: zero is a number, it is
+# not negative, and at least one figure was supplied. So `veldo spend record --tokens 0` is a legal
+# call, and what it puts in the log comes back out of the corpus as `spend_recorded` TRUE with every
+# figure ZERO. That row can name no field - a zero in the corpus spend block is the DEFAULT for a
+# field nobody recorded, so which field carried the recorded zero is unknowable - and "no recorded
+# spend" is FALSE about it, which is the message it used to get.
+#
+# THE EVENTS ARE BUILT THROUGH THE SHIPPED WRITER, at its own `emit` injection point, rather than
+# hand-assembled here. A hand-written envelope is this suite's guess at the shape, and the whole claim
+# of this fixture is that the shape is REACHABLE through the sanctioned path. The live event log's
+# mtime_ns is asserted unchanged across it, because a fixture that recorded spend into this
+# repository's own log would have changed the data every other assertion here reads.
+# ---------------------------------------------------------------------------------------
+_w1406_sspec = importlib.util.spec_from_file_location(
+    "veldo_spend_1406", ROOT / ".veldo/spend.py")
+_W1406_SPEND = importlib.util.module_from_spec(_w1406_sspec)
+_w1406_sspec.loader.exec_module(_W1406_SPEND)
+
+_w1406_espec = importlib.util.spec_from_file_location(
+    "veldo_events_1406", ROOT / ".veldo/events.py")
+_W1406_EV = importlib.util.module_from_spec(_w1406_espec)
+_w1406_espec.loader.exec_module(_W1406_EV)
+
+_W1406_Z_EVENTS = []
+
+
+def _w1406_z_emit(etype, **kw):
+    """The writer's own injection point, filled with the SHIPPED envelope builder and no file. So the
+    fixture carries the bytes `veldo spend record` would have written, without writing them."""
+    ev = _W1406_EV.make_event(etype, **kw)
+    _W1406_Z_EVENTS.append(ev)
+    return ev
+
+
+_w1406_z_log_before = (ROOT / ".veldo/events.jsonl").stat().st_mtime_ns
+_W1406_Z_PROBLEMS = _W1406_SPEND.validate("WARP-9425", "harness_reported", tokens=0)
+_W1406_Z_REFUSED = ""
+try:
+    for _w1406_zs, _w1406_zt in (("WARP-9425", 0), ("WARP-9426", 7000)):
+        _W1406_SPEND.record(_w1406_zs, "harness_reported", tokens=_w1406_zt, emit=_w1406_z_emit)
+except ValueError as _w1406_ze:
+    # CAUGHT SO THE DAY THE WRITER STOPS ACCEPTING THIS SHAPE IS A NAMED RED AND NOT A TRACEBACK
+    # THAT TAKES THE WHOLE SELFTEST DOWN. The refusal is then asserted below as the string it is: if
+    # `veldo spend record --tokens 0` ever becomes illegal, the fixture is unreachable and this
+    # fragment must say so by name rather than aborting every suite after it.
+    _W1406_Z_REFUSED = str(_w1406_ze)
+_w1406_z_log_after = (ROOT / ".veldo/events.jsonl").stat().st_mtime_ns
+
+with tempfile.TemporaryDirectory() as _w1406_dz:
+    _w1406_seed_specs(_w1406_dz, [("WARP-9425", "standard"), ("WARP-9426", "standard")])
+    _W1406_Z = CORP.build(specs_dir=_w1406_dz, events=_W1406_Z_EVENTS)
+_w1406_peg_z = NORM.resolve_peg(_W1406_Z, _W1406_Z_EVENTS, _w1406_no_eras, CORP, _W1406_ISO)
+_w1406_view_z = NORM.normalize(_W1406_Z, _w1406_peg_z, _W1406_Z_EVENTS, _w1406_no_eras,
+                               CORP, _W1406_ISO)
+
+expect("WARP-1406 AC1, THE FOURTH SHAPE, AND IT COMES OUT OF THE SANCTIONED WRITER: a spend record "
+       "of tokens=0. `spend.validate(spec, 'harness_reported', tokens=0)` returns NO problems, so "
+       "`veldo spend record --tokens 0` is legal, and the corpus reports that change with "
+       "spend_recorded TRUE and every figure zero. It gets its OWN reason for two reasons that are "
+       "both about the reader: naming a field is impossible, because a zero in the corpus spend block "
+       "is the DEFAULT for a field nobody recorded and which field carried the recorded zero is "
+       "unknowable; and 'no recorded spend' is FALSE about a change whose record is in the log, which "
+       "sends that reader hunting for a missing record that is sitting right there. The row's reason "
+       "is the ONLY thing the surface says about it, since the point is withheld either way, so a "
+       "false reason is the whole output being wrong. Asserted through the shipped writer rather than "
+       "over a hand-written envelope, because the claim is that the shape is REACHABLE",
+       _W1406_Z_PROBLEMS == []
+       and _W1406_Z_REFUSED == ""
+       and [(r["spec"], r["spend"]["spend_recorded"], r["spend"]["tokens"]) for r in _W1406_Z]
+       == [("WARP-9425", True, 0), ("WARP-9426", True, 7000)]
+       and _w1406_points(_w1406_view_z) == {"WARP-9425": None, "WARP-9426": 1.0}
+       and "every recorded figure is zero" in _w1406_reason(_w1406_view_z, "WARP-9425")
+       and "no recorded spend" not in _w1406_reason(_w1406_view_z, "WARP-9425")
+       and NORM.spend_fields_recorded(
+           [r for r in _W1406_Z if r["spec"] == "WARP-9425"][0]["spend"]) == [])
+
+expect("WARP-1406 AC1 NEGATIVE CONTROL FOR THE FOURTH REASON: the four shapes that reach the no-point "
+       "branch produce FOUR DISTINCT reasons, asserted as a set of four across three fixtures, so the "
+       "new branch did not swallow the nothing-recorded fact it sits beside - THAT row still says 'no "
+       "recorded spend' and it is the only one that does. The recorded zero keeps its raw column and "
+       "its recorded flag on the view, so the fact is REFUSED and not hidden. The SAME predicate "
+       "governs the peg, which derives to the 7000-token change over a sample of ONE rather than "
+       "pulling the recorded zero into the median. And the live event log's mtime_ns is unchanged "
+       "across building a fixture through the real spend writer, so this suite measured the writer "
+       "without recording anything into this repository",
+       len({_w1406_reason(_w1406_view_a, "WARP-9416"),
+            _w1406_reason(_w1406_view_h, "WARP-9423"),
+            _w1406_reason(_w1406_view_h, "WARP-9424"),
+            _w1406_reason(_w1406_view_z, "WARP-9425")}) == 4
+       and "no recorded spend" in _w1406_reason(_w1406_view_a, "WARP-9416")
+       and [(r["spec"], r["tokens"], r["spend_recorded"]) for r in _w1406_view_z["rows"]]
+       == [("WARP-9425", 0, True), ("WARP-9426", 7000, True)]
+       and _w1406_peg_z["spec"] == "WARP-9426" and _w1406_peg_z["tokens"] == 7000
+       and _w1406_peg_z["sample"] == 1
+       and _w1406_z_log_after == _w1406_z_log_before)
 
 expect("WARP-1406 AC1 NEGATIVE CONTROL: a record whose spend was NEVER RECORDED gets NO POINT AT "
        "ALL and a reason that says why, so the row generator is not simply a function that always "

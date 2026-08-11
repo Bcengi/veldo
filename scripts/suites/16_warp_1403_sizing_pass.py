@@ -48,6 +48,37 @@ they do not:
 The naming sweep's own reds come from probes rather than module mutations, since no module names
 this one: a throwaway file in .veldo, in engine/.veldo and in scripts/ each red it now, and the
 first two of those three were green before. The full log is in the spec's remediation note.
+
+AND TWO MORE ADDED LATER THE SAME DAY, because a fresh review of those three found the same defect
+class inside the fix. Both were fixture and assertion work; the module is untouched by this round.
+
+  8. `token_spend_events`, whose declared job is to be the BASIS of the token total, was
+     indistinguishable from the any-field count: every seeded record carried tokens, so
+     len(with_tokens) and len(carrying) were the same number. MEASURED: rewriting the key as
+     len(carrying) left the suite at 40 passed. A MIXED ledger (one tokens record beside two
+     recorded as cost and as human minutes) is the only shape where the two diverge, and over it
+     that same rewrite is 1 RED.
+  9. the reach claim named its own residual as EXACTLY TWO dynamic spellings, which is a universal
+     claim over a hand-picked pair. MEASURED against the previous revision, each green at 40:
+     `os.popen("true")`, `eval("1 + 1")`, `getattr(os, "sys" + "tem")("true")` and this module's OWN
+     loader idiom aimed at ../../etc. The claim is now four equalities over the parsed call surface
+     plus a pinned execution-target set, and those four are 1 RED each, as are a
+     spec_from_file_location outside `_mod` and a `_mod` target reached through a variable.
+
+AND ONE DEFUSED 2026-08-11: THE REAL-LOG LEG WAS A LANDMINE, not a measurement. It ran over the
+live event log and asserted `spend_events == 0`, which is not a property of this module - it is the
+observation that nobody had called `spend.py` yet. MEASURED in a scratch copy: one sanctioned write,
+`.veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000`, took the
+fragment from 42 passed, 0 failed to 41 passed, 1 FAILED, and the assertion that fired was that leg.
+The emptiness is now a BRANCH selected by an independent recount of the live log, never an
+assertion; the partition and the key-licensing equalities are unconditional. The teeth are intact
+and sharper with data present, since the numeric keys must then EQUAL the recount rather than merely
+be absent:
+
+ 10. with that same spend record in place, `"anchor_available": E.NO` hardcoded (the module claiming
+     the stand-down while data exists) is 1 RED, and `out["tokens_recorded"] = 0` beside a present
+     key is 1 RED - the two directions this leg has always existed to catch, now catchable over a
+     log that HAS spend in it.
 """
 import ast as _w1403_ast
 import hashlib as _w1403_hashlib
@@ -168,6 +199,62 @@ def _w1403_value(fn, *a, **kw):
         return fn(*a, **kw), ""
     except BaseException as e:
         return None, "%s: %s" % (type(e).__name__, e)
+
+
+def _w1403_call_surface(tree):
+    """EVERY CALL IN A PARSED MODULE, PARTITIONED BY THE SHAPE OF ITS CALLEE, so a claim about what
+    a module reaches for can be a set equality over an exhaustive domain instead of a list of the
+    spellings somebody thought of. Python's call grammar has exactly three callee shapes and this
+    returns all three, so nothing falls outside the partition:
+
+      bare      a Name - `eval(...)`, `__import__(...)`, `len(...)`
+      dotted    an Attribute chain rooted at a Name - `os.popen(...)`, `importlib.import_module()`
+      computed  a callee that is itself an expression - `getattr(os, "sys" + "tem")(...)`, which is
+                where a respelling hides. Reported as the INNER callee's name plus "()" when that
+                inner callee is a plain name, so this shape can be enumerated by what produced the
+                thing being called rather than dismissed; any other expression shape (a subscript,
+                a lambda) is reported as its node type.
+
+    An Attribute chain rooted at something other than a Name (`_estimate().propose(...)`) keeps only
+    its attribute part, so it never masquerades as a call into an imported module.
+
+    Returns LISTS and not sets, so a caller can assert a COUNT (how many times the one
+    code-executing call is made) as well as a membership."""
+    bare, dotted, computed = [], [], []
+    for node in _w1403_ast.walk(tree):
+        if not isinstance(node, _w1403_ast.Call):
+            continue
+        fn, parts = node.func, []
+        while isinstance(fn, _w1403_ast.Attribute):
+            parts.append(fn.attr)
+            fn = fn.value
+        if parts:
+            root = fn.id + "." if isinstance(fn, _w1403_ast.Name) else ""
+            dotted.append(root + ".".join(reversed(parts)))
+        elif isinstance(fn, _w1403_ast.Name):
+            bare.append(fn.id)
+        elif isinstance(fn, _w1403_ast.Call) and isinstance(fn.func, _w1403_ast.Name):
+            computed.append(fn.func.id + "()")
+        else:
+            computed.append(type(fn).__name__)
+    return bare, dotted, computed
+
+
+def _w1403_literal_args(tree, fname, argno=0):
+    """The set of constant strings passed in one argument position of every call to `fname`, plus
+    the count of calls to it that pass something else there. A pinned literal set is only a claim
+    about the call's target if no call reaches that position through a variable."""
+    lits, computed = set(), 0
+    for node in _w1403_ast.walk(tree):
+        if not (isinstance(node, _w1403_ast.Call) and isinstance(node.func, _w1403_ast.Name)
+                and node.func.id == fname):
+            continue
+        arg = node.args[argno] if len(node.args) > argno else None
+        if isinstance(arg, _w1403_ast.Constant) and isinstance(arg.value, str):
+            lits.add(arg.value)
+        else:
+            computed += 1
+    return lits, computed
 
 
 _W1403_AT = "2026-08-10"
@@ -436,34 +523,113 @@ with tempfile.TemporaryDirectory() as _d:
            _w1403_esc[0] and "escapes the repository root" in _w1403_esc[1]
            and _w1403_abs[0] and "refusing the absolute footprint entry" in _w1403_abs[1])
 
-    # THE IMPORT SET, PARSED RATHER THAN GREPPED. A list of forbidden spellings is a list of the
-    # spellings somebody thought of: `from subprocess import run`, `__import__("socket")` and
-    # `import http.client` all evade "import subprocess". So the top-level module names of EVERY
-    # import statement anywhere in the file (ast.walk, so nested and function-local ones count too)
-    # are asserted EQUAL to the declared allowlist, which is a claim about the whole set and cannot
-    # be evaded by respelling. The two dynamic-import spellings that an ast import set cannot see
-    # are asserted absent beside it.
+    # THE REACH SURFACE, PARSED AND ENUMERATED RATHER THAN GREPPED. A list of forbidden spellings is
+    # a list of the spellings somebody thought of: `from subprocess import run`, `__import__("x")`
+    # and `import http.client` all evade "import subprocess". The import set closed that, but naming
+    # its own residual as EXACTLY TWO dynamic spellings was the same defect in other clothes, and a
+    # review of that revision evaded it four ways with every assertion green: `os.popen("true")`
+    # (which is neither "os.system(" nor "Popen("), `eval("1 + 1")`, `getattr(os, "sys" + "tem")()`
+    # and this module's OWN loader idiom aimed at `../../etc`. So the domain is CLOSED instead of
+    # sampled: four equalities over the parsed module, one per shape a reach can take.
+    #
+    # WHY THOSE SHAPES EXHAUST IT. Foreign code can only enter this module by an import statement
+    # (set one), by a builtin call such as `__import__`, `eval`, `exec` or `compile` (set two, every
+    # bare-name callee the module does not itself define), by an attribute call into a module it
+    # already imported such as `importlib.import_module` or `os.popen` (set three, every dotted
+    # callee rooted at an imported name), or by CALLING WHAT A CALL RETURNED, which is the shape
+    # `getattr(os, "sys" + "tem")("id")` hides in. That fourth shape is NOT empty here and is not
+    # claimed to be: sizing_pass.py:532 calls W2's bounds rule as `_bounds_rule()(rec, ...)`. So it
+    # is enumerated by what produced the callee, and the one producer is a function THIS module
+    # defines. The one remaining door, the spec_from_file_location idiom this module loads its
+    # siblings through, is the assertion below.
     _w1403_src = (ROOT / ".veldo/sizing_pass.py").read_text()
+    _w1403_tree = _w1403_ast.parse(_w1403_src)
     _W1403_IMPORTS_ALLOWED = {"argparse", "hashlib", "importlib", "json", "os", "re", "sys",
                               "pathlib"}
     _w1403_imports = set()
-    for _w1403_node in _w1403_ast.walk(_w1403_ast.parse(_w1403_src)):
+    for _w1403_node in _w1403_ast.walk(_w1403_tree):
         if isinstance(_w1403_node, _w1403_ast.Import):
             _w1403_imports.update(_a.name.split(".")[0] for _a in _w1403_node.names)
         elif isinstance(_w1403_node, _w1403_ast.ImportFrom):
             _w1403_imports.add((_w1403_node.module or "").split(".")[0])
-    expect("WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as a "
-           "SET EQUALITY over its parsed imports and not as a grep for four forbidden spellings. "
-           "The top-level name of every import statement in the file is exactly the declared "
-           "allowlist - argparse, hashlib, importlib, json, os, re, sys, pathlib - so subprocess, "
-           "socket, urllib, http.client and every alias or respelling of them are refused by the "
-           "equality rather than by having been thought of, and the two spellings an import set "
-           "cannot see (__import__ and importlib.import_module) are named absent. Nothing here "
-           "spawns a process or opens a connection (NG5); the event log is reached through the "
-           "event module's ONE reader, which reads that file and nothing else",
+    _w1403_defs = {_n.name for _n in _w1403_ast.walk(_w1403_tree)
+                   if isinstance(_n, (_w1403_ast.FunctionDef, _w1403_ast.AsyncFunctionDef,
+                                      _w1403_ast.ClassDef))}
+    _w1403_bare, _w1403_dotted, _w1403_computed = _w1403_call_surface(_w1403_tree)
+    # Every bare-name callee this module does not define with a def or a class: builtins, plus
+    # `Path` from its one `from` import and `rx`, the ONE glob compiler it fetches from arch.py at
+    # sizing_pass.py:340. eval, exec, __import__, compile and open are refused by the EQUALITY.
+    _W1403_BARE_ALLOWED = {"Path", "SystemExit", "any", "callable", "enumerate", "getattr", "int",
+                           "isinstance", "len", "list", "min", "print", "rx", "set", "sorted",
+                           "str", "sum", "tuple", "type"}
+    # Every call this module makes into a module it imports. os.popen, os.system, os.execv,
+    # os.spawnl and importlib.import_module are refused by the EQUALITY, not by being listed.
+    _W1403_MODULE_CALLS = {"argparse.ArgumentParser", "hashlib.sha256",
+                           "importlib.util.module_from_spec",
+                           "importlib.util.spec_from_file_location", "json.dumps", "os.walk",
+                           "re.compile"}
+    _w1403_into_imports = {_c for _c in _w1403_dotted
+                           if _c.split(".")[0] in _W1403_IMPORTS_ALLOWED}
+    expect("WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR "
+           "SET EQUALITIES over its parsed call surface rather than as a grep for the spellings "
+           "somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, "
+           "re, sys and pathlib; the bare-name calls it does not define itself are exactly a "
+           "declared list of builtins plus Path and the one glob compiler, so eval, exec, "
+           "__import__ and compile are refused by the equality; the calls it makes into those "
+           "imported modules are exactly seven named ones, so os.popen, os.system, os.execv and "
+           "importlib.import_module are refused the same way; and the fourth shape, CALLING WHAT A "
+           "CALL RETURNED, is enumerated instead of waved away, because it is not empty - W2's "
+           "bounds rule is fetched and called at sizing_pass.py:532 - so it is pinned to that ONE "
+           "producer, a function this module defines, which is what makes getattr(os, 'sys' + "
+           "'tem')('id') a red rather than a blind spot. Nothing here spawns a process or opens a "
+           "connection (NG5). What this does NOT claim: the paths it READS. Those are the "
+           "footprint, whose escape refusal is the assertion above, and its sibling engine "
+           "modules, whose target set is the assertion below",
            _w1403_imports == _W1403_IMPORTS_ALLOWED
-           and all(tok not in _w1403_src
-                   for tok in ("__import__(", "import_module(", "Popen(", "os.system(")))
+           and set(_w1403_bare) - _w1403_defs == _W1403_BARE_ALLOWED
+           and _w1403_defs & _W1403_BARE_ALLOWED == set()
+           and _w1403_into_imports == _W1403_MODULE_CALLS
+           and sorted(set(_w1403_computed)) == ["_bounds_rule()"]
+           and "_bounds_rule" in _w1403_defs)
+
+    # THE ONE DOOR THE EQUALITIES ABOVE LEAVE OPEN, and it is this module's own idiom: an allowed
+    # `spec_from_file_location` can execute ANY file, so pinning the call is worth nothing without
+    # pinning what it is aimed at. All three module-executing calls live inside `_mod`, which builds
+    # its path as ROOT / rel and nothing else, and every `rel` a caller passes is a string literal,
+    # so the module's entire code-execution target set is enumerable and enumerated here.
+    _W1403_EXECUTING = ["importlib.util.module_from_spec",
+                        "importlib.util.spec_from_file_location", "spec.loader.exec_module"]
+    _W1403_MOD_TARGETS = {".veldo/arch.py", ".veldo/estimate.py", ".veldo/events.py",
+                          ".veldo/spend.py", ".veldo/toe_corpus.py", ".veldo/validate.py"}
+    _w1403_mod_def = [_n for _n in _w1403_ast.walk(_w1403_tree)
+                      if isinstance(_n, _w1403_ast.FunctionDef) and _n.name == "_mod"]
+    _w1403_exec_all = sorted(_c for _c in _w1403_dotted if _c in _W1403_EXECUTING)
+    _w1403_exec_in_mod = sorted(_c for _c in _w1403_call_surface(_w1403_mod_def[0])[1]
+                                if _c in _W1403_EXECUTING) if _w1403_mod_def else []
+    _w1403_loader_path = [_w1403_ast.dump(_n.args[1]) for _n in _w1403_ast.walk(_w1403_tree)
+                          if isinstance(_n, _w1403_ast.Call)
+                          and isinstance(_n.func, _w1403_ast.Attribute)
+                          and _n.func.attr == "spec_from_file_location" and len(_n.args) > 1]
+    _w1403_mod_targets, _w1403_mod_computed = _w1403_literal_args(_w1403_tree, "_mod")
+    expect("WARP-1403 AC3 AND THE ONE DOOR THOSE EQUALITIES LEAVE: EVERY FILE THIS MODULE CAN "
+           "EXECUTE IS NAMED, and all six are inside this engine. The three importlib calls that "
+           "load and run a file occur exactly once each and all three are inside `_mod`; `_mod` "
+           "builds the path it executes as ROOT / rel, asserted against that parsed shape and not "
+           "against a substring; every caller passes a string literal and never a variable; and "
+           "the set of those literals is exactly validate.py, estimate.py, toe_corpus.py, arch.py, "
+           "spend.py and events.py, each of which resolves to a real file under the repository "
+           "root. Without this an allowlisted spec_from_file_location would satisfy every equality "
+           "above while executing any file on the machine: a module's own loader is the reach a "
+           "list of forbidden spellings never sees",
+           _w1403_exec_all == sorted(_W1403_EXECUTING)
+           and _w1403_exec_in_mod == sorted(_W1403_EXECUTING)
+           and _w1403_loader_path == [_w1403_ast.dump(
+               _w1403_ast.parse("ROOT / rel", mode="eval").body)]
+           and _w1403_mod_targets == _W1403_MOD_TARGETS
+           and _w1403_mod_computed == 0
+           and all((ROOT / _t).is_file()
+                   and str((ROOT / _t).resolve()).startswith(str(ROOT.resolve()) + "/")
+                   for _t in _w1403_mod_targets))
 
     # THE UNIT REFUSAL, DRIVEN. The claim is that the brief REFUSES when W2's vocabulary stops
     # naming exactly one unit; observing that it names one today is a fact about estimate.py that
@@ -487,26 +653,87 @@ with tempfile.TemporaryDirectory() as _d:
            and _W1403_BRIEF["unit"] in E1403.UNITS and len(E1403.UNITS) == 1)
 
     # -----------------------------------------------------------------------------------
-    # AC4. THE EMPTY LEDGER IS REPORTED EMPTY, AND A JUDGEMENT NEVER READS CALIBRATED.
+    # AC4. THE LEDGER REPORT AGREES WITH THE LOG IT MEASURED, AND A JUDGEMENT NEVER READS
+    # CALIBRATED.
     # -----------------------------------------------------------------------------------
+    # WHAT THIS LEG MAY AND MAY NOT ASSERT, because the first version of it got that wrong. It ran
+    # over the LIVE log and pinned `spend_events == 0`, which is not a property of this module: it
+    # is the observation that nobody had used the emitter yet. MEASURED 2026-08-11: one sanctioned
+    # write, `python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported
+    # --tokens 750000`, took the fragment from 42 passed to 41 passed, 1 failed. A gate that reds on
+    # the first legitimate use of the feature it guards teaches whoever hits it that the gate is
+    # noise, and the person who hits it first is the one who asked for the feature.
+    # So the emptiness is a BRANCH, never an assertion. The partition and the key-licensing
+    # equalities below hold over ANY log; the arm is chosen by what the recount just found; and the
+    # recount is spelled HERE, in its own second spelling of "numeric", so that the two sides of
+    # every equality cannot move together when the module is mutated. The teeth are unchanged in
+    # the empty state and stronger in the recorded one, where the numeric keys must equal an
+    # independent recount instead of merely being absent.
     _w1403_real_events = SP1403._read_events()
     _w1403_real_ledger = SP1403.ledger_state(_w1403_real_events)
-    expect("WARP-1403 AC4 MEASURED OVER THE REAL LOG: this repository's ledger carries events in "
-           "the thousand and NOT ONE with a spend field, so anchor_available reads no and the "
-           "numeric anchor keys are ABSENT rather than zero. That omission is the assertion: a "
-           "zero because nothing was spent and a zero because nothing was ever recorded are "
-           "different facts, and an agent handed the second as a measurement calibrates against "
-           "nothing while feeling informed. Bound to the log's own length, not a literal count; "
-           "when real spend is first recorded this reds and the finding gets updated, which is "
-           "what a measured claim is supposed to do",
+    _w1403_spend_fields = SP1403._corpus().SPEND_FIELDS
+
+    def _w1403_isnum(v):
+        return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+    _w1403_real_carry = [_e for _e in _w1403_real_events if isinstance(_e, dict)
+                         and any(_w1403_isnum(_e.get(_f)) for _f in _w1403_spend_fields)]
+    _w1403_real_tok = [_e for _e in _w1403_real_carry if _w1403_isnum(_e.get("tokens"))]
+    _w1403_real_specs = len({_e.get("spec_id") or _e.get("correlation_id")
+                             for _e in _w1403_real_carry
+                             if _e.get("spec_id") or _e.get("correlation_id")})
+    if not _w1403_real_carry:
+        # THE HONEST STAND-DOWN, and it is required in exactly this state and nowhere else.
+        _w1403_real_arm = (_w1403_real_ledger["spend_events"] == 0
+                           and _w1403_real_ledger["anchor_available"] == E1403.NO
+                           and _w1403_real_ledger["token_anchor_available"] == E1403.NO
+                           and "tokens_recorded" not in _w1403_real_ledger
+                           and "token_spend_events" not in _w1403_real_ledger
+                           and "specs_with_spend" not in _w1403_real_ledger)
+    elif _w1403_real_tok:
+        # SPEND IS RECORDED AND SOME OF IT IS TOKENS: every numeric key must equal the recount.
+        _w1403_real_arm = (_w1403_real_ledger["anchor_available"] == E1403.YES
+                           and _w1403_real_ledger["token_anchor_available"] == E1403.YES
+                           and _w1403_real_ledger["specs_with_spend"] == _w1403_real_specs
+                           and _w1403_real_ledger["token_spend_events"] == len(_w1403_real_tok)
+                           and _w1403_real_ledger["tokens_recorded"]
+                           == sum(int(_e["tokens"]) for _e in _w1403_real_tok)
+                           and 1 <= _w1403_real_ledger["specs_with_spend"]
+                           <= _w1403_real_ledger["spend_events"])
+    else:
+        # SPEND IS RECORDED AND NONE OF IT IS TOKENS: the per-field omission, over the real log.
+        _w1403_real_arm = (_w1403_real_ledger["anchor_available"] == E1403.YES
+                           and _w1403_real_ledger["token_anchor_available"] == E1403.NO
+                           and _w1403_real_ledger["specs_with_spend"] == _w1403_real_specs
+                           and "tokens_recorded" not in _w1403_real_ledger
+                           and "token_spend_events" not in _w1403_real_ledger)
+    expect("WARP-1403 AC4 MEASURED OVER THE REAL LOG, AND THE MEASUREMENT CHOOSES THE ARM: the "
+           "ledger report is recomputed here from the live log by a second spelling of the same "
+           "definitions, and it must AGREE. Unconditionally: events is one enumeration of the log, "
+           "spend_events equals the recount, the spend events are a subset of the events, and each "
+           "numeric key is present EXACTLY when the flag licensing it says yes. Then the arm the "
+           "recount selects - with nothing recorded, anchor_available no and the numeric keys "
+           "ABSENT rather than zero, because a zero because nothing was spent and a zero because "
+           "nothing was ever recorded are different facts and an agent handed the second "
+           "calibrates against nothing while feeling informed; with spend recorded, the totals "
+           "must equal the recount and the token keys are still gated on tokens alone. What this "
+           "leg must NEVER assert is that the log carries no spend: that is today's emptiness, not "
+           "an invariant, and pinning it made the first sanctioned use of spend.py red the gate",
            _w1403_real_ledger["events"] == len(_w1403_real_events)
            and _w1403_real_ledger["events"] > 900
-           and _w1403_real_ledger["spend_events"] == 0
-           and _w1403_real_ledger["anchor_available"] == E1403.NO
-           and _w1403_real_ledger["token_anchor_available"] == E1403.NO
-           and "tokens_recorded" not in _w1403_real_ledger
-           and "token_spend_events" not in _w1403_real_ledger
-           and "specs_with_spend" not in _w1403_real_ledger)
+           and _w1403_real_ledger["spend_events"] == len(_w1403_real_carry)
+           and 0 <= _w1403_real_ledger["spend_events"] <= _w1403_real_ledger["events"]
+           and len(_w1403_real_tok) <= _w1403_real_ledger["spend_events"]
+           and _w1403_real_ledger["anchor_available"]
+           == (E1403.YES if _w1403_real_carry else E1403.NO)
+           and _w1403_real_ledger["token_anchor_available"]
+           == (E1403.YES if _w1403_real_tok else E1403.NO)
+           and ("specs_with_spend" in _w1403_real_ledger) == bool(_w1403_real_carry)
+           and ("tokens_recorded" in _w1403_real_ledger) == bool(_w1403_real_tok)
+           and ("token_spend_events" in _w1403_real_ledger) == bool(_w1403_real_tok)
+           and _w1403_real_arm
+           and SP1403.brief(_w1403_fix, events=_w1403_real_events)["ledger"]
+           == _w1403_real_ledger)
 
     _w1403_seed = [{"type": "spec.shipped", "spec_id": "WARP-9001", "tokens": 1000},
                    {"type": "spec.shipped", "spec_id": "WARP-9002", "tokens": 2500,
@@ -552,6 +779,40 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1403_no_tok_ledger["events"] == 3
            and SP1403.brief(_w1403_fix, events=_w1403_no_tok)["ledger"]
            == _w1403_no_tok_ledger)
+
+    # THE FOURTH CONTROL, and the only fixture in which `token_spend_events` MEANS anything. Its
+    # declared job is to be the BASIS of the token total, but in the three ledgers above the token
+    # events and the spend events are the SAME events - both seeded records carry tokens, and in the
+    # no-tokens ledger the key is absent - so `len(with_tokens)` and `len(carrying)` are the same
+    # number and the key could be summed over the wrong set with every assertion green. Measured:
+    # `out["token_spend_events"] = len(carrying)` left the suite at 40 passed. A MIXED ledger, one
+    # record with tokens beside two whose spend was recorded as cost and as human minutes, is the
+    # only shape where the basis and the any-field count DIVERGE, and it is the shape the sanctioned
+    # writer produces, since spend.record defaults tokens to None per record and not per ledger.
+    _w1403_mixed = [{"type": "spec.shipped", "spec_id": "WARP-9201", "tokens": 1200},
+                    {"type": "spec.shipped", "spec_id": "WARP-9202", "cost_usd": 3.75},
+                    {"type": "spec.shipped", "spec_id": "WARP-9203", "human_minutes": 20},
+                    {"type": "gate.passed", "spec_id": "WARP-9204"}]
+    _w1403_mixed_ledger = SP1403.ledger_state(_w1403_mixed)
+    expect("WARP-1403 AC4 THE TOKEN TOTAL IS SUMMED OVER THE EVENTS ITS BASIS NAMES: over a ledger "
+           "carrying one tokens record and two whose spend is cost_usd and human_minutes, "
+           "token_spend_events reads 1 while spend_events reads 3, and tokens_recorded is the 1200 "
+           "of that one record. The two counts DIVERGE here and nowhere else in this file, which "
+           "is what makes token_spend_events a measured basis and not a second name for "
+           "spend_events: a total reported over 3 events when 1 was measured is a number with a "
+           "denominator nobody can check, and the three ledgers above cannot see it because there "
+           "the token events and the spend events are the same events",
+           _w1403_mixed_ledger["token_spend_events"] == 1
+           and _w1403_mixed_ledger["spend_events"] == 3
+           and _w1403_mixed_ledger["token_spend_events"]
+           != _w1403_mixed_ledger["spend_events"]
+           and _w1403_mixed_ledger["tokens_recorded"] == 1200
+           and _w1403_mixed_ledger["token_anchor_available"] == E1403.YES
+           and _w1403_mixed_ledger["anchor_available"] == E1403.YES
+           and _w1403_mixed_ledger["specs_with_spend"] == 3
+           and _w1403_mixed_ledger["events"] == 4
+           and SP1403.brief(_w1403_fix, events=_w1403_mixed)["ledger"]
+           == _w1403_mixed_ledger)
 
     expect("WARP-1403 AC4: AN AGENT'S JUDGEMENT NEVER MAKES AN ESTIMATE CALIBRATED. The record "
            "carrying this layer reads calibration uncalibrated and validates clean, because "

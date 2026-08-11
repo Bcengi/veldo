@@ -35,8 +35,11 @@ acceptance_criteria:
       why, and the stand-down report has NO `low` and NO `high` key: not zero, not null, ABSENT, so
       a consumer that skips `predicted` gets a KeyError rather than a confident figure. Driven over
       four distinct zero-evidence shapes, each required to give its OWN code and not a generic one:
-      an empty corpus, a corpus whose records carry no spend (measured: THIS repository, 174
-      shipped records, 0 with spend), a corpus measured entirely in an earlier model era, and a
+      an empty corpus, a corpus whose records carry no spend (the state of THIS repository's
+      174-record corpus on the day this item landed - an observation of that day and NOT a required
+      invariant: what the live corpus is held to is that the layer's output is honest on the terms
+      of whatever it holds, so recording a real actual must never red this criterion), a corpus
+      measured entirely in an earlier model era, and a
       corpus whose only record is the target's own. Paired with the positive control that a seeded
       corpus through the SAME function does produce a range, so the refusals are the evidence's
       doing and not a function that always declines.
@@ -124,6 +127,12 @@ has used it yet.
 carries recorded token spend.** So the honest output of this layer in this repository, today, is no
 number at all. That is not a degraded mode to be apologised for, it is the correct answer, and the
 design problem of this item is making the correct answer impossible to mistake for a small one.
+
+That measurement is dated, and nothing here may be built on it holding. The first `spend.py record`
+ends it, deliberately, and the layer is then supposed to speak: what is asserted over the live corpus
+is that the output is honest on the terms of whatever is recorded, never that nothing is. A check
+that reddened on the first legitimate use of the emitter would teach its first user that this
+repository's gates are noise, which costs more than the check was ever worth.
 
 Hence the shape of the refusal. A stand-down returns `None` for the layer and a report whose
 `predicted` is false, and that report **carries no `low` and no `high` key at all**. A null bound is

@@ -4,6 +4,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 
 | ID | Title | Status | Risk | Owner | Approval | File |
 |---|---|---|---|---|---|---|
+| VELDO-0001 | Every behaviour-bearing criterion declares its own falsification - the negative control moves | ready | standard | dmitry | not_required | VELDO-0001-every-criterion-declares-its-own-falsification.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to | ready | high | dmitry | not_required | WARP-0714-compute-once.md |

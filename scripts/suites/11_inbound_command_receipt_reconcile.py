@@ -1685,9 +1685,19 @@ expect("WARP-1210 AC3 REAL STATE: this repository declares an architecture contr
        and "metrics" in _m10_real_in["contract_areas"]
        and _m10_real_in["spec_areas"].get("WARP-1210") == ["metrics"])
 expect("WARP-1210 AC3 REAL STATE: this repository's committed stream carries NO recorded per-area cost sample and NO incident lifecycle event, so the cost column stands down by name and the section is the honest EMPTY STATE - asserted, not assumed",
-       _m10_real_in["area_cost"] == {} and _m10_real["closed_events"] == 0
-       and _m10_real["receipts_read"] == 0 and RPT10.support_empty(_m10_real) is True
-       and _m10_real["incidents_per_area"]["cost_standdown"] == C10.SUPPORT_NO_AREA_COST_DATA)
+       # BRANCHED ON WHAT IT MEASURED, NEVER PINNED TO TODAY'S EMPTINESS (VELDO-0001 class, and the
+       # first-use gate check found this instance after four sibling suites had been defused). The
+       # earlier form asserted area_cost == {} as a REQUIRED invariant, so recording one spend through
+       # the sanctioned writer, which is the whole point of the estimation layer, reddened the required
+       # gate. The teeth are kept and are now the harder claim: whichever branch this tree is in, the
+       # cost column and the stand-down code must AGREE with each other, so a stand-down printed
+       # alongside real data is still caught, and so is data reported with no stand-down cleared.
+       (_m10_real["closed_events"] == 0 and _m10_real["receipts_read"] == 0
+        and RPT10.support_empty(_m10_real) is True)
+       and ((_m10_real_in["area_cost"] == {}
+             and _m10_real["incidents_per_area"]["cost_standdown"] == C10.SUPPORT_NO_AREA_COST_DATA)
+            or (_m10_real_in["area_cost"] != {}
+                and _m10_real["incidents_per_area"]["cost_standdown"] is None)))
 expect("WARP-1210 AC3 REAL STATE: the rendered section here is ONE honest empty-state line, not a row of zeros and not an error - and NOTHING was skipped on this tree (every entry of every store this repository has is a record), so read_skipped is empty and the section is byte-identical to what it rendered before the skipped entries were surfaced",
        [_l.strip() for _l in RPT10.support_lines(_m10_real)][1:]
        == ["no incident lifecycle event and no reconciliation receipt recorded: standing down as an "

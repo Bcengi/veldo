@@ -70,8 +70,13 @@ acceptance_criteria:
   - id: AC4
     text: >
       HONEST ABOUT THE LEDGER AND ABOUT ITSELF. Measured over this repository: the event log
-      carries over a thousand events and NOT ONE with a spend field, so the brief reports
-      anchor_available no and OMITS the numeric anchor keys rather than reporting zero - paired
+      carries over a thousand events and the ledger report AGREES with an independent recount of
+      it, with the arm chosen by what that recount found - while nothing carries a spend field the
+      brief reports anchor_available no and OMITS the numeric anchor keys rather than reporting
+      zero, and once spend IS recorded the numeric keys must EQUAL the recount. What is never
+      asserted is that the live log carries no spend: that is today's emptiness and not an
+      invariant, and pinning it made the first sanctioned use of spend.py red the gate (see the
+      third round in the notes below) - paired
       with the seeded control where the same function reports the recorded total, which is what
       makes the standdown a measurement instead of a hardcoded answer. Each numeric anchor is
       gated on ITS OWN field and never on spend having been recorded in some other one, so a
@@ -157,16 +162,20 @@ Measured over `.veldo/events.jsonl` at the commit this item was built from (a06f
 events, of which 785 `gate.passed`, 171 `verdict.recorded` and 138 `gate.failed`; **zero carry
 `tokens`, `cost_usd` or `human_minutes`, and there is not one `spec.shipped` spend record.** W1
 measured the same gap at 904 events and built `spend.py` to close it; nothing has emitted through
-it since. The total grows by one line per gate run, which is why the suite binds its assertion to
-the log's own length rather than to this figure; what it pins is the ZERO.
+it since. That is a DATED OBSERVATION and the suite treats it as one: the total grows by one line
+per gate run, so the assertion is bound to the log's own length rather than to this figure, and what
+it pins is the AGREEMENT between the report and an independent recount of the same log. The zero is
+one BRANCH of that leg and is never itself asserted, because the day somebody records real spend the
+observation stops being true while the module stays correct.
 
 Two consequences travel with every number this item produces:
 
-- The brief reports `anchor_available: no` and OMITS its numeric anchor fields rather than
-  reporting them as zero. A zero because nothing was spent and a zero because nothing was ever
-  recorded are different facts, and an agent handed the second as a measurement calibrates against
-  nothing while feeling informed. The seeded control beside that assertion is what makes the
-  standdown a measurement rather than a hardcoded answer.
+- While nothing is recorded the brief reports `anchor_available: no` and OMITS its numeric anchor
+  fields rather than reporting them as zero. A zero because nothing was spent and a zero because
+  nothing was ever recorded are different facts, and an agent handed the second as a measurement
+  calibrates against nothing while feeling informed. The seeded control beside that assertion is
+  what makes the standdown a measurement rather than a hardcoded answer, and the recount beside it
+  is what lets the same leg keep its teeth once the ledger is no longer empty.
 - Recording this pass's own cost would be the FIRST spend record this repository has ever written.
   It goes through `spend.py`'s one writer, against the spec being sized, so the estimating
   apparatus's cost lands INSIDE the measured cost of the change it sized - which is the only way
@@ -250,9 +259,10 @@ run after it):
   `if len(units) != 1:` neutered to `if False:`, 1 RED.
 - **The reach claim is a set equality over parsed imports**, not four forbidden greps. The top-level
   name of every import statement in the module (ast.walk, so function-local ones count) is asserted
-  EQUAL to a declared allowlist, and the two dynamic spellings an import set cannot see
-  (`__import__`, `import_module`) are named absent. Driven: `from subprocess import run as _run`,
-  1 RED; `__import__("socket")`, 1 RED. Both were invisible to the old grep.
+  EQUAL to a declared allowlist. Driven: `from subprocess import run as _run`, 1 RED;
+  `__import__("socket")`, 1 RED. Both were invisible to the old grep. THIS BULLET'S FIRST REVISION
+  ALSO CLAIMED the residual was closed by naming the two dynamic spellings an import set cannot see,
+  which was the same defect in other clothes and is corrected in the round below.
 - **The naming sweep covers four domains**, `.veldo/*.py`, `engine/.veldo/*.py`, `scripts/*.py` and
   `scripts/*.sh`, guarded on each glob being non-empty and on the domain provably containing both
   engine homes and the gate script. The spellings are path-shaped and import-shaped rather than the
@@ -263,9 +273,110 @@ run after it):
   A fourth probe adding this module to publish.py's hold-back list stays GREEN at 40, so the sweep
   is not a trap for the publish.py fix the bullet below still needs.
 
-The fragment reports 40 passed, 0 failed. `scripts/suites/manifest.json` still records the delivered
+## Second round, same day: the two defects the fix itself introduced
+
+A fresh review of the round above found the same defect class inside it, in the lines that round
+wrote. Both are closed here in the suite; `.veldo/sizing_pass.py` and its engine twin are UNTOUCHED
+by this round and remain byte-identical. Each mutation below was applied to BOTH twins in a scratch
+copy under /tmp, unified-diffed to confirm it applied, and the suite run after it:
+
+- **`token_spend_events` had no fixture that could distinguish it from the any-field count.** Its
+  declared job is to be the BASIS of the token total, but every seeded record in the file carried
+  tokens, so `len(with_tokens)` and `len(carrying)` were the same number in all three ledgers and a
+  total could be reported over the wrong set with nothing red. MEASURED: rewriting the key as
+  `out["token_spend_events"] = len(carrying)` left the suite at 40 passed, 0 failed. The fixture the
+  claim needs is a MIXED ledger, one record with tokens beside two whose spend was recorded as
+  `cost_usd` and as `human_minutes`, which is the only shape where the basis and the any-field count
+  diverge and is what the sanctioned writer produces, since `spend.record` defaults `tokens` to None
+  per record and not per ledger. Over it `token_spend_events` is 1 while `spend_events` is 3, and
+  that same rewrite is 1 RED. A sum without a checkable denominator is not a measurement.
+- **The reach claim named its own residual as exactly two spellings.** A universal claim over a
+  hand-picked pair is the defect it was written to fix. MEASURED against that revision, each of
+  these left the suite at 40 passed, 0 failed: `os.popen("true")` (neither `os.system(` nor
+  `Popen(`), `eval("1 + 1")`, `getattr(os, "sys" + "tem")("true")`, and this module's OWN loader
+  idiom aimed outside the tree, `_mod("../../etc/veldo_probe.py", ...)`. The domain is now CLOSED
+  rather than sampled. Foreign code can enter a module four ways and each is an equality over the
+  parsed source: an import statement (the allowlist above); a bare-name callee the module does not
+  define (a declared list of builtins plus `Path` and `rx`, so `eval`, `exec`, `__import__` and
+  `compile` are refused by the equality); a dotted callee rooted at an imported name (exactly seven,
+  so `os.popen`, `os.system`, `os.execv` and `importlib.import_module` are refused the same way);
+  and CALLING WHAT A CALL RETURNED, which is NOT empty here and is not claimed to be, since
+  `sizing_pass.py:532` calls W2's bounds rule as `_bounds_rule()(rec, ...)`, so that shape is pinned
+  to that one producer, a function this module defines. Driven: 1 RED each.
+- **And the door those equalities leave open, which is the module's own loader.** An allowlisted
+  `spec_from_file_location` can execute any file on the machine, so the call is pinned to what it is
+  aimed at: all three module-executing calls occur exactly once and all three inside `_mod`, `_mod`
+  builds its path as `ROOT / rel` asserted against that parsed shape rather than a substring, every
+  caller passes a string literal, and the set of those literals is exactly `validate.py`,
+  `estimate.py`, `toe_corpus.py`, `arch.py`, `spend.py` and `events.py`, each resolving to a real
+  file under the repository root. Driven: the outside-`_mod` absolute-path loader, 1 RED; a `_mod`
+  target reached through a variable instead of a literal, 1 RED.
+
+The fragment reports 42 passed, 0 failed. `scripts/suites/manifest.json` still records the delivered
 figure of 37 in its `requires_note`; that file is outside this item's footprint and the note is
-stale by exactly the three assertions above.
+stale by exactly the five assertions these two rounds added.
+
+The probe from the round above was re-run against these two assertions: adding
+`engine/.veldo/sizing_pass.py` and `engine/.veldo/examples/sizing-judgement-example.yaml` to
+`scripts/publish.py`'s EXCLUDE in a scratch copy leaves the fragment at 42 passed, 0 failed, so
+nothing added here traps the publish.py fix the bullet below still needs. That bullet is still OPEN:
+the two EXCLUDE lines are edits to a file outside this item's footprint, and the invariant worth
+asserting, that a SHIPPING engine module never loads a HELD-BACK one, is RED today and would turn
+the gate red if it were asserted before those lines land. It is named here rather than papered over.
+
+## Third round, same day: the real-log leg was a landmine, not a measurement
+
+The AC4 leg labelled MEASURED OVER THE REAL LOG ran `ledger_state` over the live event log and
+asserted `spend_events == 0` with every numeric anchor key absent. That is not a property of this
+module. It is the observation that nobody had called `spend.py` yet, promoted to a required
+invariant, so the gate was green exactly as long as the estimation layer went unused and would
+redden the moment somebody used it - and the first person to use it is the one who asked for the
+feature. A gate that breaks on first legitimate use is worse than a missing check, because it
+teaches its owner that the gate is noise.
+
+MEASURED, in a `cp -a` scratch copy under /tmp, with the sanctioned writer doing exactly the thing
+the estimation layer exists to do:
+
+    python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000
+
+Before: `16_warp_1403_sizing_pass 42 passed`, 0 failed. After that one record: **41 passed, 1
+FAILED**, and the assertion that fired was that leg.
+
+WHAT IT ASSERTS NOW, and the shape is the point: the live log is RECOUNTED in the suite, by a second
+spelling of "numeric" over W1's own declared `SPEND_FIELDS`, so the two sides of every equality
+cannot move together under a mutation. Unconditional over ANY log: `events` is one enumeration of
+the list, `spend_events` equals the recount, the spend events are a subset of the events, the token
+events are a subset of the spend events, each flag equals what the recount says it should, and each
+numeric key is present EXACTLY when the flag licensing it reads yes. Then ONE arm, chosen by what the
+recount just found: nothing recorded gives the honest stand-down with the numeric keys ABSENT rather
+than zero; spend recorded requires `specs_with_spend`, `token_spend_events` and `tokens_recorded` to
+EQUAL the recount, with the token keys still gated on tokens alone so a cost-only ledger omits them.
+The brief's own ledger block is asserted equal to that report over the same real events. The teeth
+are unchanged in the empty state and stronger in the recorded one, where the keys must match a number
+instead of merely being missing.
+
+Driven, each mutation applied to BOTH twins in the scratch copy WITH that spend record present,
+unified-diffed to confirm it applied, and the suite run after it (the modules in this tree are
+UNTOUCHED by this round and stay byte-identical):
+
+- `"anchor_available": E.NO` hardcoded, the module claiming the stand-down while data exists: **4
+  RED**, the real-log leg plus the three seeded controls.
+- `out["tokens_recorded"] = 0` with the key still present, the zero that reads like a measurement:
+  **4 RED**, the real-log leg, two seeded controls and the AC3 reach equality, which sees the
+  vanished `sum(...)` call.
+- and the attribution probe, `if len(evs) > 900: return {... "spend_events": 0, "anchor_available":
+  E.NO ...}`, which is the old finding hardcoded for this repository's own log and nothing else:
+  **exactly 1 RED, the real-log leg alone**. That is the isolated proof, since a mutation of a
+  function three fixtures also call cannot attribute itself to this leg.
+
+With the module restored and the spend record still in the log: **42 passed, 0 failed**. The feature
+can be used and the leg still bites.
+
+AC4's own text sanctioned the defect - it read "the event log carries over a thousand events and NOT
+ONE with a spend field" as a thing the suite proves - so the criterion is part of this fix and was
+narrowed to the truth: the report agrees with a recount, the arm follows the recount, and the
+emptiness is never asserted. The dated observation itself is kept, as an observation, in the measured
+finding above.
 
 ## Out of scope
 

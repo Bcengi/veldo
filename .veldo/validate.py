@@ -126,7 +126,7 @@ def check_spec(path, repo_root=None):
     errs += check_depends_on(path, text)
     errs += check_tracker_repo(path, fm, repo_root)
     errs += check_placement(path, repo_root)
-    errs += check_observability(path, repo_root)
+    errs += check_observability(path, repo_root) + _VC.check_falsification_declared(path, repo_root)
     return errs
 
 

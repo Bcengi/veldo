@@ -152,6 +152,15 @@
    "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, subprocess, sys, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs, while its own three imports (hashlib, re, shutil) are local, prefixed and deleted at the end. Driven: `python3 scripts/selftest.py --suite 16_warp_1403_sizing_pass` produces 37 passed, 0 failed, which is exactly the contribution it makes to a full run (measured 2026-08-10 as the delta of the aggregate line with and without this fragment: 3979 against 3942)."
   },
   {
+   "name": "17_veldo_0001_falsification_declared",
+   "file": "17_veldo_0001_falsification_declared.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "17_veldo_0001_falsification_declared"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its free names were enumerated from its own AST (Path, ROOT, V, expect, tempfile, tmpfile) and every one is bound by shared.py, which always runs, so the set difference is empty; its own three imports are local, prefixed and deleted at the end because shared.py binds none of them. It drives V._VC, the validate_checks instance validate.py itself loaded, so it reaches the code under test without importing it, and it spawns no subprocess."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

@@ -683,3 +683,318 @@ def check_spec_ids(specs_dir=None):
                                  f"sorted filename, so one file's status silently hides the "
                                  f"other's and an unshipped prerequisite can read as shipped")
     return errs
+
+
+# ---------------------------------------------------------------------------
+# VELDO-0001: THE FALSIFICATION A CRITERION DECLARES FOR ITSELF.
+#
+# The negative control moves out of reviewer lore and into the spec contract. An
+# independent review of this repository's estimation layer produced 34 confirmed
+# findings and almost every one is the same sentence: a property the module claims
+# that nothing asserts. The criteria were not too SHORT - one of them is a fifteen
+# line paragraph - they did not say what would make them FALSE, so the implementer
+# invented the falsification, and the cheapest invention is one that passes.
+#
+# So a behaviour-bearing criterion carries `falsified_by`: ONE statement of the
+# single change to the implementation that must make that criterion's check fail.
+# An implementer reading that has to build the mutation. This check verifies that
+# the author was ASKED the question and answered it in a sentence. WHETHER the
+# answer is a GOOD one is a review-lane judgement, never graded here (NG5): a
+# machine pretending to make that call would produce exactly the confident
+# wrongness the rule exists to stop.
+#
+# MODELLED ON check_observability ABOVE, deliberately, so a reader of one
+# understands the other: a present-only presence gate on the raw front matter, a
+# stand-down for the shape that declares no behaviour, a pure predicate that
+# returns problems, and refusals that name the subject and the cause. TWO THINGS
+# DIFFER, both on purpose:
+#
+#   NO ARCHITECTURE-CONTRACT GATE. check_observability stands down when the
+#   repository carries no .veldo/architecture.yaml, because its vocabulary JOINS to
+#   that contract (the C7 join). A falsification joins to nothing outside the spec
+#   it is written in, so standing down on an unrelated file would read as adoption
+#   safety and be a hole: a repository with no contract would never be asked. The
+#   adoption safety here is the two axes AC3 names instead, the non-behaviour
+#   bearing stand-down and the migration posture below.
+#
+#   THE MIGRATION IS PART OF THE RULE, NOT A FOLLOW-UP. A contract change that
+#   reddens a working repository the day it lands is how a correct rule gets
+#   reverted, so this REPORTS while FALSIFICATION_ENFORCED is False and REFUSES the
+#   moment it is True. That posture is a DECLARED constant, flipped by its own
+#   commit stating the date and the count, and deliberately NOT derived from whether
+#   the corpus complies: "enforce only once every spec complies" stops enforcing the
+#   instant a non-compliant spec arrives, which is the one shape that can never
+#   fail, which is the defect class this whole item is about.
+# ---------------------------------------------------------------------------
+
+FALSIFICATION_FIELD = "falsified_by"
+
+# The THREE distinguishable causes of one refusal, each named separately, because a
+# single undifferentiated "invalid spec" sends an author hunting and hunting is the
+# thing this item exists to stop. They are constants rather than message substrings
+# so a caller can branch on the cause without matching prose.
+FALSIFICATION_MISSING = "no_falsification_declared"
+FALSIFICATION_EMPTY = "falsification_declares_nothing"
+FALSIFICATION_UNREADABLE = "falsification_is_not_a_statement"
+
+# WHAT "TOO SHORT TO BE A STATEMENT" MEANS, in two measures rather than one. A
+# character floor alone is satisfied by padding, so the words are counted too: a
+# statement of one change needs a verb and an object, and `n/a`, `-`, `TODO` and
+# `see above` clear neither floor. There is deliberately NO denylist of placeholder
+# words and NO exemption keyword: an allowlist is a rule authors learn to route
+# around, and judging the CONTENT of a declaration is the reviewer's job.
+FALSIFICATION_MIN_CHARS = 24
+FALSIFICATION_MIN_WORDS = 4
+
+# THE MIGRATION POSTURE. False: every problem is REPORTED and the check returns 0, so
+# nothing turns red the day this lands. True: the same problems refuse by name. The flip
+# is its own commit, stating the date and the count falsification_migration_line() prints.
+FALSIFICATION_ENFORCED = False
+
+# EVERY STAND-DOWN IS RECORDED RATHER THAN PASSED, as (path, why) pairs, so a
+# reader can tell a spec that was CHECKED from one the rule never asked anything of.
+# Recorded rather than PRINTED per spec on purpose: measured 2026-08-11, 168 of this
+# repository's 200 specs declare no behaviour, and 168 stand-down lines on every gate
+# run would bury the 32 report lines that ARE the signal. The aggregate is printed by
+# falsification_migration_line(), which is where a reader meets it.
+FALSIFICATION_STANDDOWNS = []
+
+
+def _falsification_stand_down(path, why):
+    """RECORD one stand-down and return 0, so a caller reads as `return
+    _falsification_stand_down(...)`. The wording is the contract: it names WHAT stood down
+    and WHY, never that the spec passed."""
+    FALSIFICATION_STANDDOWNS.append((str(path), why))
+    return 0
+
+
+def falsification_standdowns():
+    """The stand-downs recorded so far, as an immutable snapshot of (path, why) pairs in the
+    order recorded. A caller clears the registry with `del FALSIFICATION_STANDDOWNS[:]`."""
+    return tuple(FALSIFICATION_STANDDOWNS)
+
+
+def _falsification_statement(val):
+    """(cause, collapsed_text) for one declared falsification: (None, text) when it is a
+    statement, otherwise the named cause and whatever text there was. The ONE reader of what a
+    declared falsification IS, so the structural check, the migration count and the refusal
+    message can never disagree about it.
+
+    A value that is not a string cannot be one statement of one change: a list, a mapping, a
+    number or a boolean is FALSIFICATION_UNREADABLE. A string is measured with its whitespace
+    collapsed, because the one front-matter parser folds a continuation line in with a single
+    space and an author's line wrapping must not change the verdict. A folded scalar keeps its
+    marker in that parser (`falsified_by: >` yields a value beginning "> "), so the marker is
+    stripped before measuring or it would count as a word."""
+    if val is None:
+        return FALSIFICATION_EMPTY, ""
+    if isinstance(val, bool) or not isinstance(val, str):
+        return FALSIFICATION_UNREADABLE, "%s %r" % (type(val).__name__, val)
+    s = re.sub(r"^[>|][+-]?\s*", "", val.strip())
+    s = " ".join(s.split())
+    if not s:
+        return FALSIFICATION_EMPTY, ""
+    if len(s) < FALSIFICATION_MIN_CHARS or len(s.split()) < FALSIFICATION_MIN_WORDS:
+        return FALSIFICATION_EMPTY, s
+    return None, s
+
+
+def falsification_gated(fm, obs=None):
+    """(gated, why): whether this spec's criteria are asked for a falsification, and the
+    reason when they are not.
+
+    BEHAVIOUR-BEARING HAS ONE DEFINITION IN THIS REPOSITORY and it is
+    observability.behavior_bearing, the same reader the diagnosability gate uses, passed in
+    as `obs` by a caller that loads the organ once. A second spelling of "declares
+    behaviour" here would be two enumerations of one set, diverging the first time either
+    moves - and only an explicit true is gated, so absent or false is exempt and the
+    already-shipped corpus is never asked."""
+    bb = (obs or _observability_module()).behavior_bearing(fm)
+    if bb is True:
+        return True, ""
+    if bb is False:
+        return False, "declares behavior_bearing: false, so it declares no behaviour to falsify"
+    return False, ("declares no behavior_bearing field, so the rule does not reach it (absent is "
+                   "exempt, exactly as the diagnosability gate treats the same shape)")
+
+
+def falsification_problems(fm, obs=None):
+    """The problems in one spec's declared falsifications, as [(subject, cause, message)];
+    empty iff the spec passes. PURE over the parsed front matter, so the structural check and
+    the migration count read one predicate.
+
+    Nothing at all for a spec that is not behaviour-bearing (the AC3 stand-down), and nothing
+    when acceptance_criteria is ABSENT, because that red is check_spec's own and double
+    refusing it would point an author at a criterion that does not exist. But a field that is
+    present and EMPTY, or present and not a LIST, is refused: those are the two shapes that
+    would otherwise be free exemptions, because check_spec accepts both (measured: it returns
+    0 for `acceptance_criteria: []` and for a bare key, since the field is present)."""
+    gated, _why = falsification_gated(fm, obs)
+    if not gated:
+        return []
+    if "acceptance_criteria" not in fm:
+        return []
+    crits = fm["acceptance_criteria"]
+    if crits is None or crits == []:
+        return [("acceptance_criteria", FALSIFICATION_MISSING,
+                 "acceptance_criteria is declared but EMPTY, so a behaviour-bearing spec carries "
+                 "no criterion to falsify at all: emptying the field would otherwise be the one "
+                 "way to be asked nothing, which is the escape hatch this rule refuses to have")]
+    if not isinstance(crits, list):
+        return [("acceptance_criteria", FALSIFICATION_UNREADABLE,
+                 "acceptance_criteria is %s %r rather than a list of criteria, so no criterion in "
+                 "it can carry a %s: a behaviour-bearing spec declares its criteria as a list of "
+                 "entries, each with an id and its own falsification"
+                 % (type(crits).__name__, crits, FALSIFICATION_FIELD))]
+    out = []
+    for n, crit in enumerate(crits, 1):
+        # Named by its own id where it has one, by POSITION where it does not, because a
+        # refusal an author cannot locate is a refusal they route around.
+        subject = None
+        if isinstance(crit, dict) and isinstance(crit.get("id"), str) and crit["id"].strip():
+            subject = crit["id"].strip()
+        subject = subject or "acceptance_criteria[%d]" % n
+        if not isinstance(crit, dict) or FALSIFICATION_FIELD not in crit:
+            out.append((subject, FALSIFICATION_MISSING,
+                        "criterion %s declares no %s: a behaviour-bearing criterion states the "
+                        "SINGLE change to the implementation that must make its own check fail, so "
+                        "the implementer builds that mutation instead of inventing a falsification "
+                        "(and the cheapest invention is one that passes). Add `%s: <the one change "
+                        "that must turn this criterion red>` to it"
+                        % (subject, FALSIFICATION_FIELD, FALSIFICATION_FIELD)))
+            continue
+        cause, text = _falsification_statement(crit[FALSIFICATION_FIELD])
+        if cause == FALSIFICATION_UNREADABLE:
+            out.append((subject, cause,
+                        "criterion %s declares a %s the reader cannot parse (%s): the field is ONE "
+                        "string stating one change, never a list, a mapping or a number, because a "
+                        "falsification an implementer cannot read is a falsification nobody builds"
+                        % (subject, FALSIFICATION_FIELD, text)))
+        elif cause == FALSIFICATION_EMPTY:
+            out.append((subject, cause,
+                        "criterion %s declares a %s that says nothing (%r): a statement of at least "
+                        "%d characters and %d words, measured with whitespace collapsed so padding "
+                        "cannot satisfy it. A placeholder is a missing field with the question "
+                        "marked answered, and there is no exemption keyword. Whether the statement "
+                        "is a GOOD one is a review-lane judgement, never graded here"
+                        % (subject, FALSIFICATION_FIELD, text,
+                           FALSIFICATION_MIN_CHARS, FALSIFICATION_MIN_WORDS)))
+    return out
+
+
+def check_falsification_declared(path, repo_root=None, enforce=None):
+    """Validate that every criterion of a BEHAVIOUR-BEARING spec declares its own
+    falsification, at spec-validation (elaboration) time. Returns the error count, which is
+    0 in report mode however many problems there are.
+
+    Adoption safe on the two axes AC3 names. A spec whose front matter carries no
+    behavior_bearing field at all is byte-identically unaffected: the presence gate below
+    tests the RAW front matter, so such a spec is not even parsed richly, exactly as
+    check_placement and check_observability guard their own fields. And while
+    FALSIFICATION_ENFORCED is False every problem is REPORTED through the one reporter and
+    the count is dropped, so landing this reddens nothing.
+
+    `enforce` overrides the declared posture for ONE call, because the refusal is the product:
+    a suite that could only drive the reporting posture would prove that nothing refuses, and
+    one that mutated a module constant to reach it would test a monkeypatch. None: the posture.
+
+    `repo_root` is accepted for call-site symmetry with the sibling spec checks and is
+    deliberately UNUSED: whether a criterion declares its falsification is a property of the
+    spec alone, and reading a repository file to decide it would be a coupling in costume.
+
+    HONEST BOUNDARY. This is the DECLARATION and its structural validation. Whether the
+    declared change would REALLY turn the criterion red is exactly the judgement a reviewer
+    is for, and nothing here grades it."""
+    text = Path(path).read_text()
+    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    if m is None:
+        return 0  # check_spec already reports a missing front matter
+    body = m.group(1)
+    # Presence gate: a spec declaring no behavior_bearing is never even parsed richly here.
+    if not re.search(r"(?m)^behavior_bearing:", body):
+        return _falsification_stand_down(
+            path, "declares no behavior_bearing field, so the rule does not reach it")
+    try:
+        fm = parse_yamlish(body)
+    except ValueError as e:
+        return fail(path, "behavior_bearing declared but the front matter is outside the parser "
+                          "subset, so its criteria cannot be read for a %s: %s"
+                          % (FALSIFICATION_FIELD, e))
+    obs = _observability_module()  # loaded ONCE per spec and handed to both readers below
+    gated, why = falsification_gated(fm, obs)
+    if not gated:
+        return _falsification_stand_down(path, why)
+    problems = falsification_problems(fm, obs)
+    if not problems:
+        return 0
+    refusing = FALSIFICATION_ENFORCED if enforce is None else bool(enforce)
+    if refusing:
+        return sum(fail(path, msg) for _subject, _cause, msg in problems)
+    # REPORT, through the same reporter, with the posture named IN the line so a reader is
+    # never left guessing whether they are looking at a failure. One line per spec rather
+    # than one per criterion: a report is migration pressure and must stay proportionate,
+    # while a refusal has to name each criterion an author must fix.
+    fail(path, "%s MIGRATION REPORT, not a refusal yet: %d criterion(s) declare no usable %s (%s). "
+               "VELDO-0001 reports until this repository's own specs comply; the flip to refusing "
+               "is its own commit stating the date and the count"
+         % (FALSIFICATION_FIELD, len(problems), FALSIFICATION_FIELD,
+            ", ".join("%s [%s]" % (s, c) for s, c, _m in problems)))
+    return 0
+
+
+def falsification_migration(specs_dir=None):
+    """THE MIGRATION MEASUREMENT, which is part of this item and not a follow-up: how many
+    specs the rule reaches, how many already comply, and how many WOULD be refused if the
+    posture flipped today. The flip commit states these numbers, and this is where it gets
+    them, so the count in that message cannot be a number somebody typed.
+
+    Directory-scoped so it is measurable over a temporary corpus. A file with no front
+    matter or front matter outside the parser subset is counted as stood down, never as
+    compliant: its own red belongs to check_spec."""
+    d = Path(specs_dir) if specs_dir else ROOT / "specs"
+    counts = {"specs": 0, "behaviour_bearing": 0, "stood_down": 0, "compliant": 0,
+              "would_refuse": 0, "criteria_would_refuse": 0, "by_cause": {},
+              "specs_would_refuse": []}
+    if not d.is_dir():
+        return counts
+    obs = _observability_module()  # loaded ONCE for the whole pass, not once per spec
+    for p in sorted(d.glob("*.md")):
+        if p.name.startswith("TEMPLATE") or p.name == "index.md":
+            continue
+        counts["specs"] += 1
+        m = re.match(r"^---\n(.*?)\n---", p.read_text(), re.S)
+        if m is None:
+            counts["stood_down"] += 1
+            continue
+        try:
+            fm = parse_yamlish(m.group(1))
+        except ValueError:
+            counts["stood_down"] += 1
+            continue
+        if not falsification_gated(fm, obs)[0]:
+            counts["stood_down"] += 1
+            continue
+        counts["behaviour_bearing"] += 1
+        problems = falsification_problems(fm, obs)
+        if not problems:
+            counts["compliant"] += 1
+            continue
+        counts["would_refuse"] += 1
+        counts["specs_would_refuse"].append(p.name)
+        counts["criteria_would_refuse"] += len(problems)
+        for _subject, cause, _msg in problems:
+            counts["by_cause"][cause] = counts["by_cause"].get(cause, 0) + 1
+    return counts
+
+
+def falsification_migration_line(counts=None, specs_dir=None):
+    """The migration measurement as ONE line, for the flip commit and for a reader who wants
+    the aggregate rather than 170 stand-down lines. Names the posture it was measured under,
+    because the same numbers mean different things on either side of the flip."""
+    c = counts if counts is not None else falsification_migration(specs_dir)
+    causes = ", ".join("%s %d" % (k, c["by_cause"][k]) for k in sorted(c["by_cause"])) or "none"
+    return ("falsification migration: %d spec(s) declare behaviour of %d, %d already comply, %d "
+            "would be refused (%d criterion(s): %s), %d stood down. Posture: %s"
+            % (c["behaviour_bearing"], c["specs"], c["compliant"], c["would_refuse"],
+               c["criteria_would_refuse"], causes, c["stood_down"],
+               "REFUSING" if FALSIFICATION_ENFORCED else "REPORTING"))

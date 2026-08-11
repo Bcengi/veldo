@@ -63,6 +63,18 @@ byte-identical.)
  11. "gate_event_records" dropped from the stand-down's coverage block: 2 red.
  12. a second suite fragment naming the module: 1 red.
  13. repo_report loading .veldo/entropy.py instead of .veldo/metrics.py, the C6 edge: 6 red.
+
+AND ONE OF THOSE LIVE ASSERTIONS WAS A LANDMINE RATHER THAN A CHECK, fixed here. AC4 over the real
+repository asserted that NO record carries spend - today's emptiness written as a required invariant -
+so it stayed green exactly as long as nobody used .veldo/spend.py and reddened the moment somebody
+did. Measured in a scratch copy: from 38 passed 0 failed, one sanctioned
+`python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000` left it at
+37 passed 1 FAILED. It is now asserted against an expectation DERIVED from the independently built
+corpus, per area and per signal, with only the arm that speaks about an absence branched on what the
+run just measured. The teeth were re-measured with the spend recorded: `_sum_cost` returning 0
+instead of None for a set that recorded nothing reds the derived assertion, which is the confident
+zero this criterion exists to refuse. The live block is 4 assertions rather than 1, so a clean run is
+40 passed 0 failed and the mutation counts above are the ones measured at the earlier revision.
 """
 import re as _w1409_re
 
@@ -979,35 +991,222 @@ expect("WARP-1409 AC1 AND AC3 OVER THE REAL REPOSITORY: repo_report() AGGREGATES
        and "metrics" in _w1409_live_areas_of.get(_W1409_REAL_SPEC, set())
        and "WARP-0100" in _W1409_LIVE["unattributed"]["specs"])
 
+# -----------------------------------------------------------------------------------
+# THE TWO HONESTY GAPS OVER THE LIVE MAP, ASSERTED AGAINST WHAT THE CORPUS RECORDS RATHER THAN
+# AGAINST THE FACT THAT NOBODY HAS RECORDED ANYTHING YET.
+#
+# WHAT WAS WRONG HERE, AND IT WAS A LANDMINE RATHER THAN A CHECK. This assertion used to read "Not
+# one record in this repository's corpus carries spend, so every cost field of every area is None"
+# and it asserted exactly that: usable_as_cost_ground_truth false, the cost notice present, every
+# area's cost None. None of those is a property of the module. All three are properties of nobody
+# having used .veldo/spend.py yet, and the module exists to be used. Proven in a scratch copy of
+# this repository, from a clean 38 passed 0 failed:
+#     python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000
+# which is the sanctioned writer doing the one thing it is for, left the suite at 37 passed 1
+# FAILED - this assertion. A gate that reds on the first legitimate use of the feature it guards is
+# worse than a missing check, because it teaches whoever hits it that the gate is noise, and the
+# person who hits it is whoever first records spend.
+#
+# THE SHAPE THAT KEEPS THE TEETH WITHOUT PINNING TODAY'S EMPTINESS: every per-area figure is
+# asserted EQUAL TO AN EXPECTATION DERIVED FROM THE INDEPENDENTLY BUILT CORPUS above - the same
+# corpus the partition set equality uses - and the derivation is written HERE rather than borrowed
+# from the module under test, so both sides cannot move together. A signal that reached none of an
+# area's records must read None; a signal that reached some of them must read the real sum over
+# exactly those records. That covers today's all-None map as an OUTPUT of the measurement and a
+# recorded map the same way, and it reds in BOTH directions: a confident zero where nothing was
+# recorded, and a None (or a wrong sum) where something was.
+#
+# ONLY THE ARM THAT SPEAKS ABOUT AN ABSENCE IS BRANCHED - the notices, and the None the human
+# surface prints - and the branch is chosen by what this run just measured, so recording spend MOVES
+# the assertion to its other arm instead of reding it. The structural invariants (the basis agreeing
+# with the count, the coverage arithmetic, the text carrying the JSON's own figures, the review half
+# being a real number) stay unconditional.
+# -----------------------------------------------------------------------------------
+_w1409_live_text = _W1409.render_text(_W1409_LIVE) if _W1409_LIVE_ERR == "" else ""
+
+
+def _w1409_gate_signal(cycles):
+    """Whether ONE corpus record carried a gate-cycle signal, spelled out here rather than taken
+    from the module under test: sharing its _has_cycle_signal would move both sides of every
+    comparison below together, and an equality that moves with the mutation cannot catch it."""
+    return any(isinstance(cycles.get(_f), (int, float)) and not isinstance(cycles.get(_f), bool)
+               and cycles[_f] > 0 for _f in _W1409.GATE_CYCLE_FIELDS)
+
+
+# The two signals as the INDEPENDENT corpus reports them: which specs recorded spend, and which
+# carried a gate event that reached them. Empty today; both are read rather than assumed.
+_w1409_live_spend_of = {_r["spec"]: _r["spend"] for _r in _W1409_LIVE_CORPUS
+                        if isinstance(_r.get("spend"), dict)
+                        and _r["spend"].get("spend_recorded") is True}
+_w1409_live_cycles_of = {_r["spec"]: _r["cycles"] for _r in _W1409_LIVE_CORPUS
+                         if isinstance(_r.get("cycles"), dict)}
+_w1409_live_gate_specs = {_s for _s, _c in _w1409_live_cycles_of.items()
+                          if _w1409_gate_signal(_c)}
+
+
+def _w1409_live_expect_area(area):
+    """The cost and gate figures ONE live area MUST report, derived from the independent corpus:
+    the sum over that area's own members for a signal at least one of them carried, and None for a
+    signal none of them carried. That is the module's STATED rule, restated here over independently
+    read data, which is what makes the comparison evidence rather than a tautology."""
+    _members = [_m["spec"] for _m in _W1409_LIVE["areas"][area]["members"]]
+    _spent = [_s for _s in _members if _s in _w1409_live_spend_of]
+    _gated = [_s for _s in _members if _s in _w1409_live_gate_specs]
+    _cost = {}
+    for _f in _W1409.COST_FIELDS:
+        if not _spent:
+            _cost[_f] = None
+            continue
+        _total = sum(_w1409_live_spend_of[_s].get(_f, 0) for _s in _spent)
+        _cost[_f] = round(float(_total), 6) if _f == "cost_usd" else _total
+    _gate = {_f: (sum(_w1409_live_cycles_of.get(_s, {}).get(_f, 0) for _s in _members)
+                  if _gated else None)
+             for _f in _W1409.GATE_CYCLE_FIELDS}
+    return {"spend_known": len(_spent), "cost": _cost,
+            "gate_events_known": len(_gated), "gate": _gate}
+
+
+def _w1409_live_area_ok(area):
+    """One live area's cost and gate blocks against that expectation. None-ness is compared
+    EXPLICITLY as well as by value, because the two lies this must catch are opposite: a confident
+    zero where the corpus recorded nothing, and a None where it recorded something."""
+    _a = _W1409_LIVE["areas"][area]
+    _e = _w1409_live_expect_area(area)
+    _c, _cost = _a["cycles"], _a["cost"]
+    if (_cost["spend_known"] != _e["spend_known"]
+            or _cost["cost_known"] is not bool(_e["spend_known"])
+            or _cost["cost_basis"] != ("recorded" if _e["spend_known"] else "unrecorded")
+            or _cost["spend_coverage"] != round(_e["spend_known"] / _a["records"], 4)):
+        return False
+    if (_c["gate_events_known"] != _e["gate_events_known"]
+            or _c["gate_basis"] != ("recorded" if _e["gate_events_known"] else "unrecorded")
+            or _c["gate_coverage"] != round(_e["gate_events_known"] / _a["records"], 4)):
+        return False
+    for _fields, _key, _got in ((_W1409.COST_FIELDS, "cost", _cost),
+                                (_W1409.GATE_CYCLE_FIELDS, "gate", _c)):
+        for _f in _fields:
+            if (_got[_f] is None) is not (_e[_key][_f] is None) or _got[_f] != _e[_key][_f]:
+                return False
+    # AND THE HUMAN SURFACE CANNOT PRINT A FIGURE THE JSON DOES NOT CARRY: both blocks are asserted
+    # as the exact substrings render_text builds from THIS report, so a None rendered as 0 reds here
+    # whichever arm the repository is on.
+    return (("tokens=%s cost_usd=%s human_minutes=%s (%s,"
+             % (_cost["tokens"], _cost["cost_usd"], _cost["human_minutes"],
+                _cost["cost_basis"])) in _w1409_live_text
+            and ("gate_passes=%s gate_failures=%s (%s,"
+                 % (_c["gate_passes"], _c["gate_failures"], _c["gate_basis"]))
+            in _w1409_live_text)
+
+
 expect("WARP-1409 AC4 OVER THE REAL REPOSITORY: THE TWO GAPS ARE NUMBERS IN THE LIVE MAP AND NOT "
-       "PROSE IN THE SPEC. Not one record in this repository's corpus carries spend, so every cost "
-       "field of every area is None with cost_basis 'unrecorded' and the report carries the cost "
-       "notice; and not one gate.passed or gate.failed event carries a spec id or a correlation id, "
-       "so gate_passes and gate_failures are None for EVERY area with gate_basis 'unrecorded', "
-       "usable_as_rework_ground_truth is false and the report carries the cycle notice naming the "
-       "emitter. Review verdicts are real: at least one area reports a positive verdict count with "
-       "review_basis 'recorded', which is what keeps the None above an absence of one signal rather "
-       "than a module that reports nothing. This is the assertion that reds if either honesty is "
-       "ever quietly replaced by a zero",
+       "PROSE IN THE SPEC, AND EACH NUMBER IS ASSERTED AGAINST AN EXPECTATION DERIVED FROM THE "
+       "INDEPENDENTLY BUILT CORPUS RATHER THAN AGAINST TODAY'S EMPTINESS. Per area: spend_known, "
+       "gate_events_known and both coverage ratios equal the count of that area's own members that "
+       "carried the signal; cost_basis and gate_basis are 'recorded' exactly when that count is "
+       "positive; every cost field and every gate-cycle field equals the sum over exactly those "
+       "members, and is None when none of them carried it - so a confident zero reds and so does a "
+       "None over recorded data; and the rendered text carries the report's own figures for both "
+       "blocks, so the human surface cannot show a number the JSON does not. The corpus-level "
+       "booleans and notices AGREE WITH THE COUNTS: cost_known_records and gate_event_records equal "
+       "the independently derived sets, usable_as_cost_ground_truth and "
+       "usable_as_rework_ground_truth are true exactly when those sets are non-empty, and each "
+       "notice is present exactly when its set is empty. Review verdicts are real: at least one "
+       "area reports a positive verdict count with review_basis 'recorded', which keeps an "
+       "unrecorded signal an absence of ONE signal rather than a module that reports nothing",
        _W1409_LIVE_ERR == ""
-       and _W1409_LIVE["coverage"]["usable_as_cost_ground_truth"] is False
-       and "cost_notice" in _W1409_LIVE
-       and all(a["cost"][f] is None for a in _W1409_LIVE["areas"].values()
-               for f in _W1409.COST_FIELDS)
-       and all(a["cost"]["cost_basis"] == "unrecorded" for a in _W1409_LIVE["areas"].values())
-       and _W1409_LIVE["coverage"]["gate_event_records"] == 0
-       and _W1409_LIVE["coverage"]["usable_as_rework_ground_truth"] is False
-       and "verify.sh" in _W1409_LIVE.get("cycle_notice", "")
-       and all(a["cycles"][f] is None for a in _W1409_LIVE["areas"].values()
-               for f in _W1409.GATE_CYCLE_FIELDS)
-       and all(a["cycles"]["gate_basis"] == "unrecorded"
-               for a in _W1409_LIVE["areas"].values())
+       and _W1409_LIVE["coverage"]["cost_known_records"] == len(_w1409_live_spend_of)
+       and (_W1409_LIVE["coverage"]["usable_as_cost_ground_truth"]
+            is bool(_w1409_live_spend_of))
+       and ("cost_notice" in _W1409_LIVE) is (not _w1409_live_spend_of)
+       and _W1409_LIVE["coverage"]["gate_event_records"] == len(_w1409_live_gate_specs)
+       and (_W1409_LIVE["coverage"]["usable_as_rework_ground_truth"]
+            is bool(_w1409_live_gate_specs))
+       and ("cycle_notice" in _W1409_LIVE) is (not _w1409_live_gate_specs)
+       and all(_w1409_live_area_ok(_a) for _a in _W1409_LIVE["areas"])
        # The basis is read FIRST and the count second, in that order: when the basis is
        # 'unrecorded' the count is None, and a comparison against None would raise TypeError -
        # which is a crash rather than a red, and a suite that crashes reports nothing.
        and any(a["cycles"]["review_basis"] == "recorded" and a["cycles"]["review_verdicts"] > 0
-               for a in _W1409_LIVE["areas"].values())
-       and "gate_passes=None" in _W1409.render_text(_W1409_LIVE))
+               for a in _W1409_LIVE["areas"].values()))
+
+# THE COST ARM, chosen by what the run just measured. An assertion over the live repository may
+# require the honest stand-down when nothing is recorded and the recorded reading when something is.
+# What it must never do - what it did until this remediation - is require the recorded set to be
+# EMPTY.
+if _w1409_live_spend_of:
+    expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE RECORDED COST ARM: %d record(s) in this "
+           "repository's corpus carry spend, so the live map reports them AS NUMBERS and drops the "
+           "stand-down - usable_as_cost_ground_truth true and no cost_notice - and NOTHING "
+           "RECORDED IS SILENTLY DROPPED: every spec that recorded spend is in an area or in the "
+           "unattributed list, every area holding one reports cost_basis 'recorded' with a real "
+           "tokens figure, and no area's spend_known exceeds the corpus count"
+           % len(_w1409_live_spend_of),
+           _W1409_LIVE_ERR == ""
+           and _W1409_LIVE["coverage"]["usable_as_cost_ground_truth"] is True
+           and "cost_notice" not in _W1409_LIVE
+           and all(_s in _w1409_live_areas_of
+                   or _s in set(_W1409_LIVE["unattributed"]["specs"])
+                   for _s in _w1409_live_spend_of)
+           and all(_W1409_LIVE["areas"][_a]["cost"]["cost_basis"] == "recorded"
+                   and _W1409_LIVE["areas"][_a]["cost"]["tokens"] is not None
+                   for _s in _w1409_live_spend_of
+                   for _a in _w1409_live_areas_of.get(_s, ()))
+           and all(_a["cost"]["spend_known"] <= len(_w1409_live_spend_of)
+                   for _a in _W1409_LIVE["areas"].values()))
+else:
+    expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE COST STAND-DOWN ARM: not one record in "
+           "this repository's corpus carries spend AS READ ON THIS RUN, so every cost field of "
+           "every area is None with cost_basis 'unrecorded' rather than a confident zero, the "
+           "report carries the cost notice naming .veldo/spend.py, and the rendered text prints "
+           "tokens=None. THIS IS AN ARM AND NOT AN INVARIANT: the first `.veldo/spend.py record` "
+           "moves this to the recorded arm instead of reding it, which is what the emptiness "
+           "assertion this replaced could not do",
+           _W1409_LIVE_ERR == ""
+           and _W1409_LIVE["coverage"]["usable_as_cost_ground_truth"] is False
+           and ".veldo/spend.py" in _W1409_LIVE.get("cost_notice", "")
+           and all(a["cost"][f] is None for a in _W1409_LIVE["areas"].values()
+                   for f in _W1409.COST_FIELDS)
+           and all(a["cost"]["cost_basis"] == "unrecorded"
+                   for a in _W1409_LIVE["areas"].values())
+           and "tokens=None" in _w1409_live_text)
+
+# THE GATE ARM, the same shape over the other signal. Its writer is not spend.py but verify.sh
+# learning to name the spec its run belongs to (out of scope for this item and named as such in the
+# notice), so this arm flips the day that emitter changes rather than reding.
+if _w1409_live_gate_specs:
+    expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE RECORDED GATE ARM: %d record(s) in this "
+           "repository's corpus carry a gate pass or a gate failure, so the live map reports the "
+           "rework half AS NUMBERS - usable_as_rework_ground_truth true and no cycle_notice - and "
+           "every spec whose gate events reached it is in an area reporting gate_basis 'recorded' "
+           "with real gate_passes and gate_failures figures, or in the unattributed list"
+           % len(_w1409_live_gate_specs),
+           _W1409_LIVE_ERR == ""
+           and _W1409_LIVE["coverage"]["usable_as_rework_ground_truth"] is True
+           and "cycle_notice" not in _W1409_LIVE
+           and all(_s in _w1409_live_areas_of
+                   or _s in set(_W1409_LIVE["unattributed"]["specs"])
+                   for _s in _w1409_live_gate_specs)
+           and all(_W1409_LIVE["areas"][_a]["cycles"]["gate_basis"] == "recorded"
+                   and _W1409_LIVE["areas"][_a]["cycles"]["gate_passes"] is not None
+                   and _W1409_LIVE["areas"][_a]["cycles"]["gate_failures"] is not None
+                   for _s in _w1409_live_gate_specs
+                   for _a in _w1409_live_areas_of.get(_s, ())))
+else:
+    expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE GATE STAND-DOWN ARM: not one gate.passed "
+           "or gate.failed event reaches a record AS READ ON THIS RUN - the emitter writes a "
+           "commit and no spec id or correlation id - so gate_passes and gate_failures are None "
+           "for EVERY area with gate_basis 'unrecorded', usable_as_rework_ground_truth is false, "
+           "the report carries the cycle notice NAMING THE EMITTER, and the rendered text prints "
+           "gate_passes=None. THIS IS AN ARM AND NOT AN INVARIANT: the day verify.sh names the "
+           "spec its run belongs to, this moves to the recorded arm instead of reding",
+           _W1409_LIVE_ERR == ""
+           and _W1409_LIVE["coverage"]["usable_as_rework_ground_truth"] is False
+           and "verify.sh" in _W1409_LIVE.get("cycle_notice", "")
+           and all(a["cycles"][f] is None for a in _W1409_LIVE["areas"].values()
+                   for f in _W1409.GATE_CYCLE_FIELDS)
+           and all(a["cycles"]["gate_basis"] == "unrecorded"
+                   for a in _W1409_LIVE["areas"].values())
+           and "gate_passes=None" in _w1409_live_text)
 
 # SPLIT, for the same reason WARP-1711 split the git-reader control below: the GIT-PATH half of the
 # live wiring needs commits that name a spec id, and this history's one commit names none, so

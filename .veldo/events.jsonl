@@ -1122,3 +1122,7 @@
 {"schema": "veldo.event/v1", "id": "10657f14c9b0", "type": "verdict.recorded", "at": "2026-07-29T09:07:38Z", "producer": "events.py reconcile-verdicts", "correlation_id": "WARP-0724", "spec_id": "WARP-0724", "commit": "0f59d3345ae927a9531a06858f4fbbb64ca597d9", "verdict_path": "proof/WARP-0724/verdict-1-fail.json", "verdict_blob": "f9e5de40407b6c836211b26e0bcd70040265d91b", "verdict": "fail", "reviewed_at": "2026-07-29T09:07:38Z", "round": 1}
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"bf8b57f6a415c5f0462f44efb9797fdaf8112aab","at":"2026-08-11T17:36:24Z","producer":"verify.sh","checks_run":6}
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"c61242d82ee7aabe6d1334058f4196e5c9550862","at":"2026-08-11T19:42:54Z","producer":"verify.sh","checks_run":6}
+{"schema":"veldo.event/v1","type":"gate.failed","commit":"c3810f4c8424f3775b719e0de02389ad6ab26dd0","at":"2026-08-11T21:09:55Z","producer":"verify.sh","checks_run":7}
+{"schema":"veldo.event/v1","type":"gate.failed","commit":"c3810f4c8424f3775b719e0de02389ad6ab26dd0","at":"2026-08-11T21:16:28Z","producer":"verify.sh","checks_run":7}
+{"schema":"veldo.event/v1","type":"gate.failed","commit":"c3810f4c8424f3775b719e0de02389ad6ab26dd0","at":"2026-08-11T21:21:42Z","producer":"verify.sh","checks_run":7}
+{"schema":"veldo.event/v1","type":"gate.passed","commit":"c3810f4c8424f3775b719e0de02389ad6ab26dd0","at":"2026-08-11T21:25:48Z","producer":"verify.sh","checks_run":7}

@@ -95,8 +95,16 @@ acceptance_criteria:
       as partial: the sum covers the records that carried spend and `spend_known` of `records` says
       how many that was. POSITIVE CONTROL: a record carrying real spend produces the real numbers
       and flips `usable_as_cost_ground_truth`, so the None is the absence of data and not a
-      hardcoded value. MEASURED OVER THIS REPOSITORY: 0 of 174 records carry any spend, so every
-      cost field in the live map is None and the map is a REVIEW-CYCLE map today.
+      hardcoded value. OVER THE LIVE MAP THE SELFTEST ASSERTS THE READING, NEVER THAT THE RECORDED
+      SET IS EMPTY: each per-area figure must EQUAL the sum over that area's own recorded members,
+      derived from an independently built corpus, so a signal no member carried must read None and
+      one some member carried must read its real sum; the basis, the coverage ratio and the notices
+      must agree with those counts; and only the arm that speaks about an absence is branched on
+      what the run measured, so `.veldo/spend.py record` moves the assertion to its recorded arm
+      instead of reding it. AS READ ON 2026-08-11 the recorded set was empty (0 of 174 records) and
+      the map is a REVIEW-CYCLE map today, which is a reading of this repository and not a
+      requirement on it: an assertion that required the emptiness would have gated against the
+      first legitimate use of the estimation layer.
       AND THE SAME DISCIPLINE APPLIES TO THE GATE CYCLES, IN THE DATA RATHER THAN IN THIS SPEC'S
       PROSE. The gate emitter names no spec: `scripts/verify.sh` appends gate.passed and gate.failed
       carrying a commit, and `toe_corpus.cycles_for` joins on spec_id or correlation_id, so no gate

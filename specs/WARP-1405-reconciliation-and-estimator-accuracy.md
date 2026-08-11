@@ -72,9 +72,16 @@ acceptance_criteria:
       a converging estimator and a drifting one look different on the page. With NO records every
       figure is None, `measured` is False and the reason says the estimator has no measured accuracy
       yet; the curve is empty rather than a flat line at zero; the refit and the comparison stand
-      down with reasons. MEASURED OVER THIS REPOSITORY: the live event log is non-empty and not one
-      event carries tokens, cost_usd or human_minutes, so this is the branch that runs here today,
-      with the paired control that the same predicate DOES find spend in a seeded event. Selftests
+      down with reasons. MEASURED OVER THIS REPOSITORY, WITH THE BRANCH CHOSEN BY WHAT THE
+      MEASUREMENT FINDS AND NEVER PINNED TO TODAY'S ABSENCE OF DATA: the live event log is
+      non-empty, the raw spend predicate and toe_corpus's own reader AGREE over every spec id that
+      log names on which of them carry tokens, cost_usd or human_minutes and on the figures
+      themselves, no recorded reconciliation in the tree is malformed, and the honesty rule above is
+      then required on the arm the live ledger puts it on - the stand-down when nothing is recorded,
+      which is the branch running here today, and the measured, internally reproducible figures when
+      something is - with the paired control that the same predicate DOES find spend in a seeded
+      event. Recording spend and recording a reconciliation are the SANCTIONED uses of this layer, so
+      no criterion here may require the measured set to be empty. Selftests
       also drive a seeded mixed ledger where all three outcomes appear with a 40 percent hit rate
       (the anti-vacuity control that the scorer is not a constant), require every curve point to
       equal the accuracy function over the same prefix, and require the curve to MOVE.
@@ -165,6 +172,20 @@ The distinction that decides whether this module is honest is one line wide: `ac
 missed every time. An unmeasured estimator has never been scored. The method's companion writing
 promises a line like "81 percent of the last 50 units in range"; this module renders exactly that
 shape, and today the true rendering of it is that there is nothing to render.
+
+**That finding is DATED, and it is not an invariant.** The first revision of AC3 and of the suite
+wrote it down as one: two assertions required the live spend set to be EMPTY and the live ledger to
+be an EMPTY MAP, so the check held only while nobody used the layer. MEASURED, in a scratch copy of this
+repository: one legitimate `spend.py record --spec WARP-0100 --basis harness_reported --tokens
+750000`, the sanctioned writer doing the exact thing this layer exists for, took the suite from 53
+passed to 52 passed and 1 failed. A gate that reddens on the first real use of the feature it
+measures is worse than a missing check, because whoever hits it learns that the gate is noise. So the
+criterion and the assertions now keep the partition and the reader agreement unconditional and make
+only the arm that NEEDS there to be no data conditional. The teeth were re-measured on both arms:
+with the spend recorded, an `accuracy` that scores an empty ledger 0 instead of standing down is 3
+RED; with a real reconciliation record present in the tree, an `error_pct_of` that reports 0 for an
+actual above the committed high is 9 RED where the same mutation over an empty ledger is 8, and a
+`render` that reports a measured ledger as NOT MEASURED is 1 RED.
 
 ## Two things the build changed on purpose
 

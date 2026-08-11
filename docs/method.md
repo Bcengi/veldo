@@ -75,7 +75,7 @@ The specification defines:
 - The problem or desired outcome
 - The intended behavior
 - The relevant constraints
-- Acceptance criteria
+- Acceptance criteria, each declaring its own falsification
 - Required tests or evidence
 - Areas that must not change
 - Any required human approval
@@ -85,6 +85,8 @@ The specification describes intent, not implementation details, unless a technic
 A specification should be small enough that one agent can implement it coherently and one reviewer can evaluate it without reconstructing an entire project history.
 
 A specification is complete only when success can be evaluated.
+
+Every acceptance criterion of a behavior-bearing change also declares its own falsification, in a field named `falsified_by`: one statement of the single change to the implementation that must make that criterion's check fail. This is the **negative control**, and it belongs in the contract rather than in review. Length is not what separates a criterion that produces working code from one that produces a check that cannot fail: a fifteen line criterion can still leave the implementer to invent the falsification, and the cheapest invention is one that passes. A criterion that names the mutation makes the implementer build it, and makes the reviewer's first question mechanical, which is to apply that change and watch the check go red. Whether a declared falsification is a good one is a reviewer's judgement; that one was declared at all is checked at the gate, per criterion, by name.
 
 Bad specification:
 
@@ -101,6 +103,8 @@ Acceptance criteria:
 - Existing accounts are not modified.
 - The API returns the current duplicate-account error format.
 - Unit tests cover normalization, duplicate detection, and unaffected domains.
+
+Each of those carries its own falsification. The first: remove the normalization call from the duplicate-account check, and the criterion's test must fail. The third: have the change write to one existing row, and the unchanged-accounts assertion must fail. A criterion whose falsification cannot be stated is usually a criterion that is not yet a claim about anything.
 
 The specification is the contract between human intent and machine execution.
 

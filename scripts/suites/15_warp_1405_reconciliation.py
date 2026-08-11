@@ -78,14 +78,47 @@ over:
      it": 1 RED, the never-labels assertion. GREEN before this remediation, when that assertion
      read the fit dict's KEY NAMES and never a string a reader sees.
 
-WHAT IS MEASURED RATHER THAN ARGUED. Two things. First, that this repository has NO measured
-estimator accuracy: the live event log is read and required to carry no spend field at all,
-which is WARP-1401's finding re-measured against today's bytes, and the paired control requires
-the same predicate to FIND spend in a seeded event so the zero is the log's doing. Second, that
-a reconciliation can never invalidate a spec: the REAL validate.check_spec runs over a hermetic
-repository root three times, with no record, with a valid one and with a MALFORMED one, and must
-return the identical zero, with the negative control that it DOES refuse a genuinely broken spec
-under the same root.
+AND FOUR MORE FOR THE TWO LIVE-REPOSITORY ARMS, every one of them driven WITH THE SPEND RECORDED, so
+these are reds earned over data the old shape refused to allow to exist. Each was applied to both
+copies together, DIFFED to confirm it applied, and restored before the next:
+
+ 14. `accuracy` scoring an empty ledger `measured: True` with a hit rate of 0 instead of standing
+     down: 3 RED - the empty-ledger honesty pair, the live event-log arm and the live report. Same
+     blast radius as mutation 5, which is the point: the stand-down is still measured over this tree,
+     it is just no longer the only branch the assertion permits.
+ 15. `error_pct_of` returning 0 for an actual ABOVE the committed high, with a REAL reconciliation
+     record present in .veldo/reconciliations: 9 RED, one more than the 8 the same mutation reds over
+     an empty ledger, and the extra one is the live event-log arm's MEASURED branch.
+ 16. `render` reporting a measured ledger as NOT MEASURED, same seeded record: 1 RED, the live
+     report's measured branch. With 15, these are teeth that only exist once the feature has been
+     used, which is the trade this remediation is: the arm that used to be pinned to emptiness now
+     GAINS teeth from real data instead of losing them to it.
+ 17. `spend_for` summing `v // 2` instead of `v`, so the reader disagrees with the bytes it read:
+     1 RED, the live event-log arm, through the re-summed figures. GREEN over an empty spend set,
+     which is why that clause is a set equality plus a re-summation over EVERY spec id the log names
+     rather than a claim about the recorded ones alone.
+
+WHAT IS MEASURED RATHER THAN ARGUED. Two things. First, what this repository's own bytes say about
+the estimator's accuracy - MEASURED, with the branch chosen by the measurement instead of decided in
+advance: the live event log is read, the two readers of those bytes are required to AGREE on which
+specs carry spend and on the figures themselves, and then the module's honesty rule is asserted on
+the arm the live ledger puts it on (the stand-down when nothing is recorded, the measured figures
+when something is). The paired control requires the same predicate to FIND spend in a seeded event,
+so a zero is the log's doing. Second, that a reconciliation can never invalidate a spec: the REAL
+validate.check_spec runs over a hermetic repository root three times, with no record, with a valid
+one and with a MALFORMED one, and must return the identical zero, with the negative control that it
+DOES refuse a genuinely broken spec under the same root.
+
+TWO ASSERTIONS HERE USED TO PIN TODAY'S EMPTINESS AS A REQUIRED INVARIANT, and that is fixed rather
+than deleted. The real-event-log assertion required the live spend set to be EMPTY and the live
+ledger to be an EMPTY MAP, and the live-report assertion required the report to print NOT MEASURED
+whatever this tree holds. Neither is a property of the module; both are the absence of data on the
+day they were written. MEASURED, in a scratch copy: one `spend.py record --spec WARP-0100 --basis
+harness_reported --tokens 750000`, the sanctioned writer doing the exact thing this layer exists
+for, took the fragment from 53 passed to 52 passed and 1 failed. A gate that reddens on the first
+real use of the feature it measures teaches whoever hits it that the gate is noise. The partition
+and the structural invariants stay unconditional; only the arm that depends on there being no data
+is now conditional, and both arms are measurements (see mutations 14 and 15 below).
 """
 import re as _w1405_re
 import shutil as _w1405_shutil
@@ -432,24 +465,122 @@ with tempfile.TemporaryDirectory() as _d:
            and R1405.compare([])["measured"] is False
            and R1405.compare([])["improved"] is None)
 
-    # MEASURED OVER THIS REPOSITORY'S OWN BYTES, not asserted from WARP-1401's report.
+    # MEASURED OVER THIS REPOSITORY'S OWN BYTES, not asserted from WARP-1401's report - AND THE
+    # BRANCH IS CHOSEN BY WHAT THE MEASUREMENT JUST FOUND, WHICH IS THE WHOLE OF THIS ASSERTION'S
+    # REMEDIATION. It used to require the live spend set to be EMPTY and the live ledger to be an
+    # EMPTY MAP. Neither is a property of the module: both are the absence of data on the day the
+    # assertion was written, promoted to a required invariant. ONE legitimate use of the sanctioned
+    # writer doing the exact thing this layer exists for,
+    #
+    #   python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000
+    #
+    # took this fragment from 53 passed to 52 passed and 1 failed. A gate that reddens on the FIRST
+    # REAL USE of the feature it measures is worse than a missing check, because the person who
+    # hits it learns that the gate is noise, and that person is whoever first tries the feature.
+    #
+    # WHAT IS UNCONDITIONAL AND WHAT IS NOT. The partition and the structural invariants are
+    # unconditional and stay that way: the log is non-empty, the TWO readers of the same live bytes
+    # agree on exactly which specs carry spend, a summed figure is positive exactly when spend was
+    # recorded, and no reconciliation record in this tree is malformed. The agreement is a SET
+    # EQUALITY over every spec id the log names (143 of them today), so it cannot be satisfied by a
+    # reader answering a constant, in EITHER branch - which is what stops this arm from going
+    # vacuous on the day nothing is recorded. Only the arm that NEEDS there to be no data is
+    # conditional: with an empty ledger the honest STAND-DOWN is required, and with records present
+    # the MEASURED branch is required to be internally honest over them. Neither arm can be
+    # satisfied by the other's data, and nothing here asserts that the measured set is empty.
     _w1405_live = M1405.load()
     _w1405_live_spend = [e for e in _w1405_live
                          if any(isinstance(e.get(f), (int, float))
                                 and not isinstance(e.get(f), bool)
                                 for f in C1405.SPEND_FIELDS)]
+
+    def _w1405_ev_spec(ev):
+        """The spec one event is attributed to, spelled the way toe_corpus's own reader spells it
+        (`spec_id` or the correlation id), so the two sides of the set equality below are compared
+        over one attribution rule rather than over two."""
+        return ev.get("spec_id") or ev.get("correlation_id")
+
+    # THE UNIVERSE BOTH READERS ARE COMPARED OVER: every spec id this log names at all, not only
+    # the ones carrying spend. Comparing over the spend-carrying ids alone would make the equality
+    # vacuous whenever that set is empty, which is the defect being fixed wearing other clothes.
+    _w1405_live_ids = sorted({_w1405_ev_spec(e) for e in _w1405_live} - {None})
+    _w1405_raw_spend_ids = sorted({_w1405_ev_spec(e) for e in _w1405_live_spend} - {None})
+    _w1405_live_spend_for = {_s: C1405.spend_for(_w1405_live, _s) for _s in _w1405_live_ids}
+    _w1405_reader_spend_ids = sorted(_s for _s in _w1405_live_ids
+                                     if _w1405_live_spend_for[_s]["spend_recorded"])
+    # THE SAME FIGURES RE-SUMMED HERE, from the raw events, with the arithmetic written out rather
+    # than borrowed from the reader being checked. This is the clause that carries the agreement
+    # when the recorded set is NON-EMPTY: a reader that dropped a field, double-counted an event or
+    # attributed one to the wrong spec disagrees with it. A record whose figure is legitimately 0
+    # is not a violation here, which is why this is a re-summation and not "the total is positive":
+    # `spend.py` accepts a zero figure, so requiring a positive one would red on a legal record.
+    _w1405_raw_sums = {}
+    for _s in _w1405_live_ids:
+        _w1405_raw_sums[_s] = {_f: sum(_e[_f] for _e in _w1405_live
+                                       if _w1405_ev_spec(_e) == _s
+                                       and isinstance(_e.get(_f), (int, float))
+                                       and not isinstance(_e.get(_f), bool))
+                               for _f in C1405.SPEND_FIELDS}
     _w1405_live_ledger, _w1405_live_probs = R1405.load_dir(root=ROOT)
-    expect("WARP-1405 AC3 MEASURED OVER THE REAL EVENT LOG: this repository's log is non-empty "
-           "and NOT ONE of its recorded events carries tokens, cost_usd or human_minutes, so no "
-           "shipped change has an actual, the ledger is empty and it reports itself unmeasured. "
-           "That is WARP-1401's 0 percent spend coverage re-measured against today's bytes rather "
-           "than quoted, and it is why the calibration curve this item ships renders nothing "
-           "here: the honest output of an estimator with no history is that it has none. The "
-           "count is deliberately NOT in this label, because the log grows on every gate run and "
+    _w1405_live_recs = R1405.ordered(list(_w1405_live_ledger.values()))
+    _w1405_live_acc = R1405.accuracy(_w1405_live_recs)
+    # THE ONE CONDITIONAL ARM, and the branch is chosen by the ledger that was just loaded rather
+    # than by an expectation about it. Both branches are real measurements: the stand-down branch
+    # requires the unmeasured report to say so in the module's own words (a hit rate of 0 here reds
+    # it), and the measured branch requires every figure to be reproducible from the records on
+    # disk (a ledger the module scores differently from its own derivations reds it).
+    if _w1405_live_recs:
+        _w1405_live_arm = (
+            _w1405_live_acc["measured"] is True
+            and _w1405_live_acc["n"] == _w1405_live_acc["ledger"] == len(_w1405_live_recs)
+            and 0 <= _w1405_live_acc["hit_rate_pct"] <= 100
+            and sum(_w1405_live_acc["counts"].values()) == len(_w1405_live_recs)
+            and all(R1405.validate_record(_r, spec_id=_r["spec"]) == []
+                    for _r in _w1405_live_recs)
+            and all(_r["outcome"] == R1405.outcome_of(_r["estimate_low"], _r["estimate_high"],
+                                                     _r["actual"])
+                    and _r["error_pct"] == R1405.error_pct_of(_r["estimate_low"],
+                                                             _r["estimate_high"], _r["actual"])
+                    for _r in _w1405_live_recs)
+            and [_p["n"] for _p in R1405.curve(_w1405_live_recs)] \
+            == list(range(1, len(_w1405_live_recs) + 1)))
+    else:
+        _w1405_live_arm = (
+            _w1405_live_acc["measured"] is False
+            and "NO MEASURED ACCURACY" in _w1405_live_acc["reason"]
+            and all(_w1405_live_acc[_k] is None
+                    for _k in ("hit_rate_pct", "mean_error_pct", "mean_abs_error_pct", "bias",
+                               "worst_error_pct", "mean_width_pct"))
+            and R1405.curve(_w1405_live_recs) == []
+            and R1405.fit(_w1405_live_recs)["fitted"] is False
+            and R1405.compare(_w1405_live_recs)["improved"] is None)
+    expect("WARP-1405 AC3 MEASURED OVER THE REAL EVENT LOG, AND THE BRANCH IS THE MEASUREMENT'S "
+           "OWN: this repository's log is non-empty, and over EVERY spec id it names the two "
+           "readers of those same bytes agree exactly on which ones carry tokens, cost_usd or "
+           "human_minutes - the raw field predicate and toe_corpus's spend_for - and on the FIGURES "
+           "themselves, re-summed here from the raw events, and no reconciliation record in this "
+           "tree is malformed. Then the honesty rule is asserted on the branch the live ledger "
+           "puts it on: with no records it must report NO MEASURED ACCURACY with every figure "
+           "None, an EMPTY curve rather than a flat line at zero, and a stood-down refit and "
+           "comparison; with records present it must report itself measured, count every record "
+           "once, keep the hit rate inside 0 to 100, validate each record clean and reproduce each "
+           "record's own outcome and variance. What this assertion must NEVER do is require the "
+           "measured set to be EMPTY: recording spend is the sanctioned use of this layer, and "
+           "pinning today's zero made the first legitimate `spend.py record` red the gate. The "
+           "counts are deliberately NOT in this label, because the log grows on every gate run and "
            "a label that moved with it would not be reproducible",
-           _w1405_live != [] and _w1405_live_spend == []
-           and _w1405_live_ledger == {} and _w1405_live_probs == []
-           and R1405.accuracy(list(_w1405_live_ledger.values()))["measured"] is False)
+           _w1405_live != []
+           and _w1405_live_ids != []
+           and _w1405_raw_spend_ids == _w1405_reader_spend_ids
+           and all(_w1405_live_spend_for[_s]["tokens"] == _w1405_raw_sums[_s]["tokens"]
+                   and _w1405_live_spend_for[_s]["human_minutes"]
+                   == _w1405_raw_sums[_s]["human_minutes"]
+                   and _w1405_live_spend_for[_s]["cost_usd"]
+                   == round(float(_w1405_raw_sums[_s]["cost_usd"]), 6)
+                   for _s in _w1405_live_ids)
+           and _w1405_live_probs == []
+           and sorted(_w1405_live_ledger) == sorted(_r["spec"] for _r in _w1405_live_recs)
+           and _w1405_live_arm)
 
     expect("WARP-1405 AC3 NEGATIVE CONTROL FOR THAT MEASUREMENT: the SAME predicate finds spend "
            "in a seeded event, and toe_corpus's own reader agrees with it. So the zero above is "
@@ -582,11 +713,34 @@ with tempfile.TemporaryDirectory() as _d:
            and _W1405_CURVE[-1]["cumulative_hit_rate_pct"] == 40)
 
     # THE INSPECTABLE SURFACE, end to end, both ways: the real CLI over the real repository
-    # (which must stand down honestly) and the real build_view over a hermetic root carrying a
-    # seeded ledger (which must render the numbers and the curve).
+    # (which must report the branch its own ledger puts it on) and the real build_view over a
+    # hermetic root carrying a seeded ledger (which must render the numbers and the curve).
+    #
+    # THE SECOND LIVE-REPOSITORY ARM IN THIS FRAGMENT, and it had the same defect as the first. It
+    # required the live report to print NOT MEASURED unconditionally, which is the live ledger's
+    # emptiness pinned as an invariant a second time: the sanctioned ledger writer
+    # (`toe_reconcile.py reconcile --write`, or `write_all` through the module) reddens it the
+    # moment this repository records one reconciliation. So the live half now follows the ledger it
+    # measured, and the STAND-DOWN is required only when the ledger is in fact empty. The hermetic
+    # half stays unconditional, because that root's ledger is seeded here and its emptiness is not
+    # a fact about this repository at all - and it is what keeps the stand-down attributable to the
+    # DATA rather than to a renderer that only knows how to stand down.
     _w1405_report_cli = subprocess.run(
         [sys.executable, str(ROOT / ".veldo/toe_reconcile.py"), "report"],
         capture_output=True, text=True, cwd=str(ROOT))
+    if _w1405_live_acc["measured"]:
+        _w1405_report_arm = (
+            "accuracy: NOT MEASURED" not in _w1405_report_cli.stdout
+            and "percent of the last" in _w1405_report_cli.stdout
+            and "%d percent in range of %d" % (_w1405_live_acc["hit_rate_pct"],
+                                               _w1405_live_acc["n"])
+            in _w1405_report_cli.stdout
+            and sum(1 for _ln in _w1405_report_cli.stdout.splitlines() if "cumulative" in _ln)
+            == len(_w1405_live_recs))
+    else:
+        _w1405_report_arm = ("accuracy: NOT MEASURED" in _w1405_report_cli.stdout
+                             and "not a flat line at zero" in _w1405_report_cli.stdout
+                             and "calibration curve: 0 point(s)" in _w1405_report_cli.stdout)
     _w1405_viewroot = Path(_d) / "viewroot"
     (_w1405_viewroot / ".veldo").mkdir(parents=True)
     (_w1405_viewroot / "specs").mkdir()
@@ -596,14 +750,19 @@ with tempfile.TemporaryDirectory() as _d:
     _w1405_view = R1405.build_view(root=_w1405_viewroot, window=3)
     _w1405_lines = R1405.render(_w1405_view)
     expect("WARP-1405 AC3: THE SURFACE ANYONE CAN INSPECT ACTUALLY RENDERS, BOTH WAYS. Driven as a "
-           "real process over THIS repository the report exits 0 and says its accuracy is NOT "
-           "MEASURED and that an empty curve is not a flat line at zero; driven through the real "
-           "build_view over a hermetic root carrying the seeded ledger it prints the hit-rate line, "
-           "one line per curve point and the refit line. The pair is what makes the stand-down "
-           "attributable to the DATA: the same code renders numbers the moment a ledger exists",
+           "real process over THIS repository the report exits 0, names the number of records it "
+           "read from this tree, and prints the branch that tree puts it on: with an empty ledger "
+           "the stand-down, that its accuracy is NOT MEASURED and that an empty curve is not a flat "
+           "line at zero; with records recorded, the measured hit rate and one curve line per "
+           "record and NO stand-down. It is never asserted that the live ledger is empty, because "
+           "writing one is the sanctioned use of this module. Driven through the real build_view "
+           "over a hermetic root carrying the seeded ledger it prints the hit-rate line, one line "
+           "per curve point and the refit line. The pair is what makes the stand-down attributable "
+           "to the DATA: the same code renders numbers the moment a ledger exists",
            _w1405_report_cli.returncode == 0
-           and "NOT MEASURED" in _w1405_report_cli.stdout
-           and "not a flat line at zero" in _w1405_report_cli.stdout
+           and "reconciliations: %d record(s)" % len(_w1405_live_recs) \
+           in _w1405_report_cli.stdout
+           and _w1405_report_arm
            and _w1405_view["records"] == 5
            and any("percent of the last 3 unit(s) in range" in ln for ln in _w1405_lines)
            and sum(1 for ln in _w1405_lines if "cumulative" in ln) == 5

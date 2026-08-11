@@ -364,6 +364,27 @@ price we already paid for it.
     receipt is written and the close still passes. The hole is exactly the size of a plan body. Found
     while critiquing the release-layer draft, but it is a property of the shipped hasher.
 
+26. **THE MOST IMPORTANT FINDING OF THE DAY. An assertion measured over the live repository pinned
+    today's emptiness as a required invariant, in FOUR suites independently, so the required gate went
+    red the first time anybody used the estimation layer.** Driven and measured rather than argued: a
+    scratch copy of this repository was 4145 passed and 0 failed; one invocation of the sanctioned
+    writer, `python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000`,
+    which is precisely what the layer exists to do, took it to 4141 passed and 4 FAILED, in WARP-1403
+    AC4, WARP-1404 AC5, WARP-1405 AC3 and WARP-1409 AC4.
+    WHY IT MATTERS MORE THAN ITS COUNT: a gate that breaks on first real use is worse than a missing
+    check, because it teaches whoever hits it that the gate is noise, and the person who hits it is the
+    founder on the day he first tries the feature. It was also invisible to every form of review that
+    reads code, including the adversarial pass that found the other 34: it took USING the product.
+    AND IT DEFEATED ITS OWN REMEDIATION ONCE. The first review found this shape in WARP-1408 and I
+    fixed that instance and told Dmitry the class was closed. It was not; three more suites carried it
+    and I had checked only the two instances I had been handed. The lesson is the one this ledger keeps
+    relearning: a class is not closed until the class is driven, and fixing the named instances is not
+    the same as removing the shape.
+    THE CORRECT SHAPE: an assertion over the live repository may require the honest STAND-DOWN when
+    nothing is recorded and the measured branch when something is, chosen by what it just measured.
+    Structural invariants and partitions stay unconditional. Nothing may assert that the measured set
+    is empty.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

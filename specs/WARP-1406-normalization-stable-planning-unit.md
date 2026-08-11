@@ -43,9 +43,16 @@ acceptance_criteria:
       flag is true when ANY spend field carries a number, so a change costed only in dollars or only
       in human minutes would otherwise print 0.000 pt and be counted as a measured change. Such a
       change gets no point either, with a reason NAMING the spend field that was recorded and saying
-      the token count was not, which is a third fact distinct from nothing being recorded at all. One
+      the token count was not, which is a third fact distinct from nothing being recorded at all.
+      FOUR SHAPES REACH THAT BRANCH AND THE FOURTH CANNOT NAME A FIELD: `spend.validate` accepts
+      `tokens=0`, so `veldo spend record --tokens 0` is a legal call and the corpus reports that
+      change with `spend_recorded` true and every figure zero. A zero in the corpus spend block is
+      the DEFAULT for a field nobody recorded, so which field carried the recorded zero is
+      unknowable, and "no recorded spend" is FALSE about a change whose record is in the log. It gets
+      a fourth reason of its own, saying spend was recorded and every recorded figure is zero. One
       named predicate (`recorded_tokens`) serves the display and the peg derivation, so the two paths
-      cannot disagree about which changes were measured in tokens.
+      cannot disagree about which changes were measured in tokens, and the recorded zero can no more
+      become the peg than it can carry a point.
       Selftests: the five seeded changes come out at the expected points; the raw token AND recorded
       cost columns are asserted EQUAL to the corpus's own spend block for every row of two corpora,
       the second carrying deliberately non-round values (3137 and 41 tokens, 12.37 and 0.0137 usd)
@@ -53,8 +60,17 @@ acceptance_criteria:
       row is required to have no point and a reason naming the confident zero it refuses to print; a
       cost-only change and a human-minutes-only change are required to have no point, distinct named
       reasons, and no `0.000 pt` anywhere in the render, with the control that adding a token count
-      turns the point on and that neither can become the derived peg; the rendered dollar column is
-      asserted to be the price-derived figure and NOT the recorded cost; and the summary roll-up is
+      turns the point on and that neither can become the derived peg; the recorded-zero shape is
+      driven THROUGH the shipped spend writer at its own emit injection point (a hand-written
+      envelope would be a guess at a shape whose whole claim is that it is reachable), the four
+      reasons are asserted as a set of FOUR DISTINCT strings, and the live event log's mtime_ns is
+      asserted unchanged across building that fixture; the rendered line is asserted as the COMPLETE
+      ORDERED LIST OF FIGURES it prints, at two prices, one of them chosen so the derived figure
+      (12.55) lands next to the recorded one (12.37), because the decision that the line does not
+      print the recorded cost cannot be guarded by the absence of one spelling of it: a line that
+      appends the cost ROUNDED, or that shows the recorded cost in the money column of the row whose
+      tokens were never recorded, prints it while every searched-for spelling stays absent; and the
+      summary roll-up is
       asserted as ONE whole-dict equality over three fixtures together with the printed bottom line,
       because points_total, tokens_total and eras_present are the numbers a planner sizes work with.
   - id: AC2

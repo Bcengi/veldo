@@ -78,11 +78,46 @@ records, `self` 1, `no_spend` 174) and the earlier spelling of the real-reposito
 flip the fragment is 38 passed, 0 failed. Its teeth were checked in the other direction too: an
 exclusion made to skip a no-spend record WITHOUT counting it takes the partition RED.
 
+AND THE SAME DEFECT AGAIN, FOUND 2026-08-11 AND ONE DEGREE DEEPER, because the partition repair
+above fixed the spelling and left the SHAPE. Two assertions over the LIVE repository still required
+that this repository has no recorded actuals: the real-repository measurement required
+`candidates == 0`, and the CLI assertion required the literal words STANDING DOWN. Neither is a
+property of the module. Both are the statement THAT NOBODY HAS EVER RUN .veldo/spend.py, which is a
+fact about a day, and both were measured going RED on the sanctioned emitter doing exactly the thing
+the estimation layer exists for, in a scratch copy of this repository:
+
+  baseline                                                          38 passed, 0 failed
+  after `spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000`
+                                                                    37 passed, 1 failed
+  after four of the NEAREST records carry recorded spend             36 passed, 2 failed
+
+The first person ever to use the feature would have been the founder, and the lesson a red gate
+teaches at that moment is that the gate is noise. So the arm that depends on there being no data is
+now CHOSEN BY WHAT WAS MEASURED - the honest stand-down when nothing is usable, the too_few_matches
+stand-down when something is recorded but not enough, and a checked range when there is enough - and
+the emptiness is asserted nowhere. All three arms were driven green over the real corpus (38 passed,
+0 failed at 0, 1 and 4 recorded actuals) and the teeth were then watched biting WITH SPEND RECORDED,
+in both module copies, each restored before the next:
+
+ 11. `predict` made to push the committed low ABOVE the observed low (`obs_low * (100 + widen) //
+     100`): 3 RED, the real-repository measurement among them, on its range arm. A range that no
+     longer contains the cheapest change it was drawn from is manufactured confidence.
+ 12. a record with no recorded spend dropped WITHOUT being counted: 4 RED, the real-repository
+     measurement among them, through the PARTITION leg, which is the unconditional teeth that
+     replaced the emptiness.
+ 13. `render_lines` made to print `observed_low` where the committed `low` belongs: 1 RED, the CLI
+     assertion ALONE, which is the isolation that says that check is about the process text.
+ 14. `_standdown` given `"low": 0, "high": 0` again, this time with one actual recorded so the live
+     arm is too_few_matches: 5 RED, the real-repository measurement among them. The load-bearing
+     no-bound property still bites over live data, which is what the old spelling was protecting
+     and what a deletion would have thrown away.
+
 WHAT IS DELIBERATELY MEASURED RATHER THAN ARGUED. Two things. The stand-down over THIS repository
-is driven through the real `repo_basis` over the real corpus and the real event log, and it is
-required to be the no-spend stand-down over a NON-EMPTY corpus - and then the same real corpus,
-with spend planted on four of its own records, is required to produce a range, so the measured
-stand-down is attributable to the missing emitter and not to anything else about this repository.
+is driven through the real `repo_basis` over the real corpus and the real event log, and whichever
+arm the corpus puts it on is required to be honest on its own terms over a NON-EMPTY corpus - and
+then the same real corpus, with spend planted on six of its own nearest records, is required to
+match all six and produce a range, so a measured stand-down is attributable to the missing emitter
+and not to anything else about this repository.
 And the era window is driven end to end over a hermetic repository root carrying a real
 capability-shift ledger, real spend events and real fixture specs, not only through an injected
 reader, because an injected reader tests the fake.
@@ -896,6 +931,26 @@ with tempfile.TemporaryDirectory() as _d:
     # from the event stream, so a repository cannot reach the state the first draft planted. It
     # now appends the events .veldo/spend.py would emit and REBUILDS the corpus and the era
     # reader from them, which exercises the whole shipped path.
+    #
+    # WHAT IS UNCONDITIONAL HERE AND WHAT IS NOT, because this assertion was a LANDMINE and the
+    # shape of the repair is the point. It used to require, over the LIVE corpus,
+    # `candidates == 0` and `no_spend + self == the whole corpus`. Neither is a property of this
+    # module: together they are the statement THAT NOBODY HAS EVER RECORDED SPEND, which is a fact
+    # about today and not an invariant. One legitimate use of the sanctioned emitter,
+    # `.veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000`, took this
+    # fragment from 38 passed / 0 failed to 37 / 1, so the first person ever to use the estimation
+    # layer for its purpose would have been taught by a red gate that the gate is noise.
+    #
+    # SO THE ARM THAT DEPENDS ON THERE BEING NO DATA IS NOW CHOSEN BY WHAT WAS JUST MEASURED, and
+    # each arm is required to be honest ON ITS OWN TERMS, which is strictly more than the old
+    # spelling asserted: no usable comparable -> the stand-down, with a reason code that NAMES a
+    # non-zero exclusion, and no bound; recorded but under the declared minimum -> the
+    # too_few_matches stand-down, and no bound; enough -> a real range whose recorded widening,
+    # ordering and envelope are checked against the bounds it published. What stays UNCONDITIONAL
+    # is everything that never depended on the emptiness: the corpus size, the closed exclusion
+    # vocabulary, the PARTITION (every record is either a candidate or excluded under exactly one
+    # declared reason), the bound keys being present exactly when `predicted` is true, and the
+    # CONTROL that planting spend on this repository's own records produces a range.
     _w1404_real = A1404.repo_basis()
     _w1404_selfvec = A1404.vector(A1404.target_features(
         ROOT / "specs/WARP-1404-historical-analogy.md",
@@ -906,7 +961,13 @@ with tempfile.TemporaryDirectory() as _d:
     _w1404_ranked = sorted(
         (r for r in _w1404_real[0] if A1404.vector(r["features"]) is not None),
         key=lambda r: (A1404.distance(_w1404_selfvec, A1404.vector(r["features"])), r["spec"]))
-    _w1404_plant_ids = [r["spec"] for r in _w1404_ranked[:6]]
+    # The six planted records are drawn from INSIDE the match radius on purpose, so the control's
+    # claim can be that every one of them is MATCHED once its spend exists. The old spelling
+    # asserted the reverse containment, that nothing outside the planted set was matched, and that
+    # is exactly the arm that turns a real recorded actual elsewhere in the corpus into a red.
+    _w1404_plant_ids = [
+        r["spec"] for r in _w1404_ranked
+        if A1404.distance(_w1404_selfvec, A1404.vector(r["features"])) <= A1404.MATCH_RADIUS][:6]
     _w1404_plant_events = N1404.read_events(ROOT / ".veldo" / "events.jsonl") + [
         {"schema": "veldo.event/v1", "type": "spec.shipped", "spec_id": _sid,
          "at": "2026-08-0%dT00:00:00Z" % (_i + 1), "tokens": 500000 + 10000 * _i,
@@ -919,46 +980,137 @@ with tempfile.TemporaryDirectory() as _d:
         era_of=lambda s: N1404.era_of(s, _w1404_plant_events, N1404.eras([]), TC1404,
                                       M1404.parse_iso),
         era=_w1404_real[2])[1]
-    expect("WARP-1404 AC5 MEASURED OVER THIS REPOSITORY: the corpus is NOT empty (%d shipped "
-           "records) and yet this layer stands down as no_recorded_actuals with NO bound of any "
-           "kind, because not one record carries recorded token spend - WARP-1401 measured 0 "
-           "percent spend coverage and .veldo/spend.py has never been used. STATED AS THE "
-           "PARTITION and not as one term: EVERY record is unusable, and the only reasons are "
-           "missing spend or this spec's own record excluding itself, at most one of which can "
-           "exist. `no_spend == the whole corpus` was the earlier spelling and it was a landmine - "
-           "it holds only while this item's own spec is not yet shipped, so it would have gone RED "
-           "the moment this item landed, which is the one thing landing does. AND THE CONTROL THAT "
-           "MAKES THE MEASUREMENT ATTRIBUTABLE: planting spend on records of this repository's OWN "
-           "corpus makes the SAME call produce a range, so the stand-down is the missing emitter "
-           "and not something else about this repository's specs"
-           % len(_w1404_real[0]),
+    # THE ARM, chosen by the measurement itself. WHICH EXCLUSIONS CAN PRODUCE WHICH ZERO-EVIDENCE
+    # CODE, declared here as a literal over the module's own two closed vocabularies and asserted
+    # for closure against both below, so the stand-down arm can require the reason to NAME a
+    # non-zero exclusion without carrying a second copy of the precedence that picks between them.
+    _W1404_REASON_EXCLUSIONS = {
+        A1404.NO_SAME_ERA_ACTUALS: ("other_era", "unreadable_era"),
+        A1404.NO_RECORDED_ACTUALS: ("no_spend", "zero_tokens"),
+        A1404.NO_COMPARABLE_RECORDS: ("self", "unreadable_features"),
+    }
+    _w1404_realexc = _w1404_realrep["excluded"]
+    if _w1404_realrep["candidates"] == 0:
+        # NOTHING IN THIS REPOSITORY IS USABLE AS A COMPARABLE - the state of this corpus on the
+        # day this item landed, when not one of its records carried recorded token spend.
+        _w1404_arm = "stand-down, no usable comparable"
+        _w1404_realarm = (
+            _w1404_realrep["predicted"] is False
+            and _w1404_realrep["reason_code"] in _W1404_REASON_EXCLUSIONS
+            and any(_w1404_realexc[k]
+                    for k in _W1404_REASON_EXCLUSIONS[_w1404_realrep["reason_code"]])
+            and _w1404_realrep["matched"] == 0
+            and _w1404_realrep["matched_specs"] == []
+            and ("not one of %d record(s)" % len(_w1404_real[0]))
+            in _w1404_realrep.get("detail", ""))
+    elif _w1404_realrep["matched"] < A1404.MIN_MATCHES:
+        # SPEND IS RECORDED, but not on enough comparable work to reason from. An anecdote is not
+        # a range, and this arm is the one an early adopter of .veldo/spend.py lands on.
+        _w1404_arm = "stand-down, %d comparable(s) under the minimum of %d" % (
+            _w1404_realrep["matched"], A1404.MIN_MATCHES)
+        _w1404_realarm = (
+            _w1404_realrep["predicted"] is False
+            and _w1404_realrep["reason_code"] == A1404.TOO_FEW_MATCHES
+            and _w1404_realrep["matched_specs"] == []
+            and _w1404_realrep["candidates"] > 0
+            and ("%d are required" % A1404.MIN_MATCHES)
+            in _w1404_realrep.get("detail", ""))
+    else:
+        # ENOUGH RECORDED HISTORY FOR A REAL RANGE, over this repository's own actuals. The range
+        # is checked against the evidence the same report published: the envelope it observed sits
+        # inside the bounds it committed, the widening is the declared function of the sample size,
+        # the evidence is ordered and every matched record is inside the radius and is not the
+        # target itself.
+        _w1404_arm = "range from %d comparable(s) of this repository's own recorded actuals" % (
+            _w1404_realrep["matched"],)
+        _w1404_realarm = (
+            _w1404_realrep["predicted"] is True
+            and _w1404_realrep["reason_code"] is None
+            and _w1404_realrep["low"] < _w1404_realrep["high"]
+            and _w1404_realrep["low"] <= _w1404_realrep["observed_low"]
+            and _w1404_realrep["observed_high"] <= _w1404_realrep["high"]
+            and _w1404_realrep["sample_widening_pct"]
+            == A1404.widening_pct(_w1404_realrep["matched"])
+            and _w1404_realrep["matched"] == len(_w1404_realrep["matched_specs"])
+            == len(set(_w1404_realrep["matched_specs"])) == len(_w1404_realrep["distances"])
+            and "WARP-1404" not in _w1404_realrep["matched_specs"]
+            and _w1404_realrep["distances"] == sorted(_w1404_realrep["distances"])
+            and max(_w1404_realrep["distances"]) <= _w1404_realrep["match_radius"])
+    expect("WARP-1404 AC5 MEASURED OVER THIS REPOSITORY (%d shipped records, %d usable "
+           "comparable(s), arm taken: %s): the corpus is NOT empty and what this layer says about "
+           "it is required to be HONEST ON THE TERMS OF WHAT IT MEASURED, not required to be a "
+           "stand-down. With nothing recorded it stands down under a code that names a non-zero "
+           "exclusion and carries NO bound of any kind; with spend recorded on too little "
+           "comparable work it stands down as too_few_matches, still with no bound; with enough it "
+           "publishes a range whose observed envelope sits inside its own bounds, whose widening is "
+           "the declared function of the sample size, and whose evidence is ordered, distinct, "
+           "inside the radius and never the target itself. THE EMPTINESS IS NOT ASSERTED, and that "
+           "is the repair: `candidates == 0` and `no_spend + self == the whole corpus` were the "
+           "earlier spelling, and they state that .veldo/spend.py has never been used, which one "
+           "sanctioned `spend.py record` makes false - a gate that reds on the first legitimate use "
+           "of the feature it guards teaches its first user that it is noise. WHAT IS "
+           "UNCONDITIONAL: the corpus size, the closed exclusion vocabulary, the PARTITION that "
+           "every record is either a candidate or excluded under exactly one declared reason, the "
+           "bound keys being present EXACTLY when `predicted` is true, and THE CONTROL THAT MAKES "
+           "THE MEASUREMENT ATTRIBUTABLE - planting spend on six records of this repository's OWN "
+           "corpus makes the SAME call match all six and produce a range, so a stand-down here is "
+           "the missing emitter and not something else about this repository's specs"
+           % (len(_w1404_real[0]), _w1404_realrep["candidates"], _w1404_arm),
            len(_w1404_real[0]) > 100
-           and _w1404_realrep["predicted"] is False
-           and _w1404_realrep["reason_code"] == "no_recorded_actuals"
-           and "low" not in _w1404_realrep and "high" not in _w1404_realrep
-           and _w1404_realrep["excluded"]["self"] in (0, 1)
-           and (_w1404_realrep["excluded"]["no_spend"]
-                + _w1404_realrep["excluded"]["self"]) == len(_w1404_real[0])
-           and _w1404_realrep["candidates"] == 0
+           and _w1404_realrep["corpus_records"] == len(_w1404_real[0])
+           and set(_w1404_realexc) == set(A1404.EXCLUSIONS)
+           and set(sum(_W1404_REASON_EXCLUSIONS.values(), ())) == set(A1404.EXCLUSIONS)
+           and set(_W1404_REASON_EXCLUSIONS) <= set(A1404.REASONS)
+           and _w1404_realexc["self"] in (0, 1)
+           and (_w1404_realrep["candidates"]
+                + sum(_w1404_realexc[k] for k in A1404.EXCLUSIONS)) == len(_w1404_real[0])
+           and _w1404_realrep["matched"] <= _w1404_realrep["candidates"]
+           and ("low" in _w1404_realrep) == ("high" in _w1404_realrep)
+           == bool(_w1404_realrep["predicted"])
+           and _w1404_realarm
            and len(_w1404_plant_ids) == 6
            and _w1404_plantedrep["predicted"] is True
            and _w1404_plantedrep["matched"] >= A1404.MIN_MATCHES
            and _w1404_plantedrep["low"] < _w1404_plantedrep["high"]
-           and set(_w1404_plantedrep["matched_specs"]) <= set(_w1404_plant_ids))
+           and set(_w1404_plant_ids) <= set(_w1404_plantedrep["matched_specs"]))
 
     _w1404_cli = subprocess.run(
         [sys.executable, str(ROOT / ".veldo/toe_analogy.py"), "report",
          "--spec", str(ROOT / "specs/WARP-1404-historical-analogy.md")],
         capture_output=True, text=True, cwd=str(ROOT))
-    expect("WARP-1404 AC5: THE CLI STANDS DOWN AND EXITS 0, driven as a real process over this "
-           "repository, saying STANDING DOWN, printing no range, and saying in words that this is "
-           "not a finding. A tool that exited non-zero on the absence of evidence would turn an "
-           "advisory estimator into a gate the first time somebody wired it into a script, which "
-           "is precisely NG1",
+    # THE SAME REPAIR, SECOND PLACE. This assertion required the live CLI to print STANDING DOWN,
+    # which is the emptiness again wearing a process: the moment MIN_MATCHES comparable records
+    # carry spend the tool correctly prints a range and the old conjuncts red. Recording spend on
+    # four of the nearest records took it RED in a scratch copy, at 36 passed / 2 failed. What NG1
+    # actually promises is the exit code, and that is now unconditional, with the TEXT required to
+    # agree with the in-process report over the same repository on whichever arm that report took.
+    _w1404_cliout = _w1404_cli.stdout
+    if _w1404_realrep["predicted"]:
+        _w1404_cliarm = ("analogy: %d to %d tokens from %d comparable shipped change(s)"
+                         % (_w1404_realrep["low"], _w1404_realrep["high"],
+                            _w1404_realrep["matched"]) in _w1404_cliout
+                         and "STANDING DOWN" not in _w1404_cliout)
+    else:
+        _w1404_cliarm = ("STANDING DOWN" in _w1404_cliout
+                         and "no number produced" in _w1404_cliout
+                         and _w1404_realrep["reason_code"] in _w1404_cliout
+                         and "not a finding" in _w1404_cliout
+                         and "tokens from" not in _w1404_cliout)
+    expect("WARP-1404 AC5: THE CLI EXITS 0 OVER THIS REPOSITORY WHATEVER THE EVIDENCE SAYS, driven "
+           "as a real process, and its words are the same words the in-process report over the same "
+           "repository just produced. A tool that exited non-zero on the ABSENCE of evidence would "
+           "turn an advisory estimator into a gate the first time somebody wired it into a script, "
+           "which is precisely NG1 - and the exit code is asserted on BOTH arms, because a tool "
+           "that failed on the PRESENCE of evidence would be the same defect the other way round. "
+           "On a stand-down it must say STANDING DOWN, name its reason code, print no range, and "
+           "say in words that this is not a finding; on a prediction it must print the range the "
+           "report published, to the token, and must NOT say STANDING DOWN. Requiring the literal "
+           "stand-down text unconditionally is what made this a landmine: the tool would have been "
+           "RIGHT and this check RED on the day the corpus first held %d comparable actuals"
+           % A1404.MIN_MATCHES,
            _w1404_cli.returncode == 0
-           and "STANDING DOWN" in _w1404_cli.stdout
-           and "not a finding" in _w1404_cli.stdout
-           and "no number produced" in _w1404_cli.stdout)
+           and _w1404_cliout.strip() != ""
+           and _w1404_cliarm)
 
     _w1404_gate = (ROOT / "scripts/verify.sh").read_text()
     _w1404_slots = [s for s in _w1404_gate.splitlines() if s.startswith("CHECK_")]
