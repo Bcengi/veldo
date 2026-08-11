@@ -145,7 +145,7 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 </style>
 <header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html" aria-current="page">Method</a><a href="../docs/index.html">Documents</a></nav></div></header>
 <main class="wrap">
-<div class="doc"><div class="dochead"><h1>Veldo Development Method</h1><p class="tagline">Software development at full speed, enabled by AI and governed by proof.</p><p class="meta">Version 2.2, 2026-08-03</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-core-model">1. Core Model</a></li><li><a href="#2-foundational-principles">2. Foundational Principles</a></li><li><a href="#3-the-veldo-change-lifecycle">3. The Veldo Change Lifecycle</a></li><li><a href="#4-risk-classification">4. Risk Classification</a></li><li><a href="#5-repository-structure">5. Repository Structure</a></li><li><a href="#6-the-repository-index">6. The Repository Index</a></li><li><a href="#7-agent-roles">7. Agent Roles</a></li><li><a href="#8-agent-operating-instructions">8. Agent Operating Instructions</a></li><li><a href="#9-definition-of-proven">9. Definition of Proven</a></li><li><a href="#10-definition-of-done">10. Definition of Done</a></li><li><a href="#11-what-veldo-eliminates">11. What Veldo Eliminates</a></li><li><a href="#12-what-veldo-does-not-eliminate">12. What Veldo Does Not Eliminate</a></li><li><a href="#13-production-support">13. Production Support</a></li><li><a href="#14-infrastructure-and-release">14. Infrastructure and Release</a></li><li><a href="#15-speed-without-recklessness">15. Speed Without Recklessness</a></li><li><a href="#16-measuring-veldo-performance">16. Measuring Veldo Performance</a></li><li><a href="#17-failure-modes">17. Failure Modes</a></li><li><a href="#18-adoption-rules">18. Adoption Rules</a></li><li><a href="#19-minimal-veldo-implementation">19. Minimal Veldo Implementation</a></li><li><a href="#20-veldo-manifesto">20. Veldo Manifesto</a></li><li><a href="#21-security-by-design">21. Security by Design</a></li><li><a href="#22-the-veldo-rule">22. The Veldo Rule</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><p>Veldo is a software development methodology designed for teams that build primarily with AI coding agents. It replaces the traditional software development lifecycle with a repository-native, specification-driven, proof-gated system optimized for extreme delivery speed.</p>
+<div class="doc"><div class="dochead"><h1>Veldo Development Method</h1><p class="tagline">Software development at full speed, enabled by AI and governed by proof.</p><p class="meta">Version 2.2, 2026-08-03</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-core-model">1. Core Model</a></li><li><a href="#2-foundational-principles">2. Foundational Principles</a></li><li><a href="#3-the-veldo-change-lifecycle">3. The Veldo Change Lifecycle</a></li><li><a href="#4-risk-classification">4. Risk Classification</a></li><li><a href="#5-repository-structure">5. Repository Structure</a></li><li><a href="#6-the-repository-index">6. The Repository Index</a></li><li><a href="#7-agent-roles">7. Agent Roles</a></li><li><a href="#8-agent-operating-instructions">8. Agent Operating Instructions</a></li><li><a href="#9-definition-of-proven">9. Definition of Proven</a></li><li><a href="#10-definition-of-done">10. Definition of Done</a></li><li><a href="#11-what-veldo-eliminates">11. What Veldo Eliminates</a></li><li><a href="#12-what-veldo-does-not-eliminate">12. What Veldo Does Not Eliminate</a></li><li><a href="#13-production-support">13. Production Support</a></li><li><a href="#14-infrastructure-and-release">14. Infrastructure and Release</a></li><li><a href="#15-speed-without-recklessness">15. Speed Without Recklessness</a></li><li><a href="#16-measuring-veldo-performance">16. Measuring Veldo Performance</a></li><li><a href="#17-failure-modes">17. Failure Modes</a></li><li><a href="#18-adoption-rules">18. Adoption Rules</a></li><li><a href="#19-minimal-veldo-implementation">19. Minimal Veldo Implementation</a></li><li><a href="#20-veldo-manifesto">20. Veldo Manifesto</a></li><li><a href="#21-security-by-design">21. Security by Design</a></li><li><a href="#22-the-veldo-rule">22. The Veldo Rule</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><p>Veldo is Verification-Enforced Lifecycle Delivery Orchestration: a software development methodology designed for teams that build primarily with AI coding agents. It replaces the traditional software development lifecycle with a repository-native, specification-driven, proof-gated system optimized for extreme delivery speed.</p>
 <p>The central premise is simple:</p>
 <blockquote><p>When implementation becomes nearly free, verification becomes the primary engineering bottleneck.</p></blockquote>
 <p>AI coding agents can compress planning and implementation work that once took weeks into hours. A development process designed around human implementation speed becomes unnecessary overhead. Sprints, story points, standups, handoffs, manual status reporting, and separate QA phases no longer improve delivery enough to justify their cost.</p>
@@ -415,10 +415,11 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <h3 id="stage-2-create-the-specification">Stage 2: Create the specification<a class="anchor" href="#stage-2-create-the-specification" aria-label="link to this section">#</a></h3>
 <p>The intent is converted into a repository-native specification.</p>
 <p>The specification is drafted as a dialogue, not a form. The specification agent interviews the human: what outcome matters, what constraints apply, which edge cases exist, what failure would look like. It drafts the specification from the answers, and the human edits and approves. The human never starts from a blank page, because stating intent well is the scarcest human work in the method and the dialogue is what makes it cheap.</p>
-<p>Recommended location:</p>
-<pre><code>/specs/&lt;status&gt;/&lt;spec-id&gt;-&lt;short-name&gt;.md</code></pre>
+<p>Location:</p>
+<pre><code>/specs/&lt;spec-id&gt;-&lt;short-name&gt;.md</code></pre>
 <p>Example:</p>
-<pre><code>/specs/active/VELDO-0142-payment-retry-idempotency.md</code></pre>
+<pre><code>/specs/VELDO-0142-payment-retry-idempotency.md</code></pre>
+<p>Specifications live flat in <code>specs/</code>. Status is a field inside the file, never a directory, and the file&#x27;s field is the only authority on it. This is not a stylistic preference: every reader of the corpus, the validator, the index generator, the frontier, the plan resolver and the push guard, reads <code>specs/</code> flat. A specification filed one directory down is invisible to all of them, and it fails silently rather than loudly, because an empty corpus is indistinguishable from a clean one. Group and filter by reading the derived index, not by moving files.</p>
 <p>A specification should contain:</p>
 <pre><code class="lang-markdown"># Title
 
@@ -793,14 +794,10 @@ Model or agent identifier, when available.</code></pre>
 ├── VELDO.md
 ├── README.md
 ├── Makefile
-├── specs/
-│   ├── index.md
-│   ├── draft/
-│   ├── ready/
-│   ├── active/
-│   ├── review/
-│   ├── shipped/
-│   └── blocked/
+├── specs/                      # flat; status is a field in the file, not a directory
+│   ├── index.md                # derived, never hand-edited
+│   ├── TEMPLATE.md
+│   └── VELDO-0142-payment-retry-idempotency.md
 ├── docs/
 │   ├── architecture/
 │   ├── decisions/
@@ -848,7 +845,7 @@ Model or agent identifier, when available.</code></pre>
 <li>Free of status theater</li>
 </ul>
 <p>Do not recreate Jira inside Markdown.</p>
-<p>One vocabulary rule keeps machines and humans aligned: status names are canonical in lowercase snake form (<code>in_progress</code>); status directories mirror them (<code>active/</code> holds <code>in_progress</code> work); displays may capitalize freely. The specification file&#x27;s status field is always the authority.</p>
+<p>One vocabulary rule keeps machines and humans aligned: status names are canonical in lowercase snake form (<code>in_progress</code>) and displays may capitalize freely. The specification file&#x27;s status field is always the authority, and it is the only place status lives. There are no status directories.</p>
 <p>The index is groomed in the one recurring ritual Veldo keeps: a short weekly pass, fifteen to twenty minutes, over the index. Close what shipped, kill what went stale, adjust priorities, confirm the next ready specifications. That pass is the entire planning apparatus. If it regularly needs more than twenty minutes, the specifications are too large or the index has drifted from the truth.</p>
 <h2 id="7-agent-roles">7. Agent Roles<a class="anchor" href="#7-agent-roles" aria-label="link to this section">#</a></h2>
 <p>A single underlying AI system may perform multiple roles, but the execution contexts should remain distinct.</p>
