@@ -174,7 +174,8 @@ def _w1404_tree_bytes(base):
 # required to be EMPTY, and the repo window is required to write nothing and to spawn NOTHING BUT
 # `git log` and `git show`, asserted as a set equality on the argv rather than as a tolerance.
 _W1404_NO_WRITER_DRIVER = r'''
-import ast, importlib.util, json, os, sys
+import ast, importlib.util, io as _io, json, os, sys
+from contextlib import redirect_stdout as _redirect
 
 ROOT = sys.argv[1]
 payload = json.loads(sys.stdin.read())
@@ -208,7 +209,10 @@ def hook(event, args):
     elif event in SPAWN:
         argv = args[1] if len(args) > 1 and isinstance(args[1], (list, tuple)) else args[:1]
         seen = " ".join(str(a) for a in list(argv)[:2])
-        if where == "repo":
+        if where in ("repo", "cli"):
+            # The CLI's report path delegates to the same corpus reader repo_basis uses, so its
+            # spawns are the same read-only git argvs and face the same allowlist. An import-time
+            # spawn is never legitimate and falls through to the strict bucket below.
             repo_spawn.add(seen)
             return
     if seen is None:
@@ -217,10 +221,16 @@ def hook(event, args):
 
 
 sys.addaudithook(hook)
+# THE IMPORT IS A WINDOW TOO. The hook was installed here and the module was then imported with
+# watching[0] still None, so a writer at import time was invisible: a review inserted one beside
+# UNWINDOWED and it wrote 9 bytes into the repository while the fragment stayed fully green. Module
+# scope runs exactly once and is the easiest place to hide a side effect, so it is watched first.
+watching[0] = "import"
 _spec = importlib.util.spec_from_file_location(
     "w1404_driven", os.path.join(ROOT, ".veldo", "toe_analogy.py"))
 A = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(A)
+watching[0] = None
 
 # THE IMPORT SURFACE, from the parsed AST rather than from a search for forbidden spellings, and
 # reported as a set for the caller to assert an EQUALITY over. `import os as _o`, `from shutil
@@ -252,10 +262,29 @@ try:
     A.analogy("WARP-1404", vec, _basis[0], era_of=_basis[1], era=_basis[2])
     repo_records = len(_basis[0])
     drives += 1
+    watching[0] = "cli"
+    # THE ARGV MUST BE THE REAL ONE. Written first as ["report", spec], which argparse rejects
+    # because the flag is --spec, so the window opened, raised at the parser, and measured nothing:
+    # a vacuous window is worse than no window, and it is the defect this whole suite hunts. The
+    # report path is REQUIRED to be reached, which the assertion checks through cli_reported rather
+    # than trusting this call not to have exited early.
+    # Its report goes to stdout, which is this driver's JSON channel, so it is captured rather than
+    # left to interleave. Found by running the driver by hand: the mixed stream was a JSON decode
+    # error in the caller, not a failing assertion, which is the confusing kind of red.
+    cli_reported = False
+    _cli_out = _io.StringIO()
+    try:
+        with _redirect(_cli_out):
+            A._cli(["report", "--spec", payload["spec"]])
+        cli_reported = True
+    except SystemExit as _e:
+        cli_reported = (getattr(_e, "code", 1) in (0, None))
+    drives += 1
 finally:
     watching[0] = None
 sys.stdout.write(json.dumps({
     "pure": pure, "repo_writes": repo_writes, "repo_spawn": sorted(repo_spawn),
+    "cli_reported": cli_reported,
     "drives": drives, "repo_records": repo_records, "imports": sorted(imports),
     "named_calls": sorted(named_calls),
     "predicted": [bool(r.get("predicted")) for r in reports]}))
@@ -839,7 +868,7 @@ with tempfile.TemporaryDirectory() as _d:
     _w1404_audited = (json.loads(_w1404_writerun.stdout) if _w1404_writerun.stdout.strip()
                       else {"pure": ["DRIVER DID NOT REPORT: " + _w1404_writerun.stderr[-400:]],
                             "repo_writes": [], "repo_spawn": [], "drives": 0,
-                            "repo_records": 0, "predicted": [], "imports": [],
+                            "repo_records": 0, "predicted": [], "imports": [], "cli_reported": False,
                             "named_calls": []})
 
     # MEASUREMENT TWO, reported by the same driver from the parsed AST: what the module IMPORTS, as
@@ -863,14 +892,21 @@ with tempfile.TemporaryDirectory() as _d:
            "by CONTENT recursively rather than by top-level NAME, and the import "
            "surface is a set equality over the parsed AST, so an aliased, dotted or dynamic route "
            "to os, shutil, subprocess, socket or urllib reds this whatever it is spelled. Bound to "
-           "a non-trivial drive: seven calls, the success path plus its four refusals, over a real "
-           "corpus of more than 100 records, so a driver that drove nothing cannot pass",
+           "a non-trivial drive: eight calls, the success path plus its four refusals, over a real "
+           "corpus of more than 100 records, so a driver that drove nothing cannot pass. TWO WINDOWS "
+           "WERE ADDED after a review proved the audit blind where it mattered most: MODULE IMPORT, "
+           "which ran with the window shut so a writer at module scope wrote into the repository "
+           "while this stayed green, and the CLI REPORT PATH, which had only ever been driven as a "
+           "plain subprocess outside the hook, where a review put a writer that left 806 bytes "
+           "behind unmeasured. Both now report through the same strict bucket, so a write on either "
+           "path reds this.",
            _w1404_writerun.returncode == 0
            and _w1404_audited["pure"] == []
            and _w1404_audited["repo_writes"] == []
            and _w1404_audited["repo_spawn"] != []
            and set(_w1404_audited["repo_spawn"]) <= _W1404_READONLY_GIT
-           and _w1404_audited["drives"] == 7
+           and _w1404_audited["drives"] == 8
+           and _w1404_audited.get("cli_reported") is True
            and _w1404_audited["predicted"] == [True, False, False, False, False]
            and _w1404_audited["repo_records"] > 100
            and _w1404_before == _w1404_after and _w1404_before != {}
