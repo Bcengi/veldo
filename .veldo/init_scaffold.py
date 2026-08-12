@@ -75,6 +75,7 @@ _FILES = [
     ".veldo/work_state.py",
     ".veldo/tasks.py",
     ".veldo/promises.py",
+    ".veldo/declared.py",
     ".veldo/policy.yaml",
     ".veldo/policy_check.py",
     ".veldo/capabilities.yaml",

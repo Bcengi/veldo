@@ -206,6 +206,15 @@
    "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its free names were enumerated from its own AST and every one is bound by shared.py, which always runs. It drives .veldo/promises.py through V._VC._organ, the loader validate.py itself uses, handing it validate's own parser and reporter. Every fixture is a real tree because the module's job is to read one. It spawns no subprocess and writes only inside temporary directories."
   },
   {
+   "name": "22_veldo_0005_declared_vs_shipped",
+   "file": "22_veldo_0005_declared_vs_shipped.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "22_veldo_0005_declared_vs_shipped"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED: its free names were enumerated from its own AST and every one is bound by shared.py. It drives .veldo/declared.py through V._VC._organ. Its fixture rows write real manifests and real files in temporary directories; its LIVE rows read this repository's own manifest and assert SET properties rather than counts, so adding a capability cannot redden them."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"
