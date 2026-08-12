@@ -1,0 +1,19 @@
+Driven falsifications for VELDO-0009, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 43 passed, 0 failed in 0.22s
+
+AC1 stamp-as-copied-template       selftest (PARTIAL, 1 of 34 suites): 34 passed, 4 failed in 0.02s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0009 AC1: the block ran to completion rather than raising (ScaffoldError('template missing: .veldo/
+        reds: SELFTEST FAIL: VELDO-0009 AC2: the block ran to completion rather than raising (ScaffoldError('template missing: .veldo/
+AC2 overwrite-the-stamp            selftest (PARTIAL, 1 of 34 suites): 42 passed, 1 failed in 0.18s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0009 AC2: a SECOND scaffold reports the stamp as SKIPPED and leaves it byte-identical. A stamp rewr
+AC3 guess-a-placeholder            selftest (PARTIAL, 1 of 34 suites): 42 passed, 1 failed in 0.17s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0009 AC3: templates declaring NO version produce NO stamp at all - not one saying unknown, and not 
+AC3b one-shape-only                selftest (PARTIAL, 1 of 34 suites): 34 passed, 6 failed in 0.14s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0009 AC1: a fresh install CARRIES a stamp, and it is reported as created
+        reds: SELFTEST FAIL: VELDO-0009 AC1: the block ran to completion rather than raising (FileNotFoundError(2, 'No such file or di
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 43 passed, 0 failed in 0.18s

@@ -1,0 +1,21 @@
+Driven falsifications for VELDO-0003, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 61 passed, 0 failed in 0.23s
+
+AC1 kinds-accept-any-string        selftest (PARTIAL, 1 of 34 suites): 60 passed, 1 failed in 0.23s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0003 AC1: a task declaring kind BUILD is refused with TASK_KIND_UNKNOWN and the allowed kinds named
+AC2 done-from-status-field         selftest (PARTIAL, 1 of 34 suites): 56 passed, 5 failed in 0.22s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0003 AC2: a task whose STATUS SAYS DONE while the artifact it produces is absent is still OPEN. A w
+        reds: SELFTEST FAIL: VELDO-0003 AC2 NEGATIVE CONTROL: the same task with its STATUS STILL OPEN reads CONCLUDED once its produc
+AC3 skip-the-ledger                selftest (PARTIAL, 1 of 34 suites): 59 passed, 2 failed in 0.23s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0003 AC3: with both tasks held live, claimable() returns NEITHER - the read model consults the same
+        reds: SELFTEST FAIL: VELDO-0003 AC3: RELEASING a claim makes the task claimable again, through the ledger's own release rather
+AC4 grow-its-own-pacing            selftest (PARTIAL, 1 of 34 suites): 60 passed, 1 failed in 0.22s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0003 AC4: .veldo/tasks.py REFERENCES NO SPAWNER, NO SLEEP AND NO PACING PRIMITIVE, and loads no gov
+AC5 no-standdown                   selftest (PARTIAL, 1 of 34 suites): 60 passed, 1 failed in 0.23s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0003 AC5: a repository with no .veldo/tasks/ directory STANDS THE READ MODEL DOWN and names which c
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 61 passed, 0 failed in 0.23s

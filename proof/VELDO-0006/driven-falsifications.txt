@@ -1,0 +1,22 @@
+Driven falsifications for VELDO-0006, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 45 passed, 0 failed in 0.86s
+
+AC1 empty-means-zero-spent         selftest (PARTIAL, 1 of 34 suites): 44 passed, 1 failed in 0.86s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0006 AC1: with NO recorded spend every window reports UNMEASURED and there is NO remaining figure a
+AC2 always-pacing                  selftest (PARTIAL, 1 of 34 suites): 42 passed, 3 failed in 0.86s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0006 AC2: an UNMEASURED burn rate reports posture BOOTSTRAP and says the worker count is a PERMISSI
+        reds: SELFTEST FAIL: VELDO-0006 AC2: the three postures are the declared set and nothing else is reachable
+AC3 recompute-locally              selftest (PARTIAL, 1 of 34 suites): 42 passed, 3 failed in 0.86s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0006 AC2 NEGATIVE CONTROL: with a MEASURED rate the posture is PACING and the worker count is deriv
+        reds: SELFTEST FAIL: VELDO-0006 AC2: a window whose budget is USED UP inside its horizon reports posture SPENT, zero workers, 
+AC4 drop-the-survival-section      selftest (PARTIAL, 1 of 34 suites): 27 passed, 5 failed in 0.01s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0006 AC1: the block ran to completion rather than raising (KeyError('claimed_units'))
+        reds: SELFTEST FAIL: VELDO-0006 AC2: the block ran to completion rather than raising (KeyError('claimed_units'))
+AC5 no-standdown                   selftest (PARTIAL, 1 of 34 suites): 40 passed, 1 failed in 0.61s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0006 AC5: the block ran to completion rather than raising (KeyError('concluded_artifacts'))
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 45 passed, 0 failed in 0.87s

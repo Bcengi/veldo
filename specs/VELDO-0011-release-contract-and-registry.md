@@ -4,7 +4,7 @@ id: VELDO-0011
 title: The release contract and its registry - a release is a typed, ordered group of plans with the
   plan as its floor, no two artifacts in either registry share an id, and a member is bound by the
   bytes of its file rather than by its front matter
-status: draft
+status: ready
 risk: standard - it adds one new artifact contract, one new registry, and one refusal to the plan
   corpus check, and it changes what the gate accepts rather than what any product does. It is NOT low
   because both halves are adoption-affecting in the strongest way a contract change can be: the

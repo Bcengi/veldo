@@ -1,0 +1,22 @@
+Driven falsifications for VELDO-0008, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 42 passed, 0 failed in 0.09s
+
+AC1 hand-listed-pair               selftest (PARTIAL, 1 of 34 suites): 34 passed, 5 failed in 0.06s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0008 AC1: the derived set INCLUDES packs/antigravity/plugin.json - a third declaration of this proj
+        reds: SELFTEST FAIL: VELDO-0008 AC1 ANTI-VACUITY: the derived set is NON-EMPTY and has MORE THAN TWO members (2), so a sweep t
+AC2 guess-a-default                selftest (PARTIAL, 1 of 34 suites): 40 passed, 2 failed in 0.09s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0008 AC2: with the canonical declaration ABSENT the reader returns NO version and refuses by name, 
+        reds: SELFTEST FAIL: VELDO-0008 AC4: with NO canonical declaration the CLI exits NON-ZERO and prints the refusal rather than a
+AC3 drop-both-sides                selftest (PARTIAL, 1 of 34 suites): 41 passed, 1 failed in 0.10s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0008 AC3: a disagreement names BOTH manifests AND BOTH versions. 'The versions differ' is not actio
+AC4 cli-prints-anyway              selftest (PARTIAL, 1 of 34 suites): 41 passed, 1 failed in 0.08s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0008 AC4: with NO canonical declaration the CLI exits NON-ZERO and prints the refusal rather than a
+AC5 drop-the-checked-count         selftest (PARTIAL, 1 of 34 suites): 40 passed, 2 failed in 0.10s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0008 AC3 NEGATIVE CONTROL: two manifests that AGREE produce no disagreement and no cause, so the fi
+        reds: SELFTEST FAIL: VELDO-0008 AC5: a tree with a canonical declaration and NO other manifest - which is what an adopting rep
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 42 passed, 0 failed in 0.08s

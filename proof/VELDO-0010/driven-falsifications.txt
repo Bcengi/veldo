@@ -1,0 +1,12 @@
+Driven falsifications for VELDO-0010, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.50s
+
+AC4 drop-unversioned-from-partition selftest (PARTIAL, 1 of 34 suites): 41 passed, 3 failed in 0.51s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0010 AC2: a bundle with NO field is UNVERSIONED, appears under NO version, and the report says in w
+        reds: SELFTEST FAIL: VELDO-0010 AC4: over this repository's REAL corpus the buckets PARTITION the bundles - versioned plus unv
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.50s

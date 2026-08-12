@@ -1,0 +1,63 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0001",
+ "commit": "e4ce85da95291b0ec50eb22384132306bbddfddd",
+ "producer": "claude-opus-5[1m] (implementing agent)",
+ "produced_at": "2026-08-12T11:00:30Z",
+ "veldo_version": "3.10.1",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "scripts/suites/17_veldo_0001_falsification_declared.py driven through scripts/selftest.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+  },
+  {
+   "name": "gate",
+   "status": "passed",
+   "detail": "bash scripts/verify.sh GREEN at e4ce85da9529; see .veldo/last_verify"
+  }
+ ],
+ "rollback": "See the spec's own rollback clause: VELDO-0001-every-criterion-declares-its-own-falsification.md"
+}

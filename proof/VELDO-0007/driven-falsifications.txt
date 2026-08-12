@@ -1,0 +1,21 @@
+Driven falsifications for VELDO-0007, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 47 passed, 0 failed in 4.33s
+
+AC1 install-from-THIS-repo         selftest (PARTIAL, 1 of 34 suites): 44 passed, 3 failed in 4.36s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0007 AC1: every install ran from a tree with NO engine/ directory - the COMPOSED PACK shape, where 
+        reds: SELFTEST FAIL: VELDO-0007 AC3 THE TEETH: with a required substrate file CORRUPTED inside the composed pack, the install-
+AC2 hand-listed-one-pack           selftest (PARTIAL, 1 of 34 suites): 46 passed, 1 failed in 2.82s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0007 AC2: the set installed EQUALS the set the publisher composed, and it is non-trivial (7 packs).
+AC3 ignore-the-adopter-gate        selftest (PARTIAL, 1 of 34 suites): 46 passed, 1 failed in 4.17s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0007 AC3 THE GATE'S OWN TEETH: with an INVALID STARTER PLAN inside the composed pack, init SUCCEEDS
+AC4 leave-the-temp-tree-behind     selftest (PARTIAL, 1 of 34 suites): 45 passed, 2 failed in 4.14s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0007 AC4: the temporary directory is REMOVED - the paths every result recorded no longer exist afte
+        reds: SELFTEST FAIL: VELDO-0007 AC4: it makes no network call and starts no detached process - no urlopen, no requests, no Pop
+AC5 no-vacuous-guard               selftest (PARTIAL, 1 of 34 suites): 46 passed, 1 failed in 4.21s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0007 AC2 THE GUARD'S OWN TEETH: a composer that produces a tree with NO composed pack makes the who
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 47 passed, 0 failed in 4.48s

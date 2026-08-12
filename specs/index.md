@@ -14,6 +14,8 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0008 | veldo version - one canonical declaration, every other manifest DERIVED from it rather than | ready | standard | dmitry | not_required | VELDO-0008-veldo-version-from-one-declaration.md |
 | VELDO-0009 | init stamps what it laid down, so substrate drift has a detector - and the detector reports the | ready | standard | dmitry | not_required | VELDO-0009-init-stamps-the-version-it-laid-down.md |
 | VELDO-0010 | Evidence names the version that produced it - an optional proof-bundle field, a reader that | ready | standard | dmitry | not_required | VELDO-0010-evidence-names-the-version-that-produced-it.md |
+| VELDO-0011 | The release contract and its registry - a release is a typed, ordered group of plans with the | ready | standard | dmitry | required | VELDO-0011-release-contract-and-registry.md |
+| VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to | ready | high | dmitry | not_required | WARP-0714-compute-once.md |
@@ -35,8 +37,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | WARP-1704 | The public tree is DERIVED from a declared manifest and proven offline, because a curated | ready | high | dmitry | required | WARP-1704-publication-pipeline.md |
 | WARP-1711 | History-dependent proofs in a flattened repository - the three assertions and one reconciler | ready | standard | dmitry | not_required | WARP-1711-history-dependent-proofs-in-a-flattened-repository.md |
 | WARP-0620 | The live-sandbox proof of the inbound edge - execute the codified path against a real board for | blocked | high | dmitry | required | WARP-0620-live-sandbox-proof.md |
-| VELDO-0011 | The release contract and its registry - a release is a typed, ordered group of plans with the | draft | standard | dmitry | required | VELDO-0011-release-contract-and-registry.md |
-| VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | draft | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |

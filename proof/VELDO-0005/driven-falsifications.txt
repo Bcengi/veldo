@@ -1,0 +1,23 @@
+Driven falsifications for VELDO-0005, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.23s
+
+AC1 one-root-one-file              selftest (PARTIAL, 1 of 34 suites): 42 passed, 2 failed in 0.22s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0005 AC1: ALL THREE SHAPES THE NAIVE RESOLVER GOT WRONG now resolve - a COMPOUND home naming two pa
+        reds: SELFTEST FAIL: VELDO-0005 AC1 OVER THE REAL MANIFEST, which is the row this item was written for: every one of this repo
+AC2 drop-what-it-tried             selftest (PARTIAL, 1 of 34 suites): 41 passed, 3 failed in 0.22s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0005 AC1: a COMPOUND home with ONE resolving segment and one missing is reported, and the finding s
+        reds: SELFTEST FAIL: VELDO-0005 AC2: an unresolved finding carries the home AS DECLARED, WHICH segment failed, and EVERY ROOT 
+AC3 compare-raw-home-strings       selftest (PARTIAL, 1 of 34 suites): 42 passed, 2 failed in 0.23s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0005 AC3: BOTH halves of a compound home count as DECLARED, and only the module named in no home at
+        reds: SELFTEST FAIL: VELDO-0005 AC3 NEGATIVE CONTROL: with every shipped module named somewhere, NOTHING is reported undeclare
+AC4 fold-exemptions-into-declared  selftest (PARTIAL, 1 of 34 suites): 40 passed, 4 failed in 0.22s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0005 AC3: BOTH halves of a compound home count as DECLARED, and only the module named in no home at
+        reds: SELFTEST FAIL: VELDO-0005 AC4: an exempted module is counted in its OWN bucket WITH its reason and is never added to the
+AC5 no-per-leg-standdown           selftest (PARTIAL, 1 of 34 suites): 43 passed, 1 failed in 0.22s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0005 AC5: with the manifest present but NO module directory, the report ANSWERS and the unresolved 
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.22s

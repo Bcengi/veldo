@@ -5,7 +5,7 @@ title: The behaviour floor contract - an existing codebase's current behaviour b
   artifact the machine may draft and may never rule on, where the ruling is representable ONLY as a
   human decision settled through the ticket channel and joined to the observation by a digest the
   validator recomputes, so the agent under the gate cannot write its own exemption
-status: draft
+status: ready
 risk: high - it is the root contract of the legacy on-ramp and it REGISTERS TWO NEW PROTECTED PATHS,
   which is itself a .veldo/policy.yaml edit and therefore a protected-path act needing a commit-bound
   approval. Two failure directions and both are serious: a floor that admits an inline ruling hands

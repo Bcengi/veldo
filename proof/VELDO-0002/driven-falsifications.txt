@@ -1,0 +1,24 @@
+Driven falsifications for VELDO-0002, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 43 passed, 0 failed in 0.11s
+
+AC1 done-from-run-status           selftest (PARTIAL, 1 of 34 suites): 36 passed, 6 failed in 0.10s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0002 AC1: a run recording status DONE for a spec with NO proof bundle is reported UNCONCLUDED, not 
+        reds: SELFTEST FAIL: VELDO-0002 AC1 NEGATIVE CONTROL: a spec whose artifacts ARE on disk is DONE even though no run folder men
+AC2 always-running                 selftest (PARTIAL, 1 of 34 suites): 41 passed, 2 failed in 0.11s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0002 AC2: a run whose heartbeat is 15 hours old is LIVENESS_UNCONFIRMED and carries THE AGE, never 
+        reds: SELFTEST FAIL: VELDO-0002 AC2: a run that never wrote a heartbeat at all reports an age of None and says so in words, NO
+AC3 drop-unrecorded-direction      selftest (PARTIAL, 1 of 34 suites): 40 passed, 2 failed in 0.11s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0002 AC3: a proof bundle NO run folder ever claimed is reported UNRECORDED with its paths. That is 
+        reds: SELFTEST FAIL: VELDO-0002 AC4: the block ran to completion rather than raising (IndexError('list index out of range'))
+AC4 zero-instead-of-standdown      selftest (PARTIAL, 1 of 34 suites): 41 passed, 2 failed in 0.11s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0002 AC4: when the run registry does not exist the run half STANDS DOWN and names the reason, becau
+        reds: SELFTEST FAIL: VELDO-0002 AC4: with the run half stood down NOTHING is called UNRECORDED, because being unclaimed cannot
+AC5 hand-listed-patterns           selftest (PARTIAL, 1 of 34 suites): 34 passed, 8 failed in 0.09s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0002 AC1 NEGATIVE CONTROL: a spec whose artifacts ARE on disk is DONE even though no run folder men
+        reds: SELFTEST FAIL: VELDO-0002 AC3: a proof bundle NO run folder ever claimed is reported UNRECORDED with its paths. That is 
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 43 passed, 0 failed in 0.11s

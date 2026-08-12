@@ -1,0 +1,22 @@
+Driven falsifications for VELDO-0004, re-run 2026-08-12T11:00:30Z at e4ce85da95291b0ec50eb22384132306bbddfddd
+Each mutation is applied to a fresh copy of the tree, proven to have landed, the
+suite re-run, and the tree restored. A mutation that leaves the suite green is a
+check that cannot fail and is reported as VACUOUS.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 53 passed, 0 failed in 0.20s
+
+AC1 predicates-accept-anything     selftest (PARTIAL, 1 of 34 suites): 42 passed, 1 failed in 0.20s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0004 AC1: the block ran to completion rather than raising (KeyError('looks_fine'))
+AC2 settle-from-believed           selftest (PARTIAL, 1 of 34 suites): 51 passed, 2 failed in 0.21s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0004 AC2: a claim whose author BELIEVED it supported settles CONTRADICTED when the predicate fails 
+        reds: SELFTEST FAIL: VELDO-0004 AC2 NEGATIVE CONTROL, and it is the leg that matters: a claim whose author believed it CONTRAD
+AC3 fold-unsettleable-into-supported selftest (PARTIAL, 1 of 34 suites): 50 passed, 3 failed in 0.21s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0004 AC3: a corpus whose claims are ALL unsettleable STANDS THE REPORT DOWN rather than announcing 
+        reds: SELFTEST FAIL: VELDO-0004 AC3 NEGATIVE CONTROL: with ONE settleable claim beside it the report answers, the unsettleable
+AC4 drop-the-measured-evidence     selftest (PARTIAL, 1 of 34 suites): 51 passed, 2 failed in 0.21s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0004 AC4: every CONTRADICTED settlement carries the predicate, the target it read AND what it found
+        reds: SELFTEST FAIL: VELDO-0004 AC4: the printed contradiction line carries the reading too, so the person deciding whether to
+AC5 no-standdown                   selftest (PARTIAL, 1 of 34 suites): 52 passed, 1 failed in 0.21s HAS TEETH
+        reds: SELFTEST FAIL: VELDO-0004 AC5: a repository with no .veldo/promises/ directory STANDS DOWN by name rather than reporting
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 53 passed, 0 failed in 0.21s

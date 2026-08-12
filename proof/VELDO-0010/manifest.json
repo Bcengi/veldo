@@ -1,0 +1,98 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0010",
+ "commit": "e4ce85da95291b0ec50eb22384132306bbddfddd",
+ "producer": "claude-opus-5[1m] (implementing agent)",
+ "produced_at": "2026-08-12T11:00:30Z",
+ "veldo_version": "3.10.1",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/27_veldo_0010_evidence_provenance.py: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.49s"
+    },
+    {
+     "type": "unit",
+     "ref": "AC1: 1 of 1 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0010/driven-falsifications.txt)"
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/27_veldo_0010_evidence_provenance.py: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.49s"
+    },
+    {
+     "type": "unit",
+     "ref": "AC2: 1 of 1 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0010/driven-falsifications.txt)"
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/27_veldo_0010_evidence_provenance.py: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.49s"
+    },
+    {
+     "type": "unit",
+     "ref": "AC3: 1 of 1 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0010/driven-falsifications.txt)"
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/27_veldo_0010_evidence_provenance.py: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.49s"
+    },
+    {
+     "type": "unit",
+     "ref": "AC4: 1 of 1 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0010/driven-falsifications.txt)"
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/27_veldo_0010_evidence_provenance.py: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.49s"
+    },
+    {
+     "type": "unit",
+     "ref": "AC5: 1 of 1 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0010/driven-falsifications.txt)"
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "scripts/suites/27_veldo_0010_evidence_provenance.py driven through scripts/selftest.py: selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed in 0.49s"
+  },
+  {
+   "name": "gate",
+   "status": "passed",
+   "detail": "bash scripts/verify.sh GREEN at e4ce85da9529; see .veldo/last_verify"
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "declared falsifications re-driven in this pass: 1 of 1 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0010/driven-falsifications.txt)"
+  }
+ ],
+ "rollback": "See the spec's own rollback clause: VELDO-0010-evidence-names-the-version-that-produced-it.md"
+}
