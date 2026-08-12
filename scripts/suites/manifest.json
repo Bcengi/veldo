@@ -197,6 +197,15 @@
    "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its free names were enumerated from its own AST and every one is bound by shared.py, which always runs. It drives the REAL claim ledger and the REAL fleet loop, both loaded from disk through V._VC._organ, because the item's whole claim is that it adds no second mechanism and a stub would prove only self-agreement. It spawns no subprocess and writes only inside temporary directories."
   },
   {
+   "name": "21_veldo_0004_promise_corpus",
+   "file": "21_veldo_0004_promise_corpus.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "21_veldo_0004_promise_corpus"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its free names were enumerated from its own AST and every one is bound by shared.py, which always runs. It drives .veldo/promises.py through V._VC._organ, the loader validate.py itself uses, handing it validate's own parser and reporter. Every fixture is a real tree because the module's job is to read one. It spawns no subprocess and writes only inside temporary directories."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

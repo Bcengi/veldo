@@ -74,6 +74,7 @@ _FILES = [
     # be a false requirement.
     ".veldo/work_state.py",
     ".veldo/tasks.py",
+    ".veldo/promises.py",
     ".veldo/policy.yaml",
     ".veldo/policy_check.py",
     ".veldo/capabilities.yaml",
