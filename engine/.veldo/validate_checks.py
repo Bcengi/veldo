@@ -20,6 +20,7 @@ name defined here into its own namespace, keeping the public API (V.check_arch,
 V.check_placement, V.check_ready, V.load_repo_contract, V.tripwire_status, ...)
 byte-identical for every caller.
 """
+import functools
 import importlib.util
 import re
 from pathlib import Path
@@ -188,14 +189,44 @@ def check_verdict_domain_is_the_validated_set(root=None):
     return errs
 
 
-def _arch_module():
-    """Load the architecture-contract validator (.veldo/arch.py); it receives this
-    module's parser and reporter, so it adds no second YAML parser and there is no
-    import cycle. The one place arch.py is loaded (by check_arch and check_placement)."""
-    aspec = importlib.util.spec_from_file_location("veldo_arch", ROOT / ".veldo" / "arch.py")
-    arch = importlib.util.module_from_spec(aspec)
-    aspec.loader.exec_module(arch)
-    return arch
+# THE ONE PLACE ANY ORGAN IS LOADED, and the DECLARED INVENTORY of which organs exist. Each
+# is handed this module's ONE parser and ONE reporter BY ITS CALLER: no second YAML parser,
+# no import cycle. EACH PATH IS LITERAL AND MUST STAY THAT WAY: /veldo:init and two gate
+# closures parse THIS FILE for the quoted ROOT-slash-dot-veldo-slash-name.py form rather than
+# trust a hand-kept list, because two enumerations of one set diverge. A path built from a
+# variable is invisible to them, and what that hides is a scaffolded repository raising
+# FileNotFoundError the first time a verdict reaches the organ. (Spelled in words, not shown:
+# a quoted example here enters those closures as a member that does not exist.)
+# Organs whose MODULE-LEVEL STATE must survive between calls, declared HERE not at each call
+# site: a per-call flag is a place to forget it, and forgetting it is silent. behavior_floor
+# keeps its stand-downs in a registry; losing it turns a legible stand-down into a silent pass.
+_CACHED_ORGANS = {"behavior_floor"}
+_ORGANS = {}
+
+
+def _organ(name, path):
+    """Load ONE organ by path. Cached iff its name is in _CACHED_ORGANS."""
+    if name in _ORGANS:
+        return _ORGANS[name]
+    spec = importlib.util.spec_from_file_location("veldo_" + name, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    if name in _CACHED_ORGANS:
+        _ORGANS[name] = mod
+    return mod
+
+
+# THE ORGAN INVENTORY. Each keeps ITS NAME as a zero-arg callable, because WARP-1012 AC3
+# asserts five of them resolve on validate.py and REVIEW_DIMENSIONS passes two as callables.
+_arch_module = functools.partial(_organ, "arch", ROOT / ".veldo" / "arch.py")
+_observability_module = functools.partial(_organ, "observability", ROOT / ".veldo" / "observability.py")
+_decision_module = functools.partial(_organ, "decision", ROOT / ".veldo" / "decision.py")
+_behavior_floor_module = functools.partial(_organ, "behavior_floor", ROOT / ".veldo" / "behavior_floor.py")
+_decision_review_module = functools.partial(_organ, "decision_review", ROOT / ".veldo" / "decision_review.py")
+_tripwire_module = functools.partial(_organ, "tripwire", ROOT / ".veldo" / "tripwire.py")
+_security_review_module = functools.partial(_organ, "security_review", ROOT / ".veldo" / "security_review.py")
+_shape_review_module = functools.partial(_organ, "shape_review", ROOT / ".veldo" / "shape_review.py")
+_release_contract_module = functools.partial(_organ, "release_contract", ROOT / ".veldo" / "release_contract.py")
 
 
 def check_arch(path=None, root=None, required=False):
@@ -250,17 +281,6 @@ def check_placement(path, repo_root=None):
     except arch.ArchContractError:
         return 0  # a malformed contract is reported by check_arch; do not double-refuse here
     return arch.validate_placement(fm, contract, str(path), fail)
-
-
-def _observability_module():
-    """Load the diagnosability-gate organ (.veldo/observability.py) the same way arch is
-    loaded: it is PURE over parsed dicts and receives this module's failure reporter, so
-    it adds no second YAML parser and there is no import cycle. The one place
-    observability.py is loaded (by check_observability and check_ready)."""
-    ospec = importlib.util.spec_from_file_location("veldo_observability", ROOT / ".veldo" / "observability.py")
-    obs = importlib.util.module_from_spec(ospec)
-    ospec.loader.exec_module(obs)
-    return obs
 
 
 def check_observability(path, repo_root=None):
@@ -381,16 +401,6 @@ def check_ready(path, repo_root=None):
     return errs
 
 
-def _decision_module():
-    """Load the decision-record validator (.veldo/decision.py) the same way arch is
-    loaded: it receives this module's parser and reporter, so it adds no second YAML
-    parser and there is no import cycle. The one place decision.py is loaded."""
-    dspec = importlib.util.spec_from_file_location("veldo_decision", ROOT / ".veldo" / "decision.py")
-    dec = importlib.util.module_from_spec(dspec)
-    dspec.loader.exec_module(dec)
-    return dec
-
-
 def check_decision(path, root=None, required=False):
     """Validate ONE decision record (veldo.decision/v1) structurally, delegating to
     .veldo/decision.py. Adoption safe: an absent record stands down (unless it is
@@ -412,15 +422,41 @@ def check_decisions(decisions_dir=None, root=None):
     return _decision_module().check_decisions_dir(ddir, base, parse_yamlish, fail)
 
 
-def _decision_review_module():
-    """Load the decision-review validator (.veldo/decision_review.py) the same way arch
-    and decision are loaded: it receives this module's parser and reporter (and the
-    decision loader) so it adds no second YAML parser and there is no import cycle. The
-    one place decision_review.py is loaded."""
-    drspec = importlib.util.spec_from_file_location("veldo_decision_review", ROOT / ".veldo" / "decision_review.py")
-    dr = importlib.util.module_from_spec(drspec)
-    drspec.loader.exec_module(dr)
-    return dr
+def check_floor(path, root=None, required=False):
+    """Validate ONE behaviour floor (veldo.behavior_floor/v1) structurally, delegating to
+    .veldo/behavior_floor.py. Adoption safe: an absent floor stands down (unless it is
+    required); present, or required-and-absent, fails closed."""
+    base = Path(root) if root else ROOT
+    return _behavior_floor_module().check_floor(Path(path), base, required, parse_yamlish, fail)
+
+
+def check_floors(floors_dir=None, root=None):
+    """Validate the per-repo behaviour floors under .veldo/floors/ (veldo.behavior_floor/v1),
+    in the EXACT adoption-safe, fail-closed style of check_decisions. An absent directory
+    stands the whole check down and returns clean, so a repository that has not adopted the
+    on-ramp is byte-identically unaffected; a present floor fails closed on anything
+    malformed, and a pin id declared by more than one floor is refused.
+
+    IT ENFORCES NOTHING BEYOND WELL-FORMEDNESS. No change is refused because a pin's
+    disposition is unknown or blocked: the artifact is inert data until a later item consumes
+    it, this never calls behavior_floor.disposition_for, and the precondition at ready and at
+    claim is a later item."""
+    base = Path(root) if root else ROOT
+    fdir = Path(floors_dir) if floors_dir else base / ".veldo" / "floors"
+    return _behavior_floor_module().check_floors_dir(fdir, base, parse_yamlish, fail)
+
+
+def check_releases(releases_dir=None, plans_dir=None, root=None):
+    """Validate the release registry under releases/ (veldo.release/v1) AND the plan-id
+    uniqueness it depends on, delegating both to .veldo/release_contract.py. ONE entry point
+    for the organ's two refusing calls, summed here so run_all hosts them on one line.
+    Adoption safe: an absent releases/ stands the registry check down and returns clean."""
+    base = Path(root) if root else ROOT
+    rc = _release_contract_module()
+    pdir = Path(plans_dir) if plans_dir else base / "plans"
+    return (rc.check_release(Path(releases_dir) if releases_dir else base / "releases",
+                             pdir, parse_yamlish, fail)
+            + rc.check_plan_ids(pdir, parse_yamlish, fail))
 
 
 def check_decision_review(path, root=None, decisions_dir=None):
@@ -454,17 +490,6 @@ def check_decision_reviews(reviews_dir=None, decisions_dir=None, root=None):
     return dr.check_reviews(rdir, ddir, base, parse_yamlish, fail, required_for, ld)
 
 
-def _tripwire_module():
-    """Load the decision-tripwire evaluator (.veldo/tripwire.py) the same way arch, decision,
-    and decision_review are loaded: it receives this module's parser and reporter (and the
-    decision loader) so it adds no second YAML parser and there is no import cycle. The one
-    place tripwire.py is loaded."""
-    tspec = importlib.util.spec_from_file_location("veldo_tripwire", ROOT / ".veldo" / "tripwire.py")
-    tw = importlib.util.module_from_spec(tspec)
-    tspec.loader.exec_module(tw)
-    return tw
-
-
 def check_readings(path, root=None, decisions_dir=None, now=None):
     """Validate ONE readings file (veldo.readings/v1) structurally, and when a decisions_dir is
     given evaluate it against the decision it names (each reading covers a declared assumption,
@@ -491,31 +516,6 @@ def check_tripwires(decisions_dir=None, readings_dir=None, root=None, now=None):
     tw = _tripwire_module()
     ld = _decision_module().load_record
     return tw.check_tripwires(ddir, rdir, base, parse_yamlish, fail, ld, now=now)
-
-
-def _security_review_module():
-    """Load the security review dimension (.veldo/security_review.py), spelled exactly like
-    _shape_review_module. It imports nothing itself: the floor modules it re-runs are passed
-    in by its caller, so there is no second spelling of what a secret or a wildcard is, and no
-    import cycle. The one place security_review.py is loaded (by check_json's verdict security
-    validation)."""
-    secspec = importlib.util.spec_from_file_location("veldo_security_review", ROOT / ".veldo" / "security_review.py")
-    sec = importlib.util.module_from_spec(secspec)
-    secspec.loader.exec_module(sec)
-    return sec
-
-
-def _shape_review_module():
-    """Load the shape-fit review dimension (.veldo/shape_review.py) the same way arch,
-    decision, decision_review, and tripwire are loaded. It imports nothing itself: this
-    module passes it the arch helpers (the one place placement and the boundary graph are
-    read) and the failure reporter, so there is no second parser and no import cycle. The
-    one place shape_review.py is loaded (by check_json's verdict shape_fit validation and
-    by check_shape_review)."""
-    srspec = importlib.util.spec_from_file_location("veldo_shape_review", ROOT / ".veldo" / "shape_review.py")
-    sr = importlib.util.module_from_spec(srspec)
-    srspec.loader.exec_module(sr)
-    return sr
 
 
 def check_shape_review(spec_path, changed_paths, repo_root=None):

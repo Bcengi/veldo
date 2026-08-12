@@ -18,10 +18,18 @@ human_approval: required
 lane: standalone
 placement: [contracts, enforcement]
 footprint:
-  - ".veldo/releases.py"
-  - "engine/.veldo/releases.py"
+  - ".veldo/release_contract.py"
+  - "engine/.veldo/release_contract.py"
   - ".veldo/validate.py"
   - "engine/.veldo/validate.py"
+  # The gate face (check_releases) and the organ inventory the loader reads from.
+  - ".veldo/validate_checks.py"
+  - "engine/.veldo/validate_checks.py"
+  # /veldo:init must LAY THE ORGAN DOWN, or a scaffolded repository raises FileNotFoundError
+  # the first time run_all reaches the registry check. Derived, not remembered: the init
+  # scaffold suite reads validate_checks for its literal loader paths and reds on an omission.
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - ".veldo/architecture.yaml"
   - "releases/TEMPLATE.md"
   - "engine/releases/TEMPLATE.md"
@@ -180,7 +188,7 @@ required_evidence: [unit]
 rollback: >
   Delete the registration of check_release in the corpus sweep and the one call that reports plan-id
   duplicates. The releases directory and its template become inert markdown that no reader consults,
-  .veldo/releases.py and its engine twin are removed with the suite fragment and its manifest entry,
+  .veldo/release_contract.py and its engine twin are removed with the suite fragment and its manifest entry,
   and the one includes entry added to .veldo/architecture.yaml is removed. Nothing already written
   becomes invalid, because no plan file, spec file or proof changes shape, and plan_hash is untouched,
   so no existing proof binding moves.
@@ -349,7 +357,7 @@ ids other work may already hold is the collision this item's own AC2 is about.
 - **The draft's D2** (must a plan belonging to no release say so, at the cost of touching every plan
   file once). Untouched here, because this item edits no plan file. BLOCKS: the two-way binding item.
 - **The draft's D8, naming.** Resolved in this item and not left open: the module is
-  `.veldo/releases.py`, plural and matching the directory, with a docstring pointing at
+  `.veldo/release_contract.py`, plural and matching the directory, with a docstring pointing at
   `.veldo/release.py` and saying what each owns. If the founder prefers renaming the shipped module,
   that is its own item with its own blast radius, never a side effect of this one.
 

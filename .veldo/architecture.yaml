@@ -18,7 +18,12 @@ approved_at: 2026-07-22
 areas:
   - id: contracts
     title: Contracts and structural validation, the truth layer of schemas and validators
-    includes: [".veldo/validate.py", ".veldo/arch.py", ".veldo/plan.py", ".veldo/request.py"]
+    # ADDED 2026-08-11 (VELDO-0011). The release contract and its registry are a contract organ
+    # in the exact sense the three modules beside it are: a schema, a registry that reads it, and
+    # the refusals that type it. One entry, and the contract's version is deliberately not bumped,
+    # following the precedent this file already set for an amendment inside an ordinary item
+    # (the docs area below, added by WARP-0735).
+    includes: [".veldo/validate.py", ".veldo/arch.py", ".veldo/plan.py", ".veldo/request.py", ".veldo/release_contract.py"]
   - id: engine
     title: The safety-core decision engine, the pure functions that decide whether a human decision is authorized
     includes: [".veldo/authorization.py"]

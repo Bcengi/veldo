@@ -31,6 +31,17 @@ protected_paths:
   # that makes the per-digest design trustworthy. Dmitry approved this the same hour he
   # approved the flip to enforcing.
   - {path: ".veldo/secret_inventory.json",        floor: high}
+  # VELDO-0012, the behaviour floor: the SAME registration and the SAME argument the
+  # secret inventory records two lines above. A floor pins an existing codebase's current
+  # behaviour, and a settlement is the record of what a named human SAID about one of
+  # those pins, so a settlement is an exemption in exactly the way a secret disposition
+  # is. The validator is not the integrity: the integrity of a disposition record is the
+  # integrity of a reviewed change plus the protected-path rules it sits under, never its
+  # own validation. With these two registered, adding a floor, re-pointing an observation
+  # or writing a settlement is a change that needs a commit-bound, path-scoped approval,
+  # so the agent being gated cannot author the record that exempts it.
+  - {path: ".veldo/floors/*",                     floor: high}
+  - {path: ".veldo/settlements/*",                floor: high}
 merge_rule: >
   Auto-merge if and only if: the specification is ready and valid; every
   acceptance criterion is passed in a valid proof manifest for this exact

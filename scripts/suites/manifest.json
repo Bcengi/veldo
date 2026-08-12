@@ -161,6 +161,24 @@
    "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its free names were enumerated from its own AST (Path, ROOT, V, expect, tempfile, tmpfile) and every one is bound by shared.py, which always runs, so the set difference is empty; its own three imports are local, prefixed and deleted at the end because shared.py binds none of them. It drives V._VC, the validate_checks instance validate.py itself loaded, so it reaches the code under test without importing it, and it spawns no subprocess."
   },
   {
+   "name": "18_veldo_0011_release_contract",
+   "file": "18_veldo_0011_release_contract.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "18_veldo_0011_release_contract"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its free names were enumerated from its own AST (Path, ROOT, V, expect, importlib, tempfile, tmpfile) and every one is bound by shared.py, which always runs, so the set difference is empty. A WRONG declaration here is accepted by run_scope.py and surfaces only as a NameError under --suite, which is why the measurement and not the neighbouring entry's wording is the basis. It drives .veldo/release_contract.py DIRECTLY, handing it validate.py's own parse_yamlish and fail exactly as validate.py hands them to every other organ, so it reaches the object the gate runs rather than a second copy with test wiring. Its own imports are local and prefixed. It spawns no subprocess."
+  },
+  {
+   "name": "18_veldo_0012_behaviour_floor_contract",
+   "file": "18_veldo_0012_behaviour_floor_contract.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "18_veldo_0012_behaviour_floor_contract"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its free names were enumerated from its own AST (P, Path, ROOT, V, expect, importlib, json, tempfile) and every one is bound by shared.py, which always runs, so the set difference is empty. A WRONG declaration here is accepted by run_scope.py and surfaces only as a NameError under --suite, which is why the measurement and not the neighbouring entry's wording is the basis. It drives the floor through V._VC, the validate_checks instance validate.py itself loaded, so every refusal is printed by the reporter the gate prints through. It spawns no subprocess."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

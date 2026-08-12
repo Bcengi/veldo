@@ -27,6 +27,11 @@ footprint:
   - "engine/.veldo/validate.py"
   - ".veldo/validate_checks.py"
   - "engine/.veldo/validate_checks.py"
+  # /veldo:init must LAY THE ORGAN DOWN, or a scaffolded repository raises FileNotFoundError
+  # the first time run_all reaches the floor check. Derived, not remembered: the init scaffold
+  # suite reads validate_checks for its literal loader paths and reds on an omission.
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   # The protected-path registration. policy.yaml is a DECLARED exception to the byte-identical
   # template sync (scripts/check_template_sync.sh:33), so this repository's protection and the
   # template an adopter installs are edited separately and are not compared.

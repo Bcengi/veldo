@@ -63,6 +63,12 @@ _FILES = [
     ".veldo/shape_gate.py",
     ".veldo/tripwire.py",
     ".veldo/tracker.py",
+    # VELDO-0012 and VELDO-0011: validate_checks loads both organs, so a scaffolded
+    # repository missing them raises FileNotFoundError the first time run_all reaches the
+    # check. Derived, not remembered: the suite reads validate_checks for its literal
+    # loader paths and reds if either list omits one.
+    ".veldo/behavior_floor.py",
+    ".veldo/release_contract.py",
     ".veldo/policy.yaml",
     ".veldo/policy_check.py",
     ".veldo/capabilities.yaml",
@@ -119,6 +125,12 @@ REQUIRED_SUBSTRATE = [
     ".veldo/shape_gate.py",
     ".veldo/tripwire.py",
     ".veldo/tracker.py",
+    # VELDO-0012 and VELDO-0011: validate_checks loads both organs, so a scaffolded
+    # repository missing them raises FileNotFoundError the first time run_all reaches the
+    # check. Derived, not remembered: the suite reads validate_checks for its literal
+    # loader paths and reds if either list omits one.
+    ".veldo/behavior_floor.py",
+    ".veldo/release_contract.py",
     ".veldo/policy.yaml",
     ".veldo/policy_check.py",
     ".veldo/capabilities.yaml",

@@ -829,7 +829,7 @@ def run_all():
     errs = 0
     errs += check_events(ROOT / ".veldo" / "events.jsonl")
     errs += check_arch()
-    errs += check_decisions()
+    errs += check_decisions() + _VC.check_floors()  # VELDO-0012: floors stand down when absent
     errs += check_requests()
     errs += check_decision_reviews()
     errs += check_tripwires()
@@ -838,7 +838,7 @@ def run_all():
         if p.name.startswith("TEMPLATE"):
             continue
         errs += check_plan(p, specs_dir=ROOT / "specs")
-    errs += check_spec_ids(ROOT / "specs")
+    errs += check_spec_ids(ROOT / "specs") + _VC.check_releases()  # VELDO-0011: + plan-id uniqueness
     for p in sorted((ROOT / "specs").glob("*.md")):
         if p.name.startswith("TEMPLATE") or p.name == "index.md":
             continue

@@ -11,6 +11,16 @@ protected_paths:
   - {path: "auth/**",       floor: critical}
   - {path: "billing/**",    floor: high}
   - {path: "migrations/**", floor: high}
+  # NOT examples: these two are the engine's OWN record paths and mean the same thing in
+  # every adopting repository (VELDO-0012). A behaviour floor pins an existing codebase's
+  # current behaviour, and a settlement records what a named human SAID about one of those
+  # pins, so a settlement is an exemption. The validator is not the integrity: the
+  # integrity of a disposition record is the integrity of a reviewed change plus the
+  # protected-path rules it sits under. Registered so that adding a floor, re-pointing an
+  # observation or writing a settlement needs a commit-bound, path-scoped approval and the
+  # agent being gated cannot author the record that exempts it.
+  - {path: ".veldo/floors/*",      floor: high}
+  - {path: ".veldo/settlements/*", floor: high}
 merge_rule: >
   Auto-merge if and only if: the specification is ready and valid; every
   acceptance criterion is passed in a valid proof manifest for this exact
