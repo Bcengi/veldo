@@ -533,6 +533,19 @@ that reading would not have, and two of them were checks that could not fail.
     to this repository. **A check that already existed was right and my spec was wrong**, which is the
     outcome this project should want most often.
 
+44. **THE INSTALL-AND-RUN CHECK CAUGHT ITS FIRST REAL DEFECT WITHIN MINUTES OF EXISTING, AND IT WAS
+    MINE.** Building VELDO-0008 I added `.veldo/version.py` to the init scaffolder's lay-down list, so
+    init began DEMANDING that template. The composed pack did not carry it, init failed with "template
+    missing", and every scaffolded repository was uninstallable - **the exact 1.0 defect, reintroduced,
+    and caught in the same session that built the check for it.**
+    THE CAUSE IS A PROPERTY WORTH KNOWING: the publisher derives the public tree from TRACKED files,
+    so a brand-new organ that is not yet committed does not exist for an adopter, while this
+    repository's own gate sees it perfectly. **An organ the scaffolder requires must be tracked, or the
+    only person who cannot use it is the person installing it.** Staging the two files took the same
+    pack from INIT_FAILED to a green adopter gate, which is the whole loop this item exists to close.
+    Every organ landed before it (work_state, tasks, promises, declared, budget_state) passed only
+    because they were already committed when the check first ran - so this would have shipped.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

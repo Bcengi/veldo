@@ -27,6 +27,13 @@ first ten minutes:
 THE PACK SET IS DERIVED from what the publisher composed, never typed, and set equality against
 that is asserted: a hand-kept list is the defect this repository has shipped twice.
 
+IT MEASURES THE TRACKED TREE, AND THAT IS LOAD-BEARING. The publisher derives the public tree
+from TRACKED files, so a brand-new organ that is not yet committed does not exist for an adopter
+while this repository's own gate sees it perfectly. This stage caught exactly that within minutes
+of existing: a module added to the scaffolder's lay-down list but not yet staged made every
+scaffolded repository fail with "template missing" - the 1.0 defect, reintroduced. So a red here
+on a new file is often telling you to stage it, not to change it.
+
 IT WRITES ONLY INSIDE A TEMPORARY DIRECTORY, which it removes. It makes no network call and starts
 no detached process. Producing a public tree and publishing it are two acts and this performs only
 the first.

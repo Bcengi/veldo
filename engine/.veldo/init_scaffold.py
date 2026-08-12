@@ -77,6 +77,7 @@ _FILES = [
     ".veldo/promises.py",
     ".veldo/declared.py",
     ".veldo/budget_state.py",
+    ".veldo/version.py",
     ".veldo/policy.yaml",
     ".veldo/policy_check.py",
     ".veldo/capabilities.yaml",
