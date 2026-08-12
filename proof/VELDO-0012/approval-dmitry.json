@@ -1,0 +1,16 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-0012-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0012",
+    "commit": "d449286ee13b8f94261d13dcd733a5ef4bfe810b",
+    "paths": [".veldo/policy.yaml", "engine/.veldo/policy.yaml"],
+    "proof": "proof/VELDO-0012/manifest.json"
+  },
+  "basis": "VELDO-0012 declares human_approval: required at risk high, and its one act needing a human is the registration of two new protected paths: .veldo/floors/* and .veldo/settlements/*. Adding to protected_paths is itself an edit to .veldo/policy.yaml, which is already a protected path, so this approval is required by construction rather than by policy choice. WHAT IT IS FOR, in the terms it was asked and answered in: Veldo keeps a list of files an agent cannot change on its own, and a change to one needs a human to sign off. The behaviour floor records what a corner of existing code does today; a settlement records what a named human ruled about one of those records. Without the two paths on that list, the agent being gated can edit the file that records whether the gate applies to it, and write its own exemption. ASKED AND ANSWERED: put to Dmitry over Telegram on 2026-08-12 in three rounds, because the first two answers came back 'What question?' and 'I don't get it' and a yes to a question the approver has not understood is not an approval. The question was then restated in plain terms as a single line - may these two files go on the list - and answered Yes at 01:50 UTC. WHAT THIS APPROVAL DOES NOT COVER, stated so nothing reads wider than it is: only the two protected-path registrations in policy.yaml and its engine twin. It vouches for nothing about the floor organ's own correctness, it authorises no floor, no observation and no settlement (each of those is a separate change that this very registration now sends back for approval), and it is not a standing grant - a later path added to protected_paths needs its own. HONEST ON SEQUENCE: the builder agent wrote the two lines into policy.yaml BEFORE the approval was given. Nothing was pushed, and the approval now covers the change, but the edit preceded the permission rather than following it, and Dmitry was told so at the time rather than after the fact.",
+  "recorded_at": "2026-08-12T02:05:00Z",
+  "recorded_by": "claude-opus-5[1m] (Ava, recording Dmitry's fresh in-session Telegram approval; the approver is not the proof producer, satisfying self-separation)",
+  "expires_at": "2026-09-11T02:05:00Z"
+}
