@@ -242,6 +242,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE, measured from its own AST against shared.py's bindings. It drives .veldo/version.py directly AND its CLI as a subprocess, because the refusal path's whole property is a non-zero exit status and calling the function would not test it. Its live rows assert set membership and agreement, never a version number, so the next release cannot redden them."
   },
   {
+   "name": "26_veldo_0009_install_stamp",
+   "file": "26_veldo_0009_install_stamp.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "26_veldo_0009_install_stamp"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE, measured from its own AST against shared.py's bindings. IT RUNS THE REAL SCAFFOLDER into temporary trees, because the property under test is what an install produces and a fixture would test the fixture. It spawns `git init` per tree and nothing else, and writes only inside temporary directories."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

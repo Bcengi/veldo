@@ -20,9 +20,11 @@ scaffolder that skill, or an adopting human, can call directly.
 Usage:
   python3 .veldo/init_scaffold.py <target-dir>
 """
+import json
 import os
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -164,6 +166,75 @@ def missing_substrate(target):
     return [rel for rel in REQUIRED_SUBSTRATE if not (target / rel).exists()]
 
 
+# THE INSTALL STAMP (VELDO-0009). GENERATED, never copied from a template, which is deliberate: a
+# template would have to be tracked and published, and this file's whole content is a fact about THIS
+# install. It records the version the substrate was laid from, so substrate drift has a detector - an
+# adopter running an old base against new documentation currently has no way to notice.
+#
+# CREATE-ONLY, like everything else here: a re-run never overwrites it, so the stamp keeps saying what
+# the FIRST install was rather than being quietly rewritten by a later re-run that laid nothing.
+STAMP = ".veldo/installed.json"
+STAMP_SCHEMA = "veldo.installed/v1"
+
+
+# WHERE A VERSION LIVES DEPENDS ON THE SHAPE, and there are three real ones. In THIS repository the
+# templates are engine/ and the manifest is at the repository root above it. In a composed Claude pack
+# it is .claude-plugin/plugin.json inside the pack. In the other composed packs it is plugin.json at
+# the pack root. Declared as a list of candidates rather than assumed, because assuming ONE shape is
+# precisely the mistake that made 1.0 uninstallable.
+_VERSION_CANDIDATES = (".claude-plugin/marketplace.json", ".claude-plugin/plugin.json",
+                       "plugin.json")
+
+
+def _version_in(root):
+    """The version a manifest at this root declares, in either shape, or None."""
+    for rel in _VERSION_CANDIDATES:
+        p = Path(root) / rel
+        if not p.is_file():
+            continue
+        try:
+            data = json.loads(p.read_text())
+        except (OSError, ValueError):
+            continue
+        if isinstance(data.get("version"), str):
+            return data["version"]
+        plugins = data.get("plugins")
+        if isinstance(plugins, list) and plugins and isinstance(plugins[0], dict):
+            v = plugins[0].get("version")
+            if isinstance(v, str):
+                return v
+    return None
+
+
+def _template_version(templates):
+    """The version these templates were laid from, or None. NEVER GUESSED: a stamp claiming a version
+    nobody declared would be worse than no stamp, because it makes a drift detector confidently
+    wrong. Looks at the templates root, then at its PARENT, which is what covers this repository -
+    the templates are engine/ and the manifest sits above it."""
+    t = Path(templates)
+    return _version_in(t) or _version_in(t.parent)
+
+
+def _write_stamp(templates, target, created, skipped, now=None):
+    """Record what this install was laid from. Returns the stamp dict, or None when the templates
+    declare no version - in which case NOTHING is written, because an unstamped install is an honest
+    state and a stamp saying 'unknown' is a fact nobody can act on."""
+    dest = Path(target) / STAMP
+    if dest.exists():
+        skipped.append(STAMP)
+        return None
+    version = _template_version(templates)
+    if version is None:
+        return None
+    stamp = {"schema": STAMP_SCHEMA, "version": version,
+             "installed_at": now or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+             "laid_from": str(templates)}
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps(stamp, indent=1, sort_keys=True) + "\n")
+    created.append(STAMP)
+    return stamp
+
+
 def _starter_gate(text):
     """Turn the template gate into a starter gate that is green on an empty
     repository. The template leaves the unit and dependency_audit slots blank
@@ -270,7 +341,10 @@ def scaffold(target, templates=None):
     # the derived index reflects the scaffolded specs and starter plan
     _regenerate_index(target)
 
-    return {"target": str(target), "created": created, "skipped": skipped}
+    # the install stamp: what this substrate was laid from, so drift has a detector (VELDO-0009)
+    stamp = _write_stamp(templates, target, created, skipped)
+
+    return {"target": str(target), "created": created, "skipped": skipped, "stamp": stamp}
 
 
 def main(argv=None):

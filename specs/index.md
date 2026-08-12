@@ -12,6 +12,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0006 | Budget continuity on the operator's path - where the budget stands, whether the governor is | ready | standard | dmitry | not_required | VELDO-0006-budget-continuity-on-the-operators-path.md |
 | VELDO-0007 | Install and run, proven from the artifact an adopter receives - compose the packs, initialise a | ready | standard | dmitry | not_required | VELDO-0007-install-and-run-from-the-artifact-an-adopter-receives.md |
 | VELDO-0008 | veldo version - one canonical declaration, every other manifest DERIVED from it rather than | ready | standard | dmitry | not_required | VELDO-0008-veldo-version-from-one-declaration.md |
+| VELDO-0009 | init stamps what it laid down, so substrate drift has a detector - and the detector reports the | ready | standard | dmitry | not_required | VELDO-0009-init-stamps-the-version-it-laid-down.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to | ready | high | dmitry | not_required | WARP-0714-compute-once.md |

@@ -160,11 +160,100 @@ def report_lines(rep):
     return lines
 
 
+# THE INSTALL STAMP AND ITS DRIFT DETECTOR (VELDO-0009). /veldo:init writes .veldo/installed.json
+# recording the version the substrate was laid from. Comparing it with what this tree's manifests
+# declare NOW is the only way an adopter notices they are running an old base against new
+# documentation - the drift that had no detector at all before this item.
+STAMP = ".veldo/installed.json"
+STAMP_SCHEMA = "veldo.installed/v1"
+
+# UNSTAMPED IS NOT A DRIFT, AND NOT A VERSION EITHER. A repository installed before stamping existed,
+# or set up by hand, carries no stamp; saying "drifted" there would accuse every older install and
+# saying "current" would clear one nobody measured.
+UNSTAMPED = "UNSTAMPED"
+CAUSE_STAMP_UNREADABLE = "VERSION_STAMP_UNREADABLE"
+CAUSE_DRIFT = "VERSION_SUBSTRATE_DRIFT"
+
+# AND THE STATE AN ADOPTER IS ACTUALLY IN. A scaffolded repository carries the STAMP but no
+# marketplace manifest - it is not a marketplace - so there is nothing IN IT to compare against.
+# That is not "no drift" and not a drift: it is a comparison nobody can make from inside that tree,
+# and the caller must supply the version now available to them. Reporting either verdict here would
+# be a guess in the one place a guess is least affordable.
+CAUSE_NO_CURRENT = "VERSION_NOTHING_TO_COMPARE"
+
+
+def installed_version(root=None):
+    """(version, cause, detail) from the install stamp. Never guessed, exactly like version()."""
+    base = Path(root) if root is not None else ROOT
+    p = base / STAMP
+    if not p.is_file():
+        return None, UNSTAMPED, (
+            "no %s: this repository was installed before the stamp existed, or was set up by hand, "
+            "so what it was laid from is unknown rather than current" % STAMP)
+    try:
+        data = json.loads(p.read_text())
+    except (OSError, ValueError) as e:
+        return None, CAUSE_STAMP_UNREADABLE, "%s could not be read: %s" % (STAMP, e)
+    v = data.get("version")
+    if not isinstance(v, str) or data.get("schema") != STAMP_SCHEMA:
+        return None, CAUSE_STAMP_UNREADABLE, (
+            "%s is not a %s record carrying a version" % (STAMP, STAMP_SCHEMA))
+    return v, None, None
+
+
+def drift(root=None, current=None):
+    """Whether the substrate this repository was LAID FROM differs from what is available NOW.
+
+    FOUR answers and none of them collapses into another: UNSTAMPED (this tree never recorded what it
+    was laid from), VERSION_NOTHING_TO_COMPARE (it has a stamp but nothing here declares a current
+    version, which is exactly an adopter's repository), no drift, or drift NAMING BOTH VERSIONS -
+    because a drift is actionable only if you know which way it went.
+
+    `current` is what the caller has available to install from. It defaults to this tree's own
+    canonical declaration, which is right for the veldo home repository and absent for an adopter."""
+    base = Path(root) if root is not None else ROOT
+    installed, icause, idetail = installed_version(base)
+    if current is None:
+        current, ccause, cdetail = version(base)
+    else:
+        ccause, cdetail = None, None
+    out = {"installed": installed, "current": current, "cause": None, "detail": None,
+           "stamp": STAMP, "canonical": CANONICAL}
+    if icause is not None:
+        out["cause"], out["detail"] = icause, idetail
+        return out
+    if ccause is not None:
+        out["cause"] = CAUSE_NO_CURRENT
+        out["detail"] = ("this tree records being laid from %r but declares no current version to "
+                         "compare against (%s): pass the version you can install from now. An "
+                         "adopting repository is always in this state, because it is not a "
+                         "marketplace" % (installed, cdetail))
+        return out
+    if installed != current:
+        out["cause"] = CAUSE_DRIFT
+        out["detail"] = ("this substrate was laid from %r and the tree now declares %r: an install "
+                         "running an old base against newer documentation, which had no detector "
+                         "before this" % (installed, current))
+    return out
+
+
 def _cli(argv=None):
     ap = argparse.ArgumentParser(description="what this VELDO installation is")
     ap.add_argument("--report", action="store_true",
                     help="every manifest found and what each declares")
+    ap.add_argument("--drift", action="store_true",
+                    help="compare the install stamp with what this tree declares now")
     args = ap.parse_args(argv)
+    if args.drift:
+        d = drift()
+        if d["cause"] in (UNSTAMPED, CAUSE_NO_CURRENT):
+            print("veldo version: %s - %s" % (d["cause"], d["detail"]))
+            return 0          # neither is a defect: both are comparisons nobody can make here
+        if d["cause"] is not None:
+            print("veldo version: %s - %s" % (d["cause"], d["detail"]))
+            return 1
+        print("veldo version: %s, laid from %s, no substrate drift" % (d["current"], d["stamp"]))
+        return 0
     if args.report:
         rep = version_report()
         for line in report_lines(rep):
