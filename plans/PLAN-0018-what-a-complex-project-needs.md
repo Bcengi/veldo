@@ -112,58 +112,58 @@ feature_tree:
 
 work:
   - item: W1
-    spec: WARP-1801
+    spec: VELDO-0002
     title: Recorded work state, derived not remembered, surviving a dead session
     feature_refs: [F1]
     depends_on: []
     order: 10
   - item: W2
-    spec: WARP-1802
+    spec: VELDO-0003
     title: A dispatch organ for review, audit and authoring work, paced by the governor
     feature_refs: [F2]
     depends_on: []
     order: 20
   - item: W3
-    spec: WARP-1803
+    spec: VELDO-0004
     title: The promise corpus - extract checkable claims from a document and settle each against the tree
     feature_refs: [F3]
     depends_on: []
     order: 30
   - item: W4
-    spec: WARP-1804
+    spec: VELDO-0005
     title: A design with no descendants and a capability with no home are named findings
     feature_refs: [F3]
-    depends_on: [WARP-1803]
+    depends_on: [VELDO-0004]
     order: 40
   - item: W5
-    spec: WARP-1805
+    spec: VELDO-0006
     title: Budget continuity - the governor covers the operator's path, and a spent window costs pacing not work
     feature_refs: [F4]
-    depends_on: [WARP-1801]
+    depends_on: [VELDO-0002]
     order: 50
   - item: W6
-    spec: WARP-1806
+    spec: VELDO-0007
     title: The install-and-run smoke criterion, proven from the artifact an adopter receives
     feature_refs: [F5]
     depends_on: []
     order: 60
   - item: W7
-    spec: WARP-1807
+    spec: VELDO-0008
     title: veldo version - the CLI can answer what it is, from one declaration
     feature_refs: [F6]
     depends_on: []
     order: 70
   - item: W8
-    spec: WARP-1808
+    spec: VELDO-0009
     title: init stamps the version into the repository it lays down, so substrate drift has a detector
     feature_refs: [F6]
-    depends_on: [WARP-1807]
+    depends_on: [VELDO-0008]
     order: 80
   - item: W9
-    spec: WARP-1809
+    spec: VELDO-0010
     title: The gate output and the proof bundle name the version that produced them
     feature_refs: [F6]
-    depends_on: [WARP-1807]
+    depends_on: [VELDO-0008]
     order: 90
 
 regression:
@@ -177,7 +177,7 @@ regression:
     - id: RJ2
       title: >
         A session killed mid-flight during parallel work loses no record of what was built.
-      activation: {when: after:WARP-1801}
+      activation: {when: after:VELDO-0002}
       suite: scripts/suites
 
 release:
@@ -200,26 +200,26 @@ open_decisions:
       corpus's ground truth) or in its own store? The event stream is my recommendation because a
       second store would be a second truth, and this project's first principle is that the
       repository is the operating truth. Who answers: Dmitry.
-    blocks: [WARP-1801]
+    blocks: [VELDO-0002]
   - id: D2
     text: >
       Is the non-construction fleet the SAME organ as the construction fleet with a pluggable work
       source, or a sibling? My recommendation is the same organ with a work-source seam, because the
       governor, the claim ledger and the retirement logic are exactly what it needs and duplicating
       them would create the second spelling this project keeps finding. Who answers: Dmitry.
-    blocks: [WARP-1802]
+    blocks: [VELDO-0003]
   - id: D3
     text: >
       What is the authoritative statement of the promise for the completeness organ: the README, the
       method document, the capability manifest, or the book? They can and do disagree with each
       other, which is itself a finding the organ should report rather than resolve silently.
-    blocks: [WARP-1803]
+    blocks: [VELDO-0004]
   - id: D4
     text: >
       Does the smoke criterion run in the gate on every change (slow, complete) or at release only
       (fast, and blind between releases)? Gate-on-every-change is my recommendation despite the cost,
       because "does it install" was green for the entire life of 1.0 while being false.
-    blocks: [WARP-1806]
+    blocks: [VELDO-0007]
 ---
 
 # What a complex project needs and Veldo lacks

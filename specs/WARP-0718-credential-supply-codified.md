@@ -47,6 +47,11 @@ observability:
     MirrorRunnerError kept for the case where the token exchange itself fails.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Make _default_secret_resolver return an empty string rather than nothing when the environment carries no
+      value, so the mirror's live path treats it as a resolved credential and proceeds, and the assertion that
+      with the environment variables absent the resolver yields nothing and the live path refuses BY NAME must
+      go red.
     text: >
       THE DEFECT IS REPRODUCED FIRST, AS AN OPERATIONAL FACT. A selftest asserts that with the environment
       variables absent, the credential resolver returns nothing and the mirror's live path refuses BY NAME
@@ -58,6 +63,12 @@ acceptance_criteria:
       chat message, which constraint C-approvals explicitly forbids. That is the gap: not a bug in the code, a
       hole where the instructions should be.
   - id: AC2
+    falsified_by: >
+      Drop the owner-only permission test on the operator secrets file so a group or world readable file is
+      accepted, and the assertion that such a file is REFUSED must go red; that is the load-bearing leg, since
+      it is the one deciding whether a credential may sit readable by every account on the box, while the git-
+      tracked refusal and the .gitignore coverage in the repository and in every pack falsify the same
+      criterion from the other two sides.
     text: >
       THERE IS ONE CODIFIED, IDEMPOTENT, ADOPTER-SAFE SUPPLY MECHANISM, part of the init flow rather than a
       thing a person is told in chat. The resolver accepts a documented ordered set of sources, tries them in a
@@ -69,6 +80,10 @@ acceptance_criteria:
       instructions must not be able to commit their own credentials by accident. `veldo init` reports whether a
       credential resolves, without printing it.
   - id: AC3
+    falsified_by: >
+      Interpolate the resolved value into the resolver's failure message or its __repr__, and the sentinel
+      assertions, which resolve a known sentinel and require it absent from every captured log line, error
+      message, exception string and repr including the failure paths, must go red on that output.
     text: >
       NO SECRET LEAKS AND THE REFUSAL IS DIAGNOSABLE, both proven rather than promised. Selftests assert that a
       resolved credential appears in NO log line, NO error message, NO exception string and NO object repr,

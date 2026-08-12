@@ -43,6 +43,11 @@ observability:
     message rather than inferred from a stack trace.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Accept an unrecognised key in validate_observability (.veldo/observability.py:135) instead of refusing
+      it, and the assertion that an observability key outside the four-name vocabulary is REFUSED must go red
+      while the well-formed positive control keeps passing; adding a fifth name to OBSERVABILITY_CRITERIA
+      (.veldo/observability.py:77) falsifies the exact-vocabulary assertion.
     text: >
       An observability CRITERIA VOCABULARY exists as a versioned engine organ
       (module .veldo/observability.py, schema veldo.observability/v1): OBSERVABILITY_CRITERIA
@@ -60,6 +65,11 @@ acceptance_criteria:
       asserts the vocabulary is exactly the four criteria, that a well-formed declaration
       validates clean (positive control), and that each malformation class refuses.
   - id: AC2
+    falsified_by: >
+      Remove the observability_gate call from validate.check_ready, and the assertion driven over a temporary
+      tree that check_ready REFUSES a behavior-bearing spec declaring no observability must go red while the
+      present-only check_observability keeps accepting a well-formed block, which is exactly the difference
+      between refusing at the ready transition and merely validating a declaration that already exists.
     text: >
       ELABORATION APPLIES the vocabulary and the VALIDATOR ENFORCES it at the ready
       transition (outcome O6). observability_gate (a PURE predicate in .veldo/observability.py
@@ -78,6 +88,11 @@ acceptance_criteria:
       accepts a well-formed one; and asserts the /veldo:spec skill copy names the observability
       elaboration step.
   - id: AC3
+    falsified_by: >
+      Aim the in-memory mutation at any arm of observability_gate other than the `elif not declared` floor arm
+      (.veldo/observability.py:219), so the behavior-bearing fixture with no criteria stays refused, and
+      assertion (b), that neutralizing the floor turns that same fixture GREEN, must go red; the exemption
+      control (d) falsifies from the other side by gating specs whose behavior_bearing is absent or false.
     text: >
       THE REFUSAL IS THE PRODUCT and it is NON-VACUOUS (the anti-vacuity rule C1). Proven by
       mutation and by controls, each observed to flip the result: (a) a behavior-bearing
@@ -96,6 +111,11 @@ acceptance_criteria:
       contract-required set) is enforced. A selftest asserts (a) through (d) and that the
       review-lane labeling is present in the module source.
   - id: AC4
+    falsified_by: >
+      Make contract_observability (.veldo/observability.py:180) return an empty required list for a malformed
+      observability section instead of the malformed status, and the assertion that a malformed contract
+      section is REFUSED rather than silently ignored must go red, because the gate would then fall back to
+      the floor and report an honest stand-down over a contract it could not read.
     text: >
       THE C7 SOFT JOIN, degrading down and never faking a join. contract_observability reads a
       system's observability rules from the OPTIONAL contract-level observability.required list
@@ -113,6 +133,10 @@ acceptance_criteria:
       declares no observability section, so the live gate uses the floor (an honest stand-down,
       the join not faked here).
   - id: AC5
+    falsified_by: >
+      Invoke observability_gate from validate.run_all as a static sweep of the corpus, and the assertion that
+      run_all does NOT invoke it must go red, which is the RJ6 property: the mandatory rule binds at the ready
+      transition only, so the already-shipped specs are never re-evaluated.
     text: >
       BACKWARD COMPATIBLE (regression journey RJ6), engine-synced, and honestly recorded. The
       mandatory rule binds at the ready TRANSITION only (check_ready / observability_gate),

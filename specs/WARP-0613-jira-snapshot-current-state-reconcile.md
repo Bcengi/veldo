@@ -46,6 +46,12 @@ observability:
     transition), which the report counts so a human sees it.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Delete the unwired-repo guard at .veldo/tracker_jira_init.py:401-403 so snapshot_from_repo falls
+      through into build_spec_index with no config and raises instead of returning reconciled False:
+      that is the load-bearing leg here (the genericity clause is checked only by the literal grep at
+      scripts/suites/09_action_whitelist_warp_1205.py:1376-1377), and the clean-no-op assertion at
+      scripts/suites/09_action_whitelist_warp_1205.py:1374-1375 must go red.
     text: The snapshot is GENERIC and reads every input BY REFERENCE, reusing the shipped mirror's own
       readers rather than reinventing them - build_spec_index and build_plan_index read the repository
       (the single source of truth), resolve_status_map resolves the per-org VELDO-status -> tracker-status
@@ -53,6 +59,13 @@ acceptance_criteria:
       company-specific or board-specific literal (grep-clean for the org/board name and domain), and a
       repo with no tracker config is a clean no-op reported honestly (never an error).
   - id: AC2
+    falsified_by: >
+      Change the mapped-status guard in _project_status at .veldo/tracker_jira_init.py:437-441 to fall
+      back to the raw declared status (set_status with status_map.get(ws, declared_status)) so an
+      unmapped declared status reports a confident value instead of standing down, breaking the
+      load-bearing NG4 leave-it-unset leg, and the assertion at
+      scripts/suites/09_action_whitelist_warp_1205.py:1336-1337 (both in_progress items unset, unset 2)
+      must go red.
     text: It PROJECTS THE DECLARED CURRENT STATE. For every plan (excluding the reserved PLAN-0000
       scaffold, filtered by _is_scaffold_id, never by a company/board value) it upserts the plan's epic
       keyed by plan id - the SAME stable marker the epic mirror uses, so the two converge and never fork
@@ -63,6 +76,12 @@ acceptance_criteria:
       snapshot never invents a transition outside the mapped VELDO set (NG4), the same guarantee the
       event mirror upholds.
   - id: AC3
+    falsified_by: >
+      Drop the released-to-shipped pair from the FILE_STATUS_TO_VELDO extension at
+      .veldo/tracker_jira_init.py:188 so a released plan's epic is left unset, breaking the load-bearing
+      leg of this criterion (the extension for the current-state facts no lifecycle event carries), and
+      the assertion at scripts/suites/09_action_whitelist_warp_1205.py:1326-1327 (epic:PLAN-0006 shows
+      the mapped Shipped status) must go red.
     text: It COVERS WHAT THE EVENT STREAM STRUCTURALLY CANNOT. FILE_STATUS_TO_VELDO is BUILT FROM the
       mirror's shipped SPEC_STATUS_TO_VELDO (so the two agree byte-for-byte on the shared statuses
       shipped/blocked/ready and the shared constant is copied, never mutated) and EXTENDS it with the two
@@ -72,6 +91,12 @@ acceptance_criteria:
       event that would move them, which the event mirror (driven only by spec.ready/blocked/shipped and a
       recorded verdict) cannot do from the stream alone.
   - id: AC4
+    falsified_by: >
+      Change the standalone branch at .veldo/tracker_jira_init.py:476 to pass the spec id as the epic key
+      (create_or_update_child(sid, sid, ...)) so a plan-less spec is forced under a spurious epic,
+      breaking the load-bearing epic_key None top-level placement, and the assertion at
+      scripts/suites/09_action_whitelist_warp_1205.py:1331-1332 (find_child(None, WARP-9702) resolves and
+      no epic exists for it) must go red.
     text: It places STANDALONE specs correctly and reports created-vs-reused WITHOUT a redundant write. A
       spec that declares no plan (it is in no plan's work list) is projected as a TOP-LEVEL item of the
       child issue type - a Task with no epic parent - via create_or_update_child with epic_key None, so it
@@ -81,6 +106,12 @@ acceptance_criteria:
       upserts keyed the same way, so the snapshot tells a created object from a reused one for its report
       without a second write.
   - id: AC5
+    falsified_by: >
+      Delete the no-op-when-unchanged guard in FakeTracker._set_status at
+      .veldo/tracker_adapter.py:758-759 so a second reconcile re-records every transition: that breaks
+      the load-bearing idempotency leg (the one-way leg has no guard to remove, only a write-back to
+      add), and the assertions at scripts/suites/09_action_whitelist_warp_1205.py:1353-1357 (board digest
+      byte-identical, re-run transitions 0) must go red.
     text: It is IDEMPOTENT and ONE-WAY. Re-running the snapshot over the same repository forks no epic or
       child, records no duplicate transition, and leaves the board byte-identical (the upserts are keyed,
       set_status is a no-op when unchanged). It writes ONLY through the provisioner seam (the keyed
@@ -90,6 +121,12 @@ acceptance_criteria:
       mirror it makes the board agree with the file even if an event would have said otherwise - the
       declared repository state wins, which is the source-of-truth invariant, not a conflict.
   - id: AC6
+    falsified_by: >
+      Delete the snapshot_from_repo call at .veldo/tracker_jira_init.py:507-509 and its report key at 510
+      so veldo jira init provisions, fences, and event-mirrors but never reconciles, breaking the
+      load-bearing leg that init runs the snapshot as its FINAL step, and the assertion at
+      scripts/suites/09_action_whitelist_warp_1205.py:1396-1397 (a snapshot report block reporting
+      reconciled true) must go red.
     text: It is wired as ONE command, veldo jira snapshot (a subcommand of the repo-only
       tracker_jira_init.py that bin/veldo already routes 'jira' to, behind the SAME existence guard as veldo
       jira init and veldo mirror; bin/veldo itself is UNCHANGED and stays byte-identical across its copies).
@@ -100,6 +137,12 @@ acceptance_criteria:
       init yields a board that reflects the current declared state; both remain idempotent so a re-run of
       either changes nothing. It creates no timer, daemon, or auto-start and spawns nothing detached (NG1).
   - id: AC7
+    falsified_by: >
+      Add a second literal file-status table as a fallback in _project_status at
+      .veldo/tracker_jira_init.py:436 for a declared status absent from FILE_STATUS_TO_VELDO: tooth T1
+      then goes VACUOUS because its mutant still reaches In Review through the fallback, which breaks the
+      load-bearing none-of-the-teeth-is-vacuous leg, and the mutant leg of the assertion at
+      scripts/suites/10_warp_0613_anti_vacuity.py:32-34 must go red.
     text: A selftest drives the WHOLE snapshot over the deterministic FakeTracker offline (no network) and
       is NON-TAUTOLOGICAL. A spec whose declared status is review shows the mapped In Review status; a
       released plan's epic shows the mapped Shipped status; a standalone spec (no plan) becomes a

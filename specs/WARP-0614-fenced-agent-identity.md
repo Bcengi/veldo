@@ -47,6 +47,15 @@ observability:
     error, log, proof, or repr.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Make the `if auth == "oauth-client-credentials":` branch in build_live_adapter
+      (.veldo/tracker_mirror_runner.py:316) fall through to the basic-auth builder, so a tracker block
+      declaring the oauth mode silently authenticates as a HUMAN against the site URL, and the assertion
+      at scripts/suites/10_warp_0613_anti_vacuity.py:147 (an OAuthJiraCloudAdapter whose _base is the
+      api.atlassian.com/ex/jira/{cloudId} gateway) must go red. That selector is the load-bearing leg,
+      because every other leg of this criterion is about a mode nothing would reach; the fail-closed leg
+      falsifies separately by deleting the unresolved-credential raise at
+      .veldo/tracker_mirror_runner.py:177-180, which reddens the assertion at that suite's line 141.
     text: A new AUTH MODE is added to the live edge, selectable BY REFERENCE from the jira-cloud tracker
       block - auth "basic" (the existing email + token_ref, unchanged default) or auth "oauth-client-credentials"
       (client_id_ref + client_secret_ref, both SECRET REFERENCES resolved from the environment/secret store,
@@ -58,6 +67,13 @@ acceptance_criteria:
       cache, re-fetch, gateway URL construction) is UNIT-tested offline against a fake token source; the real
       network calls are reference-wired and NEVER run in the gate. Nothing hardcodes a company/site value.
   - id: AC2
+    falsified_by: >
+      Flip the approver-group exclusion in provision_fence from member=False to member=True
+      (.veldo/tracker_jira_init.py:369), so the bootstrap puts the agent accountId INTO the approver
+      group, and the assertion at scripts/suites/10_warp_0613_anti_vacuity.py:164 must go red. The
+      exclusion is the load-bearing leg, and the flip rather than a deletion is the mutation because
+      DELETING that line reddens nothing: on a fresh board the agent is absent from the approver group
+      anyway, so only a positive membership write proves the exclusion is asserted rather than assumed.
     text: The board bootstrap ENSURES the two fence groups exist (an agent group and an approver group,
       both config, e.g. veldo-agents / veldo-approvers), idempotently (create-if-absent, reuse if present),
       and ensures the configured agent principal (its accountId, config, never hardcoded) is a member of the
@@ -65,6 +81,14 @@ acceptance_criteria:
       and modeled by the FakeTracker; reference-wired live against the group + membership REST API. A re-run
       creates no group and changes no membership.
   - id: AC3
+    falsified_by: >
+      Pass agent_g instead of appr_g to the restrict_transition call in provision_fence
+      (.veldo/tracker_jira_init.py:370), so each terminal transition is restricted to the very group the
+      agent IS in, and both the assertion at scripts/suites/10_warp_0613_anti_vacuity.py:166 (each
+      terminal transition restricted to veldo-approvers) and the one at line 170 (the agent CANNOT fire
+      Approved while an approver-group member can) must go red. Restricting to the approver group and not
+      merely restricting SOMETHING is the load-bearing leg: a restriction scoped to the agent's own group
+      leaves the anti-self-approval boundary open while the fence report still reads restricted true.
     text: For each configured TERMINAL transition (the transitions landing on the approval/decision terminal
       states - Approved, Decided, Rejected - named in config, never hardcoded), the bootstrap adds an
       idempotent workflow RESTRICTION limiting who may fire it to the approver group (the company-managed
@@ -73,6 +97,14 @@ acceptance_criteria:
       and scoped to the approver group, excluding the agent group); a re-run adds nothing. A terminal
       transition the workflow does not have fails loud by name rather than silently skipping.
   - id: AC4
+    falsified_by: >
+      Delete the `self._require_fence_admin("restrict_transition")` call from the seam's
+      restrict_transition (.veldo/tracker_adapter.py:563) so the workflow-restriction write is no longer
+      admin-gated, and the assertion at scripts/suites/10_warp_0613_anti_vacuity.py:211 must go red: the
+      non-admin agent credential is refused two of the three fence writes instead of three. The admin-only
+      separation is the load-bearing leg, since it is what makes self-unfencing structurally impossible;
+      the composition-order leg falsifies separately by hoisting the provision_fence call
+      (.veldo/tracker_jira_init.py:503) above provision_board, which reddens that suite's line 222.
     text: The fence + membership provisioning runs ONLY under an admin-capable provisioner and is composed
       into the existing veldo jira init bootstrap AFTER status/issue-type/workflow provisioning and BEFORE the
       board is considered active, so a freshly provisioned board is fenced in the same pass. The agent's own
@@ -81,6 +113,14 @@ acceptance_criteria:
       selftest: the fake agent credential is refused the group/workflow-admin operations by name while the
       admin provisioner performs them.
   - id: AC5
+    falsified_by: >
+      Replace a placeholder in the two-identity section of docs/tracker-operator-guide.md (from line 183)
+      with a real organization value, the site host in the auth-mode config block at line 229 being the
+      one an operator would paste, and the genericity leg of the assertion at
+      scripts/suites/10_warp_0613_anti_vacuity.py:299 must go red. Placeholders-only is the load-bearing
+      leg of a docs-made-true criterion, because a doc carrying one org's board is no longer the generic
+      setup it claims to document; the byte-identical capabilities leg falsifies separately by editing the
+      tracker_agent_identity entry in engine/.veldo/capabilities.yaml:171 alone, which reddens line 291.
     text: The setup is DOCUMENTED in docs/tracker-operator-guide.md, GENERIC and true to the built behavior
       (docs-made-true): the two-identity model (an admin identity performs one-time provisioning + fencing; a
       separate non-human service-account identity does runtime writes and is fenced out of the terminal
@@ -89,6 +129,14 @@ acceptance_criteria:
       appears in the doc (placeholders only). The capabilities record for the auth mode + fence is added
       byte-identically across all eight capabilities.yaml copies.
   - id: AC6
+    falsified_by: >
+      Reflow the restrictions comprehension in provision_fence (.veldo/tracker_jira_init.py:370) so the
+      literal `"restricted": provisioner.restrict_transition(project, t, appr_g)}` no longer occurs on one
+      line: the T1 tooth's in-memory string replace at
+      scripts/suites/10_warp_0613_anti_vacuity.py:311-313 then matches nothing, the mutant fences the
+      agent exactly as the real module does, and the T1 assertion at line 314 must go red. Non-vacuity is
+      the load-bearing leg of this criterion, and a tooth whose target has drifted is the one failure that
+      makes an anti-vacuity claim itself vacuous; the same edit is caught for each tooth by its own target.
     text: A selftest drives the WHOLE fence + membership + auth-mode behavior over the deterministic
       FakeTracker offline (no network) and is NON-TAUTOLOGICAL. Positive controls- a fresh board ensures both
       groups, sets the agent's membership, and restricts all configured terminal transitions to the approver

@@ -46,6 +46,11 @@ observability:
     (idempotent), not a double-apply; a request with no tracker link yet is skipped (nothing to reconcile).
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Drop the per-entry deep copy in FakeTracker._read_changelog at .veldo/tracker_adapter.py:747 so
+      it hands back the seeded list itself. The load-bearing leg is READ-ONLY, and the assertion that
+      a caller appending to and tampering with the returned changelog leaves the seeded source at
+      actor "builder" with two entries must go red.
     text: A read-only read_changelog seam is added to the TrackerAdapter base (NotImplementedError) and to
       the deterministic FakeTracker (seed_changelog + read_changelog), returning an ORDERED, ATTRIBUTED
       changelog (each entry = id, ts, actor identity, from-state, to-state). It is READ-ONLY - the reconcile
@@ -53,6 +58,11 @@ acceptance_criteria:
       (the fake is what runs). No always-on listener: the reconcile is in-session demand-driven by default,
       with an opt-in off-by-default supervised timer, never a background poller/daemon.
   - id: AC2
+    falsified_by: >
+      Replace `actors = _entry_actors(term["entries"])` with `actors = [record.get("decided_by")]` at
+      .veldo/request_reconcile.py:446 so a self-declared request field supplies the identity instead
+      of the attributed changelog, and the assertion that an agent-made terminal transition is
+      BLOCKED must go red by settling it.
     text: reconcile_requests (a sibling of the shipped reconcile_promotions) finds OPEN requests by the repo
       index (.veldo/requests/) plus the issue link plus a status query - NEVER by assignee==agent (the service
       account cannot be an assignee) - and for each pulls the ordered attributed changelog and derives the
@@ -60,6 +70,11 @@ acceptance_criteria:
       the current status. A tracker transition is only a SUBMITTED ASSERTION; the repo decides whether it
       settles.
   - id: AC3
+    falsified_by: >
+      Guard the authorized-only settlement gate as `if False and not decision.get("authorized")` at
+      .veldo/request_reconcile.py:482. That is the leg every other one funnels through (separated
+      approver, never the agent, quorum, two_key), and the assertion that an irreversible request
+      with no satisfied second key is held must go red by writing a settlement record.
     text: Before a decision settles, the reconcile VALIDATES it against the shipped safety core with
       identities derived and VERIFIED from the changelog/lineage (never self-declared request fields) - the
       terminal actor must be an authorized approver for the request tier and separated from the verified
@@ -69,6 +84,12 @@ acceptance_criteria:
       ambiguity (missing entry, two conflicting terminal transitions, an actor not resolvable) BLOCKS - the
       request is held, never inferred or defaulted-open.
   - id: AC4
+    falsified_by: >
+      Guard the compare-and-swap inside SettlementStore.settle as `if False and
+      self._has_receipt(request_id, changelog_id)` at .veldo/request_reconcile.py:307, and both
+      receipt assertions must go red: a second pass over the same request writes a second record
+      instead of being a byte-identical no-op, and a pre-seeded (REQ, c2) receipt applies instead of
+      being skipped.
     text: On a validated acceptance the reconcile writes the touchpoint's settlement record (veldo.approval /
       veldo.decision / veldo.verdict) and emits the event ONLY through an APPEND-ONLY COMPARE-AND-SWAP receipt
       keyed (request_id, changelog_id) - so a re-run, a re-projection, or a duplicated changelog entry is a
@@ -76,6 +97,12 @@ acceptance_criteria:
       the repo FIRST; setting the terminal tracker state is a downstream projection (W3), so the tracker is
       never a second source of truth. The reconcile writes no tracker state itself.
   - id: AC5
+    falsified_by: >
+      Pass `_rr_src` unmutated into `_rr_mut` at
+      scripts/suites/11_inbound_command_receipt_reconcile.py:218 so the T-agent mutant derives its
+      actor from the changelog exactly as the shipped module does, and T-agent's assertion that the
+      mutant settles one record while the real path settles none must go red, which is the
+      tautology this criterion refuses.
     text: A selftest drives reconcile_requests over the FakeTracker with a seeded changelog OFFLINE (no
       network) and is NON-TAUTOLOGICAL - a valid authorized-approver terminal transition settles once
       (settlement record + event + receipt written) and a re-run is idempotent (no second write); an

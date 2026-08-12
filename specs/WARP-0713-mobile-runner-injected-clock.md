@@ -43,6 +43,12 @@ observability:
     the same message, because only the waiting mechanism changes and never the decision to wait.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Install a fake waiter at the runner's OWN resolution site in one tracked copy, which is the round-1 hole
+      measured to leave the suite at 3261 passed and 0 failed, and the identity assertion that the waiter the
+      RUNNER constructed has sleep IS time.sleep and clock IS time.monotonic must go red for that copy;
+      binding the assertion to the runner's resolution rather than to the SettleWaiter class default is the
+      load-bearing leg, because the class default alone was satisfied while adopter waiting was gone.
     text: >
       THE SEAM DEFAULTS TO THE REAL CLOCK, SO SHIPPED BEHAVIOUR IS BYTE-IDENTICAL, and that is asserted rather
       than reasoned. Both mobile runners take a clock and a sleep as parameters DEFAULTING to time.monotonic and
@@ -63,6 +69,12 @@ acceptance_criteria:
       construction this suite makes for itself no longer counts as evidence about the runner. Proven able to
       fire one site at a time, at every site of every tracked copy.
   - id: AC2
+    falsified_by: >
+      Shorten one settle constant in one tracked copy, the tap settle default from 1 to 0.1, and the
+      enumerated three-sided comparison, the frozen table against the module AST against what the runner
+      requests at run time, must go red on that constant; separately, routing AdbDriver.wait_boot's
+      sys.boot_completed poll through the seam must redden the assertion that exactly two condition waits stay
+      raw.
     text: >
       EVERY SETTLE CONSTANT KEEPS ITS NUMERIC VALUE, asserted numerically, because the seam is what changes and
       the values are part of what ships. AMENDED BY THE BUILD, ON THE RECORD, BECAUSE THE ORIGINAL COUNT WAS
@@ -83,6 +95,13 @@ acceptance_criteria:
       FASTER IS EXPLICITLY FORBIDDEN by this item: that would make the gate faster by testing something other
       than what ships.
   - id: AC3
+    falsified_by: >
+      Delete the recording branch of SettleWaiter.settle
+      (engine/scripts/runners/mobile/veldo_android_runner.py:56) so it always takes the unrecorded path, and
+      every new assertion over the requested durations and their ORDER, the launch settle window, the one
+      second tap, the half second type and the redrive requesting terminate then launch, must go red with an
+      empty record; those assertions are the load-bearing leg, because without them the item is only a speed
+      change that spent the coverage the sleeps were buying.
     text: >
       THE WAITS BECOME ASSERTED BEHAVIOUR, WHICH IS WHY THIS IS A COVERAGE ITEM AND NOT ONLY A SPEED ITEM.
       Today the gate drives these runners against FAKE drivers that return instantly, then sleeps two real
@@ -94,6 +113,10 @@ acceptance_criteria:
       invisible. If this item lands with 46 seconds removed and no new assertions, it has thrown away the only
       thing those sleeps were buying, and that is the outcome to refuse.
   - id: AC4
+    falsified_by: >
+      Route one wait in the process runner through the injected waiter so a jumped clock reaches it, and the
+      sha256-unchanged assertion on that module must go red, along with the seven assertions over real signal
+      delivery, force-kill and orphan reaping that a virtual clock invalidates.
     text: >
       IT IS FASTER, THE PROCESS RUNNER IS UNTOUCHED, AND THE FIGURE IS THE REAL ONE. The suite's elapsed time is
       recorded against the baseline; the prototype measured about 46 seconds recoverable here with ZERO assertion

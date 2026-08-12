@@ -32,6 +32,11 @@ observability:
     a reason fails with the same label and the same message.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Delete the memo dictionary from the parse helper so every call site parses again, and the AC1 count
+      assertion that the run's ast.parse total equals the number of DISTINCT source texts must go red by
+      reporting the measured 4,460 against 86; the same shape falsifies leg (d) by moving render_text back
+      inside the generator expression that iterates its own output lines.
     text: >
       EACH DERIVATION IS COMPUTED ONCE, and the four offenders are named with the counts that were measured
       rather than described. (a) PARSING: 4,460 ast.parse calls serve only 86 DISTINCT source texts, one of them
@@ -45,6 +50,11 @@ acceptance_criteria:
       hoisted to a single value. proof/WARP-0714/measured.md records each count with the command that produced
       it.
   - id: AC2
+    falsified_by: >
+      Key the memo on the file PATH instead of on the source TEXT, so a file mutated in place during the run
+      serves its earlier tree, and the assertion that each optimized value EQUALS the naive value computed the
+      old way must go red for the mutating teeth; separately, changing the label proof from a SET comparison
+      to a COUNT must stop one deletion paired with one addition being caught.
     text: >
       NOTHING PROVES LESS, PROVEN BY EQUALITY RATHER THAN BY INSPECTION. For every assertion whose computation
       is memoized, indexed, cached or hoisted, the optimized value is asserted EQUAL to the naive value computed
@@ -54,6 +64,11 @@ acceptance_criteria:
       No assertion may be skipped, weakened, marked expected-failure or moved behind a conditional: each is
       asserted absent.
   - id: AC3
+    falsified_by: >
+      Remove the invalidation hook from the suite's own write helper so a cached path keeps its pre-write
+      bytes, and the hostile-case assertion that mutates a cached file, re-reads it through the cache and
+      requires the MUTATED bytes back must go red; that is the whole criterion, because a tooth served pre-
+      mutation content is a tooth that has been deleted while still printing green.
     text: >
       THE READ CACHE CANNOT SERVE A STALE BYTE, which is the one way this item could manufacture a false green
       and therefore gets its own criterion. The suite WRITES files and then asserts over them, and several teeth
@@ -63,6 +78,11 @@ acceptance_criteria:
       A tooth that passes against pre-mutation content is a tooth that has been deleted, so this is proven in
       both directions - the mutation is seen, and the unmutated file still reads unchanged.
   - id: AC4
+    falsified_by: >
+      Lower the WARP-0710 claim-race detector's volume below 16 threads times 400 rounds times 3 trials, or
+      replace its real fsync with a no-op, and the assertions pinning that volume and the real fsync must go
+      red; those are the load-bearing leg, because buying wall clock from deliberate detection power is the
+      one way this item can measure as a success while leaving the gate weaker.
     text: >
       IT IS FASTER AND THE FIGURE IS THE REAL ONE. The suite's elapsed time and the three collapsed counts are
       recorded beside the baseline; if the saving is smaller than the counts suggest, the real figure is what

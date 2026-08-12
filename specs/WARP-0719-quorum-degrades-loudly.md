@@ -54,6 +54,11 @@ observability:
     never be read as a small registry, because that would degrade to zero and authorize anything).
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Clamp the effective requirement at one key regardless of capacity, dropping the smaller-of-declared-and-
+      available computation, and the assertion that runs the IDENTICAL declared policy against a two-approver
+      registry and observes the requirement rise to two on its own must go red while the one-approver case
+      still passes, which is what proves the rise is the engine's rather than a config edit's.
     text: >
       THE DECLARED REQUIREMENT STAYS HONEST AND THE ENGINE SATISFIES IT AGAINST THE REGISTRY IT HAS. A policy
       declares the quorum it actually wants (for example two keys for a money, external or irreversible impact,
@@ -65,6 +70,11 @@ acceptance_criteria:
       BETWEEN, asserted by running the identical declared policy against a one-approver and a two-approver
       registry and observing the requirement rise on its own.
   - id: AC2
+    falsified_by: >
+      Record only the effective requirement in the settlement and drop the declared and available figures, and
+      the assertion that a degraded settlement is DISTINGUISHABLE from an undegraded one by a reader with no
+      access to the config must go red, along with the assertion that the recorded declared and available
+      numbers are the real ones rather than restatements of the effective one.
     text: >
       DEGRADATION IS LOUD, PERMANENT AND PER-DECISION, which is the criterion that makes AC1 safe to have.
       Every authorization satisfied by degradation records, in the settlement itself and not only in a log line,
@@ -74,6 +84,12 @@ acceptance_criteria:
       settlements are DISTINGUISHABLE by a reader with no access to the config, and asserts the recorded
       declared/available figures are the real ones rather than restatements of the effective one.
   - id: AC3
+    falsified_by: >
+      Treat an absent or malformed approver registry as a registry of size zero instead of raising
+      REGISTRY_UNREADABLE, and the assertion that it authorizes NOTHING must go red, because a zero capacity
+      degrades the requirement to zero and authorizes anything; that is the load-bearing leg of the three, and
+      the floor falsifies separately by letting degradation drop below a declared floor without
+      QUORUM_FLOOR_VIOLATED.
     text: >
       A SMALLER REGISTRY MUST NEVER BE FORGEABLE INTO A WEAKER RULE, because that is the attack this mechanism
       creates. Three refusals, each proven: an ABSENT or MALFORMED registry raises REGISTRY_UNREADABLE and
@@ -86,6 +102,11 @@ acceptance_criteria:
       stale attestation, per-request binding all still apply, asserted by re-running the entire existing
       refusal set under a degraded rule and observing every one still fire).
   - id: AC4
+    falsified_by: >
+      Introduce a default approver role name or a default team size constant into the engine so the decision
+      no longer comes entirely from the declared policy and the supplied registry, and the assertion driving
+      the identical engine through a one-person, a two-person and a five-person registry whose role sets share
+      no vocabulary must go red for every registry that does not happen to use that name.
     text: >
       IT IS GENERIC, WHICH IS WHY THE OWNER ASKED FOR IT ("Veldo should support this out of the box, for other
       projects"). Nothing about Bcengi, its team size or its role names appears in the engine: the behaviour is

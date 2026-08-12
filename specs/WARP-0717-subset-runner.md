@@ -61,6 +61,13 @@ observability:
     warning is a thing people learn to ignore.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Make RS.resolve stop closing the prerequisite set under its own relation, using each fragment's DIRECT
+      demand only (scripts/run_scope.py), and the label-identity measurement over every fragment must go red
+      as it did when measured: 8 of 13 closed and 5 of 13 producing ZERO of their own labels, fragment 13
+      dying on `NameError: name '_FakeLoop' is not defined`; transitivity is the load-bearing leg, and the
+      unknown-name refusal falsifies separately by letting an unrecognised name fall through to a full run at
+      exit 0.
     text: >
       RUNNING ONE SUITE BY NAME IS USEFUL, AND HONEST ABOUT WHAT IT RAN.
       `python3 scripts/selftest.py --suite <name>` runs the named suite TOGETHER WITH ITS MEASURED TRANSITIVE
@@ -155,6 +162,12 @@ acceptance_criteria:
       Before and after in proof/WARP-0717/flag-shapes.txt.
     id_note: fast path
   - id: AC2
+    falsified_by: >
+      Set PARTIAL_PASSED_EXIT to 0 in scripts/run_scope.py:80, and the assertion that a partial run never
+      returns 0 must go red, because that exit code is the mechanism by which scripts/verify.sh writes a green
+      .veldo/last_verify only on a successful unit slot; deleting the self._refuse call in aggregate_line
+      (scripts/run_scope.py:338) falsifies the second act by letting a partial scope print the line the gate
+      parses instead of raising PARTIAL_RUN_CANNOT_VERIFY.
     text: >
       A PARTIAL RUN IS STRUCTURALLY INCAPABLE OF COUNTING AS VERIFICATION, not merely labelled as partial. It
       CANNOT write the verify stamp (.veldo/last_verify), CANNOT satisfy the required-evidence check, and CANNOT
@@ -194,6 +207,11 @@ acceptance_criteria:
       buys the withholding of the record and not a rejection of a forged one. The guard against a hand-typed
       claim is the review, and this item does not pretend otherwise.
   - id: AC3
+    falsified_by: >
+      Place a copy of the selector at engine/scripts/selftest.py, and the absence assertion over the pack
+      roster read from .veldo/packs.json must go red because the unit suite would then ship to adopters; the
+      lesser leg falsifies by deleting the inner-loop paragraph from docs/runbook.md III.1, which reddens the
+      documentation assertion binding that text.
     text: >
       IT IS DOCUMENTED AS AN INNER LOOP AND NOTHING MORE, in the operator guide, in one short paragraph that
       says plainly what it is for (iterating on a fix) and what it is not (evidence that anything works). The

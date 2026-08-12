@@ -51,6 +51,12 @@ observability:
     readable declaration.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Give .veldo/authorization.py a module-level fallback that loads .veldo/approvers.yaml itself when the
+      approver_registry parameter of is_authorized (.veldo/authorization.py:483) arrives empty, and the
+      assertion that the core reads the declaration through the EXISTING parameter with no new coupling must
+      go red; removing the approvers.yaml entry from policy.yaml protected_paths falsifies the second leg,
+      since a change to who may approve would then need no commit-bound path-scoped approval.
     text: >
       THE REPOSITORY IS THE AUTHORITY, AND ITS SHAPE IS THE ONE THE CODE ALREADY EXPECTS. A declaration at
       .veldo/approvers.yaml supplies exactly what is_authorized takes as its approver_registry parameter today
@@ -62,6 +68,12 @@ acceptance_criteria:
       satisfies the registry contract and that authorization.py reads it through the existing parameter with no
       new coupling.
   - id: AC2
+    falsified_by: >
+      Catch the parse failure in the registry loader and return an empty mapping, so a truncated document
+      presents as a readable declaration with no approvers, and the assertions that a mode-000 file, a
+      directory at that path, a truncated document, a document parsing to a list or a scalar, and non-mapping
+      entries each raise REGISTRY_UNREADABLE and authorize NOTHING must go red, together with the assertion
+      that the WARP-0719 degradation path is not reached on an unreadable registry.
     text: >
       UNREADABLE IS NEVER EMPTY, AND THAT IS THE WHOLE SAFETY POINT. Three distinct outcomes, each refused or
       permitted by name: an ABSENT declaration raises REGISTRY_ABSENT; a declaration that exists but cannot be
@@ -74,6 +86,12 @@ acceptance_criteria:
       SIZE, an unreadable registry must never present as a small one - a selftest asserts the degradation path
       is not reached when the registry is unreadable.
   - id: AC3
+    falsified_by: >
+      Make the reconciliation stage return a PASS when the network or the credentials are unavailable instead
+      of recording a named not-applicable reason in the catalog, and the assertion that unavailability is
+      recorded as not-applicable with its reason rather than as agreement must go red; comparing only the two
+      set SIZES instead of the symmetric difference falsifies the divergence leg while agreement keeps
+      passing.
     text: >
       THE TRACKER GROUP BECOMES A LOUD RECONCILIATION CHECK, NOT A SECOND AUTHORITY. A gate stage compares the
       declared approver set against the membership of the tracker's approver group and FAILS on divergence,
@@ -85,6 +103,11 @@ acceptance_criteria:
       fails, agreement passes, and unavailability is recorded as not-applicable with its reason rather than as a
       pass.
   - id: AC4
+    falsified_by: >
+      Require the `founder` role key inside the loader itself rather than taking the vocabulary from the
+      declaration, and the assertion driving the same loader through a one-person, a three-person and an empty
+      declaration whose role vocabularies share no words must go red for every vocabulary that does not
+      contain that name.
     text: >
       GENERIC, CANON-SYNCED, AND HONEST ABOUT WHAT IT DOES NOT DO. Nothing about Bcengi, its team size or its
       names is in the engine: the behaviour is driven by the declaration and the configured group, asserted by

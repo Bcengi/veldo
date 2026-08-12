@@ -38,6 +38,14 @@ observability:
     provisioning path raises the pre-existing provisioner error classes unchanged.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Rename the mixin method _project_record back to _project at .veldo/tracker_jira_live.py:104 with its
+      two call sites at lines 118 and 127, restoring the collision with the self._project the base
+      constructor sets at .veldo/tracker_intake.py:473, and the reproduction at
+      scripts/suites/13_warp_0623_codified_live.py:48 (every mixin method callable on the REAL composed
+      instance, with a project key and without) plus the guard assertion at line 53 must go red, the guard
+      returning ['_project'] again. Reachability on the real composition, never on the fake, is the
+      load-bearing leg: the same reproduction run against a FakeTracker cannot fail in either direction.
     text: >
       THE DEFECT IS REPRODUCED BEFORE IT IS FIXED, as a test that FAILS on the current code. A selftest
       constructs the REAL adapter (the shipped JiraCloudAdapter composed with the live provisioning mixin,
@@ -49,6 +57,14 @@ acceptance_criteria:
       callable" when it is not). The reproduction is recorded as the evidence that the fix fixes something
       real, and it is written so it would have failed on every commit since the collision was introduced.
   - id: AC2
+    falsified_by: >
+      Fix the collision the other way instead: rename the constructor attribute at
+      .veldo/tracker_intake.py:473 from self._project to self._project_key and give the mixin its _project
+      name back, and the assertion at scripts/suites/13_warp_0623_codified_live.py:80 must go red on both
+      of its halves, the literal `self._project = project` no longer being in the intake source and
+      _lp_with_key._project no longer holding the configured key. WHICH SIDE gets renamed is the
+      load-bearing leg, because both directions make the method callable and only this one leaves the
+      configured project key readable by the shipped code that already reads it.
     text: >
       THE COLLISION IS FIXED BY RENAMING THE METHOD, not by renaming the attribute or by deleting either.
       The mixin's _project becomes a distinct name (_project_record) and its call sites inside
@@ -60,6 +76,14 @@ acceptance_criteria:
       A selftest asserts the old name is GONE from the mixin (so the collision cannot silently return) and
       that no other module references it.
   - id: AC3
+    falsified_by: >
+      Replace the runtime intersection in shadowed_provisioner_methods (.veldo/tracker_jira_live.py:604,
+      `for name in sorted(methods & attributes):`) with the hardcoded pair `sorted({"_project"} &
+      attributes)`, and the FUTURE-collision assertion at
+      scripts/suites/13_warp_0623_codified_live.py:164 must go red while the historical seed at line 154
+      still refuses, which is exactly the assertion that separates a generic check from a named-pair one.
+      Genericity over the composition is the load-bearing leg named by the criterion itself; the refusal
+      leg falsifies separately by removing the `if findings:` raise at line 628-629, reddening line 287.
     text: >
       THE STRUCTURAL CHECK IS THE REAL DELIVERABLE, because this class of defect is invisible to the
       offline suite by construction: the FakeTracker defines its OWN _project method and is constructed
@@ -73,6 +97,14 @@ acceptance_criteria:
       REFUSES and names it; with the collision removed the check passes; and the check is asserted to
       report EMPTY against the fixed real composition.
   - id: AC4
+    falsified_by: >
+      Make the two guards dependent: replace the callability loop in unreachable_provisioner_methods
+      (.veldo/tracker_jira_live.py:641-645) with a try/except around
+      check_provisioner_composition(type(instance), instance=instance) that returns the shadowed names off
+      the refusal, and the EXACTLY DIAGONAL assertion at
+      scripts/suites/13_warp_0623_codified_live.py:298 must go red, because neutralizing the shadow
+      refusal now also silences the callability fixture and the off-diagonal cell turns True. Independence
+      of the two guards is the load-bearing leg: a matrix whose guards share a mechanism proves one tooth.
     text: >
       THE TEETH ARE A MATRIX, the standard this repository adopted after WARP-1208's round-2 review. The
       guards under teeth are the shadow check itself and the reproduction assertion of AC1: each is
@@ -85,6 +117,14 @@ acceptance_criteria:
       composed class, not every way a live path can be unreachable (a wrong endpoint, a wrong payload
       shape, or a permission the credential lacks are only found by executing it, which is WARP-0620).
   - id: AC5
+    falsified_by: >
+      Overclaim the record: change `scope: repo-only` to `scope: engine` in the
+      tracker_provisioner_shadow_check entry at .veldo/capabilities.yaml:172 and drop the sentence holding
+      the live path UNEXECUTED until WARP-0620 from that same entry, and the assertion at
+      scripts/suites/13_warp_0623_codified_live.py:332 must go red on both of its named substrings. The
+      honest scope-and-UNEXECUTED record is the load-bearing leg, because it is the one that stops a reader
+      taking a name-collision check for the live proof; the byte-identity leg falsifies separately by
+      making that edit in engine/.veldo/capabilities.yaml alone, which reddens line 326.
     text: >
       ADDITIVE AND HONESTLY RECORDED, with the lesson written where it will be read.
       CORRECTED PREMISE (this criterion was wrong as first written and the correction is the honest

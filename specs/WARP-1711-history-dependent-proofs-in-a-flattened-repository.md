@@ -43,6 +43,8 @@ observability:
     migration artifact.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Replace the stand-down condition with a bare commit-depth test, `COMMIT_DEPTH == 1`, in shared.py's no_history, and the WARP-1711 mechanism assertion in suite 12 must go red in a successor that has made one commit of its own: 26 legs stand down at depth 1 and none at depth 2 while the input is still missing.
     text: >
       THE STAND-DOWN IS GATED ON HISTORY GENUINELY BEING ABSENT, AND THE NEGATIVE CONTROL IS THE
       EVIDENCE. Each stand-down fires only when `git rev-list --count HEAD` is exactly 1 and the
@@ -52,6 +54,8 @@ acceptance_criteria:
       today's), and runs green in a single-commit clone where each stand-down line appears in the
       output. A stand-down that cannot be shown to NOT fire is not accepted.
   - id: AC2
+    falsified_by: >
+      Guard one of the split compound assertions as a whole rather than only its historical leg, for example wrapping the entire byte-exact-prefix assertion in suite 12 in the stand-down, and the count of executed assertions in a repository WITH history must drop, which the mechanism assertion detects because the resolved set no longer equals the registered set.
     text: >
       THE COMPOUND ASSERTIONS ARE SPLIT RATHER THAN SKIPPED, which is the substance of this item. Two
       of the three assertions mix legs about the CURRENT module with legs about the pre-change module
@@ -62,6 +66,8 @@ acceptance_criteria:
       flattened run loses exactly the historical legs and no others, enumerated by name in the spec's
       proof rather than asserted as a total.
   - id: AC3
+    falsified_by: >
+      Make is_flattened in events.py always return False, and reconcile_verdicts must stop reporting the flattened cause: the AC3 fixture assertions in suite 13 go red because the report field is False where the fixture is a single-commit repository and the notice vanishes from the line a human reads.
     text: >
       THE REVIEW-EVENT RECONCILER REPORTS THE TRANSITIONAL GAP AS A GAP AND NOT AS A FAILURE OR A
       SUCCESS. Verdict artifacts whose recorded events reference commits absent from this repository
@@ -71,6 +77,8 @@ acceptance_criteria:
       at the flattening commit is explicitly refused: it would assert that a review happened at a
       commit where it did not.
   - id: AC4
+    falsified_by: >
+      Reintroduce any assertion that requires the successor's current emptiness, for example asserting that the live event log carries no spend, and scripts/check_first_use.py must refuse: it records one spend through the sanctioned writer in a throwaway copy and requires the suite to stay exactly as green as it was.
     text: >
       A FLATTENED CLONE OF THIS REPOSITORY PASSES ITS OWN GATE END TO END. The proof is a real run:
       produce the tree with `scripts/migrate_to_veldo.py`, initialise it as a single-commit

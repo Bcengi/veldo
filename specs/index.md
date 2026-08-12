@@ -26,6 +26,8 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | WARP-1704 | The public tree is DERIVED from a declared manifest and proven offline, because a curated | ready | high | dmitry | required | WARP-1704-publication-pipeline.md |
 | WARP-1711 | History-dependent proofs in a flattened repository - the three assertions and one reconciler | ready | standard | dmitry | not_required | WARP-1711-history-dependent-proofs-in-a-flattened-repository.md |
 | WARP-0620 | The live-sandbox proof of the inbound edge - execute the codified path against a real board for | blocked | high | dmitry | required | WARP-0620-live-sandbox-proof.md |
+| VELDO-0011 | The release contract and its registry - a release is a typed, ordered group of plans with the | draft | standard | dmitry | required | VELDO-0011-release-contract-and-registry.md |
+| VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | draft | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
@@ -492,21 +494,21 @@ Ready frontier: WARP-1702 (W2).
 ### PLAN-0018 - What a complex project needs and Veldo lacks - the organs this migration proved missing, and the accumulating ledger of every finding it produced
 
 Status ready, revision 1, owner dmitry. 0/9 work items shipped.
-Ready frontier: WARP-1807 (W7).
-Open decision D1 blocks: WARP-1801.
-Open decision D2 blocks: WARP-1802.
-Open decision D3 blocks: WARP-1803.
-Open decision D4 blocks: WARP-1806.
+Ready frontier: VELDO-0008 (W7).
+Open decision D1 blocks: VELDO-0002.
+Open decision D2 blocks: VELDO-0003.
+Open decision D3 blocks: VELDO-0004.
+Open decision D4 blocks: VELDO-0007.
 
 | Item | Spec | Title | Depends on | State |
 |---|---|---|---|---|
-| W1 | WARP-1801 | Recorded work state, derived not remembered, surviving a dead session | - | blocked: decision D1 |
-| W2 | WARP-1802 | A dispatch organ for review, audit and authoring work, paced by the governor | - | blocked: decision D2 |
-| W3 | WARP-1803 | The promise corpus - extract checkable claims from a document and settle each against the tree | - | blocked: decision D3 |
-| W4 | WARP-1804 | A design with no descendants and a capability with no home are named findings | WARP-1803 | waiting: WARP-1803 |
-| W5 | WARP-1805 | Budget continuity - the governor covers the operator's path, and a spent window costs pacing not work | WARP-1801 | waiting: WARP-1801 |
-| W6 | WARP-1806 | The install-and-run smoke criterion, proven from the artifact an adopter receives | - | blocked: decision D4 |
-| W7 | WARP-1807 | veldo version - the CLI can answer what it is, from one declaration | - | unstarted (frontier) |
-| W8 | WARP-1808 | init stamps the version into the repository it lays down, so substrate drift has a detector | WARP-1807 | waiting: WARP-1807 |
-| W9 | WARP-1809 | The gate output and the proof bundle name the version that produced them | WARP-1807 | waiting: WARP-1807 |
+| W1 | VELDO-0002 | Recorded work state, derived not remembered, surviving a dead session | - | blocked: decision D1 |
+| W2 | VELDO-0003 | A dispatch organ for review, audit and authoring work, paced by the governor | - | blocked: decision D2 |
+| W3 | VELDO-0004 | The promise corpus - extract checkable claims from a document and settle each against the tree | - | blocked: decision D3 |
+| W4 | VELDO-0005 | A design with no descendants and a capability with no home are named findings | VELDO-0004 | waiting: VELDO-0004 |
+| W5 | VELDO-0006 | Budget continuity - the governor covers the operator's path, and a spent window costs pacing not work | VELDO-0002 | waiting: VELDO-0002 |
+| W6 | VELDO-0007 | The install-and-run smoke criterion, proven from the artifact an adopter receives | - | blocked: decision D4 |
+| W7 | VELDO-0008 | veldo version - the CLI can answer what it is, from one declaration | - | unstarted (frontier) |
+| W8 | VELDO-0009 | init stamps the version into the repository it lays down, so substrate drift has a detector | VELDO-0008 | waiting: VELDO-0008 |
+| W9 | VELDO-0010 | The gate output and the proof bundle name the version that produced them | VELDO-0008 | waiting: VELDO-0008 |
 

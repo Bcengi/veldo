@@ -57,6 +57,11 @@ observability:
     digest changed after an attestation invalidates that attestation (denied, must re-attest).
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Drop the reason and detail keys from the record _decision builds at .veldo/authorization.py:413 so
+      is_authorized returns a bare authorized boolean, which kills the structured-decision leg the whole
+      named-reason taxonomy rests on, and every WARP-0616 assertion that reads a named reason, starting with
+      the fail-closed no_human_decisions_policy case, must go red.
     text: A new engine module .veldo/authorization.py provides PURE functions - required_roles(touchpoint,
       tier), quorum(tier) -> {count, min_independence}, and is_authorized(request, attestations,
       approver_registry) -> a structured decision (authorized bool + reason) - that decide whether a
@@ -64,24 +69,44 @@ acceptance_criteria:
       nothing. It is distributed across all 8 engine copies (root + engine + 6 packs)
       byte-identical, like request.py / two_key.py.
   - id: AC2
+    falsified_by: >
+      Delete the INERT fail-closed config gate at .veldo/authorization.py:517 so an unconfigured or malformed
+      human_decisions block falls through to the attestation tally instead of denying, and the AC5 T1
+      assertion that neutralizing the fail-closed config gate AUTHORIZES an unconfigured request
+      (scripts/suites/10_warp_0613_anti_vacuity.py:1276) must go red.
     text: The approver policy is read from a human_decisions block in policy.yaml. That block is ABSENT from
       every shipped policy.yaml, so the module ships INERT - with no block configured, is_authorized returns
       authorized=False for EVERY request (fail-closed, adoption-safe). An absent OR malformed block fails
       closed, never open. This spec does NOT add the block or edit policy.yaml (protected path); switching it
       on is a separate approval (VEL-3).
   - id: AC3
+    falsified_by: >
+      Delete the bound-digest comparison at .veldo/authorization.py:362 so an attestation made against an
+      older digest keeps counting after the bound artifact changes, which removes the material-change leg
+      (the load-bearing one, since the structured-field checks above it only stop a bare yes), and the AC5 T3
+      stale-attestation assertion at scripts/suites/10_warp_0613_anti_vacuity.py:1298 must go red.
     text: Anti-rubber-stamp attestations - an approval is only authorized when it carries STRUCTURED
       attestations (a non-empty rationale, an explicit risk_acceptance, and for a review-disposition
       touchpoint a finding_disposition), never a bare yes. Attestation is per-request (no bulk/blanket
       approve). A MATERIAL CHANGE to the bound artifact (its digest differs from the digest the attestation
       was made against) INVALIDATES that attestation - the decision is denied until re-attested.
   - id: AC4
+    falsified_by: >
+      Delete the separation-of-duties refusal at .veldo/authorization.py:375 so the VERIFIED proposer may
+      authorize their own request (the load-bearing leg of the four, since quorum and independence are both
+      satisfiable by the proposer alone once it is gone), and the AC5 T2 self-approval assertion at
+      scripts/suites/10_warp_0613_anti_vacuity.py:1287 must go red.
     text: Separation of duties + quorum - an authorizing approver identity MUST differ from the request's
       producer/proposer and can NEVER be the agent/service-account; quorum(tier).count distinct approvers
       are required and min_independence is enforced (independent identities, not one identity counted twice).
       For a request whose impact is irreversible / money / external, the frozen two_key.authorize contract
       (KEY1 + KEY2, reused UNCHANGED) MUST additionally be satisfied or the request is denied.
   - id: AC5
+    falsified_by: >
+      Make the T5 tooth vacuous by leaving the two-key requirement unpatched in the in-memory module, so the
+      mutant still denies an irreversible request that carries no second key, and the T5 assertion that
+      neutralizing the two-key requirement AUTHORIZES it
+      (scripts/suites/10_warp_0613_anti_vacuity.py:1317) must go red.
     text: A selftest drives authorization.py offline and is NON-TAUTOLOGICAL - authorized when roles +
       quorum + independence + separation + attestations are all satisfied against a FIXTURE policy;
       fail-closed when the block is absent; denied when approver == producer (separation); denied when quorum

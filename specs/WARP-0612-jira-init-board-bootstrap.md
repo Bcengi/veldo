@@ -53,6 +53,10 @@ observability:
     diagnosable from the message.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Delete the raise BootstrapError branches in resolve_bootstrap_config (.veldo/tracker_jira_init.py:225-256)
+      so a malformed bootstrap block is returned unvalidated, and the load-bearing fail-closed leg goes red:
+      the assertion that all four malformed blocks are refused by name drops below four refusals.
     text: The bootstrap is GENERIC and reads every input BY REFERENCE from .veldo/trackers.json (a
       'bootstrap' block plus the existing routing/status_map/trackers): the project key, the required
       project type, the epic/child issue-type names, the status names and their categories (To Do |
@@ -61,6 +65,10 @@ acceptance_criteria:
       .veldo/tracker_jira_init.py contains no company-specific or board-specific literal (grep-clean),
       and a malformed bootstrap block fails closed by name (BootstrapError) at resolve time.
   - id: AC2
+    falsified_by: >
+      Move the project_type detection in provision_board (.veldo/tracker_jira_init.py:311) to after the status
+      loop, so the mismatch raise no longer precedes the first provision_status call, and the assertion that a
+      refused team-managed project is left with zero statuses provisioned must go red.
     text: It DETECTS the project type FIRST and FAILS LOUD on a mismatch, before any write. A project
       that is not the configured required type (default company-managed) - a team-managed project, whose
       status workflow is UI-only and cannot be fully provisioned via the API - is refused with a
@@ -69,6 +77,12 @@ acceptance_criteria:
       first provision_status call, a refused project is left with NO status provisioned (never a
       half-provisioned board).
   - id: AC3
+    falsified_by: >
+      Delete the create-or-reuse guard (if name in statuses, return the existing id with created False)
+      in FakeTracker._provision_status at .veldo/tracker_adapter.py:866-867 so every pass mints a new
+      status, breaking the load-bearing never-a-duplicate leg of this criterion, and the re-run
+      assertion at scripts/suites/09_action_whitelist_warp_1205.py:1066-1068 (created 0, reused 9,
+      already_wired 18, board digest unchanged) must go red.
     text: It provisions the configured lifecycle status set IDEMPOTENTLY (create a status by name if the
       project lacks it, reuse it if present - never a duplicate) AND wires each into every configured
       issue type's workflow idempotently (wire if absent, no-op if already reachable), through the
@@ -78,6 +92,13 @@ acceptance_criteria:
       board byte-identical; a partial board has its MISSING statuses created and its PRESENT ones reused
       (an absent status is created, never silently skipped).
   - id: AC4
+    falsified_by: >
+      Delete the no-op-when-unchanged guard in FakeTracker._set_status at
+      .veldo/tracker_adapter.py:758-759 so the replayed mirror records a duplicate transition on the
+      second pass, breaking the load-bearing leg of this criterion (a re-run records no duplicate
+      transition), and the idempotency assertion at
+      scripts/suites/09_action_whitelist_warp_1205.py:1237-1238 (one epic and a board digest identical
+      after a second whole bootstrap) must go red.
     text: It REUSES the shipped one-way mirror (tracker_mirror_runner.run_from_repo, feeding
       tracker_mirror.mirror_events / mirror_plan_events, WARP-0605/0606/1004..1006) to project every plan
       onto an epic and every spec onto a child with its mapped status over the SAME provisioner object -
@@ -85,6 +106,12 @@ acceptance_criteria:
       epic or child and records no duplicate transition on a re-run, so the whole bootstrap (provision +
       mirror) is idempotent.
   - id: AC5
+    falsified_by: >
+      Delete the fail-closed raise for a missing jira-cloud tracker in build_live_provisioner at
+      .veldo/tracker_jira_init.py:533-536 so it guesses a connection instead of refusing by name,
+      accepting exactly what the load-bearing fail-closed leg refuses, and the assertion at
+      scripts/suites/09_action_whitelist_warp_1205.py:1262-1263 (build_live_provisioner refuses with no
+      jira-cloud tracker configured) must go red.
     text: It is integrated into the setup flow as ONE command, veldo jira init (a bin/veldo subcommand
       routing to the repo-only .veldo/tracker_jira_init.py, guarded by the same existence check as veldo
       mirror so a pack that did not lay the module fails loud and honestly rather than import a missing
@@ -94,6 +121,12 @@ acceptance_criteria:
       REFERENCE-WIRED (a JiraCloudAdapter subclass against Jira Cloud REST v3) and is NEVER run in the
       gate; it creates no timer, daemon, or auto-start and spawns nothing detached (NG1).
   - id: AC6
+    falsified_by: >
+      Delete the project-type mismatch raise at .veldo/tracker_jira_init.py:312-318 so the module on
+      disk behaves exactly like the team-managed mutant the tooth builds: the load-bearing
+      non-tautology leg collapses, the fail-loud assertion at
+      scripts/suites/09_action_whitelist_warp_1205.py:1089-1092 must go red, and the tooth at 1103-1104
+      stays green while proving nothing.
     text: A selftest drives the WHOLE bootstrap over the deterministic FakeTracker offline (no network) -
       a fresh company-managed board provisions all nine statuses and wires each into both issue types; a
       re-run creates and wires nothing and leaves the board byte-identical; a team-managed project fails
@@ -103,6 +136,12 @@ acceptance_criteria:
       the real module refuses, and an in-memory mutation that removes the create-or-reuse guard duplicates
       a status on a re-run while the real module stays idempotent (the real module byte-unchanged).
   - id: AC7
+    falsified_by: >
+      Delete the ensure-issue-types loop at .veldo/tracker_jira_init.py:323-327 so provision_board never
+      calls provision_issue_type, breaking the load-bearing add-the-missing-type leg, and the
+      create-if-missing assertion at scripts/suites/09_action_whitelist_warp_1205.py:1144-1146
+      (issue_types_created 1 with Epic present on the project) plus the before-statuses ordering
+      assertion at 1163-1166 must go red.
     text: It ENSURES the configured ISSUE TYPES exist and ADDS any that are missing, and NEVER falls back
       to a wrong type ("add types if they are missing, don't use wrong types"). Through a vendor-neutral
       issue-type seam added to the TrackerAdapter base (existing_issue_types read-only; provision_issue_type

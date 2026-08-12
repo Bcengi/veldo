@@ -29,6 +29,13 @@ footprint:
   - "specs/index.md"
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Replace the per-fact reason column in the six-row loop of execution_binding.check
+      (.veldo/execution_binding.py:170) with one shared BINDING_MALFORMED return for any scope mismatch,
+      and the AC1 assertion that every one of the six bound facts refuses under its OWN name
+      (scripts/suites/09_action_whitelist_warp_1205.py:1422) must go red on five of the six while the
+      unchanged-binding control at :1412 stays green. The distinct naming is the load-bearing leg: one
+      generic refusal leaves an operator unable to tell which of the six facts moved.
     text: >
       SIX FACTS ARE BOUND AND ALL SIX ARE RE-CHECKED AT EXECUTION, not at issue. An authorisation for a
       risky action binds target, system, environment, parameters, state_digest and proposal_digest, and
@@ -40,11 +47,24 @@ acceptance_criteria:
       The bound-fact list is declared ONCE as `BOUND_FACTS`, and a selftest requires every member to
       have a check, so a seventh fact added without a check is a red rather than a silent hole.
   - id: AC2
+    falsified_by: >
+      Delete the revoked-is-true branch at .veldo/execution_binding.py:157 so a revoked record falls
+      through to the fact loop and returns BINDING_OK while every other fact still holds, and the AC2
+      revocation assertion at scripts/suites/09_action_whitelist_warp_1205.py:1432 must go red.
+      Revocation is the load-bearing leg of the two: expiry ends an authorisation on the schedule it was
+      issued with, revocation is the only way to end one early.
     text: >
       EXPIRY AND REVOCATION END AN AUTHORISATION. Past `expires_at` refuses `binding_expired`; a record
       marked revoked refuses `binding_revoked` regardless of everything else. An authorisation is a
       moment, not a standing permission, and revocation forces a new one. Both driven by selftest.
   - id: AC3
+    falsified_by: >
+      Drop O_EXCL from the os.open call in consume (.veldo/execution_binding.py:199), leaving
+      O_CREAT|O_WRONLY, so the second caller opens the existing file and also returns True, and the AC3
+      assertion that of two callers racing one nonce exactly ONE wins
+      (scripts/suites/09_action_whitelist_warp_1205.py:1439) must go red. Atomic exclusive creation is the
+      load-bearing leg, because every other part of this design assumes the kernel already picked one
+      winner.
     text: >
       THE NONCE IS SPENT EXACTLY ONCE, ATOMICALLY, AND BEFORE THE ACTION RUNS. `consume` uses
       `os.open` with `O_CREAT|O_EXCL`, so of two callers racing the same nonce exactly one gets True.
@@ -53,6 +73,12 @@ acceptance_criteria:
       re-authorising, which is the safe direction. A selftest drives the double-consume and requires
       `True` then `False`, and drives a replayed check to `binding_replayed`.
   - id: AC4
+    falsified_by: >
+      Change the binding-is-None branch of ActionExecutor._check_binding (.veldo/action_executor.py:540)
+      to return None instead of the BINDING_ABSENT refusal, so an omitted argument waves the whole guard
+      through, and the AC4 assertion that a risky remedy with no binding refuses with binding_reason
+      BINDING_ABSENT (scripts/suites/09_action_whitelist_warp_1205.py:1448) must go red while the
+      with-binding positive control at :1454 stays green.
     text: >
       AN ABSENT BINDING ON A RISKY ACTION REFUSES, and this is the load-bearing choice. The executor
       fails closed on `execution_binding=None` for anything irreversible, data-mutating or
@@ -60,6 +86,12 @@ acceptance_criteria:
       is the shape of every guard this repository has watched be defeated. A selftest drives the
       shipped `ActionExecutor.execute` with a risky remedy and no binding and requires the refusal.
   - id: AC5
+    falsified_by: >
+      Hoist the self._check_binding call out of the needs_two_key branch (.veldo/action_executor.py:664)
+      so it runs on every execute, and the AC5 negative control that a strictly reversible action still
+      executes with no binding supplied (scripts/suites/09_action_whitelist_warp_1205.py:1468) must go red
+      while every risky-path assertion stays green: that is exactly the quietly raised bar on ordinary
+      remediation this control exists to catch.
     text: >
       THE REVERSIBLE PATH IS UNCHANGED, which is the required negative control. A strictly reversible,
       non-data-mutating action executes through the W6 single-confirmation path with no binding
@@ -67,6 +99,13 @@ acceptance_criteria:
       quietly raised the bar for ordinary remediation. A selftest drives a reversible action to
       `executed: True` with `execution_binding=None`.
   - id: AC6
+    falsified_by: >
+      Delete the WHAT THIS IS NOT paragraph from the execution_binding module docstring
+      (.veldo/execution_binding.py:35), the sentences saying it is not a forgery defense and naming the
+      affirmative act a replay requires, and the AC6 docstring assertion
+      (scripts/suites/09_action_whitelist_warp_1205.py:1473) must go red. The docstring is the
+      load-bearing leg of this criterion, because it is the only thing stopping a later reader from
+      keeping the guard and dropping the limit.
     text: >
       IT EXTENDS THE EXECUTOR RATHER THAN REPLACING IT, and says what it is not. The W6 and W7 guards
       keep their order and their names; the binding is one additional step inside the existing risky

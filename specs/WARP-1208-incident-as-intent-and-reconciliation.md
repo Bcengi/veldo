@@ -63,6 +63,12 @@ observability:
     recorded data rather than recomputed prose.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Add the incident's title to the identity fields failure_signature digests
+      (.veldo/incident_reconcile.py:260), and the field-sensitivity assertion that title, severity, timeline
+      and id do NOT change the signature must go red, so two records of the same failure would stop sharing
+      one; returning a digest over partial material instead of None falsifies the other leg, which must redden
+      the assertion that a malformed record is SKIPPED rather than silently matched.
     text: >
       THE FAILURE SIGNATURE AND RECURRENCE DETECTION exist as pure functions in one new engine organ
       (module .veldo/incident_reconcile.py, record schema veldo.reconciliation/v1, standard library
@@ -82,6 +88,12 @@ acceptance_criteria:
       signature; title, severity, timeline, and id do not), the self-exclusion, the malformed skip,
       and that a second seeded incident with the same identity fields is detected against the first.
   - id: AC2
+    falsified_by: >
+      Compare the validation's bound digest against the value the validation itself carries instead of against
+      diagnosis_digest recomputed from the record (.veldo/incident_reconcile.py:325), and the
+      diagnosis_digest_mismatch refusal must go red for a validation bound to a fabricated digest; that
+      recomputation is the load-bearing leg per the 0619 lesson, and the NG4 leg falsifies by deleting the
+      MACHINE_ACTORS test at .veldo/incident_reconcile.py:349 so the responder may validate its own diagnosis.
     text: >
       THE CLOSE GATE FAILS CLOSED on four independent conditions, each REFUSED BY NAME, and a
       diagnosis validation is never a self-declared field. reconcile_incident REFUSES to settle
@@ -106,6 +118,12 @@ acceptance_criteria:
       refusals by name over seeded fixtures, and prove the positive control: a diagnosed incident with
       a valid non-machine validation whose bound digest matches, and no open debt, settles.
   - id: AC3
+    falsified_by: >
+      Render the runbook draft with review_status reviewed instead of proposed, and the assertions that the
+      draft is NOT admitted by action_reviewed, is ABSENT from build_whitelist over its own directory, and
+      that a reviewed or verdict-bearing draft is REFUSED by name must all go red, which is the machine
+      promoting its own action; the path guard falsifies separately by permitting a draft target inside the
+      actions store or inside specs/.
     text: >
       THE TWO DRAFTS A HUMAN PROMOTES, and the machine STRUCTURALLY CANNOT promote either. A settled
       reconciliation writes (i) a REGRESSION CRITERIA DRAFT rendered from the failure mode (the
@@ -127,6 +145,12 @@ acceptance_criteria:
       directory or inside specs/ is refused by name; a reviewed or verdict-bearing draft is refused by
       name.
   - id: AC4
+    falsified_by: >
+      Read the executed action reference and parameters from the remedy's own claim rather than from the
+      execution receipt in what_was_done (.veldo/incident_reconcile.py:407), and the honesty assertions plus
+      the unsupported_execution_claim refusal at .veldo/incident_reconcile.py:388 must go red for a receipt
+      whose proposal digest does not match the recomputed one; the replay leg falsifies by appending a second
+      record under an existing content-addressed id instead of returning the existing receipt.
     text: >
       THE RECONCILIATION RECEIPT IS HONEST AND IDEMPOTENT UNDER REPLAY. The receipt
       (veldo.reconciliation/v1) records exactly what the plan's W8 requires of a reconciled change:
@@ -155,6 +179,12 @@ acceptance_criteria:
       execution-claim refusals; a full replay producing zero new records and zero new events with the
       SAME receipt id; and the compare-and-swap conflict refusal.
   - id: AC5
+    falsified_by: >
+      Point one guard's in-memory mutation at a comment rather than at that guard's branch, so its refusing
+      fixture stays refused, and the assertion that the mutation turns that fixture GREEN must go red: that
+      flip is the only thing proving the guard load-bearing rather than decoration, and the controls falsify
+      from the other side by making the no-remedy incident refuse instead of settling with an honest none
+      execution block.
     text: >
       THE REFUSALS ARE THE PRODUCT AND THEY ARE NON-VACUOUS (the anti-vacuity rule C1). Every refusal
       of AC2, AC3, and AC4 gets TEETH: for each guard, an IN-MEMORY MUTATION of the loaded module that
@@ -175,6 +205,11 @@ acceptance_criteria:
       promoted by the machine. A selftest asserts the review-lane labeling is present in the module
       source.
   - id: AC6
+    falsified_by: >
+      Call reconcile_incident from validate.run_all so the pass runs on the gate path, and the assertion that
+      no existing check, gate stage, validator or run path invokes it, hence that a repository which never
+      opens an incident is byte-identically unaffected, must go red; leaving one pack copy of
+      .veldo/incident_reconcile.py unsynced falsifies the canon leg through template sync and pack drift.
     text: >
       BACKWARD COMPATIBLE, ENGINE-SYNCED, AND HONESTLY RECORDED. The pass is PURELY ADDITIVE and runs
       only when invoked in-session (a main() CLI entry point in the module, the sibling posture of

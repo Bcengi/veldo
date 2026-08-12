@@ -44,6 +44,12 @@ observability:
     TwoKeyError by name rather than no-op.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Restore WARP-1206's dead end on the irreversible and data-mutating branch so the executor returns
+      requires_two_key instead of routing to the gate, and the positive control that executes a data-mutating
+      action end to end against the fake system with both keys must go red; giving .veldo/two_key.py its own
+      digest instead of taking the executor's proposal_digest falsifies the one-truth leg, since the two
+      computations would then be able to disagree.
     text: >
       The two-key rule (schema veldo.two_key/v1, module .veldo/two_key.py) exists as a GENERIC engine module
       and extends the execution organ's path (WARP-1206, .veldo/action_executor.py): for any action classed
@@ -63,6 +69,11 @@ acceptance_criteria:
       data-mutating action end to end against a FAKE system with both keys and drives the module standalone
       (python3 .veldo/two_key.py authorizes; --one-key refuses).
   - id: AC2
+    falsified_by: >
+      Return an authorization on the human-key branch of authorize (.veldo/two_key.py:186) without requiring
+      the independent confirmation, and the missing_independent_confirmation refusal must go red while the
+      both-keys positive control still passes; respelling REQUIRES_TWO_KEY at .veldo/two_key.py:97 falsifies
+      the drift binding that pins it to action_executor.REFUSE_REQUIRES_TWO_KEY.
     text: >
       EITHER KEY ALONE REFUSES (fail closed, degrade DOWN never up, C3), and the refusals are the product
       (C1). Both keys absent returns REFUSE_REQUIRES_TWO_KEY - the EXACT value the W6 fence used, so the
@@ -78,6 +89,12 @@ acceptance_criteria:
       actually ran, W7 opens the data-mutating execution path and is CRITICAL per C2 (two independent reviews
       and a recorded founder approval to land), where W6 was HIGH for building no such path.
   - id: AC3
+    falsified_by: >
+      Delete the confirmer-is-not-the-authorizer distinctness test from the self-separation guard, and the
+      confirmation_not_independent refusal for a confirmer who is the human authorizer must go red, and the
+      in-memory mutation battery must stop showing that guard turning a formerly-refused input into an
+      authorization; self-separation is the load-bearing one of the three, because it is what keeps two keys
+      from being one party twice.
     text: >
       BINDING AND FRESHNESS AND SELF-SEPARATION each refuse by name, proven non-vacuously. DIGEST BINDING
       (C4): a key bound to a DIFFERENT proposal digest refuses (foreign_authorization / foreign_confirmation),
@@ -96,6 +113,11 @@ acceptance_criteria:
       digest binding, and the KEY 1 machine-actor guard) in an in-memory copy so a formerly-refused input
       authorizes, with the real module byte-unchanged.
   - id: AC4
+    falsified_by: >
+      Make the fake system's run_action return ok without appending to its ordered op log, and the assertion
+      that the log SHOWS the action ran must go red, which is what makes the success real rather than
+      reported; dropping authorized_by, confirmed_by and the bound proposal_digest from the executed result
+      falsifies the audit leg, and running with one key removed falsifies the non-vacuity leg.
     text: >
       BOTH KEYS EXECUTE, and the two-key success is REAL. When both keys are present, granting, unexpired,
       self-separated, and bound to the SAME proposal digest, the executor runs the (now two-key-authorized)
@@ -111,6 +133,10 @@ acceptance_criteria:
       reality, the provenance, the revert-on-key-removal, the safeguards on the two-key path, and the
       unchanged L2 path.
   - id: AC5
+    falsified_by: >
+      Add a module-top subprocess import and a Popen call with start_new_session=True to .veldo/two_key.py,
+      and the NG3 no-detach check must go red naming this module; touching one pack copy of .veldo/two_key.py
+      so cmp against the engine copy differs falsifies the canon leg through template sync and pack drift.
     text: >
       The organ is IN-SESSION with no detached process (NG3): .veldo/two_key.py imports pathlib and json at
       module top (for the standalone demo only) and importlib LAZILY in the demo, starts no process, thread,

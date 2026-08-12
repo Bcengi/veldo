@@ -749,7 +749,7 @@ FALSIFICATION_MIN_WORDS = 4
 # THE MIGRATION POSTURE. False: every problem is REPORTED and the check returns 0, so
 # nothing turns red the day this lands. True: the same problems refuse by name. The flip
 # is its own commit, stating the date and the count falsification_migration_line() prints.
-FALSIFICATION_ENFORCED = False
+FALSIFICATION_ENFORCED = True
 
 # EVERY STAND-DOWN IS RECORDED RATHER THAN PASSED, as (path, why) pairs, so a
 # reader can tell a spec that was CHECKED from one the rule never asked anything of.

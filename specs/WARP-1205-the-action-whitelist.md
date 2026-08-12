@@ -42,6 +42,11 @@ observability:
     message rather than inferred.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Delete one refusal branch from validate_action (.veldo/action.py:253), the duplicate parameter name
+      check, and the selftest driving that malformation class over the GOOD_ACTION fixture must go red while
+      its positive control keeps passing, so the loss shows as a refusal that no longer fires rather than as a
+      broken fixture.
     text: >
       The veldo.action/v1 contract (schema veldo.action/v1, module .veldo/action.py) exists and its
       structural validator (validate_action) FAILS CLOSED by name on every malformation class. A
@@ -64,6 +69,11 @@ acceptance_criteria:
       example validates and drives every refusal class over a GOOD_ACTION fixture with a positive
       control, so no check passes vacuously.
   - id: AC2
+    falsified_by: >
+      Delete the data_mutating and irreversible branch from risk_floor (.veldo/action.py:211) so it returns
+      the whitelist floor unconditionally, and the assertions that a data-mutating action declaring high and
+      an irreversible action declaring high are each REFUSED must go red, while the standard-declaring refusal
+      and the critical positive controls stay green.
     text: >
       A RUNBOOK ACTION CARRIES A HIGH RISK FLOOR AND NOTHING LOWERS A CLASS (C2). Being pre-vetted for
       execution is itself a high-risk fact, so an action may not declare a risk class below high; a
@@ -78,6 +88,11 @@ acceptance_criteria:
       validate. A selftest asserts each refusal and each positive control and that risk_floor computes
       high and critical over the two cases.
   - id: AC3
+    falsified_by: >
+      Drop the digest comparison from action_reviewed (.veldo/action.py:375) so a reviewed and approved status
+      alone admits the action, and the assertions that the edited-content action is NOT admitted and IS stale
+      must go red; that comparison is the load-bearing leg, because without it a vetted action can be edited
+      afterwards and still execute.
     text: >
       THE STORE REJECTS AN ACTION WITHOUT A RECORDED, DIGEST-CURRENT REVIEW. An action is code: it is
       proposed, reviewed through the normal VELDO loop, and only a human promotes it; the review is
@@ -93,6 +108,11 @@ acceptance_criteria:
       admitted and the edited one is stale, a proposed action is not admitted, and the shipped trio are
       each reviewed and digest-current (a drift guard). A selftest asserts each.
   - id: AC4
+    falsified_by: >
+      Give resolve_action (.veldo/action.py:461) a free-form fallback that synthesizes an action from an
+      unknown reference, and the assertions that a shell-looking reference is unresolvable, that
+      require_action refuses by name, and that bind_remedy_action refuses an unknown-action remedy must all go
+      red; there being no fallback is the whole C4 property.
     text: >
       ANYTHING NOT IN THE WHITELIST DOES NOT EXIST TO THE MACHINE PATH (O2/C4, NG2), and parameters are
       validated with the refusal NAMED. An action reference is a whitelist KEY, never command text:
@@ -112,6 +132,11 @@ acceptance_criteria:
       remedy and a bad-parameter remedy each refuse, every parameter-validation class refuses by name
       with positive controls, and the adoption-safe and fail-closed directory postures.
   - id: AC5
+    falsified_by: >
+      Remove the start_new_session detection from the no-detach check so the planted subprocess.Popen mutation
+      is accepted, and the assertion that this mutation turns the no-detach check RED must go red; the teeth
+      battery falsifies from the other side by making one of the five mutations over action-scale-pool-
+      example.yaml a no-op, which the assertion that every mutation target occurs exactly once must catch.
     text: >
       The check has TEETH proven by mutation over this repository's shipped action-scale-pool-example.yaml
       (the anti-vacuity rule C1, the refusals are the product): stripping the review block, declaring the

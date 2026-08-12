@@ -31,6 +31,11 @@ observability:
     failure mode is legible from the message and no silent no-op is introduced.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Revert the no-clock branch of _expired at .veldo/two_key.py:173 from `return True` to `return False`,
+      and the assertion that an expired-but-declared key with no clock REFUSES must go red by authorizing
+      again, which is the exact latent fail-open both WARP-1207 reviews flagged; the positive controls with a
+      clock must stay green, so the tightening is not a redesign.
     text: >
       The two-key freshness helper (_expired in .veldo/two_key.py, the single freshness check
       authorize() applies to both keys) FAILS CLOSED when there is no clock. Before, with no clock
@@ -47,6 +52,12 @@ acceptance_criteria:
       redesign): a valid unexpired pair WITH a clock still authorizes and runs both keys end to end
       against the fake system, and the with-a-clock expired and no-expiry refusals are unchanged.
   - id: AC2
+    falsified_by: >
+      Make ActionExecutor.execute substitute a wall-clock value when now is None, and the assertion that a
+      VALID unexpired key with NO clock still REFUSES authorization_expired must go red, because the freshness
+      control would then be silently disabled by omitting the clock; that leg is load-bearing, since an
+      expired key refuses either way and only this one proves the control cannot be switched off from the call
+      site.
     text: >
       An expired-or-unverifiable-freshness key can NEVER authorize, regardless of whether a clock was
       passed, proven at BOTH the gate and the executor surface (fail closed, degrade DOWN never up, C3).
@@ -61,6 +72,11 @@ acceptance_criteria:
       no clock still refuses with the canonical requires_two_key value, drift-bound to
       action_executor.REFUSE_REQUIRES_TWO_KEY).
   - id: AC3
+    falsified_by: >
+      Point the in-memory mutation at a copy the probe does not import, so the reverted fix line never takes
+      effect, and the assertion that the mutated copy AUTHORIZES again with reason None must go red; that
+      assertion is what proves the one fix line is load-bearing rather than decorative, and the on-disk module
+      must still be asserted byte-unchanged either side of it.
     text: >
       The fix is LOAD-BEARING (anti-vacuity, C1) and the engine stays byte-identical. A selftest reverts
       the one fix line to the pre-WARP-1212 return False in an IN-MEMORY copy of two_key.py and a

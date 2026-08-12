@@ -43,6 +43,12 @@ observability:
     degrades to an empty list.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Delete fetch_changelog from .veldo/tracker_jira_live.py:699 so the live module carries no changelog
+      read of its own, and the AC1 fetch assertions at
+      scripts/suites/11_inbound_command_receipt_reconcile.py:1865 through :1869 must go red. The live-side
+      fetch is the load-bearing leg, because the base seam at .veldo/tracker_adapter.py:223 still raises
+      NotImplementedError and the FakeTracker implementation at :743 proves nothing about a real board.
     text: >
       THE SEAM IS IMPLEMENTED FOR THE LIVE TRACKER, and the docstring stops lying. _read_changelog is
       implemented on the live Jira adapter, fetching the issue changelog through the authenticated API and
@@ -53,6 +59,13 @@ acceptance_criteria:
       selftest asserts the live adapter class actually defines the method and that the base's docstring no
       longer describes a wiring that does not exist.
   - id: AC2
+    falsified_by: >
+      Delete the status-field filter at .veldo/tracker_adapter.py:144 so every changelog item becomes a
+      transition, and three assertions over the captured payload must go red at once: the flattening at
+      scripts/suites/11_inbound_command_receipt_reconcile.py:1808, the non-status exclusion at :1818, and
+      the field-for-field reproduction of what the live run recorded at :1826. Excluding non-status items
+      is the load-bearing leg, because an assignee edit read as a transition derives a state the issue was
+      never in.
     text: >
       THE NORMALIZATION LIVES IN THE ADAPTER AND IS PROVEN AGAINST THE REAL CAPTURED PAYLOAD, not an
       invented shape. The tracker returns a NESTED structure (each history entry carries an author object
@@ -64,6 +77,13 @@ acceptance_criteria:
       sent rather than in what anyone assumed it sends. A selftest asserts the flat entries derived from
       that real payload are exactly the ones the live run derived by hand, field for field.
   - id: AC3
+    falsified_by: >
+      Change the vocabulary fallback of normalize_actor_kind (.veldo/tracker_adapter.py:99) from MACHINE
+      to HUMAN so an account type the mapping has never seen reads as a person, and the assertion that an
+      unseen vocabulary value maps to non-human
+      (scripts/suites/10_warp_0613_anti_vacuity.py:1436) must go red. Defaulting away from human is the
+      load-bearing leg, since WARP-0624 refuses a machine settlement on exactly this field and a
+      human-by-default fallback hands every unrecognised actor a pass.
     text: >
       THE ENTRY CARRIES THE ACTOR KIND, so machine-ness becomes structural rather than a name guess. Each
       normalized entry carries the actor's kind as the tracker reports it, mapped by the adapter to exactly
@@ -75,6 +95,14 @@ acceptance_criteria:
       derived from the real captured payload is machine for the agent entry and human for the owner entry,
       and that an unrecognized account type maps to unknown and never to human.
   - id: AC4
+    falsified_by: >
+      Make normalize_changelog return an empty list as soon as one entry fails to parse, by wrapping its
+      entry loop (.veldo/tracker_adapter.py:141) in a try that returns [] instead of skipping the entry,
+      and the assertion that junk entries are skipped while a good entry beside them still lands
+      (scripts/suites/11_inbound_command_receipt_reconcile.py:1830) must go red while the genuinely empty
+      control at :1833 keeps passing. That control-versus-refusal pair is the load-bearing leg: it is the
+      only thing separating a history that could not be read from an issue with no transitions, which the
+      reconcile reads as not decided yet.
     text: >
       AN UNREADABLE HISTORY NEVER LOOKS LIKE AN EMPTY ONE, which is the whole safety point of this item and
       the defect class this repository has now been bitten by three times. A response that is present but
@@ -87,6 +115,15 @@ acceptance_criteria:
       that genuinely has no status transitions returns an EMPTY LIST and does not raise. Each refusal is
       proven by a selftest over a mutated copy of the real payload.
   - id: AC5
+    falsified_by: >
+      Delete the sorted call at .veldo/tracker_adapter.py:158 and return the records in the order the
+      payload arrived, and the assertion that entries come back ordered by when they happened even though
+      the captured payload arrives newest-first
+      (scripts/suites/11_inbound_command_receipt_reconcile.py:1814) must go red. Order is the load-bearing
+      leg over paging, because the derivation reads the LAST entry: a reversed history makes a
+      rejected-then-approved ticket read as approved-then-rejected. The paging leg has its own mutation,
+      advancing startAt by page_size rather than by what was received at
+      .veldo/tracker_jira_live.py:728, which reddens :1867.
     text: >
       PAGINATION AND ORDER ARE LOAD-BEARING AND PROVEN. The reader walks every page and verifies the walk
       is complete against the total the tracker reports, because a truncated changelog most plausibly loses
@@ -98,6 +135,14 @@ acceptance_criteria:
       change in this entry" from "this entry was dropped". Selftests prove: a multi-page walk assembles in
       order, a short page count refuses, a reordered payload refuses, and the skip count is reported.
   - id: AC6
+    falsified_by: >
+      Give the fetch its own transport by calling urllib.request.urlopen inside fetch_changelog
+      (.veldo/tracker_jira_live.py:719) instead of the injected request callable, and the assertion that
+      the fetch opens no socket of its own
+      (scripts/suites/11_inbound_command_receipt_reconcile.py:1880) must go red, taking every paging
+      assertion above it with it, since those drive the fetch through a fake request. Owning the transport
+      is the load-bearing leg: it is what would make the honest posture, logic gate-proven offline and the
+      live fetch exercised only by a human-run proof, untestable rather than merely unproven.
     text: >
       READ-ONLY, ENGINE-SYNCED, AND HONEST ABOUT WHAT IS STILL NOT PROVEN. The reader performs no write and
       touches no write audit, asserted structurally rather than promised. capabilities.yaml gains one

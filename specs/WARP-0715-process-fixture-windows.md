@@ -34,6 +34,11 @@ observability:
     labels and messages, because this item changes only how long their fixtures wait.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Replace the spawned child with a subprocess double in the process-runner block, and the assertion that
+      all seven of those assertions drive a REAL subprocess must go red; that is the load-bearing leg, since a
+      double is the tempting speedup that deletes the operating-system coverage entirely, while the lesser leg
+      falsifies by moving the shipped POLL constant off 0.05 and reddening its numeric pin.
     text: >
       ONLY FIXTURE PARAMETERS MOVE, AND NO SHIPPED CONSTANT DOES. The values under consideration are test inputs
       in the two lifecycle fixtures: grace_seconds 3.0, kill_tree_window_seconds 4.0 and spawn_settle_seconds
@@ -43,6 +48,11 @@ acceptance_criteria:
       reaping, which are operating-system properties, and replacing the process with a double would delete the
       only coverage they provide. A selftest asserts all seven assertions still drive a REAL subprocess.
   - id: AC2
+    falsified_by: >
+      Lower the consecutive-run count the flake harness drives from 50 to 5 while keeping the recorded
+      verdict, and the assertion requiring at least 50 consecutive runs with ZERO flaky results per candidate
+      value, with the slowest observed margin recorded in proof/WARP-0715/flake-proof.md, must go red;
+      dropping the run under concurrent load falsifies the same criterion from the other side.
     text: >
       THE RELIABILITY PROOF IS THE ITEM, AND FAILING IT MOVES THE TARGET RATHER THAN THE BAR. For each proposed
       value, the process-runner block is run AT LEAST 50 CONSECUTIVE TIMES and asserted to produce ZERO flaky
@@ -53,6 +63,11 @@ acceptance_criteria:
       must include at least one under concurrent load, because a window that is reliable on an idle machine and
       marginal on a busy one is exactly the flake this criterion exists to prevent.
   - id: AC3
+    falsified_by: >
+      Change one of the two lifecycle fixtures in a single pack copy so it diverges from the engine copy, and
+      scripts/check_pack_drift.py must go red naming that path: canon is the leg with a mechanical check here,
+      while the honest-figure leg reddens by shortening a window past its proof, which breaks the seven
+      process-runner assertions under their original labels.
     text: >
       THE SAVING IS REPORTED HONESTLY AGAINST THE COMMITTED BAR. The suite's elapsed time is measured by the
       baseline method and recorded; the committed bar for the whole gate is UNDER 20 SECONDS from 117.1, and the

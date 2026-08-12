@@ -38,6 +38,12 @@ observability:
     composition in which no provisioning mixin is recognized.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Move the shadowing class attribute in each of the three reproduction fixtures onto an MRO layer BEHIND
+      the mixin instead of ahead of it, so getattr resolves to the provisioning method again, and the
+      reproduction assertion that every call raises TypeError must go red for all three shapes; that assertion
+      is the load-bearing leg, because it is what proves the shapes are genuinely unreachable rather than
+      merely name-colliding.
     text: >
       THE DEFECT THE PREVIOUS ITEM MISSED IS REPRODUCED FIRST, in all three shapes its reviewer found: a
       CLASS ATTRIBUTE on a layer ahead of the mixin, a class attribute stamped onto the composed class, and
@@ -46,6 +52,11 @@ acceptance_criteria:
       check as it stands REFUSES NONE OF THEM. These assertions FAIL on the code as shipped and are the
       evidence that "close the whole class of defect" was an overstatement rather than a description.
   - id: AC2
+    falsified_by: >
+      Delete the unreachable_provisioner_methods(self) call from the per-instance branch so
+      check_provisioner_composition (.veldo/tracker_jira_live.py:613) refuses on the name intersection alone,
+      and the selftest that a class attribute hiding a provisioning method is refused as
+      UNREACHABLE_PROVISIONER_METHOD must go red while the name-intersection selftest stays green.
     text: >
       THE CALLABILITY PROBE IS WIRED, which is strictly stronger than intersecting names because it asks
       the only question that matters: does the resolved attribute on a real instance actually call. The
@@ -56,6 +67,11 @@ acceptance_criteria:
       method and which method it hid. The name-intersection check is RETAINED, because it catches a
       declared collision before an instance exists and the two together are a superset of either.
   - id: AC3
+    falsified_by: >
+      Drop the callability veto from the per-instance path so any name in methods & attributes refuses again
+      (.veldo/tracker_jira_live.py:594), and the two selftests asserting the callable retry-wrap override
+      PASSES and the uncalled-base-__init__ attribute PASSES must both go red, along with the assertion that
+      their old refusal names are absent.
     text: >
       BOTH KNOWN FALSE POSITIVES DISAPPEAR, and that is the same change rather than a second one. A
       constructor that assigns a CALLABLE over a mixin method's name - the ordinary per-instance override
@@ -67,6 +83,12 @@ acceptance_criteria:
       produce are gone by name. This matters more than it looks: the first false positive is what gets a
       check deleted by the next person it inconveniences.
   - id: AC4
+    falsified_by: >
+      Delete __init_subclass__ from _CompanyManagedProvisionerOps and leave the check only on
+      make_company_managed_provisioner (.veldo/tracker_jira_live.py:660), and the selftest that a hand-rolled
+      composition built directly from the exported mixin without the factory is refused must go red; the
+      lineage binding is the load-bearing leg, the truthy-marker widening in _is_provisioner_ops is the lesser
+      one and reddens by restoring the `is True` identity test.
     text: >
       THE CHECK BINDS TO THE MIXIN LINEAGE, NOT TO ONE FACTORY, so it cannot be forgotten by construction
       rather than by discipline. Both wired sites currently live on the factory, so a composition built
@@ -78,6 +100,11 @@ acceptance_criteria:
       the exact True, so a future layer writing a different truthy value does not silently drop out of the
       enumeration.
   - id: AC5
+    falsified_by: >
+      Remove the _PROVISIONER_OPS marker from FakeTracker so the check refuses it for vacuity instead of
+      inspecting it, and the selftest that plants the historical _project collision on the FAKE side and
+      expects a named refusal must go red; separately, deleting any one off-diagonal row must redden the
+      empty-list assertion in the teeth matrix.
     text: >
       THE FAKE IS INSIDE THE CHECK, which closes the loop on how this whole defect class stayed invisible.
       The FakeTracker's private-name mirroring of the real adapter is what made the original collision
@@ -91,6 +118,10 @@ acceptance_criteria:
       touched module sha256-unchanged, and the finest-grained site chosen per guard with the reason in a
       comment.
   - id: AC6
+    falsified_by: >
+      Delete one member from the module's declared shape enumeration, the unassigned __slots__ entry, without
+      touching the tests that exercise it, and the selftest asserting the module enumeration equals the set
+      the tests drive must go red on the missing member rather than passing with a smaller class.
     text: >
       THE DECLARED SHAPE GAPS ARE ENUMERATED RATHER THAN LEFT AS FOLKLORE, applying the lesson this
       repository paid for twice: when a check claims a class, the class members are listed and each is

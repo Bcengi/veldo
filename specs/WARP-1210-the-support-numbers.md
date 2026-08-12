@@ -164,6 +164,14 @@ observability:
     base each number rests on.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Turn the fail-closed interval into a number: make the unsubtractable branch of _interval_hours at
+      .veldo/metrics_support.py:252 return (0.0, None) instead of the named UNUSABLE_INTERVAL problem, so a
+      mixed-awareness timeline contributes a zero-hour observation and names nothing, and the assertion that
+      the pair is an honest ABSENCE reported by name (scripts/suites/12_warp_1210_hardening_four.py:56) must
+      go red. The fail-closed branch is the load-bearing leg because it is this criterion's CORRECTED
+      PREMISE; the recorded-order leg has its own site, sorting the values at .veldo/metrics_support.py:338,
+      which reddens scripts/suites/11_inbound_command_receipt_reconcile.py:1271.
     text: >
       THE FOUR MEASURES OUTCOME O6 NAMES ARE DERIVED FROM RECORDED DATA ONLY, in the existing metrics
       derivation (.veldo/metrics.py, extended; no new store, no new instrumentation, no new event type).
@@ -186,6 +194,14 @@ acceptance_criteria:
       processes. A selftest asserts each measure over a seeded lifecycle, asserts the trend preserves
       recorded order, and asserts purity by recomputing under two different PYTHONHASHSEED values.
   - id: AC2
+    falsified_by: >
+      Count the events instead of the receipts: replace the authentication join at
+      .veldo/metrics_support.py:214 with `authenticated = list(closed)`, so every incident.closed the stream
+      carries counts whether or not a reconciliation receipt resolves to it, and the assertion that the SAME
+      lifecycle with the receipts removed counts NOTHING
+      (scripts/suites/11_inbound_command_receipt_reconcile.py:1448) must go red together with the
+      forged-event exclusion at :1461. That one join is the load-bearing leg of the whole item: without it
+      recognition is read as authentication.
     text: >
       THE NUMBERS ARE AUTHENTICATED AGAINST THE RECEIPTS, and this is the load-bearing property of this
       item (the round-2 reviewer of WARP-1208 named it: the gate now recognizes incident lifecycle
@@ -202,6 +218,15 @@ acceptance_criteria:
       genuine ones around it still count; and the authenticated-versus-excluded counts are reported
       beside each measure.
   - id: AC3
+    falsified_by: >
+      Give the ONE decision point a default-allow: change the completeness-token check in
+      read_proves_complete at .veldo/metrics_support_contract.py:277 to `if False:`, so a read that affirms
+      nothing (a bool, a token from another version, a mapping of a shape the function has never seen) passes
+      as complete, and the positive-match-only assertion at
+      scripts/suites/12_warp_1210_hardening_four.py:586 must go red. The token check is the load-bearing leg:
+      it is what makes a filesystem shape nobody enumerated fail closed without anyone naming it. MEASURED
+      2026-08-11 rather than assumed: the 39-cell unreadable-source grid at :808 stays GREEN under that edit,
+      because its fixtures also carry named problems, so :586 is the assertion with the teeth here.
     text: >
       EVERY SOURCE PROVES IT READ COMPLETELY, OR NO NUMBER IS RENDERED AT ALL. This is the governing rule of
       the item and it REPLACES the earlier approach of naming each failure shape of each source, on the
@@ -262,6 +287,14 @@ acceptance_criteria:
       reader was losing a seeded record and 29 because the entry is a symlink, a FIFO or a socket, and no
       shape this reader affirms leaves a record unread.
   - id: AC3b
+    falsified_by: >
+      Neutralize the no-contract stand-down at .veldo/metrics_support.py:614 to `if False and contract_areas
+      is None:`, so a repository with no architecture contract gets a join over invented areas instead of
+      NO_ARCHITECTURE_CONTRACT, and the assertion that the whole join stands down BY NAME while the four
+      measures stay byte-identical to the with-contract run
+      (scripts/suites/11_inbound_command_receipt_reconcile.py:1649) must go red. The no-contract stand-down is
+      the load-bearing leg of the soft join; the cost half is a separate decision at
+      .veldo/metrics_support.py:590, asserted at :1641.
     text: >
       INCIDENTS-PER-AREA IS A SOFT JOIN THAT NEVER FAKES ITSELF (constraint C7). Incidents are attributed
       to a contract area through the incident record's affected_area when it declares one, else through
@@ -277,6 +310,13 @@ acceptance_criteria:
       further selftest asserts this repository's REAL state honestly, whatever it is, rather than
       assuming a join exists here.
   - id: AC4
+    falsified_by: >
+      Make an empty population read as one: change _population at .veldo/metrics_support.py:318 to
+      `return max(count, 1), None`, so a rate over no incidents renders a percentage instead of standing
+      down, and the EMPTY_DENOMINATOR assertion driven for each of the two rates at
+      scripts/suites/11_inbound_command_receipt_reconcile.py:1713 must go red together with the assertion at
+      :1718 that no stood-down line carries a percentage at all. The zero-population stand-down is the
+      load-bearing leg: a rate with no population is not a rate, and this edit is the one that prints one.
     text: >
       HONEST DENOMINATORS AND NO INVENTED PRECISION. A measure whose denominator is zero renders as the
       named stand-down EMPTY_DENOMINATOR and NEVER as 0 percent, 100 percent, or a dash that reads as a
@@ -288,6 +328,14 @@ acceptance_criteria:
       the two rates, the single-observation case for each of the two trends, and that the numerator and
       denominator accompany every share.
   - id: AC5
+    falsified_by: >
+      Make one enumerated guard vacuous ON DISK so its tooth can no longer light its own fixture: widen the
+      recurrence population at .veldo/metrics_support.py:692 from `known = set(backing)` to union the records
+      and the closed ids as well, and the 47-by-47 matrix assertion at
+      scripts/suites/12_warp_1210_hardening_four.py:2537 must go red with that mutation's DIAGONAL cell
+      False, as must the exactly-once target assertion at :2226, which can no longer find the line. The
+      diagonal is the load-bearing leg: a guard whose neutralization changes nothing is a decoration, which
+      is precisely what this criterion exists to detect.
     text: >
       THE EXCLUSIONS AND STAND-DOWNS ARE NON-VACUOUS, proven by the MATRIX standard this plan's last item
       established rather than by paired mutations. Every guard in this item - the unbacked-event
@@ -304,6 +352,13 @@ acceptance_criteria:
       artifacts alone is a human judgment, and the mechanical definition in AC1 is a declared proxy, not
       a measurement of understanding.
   - id: AC6
+    falsified_by: >
+      Stop being additive: add ONE key to compute() in .veldo/metrics.py:326 (any key at all, for example a
+      gate_pass_rate_pct beside verdict_counts), and the pinned pre-change byte-identity of every measure
+      metrics.py already computed (scripts/suites/12_warp_1210_hardening_four.py:3144) must go red together
+      with the no-key-gained assertion at :3146. Changing no existing number is the load-bearing leg; the
+      engine-sync leg has its own assertion, the root-versus-engine byte-identity loop at :6061, which
+      reddens the moment one copy of any of the thirteen modules is edited alone.
     text: >
       ADDITIVE, ENGINE-SYNCED, AND HONESTLY RECORDED. The support measures are added to the existing
       derivation and dashboard without changing any existing number: a selftest asserts every measure

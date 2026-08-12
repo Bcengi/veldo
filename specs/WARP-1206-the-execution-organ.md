@@ -40,6 +40,12 @@ observability:
     never a silent no-op or an unnamed exception.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Add a read method, a query or open_read, to ExecutorCredential (.veldo/action_executor.py:200), and the
+      assertion that it is a DISTINCT type from the responder's read-only credential carrying no such method
+      must go red, along with the refusal when the executor is constructed with the responder's read-only
+      credential; that separation is structural and is the load-bearing leg, because an executor that can read
+      is an investigator sharing one code path.
     text: >
       The execution organ (schema veldo.executor/v1, module .veldo/action_executor.py) exists as a SEPARATE
       organ from the VELDO build-loop executor (.veldo/executor.py, WARP-0401): it runs ONLY whitelisted
@@ -59,6 +65,12 @@ acceptance_criteria:
       read-only credential refuses. A selftest proves a POSITIVE CONTROL executes end to end against a fake
       system and drives each structural refusal with the reason named.
   - id: AC2
+    falsified_by: >
+      Add a raise_level method to ActionExecutor, which deliberately has none (.veldo/action_executor.py:511),
+      and the assertion that the executor exposes NONE of the forbidden mutators, together with its non-
+      vacuity probe that a subclass adding one is detected, must go red; defaulting an unconfigured system to
+      L2 instead of the L0 floor in AutonomyLadder (.veldo/action_executor.py:359) falsifies the fail-closed
+      leg.
     text: >
       THE AUTONOMY LADDER (O3, D2) is constructed PER SYSTEM by a human and READ by the executor, which
       NEVER raises its own level (NG4). L0 and L1 are the read-only floor and NEVER execute (below_execution_floor,
@@ -75,6 +87,12 @@ acceptance_criteria:
       ladder refusal with a positive control, that the executor exposes none of the forbidden mutators, and
       that a subclass ADDING one is detected (the no-escalation check is non-vacuous).
   - id: AC3
+    falsified_by: >
+      Check only the remedy's declared reversibility and stop checking the action's vetted reversibility from
+      the whitelist, so a mismatch no longer fails closed, and the assertion that a data-mutating action
+      refuses as requires_two_key must go red; the digest binding falsifies separately by keying the
+      confirmation on the incident id instead of proposal_digest (.veldo/action_executor.py:185), which must
+      redden the tooth where an edited proposal goes stale.
     text: >
       ANYTHING IRREVERSIBLE OR DATA-MUTATING REFUSES, PENDING THE TWO-KEY RULE (WARP-1207, W7), and the L2
       human confirmation is BOUND TO THE PROPOSAL DIGEST. proposal_digest is the canonical digest of a
@@ -90,6 +108,11 @@ acceptance_criteria:
       after it was confirmed is STALE and refuses because its digest changed (C3). A selftest proves each
       refusal with a positive control and the digest-binding tooth (an edited proposal goes stale).
   - id: AC4
+    falsified_by: >
+      Move the unhealthy-canary refusal (.veldo/action_executor.py:811) to AFTER the run_action call, and the
+      load-bearing tooth must go red: the fake system's ordered op log on a failed canary must read [canary]
+      alone, and it would read [canary, action] instead, which is the main action running behind a canary that
+      said no.
     text: >
       THE STANDING SAFEGUARDS stand guard on every run, each proven NON-VACUOUSLY (C1). A KILL SWITCH any
       human trips INSTANTLY with no ceremony halts EVERYTHING first (kill_switch_tripped), and resetting it
@@ -105,6 +128,10 @@ acceptance_criteria:
       the FakeActionSystem is the offline proof, mirroring evidence.LiveEvidencePlane and executor.LiveLoop.
       A selftest proves the kill switch, budget, timeout, and canary-first refusals with positive controls.
   - id: AC5
+    falsified_by: >
+      Change one byte in a single pack copy of .veldo/action_executor.py so cmp against the engine copy
+      differs, and the template sync and pack drift stages must go red naming that path; the NG3 leg falsifies
+      instead by starting a thread or a timer at module import, which the no-detach check must refuse.
     text: >
       The organ is IN-SESSION with no detached process (NG3): .veldo/action_executor.py imports pathlib, json,
       and hashlib at module top (json and hashlib for the proposal's own digest) and importlib LAZILY in the

@@ -55,6 +55,10 @@ observability:
     proof). Both exist because the decomposition's own integrity is what needs guarding.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Replace the region partition scripts/suite_slice.py imports from WARP-0716 with one re-derived locally
+      over topic names, and the assertion at scripts/suites/13_warp_0623_codified_live.py:7784, that the
+      partition the slicer uses IS WARP-0716's imported object rather than a re-derivation, must go red.
     text: >
       THE CROSSING-STATE VERDICT FROM WARP-0716 IS CONSUMED, NOT RE-DERIVED, and this item does not begin until
       that verdict says feasible. WARP-0716 mechanically enumerates every module-level name bound in one region
@@ -69,6 +73,11 @@ acceptance_criteria:
       elsewhere is 6, nothing sits between 6 and WARP-1210's 20, so rework is a lone outlier and the 1.19h mean
       is representative.
   - id: AC2
+    falsified_by: >
+      Reword the aggregate summary line in RunScope.aggregate_line (scripts/run_scope.py:339) from `selftest:
+      %d passed, %d failed` to any other spelling, and the assertion pinning that line character-identical
+      must go red; that line is the load-bearing leg because scripts/verify.sh, the operator guide and every
+      run record parse it, and a full run would still be correct while every parser of it broke.
     text: >
       THE ENTRY POINT DOES NOT MOVE, WHICH IS WHAT KEEPS THIS OUT OF THE PROTECTED SET. `python3
       scripts/selftest.py` remains the invocation, produces the same aggregate summary line in the same format,
@@ -78,6 +87,11 @@ acceptance_criteria:
       aggregate line is character-identical to the pre-change format, because the gate, the operator guide and
       the run records all parse that line.
   - id: AC3
+    falsified_by: >
+      Make the crossing detector in scripts/suite_slice.py stop reporting the silent shape, the name a later
+      region fills that an earlier one reads through a defensive `or` fallback, and the assertion at
+      scripts/suites/13_warp_0623_codified_live.py:7749 that the silent case is proven REACHABLE must go red;
+      the silent shape is the load-bearing one, since the loud shape raises NameError and finds itself.
     text: >
       THE IMPLICIT SEQUENTIAL STATE IS FOUND AND MADE EXPLICIT RATHER THAN ASSUMED ABSENT, and this is the
       criterion the whole item lives or dies on. Before splitting, the module-level names that cross assertion
@@ -89,6 +103,11 @@ acceptance_criteria:
       dropped. The house lesson applies: when a change claims a class, list the members and cover each or
       declare it uncovered with the reason.
   - id: AC4
+    falsified_by: >
+      Reduce the comparison in scripts/suite_equiv.py to the aggregate passed and failed totals instead of the
+      per-suite label results, and the assertion at scripts/suites/13_warp_0623_codified_live.py:7389, the
+      dangerous case where a suite passes alone having stopped checking what it checked in context, must go
+      red while the loud case keeps passing.
     text: >
       EVERY SUITE PASSES STANDALONE AND IN AGGREGATE, AND PROVES THE SAME THING BOTH WAYS. Each suite file runs
       alone, in a fresh interpreter, with no dependence on another suite having run first, and its assertion
@@ -99,6 +118,12 @@ acceptance_criteria:
       same aggregate outcome, because a suite set whose result depends on its order has not actually been
       decomposed.
   - id: AC5
+    falsified_by: >
+      Change the identity proof in scripts/suite_labels.py from a comparison of label SETS to a comparison of
+      label COUNTS, and the count-survives-it assertion at scripts/suites/13_warp_0623_codified_live.py:7342,
+      one label deleted paired with one added, must go red; separately, deleting the ON_DISK against DECLARED
+      comparison at scripts/selftest.py:73 must stop a suite file absent from the manifest being refused as
+      SUITE_NOT_ENUMERATED.
     text: >
       NOT ONE ASSERTION IS LOST, proven by identity rather than by count. The complete set of assertion LABELS
       is captured before the decomposition and after it and asserted BYTE-IDENTICAL AS A SET, which is strictly
@@ -110,6 +135,12 @@ acceptance_criteria:
       the matrix asserted EXACTLY DIAGONAL with the off-diagonal asserted as an EMPTY LIST, every mutation
       target asserted to appear exactly once, and every touched module asserted sha256-unchanged after all runs.
   - id: AC6
+    falsified_by: >
+      Change one byte in engine/scripts/suites/shared.py so the engine copy diverges from
+      scripts/suites/shared.py, and scripts/check_pack_drift.py must go red naming that path: engine canon is
+      the leg with a mechanical check here, while the disjointness demonstration reddens instead by merging
+      the fragments back into one manifest entry so the two worked-example footprints collide on a single file
+      again.
     text: >
       THE PARALLELISM THIS EXISTS FOR IS DEMONSTRATED, not asserted as a benefit in prose. The suite files are
       partitioned so that the work items on the current frontier touch DISJOINT files, demonstrated concretely

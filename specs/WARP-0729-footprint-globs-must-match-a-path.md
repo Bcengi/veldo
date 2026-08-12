@@ -30,6 +30,11 @@ observability:
     declaration that cannot match is exactly the vacuous check this corpus forbids.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Restore one trailing-slash entry, `scripts/suites/` in WARP-0712's footprint, and the corpus sweep that
+      compiles every footprint entry of every spec under specs/ with arch._glob_re and matches it against
+      every path in the tree must go red naming that entry; completeness is by construction over the whole
+      corpus, so one restored dead entry is enough to redden it.
     text: >
       NO FOOTPRINT ENTRY IN THE SPEC CORPUS MATCHES NOTHING. The domain is every entry of every
       `footprint` list in every file under specs/, read with the one parser (V.parse_yamlish) and compiled
@@ -50,6 +55,11 @@ acceptance_criteria:
       never appeared, which could not bind in any case because `proof/` is diff-excluded. WHAT WOULD REFUTE
       IT: any footprint entry anywhere under specs/ that matches no path in the tree after this lands.
   - id: AC2
+    falsified_by: >
+      Narrow the new rule in .veldo/shape_gate.py so an entry is matched only against the CHANGED paths of the
+      diff rather than against the repository's tracked paths, and the planted-bad fixture carrying
+      `scripts/suites/` must stop producing a blocking finding on a small diff, while the planted-good
+      wildcard beside it must still pass so the pair stays discriminating.
     text: >
       THE GATE REFUSES A FOOTPRINT GLOB THAT MATCHES NO PATH IN THE TREE, as a BLOCKING finding naming the
       spec and the glob. The domain is every glob in the footprint of every spec the change set names,
@@ -61,6 +71,11 @@ acceptance_criteria:
       wildcard that matches tracked paths being refused. Both are driven as a matched pair, one planted-bad
       and one planted-good, over a fixture tree.
   - id: AC3
+    falsified_by: >
+      Drop the landing-diff replay for WARP-0712 and record the before-and-after finding counts for the three
+      unlanded specs only, and the assertion that every one of the four converted specs carries a per-spec
+      count against its own landing diff must go red; 0712 is the load-bearing one, being the only SHIPPED
+      spec of the four and so the only place a change has already landed with the rule not binding.
     text: >
       THE FOUR SPECS CARRYING THE SLASHED FORM ARE RE-BOUND RATHER THAN QUIETLY EDITED. For WARP-0712
       (shipped), WARP-0718 and WARP-0719 (ready) and WARP-0720 (draft), the converted footprint is checked
@@ -73,6 +88,11 @@ acceptance_criteria:
       converted spec whose landing diff produces a finding the dead entry hid, which is a REAL uncovered
       path and must be declared rather than papered over by widening the glob.
   - id: AC4
+    falsified_by: >
+      Widen one conversion beyond the rewrite, `packs/*/scripts/suites/` to `packs/**`, and the assertion that
+      each touched footprint list changes by nothing other than the trailing-slash rewrite must go red,
+      because the verbatim before-and-after in the proof artifact no longer reads as that one text
+      transformation.
     text: >
       NO SPEC IS EDITED IN A WAY THAT WIDENS WHAT IT COVERS BEYOND ITS OWN LANDING DIFF. A conversion is
       `path/` to `path/**` and nothing else: no new path, no broader wildcard, no entry removed. The

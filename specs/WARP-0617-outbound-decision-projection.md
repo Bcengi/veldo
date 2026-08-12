@@ -45,6 +45,11 @@ observability:
     (the field is dropped, never emitted raw).
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Replace the keyed upsert at .veldo/request_projection.py:401 with a plain create per pass so the issue
+      is no longer keyed by the request id (the load-bearing leg, since idempotence and the never-forked
+      guarantee both rest on that key), and the AC1 assertion that a re-run forks nothing and leaves the board
+      byte-identical (scripts/suites/10_warp_0613_anti_vacuity.py:794) must go red.
     text: A one-way projection (a sibling of tracker_mirror.mirror_events, in a new repo-only module
       .veldo/request_projection.py) reads the veldo.request/v1 records from .veldo/requests/ and upserts ONE
       VEL Decision issue per request, keyed by the request id (never forked), through the shipped WARP-0603
@@ -55,6 +60,11 @@ acceptance_criteria:
       IDEMPOTENT: a re-run forks no issue, records no duplicate transition or comment, and leaves the board
       byte-identical.
   - id: AC2
+    falsified_by: >
+      Change the displayed binding in build_brief at .veldo/request_projection.py:344 to print
+      record.request_hash instead of bound_artifact.digest, and the assertions that the brief shows the
+      displayed digest and never presents request_hash (scripts/suites/10_warp_0613_anti_vacuity.py:777 and
+      the selfcheck at .veldo/request_projection.py:597) must go red.
     text: The projected Decision issue carries the readable BRIEF in its body: a plain-language summary;
       an explicit RISK section (the tier and why, reversible|costly|irreversible, the impact flags
       data_mutating/money/external, fake-vs-live, residual trust); WHAT approving vouches for and what it
@@ -65,6 +75,11 @@ acceptance_criteria:
       as a verified value to a human (request_hash self-consistency is a W2 creation-time invariant, the
       repo-recompute is W5).
   - id: AC3
+    falsified_by: >
+      Delete the declared-sensitive-term substitution loop in redact at .veldo/request_projection.py:117 so
+      only the env:/keychain: token regex survives and org-declared operating data reaches the ticket in the
+      clear, and the AC3 assertion that a secret reference AND an operating datum are both redacted
+      (scripts/suites/10_warp_0613_anti_vacuity.py:813) must go red.
     text: A REDACTION step scrubs secrets and operating data (per RULE #3) from the brief, the RISK
       section, and every projected comment BEFORE the write leaves the repo - secret references
       (env:/keychain:) and any declared-sensitive field are removed or masked, and the redactor fails
@@ -73,6 +88,11 @@ acceptance_criteria:
       reaffirmed, not re-implemented). A selftest asserts a request carrying a secret reference and an
       operating datum projects with them redacted and never in the clear.
   - id: AC4
+    falsified_by: >
+      Delete the mapped-versus-unmapped branch at .veldo/request_projection.py:407 so every request status is
+      handed to adapter.set_status as a literal transition whether or not the per-org request_status_map
+      declares it, and the NG4 assertion that an unmapped status is a keyed comment and never an invented
+      transition (scripts/suites/10_warp_0613_anti_vacuity.py:827) must go red.
     text: It is wired so the board bootstrap / a veldo jira command can run the projection (offline over
       the deterministic FakeTracker with no network for the gate; the live path builds the SAME fenced
       OAuthJiraCloudAdapter as the mirror and FAILS CLOSED with no token). The Decision issue uses the VEL
@@ -80,6 +100,11 @@ acceptance_criteria:
       Discussion, Awaiting Approval, Changes Requested, Decided/Approved/Rejected/Blocked/Superseded)
       through the per-org status_map. It creates no timer/daemon and spawns nothing detached (NG1).
   - id: AC5
+    falsified_by: >
+      Make the T1 tooth vacuous by leaving the redactor unpatched in the in-memory copy of
+      .veldo/request_projection.py, so the mutant still masks the secret reference, and the T1 assertion that
+      neutralizing the redactor EMITS the secret reference
+      (scripts/suites/10_warp_0613_anti_vacuity.py:856) must go red.
     text: A selftest drives the WHOLE projection over the deterministic FakeTracker offline (no network)
       and is NON-TAUTOLOGICAL - a request of each touchpoint projects one Decision issue with the brief +
       RISK + displayed digest + assignee + watchers; a re-run is byte-identical (idempotent); the requests

@@ -38,6 +38,11 @@ observability:
     named by path on its own line, and the stage's exit status semantics are unchanged.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Strip the `Reproduce:` command lines and the `ABSOLUTE SECONDS ARE MACHINE-SPECIFIC` paragraph out of
+      proof/WARP-0711/baseline.md so the figures become quoted rather than reproducible, and the AC1 assertion
+      at scripts/suites/13_warp_0623_codified_live.py:1041, which requires those exact substrings plus the 662
+      Python and 172 shell counts, must go red.
     text: >
       THE COST IS ATTRIBUTED BY MEASUREMENT, and the baseline is committed rather than quoted.
       proof/WARP-0711/baseline.md records the per-stage wall clock of the whole gate measured in a clean clone
@@ -47,6 +52,12 @@ acceptance_criteria:
       command to reproduce each figure. It states that interpreter startup IS this stage's cost, and that
       absolute seconds are machine-specific while the ATTRIBUTION is what this item binds to.
   - id: AC2
+    falsified_by: >
+      Narrow one of the two `git ls-files` patterns inside scripts/check_lint.sh, from the tracked `*.py`
+      pattern to `scripts/*.py`, so the stage checks a strict subset at the same speed, and the load-bearing
+      set-equality assertion at scripts/suites/13_warp_0623_codified_live.py:516 must go red with a non-empty
+      missing side, because checking less is the cheapest possible fake speedup and equality is the only leg
+      that closes it.
     text: >
       THE CONTRACT IS PRESERVED EXACTLY, PROVEN RATHER THAN ASSERTED IN PROSE. The replacement checks the SAME
       file set, derived from the same git ls-files patterns, and a selftest asserts the set the new stage
@@ -57,6 +68,12 @@ acceptance_criteria:
       deliberately broken shell file are each proven to still FAIL BY NAME, so the check is proven to still
       check.
   - id: AC3
+    falsified_by: >
+      Replace the two counts in the summary line of scripts/check_lint.sh with literal constants instead of
+      the lengths of the file lists it just built, and the assertion at
+      scripts/suites/13_warp_0623_codified_live.py:997, which requires the printed counts to equal the two
+      `git ls-files` patterns run independently, must go red; the derived counts are the load-bearing leg,
+      since the seconds are declared machine-specific and only the counts make a shrinking file set visible.
     text: >
       IT IS FASTER AND THE FIGURE IS THE REAL ONE. The stage completes in under 2 seconds against the 14.07s
       baseline, measured by the AC1 method and recorded beside it; if the real figure lands higher, the real

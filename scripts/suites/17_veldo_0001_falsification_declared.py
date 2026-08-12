@@ -147,7 +147,13 @@ with tempfile.TemporaryDirectory() as _fd_d:
     # to a fixture the validator would reject anyway.
     expect("VELDO-0001 fixture: both fixtures are otherwise-valid specs, so a refusal below is "
            "the falsification rule and nothing else",
-           V.check_spec(_fd_bare3) == 0 and V.check_spec(_fd_all3) == 0)
+           # BOUND TO THE POSTURE, not to today's value of it. These read `== 0` while the rule
+           # only REPORTED; the flip to refusing made check_spec correctly return non-zero on the
+           # non-compliant fixture, and a suite that reds on its own rule being enforced is a suite
+           # asserting the migration never finishes. The compliant fixture must be clean either way.
+           V.check_spec(_fd_all3) == 0
+           and (V.check_spec(_fd_bare3) > 0 if FD.FALSIFICATION_ENFORCED
+                else V.check_spec(_fd_bare3) == 0))
 
     _fd_errs, _fd_out = _fd_check(_fd_bare3, enforce=True)
     expect("VELDO-0001 AC1: a behaviour-bearing spec with three criteria and no falsified_by "
@@ -197,7 +203,9 @@ with tempfile.TemporaryDirectory() as _fd_d:
            "catch it",
            _fd_check(tmpfile(_fd_d, "scalar.md", _FD_SCALAR), enforce=True)[0] > 0
            and _fd_causes(_FD_SCALAR) == {"acceptance_criteria": FD.FALSIFICATION_UNREADABLE}
-           and V.check_spec(tmpfile(_fd_d, "scalar2.md", _FD_SCALAR)) == 0)
+           and (V.check_spec(tmpfile(_fd_d, "scalar2.md", _FD_SCALAR)) > 0
+                if FD.FALSIFICATION_ENFORCED
+                else V.check_spec(tmpfile(_fd_d, "scalar2.md", _FD_SCALAR)) == 0))
     # THE OTHER FREE EXEMPTION, and it is reachable by an author in one keystroke: check_spec
     # accepts `acceptance_criteria: []` and a bare key, because the FIELD is present. Emptying the
     # field would then be the one way for a behaviour-bearing spec to be asked nothing. Measured
@@ -210,7 +218,9 @@ with tempfile.TemporaryDirectory() as _fd_d:
                "nothing, and check_spec alone accepts it" % _fd_lbl,
                _fd_check(tmpfile(_fd_d, "empty.md", _FD_EMPTY), enforce=True)[0] == 1
                and _fd_causes(_FD_EMPTY) == {"acceptance_criteria": FD.FALSIFICATION_MISSING}
-               and V.check_spec(tmpfile(_fd_d, "empty2.md", _FD_EMPTY)) == 0)
+               and (V.check_spec(tmpfile(_fd_d, "empty2.md", _FD_EMPTY)) > 0
+                    if FD.FALSIFICATION_ENFORCED
+                    else V.check_spec(tmpfile(_fd_d, "empty2.md", _FD_EMPTY)) == 0))
     # The fourth refusal path: a spec that declares behaviour in front matter the ONE parser
     # cannot read. It is refused BY NAME rather than skipped, because a spec whose criteria cannot
     # be read is a spec whose falsifications cannot be checked.

@@ -41,6 +41,12 @@ observability:
     is renamed or lost.
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Add the live agent's normalized display name to the guard's own list, extending MACHINE_ACTORS at
+      .veldo/authorization.py:88 with "veldo agent", which is exactly the "just add it to the set" fix this
+      item exists to refuse, and the reproduction at scripts/suites/10_warp_0613_anti_vacuity.py:1426 must
+      go red because the real identity is no longer OUTSIDE the name list. That assertion IS this
+      criterion: it is the evidence the defect was real rather than untidy.
     text: >
       THE DEFECT IS REPRODUCED FIRST, from the identities the live run actually captured. A selftest
       asserts, against the SHIPPED module as it stands, that the real agent identity from the WARP-0620
@@ -50,6 +56,14 @@ acceptance_criteria:
       probes exposed: "veldo-agent", "Veldo Bot", "Automation for Jira". This test FAILS on the code as
       shipped and is the evidence that the fix fixes something real rather than tidying a list.
   - id: AC2
+    falsified_by: >
+      Hand the core the tracker's raw vocabulary: replace the normalize_actor_kind call at
+      .veldo/tracker_adapter.py:151 with author.get("accountType"), so a flattened entry carries "app"
+      rather than a normalized kind, and the assertion that the live run's "Veldo Agent" entry reads kind
+      machine (scripts/suites/11_inbound_command_receipt_reconcile.py:1821) must go red. Normalizing AT THE
+      ADAPTER is the load-bearing leg; the core's CONSUMPTION of the kind has its own mutation, deleting the
+      actor_kind read at .veldo/authorization.py:306, which reddens
+      scripts/suites/10_warp_0613_anti_vacuity.py:1453 and its control at :1460.
     text: >
       MACHINE-NESS BECOMES A REPORTED KIND, NOT AN INFERENCE FROM A NAME. The tracker adapter seam gains
       an actor-kind contract: an attributed changelog entry carries the actor's KIND as the tracker itself
@@ -60,6 +74,14 @@ acceptance_criteria:
       normalized kind and NEVER parses a display name to decide it. A selftest asserts the mapping for
       every value the live run observed and refuses to let the core see a raw tracker vocabulary.
   - id: AC3
+    falsified_by: >
+      Restore the pre-WARP-0624 default by changing the fall-through of actor_kind at
+      .veldo/authorization.py:319 from "unknown" to "human", so an actor the tracker says nothing about is
+      assumed to be a person again, and the assertion that a missing, empty, wrong-typed or
+      out-of-vocabulary kind resolves to unknown (scripts/suites/10_warp_0613_anti_vacuity.py:1455) must go
+      red while the reported-human control at :1460 stays green. That default is the load-bearing leg,
+      because the UNESTABLISHED_ACTOR_KIND refusal at .veldo/authorization.py:372 is only ever reached
+      through it.
     text: >
       UNKNOWN IS REFUSED, WHICH IS THE WHOLE POINT (constraint C3, fail closed). An actor whose kind the
       tracker does not report is refused with UNESTABLISHED_ACTOR_KIND: humanness must be ESTABLISHED, not
@@ -70,6 +92,13 @@ acceptance_criteria:
       the CONTROL proves it does not over-fire: an actor the tracker reports as human settles exactly as
       it does today.
   - id: AC4
+    falsified_by: >
+      Drop the retained refusal instead of keeping it: replace the two name-list legs of _is_machine at
+      .veldo/authorization.py:337 through :339 with a bare return False, so only a tracker-reported kind
+      refuses, and the enumeration over the ENTIRE current MACHINE_ACTORS set
+      (scripts/suites/10_warp_0613_anti_vacuity.py:1471) must go red. Keeping the name list is the
+      load-bearing leg of this criterion: it is the only thing that makes the new guard a strict superset of
+      the old one.
     text: >
       NOTHING PERMITTED TODAY BECOMES PERMITTED, and the existing refusal is kept. The name list is
       RETAINED as an additional, independent refusal rather than replaced, so the guard is a strict
@@ -80,6 +109,14 @@ acceptance_criteria:
       refuse LESS in any case is a defect, and the suite is written to catch it: the assertion enumerates
       the current set rather than sampling it.
   - id: AC5
+    falsified_by: >
+      Neutralize the reported-machine refusal ALONE, changing .veldo/authorization.py:335 to read `if False
+      and actor_kind(entry) == "machine":`, and the assertion that a tracker-reported machine is refused
+      although its name is in no list (scripts/suites/10_warp_0613_anti_vacuity.py:1453) must go red while
+      the unknown-kind leg at :1455 and the name-list leg at :1471 stay green. That one-guard-at-a-time
+      isolation over the three refusals is what this item SHIPS in place of the matrix this criterion
+      describes: measured 2026-08-11, the suite carries no 3-by-3 grid, no off-diagonal list and no sha256
+      assertion for this guard, so the per-leg assertions are the only thing a mutation can redden.
     text: >
       THE TEETH ARE A MATRIX over every guard this item touches - the reported-machine refusal, the
       unknown-kind refusal, and the retained name-list refusal - each neutralized in memory one at a time
@@ -91,6 +128,13 @@ acceptance_criteria:
       account is not operated by a script, which is an access-control question and not a decidable one
       here.
   - id: AC6
+    falsified_by: >
+      Ship an engine that does not carry the guard: delete the UNESTABLISHED_ACTOR_KIND refusal from
+      engine/.veldo/authorization.py:372 through :373 only, leaving the repository copy intact, and the
+      root-versus-engine byte-identity assertion at scripts/suites/10_warp_0613_anti_vacuity.py:1400 must go
+      red together with the pack copy at :1402. Engine sync is the load-bearing leg, because an adopter runs
+      the engine copy and a refusal that exists only here is not shipped; the frozen-core leg has its own
+      assertion at :1412, which reddens the moment two_key, policy_check or decision references this module.
     text: >
       ENGINE-SYNCED, HONESTLY RECORDED, AND THE BLOCKING RELATIONSHIP STATED. capabilities.yaml gains one
       mechanical entry in every copy naming exactly what ships, and stating that this refusal is what makes
