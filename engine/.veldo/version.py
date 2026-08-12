@@ -237,13 +237,100 @@ def drift(root=None, current=None):
     return out
 
 
+# WHICH VERSION PRODUCED A PIECE OF EVIDENCE (VELDO-0010). A proof bundle is the record that a
+# criterion was met, and until now it did not say which version of the method produced it - so
+# evidence written by a version whose checks were weaker is indistinguishable from evidence written
+# by today's. The field is OPTIONAL BY CONSTRUCTION: 143 bundles already exist and none carries it,
+# so requiring it would redden a working repository on the day it landed, which is how a correct rule
+# gets reverted. They are reported UNVERSIONED, and NOTHING infers a version for them - inferring the
+# current one would state exactly the fact the field exists to establish.
+PROOF_VERSION_FIELD = "veldo_version"
+UNVERSIONED = "UNVERSIONED"
+
+PROVENANCE_KEYS = ("bundles", "versioned", "unversioned", "malformed", "by_version", "field")
+
+
+def _version_shaped(v):
+    """Whether this looks like a version at all. SHAPE ONLY, never equality with the current one: a
+    bundle produced by an older version legitimately carries an older version, and that is the whole
+    point of recording it."""
+    if not isinstance(v, str) or not v.strip():
+        return False
+    parts = v.strip().split(".")
+    return len(parts) >= 2 and all(p.isdigit() for p in parts[:2])
+
+
+def proof_version_problems(manifest, where):
+    """Why a manifest's version field cannot be read, or an empty list. An ABSENT field is NOT a
+    problem - it is the state 143 existing bundles are in."""
+    if not isinstance(manifest, dict) or PROOF_VERSION_FIELD not in manifest:
+        return []
+    v = manifest[PROOF_VERSION_FIELD]
+    if not _version_shaped(v):
+        return ["%s: %s is %r, which is not version-shaped" % (where, PROOF_VERSION_FIELD, v)]
+    return []
+
+
+def provenance_report(root=None):
+    """Which version produced each piece of evidence. ONE key shape, and the UNVERSIONED count is
+    part of the answer rather than rounded away."""
+    base = Path(root) if root is not None else ROOT
+    rep = {"bundles": 0, "versioned": [], "unversioned": [], "malformed": [], "by_version": {},
+           "field": PROOF_VERSION_FIELD}
+    proof_root = base / "proof"
+    if not proof_root.is_dir():
+        return rep
+    for m in sorted(proof_root.glob("*/manifest.json")):
+        rel = str(m.relative_to(base))
+        rep["bundles"] += 1
+        try:
+            data = json.loads(m.read_text())
+        except (OSError, ValueError) as e:
+            rep["malformed"].append({"bundle": rel, "detail": str(e)})
+            continue
+        problems = proof_version_problems(data, rel)
+        if problems:
+            rep["malformed"].append({"bundle": rel, "detail": problems[0]})
+            continue
+        v = data.get(PROOF_VERSION_FIELD)
+        if v is None:
+            rep["unversioned"].append(rel)
+            continue
+        rep["versioned"].append({"bundle": rel, "version": v})
+        rep["by_version"].setdefault(v, []).append(rel)
+    return rep
+
+
+def provenance_lines(rep):
+    lines = ["evidence provenance: %d bundle(s): %d name the version that produced them, %d are "
+             "%s, %d malformed"
+             % (rep["bundles"], len(rep["versioned"]), len(rep["unversioned"]), UNVERSIONED,
+                len(rep["malformed"]))]
+    for v in sorted(rep["by_version"]):
+        lines.append("  produced by %s: %d bundle(s)" % (v, len(rep["by_version"][v])))
+    if rep["unversioned"]:
+        lines.append("  %s: %d bundle(s) predate the %s field and NOTHING infers a version for "
+                     "them - inferring today's would state the very fact the field exists to record"
+                     % (UNVERSIONED, len(rep["unversioned"]), PROOF_VERSION_FIELD))
+    for m in rep["malformed"]:
+        lines.append("  MALFORMED %s: %s" % (m["bundle"], m["detail"]))
+    return lines
+
+
 def _cli(argv=None):
     ap = argparse.ArgumentParser(description="what this VELDO installation is")
     ap.add_argument("--report", action="store_true",
                     help="every manifest found and what each declares")
+    ap.add_argument("--provenance", action="store_true",
+                    help="which version produced each proof bundle")
     ap.add_argument("--drift", action="store_true",
                     help="compare the install stamp with what this tree declares now")
     args = ap.parse_args(argv)
+    if args.provenance:
+        rep = provenance_report()
+        for line in provenance_lines(rep):
+            print(line)
+        return 1 if rep["malformed"] else 0
     if args.drift:
         d = drift()
         if d["cause"] in (UNSTAMPED, CAUSE_NO_CURRENT):

@@ -251,6 +251,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE, measured from its own AST against shared.py's bindings. IT RUNS THE REAL SCAFFOLDER into temporary trees, because the property under test is what an install produces and a fixture would test the fixture. It spawns `git init` per tree and nothing else, and writes only inside temporary directories."
   },
   {
+   "name": "27_veldo_0010_evidence_provenance",
+   "file": "27_veldo_0010_evidence_provenance.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "27_veldo_0010_evidence_provenance"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE, measured from its own AST against shared.py's bindings. Its live rows assert a PARTITION over this repository's proof corpus, never a count, so recording a new proof cannot redden them. It writes only inside temporary directories and spawns no subprocess."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

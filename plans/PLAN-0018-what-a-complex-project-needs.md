@@ -546,6 +546,17 @@ that reading would not have, and two of them were checks that could not fail.
     Every organ landed before it (work_state, tasks, promises, declared, budget_state) passed only
     because they were already committed when the check first ran - so this would have shipped.
 
+45. **THE REPORT-UNTIL-APPROVED POSTURE HAS ITS OWN VACUOUS SHAPE, AND VELDO-0010 HAD IT.** Both
+    VELDO-0007 and VELDO-0010 hold a protected-path edit for approval and let the criterion REPORT
+    until it lands. Driving VELDO-0010's showed the flaw: with ONE flag meaning "does the gate mention
+    a version", both branches were satisfiable, so adding a bare marker to the gate reddened nothing.
+    **A posture derived from the live tree can be flipped by the mutation it is supposed to catch.**
+    The fix is two facts rather than one - the gate MENTIONS a producing version, and the gate WRITES
+    the key - with the invariant that mentioning without stamping is red in EITHER posture. That
+    catches the real failure, which is a half-done registration: a marker in the gate with no field in
+    the record it stamps. VELDO-0007's AC5 is the same shape and is worth the same treatment when its
+    approval lands.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
