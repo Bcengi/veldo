@@ -215,6 +215,15 @@
    "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED: its free names were enumerated from its own AST and every one is bound by shared.py. It drives .veldo/declared.py through V._VC._organ. Its fixture rows write real manifests and real files in temporary directories; its LIVE rows read this repository's own manifest and assert SET properties rather than counts, so adding a capability cannot redden them."
   },
   {
+   "name": "23_veldo_0006_budget_state",
+   "file": "23_veldo_0006_budget_state.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "23_veldo_0006_budget_state"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED: its free names were enumerated from its own AST and every one is bound by shared.py. It drives .veldo/budget_state.py AND .veldo/governor.py through V._VC._organ, because the item's central claim is that every number comes from the governor and equality against a second copy would prove nothing. TIME IS A PARAMETER in every row, so no row depends on the wall clock. It spawns no subprocess."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"
