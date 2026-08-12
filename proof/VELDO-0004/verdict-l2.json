@@ -1,0 +1,136 @@
+{
+  "schema": "veldo.verdict/v1",
+  "spec_id": "VELDO-0004",
+  "commit": "dda45bff3e86fb336f5899f37ed6678a42ce06b6",
+  "reviewer": "claude-opus-5[1m] (independent L2, fresh context)",
+  "reviewed_at": "2026-08-12T11:33:44Z",
+  "verdict": "fail",
+  "method": "Every mutation was applied to a private copy at /tmp/.../scratchpad/rev-VELDO-0004, proven landed by git diff, run through `python3 scripts/selftest.py --suite 21_veldo_0004_promise_corpus`, and reverted (`git status --short` empty after each). The live repository was never mutated; this verdict file is the only write to it. Baseline in the copy: 53 passed, 0 failed (27 rows from this fragment). `bash scripts/verify.sh` in the copy: GATE: GREEN (dda45bff3e86fb336f5899f37ed6678a42ce06b6). Findings severities use blocking|note because .veldo/validate.py rejects any other value in a list-shaped findings array; the reviewer's own three-level severity is carried in l2_severity (see F12).",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "DRIVEN. The declared falsification, applied literally (`pred not in PREDICATES` -> always false), reds the suite at 42 passed / 1 failed - but it does NOT red the row the field names: it raises KeyError('looks_fine') at PRED_NEEDS[pred] inside the block, the _pm_block wrapper reds instead, and 11 of 27 rows silently stop running. I re-drove it with PRED_NEEDS.get(pred, ()) so the block survives, and then the named row reds correctly (52 passed / 1 failed, 26 rows still running), so the predicate refusal genuinely has teeth. Also driven independently: the 'BOTH files named' leg (replacing the joined path list with sorted(paths)[0] reds that row). The negative-control-first row, the five per-field missing-field rows, the needle-at-read-time row, the `waived` unrecognised-key row and the two target-unbound rows are all present and discriminating. GAPS, both recorded as findings rather than as a downgrade because AC1's subject is the CLAIM contract: the CORPUS-level half of 'the key set is closed' is entirely unasserted (F6), and a claim this validator ACCEPTS can still be unrunnable - an integer needle crashes the report (F4)."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "DRIVEN, and this is the best-defended criterion in the item. Reading the outcome from `believed` at the top of settle() reds BOTH rows (51 passed / 2 failed). I also drove the narrower cheat the negative control exists for - trust `believed` only when it says CONTRADICTED - and the negative-control row catches it ALONE (52 passed / 1 failed), so that leg is load-bearing rather than decorative. The AST symbol row is real: a name appearing only in a docstring settles CONTRADICTED while the def settles SUPPORTED. LIMIT, filed as F3 rather than as a downgrade because AC2's text is scoped to `believed` by name: a DIFFERENT author-written field does settle a claim outright - `predicate: unsettleable` returns UNSETTLEABLE without reading anything and copies the author's own `note` into the `measured` column."
+    },
+    {
+      "id": "AC3",
+      "status": "unevidenced",
+      "note": "SPLIT. The first leg is confirmed and driven: folding UNSETTLEABLE into SUPPORTED reds three rows (50 passed / 3 failed), the all-unsettleable stand-down and its reason string are asserted, the unsettleable claim is asserted into its own bucket and onto the page, and the partition row sums the buckets to the claim count. The second leg is NOT evidenced. AC3 says 'NO SCORE IS PRINTED: there is no ratio, no percentage and no float anywhere in the report'; the row that claims to check it inspects only the report DICT's keys and values. I added `  50% of this corpus is supported (0.50)` to report_lines - the docstring's own 'report as lines a stranger reads', and the only surface a number would ever be quoted from - and the suite stayed FULLY GREEN at 53 passed / 0 failed (F8). Separately, the confident-zero this criterion exists to prevent is reachable by another route the suite never fixtures: a malformed claim beside a good one vanishes from the report entirely and the page prints '1 claim(s) ... 0 CONTRADICTED' over a corpus that declared two (F5), and an unparseable corpus file can be swallowed into an empty one with the suite still green (F7)."
+    },
+    {
+      "id": "AC4",
+      "status": "unevidenced",
+      "note": "THE CRITERION'S CENTRAL AND UNIVERSAL CLAIM IS ASSERTED FOR ONE PREDICATE OUT OF FIVE. The declared falsification does red: dropping `measured` on a CONTRADICTED path_exists settlement reds two rows (51 passed / 2 failed). But 'every CONTRADICTED settlement carries the predicate, the target it read AND what it found there' is pinned only on that one path. I stripped `measured`, `predicate` AND `target` from every contradiction produced by path_absent, text_present, text_absent and symbol_defined in one mutation and the suite stayed FULLY GREEN at 53 passed / 0 failed (F1). The text predicates are the ones this item is actually about - a claim a document makes is text - and each was independently vacuous on its own too. The criterion's wider sentence, 'every settlement records the predicate, the target it read, and what it actually found', is additionally FALSE today for declared-unsettleable settlements: target is None and `measured` is the author's own prose (F3). Confirmed by inspection and by probe, not by the suite: every contradiction in the unmutated module does carry a reading, and the unreadable-target row (an unopenable target settles UNSETTLEABLE, never CONTRADICTED) is genuine."
+    },
+    {
+      "id": "AC5",
+      "status": "unevidenced",
+      "note": "SPLIT. Adoption safety is confirmed and driven: replacing the absent-directory stand-down with a clean answer reds the named row (52 passed / 1 failed), the reason string is asserted by substring, the with-corpus negative control answers, and the ONE-key-shape row compares sorted(report) to REPORT_KEYS on both the stood-down and answering paths. 'NO GATE STAGE LOADS THIS' is NOT evidenced. The _pm_loads AST scan only inspects Call nodes whose function name is spec_from_file_location/_organ/_load/_sibling, so it is blind to `functools.partial(_organ, name, path)` - the idiom .veldo/validate_checks.py uses for ALL NINE of its organs. I wired promises.py into validate_checks.py exactly that way, PROVED it genuinely loads (the wiring wrote /tmp/l2_0004_promises_really_loaded containing the module's own SCHEMA constant, 'veldo.promises/v1', during the run), and the row stayed GREEN at 53 passed / 0 failed. A direct `_organ(\"promises\", ...)` IS caught (control run: 52 passed / 1 failed), so the blind spot is precisely the partial idiom plus any non-Constant path argument (F2). The scan also globs only `.veldo/*.py` and `scripts/*.py`: bin/veldo - documented as 'the single front door' and carrying no .py suffix - plus scripts/suites/*.py and every subdirectory are outside it. The PROPERTY itself is true at this commit: I grepped the whole tree for the four load idioms against 'promises' and the only hit is the suite's own line 24, and .veldo/init_scaffold.py:79 merely lists the path in a ship manifest."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "blocking",
+      "l2_severity": "blocker",
+      "text": "AC4's universal claim - every CONTRADICTED settlement carries the predicate, the target it read and what it found - is asserted for exactly one of the five mechanical predicates. Evidence can be stripped from every other contradiction path with the suite fully green, so the check protecting this item's whole reason for existing cannot fail for text_present, text_absent, symbol_defined or path_absent. path_absent has no coverage at all: the string does not appear once in the suite fragment.",
+      "evidence": "In the scratch copy, one mutation set out['measured']=out['predicate']=out['target']=None on every CONTRADICTED settlement produced by the text branch, the symbol branch and path_absent (path_exists untouched). git diff confirmed all three hunks landed. `python3 scripts/selftest.py --suite 21_veldo_0004_promise_corpus` -> 'selftest (PARTIAL, 1 of 34 suites): 53 passed, 0 failed' (baseline is also 53/0). Each branch was also vacuous alone: text-only -> 53 passed 0 failed; symbol-only -> 53 passed 0 failed. For contrast the declared mutation on path_exists reds 2 rows (51 passed, 2 failed). Predicate coverage counted in the fragment: path_exists 2, path_absent 0, text_present 9, text_absent 3, symbol_defined 4."
+    },
+    {
+      "id": "F2",
+      "severity": "blocking",
+      "l2_severity": "blocker",
+      "text": "AC5's 'NO GATE STAGE LOADS THIS' is enforced by an AST scan that cannot see this repository's own organ-wiring idiom. .veldo/validate_checks.py wires all nine of its organs as functools.partial(_organ, name, ROOT / '.veldo' / 'x.py'); the scan skips those Call nodes because the outer function name is 'partial'. So the one wiring anybody would actually write is invisible to the assertion that forbids it. The scan additionally globs only .veldo/*.py and scripts/*.py, leaving bin/veldo (the documented single front door, no .py suffix), scripts/suites/*.py and all subdirectories unscanned.",
+      "evidence": "In the scratch copy I added to .veldo/validate_checks.py: `_promises_module = functools.partial(_organ, \"promises\", ROOT / \".veldo\" / \"promises.py\")` then `_PROMISES_ORGAN = _promises_module()` and a marker write. Proof it really loaded during the run: /tmp/l2_0004_promises_really_loaded contained 'veldo.promises/v1', the module's own SCHEMA constant. Suite: 'selftest (PARTIAL, 1 of 34 suites): 53 passed, 0 failed' - the AC5 no-load row stayed green with the organ genuinely loaded by a required gate stage. Fair-side control, same file, `_PROMISES_ORGAN = _organ(\"promises\", ROOT / \".veldo\" / \"promises.py\")`: 'SELFTEST FAIL: VELDO-0004 AC5: NO GATE STAGE LOADS THIS' (52 passed, 1 failed)."
+    },
+    {
+      "id": "F3",
+      "severity": "note",
+      "l2_severity": "major",
+      "text": "A claim is settled by a field its author wrote. `predicate: unsettleable` returns UNSETTLEABLE without reading anything, requires no target (PRED_NEEDS[unsettleable] is empty), and puts the author's own `note` string verbatim into `measured` - so report_lines prints an authored sentence in the exact column every other row prints a measurement. `believed` is also suppressed for that outcome (promise_report excludes UNSETTLEABLE from author_disagrees), so declaring unsettleable buys total silence about the author's expectation. This is the move the suite explicitly refuses when it is spelled `waived: trust me` ('exactly the key somebody would add to make an inconvenient claim stop counting'), sanctioned under a different name. It also defeats the AC3 stand-down: one trivially-true claim beside twenty declared-unsettleable ones makes the report answer and print '0 CONTRADICTED'.",
+      "evidence": "Probe against the unmutated module (importlib-loaded promises.py + validate.parse_yamlish, real trees in tempdirs). Claim {predicate: unsettleable, believed: SUPPORTED, note: 'MY OWN SENTENCE PASTED AS THE MEASUREMENT'} -> check_promises_dir errors: 0; settlement outcome UNSETTLEABLE, target None, measured 'MY OWN SENTENCE PASTED AS THE MEASUREMENT', author_disagrees []. With 1 text_present claim + 20 declared-unsettleable claims: 'promise corpus: 21 claim(s) in 1 corpus(es): 1 supported, 0 CONTRADICTED, 20 unsettleable', author_disagrees []."
+    },
+    {
+      "id": "F4",
+      "severity": "note",
+      "l2_severity": "major",
+      "text": "promise_report raises an uncaught TypeError on an integer needle, losing the entire report. .veldo/validate.py's parse_yamlish coerces any /-?\\d+/ scalar to int, so `needle: 200` - the obvious way to claim 'the document says 200 countries' - produces `200 in text`. check_promises_dir accepts the claim with zero errors (it tests needle for truthiness, never for type), then settle() dies. Every other claim in every other corpus dies with it. The module has a six-name refusal taxonomy for author mistakes precisely so this class is named rather than thrown, and the comment above PRED_NEEDS says a claim that cannot be run is 'refused at read time'; this one is not.",
+      "evidence": "Probe: corpus with claim {predicate: text_present, target: docs/doc.md, needle: 200}. check_promises_dir -> 0 errors, no output. promise_report -> \"TypeError: 'in <string>' requires string as left operand, not int\". Re-run with that claim plus three healthy path_exists claims: same TypeError, no report produced at all."
+    },
+    {
+      "id": "F5",
+      "severity": "note",
+      "l2_severity": "major",
+      "text": "A malformed claim beside a well-formed one disappears from the report with no trace, and the page then prints a confident zero. all_claims() drops any claim with structural problems and its docstring defers to check_promises_dir - which nothing in the tree calls, because AC5 asserts nothing loads this module at all. So promise_report is the only surface, and it reports 1 claim where the author wrote 2, with no 'dropped' bucket. The file-level version of the same weakness IS carried loudly ('N corpus file(s) COULD NOT BE READ and are absent from every count above'), so the shape was understood and covered on one side only. This is AC3's own confident zero: '0 CONTRADICTED' over a corpus containing a claim nothing settled.",
+      "evidence": "Probe: corpus a.yaml with CLAIM-GOOD (well formed) and CLAIM-BAD (text_present, no needle). Report: claims counted 1, unreadable [], single line 'promise corpus: 1 claim(s) in 1 corpus(es): 1 supported, 0 CONTRADICTED, 0 unsettleable' - CLAIM-BAD appears nowhere. check_promises_dir on the same tree reports 1 error, but nothing calls it. Contrast: a tab-indented b.yaml yields the loud 'COULD NOT BE READ ... absent from every count above' line."
+    },
+    {
+      "id": "F6",
+      "severity": "note",
+      "l2_severity": "major",
+      "text": "The CORPUS-level half of AC1's 'the key set is closed' is entirely unasserted: CORPUS_REQUIRED, the unrecognised-corpus-key refusal and the schema-mismatch refusal can all be deleted with the suite fully green. The suite only ever drops CLAIM fields (its _pm_emit helper has a head-drop parameter that no row uses). This matters to AC4, not just AC1: `document` is a corpus field, and with the corpus closure gone a corpus omitting it prints 'None' as the document on every contradiction line - the locator a human needs to overturn the accusation.",
+      "evidence": "Mutation replacing the three corpus-level checks in corpus_problems() with `if False: ...`; git diff shows the ten deleted lines. Suite: 'selftest (PARTIAL, 1 of 34 suites): 53 passed, 0 failed'."
+    },
+    {
+      "id": "F7",
+      "severity": "note",
+      "l2_severity": "major",
+      "text": "PROMISE_UNREADABLE never fires in any assertion and the report's `unreadable` bucket is never populated by any fixture, so the module's stated law - 'an unreadable corpus is CARRIED as an error, never dropped: a dropped file is a coverage figure quoted without the weakness that produced it' - is unprotected. An unparseable corpus can be swallowed into an empty one and the report will announce zero contradictions over a file it silently discarded. The spec's error_taxonomy names PROMISE_UNREADABLE as one of six refusals 'named separately because each is a different author mistake'; five appear in the suite, this one does not.",
+      "evidence": "Mutation: load_corpus's `except Exception -> raise PromiseRecordError(... CAUSE_UNREADABLE ...)` replaced with a return of an empty corpus dict. git diff confirms. Suite: 'selftest (PARTIAL, 1 of 34 suites): 53 passed, 0 failed'. Grep of the fragment: CAUSE_UNREADABLE is referenced nowhere; the only assertion touching CAUSES is a set-uniqueness tautology."
+    },
+    {
+      "id": "F8",
+      "severity": "note",
+      "l2_severity": "minor",
+      "text": "AC3's 'NO SCORE IS PRINTED ... no ratio, no percentage and no float anywhere in the report' is asserted only over the report dict, never over report_lines - the surface the module's own docstring calls 'the report as lines a stranger reads' and the only place a proportion would ever be quoted from. A printed percentage and a printed float both pass.",
+      "evidence": "Mutation appending `'  %d%% of this corpus is supported (%.2f)'` to report_lines(). git diff confirms the hunk. Suite: 'selftest (PARTIAL, 1 of 34 suites): 53 passed, 0 failed'. The unmutated module prints no score, so the property is true today and merely unpinned."
+    },
+    {
+      "id": "F9",
+      "severity": "note",
+      "l2_severity": "minor",
+      "text": "symbol_defined states a falsehood in the evidence column for imported names, which is the wrong-accusation failure mode AC4 exists for. _symbol_defined recognises defs, classes and Name-Store assignments only, so an imported binding is reported as \"symbol 'ast' is NOT defined\" and a true sentence settles CONTRADICTED. The measured string should say what the predicate looked for (a def, class or assignment) rather than assert non-existence of the name.",
+      "evidence": "Probe against a fixture module `import ast\\nfrom pathlib import Path\\n...`: CONTRADICTED C-AST -> \"symbol 'ast' is NOT defined\"; CONTRADICTED C-PATH -> \"symbol 'Path' is NOT defined\". Both names are in fact bound at module level."
+    },
+    {
+      "id": "F10",
+      "severity": "note",
+      "l2_severity": "minor",
+      "text": "The stand-down reason is factually wrong when a present corpus declares only malformed claims: the report prints 'promise corpus: stood down - no corpus declares a claim at all'. The corpus does declare a claim; it is the claim that is broken. In a module whose whole thesis is that a settlement must name what it measured, the stand-down reason misnames what happened.",
+      "evidence": "Probe: single corpus whose only claim is text_present with no needle. promise_report -> stood_down True, reason 'no corpus declares a claim at all', claims 0."
+    },
+    {
+      "id": "F11",
+      "severity": "note",
+      "l2_severity": "minor",
+      "text": "The suite fragment's docstring says 'every settlement is asserted in both directions', which is false for two of the five mechanical predicates: path_absent is never settled at all (the string does not occur once in the fragment) and text_absent's SUPPORTED direction is never settled. path_absent does work - I exercised both directions by hand - so this is unasserted coverage rather than a live bug, but the docstring is a coverage claim about code and is checkable.",
+      "evidence": "Counted occurrences in scripts/suites/21_veldo_0004_promise_corpus.py: path_exists 2, path_absent 0, text_present 9, text_absent 3, symbol_defined 4, unsettleable 11. Hand probe: path_absent on a missing target -> SUPPORTED; on an existing target -> CONTRADICTED 'path exists'."
+    },
+    {
+      "id": "F12",
+      "severity": "note",
+      "l2_severity": "minor",
+      "text": "PROCESS, outside the item: the verdict template handed to L2 reviewers specifies findings severities blocker|major|minor, and .veldo/validate.py rejects exactly that - list-shaped findings entries must carry severity blocking|note. A reviewer who follows the template reds the contracts stage of the gate with their own verdict file. This file therefore uses blocking|note and carries the template's vocabulary in l2_severity; the template or the validator should be reconciled.",
+      "evidence": "In the scratch copy, a verdict-l2.json with severity 'major': `python3 .veldo/validate.py all` printed 'proof/VELDO-0004/verdict-l2.json: list-shaped findings entries need severity blocking|note and text'. Same file with severity blocking/note plus extra keys: validate.py all exits 0 and `validate.py verdict <file>` exits 0."
+    },
+    {
+      "id": "F13",
+      "severity": "note",
+      "l2_severity": "minor",
+      "text": "A target that is a symlink pointing outside the repository is read and settled. target_problems refuses absolute paths and '..' segments, and the suite asserts the sentence 'so no claim can be settled against a file outside this repository'; a symlink committed in the tree defeats that sentence. Low impact because the corpus is authored in-repo data, but the assertion's prose overstates what the check delivers.",
+      "evidence": "Probe: tree containing link.txt -> a file in an unrelated temp directory containing 'OUTSIDE THE REPOSITORY'; claim {predicate: text_present, target: link.txt, needle: 'OUTSIDE'} settles SUPPORTED with measured \"found 'OUTSIDE' at offset 0\"."
+    },
+    {
+      "id": "F14",
+      "severity": "note",
+      "l2_severity": "minor",
+      "text": "The proof bundle overstates what was driven, in two ways. (1) The AC1 falsification, applied as written, does not red the row the falsified_by field names: it raises KeyError('looks_fine') inside the block, the wrapper row reds instead, and 11 of 27 rows stop running (42 passed vs a 53 baseline). driven-falsifications.txt records this as 'HAS TEETH' with the wrapper row quoted, which is true of the suite but not of the named check; the disappearance of 11 assertions is not noted anywhere. (2) manifest.json repeats 'AC1: 5 of 5 declared falsification(s) re-driven' under each of the five criteria, when exactly one mutation targets each criterion; the per-criterion line reads as five mutations per criterion.",
+      "evidence": "I re-drove AC1 both ways. Literal mutation (`pred not in PREDICATES` -> False): 'SELFTEST FAIL: VELDO-0004 AC1: the block ran to completion rather than raising (KeyError(...))', 42 passed 1 failed - byte-for-byte the producer's recorded line. With PRED_NEEDS.get(pred, ()) added so the block survives: 'SELFTEST FAIL: VELDO-0004 AC1: a claim declaring predicate `looks_fine` is refused with PROMISE_PREDICATE_UNKNOWN...', 52 passed 1 failed, 26 rows still running. proof/VELDO-0004/driven-falsifications.txt lists five mutation rows total, one per criterion."
+    }
+  ]
+}

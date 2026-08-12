@@ -143,7 +143,16 @@ COMMIT=$(git rev-parse --verify HEAD 2>/dev/null || echo "no-git")
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 mkdir -p .veldo
 if [ "$FAIL" -eq 0 ]; then STATUS=green; EVENT=gate.passed; else STATUS=red; EVENT=gate.failed; fi
-VELDO_VERSION=$(python3 .veldo/version.py 2>/dev/null | awk '{print $1}')
+# THE EXIT CODE AND THE SHAPE, both, and neither alone. version.py prints its REFUSAL on stdout
+# when it cannot read a version, so taking the first word gave "veldo" - an invented version, in the
+# one record where it would be believed, and it shipped to adopters. Found by independent review of
+# VELDO-0010. The exit status is checked first, and the value must still LOOK like a version, because
+# a shape test survives any future change to what that script prints.
+VELDO_VERSION=""
+if _veldo_v=$(python3 .veldo/version.py 2>/dev/null); then
+  _veldo_v=$(printf '%s' "$_veldo_v" | awk '{print $1}')
+  case "$_veldo_v" in [0-9]*.[0-9]*) VELDO_VERSION="$_veldo_v" ;; esac
+fi
 if [ -n "$VELDO_VERSION" ]; then VERSION_JSON="\"$VELDO_VERSION\""; else VERSION_JSON=null; fi
 printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s}\n' \
   "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" > .veldo/last_verify

@@ -1,0 +1,109 @@
+{
+  "schema": "veldo.verdict/v1",
+  "spec_id": "VELDO-0010",
+  "commit": "dda45bff3e86fb336f5899f37ed6678a42ce06b6",
+  "proof_digest": "sha256:2bb070d16261f001",
+  "reviewer": "claude-opus-5[1m] (independent L2, fresh context)",
+  "reviewed_at": "2026-08-12T11:30:00Z",
+  "verdict": "fail",
+  "summary": "The evidence half of this item is real: AC1 through AC4 are each asserted over both fixtures and the live corpus, I drove all four declared falsifications in a scratch copy and each reddened the row its field names, and using the feature (adding new bundles that carry the field, one well shaped and one malformed) leaves the suite green, so the live rows are a partition and not a pin. AC5 is refuted. Both of its gate assertions are substring scans over verify.sh's source text, so a one line comment containing the quoted key satisfies them: with the stamp deleted from scripts/verify.sh, engine/scripts/verify.sh and run_scope.verify_stamp_payload and only such a comment left behind, suite 27 is 44 passed 0 failed and the FULL selftest is 4530 passed 0 failed, identical to the baseline, while the gate's own record loses the field. That is exactly the claim AC5 makes about itself ('MENTIONING a producing version without WRITING the key is red') failing on its own terms. Separately, the criterion's 'NULL rather than a guessed string' property is false at runtime: when the version cannot be read the gate stamps \"veldo_version\":\"veldo\", because version.py prints its refusal on stdout and the gate takes field 1 of it. The VERSION_JSON=null branch is unreachable for all three causes the module declares.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "confirmed",
+      "note": "Drove the declared falsification in a scratch copy: added \"veldo_version\" to PROOF_REQ in .veldo/validate.py, proved it landed with git diff, and both AC1 rows reddened (42 passed, 2 failed). Read the contract: PROOF_REQ at .veldo/validate.py:289 does not carry the field and check_json only requires listed keys, so an extra key is accepted. Used the feature: added two fresh bundles carrying the field (one 4.1.0, one 'latest') to a scratch copy and both python3 .veldo/validate.py all and suite 27 stayed green, so nothing here reddens on first real use. Defect against the row text only, filed as a note: the message prints the live count (155 bundles) while asserting 'MEASURED: none of them carries the field' when 12 already do."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Drove the declared falsification: replaced the unversioned branch in provenance_report with v = version(base)[0], proved it landed, and the named fixture row reddened. The property itself is real in the reader: an absent field appends to unversioned and returns, so it appears under no version, and provenance_lines emits the 'NOTHING infers a version' sentence whenever unversioned is nonempty. Two weaknesses, filed as a finding rather than a refusal because the fixture row carries the criterion: the third row, titled 'OVER THE REAL CORPUS', stayed GREEN under that same inference mutation (only the fixture row reddened), and its text states that every bundle in this repository is UNVERSIONED and by_version is EMPTY, which is false at this commit (12 versioned, by_version has one key)."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Drove the declared falsification: reduced _version_shaped to isinstance(v, str), proved it landed, and all four malformed rows reddened plus the mixed-corpus partition row (39 passed, 5 failed). Checked the never-equality half by reading proof_version_problems and by the row that accepts 1.0.0 against a tree declaring 3.10.1. Separate defect, filed as a finding: a manifest that parses as JSON but is not an object (for example []) is not reported malformed at all, it raises AttributeError out of provenance_report, and because the suite computes _VP_LIVE at module level (line 45, outside _vp_block) one such file aborts the entire selftest with a traceback rather than reddening a named row."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Drove the declared falsification: dropped the unversioned append from provenance_report, proved it landed, and the live partition row plus the mixed-corpus row reddened along with AC2 (41 passed, 3 failed), reproducing proof/VELDO-0010/driven-falsifications.txt exactly. Confirmed the row asserts a partition and pins no count, and confirmed by use: with two extra bundles added, versioned plus unversioned plus malformed still equalled the total (157 = 13 + 143 + 1). One incompleteness filed as a note: the total counts proof/*/manifest.json, so four proof directories that hold no manifest.json (WARP-0620 holds manifest-draft.json, WARP-0732, WARP-1702, WARP-1703 hold only approval-dmitry.json) sit outside every bucket while the report calls its total 'bundle(s)'."
+    },
+    {
+      "id": "AC5",
+      "status": "refuted",
+      "note": "REFUTED on two grounds, both executed. (1) The stamp check is a substring scan of verify.sh's text ('\"veldo_version\":' in _VP_GATE), so a comment satisfies it. In a scratch copy I removed the field from the printf in BOTH scripts/verify.sh and engine/scripts/verify.sh and from run_scope.verify_stamp_payload, and left one line reading '# TODO(VELDO-0010): the record still owes a \"veldo_version\": field. Not written yet.': suite 27 was 44 passed 0 failed and the FULL selftest was 4530 passed 0 failed, byte-identical in count to the baseline. So neither 'the gate stamps it' nor 'mentioning equals stamping' can catch a gate that stamps nothing. A narrower mutation (printf field removed, run_scope untouched, comment present) ran the real gate and produced .veldo/last_verify without the key while suite 27 stayed green; the only row that reddened in the whole gate belonged to WARP-0717, whose printf key parse is coupled to run_scope. (2) The 'NULL rather than a guessed string' property is false in the gate: running lines 159 to 162 of scripts/verify.sh verbatim in a tree with no canonical declaration wrote \"veldo_version\":\"veldo\", because version.py prints 'veldo version: VERSION_CANONICAL_ABSENT ...' on stdout (only stderr is suppressed) and awk '{print $1}' takes the first word. All three causes the module declares print that prefix, so VERSION_JSON=null is unreachable for every failure the version reader models. The row asserting the null property greps the shell source and never runs the stamping path, and nothing in the repository asserts the content of the record the gate actually writes. (3) Also measured: _VP_MENTIONS looks only for the lowercase key, so with the printf field removed the gate still computed VELDO_VERSION and VERSION_JSON and wrote no field, and the 'mentioning equals stamping' row PASSED (43 passed, 1 failed, only the stamp row red). That is precisely the half-done registration PLAN-0018 ledger finding 45 says the two-fact fix catches."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "blocking",
+      "level": "blocker",
+      "text": "AC5's two gate assertions prove nothing about the gate. Both are substring scans over the text of scripts/verify.sh, so a comment mentioning the quoted key satisfies 'the gate WRITES the key'. With the stamp removed from scripts/verify.sh, engine/scripts/verify.sh and scripts/run_scope.py, and a single comment left behind, the item's own suite and the entire repository stay green while the gate record loses the field. This is a substring scan used to prove a presence, and it is the same shape as using a substring scan to prove an absence.",
+      "evidence": "Scratch copy /tmp/.../scratchpad/rev2: printf field deleted in both verify.sh files, veldo_version removed from run_scope.verify_stamp_payload, comment '# TODO(VELDO-0010): the record still owes a \"veldo_version\": field. Not written yet.' added after the redirect. git diff --stat: 3 files changed. python3 scripts/selftest.py --suite 27_veldo_0010_evidence_provenance -> 'selftest (PARTIAL, 1 of 34 suites): 44 passed, 0 failed'. python3 scripts/selftest.py (all suites) -> 'selftest: 4530 passed, 0 failed', zero SELFTEST FAIL lines. Narrower variant in /tmp/.../rev-VELDO-0010 (run_scope untouched): bash scripts/verify.sh -> GATE: RED with exactly one failure, 'WARP-0717 AC2 NON-VACUITY', and .veldo/last_verify = {\"commit\":\"dda45bff...\",\"status\":\"red\",\"at\":\"2026-08-12T11:24:42Z\",\"checks_run\":8,\"checks_na\":15} with no veldo_version key, while suite 27 alone was 44 passed 0 failed."
+    },
+    {
+      "id": "F2",
+      "severity": "blocking",
+      "level": "blocker",
+      "text": "The gate stamps an invented version instead of null when the version cannot be read, which is the exact failure AC5 says it prevents. VELDO_VERSION=$(python3 .veldo/version.py 2>/dev/null | awk '{print $1}') captures the refusal line, which version.py prints on STDOUT for all three declared causes (VERSION_CANONICAL_ABSENT, VERSION_DISAGREEMENT, VERSION_UNPARSEABLE), so $1 is the word 'veldo' and the record carries \"veldo_version\":\"veldo\". VERSION_JSON=null is reachable only when python3 or the file is missing entirely. Present identically in engine/scripts/verify.sh:146-149, so every adopter gate inherits it. Nothing asserts the runtime record: the criterion's row greps the shell source for the string VERSION_JSON=null.",
+      "evidence": "sed -n '159,162p' /home/dmitry/projects/veldo/scripts/verify.sh > stamp_lines.sh; in a directory holding only .veldo/version.py copied from HEAD (no .claude-plugin/marketplace.json): 'python3 .veldo/version.py' -> 'veldo version: VERSION_CANONICAL_ABSENT - the canonical declaration ... is absent, so there is no version to report and none will be guessed' (exit 1); sourcing stamp_lines.sh with COMMIT/STATUS/TS/RAN/NA set wrote .veldo/last_verify = {\"commit\":\"abc123\",\"status\":\"green\",\"at\":\"now\",\"checks_run\":8,\"checks_na\":15,\"veldo_version\":\"veldo\"}."
+    },
+    {
+      "id": "F3",
+      "severity": "blocking",
+      "level": "major",
+      "text": "The 'mentioning equals stamping' invariant is blind to the gate's own mention mechanism. _VP_MENTIONS tests only the lowercase key 'veldo_version', while the gate mentions and derives the producing version as VELDO_VERSION and VERSION_JSON. Removing the printf field therefore leaves a gate that computes a producing version and writes no field into the record, which is verbatim the 'half-done registration' PLAN-0018 ledger finding 45 says the two-fact fix catches, and the invariant row passed. The two facts are also not independent: '\"veldo_version\":' in the text implies 'veldo_version' in the text, so the second row can never red without the first.",
+      "evidence": "Scratch /tmp/.../rev-VELDO-0010 with only the printf field removed: grep -n 'veldo_version' scripts/verify.sh -> no hits; grep -n 'VELDO_VERSION|VERSION_JSON' -> lines 159 and 160 still present. python3 scripts/selftest.py --suite 27_veldo_0010_evidence_provenance -> '43 passed, 1 failed', the only failure being the stamp row; the row 'MENTIONING a producing version without WRITING the key is red' passed."
+    },
+    {
+      "id": "F4",
+      "severity": "note",
+      "level": "major",
+      "text": "The proof manifest credits every criterion with a re-driven falsification that the cited artifact does not contain. proof/VELDO-0010/manifest.json states, for each of AC1 through AC5, '1 of 1 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0010/driven-falsifications.txt)', while that file records one mutation only, labelled AC4, plus a baseline and a restore. Nothing in the gate reconciles the manifest's claim with the file, so the count is a confident one over an input that was never recorded for four criteria. I drove all five independently: AC1 to AC4 have teeth; AC5's declared mutation reddens only one of the two assertions it names, and its second declared variant reddens nothing.",
+      "evidence": "cat proof/VELDO-0010/driven-falsifications.txt -> BASELINE, one 'AC4 drop-unversioned-from-partition ... HAS TEETH' line, RESTORED. grep -rn 'driven-falsifications' over the tree outside proof/ returns nothing, so no validator or suite reads it. My own drives: AC1 -> 42 passed 2 failed; AC2 -> 41 passed 2 failed; AC3 -> 39 passed 5 failed; AC4 -> 41 passed 3 failed (matching the recorded row); AC5 -> 43 passed 1 failed, and 44 passed 0 failed for the comment variant."
+    },
+    {
+      "id": "F5",
+      "severity": "note",
+      "level": "major",
+      "text": "provenance_report raises on a proof manifest that parses as JSON but is not an object: proof_version_problems returns 'no problem' for a non-dict (version.py:266) and the caller then calls data.get (version.py:295), so a list or a bare string manifest is an uncaught AttributeError. Because the suite computes the live report at module level (27_veldo_0010_evidence_provenance.py:45, outside _vp_block) and scripts/selftest.py execs fragments without a guard, one such file aborts the whole selftest run with a traceback instead of reddening a named row. This contradicts the suite docstring ('EVERY CRITERION'S BLOCK IS WRAPPED, so a raise reds a NAMED row instead of shortening the run') and AC3's row claiming a corrupt bundle is reported malformed and never reads as one that predates the field.",
+      "evidence": "In scratch: printf '[]' > proof/VELDO-9996/manifest.json; python3 scripts/selftest.py --suite 27_veldo_0010_evidence_provenance -> traceback ending 'File .../27_veldo_0010_evidence_provenance.py, line 45, in <module> _VP_LIVE = VP.provenance_report(ROOT) ... AttributeError: list object has no attribute get'. Same raise reproduced directly against .veldo/version.py over a temp tree holding manifests '[]' and '\"3.10.1\"'."
+    },
+    {
+      "id": "F6",
+      "severity": "note",
+      "level": "major",
+      "text": "AC2's third row, titled 'OVER THE REAL CORPUS', cannot catch inference over the real corpus and its text states a falsehood. The assertion is 'by_version == {} or all(b not in unversioned for ...)'; the first disjunct is false at this commit and the second is guaranteed by the reader's own control flow, since a bundle is appended to exactly one bucket. Under the AC2 inference mutation, where all 143 unversioned bundles were attributed to today's version, this row stayed green. Its message also asserts that every bundle in this repository is UNVERSIONED and by_version is EMPTY, which is false: 12 bundles carry the field and by_version has the key 3.10.1.",
+      "evidence": "python3 .veldo/version.py --provenance at HEAD -> '155 bundle(s): 12 name the version that produced them, 143 are UNVERSIONED, 0 malformed / produced by 3.10.1: 12 bundle(s)'. With provenance_report mutated to infer version(base)[0], the suite reported '41 passed, 2 failed' and the only VELDO-0010 failure was the fixture row; the OVER THE REAL CORPUS row did not fail."
+    },
+    {
+      "id": "F7",
+      "severity": "note",
+      "level": "minor",
+      "text": "The measurement the item is built on is stale in the assertion text the gate prints and in the spec. AC1's row interpolates the live bundle count and then states 'MEASURED: none of them carries the field'; at this commit that message reads '155 existing bundles ... none of them carries the field' while 12 do. The spec repeats it as present tense in AC1 ('MEASURED on 2026-08-12: 143 proof bundles exist in this repository and NONE carries a producing version') and in the body ('143 proof bundles exist in this repository. None of them carries the version that produced it.'). The assertions themselves are correctly written as a partition and a lower bound, so this is wrong prose rather than wrong code, but it is prose the gate output prints.",
+      "evidence": "Suite output under the AC1 mutation: 'SELFTEST FAIL: VELDO-0010 AC1: the producing version is ABSENT from the proof contract's required keys, so every one of this repository's 155 existing bundles validates unchanged. MEASURED: none of them carries the field ...'. grep -l veldo_version proof/*/manifest.json -> 12 files."
+    },
+    {
+      "id": "F8",
+      "severity": "note",
+      "level": "minor",
+      "text": "The suite still carries the abandoned not-written posture, and its own written falsification is inverted. The module docstring says the item rests on the claim 'that the gate carries no version stamp yet', which is the opposite of what the code now asserts. The AC5 section header says 'THE GATE-OUTPUT HALF IS SPECIFIED AND NOT WRITTEN, AND THIS SAYS SO. FALSIFIED BY: declare a version slot in scripts/verify.sh, and the row below must go red' - a reader who drives that mutation gets green and would correctly record the row as vacuous. Two leftovers are computed and never used: _VP_DECLARES_NO_PROTECTED (which is False, since the spec declares two protected paths) and _VP_STAMPED.",
+      "evidence": "Read scripts/suites/27_veldo_0010_evidence_provenance.py lines 9-11, 184-186, 189-201 against the live assertions at 209-226; grep for _VP_DECLARES_NO_PROTECTED and _VP_STAMPED shows one definition and no use each. Not driven, since the defect is the text."
+    },
+    {
+      "id": "F9",
+      "severity": "note",
+      "level": "minor",
+      "text": "The spec contradicts itself about whether the gate edit landed. The risk field says 'the one gate-output line it would add is held for a recorded approval rather than written', and the body section 'The half that is not written, and why' says the item 'lands the evidence half and asserts the true state of the other rather than writing the line first and asking afterwards', while the footprint declares both verify.sh files as THE APPROVED GATE EDIT and AC5 asserts the stamp exists. A reader taking the body as the controlling statement would conclude the opposite of what the gate now checks.",
+      "evidence": "Read specs/VELDO-0010-evidence-names-the-version-that-produced-it.md lines 9-13 and 135-139 against lines 20-31 and 100-113. Not driven, since the defect is the text."
+    },
+    {
+      "id": "F10",
+      "severity": "note",
+      "level": "minor",
+      "text": "The partition's denominator is manifests found, not bundles present, so the coverage figure AC4 exists to give a reader is itself incomplete. provenance_report globs proof/*/manifest.json, so four proof directories that hold no manifest.json fall outside every bucket, including WARP-0620 which holds manifest-draft.json and three that hold only approval-dmitry.json. The report calls its total 'bundle(s)', so a reader cannot tell that four bundle directories were skipped.",
+      "evidence": "for d in proof/*/; do [ -f \"$d/manifest.json\" ] || echo \"$d\"; done -> proof/WARP-0620/ (approval-dmitry.json, manifest-draft.json, run-record.md), proof/WARP-0732/, proof/WARP-1702/, proof/WARP-1703/. ls proof | wc -l -> 160; ls proof/*/manifest.json | wc -l -> 155; the reader reports 155."
+    }
+  ]
+}

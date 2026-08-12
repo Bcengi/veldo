@@ -1,0 +1,94 @@
+{
+  "schema": "veldo.verdict/v1",
+  "spec_id": "VELDO-0005",
+  "commit": "dda45bff3e86fb336f5899f37ed6678a42ce06b6",
+  "reviewer": "claude-opus-5[1m] (independent L2, fresh context)",
+  "reviewed_at": "2026-08-12T11:35:00Z",
+  "verdict": "fail",
+  "summary": "The resolver works for the three shapes the item names and all five declared falsifications have real teeth, independently re-driven in a scratch copy. Two promises are false, both checkable in one command. (1) IT GATES NOTHING is wrong: the organ is loaded by its own suite, the suite runs inside verify.sh's required unit check, and two of its rows pin live repository state, so `mkdir design` at the repository root reds the gate and so does adding a CORRECT capability declaration whose home lives under any pack root except packs/claude. The AST scan that proves no gate stage loads the organ cannot see the only loader in the tree, because its glob domain stops at scripts/*.py and the loader is scripts/suites/22_veldo_0005_declared_vs_shipped.py. (2) The design-with-no-descendants stand-down rests on a false statement about the tree: docs/design/ holds 19 design documents, and PLAN-0018 observation 18, the observation that MOTIVATED this work item, names docs/design/05-product-planning-layer-sol.md as the exact instance the leg would have found. Separately the multi-root resolver misses a real stale declaration whenever a sibling mirror copy survives: deleting .veldo/promises.py leaves the organ reporting 0 unresolved because the home resolves to engine/.veldo/promises.py, and check_template_sync.sh does not catch it either.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "refuted",
+      "note": "Drove the declared falsification in a scratch copy: SEARCH_ROOTS reduced to ('.',) and home_segments reduced to [home]. Diffed the file to prove the mutation landed, then `python3 scripts/selftest.py --suite 22_veldo_0005_declared_vs_shipped` went from 44 passed / 0 failed to 37 passed / 7 failed, including the named AC1 row and the live-manifest row. The historical measurement also reproduces: a naive one-root no-compound resolver reports 43 unresolved of 178 homes today and all 43 resolve properly, so the 42-of-167 claim is credible. REFUTED ANYWAY, on the criterion's own words 'may live under a pack root rather than the repository root': .veldo/packs.json declares SEVEN pack roots and SEARCH_ROOTS hardcodes exactly one of them. I added one correct declaration, home .cursor/hooks/veldo-guard-hook.sh, a real executable file at packs/cursor/.cursor/hooks/veldo-guard-hook.sh, and the organ reported HOME_UNRESOLVED and reddened the suite. That is the same false-accusation class the item exists to eliminate, now reachable by any declaration about a non-Claude pack driver. The multi-root permissiveness also produces the mirror failure: `rm .veldo/promises.py` leaves unresolved == [] because resolve_segment returns engine/.veldo/promises.py, a path the manifest never declared. See F2 and F4."
+    },
+    {
+      "id": "AC2",
+      "status": "confirmed",
+      "note": "Drove the declared falsification: deleted the \"roots_tried\": tried entry from the HOME_UNRESOLVED finding in .veldo/declared.py. Diffed to prove it landed; the suite went to 38 passed / 2 failed with the AC2 block red (KeyError('roots_tried')) and AC1's block red too. The finding does carry home_as_declared, unresolved_segments, resolved_segments and roots_tried, and report_lines prints the roots in the human line. NOTE, not a refutation: the row asserts f['roots_tried'] == list(DC.SEARCH_ROOTS), which binds the record to the module's own constant rather than to the paths resolve_segment actually stat'ed, so a resolver that reported a root it never searched would still satisfy this row. See F7."
+    },
+    {
+      "id": "AC3",
+      "status": "confirmed",
+      "note": "Drove the declared falsification: replaced declared_paths.update(resolved) with declared_paths.add(home), so the undeclared scan compares against raw home strings. The suite went to 42 passed / 2 failed, reddening the compound row and the AC3 negative control. Both fixture legs are real: a module named as one half of `a.py + b.py` counts as declared, a module named nowhere is reported, and with every module named nothing is reported. Verified the live behaviour by hand: the organ reports 182 capabilities, 111 shipped modules, 0 unresolved, 21 undeclared, 0 exempted, and the row does not require the undeclared count to be zero, which is correct. NOTE: the AC3 'OVER THE REAL TREE' row survived this exact mutation, so its live leg contributes no discrimination. See F6."
+    },
+    {
+      "id": "AC4",
+      "status": "confirmed",
+      "note": "Drove the declared falsification: folded exemptions into declared_paths and deleted the exempted bucket append. Diffed to prove it landed; the suite went to 43 passed / 1 failed on the named AC4 row. Also drove the second leg by relaxing read_exemptions from `if mod and reason` to `if mod`, which reddened the no-reason row, so the reason requirement is load-bearing rather than decorative. Exempted modules are counted in their own bucket and never added to the declared count. NOTE, minor: a reason-less exemption is dropped in silence, the report says '0 exempted' when no exemption file exists at all rather than saying the input was absent, and an exemption naming a module that is already declared or no longer shipped is never reported, so the list can rot unseen. See F5."
+    },
+    {
+      "id": "AC5",
+      "status": "refuted",
+      "note": "The stand-down half is real and has teeth: driving the declared falsification (make an absent module directory set stood_down on the whole report) reddened the named AC5 row, an absent manifest stands the whole report down by name, an absent module directory stands only its own leg down, and every return path carries the same ten keys. REFUTED on the two claims that matter. FIRST, 'IT GATES NOTHING' and 'No gate stage loads this' are false. scripts/verify.sh line 19 declares CHECK_unit=\"required:python3 scripts/selftest.py\", the suites manifest registers 22_veldo_0005_declared_vs_shipped, and that fragment loads the organ and asserts over live repository state. `mkdir design` in a scratch copy of HEAD reds the suite (43 passed / 1 failed, selftest exit 1) with a row whose text says a leg is deliberately not built, and adding one correct capability declaration also reds it. The AST loader scan asserted for this claim globs .veldo/*.py and scripts/*.py non-recursively, so the one file in the whole tree that loads declared.py, scripts/suites/22_veldo_0005_declared_vs_shipped.py, is outside the domain by construction; I ran the suite's own predicate over the excluded paths and it returns True for that file. SECOND, the reason given for not building the design leg is false about this tree: 'this repository has no design/ directory at all' is only true of the literal top-level path. docs/design/ holds 19 design documents including a held-back area, and PLAN-0018 observation 18, the observation that produced W4, names docs/design/05-product-planning-layer-sol.md as a design that died with nothing noticing. See F1 and F3."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "blocking",
+      "level": "blocker",
+      "text": "The item claims it gates nothing, and it gates the whole repository. .veldo/declared.py is loaded by scripts/suites/22_veldo_0005_declared_vs_shipped.py, which runs inside verify.sh's required unit check, and two of that suite's rows assert over LIVE repository state: _dc_live['unresolved'] == [] (a required count of zero, in direct contradiction of the suite docstring nine lines earlier, which says 'none of them requires a count to be zero, because a row that pinned today's manifest would redden the moment somebody adds a capability') and `not (ROOT / 'design').is_dir()`. So an ordinary repository change reds the gate on a heuristic verdict, which is exactly what PLAN-0018 NG3 and this spec's own AC5 forbid. The evidence offered for the no-gate-stage claim cannot detect the violation: the AST scan globs .veldo/*.py and scripts/*.py non-recursively, so the only loader in the tree, the suite itself, is outside its domain, and running the suite's own _dc_loads predicate over the excluded paths returns True for it.",
+      "evidence": "Scratch copy at /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/rev-VELDO-0005 (cp -a of HEAD dda45bff, `bash scripts/verify.sh` GREEN there in 3m49s). `mkdir design && python3 scripts/selftest.py --suite 22_veldo_0005_declared_vs_shipped` -> 'SELFTEST FAIL: VELDO-0005 AC5: A DESIGN-WITH-NO-DESCENDANTS LEG IS NOT BUILT ...', 43 passed / 1 failed, exit 1; `rmdir design` restores 44 passed / 0 failed. Gate wiring: `grep -n selftest scripts/verify.sh` -> line 19 CHECK_unit=\"required:python3 scripts/selftest.py\"; `grep -n 22_veldo_0005 scripts/suites/manifest.json` -> registered. Loader scan domain: reimplemented the suite's _dc_loads over the paths it excludes -> ['scripts/suites/22_veldo_0005_declared_vs_shipped.py'], while its own domain (.veldo/*.py + scripts/*.py) returns []."
+    },
+    {
+      "id": "F2",
+      "severity": "note",
+      "level": "major",
+      "text": "The resolver still makes the false accusation the item was built to eliminate, for six of the seven pack roots this repository declares. SEARCH_ROOTS is the literal tuple ('.', 'engine', 'packs/claude'), while .veldo/packs.json declares pack_dir for packs/claude, packs/cursor, packs/codex, packs/copilot, packs/antigravity, packs/opencode and packs/aider. A capability whose home is a real file in any pack except claude, which is what a tool-native driver is, is reported HOME_UNRESOLVED, and because of F1 that false accusation reds the gate rather than being advisory. The fix is to read the roots from the manifest the repository already ships instead of hardcoding three of them.",
+      "evidence": "In the scratch copy, added one row to .veldo/capabilities.yaml: `cursor_guard_hook: {status: mechanical, home: .cursor/hooks/veldo-guard-hook.sh, note: the Cursor pack ships the guard hook}`. The file is real and executable: `ls -l packs/cursor/.cursor/hooks/veldo-guard-hook.sh` -> -rwxrwxr-x 1359 bytes. `python3 scripts/selftest.py --suite 22_veldo_0005_declared_vs_shipped` -> 'SELFTEST FAIL: VELDO-0005 AC1 OVER THE REAL MANIFEST ... every one of this repository's 183 declared capabilities resolves', 43 passed / 1 failed. Reverted with git checkout. Pack roots read from .veldo/packs.json; SEARCH_ROOTS printed from the module."
+    },
+    {
+      "id": "F3",
+      "severity": "note",
+      "level": "major",
+      "text": "The design-with-no-descendants stand-down is justified by a statement that is false about this tree, and a green assertion dresses that statement up as a verified absence. The spec and the module docstring both say 'this repository has no design/ directory at all, so a leg for it would ship unexercised and its first real run would be its first test', and the suite asserts `not (ROOT / 'design').is_dir()` with the words 'the directory it would need really is absent here'. Only the literal top-level path is absent. docs/design/ holds 19 design documents including docs/design/held-back/, several specs reference designs by path there, and PLAN-0018 observation 18, the observation that produced work item W4 (this spec), names docs/design/05-product-planning-layer-sol.md as a design that defined child_plans and never became a spec or plan item. The leg had a corpus and a known positive instance to run against. Narrowing scope is legitimate here; the false reason and the assertion that certifies it are not.",
+      "evidence": "`find docs/design -type f | head -20` -> 19+ files including 05-product-planning-layer-sol.md, INVERSION-*, PCATCH-*, held-back/README.md. `sed -n '315,330p' plans/PLAN-0018-what-a-complex-project-needs.md` -> '18. A design can die with nothing noticing. docs/design/05-product-planning-layer-sol.md defined child_plans and never became a spec or a plan item ... -> W4.' `grep -rn 'docs/design/held-back' specs/` -> WARP-0734, WARP-0625, WARP-0620 all reference designs held there. Suite line 288: `and not (ROOT / \"design\").is_dir()`."
+    },
+    {
+      "id": "F4",
+      "severity": "note",
+      "level": "major",
+      "text": "The unresolved leg misses a real stale declaration whenever a sibling mirror copy survives, which is this repository's most common drift shape by construction: the manifest itself says .veldo modules are distributed byte-identical across eight engine copies. resolve_segment accepts the first root where the path exists, so a home declared as .veldo/x.py resolves to engine/.veldo/x.py after the declared path is gone, and the report calls it clean while recording a resolved path the manifest never declared. Nothing in the report distinguishes 'resolved where declared' from 'resolved somewhere else'. Two cheap fixes exist: report the root a home resolved under, and treat resolution under a non-declared root as a named finding rather than silence.",
+      "evidence": "In the scratch copy: `rm .veldo/promises.py` (declared at capabilities.yaml line 184, promise_corpus, home .veldo/promises.py). The organ then reports unresolved: 0, modules: 110, and resolve_segment('.veldo/promises.py') -> 'engine/.veldo/promises.py'. `python3 scripts/selftest.py --suite 22_veldo_0005_declared_vs_shipped` -> 44 passed / 0 failed, fully green. `bash scripts/check_template_sync.sh` also passes with the file gone, reclassifying it from a compared pair to engine-only: 'template sync: pass (121 pair(s) compared, 6 declared per-repo, 132 engine-only)' versus 122 and 131 at baseline. Restored with git checkout."
+    },
+    {
+      "id": "F5",
+      "severity": "note",
+      "level": "minor",
+      "text": "The exemption ledger has three blind spots that undercut the anti-forgetting purpose AC4 states. The report prints '0 exempted' when .veldo/undeclared_exemptions.yaml does not exist at all, which is the same output an existing empty list would produce, while the manifest leg is careful to say an absent input is not the same fact as agreement. A reason-less exemption is dropped in silence, so a human who wrote one sees the module still listed as undeclared with no hint that the exemption was seen and refused. And an exemption naming a module that is already declared, or no longer shipped, is never reported, so the list can rot into exactly the forgetting place the criterion warns about.",
+      "evidence": "Read .veldo/declared.py read_exemptions and declared_report; ran the organ over the live tree: '0 exempted' with pathlib confirming .veldo/undeclared_exemptions.yaml does not exist. No REPORT_KEYS entry records the exemption input's presence, and no report line mentions a refused or stale exemption."
+    },
+    {
+      "id": "F6",
+      "severity": "note",
+      "level": "minor",
+      "text": "AC3's live row carries no discrimination. 'AC3 OVER THE REAL TREE', which asserts the six new organs are declared, stays green under AC3's own declared falsification, because all six are declared with simple non-compound homes whose strings equal their module paths, so raw-string comparison still finds them. The row reports a useful number (how many modules remain undeclared) but it cannot fail for the reason AC3 is about; the fixture rows are carrying the criterion alone.",
+      "evidence": "With declared_paths.add(home) substituted for declared_paths.update(resolved), the only failures were 'AC3: BOTH halves of a compound home count as DECLARED' and 'AC3 NEGATIVE CONTROL'; the 'AC3 OVER THE REAL TREE' row did not appear in the failure list (42 passed / 2 failed)."
+    },
+    {
+      "id": "F7",
+      "severity": "note",
+      "level": "minor",
+      "text": "AC2's what-it-tried record is asserted against the module's own constant rather than against the paths the resolver actually attempted. resolve_home returns list(roots) unconditionally, and the suite checks f['roots_tried'] == list(DC.SEARCH_ROOTS), so a resolver that skipped a root while still reporting it would satisfy the row and the printed line 'could not find X under any of ., engine, packs/claude' would be a false statement about work never done. In this repository a dropped root happens to be caught by AC1's live row, so the hole is narrow, but the property AC2 states is not the property asserted.",
+      "evidence": "Code reading of .veldo/declared.py resolve_home (returns list(roots), not the candidates stat'ed) against suite line 136. Not executed as a mutation, because every root currently has live dependents and dropping one reds AC1's live row instead."
+    },
+    {
+      "id": "F8",
+      "severity": "note",
+      "level": "major",
+      "text": "OUT OF SCOPE FOR VELDO-0005, recorded because it fires the moment this artifact exists: the existence of an uncommitted verdict artifact reds the gate. WARP-0727 AC1 in scripts/suites/13_warp_0623_codified_live.py asserts raw set equality between the git index (events.tracked_verdicts, git ls-files) and the working tree (validate._corpus over verdict_corpus.VERDICT_PATTERN), so any new verdict-l2.json reds the required unit check until it is staged or committed. The row's own text says it asserts the four divergence buckets are empty and that it never pins a cardinality, and all four buckets ARE empty here; the failing conjunct is the index-versus-worktree equality. verdict_corpus.divergence classifies the file as 'untracked' and check_verdict_domain_is_the_validated_set returns 0 errors, exactly as its docstring promises ('UNTRACKED is the one legitimate reason and is expected, an author validating before committing, so it is not red'), so the suite contradicts the module it tests. Staging the file clears it. An L2 fleet writing twelve verdicts leaves the gate red until every one is committed.",
+      "evidence": "Scratch copy at HEAD: with proof/VELDO-0005/verdict-l2.json untracked, `python3 scripts/selftest.py --suite 13_warp_0623_codified_live` -> 3511 passed / 1 failed on WARP-0727 AC1, and `bash scripts/verify.sh` -> GATE: RED with every other stage passing. Removing the file -> 3512 passed / 0 failed. `git add proof/VELDO-0005/verdict-l2.json` -> 3512 passed / 0 failed. Divergence measured directly: validated minus domain == ['proof/VELDO-0005/verdict-l2.json'], untracked == the same one path, entitled_not_validated / contradiction / overclaimed / misfiled all empty, and `python3 .veldo/validate.py verdict proof/VELDO-0005/verdict-l2.json` exits 0."
+    }
+  ]
+}

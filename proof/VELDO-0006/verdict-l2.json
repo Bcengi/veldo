@@ -1,0 +1,110 @@
+{
+ "schema": "veldo.verdict/v1",
+ "spec_id": "VELDO-0006",
+ "commit": "dda45bff3e86fb336f5899f37ed6678a42ce06b6",
+ "reviewer": "claude-opus-5[1m] (independent L2, fresh context)",
+ "reviewed_at": "2026-08-12T11:35:00Z",
+ "verdict": "fail",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "unevidenced",
+   "note": "The empty-history arm IS evidenced and its declared falsification has teeth: I applied the mutation myself in a scratch copy (used/remaining/state no longer conditioned on `inside`), diffed the file to prove it landed, and the named AC1 row plus the outside-the-horizon row went red (43 passed, 2 failed). What is NOT evidenced is the half AC1's own text names - THIS REPOSITORY. The only thing standing between the live stream and 'the whole budget remains' is the `tokens is not None` filter in spend_events(), and NO row in the suite ever passes an event without a tokens field. I replaced that filter with `return [e for e in events]`, proved the diff, and the suite stayed 45 passed / 0 failed; the same module then reported over the live .veldo/events.jsonl (1158 events, 0 carrying tokens): 'session (14400s horizon): 0 of 500000 used, 500000 remaining, from 26 recorded event(s)'. The fixtures are all-spend-or-empty, which is the one shape the live stream is not. See finding F1."
+  },
+  {
+   "id": "AC2",
+   "status": "confirmed",
+   "note": "Drove the declared falsification (`elif per_worker_rate <= 0:` -> `elif False:`), proved the diff, and the named AC2 BOOTSTRAP row plus the three-postures row went red (42 passed, 3 failed). Read the three rows: BOOTSTRAP asserts posture, the PERMITS/'not a pace' wording and desired_workers == max_workers; the PACING negative control asserts equality against BSG.desired_workers called directly; the SPENT row asserts zero workers, resume_at > now and the window state. All three fixtures differ only in inputs, so the posture is a measurement of its inputs. GAP, reported as finding F5 rather than as a refutation: per_worker_rate is a CALLER-SUPPLIED argument the module never derives (governor.measure_per_worker_rate appears once in this file, inside a docstring), so budget_report(per_worker_rate=1.0, events=[]) prints 'posture PACING. burn is measured at 1.0 tokens per worker per second' directly above 'UNMEASURED - no recorded spend inside the horizon', and no row forbids that combination."
+  },
+  {
+   "id": "AC3",
+   "status": "refuted",
+   "note": "I drove this criterion's OWN declared falsification exactly as written - computed the worker count and the resume time inside .veldo/budget_state.py instead of calling governor.desired_workers / governor.resume_at, as a faithful copy-paste of the governor's arithmetic - and the suite stayed 45 passed / 0 failed. The check cannot fail for the property the criterion names; it can only fail for a DIVERGENT copy (I confirmed that separately: dropping the max(1, ...) floor reds 'AC3: the WORKER COUNT equals governor.desired_workers'). The producer's own proof/VELDO-0006/driven-falsifications.txt corroborates this: its AC3 mutation reddened two AC2 rows and no AC3 row at all, which is not what the falsified_by field says must happen. Separately, the headline claim is false about the shipped code: `remaining` (w.tokens - used), `recorded_events_in_horizon` and the per-window `state` are computed in budget_state.py, and the in-horizon predicate there (gov.M.parse_at(e).timestamp() >= now - w.seconds over spend_events) is a second spelling of governor._tokens_at plus its cut - the exact duplication the criterion says does not exist. The narrow sentence (worker count, windowed spend, resume time, target rate equal the governor's functions over the same inputs) IS asserted and holds. See finding F2."
+  },
+  {
+   "id": "AC4",
+   "status": "unevidenced",
+   "note": "First half confirmed with teeth: I deleted the survival section, proved the diff, and the named AC4 row went red (KeyError('concluded_artifacts')). Second half - 'IT CLAIMS NOTHING IT DID NOT MEASURE: an unreadable or absent ledger is reported as such rather than as nothing at risk' - is not asserted anywhere, and the row whose prose claims to test it accepts the defect explicitly: `unreadable['concluded_artifacts'] == 0 or unreadable['concluded_artifacts'] is None`. The measured behaviour is the confident zero: BS.budget_report(root='/tmp/no-such-veldo-tree-at-all') prints 'survives stopping: 0 concluded artifact set(s) on disk; 0 claimed unit(s)' with at_risk empty. I then changed BOTH except-branches in survival() to report 0 instead of None and the suite stayed 45 passed / 0 failed, so LEDGER_UNKNOWN, the at_risk list and the 'UNKNOWN' rendering in report_lines are unexercised. The third row, labelled 'with an EMPTY claims directory', actually points at a doubly-absent path (claim.claims_root re-joins the override with 'claims', so it resolves to <tmp>/claims/claims), so both AC4 negative controls measure the same absent-directory case. Note also that the first row pins live repository state (`concluded_artifacts > 0`, measured 142 here). See finding F3."
+  },
+  {
+   "id": "AC5",
+   "status": "confirmed",
+   "note": "Drove the declared falsification (removed the `if not windows` stand-down), proved the diff, and the named AC5 stand-down row went red (44 passed, 1 failed). The negative control (a window configured -> the same report answers) and the key-shape row are real assertions over real fixtures. Three weaknesses reported as findings rather than as a refutation: (F4) 'NO GATE STAGE LOADS THIS' asserts a MEASURED SET IS EMPTY over live repository state across every .veldo/*.py and scripts/*.py, not over gate stages - I added a 24-line operator entry point .veldo/budget_console.py that only prints report_lines and that row went red, i.e. the gate reddens the first time anyone puts this read model on the operator's path the title names; (F7) the 'paces nothing, waits for nothing' proof is a fixed AST name deny-list {sleep, spawn, retire, wait_until, Popen, Thread, Process}, and adding subprocess.run(['/bin/sleep', ...]) plus os.system(...) left the suite green; (F8) 'ONE key shape' is asserted with resume_at excluded from both sides, so the report really carries a posture-dependent key."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "severity": "blocking",
+   "severity_l2": "blocker",
+   "confirmed_by_running": true,
+   "text": "AC1's protection for the case it names - THIS repository - rests on an unasserted guard. The only code that distinguishes 'no recorded spend' from 'spend totalling zero' is `spend_events()`'s `e.get('tokens') is not None` filter, and every fixture in the suite passes either [] or events that all carry tokens, so no row exercises a non-spend event. That is the ONLY event shape the live stream has: 1158 events, 0 carrying tokens. With the filter removed the suite is fully green and the module reports the full budget as remaining over a stream with zero recorded spend, which is the one sentence the spec says the item exists to refuse.",
+   "evidence": "cp -a /home/dmitry/projects/veldo <scratch>/rev-VELDO-0006; edited spend_events to `return [e for e in events]`; diff proves the single-line change; `python3 scripts/selftest.py --suite 23_veldo_0006_budget_state` -> 'selftest (PARTIAL, 1 of 34 suites): 45 passed, 0 failed in 0.93s' (baseline is also 45/0). Then over the LIVE stream in that mutated copy: 'session (14400s horizon): 0 of 500000 used, 500000 remaining, from 26 recorded event(s)' and 'weekly (604800s horizon): 0 of 5000000 used, 5000000 remaining, from 128 recorded event(s)', with spend_events: 1158. Live-stream census at HEAD: events 1158, with tokens 0. FIX SHAPE: one row feeding events that carry no tokens field (e.g. two gate.passed events inside the horizon) and requiring UNMEASURED, used is None, remaining is None."
+  },
+  {
+   "id": "F2",
+   "severity": "blocking",
+   "severity_l2": "blocker",
+   "confirmed_by_running": true,
+   "text": "AC3's declared falsification, driven literally, leaves the suite green: a faithful copy-paste second implementation of governor.desired_workers and governor.resume_at inside .veldo/budget_state.py reds nothing. Equality-against-the-governor can only catch a DIVERGENT copy, never the duplication AC3 says is the defect ('two implementations of one rule ... diverges quietly because both copies look right'). The producer's own driven-falsifications.txt shows the same thing from the other side: its AC3 mutation reddened only AC2 rows, so no AC3 row has ever been demonstrated to fail under the mutation AC3 declares.",
+   "evidence": "In the scratch copy I added _local_desired_workers / _local_resume_at (the governor's arithmetic verbatim) and repointed both call sites; grep proves 'gov.desired_workers' and 'gov.resume_at' no longer appear; suite -> '45 passed, 0 failed in 0.90s'. Control: a DIVERGENT copy (dropping `max(1, int(target_rate/rate))`) reds 'VELDO-0006 AC3: the WORKER COUNT equals governor.desired_workers over the same inputs' (43 passed, 2 failed), so the row works, but not for the declared mutation. FIX SHAPE: assert single-sourcing structurally (the module's AST contains exactly one call each to gov.desired_workers / gov.resume_at and no local pacing arithmetic), or restate AC3 as the agreement property it actually checks."
+  },
+  {
+   "id": "F3",
+   "severity": "note",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "AC4's 'IT CLAIMS NOTHING IT DID NOT MEASURE' is unasserted, and the row that names it is written to accept the answer it calls wrong: `unreadable['concluded_artifacts'] == 0 or unreadable['concluded_artifacts'] is None`. The measured behaviour is 0, i.e. the confident zero. Turning both UNKNOWN branches in survival() into 0 leaves the suite green, so LEDGER_UNKNOWN, the at_risk list and report_lines' 'UNKNOWN' rendering are dead in the suite. An absent claims directory also reports 0 rather than UNKNOWN (the UNKNOWN path fires only when git itself cannot resolve a common dir), and the row labelled 'EMPTY claims directory' resolves to <tmp>/claims/claims because claim.claims_root re-joins the override with 'claims' - so both AC4 negative controls measure the same absent-directory case.",
+   "evidence": "BS.survival(root='/tmp/no-such-veldo-tree-at-all') -> {'concluded_artifacts': 0, 'claimed_units': 0, 'ledger': None, 'stale_after_seconds': 90}; report_lines over that tree -> 'survives stopping: 0 concluded artifact set(s) on disk; 0 claimed unit(s) ...', at_risk []. Mutation (both except-branches -> 0, ledger None), diff proven, suite -> '45 passed, 0 failed'. BS.survival(root='.', claims_root='/tmp/definitely-no-claims-dir-here') -> claimed_units 0, ledger None. Running from a non-git cwd is the only path that produced claimed_units None + LEDGER_UNKNOWN."
+  },
+  {
+   "id": "F4",
+   "severity": "note",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "AC5's last row pins an EMPTY measured set over live repository state - the defect class scripts/check_first_use.py exists to forbid ('no suite may pin this repository's current emptiness as a required invariant'). It scans every .veldo/*.py and scripts/*.py for a load of budget_state and requires the result to be [], but the property it claims is about GATE STAGES. Putting the read model on the operator's path the spec title names reds the gate. check_first_use cannot see this pin: its MUTATIONS table only drives .veldo/spend.py, and its own documented limitation 1 says a suite pinning some OTHER live set stays invisible there.",
+   "evidence": "Added .veldo/budget_console.py (24 lines: _organ, build one Window, print report_lines - it gates nothing) and the suite red: 'SELFTEST FAIL: VELDO-0006 AC5: NO GATE STAGE LOADS THIS ...' (44 passed, 1 failed). Removing the file restored 45/0. FIX SHAPE: scope the scan to the gate's own stages (the commands scripts/verify.sh runs) instead of every module in two directories, or require the honest branch rather than an empty set."
+  },
+  {
+   "id": "F5",
+   "severity": "note",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "The posture - the item's central output - is decided by a caller-supplied argument the module never measures, and nothing forbids a posture that contradicts the windows in the same report. budget_report takes per_worker_rate=0.0 as a parameter; the module reads the event stream but never calls governor.measure_per_worker_rate (its single occurrence in the file is inside a docstring, and prose does not execute). So a caller passing any positive number gets 'burn is measured at X tokens per worker per second' over a stream carrying no spend at all.",
+   "evidence": "BS.budget_report(windows=[Window('session',3600,1000)], now_epoch=1760000000.0, events=[], per_worker_rate=1.0) -> posture PACING, spend_events 0, and report_lines prints 'budget state: posture PACING. burn is measured at 1.0 tokens per worker per second ...' immediately followed by '  session (3600s horizon, 1000 tokens): UNMEASURED - no recorded spend inside the horizon, so there is no remaining figure to quote'. grep of the module: measure_per_worker_rate occurs once, in the budget_report docstring."
+  },
+  {
+   "id": "F6",
+   "severity": "note",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "The spec's declared error taxonomy says a window with NO recorded spend and a window with spend totalling zero are distinct 'and neither is reported as budget available'. The second half is false about the code and unasserted: a single event carrying tokens=0 inside the horizon makes the window 'measured' and quotes the entire budget as remaining. No row in the suite uses a zero or fractional token value, and .veldo/events.py accepts --tokens 0, so the shape is reachable through the sanctioned writer.",
+   "evidence": "One event {'tokens': 0, 'at': now-60} with Window('session',3600,1000) -> window row {'recorded_events_in_horizon': 1, 'used': 0, 'remaining': 1000.0, 'state': 'measured'} and the line '  session (3600s horizon): 0 of 1000 used, 1000 remaining, from 1 recorded event(s)'. tokens=0.9 gives the same result, because governor._tokens_at int()s the value to 0 while budget_state's own in-horizon filter counts the event."
+  },
+  {
+   "id": "F7",
+   "severity": "note",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "text": "AC5's 'IT PACES NOTHING AND WAITS FOR NOTHING' proves an absence with a fixed deny-list of AST identifiers {sleep, spawn, retire, wait_until, Popen, Thread, Process}. The two most ordinary spellings of spawning and waiting are not in it, so the row cannot hold the line it claims to hold; its own prose ('AST identifiers, not substrings') advertises a strength the deny-list does not have.",
+   "evidence": "Added a function to budget_state.py doing `import subprocess as _sp; _sp.run(['/bin/sleep', str(seconds)], check=False)` and `_os.system('/bin/true')`; suite -> '45 passed, 0 failed'."
+  },
+  {
+   "id": "F8",
+   "severity": "note",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "text": "The 'ONE key shape whether it stood down or not' claim is qualified by an explicit exception in the very row that asserts it: both sides are compared with resume_at removed, and AC3 separately asserts resume_at is ABSENT outside the SPENT posture. So the report genuinely has two shapes and a consumer reading rep['resume_at'] raises KeyError in two of the three postures - the guess the claim says it prevents.",
+   "evidence": "Suite row: `sorted(k for k in rep if k != 'resume_at') == sorted(BS.REPORT_KEYS)`; module sets rep['resume_at'] only inside the `if spent_window is not None` branch; REPORT_KEYS does not contain it. Measured: 'resume_at' in rep is True for a SPENT live-stream report and False for BOOTSTRAP."
+  },
+  {
+   "id": "F9",
+   "severity": "note",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "text": "survival() honours its `root` argument for the artifact half but not for the ledger half: claims_root defaults to None, which claim.claims_root resolves from `git rev-parse --git-common-dir` in the PROCESS's cwd. A survival report about tree A can therefore carry tree B's live claim count. It is masked in the suite because the one row that varies the tree passes claims_root explicitly.",
+   "evidence": "BS.survival(root='/tmp/no-such-veldo-tree-at-all') run inside the veldo checkout returned claimed_units 0 read from the checkout's own ledger, alongside concluded_artifacts 0 read from the nonexistent tree."
+  }
+ ],
+ "summary": "FAIL on two blockers. (1) AC3's declared falsification, driven exactly as written - a faithful copy-paste of governor.desired_workers/resume_at inside budget_state.py - leaves the suite 45/0 green, so the assertion the criterion names cannot fail for the property it names; the producer's own driven-falsifications.txt shows the same mutation reddening only AC2 rows. (2) AC1's guard for the case it names is unasserted: removing the tokens filter from spend_events leaves the suite green and makes the module announce the full budget as remaining over the live stream's 1158 events, none of which carry a spend field - the exact sentence the item exists to refuse. Four further gaps: the UNKNOWN-not-zero half of AC4 is unasserted and its row accepts the confident zero; AC5 pins an empty live set that reds the moment the read model is put on an operator's path; the posture is a caller-supplied number the module never measures and can contradict its own window rows; and the taxonomy's zero-total-spend distinction is neither implemented nor asserted. What IS solid: the stand-down, the BOOTSTRAP/PACING/SPENT partition, the equality of the worker count / windowed spend / resume time / target rate against the governor's own functions over the suite's fixtures, and the survival section's existence - each verified by driving its own mutation and watching the named row go red. Using the feature for real (one sanctioned `python3 .veldo/spend.py record --tokens 750000`) does NOT red this suite, and the resulting live report reads correctly as SPENT with the governor's resume time."
+}

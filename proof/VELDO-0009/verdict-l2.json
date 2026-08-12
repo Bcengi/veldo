@@ -1,0 +1,86 @@
+{
+ "schema": "veldo.verdict/v1",
+ "spec_id": "VELDO-0009",
+ "commit": "dda45bff3e86fb336f5899f37ed6678a42ce06b6",
+ "reviewer": "claude-opus-5[1m] (independent L2, fresh context)",
+ "reviewed_at": "2026-08-12T11:35:00Z",
+ "verdict": "fail",
+ "summary": "The stamp writer and the four-state detector are real work, not prose: I drove all five declared falsifications myself in a scratch copy plus four extra variants, and every one reddened the row its falsified_by field names, so no check here is vacuous. AC1 was driven twice, including the faithful form (add the stamp to _FILES AND put a template in engine/ so the copy succeeds), which reds the named 'NO TEMPLATE exists' assertion directly rather than only through a ScaffoldError. AC5 is refuted: the criterion claims that a file at the stamp path which PARSES but is not a veldo.installed/v1 record is VERSION_STAMP_UNREADABLE, and for any JSON that is not an object ('[]', 'null', '5', a bare string) installed_version raises AttributeError instead, so `python3 .veldo/version.py --drift` tracebacks rather than naming the state; the same file guards isinstance(data, dict) in _declared_version 100 lines above and nothing asserts the case. Two more defects came out of USING the feature rather than reading it: 5 of the 7 supported packs (aider, codex, copilot, cursor, opencode) install with NO stamp at all, silently, and the UNSTAMPED detail they then produce states a reason that is false about them; and AC4's live row pins the live tree's answer to UNSTAMPED, so running the documented create-only scaffolder over the veldo repository itself reds the gate. The proof manifest's per-criterion evidence line ('4 of 4 declared falsification(s) re-driven ... each reddened its own row') is false for AC4 and AC5: the cited driven-falsifications.txt records four mutations covering AC1, AC2 and AC3 only. The fixes are small (one isinstance guard, one row relaxed from a pin to a partition, a manifest in the five thin packs or an honest reason), but shipped source that raises where the criterion says it names a state is wrong code, so this does not land as written.",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "confirmed",
+   "note": "Drove the declared falsification twice in a scratch copy. (a) Adding '.veldo/installed.json' to _FILES: scaffold raises ScaffoldError('template missing: .veldo/installed.json') and 4 named rows red (34 passed, 4 failed). (b) The faithful form, adding it to _FILES AND writing engine/.veldo/installed.json so the copy succeeds: the specifically named row 'NO TEMPLATE for the stamp exists in the templates tree' reds along with 'a fresh install CARRIES a stamp' (41 passed, 2 failed). Independently verified over the real artifact: `python3 scripts/publish.py` then `find pub -name installed.json` returns 0, so no published pack carries a stamp template, and engine/.veldo has none. The stamp content is as the criterion says (schema, version, installed_at ending Z, laid_from). Note, not a finding: laid_from is an absolute path on the installing machine (mine recorded /tmp/.../scratchpad/pub/packs/claude; a real adopter would commit their home directory into the record)."
+  },
+  {
+   "id": "AC2",
+   "status": "confirmed",
+   "note": "Drove the declared falsification twice. (a) Deleting the `if dest.exists(): skipped.append; return None` guard so the stamp is rewritten: the AC2 row reds (42 passed, 1 failed). (b) The sneakier variant, keeping skipped.append(STAMP) but falling through to rewrite, so the report still SAYS skipped: the row still reds, via created/stamp. Also confirmed on the real path: a second `python3 .veldo/init_scaffold.py .` reports the stamp among skipped and leaves the bytes untouched. Weak clause worth naming: byte-identity alone would not catch a same-second rewrite, since installed_at has one-second resolution; the row survives only because the created/skipped bookkeeping is also asserted."
+  },
+  {
+   "id": "AC3",
+   "status": "confirmed",
+   "note": "Drove the declared falsification (`version = _template_version(templates) or \"unknown\"`): the 'templates declaring NO version produce NO stamp at all' row reds (42 passed, 1 failed). Drove the shape claim twice more, neither declared: reducing _VERSION_CANDIDATES to one shape reds both composed-pack rows, and dropping the `or _version_in(t.parent)` leg reds the parent row plus 5 collateral rows. So the three-shapes-plus-parent claim has teeth. What is NOT asserted anywhere is that the value found is veldo's version or is a version at all - see finding F5; and the shapes are only ever exercised against synthetic fixtures, never against a real composed pack, which is how F1 stayed invisible."
+  },
+  {
+   "id": "AC4",
+   "status": "confirmed",
+   "note": "Drove the declared falsification (make drift() return a clean answer when this tree declares no current version): the VERSION_NOTHING_TO_COMPARE row reds (42 passed, 1 failed). The negative control is real and additive: with current supplied and matching, the SAME tree reports cause None; with current='99.0.0' it reports VERSION_SUBSTRATE_DRIFT naming both versions in the detail. I also attacked the taxonomy for collapse: a corrupt stamp with mode 000 is STAMP_UNREADABLE (not UNSTAMPED), and drift over a real scaffolded tree is NOTHING_TO_COMPARE. Two defects attach to this criterion rather than to the property: the live-repository row is a pin (F3), and the NOTHING_TO_COMPARE detail contradicts itself when the canonical manifest exists but is unreadable (F6). A curiosity, not filed: if .veldo/installed.json is a DIRECTORY, is_file() is False and the answer is UNSTAMPED ('no record') even though something wrote there."
+  },
+  {
+   "id": "AC5",
+   "status": "refuted",
+   "note": "The declared falsification does have teeth: removing the schema check reds 'a JSON file at the stamp path that is NOT a veldo.installed/v1 record is VERSION_STAMP_UNREADABLE' (42 passed, 1 failed), and the two asserted sub-cases (a dict that is not a record, an unparseable file) plus the UNSTAMPED negative control and the real-install read-back all hold. But the criterion states a TOTAL property over 'a file at the stamp path that parses but is not a veldo.installed/v1 record carrying a version', and it is false: for '[]', 'null', '5' and '\"veldo.installed/v1\"' the file parses, is not a record, and installed_version raises AttributeError('list'/'NoneType'/'int'/'str' object has no attribute 'get') rather than returning VERSION_STAMP_UNREADABLE. drift() propagates it and `python3 .veldo/version.py --drift` exits on a traceback, so the state is not reported at all, let alone reported as itself. Nothing in the suite covers a non-object JSON stamp; the identical guard exists in the same file (_declared_version: `if not isinstance(data, dict): return None`). See F2."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "severity": "blocking",
+   "text": "The feature is absent from 5 of the 7 supported install paths, silently, and the state it leaves behind is then reported with a false reason. packs/README.md says Veldo runs natively on seven tools and the gate's install-and-run stage installs all seven; only packs/claude (.claude-plugin/plugin.json) and packs/antigravity (plugin.json) declare a version at a shape _VERSION_CANDIDATES searches, and the composed pack's parent is packs/, which declares nothing. So an aider, codex, copilot, cursor or opencode adopter gets no stamp, init prints 'substrate complete' and exits 0 with no word that the record was not laid, and their tree then answers UNSTAMPED with the detail 'this repository was installed before the stamp existed, or was set up by hand' - both halves false for an install made today by the current scaffolder. AC5's own principle is that the reason is part of the answer because the reason determines who does what next; this reason sends the adopter to look for an old install. Neither the 0009 suite (which only ever runs the repository's own scaffolder, where the parent leg supplies the version) nor scripts/check_install_and_run.py (which never looks at the stamp) can see this.",
+   "evidence": "cd scratch copy; python3 scripts/publish.py $S/pub; then for each composed pack, git init a fresh dir and run that pack's .veldo/init_scaffold.py . -> aider: NO STAMP | antigravity: STAMP 3.10.1 | claude: STAMP 3.10.1 | codex: NO STAMP | copilot: NO STAMP | cursor: NO STAMP | opencode: NO STAMP. Full init output from the cursor pack: 'veldo init: scaffolded .' / 'created 58 file(s), skipped 0 existing' / 'substrate complete; run ./scripts/verify.sh to confirm the gate is green', exit 0, and ls .veldo/installed.json -> No such file or directory. In that tree: python3 .veldo/version.py --drift -> 'veldo version: UNSTAMPED - no .veldo/installed.json: this repository was installed before the stamp existed, or was set up by hand, so what it was laid from is unknown rather than current', exit 0.",
+   "confirmed_by_running": true,
+   "level": "major"
+  },
+  {
+   "id": "F2",
+   "severity": "blocking",
+   "text": "installed_version() crashes instead of naming a state for any JSON at the stamp path that is not an object, which refutes AC5 as written. `data.get('version')` and `data.get('schema')` are called with no isinstance(data, dict) guard, so '[]', 'null', '5' or a bare JSON string raise AttributeError out of installed_version, out of drift(), and out of the `--drift` CLI. The four-state taxonomy the capability manifest describes as 'FOUR ANSWERS AND NONE COLLAPSES' therefore has a fifth outcome: no answer at all. The same module already applies the guard where it matters for VELDO-0008 (_declared_version starts with `if not isinstance(data, dict): return None`), so this is an omission, not a design position, and the suite's AC5 block only covers a dict-shaped non-record and an unparseable file. Fix: one isinstance check, plus a row asserting a non-object JSON stamp is VERSION_STAMP_UNREADABLE.",
+   "evidence": "In the scratch copy, loading .veldo/version.py directly and writing each body to <tmp>/.veldo/installed.json: '[]' -> RAISED AttributeError 'list' object has no attribute 'get' (and drift -> RAISED the same); 'null' -> RAISED AttributeError 'NoneType' object has no attribute 'get'; '5' -> RAISED AttributeError 'int' object has no attribute 'get'; '\"veldo.installed/v1\"' -> RAISED AttributeError 'str' object has no attribute 'get'; the well-formed record -> ('1.0.0', None, None) and drift -> VERSION_NOTHING_TO_COMPARE.",
+   "confirmed_by_running": true,
+   "level": "major"
+  },
+  {
+   "id": "F3",
+   "severity": "blocking",
+   "text": "AC4's live-repository row pins the live tree's four-state answer to UNSTAMPED, so using the documented scaffolder on the veldo repository itself turns the gate red. The row asserts live['cause'] == UNSTAMPED and live['installed'] is None over ROOT. .veldo/init_scaffold.py advertises itself as idempotent and safe to re-run and lays create-only files, and .veldo/installed.json is not in .gitignore, so a single `python3 .veldo/init_scaffold.py .` in the repository root writes a valid stamp and reds a named row for a correct, non-destructive operation - a red that reads as 'the drift detector is broken' when in fact the detector answered correctly. The row's own comment claims it is 'Reported rather than pinned', which is self-contradictory: an expect() over the live tree's cause IS the pin. The sibling suite for VELDO-0008 states the correct discipline in scripts/suites/manifest.json: 'Its live rows assert set membership and agreement, never a version number, so the next release cannot redden them.' The honest form here asserts that the live answer is one of the four named causes and that its detail matches the cause it names.",
+   "evidence": "In the scratch copy at HEAD (baseline: 43 passed, 0 failed): python3 .veldo/init_scaffold.py . -> 'created 5 file(s), skipped 55 existing', exit 0, .veldo/installed.json written with version 3.10.1 (git status shows it untracked, not ignored). python3 scripts/selftest.py --suite 26_veldo_0009_install_stamp -> 'SELFTEST FAIL: VELDO-0009 AC4 OVER THIS REPOSITORY: it reports UNSTAMPED ...', 42 passed, 1 failed. After deleting the stamp and the other created files and restoring specs/index.md: 43 passed, 0 failed.",
+   "confirmed_by_running": true,
+   "level": "major"
+  },
+  {
+   "id": "F4",
+   "severity": "blocking",
+   "text": "The proof bundle's per-criterion evidence claim is false for AC4 and AC5. proof/VELDO-0009/manifest.json carries, under EACH of the five criteria, 'AC<n>: 4 of 4 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0009/driven-falsifications.txt)'. The cited file records exactly four mutations - AC1 stamp-as-copied-template, AC2 overwrite-the-stamp, AC3 guess-a-placeholder, AC3b one-shape-only - so no mutation of AC4's or AC5's declared falsification appears anywhere in the record, and the spec declares five falsified_by fields, not four, so '4 of 4' is a count over an input that was never the declared set. This is the shape the method exists to catch: a per-criterion coverage claim that is false about the artifact it cites, and it is load-bearing because a reader takes it as proof the row can fail. The substance survives - I drove AC4's and AC5's declared falsifications myself and each reddened its own named row - so the defect is the evidence record, not the checks.",
+   "evidence": "cat proof/VELDO-0009/driven-falsifications.txt -> four mutation rows (AC1, AC2, AC3, AC3b) plus BASELINE and RESTORED lines, no AC4 or AC5 entry; grep of proof/VELDO-0009/manifest.json shows the identical '4 of 4 declared falsification(s) re-driven' string under all five criteria. My own drives, absent from the record: AC4 (return out in place of the CAUSE_NO_CURRENT branch) -> 42 passed, 1 failed on the AC4 NOTHING_TO_COMPARE row; AC5 (return v with no schema check) -> 42 passed, 1 failed on the AC5 STAMP_UNREADABLE row.",
+   "confirmed_by_running": true,
+   "level": "major"
+  },
+  {
+   "id": "F5",
+   "severity": "note",
+   "text": "Nothing checks that the version the stamp records belongs to veldo or is a version at all, so AC3's 'no stamp is better than a stamp that guesses' has two holes. (a) _version_in reads plugins[0]['version'] with no name match, and _template_version falls back to the templates' PARENT, so a parent marketplace that lists another plugin first stamps that plugin's version as this install's - a fact nobody declared about veldo, which is what the criterion means by a guess. (b) Any non-empty string passes: a manifest declaring '   ' produces a stamp whose version is '   ', installed_version returns it as a VERSION with cause None, and drift reports VERSION_SUBSTRATE_DRIFT naming '   ' against the real current version. The same module already owns the right predicate for this, _version_shaped(), which returns False for '   ' and is used only for proof provenance. Note that an empty string behaves differently again: '' is falsy, so _template_version silently falls through to the parent manifest instead of refusing.",
+   "evidence": "In the scratch copy, loading .veldo/init_scaffold.py directly: a parent .claude-plugin/marketplace.json with plugins [{name: other-plugin, version: 9.9.9}, {name: veldo, version: 3.10.1}] and an empty engine/ -> _template_version(parent/'engine') == '9.9.9'. A templates tree declaring {'version': '   '} -> _write_stamp writes {'schema': 'veldo.installed/v1', 'version': '   ', ...}, created == ['.veldo/installed.json'], installed_version -> ('   ', None, None), drift(current='3.10.1') -> cause VERSION_SUBSTRATE_DRIFT installed '   ', while vv._version_shaped('   ') is False.",
+   "confirmed_by_running": true,
+   "level": "minor"
+  },
+  {
+   "id": "F6",
+   "severity": "note",
+   "text": "The VERSION_NOTHING_TO_COMPARE detail contradicts itself when the canonical manifest is present but unreadable. version() folds 'absent' and 'present but no readable version' into one cause, so drift() emits a detail that names the unparseable manifest and then asserts 'An adopting repository is always in this state, because it is not a marketplace' - a sentence that is false about exactly the tree being described, which does have a marketplace manifest and has a broken one. The reason is the actionable half of this reader's answer (AC5's own principle) and here it points at the wrong repair: supply a version rather than fix the manifest you have.",
+   "evidence": "In the scratch copy, a tree with a valid stamp (3.10.1) and .claude-plugin/marketplace.json containing '{not json' -> drift cause VERSION_NOTHING_TO_COMPARE, detail 'this tree records being laid from ... could not be read: VERSION_UNPARSEABLE: Expecting property name enclosed in double quotes ... An adopting repository is always in this state, because it is not a marketplace'. Same outcome for a numeric version and for plugins: [].",
+   "confirmed_by_running": true,
+   "level": "minor"
+  }
+ ]
+}
