@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-0007-0010-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0007",
+    "commit": "62ce444456a4c38ce739f4d1784ff5ddacdc438c",
+    "paths": ["scripts/verify.sh", "engine/scripts/verify.sh"],
+    "also_covers_spec_id": "VELDO-0010",
+    "proof": "proof/VELDO-0007/manifest.json"
+  },
+  "basis": "TWO EDITS TO PROTECTED PATHS, both stated back to Dmitry line by line before he answered, and both belonging to items whose criteria had been REPORTING rather than refusing while they waited. WHAT IT COVERS, exactly and nothing else: (1) VELDO-0007 - scripts/verify.sh declares the install-and-run stage as a required catalog item, in the EXISTING packaging slot rather than a new catalog name, because composing the published packs and proving a stranger can install and run them IS packaging verification and a new slot would have changed a vocabulary this approval does not cover; it is deliberately ABSENT from engine/scripts/verify.sh because the script does not ship to an adopter and an adopter does not publish packs, so a required slot in their gate would be a check they cannot run. (2) VELDO-0010 - both gates stamp the producing version into .veldo/last_verify beside the commit and the status, with the value NULL rather than a guessed string when the version cannot be read, because a gate record is exactly where an invented version would be believed. WHY THESE NEEDED A HUMAN: scripts/verify.sh and engine/scripts/verify.sh are the enforcement core this repository ships to every adopting repository, so weakening or extending the gate here propagates everywhere; that is the whole reason they are protected. ASKED AND ANSWERED: the two changes were put to him over Telegram on 2026-08-12 as one line each, in his terms, with the scope of each named (ours only versus both gates) and with what would follow stated in advance - that both criteria would flip from reporting to enforcing. He answered Yes at 10:28 UTC and confirmed with Ok at 10:30 after the restatement. THE EDIT DID NOT PRECEDE THE PERMISSION: nothing in either gate file was touched until after his answer, which is the correction recorded from the VELDO-0012 approval where a builder had written its protected lines first. WHAT THIS APPROVAL DOES NOT COVER: any other catalog slot, any other gate behaviour, and any future change to either file - each needs its own. VERIFIED AFTER LANDING, not asserted: the gate is GREEN at 4530 passed / 0 failed with the install stage inside it, all seven composed packs installing and their own gates going green as part of the run; and the enforcing posture was DRIVEN three ways - reverting the packaging slot reds VELDO-0007, removing the version key reds VELDO-0010, and naming the script in an `na:` slot without requiring it reds VELDO-0007 twice.",
+  "recorded_at": "2026-08-12T10:45:00Z",
+  "recorded_by": "claude-opus-5[1m] (Ava, recording Dmitry's fresh in-session Telegram approval; the approver is not the proof producer, satisfying self-separation)",
+  "expires_at": "2026-09-11T10:45:00Z"
+}
