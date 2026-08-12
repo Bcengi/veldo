@@ -224,6 +224,15 @@
    "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED: its free names were enumerated from its own AST and every one is bound by shared.py. It drives .veldo/budget_state.py AND .veldo/governor.py through V._VC._organ, because the item's central claim is that every number comes from the governor and equality against a second copy would prove nothing. TIME IS A PARAMETER in every row, so no row depends on the wall clock. It spawns no subprocess."
   },
   {
+   "name": "24_veldo_0007_install_and_run",
+   "file": "24_veldo_0007_install_and_run.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "24_veldo_0007_install_and_run"
+   ],
+   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED: its free names were enumerated from its own AST and every one is bound by shared.py. IT IS THE ONE FRAGMENT THAT SPAWNS SUBPROCESSES ON PURPOSE: it runs the real publisher, a composed pack's own scaffolder, and the scaffolded repository's own gate, because the defect it exists for was invisible to every test that ran against this repository. Measured at about 2 seconds for the full seven-pack sweep, which runs ONCE; the mutation rows drive a single pack. Everything it writes lands under a temporary directory it removes, and a row asserts this repository's own git status is unchanged across a run."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

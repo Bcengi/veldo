@@ -497,6 +497,42 @@ blanket one. The findings below are what survived that.
     floors where one is unparseable. Also fixed alongside: a pin with no `language` surfaced the
     string `None` in `unanalyzed_languages`.
 
+### Found building W1 to W6, by driving my own declared falsifications (2026-08-12)
+Every criterion of VELDO-0002 through VELDO-0007 was driven: the mutation applied to a fresh copy,
+proven landed, the named row required to red, then reverted. It found four defects in my own work
+that reading would not have, and two of them were checks that could not fail.
+
+40. **TWO OF VELDO-0007's OWN CRITERIA WERE VACUOUS, AND ONLY DRIVING SHOWED IT.** The
+    adopter-gate criterion accepted either INIT_FAILED or ADOPTER_GATE_RED, so deleting the
+    gate-status check entirely left the suite green - the mutation that proved its teeth broke init
+    before the gate was ever consulted. The fix is a second mutation that init accepts HAPPILY (an
+    invalid starter plan inside the composed pack) which the adopter's own gate then refuses, so the
+    failure is attributable to the nested gate alone. The vacuous-run criterion was worse: the
+    NO_PACKS_COMPOSED guard lives inside `check()` and every row tested `composed_packs()` over a
+    fixture instead, so nothing reached the guard at all. **A guard against an empty set that nothing
+    drives is itself the vacuous shape it exists to prevent.** Fixed by injecting a composer seam, the
+    way fleet.py's spawner and waiter are injected.
+41. **AN ASSERTION CAN BE WRONG ABOUT THE CODE RATHER THAN THE REVERSE, AND THE CODE WINS.** Two
+    rows I wrote asserted properties the system does not have. VELDO-0003's claimed the fleet loop
+    refuses to spawn over a concluded queue; driving it showed the loop spawning, because
+    `work_remains` is consulted only at a zero target - that is its documented drain-versus-backoff
+    distinction. VELDO-0005's claimed no file may NAME a module, which correctly caught the item's own
+    lay-down entry: /veldo:init must name a module in order to ship it, and naming is not consulting.
+    Both replaced with the property that exists, both of which are STRONGER than what I first wrote.
+42. **MY OWN TEST CODE CARRIED AN `or True` TAUTOLOGY AND AN UNREACHABLE BRANCH.** In VELDO-0005's
+    suite, one row ended `... is False or True`, which is the exact shape a review caught in this
+    repository once already; and its stand-down branch was unreachable by the default path, because
+    the capability manifest lives INSIDE the directory the modules leg scans. The branch is reachable
+    through the manifest parameter, which is how an adopter with a manifest elsewhere reaches it, so
+    the row drives it that way rather than asserting nothing.
+43. **THE CAPABILITY MANIFEST'S OWN HONESTY CHECK CORRECTED A SPEC I HAD ALREADY WRITTEN.**
+    VELDO-0007 declared that its stage belongs in BOTH this repository's gate and the shipped
+    template, so an adopter would inherit it. The existing capability-honesty check refused: the
+    script does not ship, and an adopter does not publish packs, so a required slot in their gate
+    would be a check they cannot run. The capability is `scope: repo-only` and the criterion is scoped
+    to this repository. **A check that already existed was right and my spec was wrong**, which is the
+    outcome this project should want most often.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
