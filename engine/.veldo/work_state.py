@@ -20,10 +20,23 @@ ONLY SAYS WHAT WAS CLAIMED. A process that announced its own success and left no
 is the failure mode, so its own word about itself is exactly what must not be trusted.
 
 FOUR STATES, NEVER COLLAPSED, because the operator's next action differs in each:
-  DONE        its proof bundle and verdict are on disk
+  DONE        its manifest is on disk AND a verdict artifact RECORDS a passing review
   UNCONCLUDED a run claimed it and no artifact concludes it - go look at the named folder
   QUEUED      ready, and no run has claimed it
   UNRECORDED  artifacts exist that no run ever claimed - work a dead session left behind
+
+DONE READS THE VERDICT'S BYTES, NEVER THE FILENAME. A file called verdict.json is not a
+conclusion; what it RECORDS is. This reader used to call an item done because the file existed,
+and measured on this repository that reported twelve REJECTED items as done, the review that
+failed this very item among them. An operator told "done" about rejected work stops looking at
+exactly the work that needs them, which is the same failure as the one above wearing the
+opposite sign.
+
+AND ONE THING IT CANNOT SAY, stated here so no reader infers it from the four states above:
+there is NO state for REVIEWED AND REJECTED. An item whose only verdict records a rejection
+falls back to UNCONCLUDED when a run claimed it and to QUEUED otherwise, and report_lines names
+it with the path of the verdict that rejected it rather than leaving the operator with a bucket.
+A fifth state is a change to the taxonomy this module's spec declares, so it is not made here.
 
 AND ONE THING IT REFUSES TO SAY. It reads a heartbeat written by a process it cannot see. A
 stale heartbeat means the process may have died, may be paused, or may be a moment from
@@ -67,6 +80,15 @@ STANDDOWN_NO_GIT = ("the run registry root cannot be resolved because this tree 
 REPORT_KEYS = ("runs_stood_down", "runs_standdown_reason", "corpus_patterns", "items", "runs",
                "counts", "unrecorded", "unconcluded")
 
+# HOW THIS READER FINDS THE CORPUS PATTERNS IT WALKS: a module-level name in verdict_corpus
+# ending in this suffix, whose value is a string, IS one of that module's declared corpus
+# patterns. THE RULE IS THE DELEGATION. A list of the values here would be a second spelling of
+# the set, and set equality between two spellings of the same constants cannot detect the copy on
+# the day it is written - only on the day it drifts, which is the day it is too late. So the set
+# is derived from the declaring module's own declarations, and the suite proves the delegation by
+# SUBSTITUTING a verdict_corpus that declares different patterns.
+CORPUS_PATTERN_SUFFIX = "_PATTERN"
+
 
 def _sibling(name):
     """Load a sibling organ BY PATH, the idiom every organ in this directory uses. Kept to one
@@ -79,11 +101,26 @@ def _sibling(name):
 
 
 def corpus_patterns():
-    """THE PATTERNS THIS READER WALKS, taken from the module that declares them rather than
-    copied. A hand-kept list here is how this repository has already shipped two mechanisms
-    enumerating one set in two spellings, with the gap invisible to both."""
+    """THE PATTERNS THIS READER WALKS, DERIVED AT CALL TIME from the module that declares them.
+
+    Not a copy of two values and not even a copy of two NAMES: every corpus pattern
+    verdict_corpus declares is walked, found by CORPUS_PATTERN_SUFFIX, so renaming a pattern
+    there, or adding one, arrives here without an edit. A hand-kept copy of today's values passes
+    any equality check written against those same values, which is exactly how this repository
+    has already shipped two mechanisms enumerating one set in two spellings with the gap
+    invisible to both."""
     vc = _sibling("verdict_corpus")
-    return (vc.VERDICT_PATTERN, vc.MANIFEST_PATTERN)
+    return tuple(sorted(v for k, v in vars(vc).items()
+                        if k.endswith(CORPUS_PATTERN_SUFFIX) and isinstance(v, str) and v))
+
+
+def passing_verdicts():
+    """THE VERDICT VALUES THAT CONCLUDE A REVIEW, taken from the module that declares them:
+    executor.PASSING_VERDICTS, whose own words are "a review verdict that lets the loop proceed to
+    merge readiness. Anything else is a failed cycle". Never re-spelled here, for the reason
+    corpus_patterns states: one enumeration, kept in the module that owns it."""
+    ex = _sibling("executor")
+    return frozenset(ex.PASSING_VERDICTS)
 
 
 def artifact_items(root=None):
@@ -101,18 +138,70 @@ def artifact_items(root=None):
     return out
 
 
-def concluded(entry):
-    """An item is CONCLUDED when BOTH a manifest and a verdict are on disk for it. One without
-    the other is a bundle mid-write, which is a different state from finished."""
-    vc = _sibling("verdict_corpus")
-    return bool(entry.get(vc.VERDICT_PATTERN)) and bool(entry.get(vc.MANIFEST_PATTERN))
+def recorded_verdict(rel, root=None):
+    """THE VERDICT ONE ARTIFACT RECORDS, read from its bytes rather than inferred from its name.
+
+    None when the file cannot be read, is not an object, or carries no verdict string, and None is
+    never treated as a conclusion: a file this reader could not read has concluded nothing. Fails
+    CLOSED, because the whole point is that the reassuring answer must be earned."""
+    base = Path(root) if root is not None else ROOT
+    try:
+        doc = json.loads((base / rel).read_text(errors="replace"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(doc, dict):
+        return None
+    v = doc.get("verdict")
+    return v if isinstance(v, str) else None
+
+
+def verdict_records(entry, root=None, vc=None, passing=None):
+    """Every verdict artifact of one item WITH THE VERDICT IT RECORDS and whether that verdict
+    concludes it: [{path, verdict, concludes}], in path order.
+
+    THE PATHS ARE KEPT, because the product of this organ is somewhere to look: an item that is
+    not done because it was REJECTED has to name the file that rejected it, and a count would not.
+
+    The two sibling organs are OPTIONAL ARGUMENTS so ONE report loads them ONCE rather than once
+    per item, which is measured rather than guessed: 213 items meant 643 module loads before they
+    were passed in. The defaults keep this callable on its own."""
+    vc = _sibling("verdict_corpus") if vc is None else vc
+    passing = passing_verdicts() if passing is None else passing
+    out = []
+    for rel in sorted(entry.get(vc.VERDICT_PATTERN) or []):
+        v = recorded_verdict(rel, root)
+        out.append({"path": rel, "verdict": v, "concludes": v in passing})
+    return out
+
+
+def concluded(entry, root=None, records=None, vc=None, passing=None):
+    """An item is CONCLUDED when a manifest is on disk AND some verdict artifact RECORDS A PASSING
+    VERDICT. THE ONE SPELLING of that rule; work_report calls this rather than restating it.
+
+    A manifest with no verdict at all is a bundle mid-write, which is a different state from
+    finished. A verdict that records a rejection is a conclusion that the item is NOT done, and
+    reading the file's EXISTENCE as done reported twelve rejected items on this repository as
+    done. A later round that records a pass concludes it, which is how every multi-round review
+    here is shaped: the failing round stays on disk as the record."""
+    vc = _sibling("verdict_corpus") if vc is None else vc
+    if not entry.get(vc.MANIFEST_PATTERN):
+        return False
+    recs = verdict_records(entry, root, vc=vc, passing=passing) if records is None else records
+    return any(r["concludes"] for r in recs)
 
 
 def ready_specs(root=None):
-    """Spec ids whose spec file declares status ready. Read with one cheap scan of the front
-    matter rather than the full validator, because this reader must answer over a tree that
-    may not be valid: an operator asking what is done after a loss is often asking BECAUSE
-    something is broken."""
+    """EVERY spec in specs/ with the status it declares: {spec id: {status, path}}. Read with one
+    cheap scan of the front matter rather than the full validator, because this reader must answer
+    over a tree that may not be valid: an operator asking what is done after a loss is often asking
+    BECAUSE something is broken.
+
+    IT FILTERS NOTHING, and the name is historical. This docstring used to claim it returned only
+    specs declaring status ready, which was false, and an independent review filed that as a finding
+    against the QUEUED bucket: shipped, draft and blocked specs land in it beside genuinely ready
+    ones. The status TRAVELS with each item as spec_status so a caller can tell them apart, and the
+    finding is open rather than papered over - deciding what QUEUED means is a change to the
+    declared taxonomy, not a docstring edit."""
     base = Path(root) if root is not None else ROOT
     sdir = base / "specs"
     out = {}
@@ -180,6 +269,9 @@ def work_report(root=None, runs_root=None, now_epoch=None):
 
     arts = artifact_items(base)
     specs = ready_specs(base)
+    # Loaded ONCE for the whole report and passed down, never once per item.
+    vc = _sibling("verdict_corpus")
+    passing = passing_verdicts()
 
     # THE RUN HALF. It stands down loudly rather than reporting zero.
     rl = _sibling("runlog")
@@ -210,11 +302,13 @@ def work_report(root=None, runs_root=None, now_epoch=None):
     # THE PARTITION. Every spec id either half knows about, in one pass.
     for sid in sorted(set(arts) | set(specs) | set(claimed)):
         entry = arts.get(sid, {})
-        is_done = concluded(entry)
+        records = verdict_records(entry, base, vc=vc, passing=passing)
+        is_done = concluded(entry, base, records=records, vc=vc)
         state = DONE if is_done else (UNCONCLUDED if sid in claimed else QUEUED)
         rep["items"][sid] = {
             "state": state,
             "artifacts": sorted(p for paths in entry.values() for p in paths),
+            "verdicts": records,
             "spec_status": (specs.get(sid) or {}).get("status"),
             "claims": claimed.get(sid, []),
         }
@@ -253,6 +347,20 @@ def report_lines(rep):
     for u in rep["unrecorded"]:
         lines.append("  UNRECORDED %s: finished artifacts that NO run ever claimed - %s"
                      % (u["spec"], ", ".join(u["artifacts"])))
+    # REVIEWED AND NOT CONCLUDED. This report has four states and none of them says REJECTED, so
+    # an item whose verdicts all record a rejection would otherwise sit silently in QUEUED beside
+    # work nobody has started. It gets a line and A PATH, and the line says what the state cannot.
+    for sid, item in rep["items"].items():
+        if item["state"] == DONE:
+            continue
+        rejecting = [r for r in item.get("verdicts") or [] if not r["concludes"]]
+        if not rejecting:
+            continue
+        lines.append("  REVIEWED AND NOT CONCLUDED %s: reported %s because no verdict on disk "
+                     "records a passing review - %s. There is no state here for reviewed and "
+                     "REJECTED, so read the path rather than the bucket"
+                     % (sid, item["state"],
+                        "; ".join("%s records %r" % (r["path"], r["verdict"]) for r in rejecting)))
     return lines
 
 

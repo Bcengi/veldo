@@ -97,10 +97,33 @@ def load_private_names(path=PRIVATE_NAMES):
     return names
 
 
-def tracked_files():
-    out = subprocess.run(["git", "-C", str(ROOT), "ls-files"],
+def tracked_files(root=None):
+    """The tracked set, NUL delimited, because this decides what every adopter receives.
+
+    IT WAS PARSED FOR A DELIMITER IT WAS NEVER ASKED FOR. This ran `ls-files` with no `-z` and then
+    split the newline-delimited output on the literal two characters `\\n0`, which is `\\0` with a
+    typo, and finally on whitespace. Two consequences, both silent, both in the SOLE writer of the
+    published tree:
+      A tracked path containing a SPACE became two bogus paths, so it shipped as neither.
+      A top-level tracked path sorting at `0` TRUNCATED the list there, so everything after it in
+      git's own sorted order was dropped from every composed pack.
+    Neither has fired: measured 2026-08-12, this repository has 1386 tracked paths, none starting
+    with `0` and none containing a space, so the old parse and this one return identical sets today.
+    **It worked by accident, which is the only reason nobody noticed.** The failure mode is an
+    incomplete pack that installs and then breaks in a stranger's tree, which is precisely the class
+    VELDO-0007 exists to catch and the class that shipped 1.0 uninstallable.
+    scripts/migrate_to_veldo.py and scripts/rename_migration.py both already do this correctly. Three
+    implementations of one operation, and the one that differed was the one that ships.
+
+    THE ROOT IS A PARAMETER SO THAT THIS CAN BE DRIVEN AT ALL, and that seam is the second half of the
+    fix rather than a convenience. The defect is invisible over THIS repository, which has no path
+    with a space and none sorting at `0`, so a check that can only ask about this tree cannot fail for
+    it - measured: the first version of the assertion guarding this stayed green under the old parse.
+    A property that only a differently shaped tree can exhibit needs a way to be asked about that
+    tree, exactly as the corpus owner takes its root as an argument."""
+    out = subprocess.run(["git", "-C", str(root or ROOT), "ls-files", "-z"],
                          capture_output=True, text=True, check=True)
-    return sorted(out.stdout.split("\n0")[0].split())
+    return sorted(p for p in out.stdout.split("\0") if p)
 
 
 def _glob_re(pattern):

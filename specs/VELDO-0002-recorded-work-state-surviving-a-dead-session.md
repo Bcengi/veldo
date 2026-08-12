@@ -36,27 +36,45 @@ observability:
     a path to look at, never a count to trust.
   error_taxonomy: >
     Four distinguishable states for one item, never collapsed, because the operator's next action
-    differs in each: DONE (its artifacts are on disk), UNCONCLUDED (a run claimed it and no artifact
-    concludes it - go look at the named folder), QUEUED (ready, unclaimed) and UNRECORDED (artifacts
-    exist that no run ever claimed, which is the shape of work a dead session left behind). A run
-    whose liveness cannot be confirmed is reported as LIVENESS_UNCONFIRMED with the age of its last
-    heartbeat, never as running and never as dead, because this module cannot tell those apart and
-    saying either would be a guess an operator would act on.
+    differs in each: DONE (its manifest is on disk and a verdict artifact RECORDS a passing review),
+    UNCONCLUDED (a run claimed it and no artifact concludes it - go look at the named folder), QUEUED
+    (ready, unclaimed) and UNRECORDED (artifacts exist that no run ever claimed, which is the shape
+    of work a dead session left behind). A run whose liveness cannot be confirmed is reported as
+    LIVENESS_UNCONFIRMED with the age of its last heartbeat, never as running and never as dead,
+    because this module cannot tell those apart and saying either would be a guess an operator would
+    act on. WHAT THIS TAXONOMY CANNOT EXPRESS, recorded here rather than papered over: there is no
+    state for REVIEWED AND REJECTED. An item whose verdict artifacts all record a rejection is
+    reported UNCONCLUDED when a run claimed it and QUEUED otherwise, and the report gives it a line
+    naming the path and the recorded verdict, because a fifth state is a change to this taxonomy and
+    this item does not make one. The operator reads the path, not the bucket.
 acceptance_criteria:
   - id: AC1
     falsified_by: >
-      Delete the artifact half of the partition in .veldo/work_state.py so DONE is read from the run
-      registry's status field instead of from the proof and verdict on disk, and the assertion that a
-      run recording status done for a spec with NO proof bundle is reported UNCONCLUDED rather than
-      DONE must go red.
+      TWO MUTATIONS, because this criterion asserts two things about where DONE comes from, and each
+      must red a row that names it. ONE: delete the artifact half of the partition in
+      .veldo/work_state.py so DONE is read from the run registry's status field instead of from the
+      proof and verdict on disk, and the assertion that a run recording status done for a spec with NO
+      proof bundle is reported UNCONCLUDED rather than DONE must go red. TWO: make DONE read the
+      EXISTENCE of a verdict artifact instead of the verdict it records, and the assertion that a
+      complete bundle whose verdict records a rejection is NOT done must go red.
     text: >
-      DONE IS DERIVED FROM THE ARTIFACTS, NEVER FROM WHAT A RUN SAID ABOUT ITSELF. An item is DONE
-      when its proof bundle and verdict exist on disk, and for no other reason. A run folder claiming
-      status done for a spec with no such artifacts is reported UNCONCLUDED with the folder named,
-      because a process that says it finished and left nothing behind is the exact shape of the
-      2026-08-10 loss. NEGATIVE CONTROL: a spec whose artifacts ARE on disk is reported DONE even
-      when no run folder mentions it at all, so the artifact half is what decides and the run half
-      cannot veto it.
+      DONE IS DERIVED FROM THE ARTIFACTS, NEVER FROM WHAT A RUN SAID ABOUT ITSELF, AND A VERDICT
+      FILE IS NOT A CONCLUSION - WHAT IT RECORDS IS. An item is DONE when its manifest is on disk
+      and a verdict artifact RECORDS a value from the passing set the loop already declares
+      (executor.PASSING_VERDICTS, taken from that module rather than re-spelled), read from the
+      file's bytes, and for no other reason. A run folder claiming status done for a spec with no
+      such artifacts is reported UNCONCLUDED with the folder named, because a process that says it
+      finished and left nothing behind is the exact shape of the 2026-08-10 loss. A bundle whose
+      verdict records a rejection, or whose verdict cannot be read at all, is NOT done either:
+      MEASURED, and the reason this sentence is here, reading existence reported TWELVE rejected
+      items on this repository as done, the independent review that FAILED this very item among
+      them, under a headline of "154 done, 0 unconcluded". An operator told done about rejected work
+      stops looking at exactly the work that needs them. NEGATIVE CONTROL: a spec whose artifacts
+      ARE on disk is reported DONE even when no run folder mentions it at all, so the artifact half
+      is what decides and the run half cannot veto it. SECOND NEGATIVE CONTROL, ADDITIVE: the same
+      rejected bundle with a later-round verdict ADDED that records a pass IS done, because every
+      multi-round review here leaves the failing round on disk as the record, so this is a
+      measurement of what the verdicts say and not a refusal of any bundle that carries a failure.
   - id: AC2
     falsified_by: >
       Replace the liveness branch in .veldo/work_state.py with a return of "running" whenever a run
@@ -98,14 +116,23 @@ acceptance_criteria:
   - id: AC5
     falsified_by: >
       Hand-list the artifact patterns the corpus half walks in .veldo/work_state.py instead of taking
-      them from verdict_corpus, and the assertion that the walked pattern set is EQUAL to
-      verdict_corpus's declared patterns must go red.
+      them from verdict_corpus, WITH THE VALUES UNCHANGED, and the assertion that a tree whose
+      verdict_corpus declares RENAMED patterns makes this reader walk the renamed ones must go red.
     text: >
       THE CORPUS IS THE ONE ALREADY DECLARED, NOT A SECOND SPELLING OF IT. The artifact half
       enumerates through .veldo/verdict_corpus.py, the module that already owns what a corpus path is,
-      and the suite asserts SET EQUALITY between the patterns this reader walks and the patterns that
-      module declares. A hand-kept copy is how this repository has already shipped two mechanisms
-      enumerating one set in two spellings, with the gap invisible to both.
+      and it takes EVERY corpus pattern that module declares, found by the naming rule rather than by
+      copying names or values, so a rename or an addition there arrives here without an edit. A
+      hand-kept copy is how this repository has already shipped two mechanisms enumerating one set in
+      two spellings, with the gap invisible to both. THE CHECK IS A SUBSTITUTION, NOT AN EQUALITY,
+      and the reason is measured: an independent review drove the hand-list with the values unchanged
+      and the suite and the whole gate stayed GREEN, because value equality between two reads of the
+      same constants can only catch a WRONG pattern and never a copy that copies correctly, which is
+      the entire defect this criterion names. So the suite substitutes a verdict_corpus declaring
+      renamed patterns and requires this reader to walk THOSE - a bundle named for them is done, and
+      a bundle named for the values this repository happens to use today is not. Set equality against
+      that module's own declarations is asserted too, derived from its declarations rather than from a
+      literal written in the suite, which is where the second spelling had moved.
 required_evidence: [unit]
 rollback: >
   Delete .veldo/work_state.py and its suite fragment. Nothing else reads it, no gate stage runs it,
@@ -150,3 +177,26 @@ because that is what tells them whether to wait or to go look.
 So this reports the age and refuses to convert it into a verdict about the process. It cannot see the
 process. Saying "dead" would be a guess, and saying "running" would be the same guess wearing a more
 reassuring word.
+
+## What an independent review found, and what changed
+
+An L2 review at dda45bf confirmed AC1 to AC4 by driving their declared falsifications, and REFUTED
+AC5: it applied that criterion's own declared mutation, hand-listing the corpus patterns with the
+values unchanged in both mirrors, and the suite stayed at 43 passed 0 failed with the whole gate
+GREEN. The row only reddened when the hand-list also changed a VALUE, which is a different defect
+that AC1 and AC3 already catch. **Value equality between two reads of the same constants cannot
+detect a copy that copies correctly**, which is the entire defect AC5 names, so AC5's check is now a
+SUBSTITUTION: the suite builds a tree whose `verdict_corpus` declares renamed patterns and requires
+this reader to walk those. Two sentences of AC5 were also false about the code, and both are
+corrected above: that module declares FOUR corpus patterns rather than the two the old row compared
+against, and the "declared" set the old row measured was a two-element literal written inside the
+suite, so the second spelling had moved into the test rather than disappearing.
+
+The same review measured something worse than any single criterion, on the live tree: **the reader
+gave the wrong answer about this repository**. It called an item DONE because a file named
+`verdict.json` existed, never reading what the verdict SAID, so twelve items whose only verdict on
+disk recorded `fail` were reported done under a headline of "154 done, 0 unconcluded" - including
+this item's own failing review. AC1's second half is that fix, and the honest limit is written into the taxonomy
+above: the four states cannot say REVIEWED AND REJECTED, a fifth state is a change to this item's
+declared taxonomy, and it is NOT invented here. A rejected item falls back to UNCONCLUDED or QUEUED
+and the report names it with the path of the verdict that rejected it.

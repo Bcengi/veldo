@@ -504,3 +504,66 @@ def _iar_ac5():
 
 
 _iar_block("AC5", _iar_ac5)
+
+
+# WHAT SHIPS IS DECIDED BY ONE PARSE OF ONE GIT READ, so that parse is asserted here rather than
+# trusted. Found 2026-08-12 while merging this round: publish.tracked_files() ran `ls-files` with NO
+# `-z` and split the result on the literal `\n0` - a typo for `\0` - and then on whitespace. A tracked
+# path containing a SPACE became several bogus paths and shipped as none of them, and a top-level path
+# sorting at `0` truncated the list, dropping everything after it from every composed pack. It had
+# never fired, because this repository happens to have no such path, so it WORKED BY ACCIDENT.
+# scripts/migrate_to_veldo.py and scripts/rename_migration.py already did it correctly: three
+# implementations of one operation, and the one that differed was the one that decides what an adopter
+# receives.
+def _iar_publisher_parse():
+    _iar_pub = V._VC._organ("veldo_publish", ROOT / "scripts" / "publish.py")
+    # THE INDEPENDENT ENUMERATION, asked of git through a route that shares no parsing with the
+    # publisher's. Compared in BOTH directions and never as a count, because this repository grows.
+    _iar_z = _iar_sp.run(["git", "-C", str(ROOT), "ls-files", "-z"],
+                         capture_output=True, text=True, check=True).stdout
+    _iar_indep = sorted(p for p in _iar_z.split("\0") if p)
+    _iar_seen = _iar_pub.tracked_files()
+    expect("VELDO-0007 ride-along: THE PUBLISHER'S TRACKED SET EQUALS AN INDEPENDENT GIT ENUMERATION "
+           "in both directions, over this repository's real corpus, with no cardinality asserted. The "
+           "publisher decides what every adopter receives, so its one parse of git's output is "
+           "checked against git rather than assumed",
+           sorted(_iar_seen) == _iar_indep
+           and set(_iar_seen) <= set(_iar_indep) and set(_iar_indep) <= set(_iar_seen)
+           and bool(_iar_seen))
+    # THE DRIVEN CASE, in a throwaway repository, because the property cannot be exercised here: this
+    # tree has no path with a space and none sorting at `0`, which is exactly why the defect survived.
+    # A fixture is the only way to reach the shape, so the fixture IS the evidence.
+    import tempfile as _iar_tf
+    with _iar_tf.TemporaryDirectory() as _iar_d:
+        for _iar_cmd in (["git", "init", "-q", "."],
+                         ["git", "-c", "user.email=a@b", "-c", "user.name=a",
+                          "commit", "-q", "--allow-empty", "-m", "init"]):
+            _iar_sp.run(_iar_cmd, cwd=_iar_d, capture_output=True, text=True, check=True)
+        for _iar_name in ("a file with spaces.md", "0-sorts-first.md", "zz-last.md"):
+            (_iar_os.path.join(_iar_d, _iar_name) and
+             open(_iar_os.path.join(_iar_d, _iar_name), "w").write("x\n"))
+        _iar_sp.run(["git", "add", "-A"], cwd=_iar_d, capture_output=True, text=True, check=True)
+        _iar_sp.run(["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m", "f"],
+                    cwd=_iar_d, capture_output=True, text=True, check=True)
+        _iar_zf = _iar_sp.run(["git", "-C", _iar_d, "ls-files", "-z"],
+                              capture_output=True, text=True, check=True).stdout
+        _iar_want = sorted(p for p in _iar_zf.split("\0") if p)
+        # THE SUBJECT IS THE PUBLISHER, ASKED ABOUT THE FIXTURE. The first version of this row
+        # compared a value against itself and computed the old parse inline, so it never called the
+        # publisher at all and stayed GREEN under the mutation - the same vacuous shape this whole
+        # round exists to remove, written while removing it. This calls tracked_files(root=...), which
+        # is why the root seam exists.
+        _iar_got = _iar_pub.tracked_files(root=_iar_d)
+        expect("VELDO-0007 ride-along, DRIVEN IN A FIXTURE: THE PUBLISHER ITSELF, asked about a tree "
+               "carrying a tracked path with a SPACE and one sorting at `0`, returns git's own set "
+               "exactly. This cannot be asked of this repository, which has neither shape - which is "
+               "precisely why the defect survived - so the fixture is the only place the property is "
+               "observable and tracked_files takes a root in order to be asked here. The old parse "
+               "FAILS this tree: it returns the whitespace fragments and loses the real path",
+               _iar_got == _iar_want
+               and "a file with spaces.md" in _iar_got
+               and "zz-last.md" in _iar_got
+               and "with" not in _iar_got)
+
+
+_iar_block("publisher-parse", _iar_publisher_parse)

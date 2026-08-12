@@ -406,7 +406,16 @@ def _bs_ac4():
         # same call answers with real counts. So UNKNOWN is a measurement of what was readable.
         tree = Path(d) / "tree"
         (tree / "proof" / "VELDO-9999").mkdir(parents=True)
-        (tree / "proof" / "VELDO-9999" / "verdict.json").write_text('{"schema": "veldo.verdict/v1"}')
+        # THE VERDICT CARRIES A PASSING VALUE, and it has to. This fixture wrote a verdict with a
+        # schema and NO verdict field, which counted as concluded while `concluded()` only checked
+        # that a verdict FILE existed. VELDO-0002's remediation made it read what the verdict SAYS,
+        # so a bundle whose verdict states nothing is correctly no longer concluded and this fixture
+        # measured 0 where it asserts 1. The row's SUBJECT is a real concluded bundle producing a real
+        # count, so the fixture is what was wrong, not the assertion: it now writes what a concluded
+        # bundle actually looks like. Measured both ways at integration: no verdict value gives 0, a
+        # `pass` gives 1.
+        (tree / "proof" / "VELDO-9999" / "verdict.json").write_text(
+            '{"schema": "veldo.verdict/v1", "verdict": "pass"}')
         (tree / "proof" / "VELDO-9999" / "manifest.json").write_text('{"schema": "veldo.proof/v1"}')
         (tree / "claims").mkdir()
         built = BS.survival(root=tree, claims_root=str(tree))

@@ -312,20 +312,39 @@ def drift(root=None, current=None):
 # WHICH VERSION PRODUCED A PIECE OF EVIDENCE (VELDO-0010). A proof bundle is the record that a
 # criterion was met, and until now it did not say which version of the method produced it - so
 # evidence written by a version whose checks were weaker is indistinguishable from evidence written
-# by today's. The field is OPTIONAL BY CONSTRUCTION: 143 bundles already exist and none carries it,
-# so requiring it would redden a working repository on the day it landed, which is how a correct rule
-# gets reverted. They are reported UNVERSIONED, and NOTHING infers a version for them - inferring the
-# current one would state exactly the fact the field exists to establish.
+# by today's. The field is OPTIONAL BY CONSTRUCTION: when it landed this repository already held
+# well over a hundred bundles and not one carried it, so requiring it would have reddened a working
+# repository on the day it landed, which is how a correct rule gets reverted. Bundles without it are
+# reported UNVERSIONED, and NOTHING infers a version for them - inferring the current one would state
+# exactly the fact the field exists to establish.
 PROOF_VERSION_FIELD = "veldo_version"
 UNVERSIONED = "UNVERSIONED"
 
-PROVENANCE_KEYS = ("bundles", "versioned", "unversioned", "malformed", "by_version", "field")
+# THE DENOMINATOR IS REPORTED TWICE ON PURPOSE. `bundles` counts the manifests found, which is the
+# set the three version buckets partition; `directories` counts the proof directories that exist and
+# `no_manifest` NAMES the ones holding no manifest.json at all. Independent review measured four such
+# directories here (one holding a draft manifest, three holding only an approval), so a single total
+# labelled "bundle(s)" was silently leaving them out of every bucket - a coverage figure with a hole
+# in exactly the place a coverage figure is read.
+PROVENANCE_KEYS = ("bundles", "directories", "no_manifest", "versioned", "unversioned",
+                   "malformed", "by_version", "field")
+
+
+NOT_AN_OBJECT = "the manifest parses as JSON but is a %s rather than an object, so there is no %s " \
+                "in it to read and it is somebody's mistake rather than a bundle that predates the " \
+                "field"
 
 
 def proof_version_problems(manifest, where):
-    """Why a manifest's version field cannot be read, or an empty list. An ABSENT field is NOT a
-    problem - it is the state 143 existing bundles are in."""
-    if not isinstance(manifest, dict) or PROOF_VERSION_FIELD not in manifest:
+    """Why a manifest's version field cannot be read, or an empty list.
+
+    An ABSENT field is NOT a problem - it is the legitimate state of every bundle written before the
+    field existed. A manifest that is not an object at all IS a problem, and saying so here is the fix
+    for a defect independent review drove: this returned "no problem" for a list or a bare string, and
+    the caller then called .get on it, so such a manifest raised AttributeError out of the reader."""
+    if not isinstance(manifest, dict):
+        return [NOT_AN_OBJECT % (type(manifest).__name__, PROOF_VERSION_FIELD)]
+    if PROOF_VERSION_FIELD not in manifest:
         return []
     v = manifest[PROOF_VERSION_FIELD]
     if not _version_shaped(v):
@@ -335,14 +354,28 @@ def proof_version_problems(manifest, where):
 
 def provenance_report(root=None):
     """Which version produced each piece of evidence. ONE key shape, and the UNVERSIONED count is
-    part of the answer rather than rounded away."""
+    part of the answer rather than rounded away.
+
+    IT WALKS DIRECTORIES AND NOT MANIFESTS, so the total it reports is the number of proof bundles
+    that exist rather than the number that happen to hold a manifest.json. See PROVENANCE_KEYS: the
+    three version buckets partition `bundles`, and `bundles` plus `no_manifest` accounts for every
+    directory, so nothing sits outside the report unnamed.
+
+    NOTHING HERE RAISES ON A BAD MANIFEST. Every way a manifest can be unreadable lands in
+    `malformed` WITH THE BUNDLE NAMED, because this reader is called at a suite's module level and an
+    exception there shortens a run instead of reddening one row."""
     base = Path(root) if root is not None else ROOT
-    rep = {"bundles": 0, "versioned": [], "unversioned": [], "malformed": [], "by_version": {},
-           "field": PROOF_VERSION_FIELD}
+    rep = {"bundles": 0, "directories": 0, "no_manifest": [], "versioned": [], "unversioned": [],
+           "malformed": [], "by_version": {}, "field": PROOF_VERSION_FIELD}
     proof_root = base / "proof"
     if not proof_root.is_dir():
         return rep
-    for m in sorted(proof_root.glob("*/manifest.json")):
+    for d in sorted(p for p in proof_root.iterdir() if p.is_dir()):
+        rep["directories"] += 1
+        m = d / "manifest.json"
+        if not m.is_file():
+            rep["no_manifest"].append(str(d.relative_to(base)))
+            continue
         rel = str(m.relative_to(base))
         rep["bundles"] += 1
         try:
@@ -364,16 +397,20 @@ def provenance_report(root=None):
 
 
 def provenance_lines(rep):
-    lines = ["evidence provenance: %d bundle(s): %d name the version that produced them, %d are "
-             "%s, %d malformed"
-             % (rep["bundles"], len(rep["versioned"]), len(rep["unversioned"]), UNVERSIONED,
-                len(rep["malformed"]))]
+    lines = ["evidence provenance: %d proof director(ies), %d carrying a manifest: %d name the "
+             "version that produced them, %d are %s, %d malformed"
+             % (rep["directories"], rep["bundles"], len(rep["versioned"]),
+                len(rep["unversioned"]), UNVERSIONED, len(rep["malformed"]))]
     for v in sorted(rep["by_version"]):
         lines.append("  produced by %s: %d bundle(s)" % (v, len(rep["by_version"][v])))
     if rep["unversioned"]:
         lines.append("  %s: %d bundle(s) predate the %s field and NOTHING infers a version for "
                      "them - inferring today's would state the very fact the field exists to record"
                      % (UNVERSIONED, len(rep["unversioned"]), PROOF_VERSION_FIELD))
+    if rep["no_manifest"]:
+        lines.append("  NO MANIFEST: %d director(ies) under proof/ hold no manifest.json, so they "
+                     "are named here rather than counted in any bucket above: %s"
+                     % (len(rep["no_manifest"]), ", ".join(rep["no_manifest"])))
     for m in rep["malformed"]:
         lines.append("  MALFORMED %s: %s" % (m["bundle"], m["detail"]))
     return lines

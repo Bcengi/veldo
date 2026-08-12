@@ -708,7 +708,20 @@ declared falsifications rather than reading them, which is why they found what r
     the remediation round, with nine agents each running their own gates on the same machine, two of
     its rows went red in a run where the same suite passed 28/0 standalone moments later and
     `python3 scripts/check_install_and_run.py` passed all seven packs with every adopter gate GREEN.
-    The cause is contention against that timeout, not the change under test.
+    **CORRECTION, and the correction is the more useful half of this entry.** This first read "the
+    cause is contention against that timeout." That was inference from timing, not evidence, and it
+    was wrong. The run that DID reach the stage recorded the actual failure, in VELDO-0010's copy:
+    `init said: /usr/bin/python3: can't open file '.../public/packs/opencode/.veldo/init_scaffold.py':
+    [Errno 2] No such file or directory`. **The composed pack was missing the scaffolder.** Not a
+    timeout: an incomplete pack. The publisher composes from `git ls-files`, so what ships is a
+    function of the git INDEX at publication time, and concurrent work against that index is the
+    mechanism. Finding 58 is the latent parse defect in the same function, and finding 59 is the index
+    state that reproduced the symptom deterministically.
+    WHY I REACHED FOR THE WRONG CAUSE, which is the part worth keeping: the row I was looking at
+    prints nothing but its own name, so there was nothing to read, and **I filled the gap with a
+    plausible story instead of going to find the run that had recorded something.** The reporting
+    defect below is not a cosmetic complaint; it is what made a wrong diagnosis the path of least
+    resistance.
     **This matters because the slot became REQUIRED today.** A required check that reddens for
     reasons unrelated to the change teaches people to re-run until green, and a gate people re-run
     until green has stopped being a gate. It is also the exact shape this plan warns about from the
@@ -718,6 +731,118 @@ declared falsifications rather than reading them, which is why they found what r
     900, and the two failing rows print nothing but their own names, so a reader cannot tell a
     timeout from a genuinely red adopter gate. The CHECK already quotes the adopter's gate tail on
     failure; the SUITE ROW throws that away by reducing it to a boolean.
+
+56. **FINDING 45's OWN FIX WAS STILL TWO READS OF ONE STRING, AND A COMMENT SATISFIED BOTH.** The two
+    facts finding 45 prescribed were both substring scans over `scripts/verify.sh`'s text: `veldo_version`
+    in it, and `"veldo_version":` in it. The second implies the first, so they are not independent, and
+    neither is about the gate. An independent reviewer of VELDO-0010 deleted the field from the printf in
+    BOTH gates and from `run_scope.verify_stamp_payload`, left one line reading
+    `# TODO(VELDO-0010): the record still owes a "veldo_version": field`, and measured suite 27 at 44
+    passed 0 failed and the FULL selftest at 4530 passed 0 failed, byte-identical to the baseline, while
+    the record the gate writes lost the field entirely. **A substring scan used to prove a PRESENCE is
+    the same defect as one used to prove an ABSENCE, which this ledger already records twice for
+    absences.** The fix is to RUN THE ARTIFACT: each gate is copied into a throwaway tree with
+    `.veldo/version.py`, executed twice (canonical declaration present, and absent), and the
+    `.veldo/last_verify` it produced is PARSED. Mentioning versus stamping is now genuinely two facts,
+    because one reads the source text and the other reads a file the source wrote. The general rule for a
+    PROTECTED path: it cannot be proven by reading it, only by running it, precisely because the suite is
+    not allowed to change it. VELDO-0007's AC5 inherits this, not just finding 45's version of it.
+57. **AND THE MEASUREMENT PAID FOR ITSELF ON THE FIRST RUN.** The same review found the gate stamping
+    `"veldo_version":"veldo"` in any tree that cannot read a version, because the derivation took the
+    first word of `version.py`'s stdout and `version.py` prints its refusal there for all three causes
+    it models. A fabricated identity in the record where it would be most believed, shipped identically
+    to adopters. That defect existed for an hour under a recorded approval with a green gate and a row
+    asserting the exact opposite property - because the row grepped the shell source for the string
+    `VERSION_JSON=null` instead of reading a record. **A criterion that names a runtime property and
+    checks it in source text is unevidenced, however precisely it is worded.**
+    RENUMBERED ON MERGE: VELDO-0010's remediation wrote these as 46 and 47, which findings 46, 47 and
+    48 above had already taken in the same round. Two numbers for one finding is how a ledger stops
+    being citable, so they are 56 and 57 and the originals stand.
+
+58. **THE SOLE WRITER OF WHAT ADOPTERS RECEIVE PARSED GIT FOR A DELIMITER IT NEVER ASKED FOR, AND HAD
+    WORKED BY ACCIDENT SINCE IT WAS WRITTEN.** `scripts/publish.py:tracked_files()` ran `git ls-files`
+    with NO `-z` and split the newline-delimited result on the literal two characters `\n0` - which is
+    `\0` with a typo - and then on whitespace. Driven in a throwaway repository: a tracked
+    `a file with spaces.md` comes back as the four fragments `a`, `file`, `spaces.md`, `with`, and the
+    real path is GONE. A top-level path sorting at `0` truncates the list, dropping everything after it
+    in git's own order from every composed pack.
+    IT HAS NEVER FIRED. Measured: 1386 tracked paths here, none with a space, none starting with `0`,
+    so the old parse and the correct one return identical sets today. **A defect that cannot fire in
+    the only tree anybody tests is not a small defect, it is an invisible one**, and its blast radius
+    is an incomplete pack that installs and then breaks in a stranger's tree - the class VELDO-0007
+    exists to catch and the class that shipped 1.0 uninstallable.
+    `scripts/migrate_to_veldo.py` and `scripts/rename_migration.py` already did it correctly, with
+    `-z` and a NUL split. **Three implementations of one operation, and the one that differed was the
+    one that decides what ships.** Fixed to match the other two.
+59. **AN UNMERGED INDEX MAKES `git ls-files` ANSWER WRONGLY, AND SEVERAL GATE STAGES TAKE IT AS TRUTH.**
+    Reproduced deterministically, by me, on the live tree: with `.veldo/version.py` left in the `UU`
+    state after a three-way merge whose markers I had resolved in the working tree but never staged,
+    `git ls-files .veldo/version.py` prints the path **THREE times** - one entry per merge stage. The
+    gate went RED on three rows including WARP-0711's file-set equality against `ls-files`. Staging the
+    resolution took the count to 1.
+    **A conflicted merge is a completely ordinary state for a developer to be in**, and it is a state
+    in which the publisher's view of what ships, the lint stage's file set, and the verdict domain are
+    all quietly wrong. This is the same family as finding 46 from the opposite direction: there, a gate
+    reddened because an author had not yet committed; here, several stages silently read a different
+    set because a merge was half finished.
+    RECORDED, NOT FIXED, and the reason is honest rather than convenient: the right fix is for every
+    reader of the tracked set to refuse an unmerged index by name instead of consuming it, and that is
+    one enumeration to build once rather than four patches. It belongs with VELDO-DEC-0002's
+    one-enumeration question rather than being guessed at here.
+60. **I WROTE A SECOND CHECK WITH NO TEETH WHILE FIXING THE FIRST ONE, IN THE SAME HOUR.** Finding 48
+    was a substring scan that could not fail. Finding 58's guard was worse: its fixture row compared a
+    value **against itself** (`_iar_want == sorted(p for p in _iar_zf.split("\0") if p)`) and computed
+    the old parse inline, so it never called the publisher at all, while its live row asked about a tree
+    that cannot exhibit the defect. Restoring the broken parse left the suite at 56 passed, 0 failed.
+    Fixed by giving `tracked_files` a `root` parameter and asking the publisher itself about the
+    fixture: the mutation now reds exactly one named row.
+    **TWO LESSONS, and the second is the one I keep relearning.** A property that only a differently
+    shaped tree can exhibit needs a SEAM to be asked about that tree, so the seam is part of the fix
+    and not a convenience. And driving the mutation is the only step in this process that catches
+    this class - it caught me twice tonight, on findings 48 and 60, both times within minutes, both
+    times after I had just finished writing about the same mistake.
+
+61. **THE FLAGSHIP COMMAND OF THIS PLAN CRASHES IN EVERY ADOPTER TREE, AND THE INSTALL CHECK CANNOT
+    SEE IT.** Reported out of footprint by VELDO-0002's remediation and driven here to be sure.
+    `.veldo/init_scaffold.py` lays down 25 `.veldo` modules including `work_state.py` and
+    `verdict_corpus.py`, and NOT `executor.py`, `runlog.py` or `claim.py`. `work_state.py` loads
+    `executor` for `PASSING_VERDICTS` and `runlog` for the run registry. MEASURED: a fixture carrying
+    exactly the 25 modules init lays down answers
+    `python3 .veldo/work_state.py report` with exit 1 and
+    `FileNotFoundError: [Errno 2] No such file or directory: '.veldo/executor.py'`.
+    So O1's whole promise - "ask Veldo what is done after a session died, and it answers without
+    anyone grepping worktrees" - is a traceback for everybody who installs it. **It was already true
+    before this round; the round made it worse by adding the `executor` dependency**, which is the
+    dependency that closed the false-DONE defect, so the two are not separable by reverting.
+    WHY VELDO-0007 DOES NOT CATCH IT, which is the more interesting half: the install-and-run stage
+    requires the adopter's own GATE to exit zero, and the adopter's gate does not invoke
+    `work_state.py`. **An install check that proves the gate runs does not prove the product runs.**
+    Every organ init lays down that no gate stage invokes is in this blind spot, and the blind spot is
+    derivable rather than a matter of opinion: it is the laid-down set minus the set the shipped gate
+    reaches.
+    NOT FIXED, and this one genuinely needs a decision rather than a patch, because the two repairs
+    have different products. Either init ships `executor.py` and `runlog.py`, which widens what every
+    adopter receives and needs its own look at whether an adopter is meant to have the loop at all; or
+    `work_state` degrades honestly when a sibling is absent, standing the affected half down by name
+    the way it already stands the run half down when no registry exists. The second matches this
+    project's own posture and cannot express "which verdicts count as passing" without the executor, so
+    it is probably both. Raised rather than guessed at.
+
+62. **A CORRECT FIX BROKE ANOTHER ITEM'S FIXTURE, AND THE FIXTURE WAS THE THING THAT WAS WRONG.**
+    Caught only by gating the nine patches TOGETHER rather than trusting nine separately green copies.
+    VELDO-0006's AC4 control built a proof bundle whose verdict carried a schema and NO verdict field,
+    and asserted `concluded_artifacts == 1`. That passed while VELDO-0002's `concluded()` only checked
+    that a verdict FILE existed. Once 0002's remediation made it read what the verdict SAYS, the same
+    fixture measured 0 and two rows went red.
+    **Neither patch was wrong and the tightening is exactly what was wanted.** The row's subject is a
+    real concluded bundle producing a real count, so the fixture was representing a state that had
+    never actually been concluded; it now writes `"verdict": "pass"`. Measured both ways at
+    integration: no verdict value gives 0, a passing verdict gives 1.
+    THE PROCESS LESSON, which is why this is recorded rather than quietly patched: each of the nine
+    remediation copies was GREEN on its own and the interaction existed only in the union.
+    `budget_state.survival()` consumes VELDO-0002's concluded-artifact semantics, so a change to what
+    "done" means necessarily moves it. **Nine green copies are not a green repository, and the only
+    thing that found this was one gate over all of them at once.**
 
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
