@@ -69,6 +69,9 @@ _FILES = [
     # loader paths and reds if either list omits one.
     ".veldo/behavior_floor.py",
     ".veldo/release_contract.py",
+    # VELDO-0002. Laid down but deliberately NOT in REQUIRED_SUBSTRATE: no gate stage loads it, so
+    # a missing copy cannot redden a gate run, and claiming otherwise would be a false requirement.
+    ".veldo/work_state.py",
     ".veldo/policy.yaml",
     ".veldo/policy_check.py",
     ".veldo/capabilities.yaml",
