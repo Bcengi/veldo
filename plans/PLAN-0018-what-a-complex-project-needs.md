@@ -385,6 +385,55 @@ price we already paid for it.
     Structural invariants and partitions stay unconditional. Nothing may assert that the measured set
     is empty.
 
+### Found wiring VELDO-0011 and VELDO-0012 into the gate (2026-08-12)
+27. **A DERIVATION THAT READS SOURCE FOR LITERAL PATHS IS BROKEN BY MAKING THOSE PATHS DYNAMIC, AND
+    THE REFACTOR LOOKS CORRECT.** Three separate mechanisms regex `.veldo/validate_checks.py` for the
+    quoted form of an organ path: what `/veldo:init` must lay down, and two independent gate
+    dependency closures. Collapsing eight duplicated organ loaders into one generic loader that built
+    the path from a variable emptied all three at once, reddening five assertions.
+    WHAT IT HID is the point: a freshly scaffolded repository raising `FileNotFoundError` the first
+    time a verdict reached the organ, which is the exact defect the init check was written for after
+    `security_review` was wired in without being laid down.
+    THE FIX KEEPS BOTH PROPERTIES: one generic loader, and the nine literal paths declared once each
+    riding on the alias lines that had to exist anyway, so the inventory costs no extra lines. The
+    duplication is gone and the literals are now an explicit declaration instead of nine paths buried
+    in nine functions. GENERALISED: before changing how a path, id or module name is WRITTEN, look for
+    a derivation that reads that file as text. If one exists, the literal form is load-bearing.
+28. **A SOURCE-PARSING DERIVATION CANNOT TELL A SPECIFICATION OF A FORM FROM AN INSTANCE OF IT.** The
+    comment written to warn that these paths must stay literal contained a quoted example, and both
+    closures parsed the example as a real member: `.veldo/<name>.py` entered the dependency graph as
+    a file that does not exist. Any file a derivation reads must spell such forms in words.
+29. **BOTH OF init_scaffold's LISTS ARE HAND-MAINTAINED AND BOTH WERE MISSING BOTH NEW ORGANS.** The
+    builders wired two organs into `validate_checks` and neither added them to `_FILES` or
+    `REQUIRED_SUBSTRATE`. Nothing a human reads would have caught it; the derived check did. This is
+    the third recorded instance of the same shape, which is the argument for deriving the list rather
+    than keeping a second copy of it.
+30. **A CARDINALITY ASSERTED OVER A CACHED REGISTRY BREAKS THE MOMENT THE THING IT MEASURES IS REALLY
+    WIRED.** `18_veldo_0012` asserted `len(floor_standdowns()) == 1` over a module-level registry on a
+    deliberately CACHED instance. Once `run_all` carried the registration it recorded a stand-down of
+    its own into the same registry and the row went red. Same class as finding 26, in a new dress:
+    the assertion measured process-wide accumulation instead of one call.
+31. **THE REPOSITORY CONTRADICTS ITSELF ABOUT THE module_lines BUDGET, AND THE CONTRADICTION IS NOW
+    LOAD-BEARING.** `architecture.yaml` declares `module_lines` ADVISORY (`enforcement: review`) on
+    Dmitry's 2026-08-01 decision, recorded there in his terms: a mechanised cap "blocked a correct
+    four-line security fix" and "costs more than the sprawl it prevents". WARP-1012 AC1/AC2 then HARD
+    ASSERT two named files at `<= max`. So the contract says advisory and the suite says mandatory.
+    WHY IT MATTERS: `validate.py` and `validate_checks.py` both now sit at EXACTLY 1000 of 1000, so
+    the next correct change to either has nowhere to go, and the two available moves are both bad -
+    shredding load-bearing rationale comments, or raising the budget, which uses his advisory ruling
+    as a loophole to make room for one's own code. NOT RESOLVED TONIGHT and deliberately not resolved
+    unilaterally: it is a contract question. Recorded so the next person does not rediscover it at
+    2am while blocked.
+32. **`validate_checks.py` HAS BECOME THE THING WARP-1012 SPLIT `validate.py` TO STOP BEING.** It now
+    holds nine organs' gate faces plus every spec and proof check, at the budget ceiling. The correct
+    fix is the same one: extract the organ loading and the organ gate faces, which are a coherent
+    unit, keeping the literal path inventory in `validate_checks.py` where the derivations read it.
+    Sized as its own item, not smuggled into an unrelated change.
+33. **`record_problems` in `.veldo/release_contract.py` has cyclomatic complexity 33 against a budget
+    of 20**, reported by the shape gate's review lane and therefore non-blocking. Left standing with
+    the number named rather than silently accepted, and handed to the adversarial review to check for
+    an unreachable branch or two causes reported under different names.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
