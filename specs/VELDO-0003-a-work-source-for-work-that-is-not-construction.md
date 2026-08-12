@@ -19,6 +19,8 @@ placement: [contracts]
 footprint:
   - ".veldo/tasks.py"
   - "engine/.veldo/tasks.py"
+  - ".veldo/claim.py"
+  - "engine/.veldo/claim.py"
   - ".veldo/init_scaffold.py"
   - "engine/.veldo/init_scaffold.py"
   - "scripts/suites/20_veldo_0003_task_source.py"
@@ -36,9 +38,15 @@ observability:
     that nobody here can do" send an operator in opposite directions.
   error_taxonomy: >
     Task-set refusals: TASK_UNREADABLE, TASK_MISSING_FIELD, TASK_KEY_UNRECOGNIZED, TASK_KIND_UNKNOWN,
-    TASK_DECLARED_TWICE and TASK_PRODUCES_UNBOUND, each named separately because each is a different
-    author mistake. Claim answers reuse the EXISTING ledger's vocabulary (granted, capability, claimed)
-    rather than inventing a second spelling, and add CONCLUDED for a task whose product already exists.
+    TASK_DECLARED_TWICE, TASK_PRODUCES_UNBOUND, TASK_BAD_STATUS, TASK_ID_UNPREFIXED and
+    TASK_ID_UNCLAIMABLE, each named separately because each is a different author mistake. The last two
+    are about the id AS A CLAIM KEY: outside the TASK- namespace it could be one claim record with a
+    spec construction claims in the same ledger, and an id that is not its own claim.ledger_basename
+    would share one record with every other id that maps onto that basename. Claim answers reuse the
+    EXISTING ledger's vocabulary (granted, capability, claimed) rather than inventing a second
+    spelling, and add CONCLUDED for a task whose product already exists; an id the ledger cannot store
+    faithfully is a UnitIdError out of the ledger rather than a fifth answer, because a malformed key
+    is a bug to surface and not a claimant to arbitrate between.
 acceptance_criteria:
   - id: AC1
     falsified_by: >
@@ -69,7 +77,9 @@ acceptance_criteria:
     falsified_by: >
       Make claimable() skip the ledger consultation in .veldo/tasks.py and return every open task, and
       the assertion that a task held live by another worker is NOT claimable, driven through the real
-      .veldo/claim.py ledger, must go red.
+      .veldo/claim.py ledger, must go red. OR delete the ledger-basename refusal from
+      task_id_problems, and the assertion that two ids sharing ONE claim record cannot both be
+      accepted - and that neither harm of such a pair is reachable - must go red.
     text: >
       TWO WORKERS NEVER GET ONE TASK, THROUGH THE LEDGER THAT ALREADY GUARANTEES THAT. Claimability is
       answered by consulting .veldo/claim.py, the existing per-unit-lock ledger, and NOT by a second
@@ -77,8 +87,15 @@ acceptance_criteria:
       exceed the worker's capabilities is refused `capability`, and a task whose product exists is
       refused `concluded`. DRIVEN THROUGH THE REAL LEDGER, never a stub, because the property being
       relied on is that ledger's locking and a stub would prove only that the stub agrees with itself.
-      NEGATIVE CONTROL: two claims for two DIFFERENT tasks both succeed, so the refusal is arbitration
-      rather than a ledger that refuses everything.
+      AND AN ID IS THAT LEDGER'S CLAIM KEY, NOT A LABEL, which is where the first version of this item
+      failed review: a task id must carry TASK- so it can never be one claim record with the SPEC of
+      that name construction claims in the same ledger, and it must be its own claim.ledger_basename,
+      so two ids this contract accepts can never fold into one record. Without that refusal TASK-1_b
+      and TASK-1/b are two tasks here and one file there, which reaches BOTH harms this criterion
+      forbids: a live claim on either refuses the other, and a release by one worker frees the task
+      another is still holding. NEGATIVE CONTROL: two claims for two DIFFERENT tasks both succeed, and
+      adding more legitimately spelled ids keeps one live record per id, so the refusals are
+      arbitration and discrimination rather than a ledger that refuses everything.
   - id: AC4
     falsified_by: >
       Add a control loop, a worker spawner or a pacing decision to .veldo/tasks.py, and the assertion
@@ -140,3 +157,20 @@ declares what it produces, and that path existing is what concludes it.
 That also makes the queue honest under a dead session, for free: a worker that died mid-review leaves a
 stale claim the ledger already ages out, and a task whose product never appeared simply becomes
 claimable again. Nothing has to remember what happened.
+
+## The one thing the ledger cannot check for itself
+
+The ledger is generic over a unit id, and that genericity is exactly why it could not defend this: it
+stores a claim at a filesystem-safe basename derived from the id, so two ids differing only in a
+character that basename cannot hold are one record and one lock. Construction never met that, because
+its ids are format-checked spec ids. This item is where AUTHOR-WRITTEN ids first enter the ledger's
+namespace, so the gap arrived with it, and the independent review of the first version drove both
+halves: a task no worker could take, and a release by one worker handing a live task to a second.
+
+The remedy is two refusals in the contract and one in the store. A task id carries the TASK- prefix
+this module already declared and enforced nowhere, which keeps the task namespace disjoint from the
+spec namespace sharing that ledger. A task id is its own `claim.ledger_basename`, asked OF the ledger
+rather than re-derived here, so the ids this contract accepts map to records injectively and no
+cross-file collision sweep is needed beside the per-task refusal. And the ledger itself refuses to
+resolve a record for an id it cannot store faithfully, because a store that silently conflates two
+keys reports a safety it does not have.

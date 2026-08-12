@@ -66,14 +66,25 @@ acceptance_criteria:
     falsified_by: >
       Make the reader fall back to a default string when the canonical declaration is absent in
       .veldo/version.py, and the assertion that an absent canonical file yields
-      VERSION_CANONICAL_ABSENT rather than a version must go red.
+      VERSION_CANONICAL_ABSENT rather than a version must go red. ALSO delete the shape test from
+      read_manifest, and the rows asserting that a canonical declaration of "" or "TBD" is refused
+      must go red. ALSO read plugins[0] positionally instead of the entry named PLUGIN_NAME, and the
+      rows asserting the reader answers what the veldo ENTRY declares must go red.
     text: >
       NO GUESSED VERSION, EVER. If the canonical declaration is missing or unreadable the reader
       refuses with VERSION_CANONICAL_ABSENT and returns no version at all. A default would be the
       confident-zero disease applied to identity: an installation that reports a version it invented is
       worse than one that reports none, because a bug report against a fabricated number sends
-      everybody to the wrong tree. NEGATIVE CONTROL: with the canonical file present the same reader
-      returns the real version, so the refusal is a measurement rather than the reader's only answer.
+      everybody to the wrong tree. AND A STRING IS NOT A VERSION: "" and "TBD" are strings, so every
+      declaration is SHAPE-CHECKED where it is read, because reporting an empty identity with a zero
+      exit is the same disease wearing a pass. AND THE READ IS BY IDENTITY, NOT BY POSITION: a
+      marketplace manifest hosts a LIST, so this version is the one the entry NAMED veldo declares,
+      and a top-level "version" beside that list is a schema version that does not shadow it. Both
+      holes were found by independent review of this item, both were reachable with the gate green,
+      and each now has its own row. NEGATIVE CONTROL: with the canonical file present the same reader
+      returns the real version, so the refusal is a measurement rather than the reader's only answer,
+      and a legitimately co-hosted plugin ADDED to the marketplace at its own version changes nothing
+      about what this installation reports.
   - id: AC3
     falsified_by: >
       Report only that the versions differ in .veldo/version.py, dropping the two values and two
@@ -87,12 +98,18 @@ acceptance_criteria:
     falsified_by: >
       Make the CLI print a version even when the canonical declaration is absent in .veldo/version.py,
       and the assertion that it exits NON-ZERO and prints the refusal rather than a number must go red.
+      ALSO let read_manifest accept any string again, and the row asserting that a canonical
+      declaration of "" makes BOTH the bare CLI and --report exit non-zero must go red.
     text: >
       THE CLI ANSWERS WHAT THIS INSTALLATION IS, AND FAILS LOUD WHEN IT CANNOT. `python3
-      .veldo/version.py` prints the version and exits zero; with no canonical declaration it prints the
-      refusal and exits non-zero, so a script that captures its output can never silently receive a
-      guess. It prints the canonical path alongside the number, because an adopter debugging a version
-      needs to know which file to look at.
+      .veldo/version.py` prints the version and exits zero; with no canonical declaration, or with one
+      declaring something that is not version-shaped, it prints the refusal and exits non-zero, so a
+      script that captures its output can never silently receive a guess. It prints the canonical path
+      alongside the number, because an adopter debugging a version needs to know which file to look at.
+      THE PRESENCE OF THE NUMBER IS ASSERTED BY EQUALITY on the printed token, never by scanning
+      stdout for it: a substring scan cannot fail when the declaration is the empty string, which is
+      the one state where the clause had to hold, and that is how this guarantee was false while the
+      row proving it passed.
   - id: AC5
     falsified_by: >
       Remove the absent-manifest stand-down from the report in .veldo/version.py, and the assertion
@@ -137,3 +154,28 @@ what people forget.
 Because it is the file an adopter installs from, which the existing assertion already identified as
 the one that matters. Introducing a fourth file to be canonical would add a declaration rather than
 remove two.
+
+## What independent review found: two ways to answer with a version this installation is not
+
+Both were reachable with the gate GREEN, and both are closed here.
+
+**A string is not a version.** The reader refused only when the version KEY was missing, so
+`"version": ""` in the canonical manifest made `python3 .veldo/version.py` print
+` (from .claude-plugin/marketplace.json)` and exit 0, `--report` claim agreement over three
+manifests and exit 0, and the suite stay green at 42 passed. `"TBD"` behaved the same way. The
+shape test that guards evidence provenance in the same module was never applied to the number the
+module exists to report, and the row that proved the number was PRESENT could not fail in that
+state, because it scanned stdout for a substring and the empty string is a substring of everything.
+Now every declaration is shape-checked where it is read, an unshaped one is UNPARSEABLE and
+therefore a refusal with a non-zero exit, and the presence of the number is asserted by equality on
+the printed token.
+
+**The canonical read was positional.** It took `plugins[0]` and never matched the entry named
+`veldo` that is right there in the manifest, and a top-level `"version"` shadowed the list entirely.
+So a marketplace with one co-hosted entry listed first answered with that entry's version: at
+1.0.0 the report named BOTH veldo packs as the ones that had drifted, which is the inverse of the
+diagnosis AC3 promises, and at 3.10.1 with the veldo entry bumped to 3.11.0 the reader answered
+3.10.1, the report claimed agreement over three manifests, 3.11.0 was never mentioned and the suite
+was green. Now the entry is matched by name, two entries claiming that name and disagreeing is an
+ambiguity rather than a tie-break to guess at, and a marketplace with no veldo entry refuses while
+naming the entries it did find.

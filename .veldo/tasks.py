@@ -30,6 +30,16 @@ TWO WORKERS NEVER GET ONE TASK, and not because of anything written here: claima
 answered by consulting .veldo/claim.py, whose per-unit lock already arbitrates a whole claim
 decision. A second mechanism would be a second answer.
 
+WHICH MAKES A TASK ID A CLAIM KEY, NOT A LABEL, and the one thing this file's authored ids can
+get wrong that the ledger cannot defend itself against. Two rules, both refusals, both about
+that ONE shared ledger: an id carries TASK_ID_PREFIX, so a task can never be one claim record
+with the SPEC of the same name that construction claims in the same ledger under the same root;
+and an id is its own claim.ledger_basename, so two ids this contract accepts can never be one
+record. Without the second, TASK-1_b and TASK-1/b are two tasks here and one file there, and
+that pair reaches both harms the criterion promises never happen: a task nobody can take, and a
+release by one worker freeing a task another is still holding. The ledger's character rule is
+ASKED of the ledger, never copied here, because a copy would be two enumerations of one set.
+
 IT ENFORCES NOTHING. No gate stage consults this, no build is refused because a task is open,
 and an absent .veldo/tasks/ directory stands the read model down by name rather than reporting
 zero open tasks as though it had looked.
@@ -56,6 +66,11 @@ KINDS = ("review", "audit", "authoring", "investigation", "migration")
 # what decides. Kept in the contract so a wrong value is refused rather than silently believed.
 STATUSES = ("open", "done")
 
+
+# THE TASK NAMESPACE INSIDE THE SHARED LEDGER. Construction claims SPEC ids (WARP-nnnn,
+# VELDO-nnnn) in the same claim ledger under the same root, so this prefix is what keeps the two
+# namespaces from meeting on one claim record. It is ENFORCED, not decorative: an id declared and
+# never checked would be this file claiming a property it does not have.
 TASK_ID_PREFIX = "TASK-"
 
 CAUSE_UNREADABLE = "TASK_UNREADABLE"
@@ -65,8 +80,11 @@ CAUSE_KIND_UNKNOWN = "TASK_KIND_UNKNOWN"
 CAUSE_DECLARED_TWICE = "TASK_DECLARED_TWICE"
 CAUSE_PRODUCES_UNBOUND = "TASK_PRODUCES_UNBOUND"
 CAUSE_BAD_STATUS = "TASK_BAD_STATUS"
+CAUSE_ID_UNPREFIXED = "TASK_ID_UNPREFIXED"
+CAUSE_ID_UNCLAIMABLE = "TASK_ID_UNCLAIMABLE"
 CAUSES = (CAUSE_UNREADABLE, CAUSE_MISSING_FIELD, CAUSE_KEY_UNRECOGNIZED, CAUSE_KIND_UNKNOWN,
-          CAUSE_DECLARED_TWICE, CAUSE_PRODUCES_UNBOUND, CAUSE_BAD_STATUS)
+          CAUSE_DECLARED_TWICE, CAUSE_PRODUCES_UNBOUND, CAUSE_BAD_STATUS, CAUSE_ID_UNPREFIXED,
+          CAUSE_ID_UNCLAIMABLE)
 
 # The claim answers. The first three are the LEDGER'S OWN vocabulary, reused rather than
 # respelled; only CONCLUDED is this module's, because only it knows what finishing looks like.
@@ -97,6 +115,20 @@ def _organ(name):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+_LEDGER = None
+
+
+def _ledger():
+    """The EXISTING claim ledger, loaded once, from ONE call site. One site because 'which organ
+    is the ledger' is exactly the kind of fact that goes wrong when it is written down three
+    times, and once because the validator asks it about every task id and re-executing a module
+    per task would make a read model pay for a constant."""
+    global _LEDGER
+    if _LEDGER is None:
+        _LEDGER = _organ("claim")
+    return _LEDGER
 
 
 def default_tasks_dir(root=None):
@@ -138,6 +170,36 @@ def produces_problems(produces):
     return None
 
 
+def task_id_problems(task_id):
+    """Every reason this id cannot be a TASK id, as (cause, reason) pairs. An id here is the
+    claim key the ledger arbitrates by, so both refusals are about two workers and one task.
+
+    IT MUST CARRY TASK_ID_PREFIX AND SOMETHING AFTER IT. Construction claims spec ids in this
+    same ledger under the same root, so a task called VELDO-0003 and the spec of that name are
+    ONE claim record: the reviewer of the task and the builder of the spec hold one lock, and
+    whichever releases first frees the other's work. A prefix is what keeps the namespaces apart.
+
+    IT MUST BE ITS OWN LEDGER BASENAME, and that is asked of the ledger rather than re-derived
+    here. The record lives at claim.ledger_basename(id), so without this refusal TASK-1_b and
+    TASK-1/b are two tasks to this contract and one file to the ledger, which reaches both harms
+    AC3 promises never happen: a live claim on either refuses the other, and a release of either
+    frees the task the other worker is still holding. Because every accepted id IS its own
+    basename, the mapping over accepted ids is the identity and therefore injective: two
+    accepted ids can never be one record, which is why no cross-file collision sweep is needed
+    beside the per-task refusal."""
+    out = []
+    if not isinstance(task_id, str) or not task_id.startswith(TASK_ID_PREFIX) \
+            or task_id == TASK_ID_PREFIX:
+        out.append((CAUSE_ID_UNPREFIXED,
+                    "task id %r does not start with '%s' followed by anything. Construction "
+                    "claims SPEC ids in the same ledger, so an id outside the task namespace can "
+                    "be one claim record with a spec's" % (task_id, TASK_ID_PREFIX)))
+    why = _ledger().unit_id_problem(task_id)
+    if why:
+        out.append((CAUSE_ID_UNCLAIMABLE, "task id cannot be a claim key: %s" % why))
+    return out
+
+
 def task_problems(task, where):
     """Every structural problem with ONE task, as (cause, message) pairs. All of them, not the
     first, because an author fixing one at a time is the thing a named taxonomy prevents."""
@@ -151,6 +213,11 @@ def task_problems(task, where):
         if not task.get(field):
             out.append((CAUSE_MISSING_FIELD,
                         "%s: task %s declares no %s" % (where, label, field)))
+    if task.get("id"):
+        # Only when one is declared: a task with no id at all is the MISSING_FIELD above, and
+        # naming the same absence twice sends an author looking for a second mistake.
+        for cause, why in task_id_problems(task.get("id")):
+            out.append((cause, "%s: %s" % (where, why)))
     for key in sorted(set(task) - TASK_KEYS):
         out.append((CAUSE_KEY_UNRECOGNIZED,
                     "%s: task %s declares unrecognised key '%s' (allowed: %s)"
@@ -261,10 +328,15 @@ def concluded(task, root=None):
 
 def claim_answer(task, worker_caps=None, root=None, claims_root=None):
     """Why this worker may or may not take this task, in ONE vocabulary. The first three
-    answers are the LEDGER'S, asked of the ledger; only CONCLUDED is this module's."""
+    answers are the LEDGER'S, asked of the ledger; only CONCLUDED is this module's.
+
+    A task whose id cannot be a claim key raises OUT of the ledger here rather than being
+    answered, deliberately: every path that reaches this function through the read model has
+    already refused such a task, so a caller that hand-built one is a bug to surface and not a
+    claimant to arbitrate between."""
     if concluded(task, root):
         return REFUSED_CONCLUDED
-    cl = _organ("claim")
+    cl = _ledger()
     reqs = task.get("requires") or []
     if not cl.capability_ok(worker_caps, reqs):
         return REFUSED_CAPABILITY
@@ -289,7 +361,7 @@ def claim_task(task_id, worker_id, worker_caps=None, tdir=None, root=None, parse
     task = found[0]
     if concluded(task, root):
         return False, REFUSED_CONCLUDED
-    cl = _organ("claim")
+    cl = _ledger()
     return cl.claim(task_id, worker_id, worker_caps=worker_caps,
                     requirements=task.get("requires") or [], root=claims_root)
 

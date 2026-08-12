@@ -34,6 +34,18 @@ def _ts_block(label, fn):
                % (label, _ts_e), False)
 
 
+def _ts_try(fn):
+    """(value, error) for one call, so a row about a REFUSAL asserts on it instead of letting it
+    escape. A raise from inside a criterion's block reds _ts_block's row rather than the row the
+    criterion names, and 'some row went red' is exactly the evidence a mutation must not be able
+    to produce: the id refusals below are asserted THROUGH this, so removing either of them reds
+    the row that is about it."""
+    try:
+        return fn(), None
+    except Exception as e:                       # noqa: BLE001 - the refusal is the measurement
+        return None, e
+
+
 def _ts_re_organs(src):
     """Which sibling organs this module loads, read from its own AST rather than by substring: a
     docstring naming the organ it deliberately does NOT touch is prose, and an absence claim built
@@ -271,6 +283,96 @@ def _ts_ac3():
                "the ledger is even asked, so a pool cannot spend a worker redoing finished work",
                oke is False and whye == TS.REFUSED_CONCLUDED)
 
+    # ONE ID, ONE RECORD. An id here is not a label, it is the LEDGER'S CLAIM KEY, so the ids
+    # this contract accepts have to be distinct AS KEYS and not merely as strings. The review of
+    # this item found the gap by driving it: TASK-0001_b and TASK-0001/b were two tasks to the
+    # contract and ONE file to the ledger, and that pair reached both outcomes AC3 promises never
+    # happen - a live claim on either refused the other, and a release of either freed the task
+    # the other worker was still holding, so a second worker was GRANTED it. The rows below are
+    # that measurement, kept.
+    _ts_key_ok, _ts_key_twin = "TASK-0001_b", "TASK-0001/b"
+    expect("VELDO-0003 AC3 PRECONDITION for the rows below: the pair really does collide in the "
+           "LEDGER'S OWN key space - two different ids, one basename - so what follows is driven "
+           "against a real collision rather than a spelling nobody would ever write. Asked of the "
+           "ledger, because the ledger's key rule is the ledger's fact and a copy of it here "
+           "would be two enumerations of one set",
+           _ts_key_twin != _ts_key_ok
+           and TSCL.ledger_basename(_ts_key_twin) == TSCL.ledger_basename(_ts_key_ok)
+           == _ts_key_ok)
+
+    _ts_key_sets = [("a.yaml", _ts_emit([_ts_task(tid=_ts_key_ok, produces="build/review-A.md"),
+                                         _ts_task(tid=_ts_key_twin,
+                                                  produces="build/review-B.md")]))]
+    n_kt, out_kt = _ts_check(_ts_key_sets)
+    expect("VELDO-0003 AC3: an id that is NOT ITS OWN LEDGER BASENAME is refused with "
+           "TASK_ID_UNCLAIMABLE naming the id AND the basename it would share. Both ids here "
+           "carry the TASK- prefix, so this row can only be red for the namespace rule and never "
+           "for the prefix one",
+           n_kt > 0 and TS.CAUSE_ID_UNCLAIMABLE in out_kt and _ts_key_twin in out_kt
+           and _ts_key_ok in out_kt)
+
+    with tempfile.TemporaryDirectory() as d:
+        base, td, claims = _ts_tree(d, _ts_key_sets)
+        offered = [t.get("id") for t, _p in TS.all_tasks(td, base, V.parse_yamlish)]
+        took_ok, _e1 = _ts_try(lambda: TS.claim_task(_ts_key_ok, "worker-a", tdir=td, root=base,
+                                                     parse=V.parse_yamlish, claims_root=claims))
+        took_twin, _e2 = _ts_try(lambda: TS.claim_task(_ts_key_twin, "worker-b", tdir=td,
+                                                       root=base, parse=V.parse_yamlish,
+                                                       claims_root=claims))
+        freed, freed_err = _ts_try(lambda: TSCL.release(_ts_key_twin, "worker-a", root=claims))
+        held, _e3 = _ts_try(lambda: TSCL.holder(_ts_key_ok, root=claims))
+        took_again, _e4 = _ts_try(lambda: TS.claim_task(_ts_key_ok, "worker-b", tdir=td, root=base,
+                                                        parse=V.parse_yamlish,
+                                                        claims_root=claims))
+        expect("VELDO-0003 AC3, THE HARM ITSELF, DRIVEN THROUGH THE REAL LEDGER: neither outcome "
+               "of the collision is reachable. The colliding twin is not offered by the read "
+               "model and answers no_such_task rather than `claimed`, so no task becomes one "
+               "nobody can take; it cannot be RELEASED as though it were the accepted task, "
+               "because the ledger refuses to address a record under an id that is not its own "
+               "basename; the accepted task is STILL HELD by the worker that took it; and a "
+               "second worker asking for that task is refused `claimed`. Measured on this tree "
+               "before the refusal existed: the release returned True, the holder became None, "
+               "and worker-b was GRANTED a task worker-a was still working (freed=%r)" % (freed,),
+               offered == [_ts_key_ok] and took_ok == (True, "granted")
+               and took_twin == (False, TS.REFUSED_UNKNOWN)
+               and isinstance(freed_err, TSCL.UnitIdError) and held == "worker-a"
+               and took_again == (False, "claimed"))
+
+    _ts_spec_id = "VELDO-0003"
+    n_pf, out_pf = _ts_check([("a.yaml", _ts_emit([_ts_task(tid=_ts_spec_id)]))])
+    expect("VELDO-0003 AC3: an id OUTSIDE THE TASK NAMESPACE is refused with TASK_ID_UNPREFIXED, "
+           "so a task can never be one claim record with the SPEC of the same name. Construction "
+           "claims spec ids in THIS SAME ledger under the same root, so a task called VELDO-0003 "
+           "and the spec VELDO-0003 would hold one lock and whichever released first would free "
+           "the other's work. TASK_ID_PREFIX was declared in this module and enforced by nothing",
+           n_pf > 0 and TS.CAUSE_ID_UNPREFIXED in out_pf and _ts_spec_id in out_pf)
+    expect("VELDO-0003 AC3: the task and spec namespaces are DISJOINT under the ledger's own key "
+           "map - an accepted task id keeps the prefix in its basename and a spec id cannot "
+           "produce one that does - so this is a property of the mapping rather than of whichever "
+           "ids somebody happens to have written down today",
+           TSCL.ledger_basename("TASK-0001").startswith(TS.TASK_ID_PREFIX)
+           and not TSCL.ledger_basename(_ts_spec_id).startswith(TS.TASK_ID_PREFIX)
+           and TS.task_id_problems("TASK-0001") == [])
+
+    _ts_legit = ["TASK-0001", "TASK-0001_b", "TASK-0002.v2", "TASK-0003-review"]
+    _ts_legit_sets = [("a.yaml", _ts_emit([_ts_task(tid=t, produces="build/review-%d.md" % i)
+                                           for i, t in enumerate(_ts_legit)]))]
+    n_lg, _out_lg = _ts_check(_ts_legit_sets)
+    with tempfile.TemporaryDirectory() as d:
+        base, td, claims = _ts_tree(d, _ts_legit_sets)
+        grants = [TS.claim_task(t, "worker-%d" % i, tdir=td, root=base, parse=V.parse_yamlish,
+                                claims_root=claims) for i, t in enumerate(_ts_legit)]
+        records = sorted(TSCL.claimed_units(root=claims))
+    expect("VELDO-0003 AC3 NEGATIVE CONTROL, AND IT IS ADDITIVE: ADDING three more legitimately "
+           "spelled ids - underscore, dot and hyphen, all of which the ledger stores verbatim - "
+           "is accepted with ZERO errors, each is granted to its OWN worker, and the ledger holds "
+           "as many distinct live records as there are ids. So the refusals above discriminate: "
+           "they are not 'any id with an underscore' and not 'more than one task per set', and "
+           "one record per id is what the absence of a collision looks like from the ledger's "
+           "side rather than from this file's",
+           n_lg == 0 and all(g == (True, "granted") for g in grants)
+           and records == sorted(_ts_legit) and len(records) == len(_ts_legit))
+
 
 _ts_block("AC3", _ts_ac3)
 
@@ -474,10 +576,16 @@ def _ts_ac5():
            "AST rather than over mentions, because /veldo:init legitimately NAMES the module in "
            "order to ship it and naming is not consulting",
            _ts_loaders == [])
-    expect("VELDO-0003 AC5 NEGATIVE CONTROL for the row above: the load detector is not blind - it "
-           "finds this module's OWN load of the claim ledger, so an absence claim built on it is a "
-           "measurement rather than a scan that never matches anything",
-           _ts_re_organs((ROOT / ".veldo" / "tasks.py").read_text()) == ["claim", "claim"])
+    _ts_own_organs = _ts_re_organs((ROOT / ".veldo" / "tasks.py").read_text())
+    expect("VELDO-0003 AC5 NEGATIVE CONTROL for the row above: the organ detector is not blind - "
+           "it FINDS this module's own load of the claim ledger and finds nothing in a module that "
+           "loads no organ at all, so an absence claim built on the same AST reading is a "
+           "measurement rather than a scan that never matches anything. Membership, never a COUNT: "
+           "how many times the ledger is consulted is a refactoring decision, and a control that "
+           "pinned the count would red for a legitimate extra consult - a control failing for the "
+           "one reason a control must never fail (it did, when the id refusal below folded three "
+           "consults into one accessor)",
+           "claim" in _ts_own_organs and _ts_re_organs("x = 1\n") == [])
 
 
 _ts_block("AC5", _ts_ac5)

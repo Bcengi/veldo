@@ -34,6 +34,9 @@ observability:
     settled it, and WHAT THE PREDICATE MEASURED. Every refusal names the claim id and the file. The
     report separates supported, contradicted and unsettleable, and never sums them into a score,
     because a percentage of a corpus nobody enumerated is the number this repository refuses to print.
+    A corpus file that could not be read AND a declared claim that could not be read as a claim are
+    both CARRIED in the report and named on the page as absent from every count above, never dropped:
+    a count that silently excludes what it could not read is the same confident zero one level down.
   error_taxonomy: >
     Corpus refusals: PROMISE_UNREADABLE, PROMISE_MISSING_FIELD, PROMISE_KEY_UNRECOGNIZED,
     PROMISE_PREDICATE_UNKNOWN, PROMISE_DECLARED_TWICE and PROMISE_TARGET_UNBOUND, named separately
@@ -49,11 +52,16 @@ acceptance_criteria:
     text: >
       A CLAIM IS A CLOSED CONTRACT WITH A DECLARED PREDICATE. Each claim carries an id, the document
       and locator it was read from, the claim as WRITTEN, and one predicate from a closed set. The key
-      set is closed, an unknown predicate is refused with the allowed set named, and one claim id in
-      two files is refused with BOTH files named. THE PREDICATE VOCABULARY IS DELIBERATELY TINY - path
-      presence, text presence, text absence and symbol definition - because a predicate that needed
-      judgement would be a machine pretending to make a review-lane call. NEGATIVE CONTROL: a corpus
-      differing only in a valid predicate is accepted.
+      set is closed ON THE CORPUS HEAD AS WELL AS ON EACH CLAIM, an unknown predicate is refused with
+      the allowed set named, and one claim id in two files is refused with BOTH files named. THE
+      PREDICATE VOCABULARY IS DELIBERATELY TINY - path presence, path absence, text presence, text
+      absence and symbol definition, plus an explicit `unsettleable` declaration for a claim its
+      author states no predicate can decide - because a predicate that needed judgement would be a
+      machine pretending to make a review-lane call. A claim that could not be RUN is refused at read
+      time rather than settling as unsettleable and looking like an honest limit: that includes a
+      needle or a symbol that is not text, because the one front-matter parser turns a bare number
+      into an int and `200 in text` is a crash while a symbol named 200 is a false accusation.
+      NEGATIVE CONTROL: a corpus differing only in a valid predicate is accepted.
   - id: AC2
     falsified_by: >
       Read the outcome from a claim's own `believed` field in .veldo/promises.py instead of running its
@@ -78,14 +86,23 @@ acceptance_criteria:
       named on the page. "The tree supports this" and "nothing here can decide this" are opposite facts
       about how far a reader should trust the report, and a corpus whose claims are ALL unsettleable
       stands the report down rather than announcing zero contradictions, which is the confident zero
-      this migration kept finding. NO SCORE IS PRINTED: there is no ratio, no percentage and no float
-      anywhere in the report, because a proportion of a corpus nobody enumerated is exactly the number
-      that would get quoted.
+      this migration kept finding. A DECLARED CLAIM THAT COULD NOT BE READ AS A CLAIM IS CARRIED THE
+      SAME WAY, in its own bucket and on the page, because a report that counts one claim where the
+      author wrote two prints the identical confident zero one level down - and a corpus whose only
+      claims are malformed stands down with a reason that says so rather than claiming nobody declared
+      a claim at all. NO SCORE IS PRINTED: there is no ratio, no percentage and no float anywhere in
+      the report OR IN THE LINES IT PRINTS, because a proportion of a corpus nobody enumerated is
+      exactly the number that would get quoted, and the printed page is the surface it would be quoted
+      from.
   - id: AC4
     falsified_by: >
       Drop the measured evidence from a settlement in .veldo/promises.py so a contradiction reports
       only its outcome, and the assertion that every CONTRADICTED settlement carries the predicate, the
-      target it read and what it found there must go red.
+      target it read and what it found there must go red. The claim is UNIVERSAL, so the falsification
+      is too: strip measured, predicate or target from the contradiction path of ANY ONE of the five
+      mechanical predicates - path_exists, path_absent, text_present, text_absent, symbol_defined -
+      and THAT predicate's row must go red, because a universal claim asserted on one predicate is a
+      check that cannot fail for the other four.
     text: >
       A CONTRADICTION CARRIES WHAT IT MEASURED, SO A HUMAN CAN OVERTURN IT. This is the finding that
       produced this item: the 2026-08-10 audit of this project's own shipped documents raised fifteen
@@ -98,7 +115,12 @@ acceptance_criteria:
     falsified_by: >
       Remove the absent-corpus stand-down from the read model in .veldo/promises.py, and the assertion
       that an absent .veldo/promises/ directory stands down with its reason named while the report keeps
-      ONE key shape must go red.
+      ONE key shape must go red. The no-load half has its own falsification, driven the same way: wire
+      the promises organ into .veldo/validate_checks.py the way all nine of its organs are wired, as
+      `functools.partial(_organ, "promises", ROOT / ".veldo" / "promises.py")`, or into bin/veldo
+      through that file's own `_mod` helper, and the assertion that NO GATE STAGE LOADS THIS must go
+      red - as must narrowing the file set it is measured over, because the set it finds is asserted
+      EQUAL to the one file that must load it.
     text: >
       ADOPTION SAFE, AND IT GATES NOTHING. A repository with no .veldo/promises/ directory stands the
       read model down by name rather than reporting a clean corpus it never looked at. No gate stage

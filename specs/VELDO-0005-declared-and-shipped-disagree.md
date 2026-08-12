@@ -5,11 +5,13 @@ title: Where the manifest and the tree disagree - a declared capability whose ho
   and a shipped module nothing declares, both named, both carrying what the resolver tried
 status: ready
 risk: standard - it adds one read model over the capability manifest and the shipped tree, writes
-  nothing and gates nothing. It is NOT low because its product is an accusation against the one file
-  documentation defers to, and the obvious implementation of its first half was MEASURED to accuse a
-  third of the corpus falsely, so a resolver that hid what it tried would launder those into facts.
-  It is not high because it refuses no change and every leg stands down by name when its input is
-  absent
+  nothing, and no gate stage consumes its findings. It is NOT low because its product is an accusation
+  against the one file documentation defers to, and the obvious implementation of its first half was
+  MEASURED to accuse a third of the corpus falsely, so a resolver that hid what it tried would launder
+  those into facts - and because its own suite runs in the required unit stage, a row that turned one
+  of those accusations into a gate condition made the organ block after all, which is what independent
+  review found and what AC5 now drives against. It is not high because it refuses no change and every
+  leg stands down by name when its input is absent
 owner: dmitry
 human_approval: not_required
 lane: planned
@@ -33,9 +35,11 @@ behavior_bearing: true
 observability:
   logs: >
     Every unresolved home names the capability, the home as DECLARED, each segment that failed, and
-    every root the resolver tried, so a reader can see the resolver was pointed wrong before editing
-    the manifest. Every undeclared module names its path. Each leg reports its own stand-down reason
-    separately, because an absent manifest and an absent tree are different absences.
+    every root the resolver actually searched for it, so a reader can see the resolver was pointed
+    wrong before editing the manifest. The report also names the roots AVAILABLE to the resolver and
+    where they were derived from, which is a different fact from what any one home attempted. Every
+    undeclared module names its path. Each leg reports its own stand-down reason separately, because
+    an absent manifest and an absent tree are different absences.
   error_taxonomy: >
     Two findings, never merged, because they are opposite mistakes with opposite fixes: HOME_UNRESOLVED
     (the manifest claims a home the tree does not have - either the module moved or the declaration is
@@ -56,8 +60,16 @@ acceptance_criteria:
       under the repository root reported 42 unresolved of 167, and ALL 42 WERE FALSE. A home may be
       COMPOUND (two paths joined by `+`), may be a DIRECTORY rather than a file, and may live under a
       pack root rather than the repository root. So the resolver splits compounds, tries every
-      declared root, and accepts a directory. NEGATIVE CONTROL: a home naming a path that genuinely
+      declared root, and accepts a directory. THE ROOTS ARE DERIVED FROM .veldo/packs.json AND THE
+      TREE, NEVER HARDCODED, and that came from independent review: the first implementation carried
+      the literal tuple ('.', 'engine', 'packs/claude') while the pack manifest declares SEVEN pack
+      roots, so ONE CORRECT declaration whose home was a real Cursor driver under packs/cursor was
+      reported HOME_UNRESOLVED - the same false accusation this item exists to eliminate, reachable
+      for six of the seven tool drivers. NEGATIVE CONTROL: a home naming a path that genuinely
       exists nowhere IS reported unresolved, so the resolver is not one that resolves everything.
+      OVER THE LIVE MANIFEST the assertion is SOUNDNESS, never content: every accused segment is
+      stat'ed by the suite itself under every root the tree declares, and an accusation against a
+      path that exists anywhere is the failure. No live row requires the unresolved set to be empty.
   - id: AC2
     falsified_by: >
       Drop the attempted-paths record from an unresolved finding in .veldo/declared.py, and the
@@ -69,7 +81,11 @@ acceptance_criteria:
       of 167, so a finding that reported only its conclusion would have laundered every one of those
       into a fact. Each finding records the home AS DECLARED, which segment failed, and every root
       that was searched - the same discipline VELDO-0004 applies to a contradicted claim, for the same
-      reason and from the same measurement.
+      reason and from the same measurement. WHAT IS RECORDED IS WHAT WAS SEARCHED: the attempted
+      roots are collected as the search runs, not copied from the list the resolver was handed, so a
+      resolver that skipped a root cannot print a line naming it. The suite checks the record against
+      a root derivation of its own rather than against the module's constant, because asserting a
+      module's output equals that module's own constant asserts nothing about the work it did.
   - id: AC3
     falsified_by: >
       Make the undeclared-module scan in .veldo/declared.py compare against the raw home STRINGS
@@ -100,17 +116,35 @@ acceptance_criteria:
       absent manifest stands the whole report down by name while an absent module directory stands
       only its own leg down must go red.
     text: >
-      EACH LEG STANDS DOWN SEPARATELY AND IT GATES NOTHING. An absent capability manifest stands the
-      whole report down, because both findings are defined against it. An absent module directory
-      stands only the undeclared leg down while the unresolved leg still answers. A DESIGN-WITH-NO-
-      DESCENDANTS leg is DELIBERATELY NOT BUILT HERE and said so rather than stubbed: this repository
-      has no design/ directory at all, so a leg for it would ship unexercised and its first real run
-      would be its first test. No gate stage loads this (PLAN-0018 NG3: a completeness organ that
-      blocked on a heuristic verdict would cut true sentences and stop real work).
+      EACH LEG STANDS DOWN SEPARATELY AND ITS FINDINGS GATE NOTHING. An absent capability manifest
+      stands the whole report down, because both findings are defined against it. An absent module
+      directory stands only the undeclared leg down while the unresolved leg still answers.
+      THE CLAIM THAT NO GATE STAGE LOADS THIS WAS FALSE AND IS RETRACTED, on independent review: the
+      module is loaded by its own suite fragment, which runs inside verify.sh's required unit stage
+      like every other fragment, and two of that fragment's rows pinned live repository state (an
+      unresolved set required to be EMPTY and a design/ directory required to be ABSENT), so an
+      ordinary repository change reddened the whole gate on this organ's heuristic verdict - the
+      thing PLAN-0018 NG3 forbids. What is asserted now is the property that matters and it is
+      DRIVEN rather than promised: the organ-produced findings of a fixture tree are spliced into the
+      live report so every bucket carries one, and every claim the suite makes about a real tree is
+      re-driven over THAT report and must still hold, so a row that pins emptiness again reds in
+      front of its author. The loader scan is recursive over the whole tree and must find the
+      fragment ITSELF, because a scan whose domain excludes the only loader reported an empty list.
+      A DESIGN-WITH-NO-DESCENDANTS leg is DELIBERATELY NOT BUILT HERE and said so rather than
+      stubbed. THE REASON RECORDED BEFORE WAS FALSE: it said this repository has no design/ directory
+      at all, and only the literal top-level path is absent, while docs/design/ holds 19 design
+      documents and PLAN-0018 observation 18, the observation that produced this work item, names
+      docs/design/05-product-planning-layer-sol.md as a design that died with nothing noticing. The
+      true reason is a scope decision: that leg needs a DESCENDANTS relation between a design and the
+      specs or plan items it produced, a different corpus and a different judgement from comparing
+      the manifest against the shipped modules. What is asserted instead is a property of the code
+      that a half-built leg cannot satisfy: the finding kinds the module DECLARES are exactly the
+      kinds a driven report EMITS.
 required_evidence: [unit]
 rollback: >
   Delete .veldo/declared.py and its suite fragment. The capability declarations it motivated stay
-  valid on their own, nothing imports it and no gate stage runs it, so the retreat costs one file.
+  valid on their own and no gate stage consumes its findings, so the retreat costs two files: the
+  organ and the fragment that drives it, which is the only thing in the tree that loads it.
 ---
 
 # Where the manifest and the tree disagree
@@ -136,10 +170,46 @@ completeness check accuses a third of the corpus wrongly, and an accusation agai
 documentation defers to would send somebody editing correct declarations. So the resolver is the
 substance of the work, and every finding carries what the resolver tried.
 
+**The first implementation made that same false accusation for six of seven pack roots**, and
+independent review found it. `SEARCH_ROOTS` was the literal tuple `('.', 'engine', 'packs/claude')`
+while `.veldo/packs.json` declares seven packs, so one correct declaration about a real Cursor driver
+under `packs/cursor` was reported `HOME_UNRESOLVED`. The roots are now read from that manifest plus
+the directories that exist under `packs/`, so a pack added later is covered by arriving.
+
+## What the first version got wrong about gating, and what is asserted instead
+
+The item said IT GATES NOTHING and that no gate stage loads the module. The second half was false.
+The module is loaded by its own suite fragment, that fragment runs inside `scripts/verify.sh`'s
+required `unit` stage, and two of its rows asserted over live repository state: the unresolved set
+was required to be EMPTY, and a `design/` directory was required to be ABSENT. So `mkdir design`
+reddened the whole gate, and so did adding one correct capability declaration. The evidence offered
+for the no-loader claim could not have found the violation either: the AST scan globbed
+`.veldo/*.py` and `scripts/*.py` non-recursively, which excludes `scripts/suites/` by construction.
+
+What is asserted now, driven rather than promised:
+
+- **Soundness, not content.** Every accusation the organ makes about this repository is stat'ed by
+  the suite itself under every root the tree declares. A genuinely stale declaration keeps the row
+  green and gets printed; a false accusation reds it.
+- **Agreement, not counts.** The undeclared set must equal a derivation the suite performs itself.
+- **The claims survive real findings.** Fixture-produced findings are spliced into the live report so
+  unresolved, undeclared and exempted each carry one, and every live claim is re-driven over that
+  report. A row that pins emptiness again reds there, in front of its author.
+- **The loader scan proves its own domain** by finding the fragment itself, recursively over the tree.
+
 ## What is deliberately not here
 
-**A design with no descendants**, which is half of this work item's title in PLAN-0018. This
-repository has no `design/` directory: the leg would ship with nothing to run against, its first real
-execution would be its first test, and a check whose coverage is a promise about the future is the
-shape this project keeps finding in its own history. Named as not built rather than stubbed, so
-nobody reads its absence as coverage.
+**A design with no descendants**, which is half of this work item's title in PLAN-0018. The reason
+recorded in the first version was false: it said this repository has no `design/` directory, and only
+the literal top-level path is absent, while `docs/design/` holds 19 design documents and PLAN-0018
+observation 18, the observation that produced this work item, names
+`docs/design/05-product-planning-layer-sol.md` as a design that died with nothing noticing. The leg
+had a corpus and a known positive instance.
+
+The true reason is a scope decision, and it is narrower: that leg needs a DESCENDANTS relation
+between a design and the specs or plan items that came from it, which is a different corpus and a
+different judgement from comparing the capability manifest against the shipped module set. Its one
+known instance is already named in PLAN-0018 and in VELDO-0011, so nothing is being kept quiet by
+leaving it out. Named as not built rather than stubbed, and the suite no longer certifies the absence
+of a directory: it asserts that the finding kinds the module declares are exactly the kinds a driven
+report emits, so a third kind named without a leg reds the row.

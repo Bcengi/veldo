@@ -19,6 +19,19 @@ returns no version at all. A default would be the confident-zero disease applied
 installation reporting a version it invented is worse than one reporting none, because a bug
 report against a fabricated number sends everybody to the wrong tree.
 
+AND A STRING IS NOT A VERSION. "" and "TBD" are strings, and reporting either as this
+installation's identity with a zero exit is the same disease wearing a pass: a caller capturing
+this output would receive an empty identity and read it as an answer. Every declaration read here
+is SHAPE-CHECKED, so a manifest declaring something that is not version-shaped is unreadable -
+which is a refusal and a non-zero exit, not a number. Found by independent review of this item.
+
+BY IDENTITY, NEVER BY POSITION. A marketplace manifest hosts a LIST of plugin entries, so the
+canonical read matches the entry NAMED veldo. Taking plugins[0] answers with whichever entry
+happens to be listed first, which is a version this installation is not, and no agreement check
+downstream can catch it because every copy then agrees with the wrong number. A top-level
+"version" beside that list is a schema version and does not shadow the entry. Also found by
+independent review of this item.
+
 A DISAGREEMENT NAMES BOTH SIDES. "The versions differ" is not actionable; "this manifest says X
 and the canonical declaration says Y" is, and which side is wrong is not always the copy.
 """
@@ -41,6 +54,14 @@ MANIFEST_NAMES = ("plugin.json", "marketplace.json")
 # own tests and are deliberately not this project's version.
 EXCLUDE_PARTS = ("fixtures",)
 
+# THE PLUGIN THIS READER IS THE VERSION OF, by name, because a marketplace manifest hosts a LIST and
+# any entry in it may be somebody else's plugin. This is not a hand-listed SET - it is the answer to
+# "the version of WHAT", and it cannot be derived from the file being read without believing whatever
+# that file listed first, which is precisely the defect. In a repository that is NOT this marketplace
+# there is no such entry, so the canonical read refuses exactly as it does with no manifest at all:
+# that tree's veldo version lives in the install stamp, which drift() reads.
+PLUGIN_NAME = "veldo"
+
 CAUSE_CANONICAL_ABSENT = "VERSION_CANONICAL_ABSENT"
 CAUSE_DISAGREEMENT = "VERSION_DISAGREEMENT"
 CAUSE_UNPARSEABLE = "VERSION_UNPARSEABLE"
@@ -50,30 +71,80 @@ REPORT_KEYS = ("version", "canonical", "cause", "detail", "manifests", "disagree
                "unparseable", "checked")
 
 
-def _declared_version(data):
-    """The version a manifest declares, in either shape it uses, or None. A marketplace manifest
-    carries it under plugins[0]; a plugin manifest carries it at the top level."""
+def _version_shaped(v):
+    """Whether this looks like a version at all. SHAPE ONLY, never equality with the current one: a
+    bundle produced by an older version legitimately carries an older version, and that is the whole
+    point of recording it. The same test guards what a MANIFEST declares, because "" and "TBD" are
+    strings and neither is an identity anything can be reported as."""
+    if not isinstance(v, str) or not v.strip():
+        return False
+    parts = v.strip().split(".")
+    return len(parts) >= 2 and all(p.isdigit() for p in parts[:2])
+
+
+def _marketplace_entry_names(plugins):
+    """Every name a marketplace's plugin list declares, in order, with an unnamed entry recorded as
+    None - so a refusal can print what the file DID declare instead of only what it did not."""
+    return [e.get("name") if isinstance(e.get("name"), str) else None
+            for e in plugins if isinstance(e, dict)]
+
+
+def _declared_version(data, plugin_name=PLUGIN_NAME):
+    """(version, problem) for the version THIS PROJECT declares in one manifest, in either shape it
+    uses: (None, why not) when there is nothing here to read.
+
+    A MARKETPLACE MANIFEST carries a list of plugin entries and the version is the one declared by
+    the entry NAMED plugin_name. Matching by name is the difference between "what this installation
+    is" and "whatever entry is listed first": a co-hosted entry ahead of ours makes plugins[0]
+    answer with a version this installation is not, while every copy of the real number sits there
+    agreeing with itself. Two entries claiming the name and disagreeing is an ambiguity, not a
+    tie-break to guess at.
+
+    A PLUGIN MANIFEST carries the version at the top level, and that leg is read ONLY when there is
+    no plugins list, so a schema version sitting beside the list cannot shadow the entry."""
     if not isinstance(data, dict):
-        return None
-    if isinstance(data.get("version"), str):
-        return data["version"]
+        return None, "the manifest is not a JSON object"
     plugins = data.get("plugins")
-    if isinstance(plugins, list) and plugins and isinstance(plugins[0], dict):
-        v = plugins[0].get("version")
-        return v if isinstance(v, str) else None
-    return None
+    if isinstance(plugins, list):
+        names = _marketplace_entry_names(plugins)
+        mine = [e for e in plugins if isinstance(e, dict) and e.get("name") == plugin_name]
+        if not mine:
+            return None, ("no plugin entry is named %r, so this manifest declares no version for it; "
+                          "the entries it does declare are %r" % (plugin_name, names))
+        declared = sorted({e["version"] for e in mine
+                           if isinstance(e.get("version"), str)})
+        if len(mine) > 1 and len(declared) != 1:
+            return None, ("%d plugin entries are named %r and they do not declare one version (%r), "
+                          "so which one this installation is cannot be read"
+                          % (len(mine), plugin_name, declared))
+        if len(declared) != 1:
+            return None, "the plugin entry named %r declares no version string" % plugin_name
+        return declared[0], None
+    v = data.get("version")
+    if isinstance(v, str):
+        return v, None
+    return None, "no version field in either shape"
 
 
-def read_manifest(path):
+def read_manifest(path, plugin_name=PLUGIN_NAME):
     """(version, error) for one manifest. An unreadable manifest is UNPARSEABLE, which is a
-    different fact from declaring the wrong version because the fix differs."""
+    different fact from declaring the wrong version because the fix differs.
+
+    A DECLARATION THAT IS NOT VERSION-SHAPED IS UNREADABLE TOO. Accepting any str let "" and "TBD"
+    through as this installation's identity with a zero exit, which is the confident-zero disease
+    with a pass on it, and it was invisible to a check that proved presence by substring - the empty
+    string is a substring of every string. The shape test is the one already used for evidence
+    provenance, applied where the number is first read rather than only where it is reported."""
     try:
         data = json.loads(Path(path).read_text())
     except (OSError, ValueError) as e:
         return None, "%s: %s" % (CAUSE_UNPARSEABLE, e)
-    v = _declared_version(data)
-    if v is None:
-        return None, "%s: no version field in either shape" % CAUSE_UNPARSEABLE
+    v, problem = _declared_version(data, plugin_name)
+    if problem is not None:
+        return None, "%s: %s" % (CAUSE_UNPARSEABLE, problem)
+    if not _version_shaped(v):
+        return None, ("%s: the declared version %r is not version-shaped, so there is nothing here "
+                      "that can be reported as an identity" % (CAUSE_UNPARSEABLE, v))
     return v, None
 
 
@@ -116,7 +187,8 @@ def version(root=None):
     v, err = read_manifest(p)
     if v is None:
         return None, CAUSE_CANONICAL_ABSENT, (
-            "the canonical declaration %s could not be read: %s" % (CANONICAL, err))
+            "the canonical declaration %s could not be read as this project's version, so there is "
+            "none to report and none will be guessed: %s" % (CANONICAL, err))
     return v, None, None
 
 
@@ -248,16 +320,6 @@ PROOF_VERSION_FIELD = "veldo_version"
 UNVERSIONED = "UNVERSIONED"
 
 PROVENANCE_KEYS = ("bundles", "versioned", "unversioned", "malformed", "by_version", "field")
-
-
-def _version_shaped(v):
-    """Whether this looks like a version at all. SHAPE ONLY, never equality with the current one: a
-    bundle produced by an older version legitimately carries an older version, and that is the whole
-    point of recording it."""
-    if not isinstance(v, str) or not v.strip():
-        return False
-    parts = v.strip().split(".")
-    return len(parts) >= 2 and all(p.isdigit() for p in parts[:2])
 
 
 def proof_version_problems(manifest, where):

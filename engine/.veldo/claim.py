@@ -15,6 +15,15 @@ a heartbeat. Two rules make the pool self-divide safely:
   - A claim is granted only when the unit's requirements are a subset of the worker's
     capabilities, so capability-gated work (iOS on a Mac, GPU on a GPU box) routes right.
 
+ONE ID, ONE RECORD. Both rules above are per unit, and a unit IS its id: the record lives at
+veldo/claims/<basename>.json and the lock that arbitrates it at <basename>.json.lock. So a unit
+id that is not its own basename would share a record, and therefore a lock, with every other id
+that maps onto the same basename - and for that pair the whole guarantee of this module is void:
+a live claim on either refuses the other (a unit nobody can take) and a release of either drops
+the claim the other one is still working under (two workers, one unit). Every path that resolves
+a record therefore REFUSES such an id loudly (UnitIdError) instead of addressing somebody else's
+record, and callers that mint their own ids ask unit_id_problem() before they mint.
+
 A claim whose heartbeat is older than STALE_AFTER_SECONDS is presumed dead and is
 reclaimable by another capable worker. Pure stdlib, but fcntl-based takeover locking makes
 this module Unix-only (Linux and macOS, the fleet's target machines); the claims root
@@ -57,8 +66,53 @@ def _safe(unit_id):
     return s or "_"
 
 
+class UnitIdError(ValueError):
+    """A unit id this ledger cannot store faithfully, raised rather than returned as a claim
+    reason. 'claimed' and 'capability' are ARBITRATION answers about a real unit; this is a
+    malformed key, and folding the two into one vocabulary would let a caller read its own bug
+    as somebody else holding the work."""
+
+
+def ledger_basename(unit_id):
+    """The basename this ledger stores unit_id's claim record under, without the .json suffix.
+
+    PUBLIC because the ledger's key space is the ledger's own fact. A caller that mints unit
+    ids (an authored task id, say, rather than a format-checked spec id) has to be able to ask
+    whether two of the ids it accepts are ONE record here, and a copy of the character rule at
+    the call site would be two enumerations of one set."""
+    return _safe(unit_id)
+
+
+def unit_id_problem(unit_id):
+    """Why unit_id cannot be a key in this ledger, or None.
+
+    THE INVARIANT: a unit id is its OWN ledger basename. Two ids that differ but share a
+    basename are one record and one lock, so for that pair this module guarantees nothing: a
+    live claim on either refuses the other, and a release of either frees both. A store that
+    silently conflates two keys is worse than one that refuses a key, because the conflation
+    stays invisible until two workers are already inside one unit of work."""
+    if not isinstance(unit_id, str) or not unit_id:
+        return ("a unit id must be a non-empty string, got %r: this ledger keys a claim by the "
+                "id's own text, so two values that merely print alike would be one record"
+                % (unit_id,))
+    base = ledger_basename(unit_id)
+    if base != unit_id:
+        return ("unit id %r is stored under the basename %r, so it would SHARE ONE CLAIM RECORD "
+                "with every other id that maps onto %r: a live claim on either would refuse the "
+                "other and a release of either would free both. Use an id made only of letters, "
+                "digits, '.', '_' and '-'" % (unit_id, base, base))
+    return None
+
+
 def _path(unit_id, root=None):
-    return os.path.join(claims_root(root), _safe(unit_id) + ".json")
+    """The record path for unit_id, or a REFUSAL. Every read and write path resolves a record
+    through here, so an id that cannot be stored faithfully can never reach another unit's
+    record from any of them: the one place that knows the mapping is the one place that
+    enforces it being injective."""
+    problem = unit_id_problem(unit_id)
+    if problem is not None:
+        raise UnitIdError(problem)
+    return os.path.join(claims_root(root), ledger_basename(unit_id) + ".json")
 
 
 def capability_ok(worker_caps, unit_reqs):

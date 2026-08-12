@@ -45,6 +45,23 @@ def _vv_tree(d, canonical=None, others=()):
     return base
 
 
+def _vv_marketplace(d, entries, top=None, others=()):
+    """A tree whose canonical manifest hosts the given plugin ENTRIES verbatim, so a row can put a
+    co-hosted plugin ahead of ours, name two entries the same, or add a schema version beside the
+    list - the shapes a marketplace really takes, none of which a positional read survives."""
+    base = Path(d)
+    p = base / VV.CANONICAL
+    p.parent.mkdir(parents=True, exist_ok=True)
+    body = dict(top or {})
+    body["plugins"] = list(entries)
+    p.write_text(json.dumps(body))
+    for rel, other in others:
+        q = base / rel
+        q.parent.mkdir(parents=True, exist_ok=True)
+        q.write_text(other if isinstance(other, str) else json.dumps(other))
+    return base
+
+
 # ---------------------------------------------------------------------------------------
 # AC1. EVERY MANIFEST THAT DECLARES A VERSION IS DERIVED, NOT LISTED.
 #
@@ -87,7 +104,10 @@ _vv_block("AC1", _vv_ac1)
 # ---------------------------------------------------------------------------------------
 # AC2. NO GUESSED VERSION, EVER.
 #
-# FALSIFIED BY: fall back to a default string, and the row below must go red.
+# FALSIFIED BY: fall back to a default string, and the row below must go red. ALSO FALSIFIED BY
+# dropping the shape test from read_manifest, and by reading plugins[0] instead of the entry named
+# PLUGIN_NAME - each has its own row below, because both of those WERE the code and both answered
+# with a version this installation is not while this suite stayed green.
 # ---------------------------------------------------------------------------------------
 
 
@@ -117,6 +137,80 @@ def _vv_ac2():
                "reader returns the real version and no cause, so the refusal is a measurement rather "
                "than the reader's only answer",
                v3 == "4.5.6" and cause3 is None)
+
+    # A STRING IS NOT A VERSION. Every one of these was answered with exit zero before this row
+    # existed: the reader refused only on a missing key, so "" and "TBD" travelled all the way to a
+    # caller as this installation's identity.
+    for label, declared in (("the EMPTY string", ""), ("whitespace", "   "),
+                            ("a placeholder", "TBD"), ("a single integer", "1"),
+                            ("a word with a dot", "next.build")):
+        with tempfile.TemporaryDirectory() as d:
+            base = _vv_tree(d, declared)
+            vs, causes, details = VV.version(base)
+            expect("VELDO-0008 AC2: a canonical declaration of %s (%r) is NOT a version, so the "
+                   "reader REFUSES instead of reporting it. An installation answering with an empty "
+                   "identity and a zero exit is the confident-zero disease wearing a pass, and it "
+                   "cannot be caught downstream by proving the answer is PRESENT: the empty string "
+                   "is a substring of every string" % (label, declared),
+                   vs is None and causes == VV.CAUSE_CANONICAL_ABSENT
+                   and "not version-shaped" in (details or ""))
+
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_marketplace(d, [{"name": "veldo-companion", "version": "9.9.9"},
+                                   {"name": VV.PLUGIN_NAME, "version": "3.11.0"}])
+        vp, causep, _ = VV.version(base)
+        expect("VELDO-0008 AC2: the canonical read matches the entry NAMED %r rather than taking "
+               "plugins[0]. With a co-hosted plugin listed FIRST the positional read answered 9.9.9 "
+               "- a version this installation is not - and nothing downstream could notice, because "
+               "every copy of the real number then 'disagrees' with the intruder rather than the "
+               "other way round" % VV.PLUGIN_NAME,
+               (vp, causep) == ("3.11.0", None))
+
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_marketplace(d, [{"name": VV.PLUGIN_NAME, "version": "3.11.0"}],
+                               top={"version": "1"})
+        vt, causet, _ = VV.version(base)
+        expect("VELDO-0008 AC2: a top-level \"version\" beside the plugin list is a SCHEMA version "
+               "and does not shadow the entry. Reading the top level first answered '1' as this "
+               "product's identity, with exit zero",
+               (vt, causet) == ("3.11.0", None))
+
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_marketplace(d, [{"name": "veldo-companion", "version": "2.0.0"}])
+        vn, causen, detailn = VV.version(base)
+        expect("VELDO-0008 AC2: a marketplace with NO entry named %r declares no version for this "
+               "installation, so the reader refuses and NAMES the entries it did find. Answering "
+               "with somebody else's plugin version would be a guess about this one" % VV.PLUGIN_NAME,
+               vn is None and causen == VV.CAUSE_CANONICAL_ABSENT
+               and VV.PLUGIN_NAME in (detailn or "") and "veldo-companion" in (detailn or ""))
+
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_marketplace(d, [{"name": VV.PLUGIN_NAME, "version": "3.10.1"},
+                                   {"name": VV.PLUGIN_NAME, "version": "3.11.0"}])
+        va, causea, detaila = VV.version(base)
+        expect("VELDO-0008 AC2: two entries claiming the name and declaring different versions is an "
+               "AMBIGUITY, not a tie-break to guess at - the reader refuses and says how many "
+               "entries claimed it, because picking one is exactly the positional read again",
+               va is None and causea == VV.CAUSE_CANONICAL_ABSENT
+               and "do not declare one version" in (detaila or ""))
+
+    with tempfile.TemporaryDirectory() as d:
+        entries = [{"name": VV.PLUGIN_NAME, "version": "3.10.1"},
+                   {"name": "veldo-companion", "version": "0.4.0"}]
+        base = _vv_marketplace(d, entries,
+                               others=[("packs/claude/plugin.json",
+                                        {"name": "veldo", "version": "3.10.1"})])
+        hosted = json.loads((base / VV.CANONICAL).read_text())["plugins"]
+        repn = VV.version_report(base)
+        expect("VELDO-0008 AC2 NEGATIVE CONTROL, ADDITIVE: a legitimately co-hosted plugin ADDED to "
+               "the marketplace at its own version (%d entries present, the second declaring 0.4.0) "
+               "changes nothing - this installation is still 3.10.1, the pack still agrees, no cause. "
+               "So the rows above discriminate between a co-hosted entry and a wrong answer rather "
+               "than refusing every marketplace that hosts more than one plugin" % len(hosted),
+               len(hosted) == 2 and hosted[1]["version"] == "0.4.0"
+               and repn["version"] == "3.10.1" and repn["cause"] is None
+               and repn["disagreements"] == [] and repn["unparseable"] == []
+               and repn["checked"] == 2)
 
 
 _vv_block("AC2", _vv_ac2)
@@ -162,6 +256,23 @@ def _vv_ac3():
                [u["manifest"] for u in rep3["unparseable"]] == ["packs/broken/plugin.json"]
                and rep3["disagreements"] == [])
 
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_marketplace(d, [{"name": "veldo-companion", "version": "1.0.0"},
+                                   {"name": VV.PLUGIN_NAME, "version": "3.10.1"}],
+                               others=[("packs/claude/plugin.json",
+                                        {"name": "veldo", "version": "3.10.1"}),
+                                       ("packs/antigravity/plugin.json",
+                                        {"name": "veldo", "version": "3.10.1"})])
+        repi = VV.version_report(base)
+        expect("VELDO-0008 AC3: a co-hosted marketplace entry does not INVERT THE BLAME. Every pack "
+               "declares what the veldo entry declares, so there is no disagreement to report; "
+               "reading plugins[0] named BOTH packs as the ones that had drifted, away from a number "
+               "that is not this project's at all - the exact inverse of the diagnosis this criterion "
+               "promises, and the wrong two files to go and edit",
+               repi["disagreements"] == [] and repi["cause"] is None
+               and repi["version"] == "3.10.1" and repi["checked"] == 3
+               and repi["manifests"][VV.CANONICAL] == "3.10.1")
+
     expect("VELDO-0008 AC3 OVER THE LIVE TREE: every derived manifest AGREES with the canonical "
            "declaration, whatever it says. Nothing here pins the number - a row asserting 3.10.1 "
            "would redden on the next release, which is the live-state defect this repository has "
@@ -185,11 +296,17 @@ _vv_block("AC3", _vv_ac3)
 def _vv_ac4():
     ok = _vv_sp.run([_vv_sys.executable, str(ROOT / ".veldo" / "version.py")],
                     cwd=str(ROOT), capture_output=True, text=True)
+    live = VV.version(ROOT)[0]
+    first = (ok.stdout.split() or [""])[0]
     expect("VELDO-0008 AC4: the CLI prints the version AND the canonical path, exiting zero. The "
            "path is printed because an adopter debugging a version needs to know which file to look "
-           "at, and a bare number does not say",
+           "at, and a bare number does not say. THE FIRST TOKEN IS COMPARED FOR EQUALITY and tested "
+           "for version SHAPE, not scanned for as a substring: `version(ROOT)[0] in stdout` cannot "
+           "fail when the declaration is the empty string, which is the one state where the clause "
+           "had to hold - it printed ' (from %s)' with exit zero and this row passed"
+           % VV.CANONICAL,
            ok.returncode == 0 and VV.CANONICAL in ok.stdout
-           and VV.version(ROOT)[0] in ok.stdout)
+           and first == live and VV._version_shaped(live))
 
     with tempfile.TemporaryDirectory() as d:
         base = _vv_tree(d, None)
@@ -206,6 +323,30 @@ def _vv_ac4():
                bad.returncode != 0
                and VV.CAUSE_CANONICAL_ABSENT in bad.stdout
                and not _vv_re.search(r"\b\d+\.\d+\.\d+\b", bad.stdout))
+
+    # THE STATE THAT DEFEATED THIS CRITERION'S CLOSING GUARANTEE, driven as a subprocess exactly as
+    # a caller runs it. A canonical declaration of "" is PRESENT and READABLE, so nothing refused:
+    # the CLI printed " (from .claude-plugin/marketplace.json)" and exited 0, and --report claimed
+    # agreement over three manifests and exited 0.
+    for label, declared in (("the EMPTY string", ""), ("a placeholder", "TBD")):
+        with tempfile.TemporaryDirectory() as d:
+            base = _vv_tree(d, declared)
+            vdir = base / ".veldo"
+            vdir.mkdir(parents=True, exist_ok=True)
+            (vdir / "version.py").write_text((ROOT / ".veldo" / "version.py").read_text())
+            bare = _vv_sp.run([_vv_sys.executable, str(vdir / "version.py")],
+                              cwd=str(base), capture_output=True, text=True)
+            rep = _vv_sp.run([_vv_sys.executable, str(vdir / "version.py"), "--report"],
+                             cwd=str(base), capture_output=True, text=True)
+            expect("VELDO-0008 AC4: a canonical declaration of %s makes BOTH the bare CLI and "
+                   "--report exit NON-ZERO and print the refusal. This is the state where 'a script "
+                   "capturing its output can never silently receive a guess' was false: the script "
+                   "received %r and a ZERO exit, which reads as a pass, and no presence check could "
+                   "see it because the empty string is a substring of everything"
+                   % (label, "%s (from %s)" % (declared, VV.CANONICAL)),
+                   bare.returncode != 0 and VV.CAUSE_CANONICAL_ABSENT in bare.stdout
+                   and "not version-shaped" in bare.stdout
+                   and rep.returncode != 0 and VV.CAUSE_CANONICAL_ABSENT in rep.stdout)
 
 
 _vv_block("AC4", _vv_ac4)

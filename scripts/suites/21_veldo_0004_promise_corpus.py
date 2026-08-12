@@ -20,6 +20,14 @@ BOTH DIRECTIONS, EVERYWHERE. This item's product is an ACCUSATION against shippe
 audit that motivated it had five of fifteen accusations overturned. So every refusal is paired with
 an accepting fixture differing in exactly one field, and every settlement is asserted in both
 directions - a predicate that only ever accuses is as useless as one that never does.
+
+EVERY PREDICATE, NOT ONE OF THEM. AC4's claim is universal: EVERY contradiction carries the
+predicate, the target it read and what it found. That was asserted on path_exists alone, and
+measured by independent review, the evidence could be stripped from path_absent, text_present,
+text_absent and symbol_defined with this fragment fully green - path_absent was not settled here
+even once. The AC4 block now drives all five mechanical predicates in both directions from ONE
+table whose key set is asserted EQUAL to the module's own PREDICATES, so a predicate added to the
+module without a fixture reds a row rather than inheriting an untested universal claim.
 """
 PM = V._VC._organ("promises", ROOT / ".veldo" / "promises.py")
 
@@ -148,6 +156,85 @@ def _pm_ac1():
         expect("VELDO-0004 AC1: a target that is %s is refused with PROMISE_TARGET_UNBOUND, so no "
                "claim can be settled against a file outside this repository" % why,
                n_t > 0 and PM.CAUSE_TARGET_UNBOUND in out_t)
+
+    # THE CORPUS'S OWN KEY SET IS CLOSED TOO, and this half was entirely unasserted: measured by
+    # independent review, CORPUS_REQUIRED, the unrecognised-corpus-key refusal and the
+    # schema-mismatch refusal could all be DELETED with this fragment green, because every row
+    # above drops fields from a CLAIM and none from the head. It matters to AC4 as much as to AC1:
+    # `document` is a corpus field, and a corpus that omits it prints None as the document on every
+    # contradiction line, which is the locator a human needs in order to overturn the accusation.
+    for field in PM.CORPUS_REQUIRED:
+        if field == "claims":
+            body = "\n".join("%s: %s" % kv for kv in (("schema", PM.SCHEMA),
+                                                      ("id", "PROMISES-doc"),
+                                                      ("version", 1),
+                                                      ("document", "docs/doc.md"))) + "\n"
+            n_c, out_c = _pm_check([("a.yaml", body)])
+        else:
+            n_c, out_c = _pm_check([("a.yaml", _pm_emit([_pm_claim()], drop=(field,)))])
+        expect("VELDO-0004 AC1: a CORPUS declaring no %s is refused with PROMISE_MISSING_FIELD "
+               "naming the field, so the head of the record is closed by the same rule as the "
+               "claims inside it" % field,
+               n_c > 0 and PM.CAUSE_MISSING_FIELD in out_c and field in out_c)
+
+    n_ck, out_ck = _pm_check([("a.yaml", _pm_emit([_pm_claim()], waived="trust me"))])
+    expect("VELDO-0004 AC1: an UNRECOGNISED key on the CORPUS is refused too, for the same reason "
+           "it is on a claim: a closed set whose extra keys are ignored is not closed, and a corpus "
+           "level `waived` would take every claim in the file out of the count at once",
+           n_ck > 0 and PM.CAUSE_KEY_UNRECOGNIZED in out_ck and "waived" in out_ck)
+
+    n_s, out_s = _pm_check([("a.yaml", _pm_emit([_pm_claim()], schema="veldo.promises/v2"))])
+    expect("VELDO-0004 AC1: a corpus declaring a DIFFERENT schema is refused with the expected one "
+           "named, because a record read under the wrong contract is read by guessing",
+           n_s > 0 and PM.CAUSE_UNREADABLE in out_s and PM.SCHEMA in out_s)
+
+    n_u, out_u = _pm_check([("a.yaml", "this file is not a corpus at all\n")])
+    expect("VELDO-0004 AC1: a corpus file the ONE parser cannot read is refused with "
+           "PROMISE_UNREADABLE naming the file. The module's law is that an unreadable corpus is "
+           "CARRIED as an error and never dropped, because a dropped file is a coverage figure "
+           "quoted without the weakness that produced it - and until this row the cause fired in "
+           "no assertion at all",
+           n_u > 0 and PM.CAUSE_UNREADABLE in out_u and "a.yaml" in out_u)
+
+    n_ml, out_ml = _pm_check([("a.yaml", "- one\n- two\n")])
+    expect("VELDO-0004 AC1: a corpus that parses to a LIST rather than a mapping is refused with "
+           "PROMISE_UNREADABLE naming what it got, rather than being walked as if it were a record",
+           n_ml > 0 and PM.CAUSE_UNREADABLE in out_ml and "list" in out_ml)
+
+    n_i, out_i = _pm_check([("a.yaml", _pm_emit([_pm_claim(needle=200)]))])
+    expect("VELDO-0004 AC1: `needle: 200` - the obvious way to write 'the document says 200 "
+           "countries' - is refused AT READ TIME with the type named. The one front-matter parser "
+           "coerces a bare number to an INT, and `200 in text` is a TypeError that loses the whole "
+           "report and every other corpus in it, so this belongs in the refusal taxonomy rather "
+           "than in a traceback",
+           n_i > 0 and PM.CAUSE_MISSING_FIELD in out_i and "int" in out_i and "200" in out_i)
+
+    with tempfile.TemporaryDirectory() as d:
+        base, _pdir_i = _pm_tree(d)
+        s_int = PM.settle(_pm_claim(cid="CLAIM-INT", needle=200), root=base)
+        s_sym = PM.settle(_pm_claim(cid="CLAIM-SYM", predicate="symbol_defined", target="mod.py",
+                                    symbol=200), root=base)
+        expect("VELDO-0004 AC1: and a claim that reached the settler anyway does not CRASH it - an "
+               "int needle and an int symbol each settle UNSETTLEABLE naming the type. A settler "
+               "that throws takes every claim in every other corpus down with it, and an int "
+               "symbol would otherwise be a FALSE ACCUSATION: nothing is named 200, so the claim "
+               "would be contradicted",
+               s_int["outcome"] == PM.UNSETTLEABLE and "int" in s_int["measured"]
+               and s_sym["outcome"] == PM.UNSETTLEABLE and "int" in s_sym["measured"])
+
+    with tempfile.TemporaryDirectory() as d, tempfile.TemporaryDirectory() as elsewhere:
+        base, _pdir_s = _pm_tree(d)
+        outside = Path(elsewhere) / "secret.md"
+        outside.write_text("a thing that is here")
+        (base / "docs" / "link.md").symlink_to(outside)
+        s_link = PM.settle(_pm_claim(cid="CLAIM-LINK", target="docs/link.md"), root=base)
+        expect("VELDO-0004 AC1: a target that is a SYMLINK out of the tree settles UNSETTLEABLE "
+               "naming where it resolved, never SUPPORTED. target_problems refuses an absolute "
+               "path and a '..' segment in the TEXT of a target and a committed symlink is "
+               "neither, so the row above claims more than the text check delivers unless the "
+               "resolved path is compared to the resolved root as well",
+               s_link["outcome"] == PM.UNSETTLEABLE and "outside this repository" in s_link["measured"])
+
     expect("VELDO-0004 AC1: every declared cause is registered under a unique name, so no two "
            "refusals share a spelling, and the predicate vocabulary has no duplicate either",
            len(set(PM.CAUSES)) == len(PM.CAUSES)
@@ -252,6 +339,58 @@ def _pm_ac3():
            len(rep2["supported"]) + len(rep2["contradicted"]) + len(rep2["unsettleable"])
            == rep2["claims"])
 
+    # A MALFORMED CLAIM USED TO VANISH, AND THE PAGE THEN PRINTED A CONFIDENT ZERO. all_claims
+    # dropped it and deferred to check_promises_dir, which nothing in an adopting tree calls -
+    # AC5 forbids anything loading this module - so the report was the only surface and it counted
+    # one claim where the author wrote two. That is this criterion's own confident zero, one level
+    # down from the file-level version the module already carried loudly.
+    rep_m, lines_m = _pm_report([("a.yaml", _pm_emit([_pm_claim(cid="CLAIM-GOOD"),
+                                                     _pm_claim(cid="CLAIM-BAD",
+                                                               drop=("locator",))]))])
+    expect("VELDO-0004 AC3: a MALFORMED claim beside a well-formed one is CARRIED into the report "
+           "with its cause and named on the page, never dropped. The author declared TWO claims: a "
+           "report that counted one, said 0 CONTRADICTED and mentioned the difference nowhere is "
+           "the confident zero this criterion exists to prevent",
+           rep_m["declared"] == 2 and rep_m["claims"] == 1
+           and [m["claim"] for m in rep_m["malformed"]] == ["CLAIM-BAD"]
+           and PM.CAUSE_MISSING_FIELD in rep_m["malformed"][0]["causes"]
+           and any("COULD NOT BE READ AS CLAIMS" in ln and "CLAIM-BAD" in ln for ln in lines_m))
+
+    expect("VELDO-0004 AC3: DECLARED accounts for every claim an author wrote - the settled buckets "
+           "plus the malformed ones - so no claim can leave the corpus without appearing in a count",
+           rep_m["declared"] == rep_m["claims"] + len(rep_m["malformed"])
+           and len(rep_m["supported"]) + len(rep_m["contradicted"]) + len(rep_m["unsettleable"])
+           == rep_m["claims"])
+
+    rep_o, lines_o = _pm_report([("a.yaml", _pm_emit([_pm_claim(cid="CLAIM-BAD",
+                                                                drop=("locator",))]))])
+    expect("VELDO-0004 AC3: a corpus whose ONLY claim is malformed stands the report down with a "
+           "reason that says what actually happened - the corpus DOES declare a claim, and it is "
+           "the claim that is broken. 'No corpus declares a claim at all' is a false sentence in a "
+           "module whose whole thesis is that a settlement names what it measured",
+           rep_o["stood_down"] is True and rep_o["reason"] == PM.STAND_DOWN_NOTHING_READABLE
+           and rep_o["declared"] == 1 and rep_o["claims"] == 0
+           and any("COULD NOT BE READ AS CLAIMS" in ln for ln in lines_o))
+
+    rep_u, lines_u = _pm_report([("bad.yaml", "this file is not a corpus at all\n"),
+                                 ("good.yaml", _pm_emit([_pm_claim(cid="CLAIM-W")]))])
+    expect("VELDO-0004 AC3: an UNREADABLE corpus beside a readable one is carried into the report "
+           "and named on the page as absent from every count above, so a file that was silently "
+           "discarded cannot become a clean run over a corpus nobody read",
+           len(rep_u["unreadable"]) == 1 and rep_u["unreadable"][0].endswith("bad.yaml")
+           and rep_u["corpora"] == 2 and rep_u["claims"] == 1
+           and any("COULD NOT BE READ" in ln and "bad.yaml" in ln for ln in lines_u))
+
+    import re as _pm_re
+    _pm_score = _pm_re.compile(r"\d+\.\d+|%|percent|ratio|proportion|score|per cent")
+    _pm_all_lines = lines + lines2 + lines_m + lines_o + lines_u
+    expect("VELDO-0004 AC3: NO SCORE IS PRINTED ON THE PAGE EITHER, and the page is the surface a "
+           "number would be quoted FROM: no line of any report above carries a float, a percent "
+           "sign, or the words percent, ratio, proportion or score. Asserted over report_lines and "
+           "not only over the report dict, because the dict is not what a stranger reads and a "
+           "printed '50 percent of this corpus is supported (0.50)' passed every dict row here",
+           _pm_all_lines and not any(_pm_score.search(ln.lower()) for ln in _pm_all_lines))
+
 
 _pm_block("AC3", _pm_ac3)
 
@@ -259,8 +398,89 @@ _pm_block("AC3", _pm_ac3)
 # ---------------------------------------------------------------------------------------
 # AC4. A CONTRADICTION CARRIES WHAT IT MEASURED, SO A HUMAN CAN OVERTURN IT.
 #
-# FALSIFIED BY: drop the measured evidence from a settlement, and the row below must go red.
+# FALSIFIED BY: drop the measured evidence from ANY ONE of the five mechanical predicates'
+# contradiction paths, and that predicate's row below must go red.
 # ---------------------------------------------------------------------------------------
+
+# THE WHOLE VOCABULARY, BOTH DIRECTIONS, ONE TABLE. AC4's claim is universal and it was pinned on
+# path_exists alone: measured by independent review, one mutation setting measured, predicate AND
+# target to None on every contradiction from path_absent, the text branch and the symbol branch
+# left this fragment at 53 passed, 0 failed - and each branch was vacuous on its own too. The text
+# predicates are what this item is actually about, because a claim a document makes IS text.
+#
+# Each entry is (contradicting claim fields, a token its reading MUST name, supporting claim
+# fields, a token that reading must name). The tokens are what makes the row a check on the
+# READING rather than on the presence of a string: a constant "contradicted" in the measured
+# column would satisfy `is a non-empty str` and satisfies nothing here.
+_PM_EV_DOCS = (("docs/doc.md", "a thing that is here"),
+               ("mod.py", "def a_symbol():\n    return 1\n"))
+_PM_EVIDENCE = {
+    "path_exists": (dict(target="docs/missing.md"), "path does not exist",
+                    dict(target="docs/doc.md"), "path exists"),
+    "path_absent": (dict(target="docs/doc.md"), "path exists",
+                    dict(target="docs/missing.md"), "path does not exist"),
+    "text_present": (dict(target="docs/doc.md", needle="a sentence nobody wrote"),
+                     "a sentence nobody wrote",
+                     dict(target="docs/doc.md", needle="a thing that is here"),
+                     "a thing that is here"),
+    "text_absent": (dict(target="docs/doc.md", needle="a thing that is here"),
+                    "a thing that is here",
+                    dict(target="docs/doc.md", needle="a sentence nobody wrote"),
+                    "a sentence nobody wrote"),
+    "symbol_defined": (dict(target="mod.py", symbol="never_written"), "never_written",
+                       dict(target="mod.py", symbol="a_symbol"), "a_symbol"),
+}
+
+
+def _pm_ac4_every_predicate():
+    """Every mechanical predicate settled in both directions, with the evidence asserted on each."""
+    claims = []
+    for pred in sorted(_PM_EVIDENCE):
+        con_kw, _ct, sup_kw, _st = _PM_EVIDENCE[pred]
+        claims.append(_pm_claim(cid="CON-%s" % pred, predicate=pred, **con_kw))
+        claims.append(_pm_claim(cid="SUP-%s" % pred, predicate=pred, **sup_kw))
+    rep, lines = _pm_report([("all.yaml", _pm_emit(claims))], docs=_PM_EV_DOCS)
+    settled = rep["supported"] + rep["contradicted"] + rep["unsettleable"]
+    by = {s["claim"]: s for s in settled}
+
+    for pred in sorted(_PM_EVIDENCE):
+        con_kw, con_tok, sup_kw, sup_tok = _PM_EVIDENCE[pred]
+        c = by.get("CON-%s" % pred, {})
+        expect("VELDO-0004 AC4 [%s]: the CONTRADICTED settlement carries the predicate, the target "
+               "it read AND what it found there, in the record and on the printed line. The 2026-08-10 "
+               "audit raised fifteen accusations and FIVE WERE OVERTURNED: an accusation whose "
+               "evidence is not in the record is indistinguishable from a correct one, and the cost "
+               "of acting on a wrong one is deleting a true sentence from a shipped document" % pred,
+               c.get("outcome") == PM.CONTRADICTED and c.get("predicate") == pred
+               and c.get("target") == con_kw["target"]
+               and isinstance(c.get("measured"), str) and con_tok in c["measured"]
+               and c.get("document") == "docs/doc.md" and c.get("locator") == "line 12"
+               and any(("CONTRADICTED CON-%s" % pred) in ln and pred in ln
+                       and con_kw["target"] in ln and con_tok in ln for ln in lines))
+        s = by.get("SUP-%s" % pred, {})
+        expect("VELDO-0004 AC4 [%s]: the SUPPORTED settlement of the same predicate carries the "
+               "same three things, because a settlement that only explains itself when it accuses "
+               "is one nobody can audit" % pred,
+               s.get("outcome") == PM.SUPPORTED and s.get("predicate") == pred
+               and s.get("target") == sup_kw["target"]
+               and isinstance(s.get("measured"), str) and sup_tok in s["measured"])
+
+    expect("VELDO-0004 AC4: the table above covers EVERY mechanical predicate the module ships, "
+           "asserted as SET EQUALITY against PREDICATES rather than by counting fixtures, so a "
+           "predicate added to the module cannot inherit this criterion's universal claim without "
+           "a fixture that drives it in both directions",
+           set(_PM_EVIDENCE) == set(PM.PREDICATES) - {PM.PRED_UNSETTLEABLE})
+
+    expect("VELDO-0004 AC4: and the universal is asserted as a universal - EVERY settlement in the "
+           "report, all ten, five contradictions and five supports, carries a predicate, a target "
+           "and a reading of more than a word. A row that checked one predicate would report safety "
+           "for the other four, which is exactly what was measured here before this block existed",
+           len(rep["contradicted"]) == 5 and len(rep["supported"]) == 5
+           and rep["unsettleable"] == [] and rep["declared"] == 10
+           and all(s["predicate"] in PM.PREDICATES and isinstance(s["target"], str) and s["target"]
+                   and isinstance(s["measured"], str) and len(s["measured"]) > 8
+                   and len(s["measured"].split()) > 1
+                   for s in rep["supported"] + rep["contradicted"]))
 
 
 def _pm_ac4():
@@ -302,6 +522,7 @@ def _pm_ac4():
 
 
 _pm_block("AC4", _pm_ac4)
+_pm_block("AC4 every predicate", _pm_ac4_every_predicate)
 
 
 # ---------------------------------------------------------------------------------------
@@ -333,33 +554,129 @@ def _pm_ac5():
            and sorted(_pm_report([])[0]) == sorted(PM.REPORT_KEYS))
 
     import ast as _pm_a
+    import os as _pm_os
+
+    # THE IDIOM THIS REPOSITORY ACTUALLY USES, AND THE WHOLE TREE IT LIVES IN. The scan this
+    # replaces keyed on the name of the CALLED function and globbed exactly two directories, so it
+    # was blind to `functools.partial(_organ, name, path)` - the wiring .veldo/validate_checks.py
+    # uses for ALL NINE of its organs - and never opened bin/veldo (documented as the single front
+    # door, no .py suffix), scripts/suites/, or any subdirectory. Measured by independent review:
+    # the partial wiring loaded this organ inside a required gate stage, proved by the module's own
+    # SCHEMA constant appearing in a marker file during the run, with this row GREEN. The one
+    # wiring anybody would write was invisible to the assertion that forbids it.
+    # The import machinery itself, plus the three cross-file organ helpers this codebase passes
+    # between modules. Every OTHER loader name is DERIVED per file below rather than enumerated
+    # here, because a hand-written list of helper names is the same losing enumeration that made
+    # the previous scan blind: validate_checks.py calls its loader `_organ` and bin/veldo calls
+    # its `_mod`, and the next one will be called something else again.
+    _PM_MACHINERY = ("spec_from_file_location", "exec_module", "import_module", "load_module",
+                     "__import__", "SourceFileLoader", "_organ", "_load", "_sibling")
+
+    def _pm_loader_names(tree):
+        """Every name in THIS file that loads a module: the machinery, and the transitive closure
+        of functions whose bodies reach it, so a wrapper cannot launder the load."""
+        names = set(_PM_MACHINERY)
+        bodies = []
+        for node in _pm_a.walk(tree):
+            if isinstance(node, (_pm_a.FunctionDef, _pm_a.AsyncFunctionDef)):
+                inner = {n.attr for n in _pm_a.walk(node) if isinstance(n, _pm_a.Attribute)}
+                inner |= {n.id for n in _pm_a.walk(node) if isinstance(n, _pm_a.Name)}
+                bodies.append((node.name, inner))
+        changed = True
+        while changed:
+            changed = False
+            for fname, inner in bodies:
+                if fname not in names and (inner & names):
+                    names.add(fname)
+                    changed = True
+        return names
+
+    def _pm_names_promises(s):
+        base = str(s).replace("\\", "/").rsplit("/", 1)[-1]
+        if base.endswith(".py"):
+            base = base[:-3]
+        return base == "promises" or base.endswith("_promises")
+
+    def _pm_strings_under(node):
+        return [n.value for n in _pm_a.walk(node)
+                if isinstance(n, _pm_a.Constant) and isinstance(n.value, str)]
+
+    def _pm_call_names(call):
+        """Every name that could BE the loader in one call: the callee AND the names handed to it
+        as arguments, because partial() puts the loader in an argument and the callee is 'partial'."""
+        out = []
+        for n in [call.func] + list(call.args) + [kw.value for kw in call.keywords]:
+            if isinstance(n, _pm_a.Attribute):
+                out.append(n.attr)
+            elif isinstance(n, _pm_a.Name):
+                out.append(n.id)
+        return set(out)
 
     def _pm_loads(path):
+        """Whether this file LOADS the promises organ, over the whole call expression rather than
+        its callee name. A non-Constant path argument no longer hides it either: the module can be
+        named by any string constant anywhere in the call, or by a name bound to one."""
         try:
-            tree = _pm_a.parse(path.read_text())
-        except (OSError, SyntaxError):
+            tree = _pm_a.parse(path.read_text(errors="replace"))
+        except (OSError, SyntaxError, ValueError):
             return False
+        loaders = _pm_loader_names(tree)
+        alias = set()
+        for node in _pm_a.walk(tree):
+            if isinstance(node, _pm_a.Assign) \
+                    and any(_pm_names_promises(s) for s in _pm_strings_under(node.value)):
+                alias |= {t.id for t in node.targets if isinstance(t, _pm_a.Name)}
         for node in _pm_a.walk(tree):
             if not isinstance(node, _pm_a.Call):
                 continue
-            fname = (node.func.attr if isinstance(node.func, _pm_a.Attribute)
-                     else getattr(node.func, "id", ""))
-            if fname not in ("spec_from_file_location", "_organ", "_load", "_sibling"):
+            names = _pm_call_names(node)
+            if not (names & loaders):
                 continue
-            for arg in list(node.args) + [kw.value for kw in node.keywords]:
-                if isinstance(arg, _pm_a.Constant) and isinstance(arg.value, str) \
-                        and arg.value.rstrip(".py").endswith("promises"):
-                    return True
+            if (names & alias) or any(_pm_names_promises(s) for s in _pm_strings_under(node)):
+                return True
         return False
 
-    _pm_loaders = sorted(p.name for p in list((ROOT / ".veldo").glob("*.py"))
-                         + list((ROOT / "scripts").glob("*.py"))
-                         if p.name != "promises.py" and _pm_loads(p))
+    def _pm_python_sources():
+        """Every Python source in BOTH trees: subdirectories included, and the extensionless
+        executables too, because bin/veldo is the documented single front door and carries no .py
+        suffix. An assertion is only ever as wide as the file set it reads."""
+        out = []
+        for dirpath, dirnames, filenames in _pm_os.walk(ROOT):
+            dirnames[:] = sorted(x for x in dirnames
+                                 if x not in (".git", "__pycache__", "node_modules", ".venv",
+                                              "venv"))
+            for fn in sorted(filenames):
+                p = Path(dirpath) / fn
+                if fn.endswith(".py"):
+                    out.append(p)
+                elif "." not in fn:
+                    try:
+                        head = p.open("rb").readline()
+                    except OSError:
+                        continue
+                    if head.startswith(b"#!") and b"python" in head:
+                        out.append(p)
+        return out
+
+    _pm_sources = _pm_python_sources()
+    _pm_rel = {str(p.relative_to(ROOT)) for p in _pm_sources}
+    expect("VELDO-0004 AC5: the surface that assertion is measured over CONTAINS the files a wiring "
+           "would really go in - the organ inventory in .veldo/validate_checks.py and its engine "
+           "twin, the documented single front door bin/veldo which has no .py suffix, the gate's "
+           "own unit stage, and this fragment in scripts/suites/. The scan this replaces globbed "
+           "two directories and opened none of the last three",
+           {".veldo/validate_checks.py", "engine/.veldo/validate_checks.py", "bin/veldo",
+            "scripts/selftest.py", "scripts/suites/21_veldo_0004_promise_corpus.py"} <= _pm_rel)
+
+    _pm_loaders = sorted({p.name for p in _pm_sources if _pm_loads(p)})
     expect("VELDO-0004 AC5: NO GATE STAGE LOADS THIS. PLAN-0018 NG3 says a completeness organ that "
            "BLOCKED on a heuristic verdict would cut true sentences and stop real work, and this is "
            "that organ: advisory, loud, human-resolved. Asserted over LOADS via the AST, not over "
-           "mentions, because /veldo:init legitimately NAMES the module in order to ship it",
-           _pm_loaders == [])
+           "mentions, because /veldo:init legitimately NAMES the module in order to ship it - and "
+           "asserted as an EQUALITY against the one file that must load it, this fragment, so a "
+           "scan that went blind reports a set that is missing its own known load and reds instead "
+           "of reading as safety",
+           _pm_loaders == ["21_veldo_0004_promise_corpus.py"])
 
 
 _pm_block("AC5", _pm_ac5)

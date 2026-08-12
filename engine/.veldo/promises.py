@@ -88,9 +88,16 @@ STAND_DOWN_NO_DIRECTORY = ("no .veldo/promises/ directory: no document's claims 
 STAND_DOWN_NOTHING_SETTLEABLE = ("every claim in this corpus is UNSETTLEABLE, so no predicate "
                                  "here decided anything: reporting zero contradictions would be "
                                  "a measurement nobody made")
+# NAMED SEPARATELY FROM "no corpus declares a claim at all", because they are different facts and
+# the stand-down reason is the one sentence a human reads. A corpus whose only claims are malformed
+# DOES declare claims; saying nobody declared one misnames what happened, in a module whose whole
+# thesis is that a settlement must name what it measured.
+STAND_DOWN_NOTHING_READABLE = ("this corpus DOES declare claims and not one of them could be read "
+                               "as a claim, so no predicate read anything: the malformed claims "
+                               "are named below and none of them is counted anywhere above")
 
-REPORT_KEYS = ("stood_down", "reason", "corpora", "claims", "supported", "contradicted",
-               "unsettleable", "author_disagrees", "unreadable")
+REPORT_KEYS = ("stood_down", "reason", "corpora", "declared", "claims", "supported",
+               "contradicted", "unsettleable", "author_disagrees", "unreadable", "malformed")
 
 
 class PromiseRecordError(ValueError):
@@ -159,10 +166,22 @@ def claim_problems(claim, where):
                     "review-lane call" % (where, label, pred, ", ".join(PREDICATES))))
     elif pred is not None:
         for need in PRED_NEEDS[pred]:
-            if not claim.get(need):
+            val = claim.get(need)
+            if not val:
                 out.append((CAUSE_MISSING_FIELD,
                             "%s: claim %s declares predicate %s, which needs %s"
                             % (where, label, pred, need)))
+            elif need in ("needle", "symbol") and not isinstance(val, str):
+                # A NEEDLE AND A SYMBOL ARE TEXT, AND THE ONE PARSER COERCES A BARE NUMBER.
+                # `needle: 200` is the obvious way to write "the document says 200 countries", and
+                # the front-matter subset yields the INT 200, which `in` cannot search a string for
+                # and which a symbol lookup answers NO to - a FALSE ACCUSATION carrying a true
+                # looking reading. Refused at read time, like every other claim that cannot be run.
+                out.append((CAUSE_MISSING_FIELD,
+                            "%s: claim %s declares %s as %s (%r) and predicate %s reads TEXT: "
+                            "quote it, because the front-matter subset turns a bare number into an "
+                            "int and no predicate can search text for one"
+                            % (where, label, need, type(val).__name__, val, pred)))
         if claim.get("target") is not None:
             why = target_problems(claim.get("target"))
             if why:
@@ -253,6 +272,23 @@ def _symbol_defined(text, name):
     return False
 
 
+def _outside_repository(path, base):
+    """Why this target lies outside the tree once the filesystem has had its say, or None.
+
+    target_problems refuses an absolute path and a '..' segment in the TEXT of a target. A symlink
+    committed in the tree is neither, and a claim settled against a file outside the repository is
+    an accusation nobody can check - so the resolved path is compared to the resolved root here,
+    and a target that leaves the tree settles UNSETTLEABLE rather than accusing anything."""
+    try:
+        rp, rb = Path(path).resolve(), Path(base).resolve()
+    except OSError as e:
+        return "target could not be resolved: %s" % e
+    if rp != rb and rb not in rp.parents:
+        return ("target resolves to %s, which is outside this repository, so nothing here can "
+                "settle the claim" % rp)
+    return None
+
+
 def settle(claim, root=None):
     """Run ONE claim's predicate over the tree and return the settlement.
 
@@ -268,13 +304,38 @@ def settle(claim, root=None):
            "believed": claim.get("believed")}
 
     if pred == PRED_UNSETTLEABLE:
-        out["measured"] = (claim.get("note")
-                           or "declared unsettleable: no mechanical predicate decides this claim")
+        # ATTRIBUTED TO ITS AUTHOR, because this reading is a SENTENCE SOMEBODY WROTE and every
+        # other value in this column is a machine reading a file. A declared unsettleable settles
+        # nothing and must not be able to pass for a measurement.
+        out["measured"] = ("DECLARED unsettleable by the claim's author, so no predicate read "
+                           "anything here: %s"
+                           % (claim.get("note") or "the author gave no reason"))
         return out
 
     path = base / target if isinstance(target, str) and target else None
     if path is None:
         out["measured"] = "no target to read"
+        return out
+
+    escaped = _outside_repository(path, base)
+    if escaped is not None:
+        out["measured"] = escaped
+        return out
+
+    # A NEEDLE AND A SYMBOL ARE TEXT, AND THEY ARE CHECKED BEFORE THE FILESYSTEM IS TOUCHED because
+    # the defect is in the CLAIM and does not depend on what the target holds. check_promises_dir
+    # refuses both at read time; the guard is here as well because a settler that CRASHES on a claim
+    # the validator would have refused takes every other claim in every other corpus down with it,
+    # and this module's law is that a claim which cannot be run is NAMED rather than thrown. The one
+    # front-matter parser coerces `needle: 200` to an int, which `in` cannot search text for, and an
+    # int symbol would resolve to NOTHING and produce a contradiction - a false accusation.
+    if pred in (PRED_TEXT_PRESENT, PRED_TEXT_ABSENT) and not isinstance(claim.get("needle"), str):
+        out["measured"] = ("needle is %s rather than text, so nothing could be searched for"
+                           % type(claim.get("needle")).__name__)
+        return out
+    if pred == PRED_SYMBOL_DEFINED and not isinstance(claim.get("symbol"), str):
+        out["measured"] = ("symbol is %s rather than a name, so nothing could be resolved"
+                           % type(claim.get("symbol")).__name__)
         return out
 
     if pred in (PRED_PATH_EXISTS, PRED_PATH_ABSENT):
@@ -305,7 +366,14 @@ def settle(claim, root=None):
         if defined is None:
             out["measured"] = "target does not parse as Python, so no symbol can be resolved"
             return out
-        out["measured"] = "symbol %r is %sdefined" % (name, "" if defined else "NOT ")
+        # WHAT THE PREDICATE LOOKED FOR, NOT AN ASSERTION ABOUT THE NAME. _symbol_defined reads
+        # defs, classes and Name-Store assignments, so an IMPORTED binding is not found - and
+        # "symbol 'ast' is NOT defined" is a falsehood in the evidence column, which is the wrong
+        # accusation failure mode this criterion exists for. The reading now states its own reach.
+        out["measured"] = (("symbol %r is defined here by a def, a class or an assignment" % name)
+                           if defined else
+                           ("no def, class or assignment named %r anywhere in this target (an "
+                            "imported binding is not a definition and is not counted)" % name))
         out["outcome"] = SUPPORTED if defined else CONTRADICTED
         return out
 
@@ -313,32 +381,62 @@ def settle(claim, root=None):
     return out
 
 
-def all_claims(pdir=None, root=None, parse=None):
-    """[(claim, path, document)] for every WELL-FORMED claim. Malformed claims are excluded here
-    and reported by check_promises_dir, so nothing settles a half-read claim."""
-    out = []
+def partition_claims(pdir=None, root=None, parse=None):
+    """(well_formed, malformed) over every claim a READABLE corpus declares.
+
+    THE MALFORMED HALF IS RETURNED, NEVER DROPPED. It used to be filtered out here and left to
+    check_promises_dir - and nothing in an adopting tree calls that, because this module gates
+    nothing, so the report was the only surface and it counted ONE claim where the author wrote
+    two and then printed a confident zero over the difference. The file-level version of this
+    weakness was already carried loudly; this is the claim-level version of the same fact.
+
+    well_formed is [(claim, path, document)] as before. malformed is [dict] with the claim id (or
+    None when even that is missing), the file, the document, the named causes and the messages, so
+    the report can say what it could not read instead of quietly reporting less."""
+    good, bad = [], []
     for path, data, err in read_corpora(pdir, root, parse):
         if err is not None or not isinstance(data, dict):
             continue
-        for claim in (data.get("claims") or []):
-            if not claim_problems(claim, str(path)):
-                out.append((claim, path, data.get("document")))
-    return out
+        claims = data.get("claims")
+        for claim in (claims if isinstance(claims, list) else []):
+            problems = claim_problems(claim, str(path))
+            if not problems:
+                good.append((claim, path, data.get("document")))
+                continue
+            cid = claim.get("id") if isinstance(claim, dict) else None
+            bad.append({"claim": cid if isinstance(cid, str) and cid else None,
+                        "declared_in": str(path), "document": data.get("document"),
+                        "causes": sorted({cause for cause, _msg in problems}),
+                        "problems": [msg for _cause, msg in problems]})
+    return good, bad
+
+
+def all_claims(pdir=None, root=None, parse=None):
+    """[(claim, path, document)] for every WELL-FORMED claim: the first half of
+    partition_claims, kept as its own name because a caller that only settles wants exactly this
+    and the malformed half is reported by promise_report rather than dropped by anyone."""
+    return partition_claims(pdir, root, parse)[0]
 
 
 def promise_report(pdir=None, root=None, parse=None):
     """ONE key shape whether it stood down or not. NO SCORE: no ratio, no percentage and no float
     anywhere, because a proportion of a corpus nobody enumerated is the number that gets quoted."""
     d = Path(pdir) if pdir is not None else default_promises_dir(root)
-    rep = {"stood_down": True, "reason": None, "corpora": 0, "claims": 0, "supported": [],
-           "contradicted": [], "unsettleable": [], "author_disagrees": [], "unreadable": []}
+    rep = {"stood_down": True, "reason": None, "corpora": 0, "declared": 0, "claims": 0,
+           "supported": [], "contradicted": [], "unsettleable": [], "author_disagrees": [],
+           "unreadable": [], "malformed": []}
     if not d.is_dir():
         rep["reason"] = STAND_DOWN_NO_DIRECTORY
         return rep
     corpora = read_corpora(d, root, parse)
     rep["corpora"] = len(corpora)
     rep["unreadable"] = [str(p) for p, _data, err in corpora if err is not None]
-    claims = all_claims(d, root, parse)
+    claims, malformed = partition_claims(d, root, parse)
+    rep["malformed"] = malformed
+    # DECLARED is what the authors wrote, claims is what could be settled, and the two are
+    # separate keys on purpose: one number that quietly means the second is how a corpus loses a
+    # claim without anybody being told.
+    rep["declared"] = len(claims) + len(malformed)
     rep["claims"] = len(claims)
     for claim, path, document in claims:
         s = settle(claim, root)
@@ -356,8 +454,12 @@ def promise_report(pdir=None, root=None, parse=None):
             rep["author_disagrees"].append(s)
     settleable = len(rep["supported"]) + len(rep["contradicted"])
     if not claims or settleable == 0:
-        rep["reason"] = (STAND_DOWN_NOTHING_SETTLEABLE if claims
-                         else "no corpus declares a claim at all")
+        if claims:
+            rep["reason"] = STAND_DOWN_NOTHING_SETTLEABLE
+        elif malformed:
+            rep["reason"] = STAND_DOWN_NOTHING_READABLE
+        else:
+            rep["reason"] = "no corpus declares a claim at all"
         return rep
     rep["stood_down"] = False
     return rep
@@ -365,22 +467,38 @@ def promise_report(pdir=None, root=None, parse=None):
 
 def report_lines(rep):
     """The report as lines a stranger reads. Every contradiction carries its reading, so a human
-    can see whether the predicate was pointed at the wrong file before deleting a sentence."""
+    can see whether the predicate was pointed at the wrong file before deleting a sentence.
+
+    NO SCORE ON THIS SURFACE EITHER: no ratio, no percentage and no float is printed here, because
+    THIS is where a number would be quoted from and a proportion of a corpus nobody enumerated is
+    exactly the number that gets quoted.
+
+    THE WEAKNESSES ARE CARRIED ON BOTH PATHS. A stand-down that dropped the unreadable files and
+    the malformed claims would be the same silence with a calmer word on it, so they are printed
+    whether the read model answered or stood down."""
     if rep["stood_down"]:
-        return ["promise corpus: stood down - %s" % rep["reason"]]
-    lines = ["promise corpus: %d claim(s) in %d corpus(es): %d supported, %d CONTRADICTED, "
-             "%d unsettleable"
-             % (rep["claims"], rep["corpora"], len(rep["supported"]), len(rep["contradicted"]),
-                len(rep["unsettleable"]))]
+        lines = ["promise corpus: stood down - %s" % rep["reason"]]
+    else:
+        lines = ["promise corpus: %d claim(s) in %d corpus(es): %d supported, %d CONTRADICTED, "
+                 "%d unsettleable"
+                 % (rep["claims"], rep["corpora"], len(rep["supported"]),
+                    len(rep["contradicted"]), len(rep["unsettleable"]))]
     if rep["unreadable"]:
         lines.append("  %d corpus file(s) COULD NOT BE READ and are absent from every count "
                      "above: %s" % (len(rep["unreadable"]), ", ".join(rep["unreadable"])))
+    if rep["malformed"]:
+        lines.append("  %d DECLARED claim(s) COULD NOT BE READ AS CLAIMS and are absent from every "
+                     "count above: %s"
+                     % (len(rep["malformed"]),
+                        ", ".join("%s in %s (%s)" % (m["claim"] or "an unnamed claim",
+                                                     m["declared_in"], ", ".join(m["causes"]))
+                                  for m in rep["malformed"])))
     for s in rep["contradicted"]:
-        lines.append("  CONTRADICTED %s (%s %s): %s -- predicate %s on %s %s"
+        lines.append("  CONTRADICTED %s (%s %s): %s | predicate %s on %s: %s"
                      % (s["claim"], s["document"], s["locator"], s["text"], s["predicate"],
                         s["target"], s["measured"]))
     for s in rep["unsettleable"]:
-        lines.append("  UNSETTLEABLE %s (%s %s): %s -- %s"
+        lines.append("  UNSETTLEABLE %s (%s %s): %s | %s"
                      % (s["claim"], s["document"], s["locator"], s["text"], s["measured"]))
     for s in rep["author_disagrees"]:
         lines.append("  AUTHOR DISAGREES %s: believed %s, the tree says %s (%s)"
