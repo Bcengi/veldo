@@ -19,22 +19,24 @@ that differs in exactly the one field, because a refusal asserted alone is indis
 a validator that refuses everything. The seven criteria of VELDO-0012 each declare a FALSIFIED BY,
 and the rows below are named for them.
 
-TWO THINGS THIS FRAGMENT DELIBERATELY DOES NOT CLAIM, stated rather than hidden.
+THREE THINGS ABOUT WHAT THIS FRAGMENT DOES AND DOES NOT CLAIM, stated rather than hidden.
 
-  THE REGISTRATION IN run_all DOES NOT EXIST YET. .veldo/validate.py is wired serially by the
-  owner, so this suite calls V._VC.check_floors() DIRECTLY - the exact call the registration will
-  make. AC7's own falsification names "the assertion that validate.run_all's output over this
-  repository is byte-identical", and the row below asserts precisely that property in the only
-  form available before the wiring lands: run_all's (count, output) over this repository, plus the
-  check called as run_all will call it, equals run_all's (count, output) alone. Deleting the
-  stand-down guard makes the second term RAISE, so the row reds. No row here pretends the
-  registration exists.
+  THE REGISTRATION IN run_all EXISTS. .veldo/validate.py:832 reads
+  `check_decisions() + _VC.check_floors()`, so run_all's own term below already contains the check
+  and the byte-identity row is asserted over the exact call it makes.
 
-  THE TWO protected_paths ENTRIES ARE A HUMAN ACT. AC6's rows read the LIVE policy through
-  policy_check.protected_patterns(), which is the mechanism the gate uses. The entries are written
-  and the rows are green, but registering a protected path is itself a .veldo/policy.yaml edit and
-  needs Dmitry's recorded, commit-bound approval; nothing here can grant that and nothing here
-  claims it was granted.
+  AC7's DECLARED FALSIFICATION IS WRONG AND IS RECORDED AS WRONG. It says deleting the stand-down
+  guard from check_floors_dir makes run_all's output differ. It does not: on CPython
+  `Path("missing").glob("*.yaml")` yields nothing and raises nothing, so with the guard deleted the
+  function still returns 0 and still prints nothing, and NO assertion over run_all's (count, output)
+  can ever see the mutation. The row with teeth against it is the RECORDED STAND-DOWN row, which
+  reds because the deletion also removes the only call that records one. Measured both ways.
+
+  THE TWO protected_paths ENTRIES ARE A HUMAN ACT, AND THE HUMAN ACTED. AC6's rows read the LIVE
+  policy through policy_check.protected_patterns(), which is the mechanism the gate uses.
+  Registering a protected path is itself a .veldo/policy.yaml edit; Dmitry approved these two on
+  2026-08-12 and the approval is recorded, commit-bound and path-scoped at
+  proof/VELDO-0012/approval-dmitry.json. Nothing here grants it and nothing here infers it.
 """
 import ast as _bf_ast
 import contextlib as _bf_ctx
@@ -354,16 +356,27 @@ expect("VELDO-0012 AC3: the key set is CLOSED AT EVERY LEVEL, so there is nowher
                                "waived_paths": "legacy"}))[1]
        and BF.PIN_KEY_UNRECOGNIZED in _bf_run(_bf_floor(
            [_bf_pin(obs_extra={"disposition": "incidental"})]))[1])
-expect("VELDO-0012 AC3: NO KEY ANYWHERE IN THE ARTIFACT ADDRESSES A LOCATION. Every one of the "
-       "four closed key sets is enumerated and none of them carries a path, glob, pattern, "
-       "module, directory, file or scope-of-files key, so a path-scoped exemption is not merely "
-       "refused, it is unrepresentable",
-       not any(_bf_w in _bf_k.lower()
-               for _bf_k in (BF.FLOOR_KEYS | BF.SCOPE_KEYS | BF.PIN_KEYS | BF.OBSERVATION_KEYS)
-               for _bf_w in ("path", "glob", "pattern", "dir", "file", "exempt", "waiv",
-                             "disposition", "decided", "ruling"))
+expect("VELDO-0012 AC3: NO KEY ANYWHERE IN THE ARTIFACT CARRIES A RULING OR AN EXEMPTION, AND "
+       "NONE SCOPES ONE TO A LOCATION, so a path, glob or module scoped exemption is not merely "
+       "refused, it is unrepresentable. ALL FOUR closed sets are pinned by EXACT SET EQUALITY, "
+       "not by a word blacklist: the blacklist alone let `modules_not_pinned` into SCOPE_KEYS and "
+       "`verdict`/`ruled_by` into OBSERVATION_KEYS with this row still green, because it never "
+       "listed those words - a module-scoped exemption and a ruling beside the digest it binds, "
+       "both representable, both undetected. A closed set's teeth are its enumeration. NOTE the "
+       "claim is deliberately narrower than 'no key addresses a location': `surface` names a file "
+       "and function and `area` names an architecture area, because a floor has to say WHAT it "
+       "pins. What may not exist is a key that EXEMPTS a location",
+       BF.FLOOR_KEYS == {"schema", "id", "version", "area", "scope", "pins"}
+       and BF.SCOPE_KEYS == {"method", "enumerated", "unreachable"}
        and BF.PIN_KEYS == {"id", "surface", "language", "fidelity", "observation", "reproduces",
-                           "status"})
+                           "status"}
+       and BF.OBSERVATION_KEYS == {"recorded", "digest"}
+       and not any(_bf_w in _bf_k.lower()
+                   for _bf_k in (BF.FLOOR_KEYS | BF.SCOPE_KEYS | BF.PIN_KEYS
+                                 | BF.OBSERVATION_KEYS)
+                   for _bf_w in ("path", "glob", "pattern", "dir", "file", "exempt", "waiv",
+                                 "disposition", "decided", "ruling", "ruled", "module", "verdict",
+                                 "judg", "allow", "legacy", "grandfather")))
 
 # ---------------------------------------------------------------------------------------
 # AC4. A RULING IS RESOLVED ONLY FROM A DECISION THAT WENT THROUGH THE TICKET CHANNEL, JOINED TO
@@ -593,6 +606,30 @@ with tempfile.TemporaryDirectory() as _bf_rd:
            and any("analyzers are python only" in ln for ln in _BF_LINES)
            and 'rel.endswith(".py")' in (ROOT / ".veldo/shape_gate.py").read_text())
 
+# AN UNREADABLE FLOOR IS NAMED, NOT DROPPED BEHIND THE COUNTS. floor_report has no reporter of
+# its own, so the `except FloorRecordError: continue` in its read loop used to drop the file and
+# then quote pin and surface counts computed over whatever parsed - a coverage figure without the
+# weakness that produced it, which is exactly what this report's own contract forbids. Driven with
+# two floors on disk, one of them unparseable: the counts must come from the ONE that parsed AND
+# the report must name the one that did not, in the dict and on the page.
+with tempfile.TemporaryDirectory() as _bf_ud:
+    _bf_udir = Path(_bf_ud) / ".veldo" / "floors"
+    _bf_udir.mkdir(parents=True)
+    (_bf_udir / "good.yaml").write_text(_bf_floor([_bf_pin()]))
+    (_bf_udir / "broken.yaml").write_text("schema: veldo.behavior_floor/v1\npins:\n\t- nope\n")
+    _BF_UREP = BF.floor_report(fdir=_bf_udir, root=Path(_bf_ud), parse=V.parse_yamlish,
+                               settlements=[], requests=[])
+    _BF_ULINES = BF.report_lines(_BF_UREP)
+    expect("VELDO-0012 AC5: A FLOOR THAT COULD NOT BE READ IS COUNTED AND NAMED, and the pin and "
+           "surface counts beside it are the ones from the floors that DID parse - so the report "
+           "cannot quote coverage while silently omitting a file, which is the defect its own "
+           "contract names. NEGATIVE CONTROL: the readable floor's pin still counts, so naming the "
+           "unreadable one is not achieved by refusing the whole report",
+           _BF_UREP["unreadable"] == ["broken.yaml"]
+           and (_BF_UREP["floors"], _BF_UREP["pins"]) == (1, 1)
+           and _BF_UREP["standdown"] is False
+           and any("COULD NOT BE READ" in ln and "broken.yaml" in ln for ln in _BF_ULINES))
+
 # ---------------------------------------------------------------------------------------
 # AC6. THE FLOOR AND THE SETTLED RULINGS SIT UNDER protected_paths, BECAUSE THE VALIDATOR IS NOT
 # THE INTEGRITY.
@@ -661,29 +698,42 @@ expect("VELDO-0012 AC6: the engine template an adopter installs carries the same
 # byte-identity row states the adoption-safety property the registration must not break, and the
 # recorded-stand-down row is the one with teeth against this mutation.
 # ---------------------------------------------------------------------------------------
-del BF.FLOOR_STANDDOWNS[:]                     # the registry is the record; measure a clean one
+# THE STAND-DOWN AND ITS RECORD ARE PROVEN UNCONDITIONALLY, over a directory that CANNOT
+# exist, so this leg holds whatever this repository itself happens to contain. It used to be
+# driven over the live .veldo/floors/ and paired with `not (...).exists()`, which pinned today's
+# emptiness: writing one valid floor - USING the feature - took the suite from 3 failed to 4.
+# An assertion measured over the live repository may never require the measured set to be empty.
+del BF.FLOOR_STANDDOWNS[:]
+with tempfile.TemporaryDirectory() as _bf_nodir:
+    _BF_ABSENT = _bf_capture(lambda: BFC.check_floors(
+        floors_dir=Path(_bf_nodir) / "floors", root=Path(_bf_nodir)))
+expect("VELDO-0012 AC7: an absent floors directory stands the whole check down, returns clean, "
+       "AND the stand-down is RECORDED with the reason that fired - so a reader can tell a "
+       "repository that was CHECKED from one the rule never asked anything of. Driven over a "
+       "path that cannot exist, so nothing here depends on what this repository holds",
+       _BF_ABSENT == (0, "")
+       and len(BF.floor_standdowns()) == 1
+       and "no .veldo/floors/ directory" in BF.floor_standdowns()[0][1])
+
+# The live half: adding the check to run_all must not change run_all's (count, output). That
+# property holds in BOTH states - absent, it stands down; present and valid, it validates and
+# still adds nothing - so the row states the property and REPORTS which state it measured
+# instead of requiring one of them.
+del BF.FLOOR_STANDDOWNS[:]
 _BF_RUNALL = _bf_capture(V.run_all)
 # run_all NOW CARRIES THE REGISTRATION, so it records a stand-down of its own into this same
 # module-level registry - BF is the CACHED instance, which is the whole point of caching it.
-# Cleared again here so the row below measures ONE call's record instead of what has
-# accumulated in the process: a cardinality asserted over live accumulation is the defect that
-# reddens a gate the moment the thing it measures is actually wired.
+# Cleared again so the term below measures ONE call rather than process-wide accumulation.
 del BF.FLOOR_STANDDOWNS[:]
 _BF_LIVE = _bf_capture(BFC.check_floors)
 _BF_WITH = ((_BF_RUNALL[0] + _BF_LIVE[0], _BF_RUNALL[1] + _BF_LIVE[1])
             if isinstance(_BF_LIVE[0], int) and isinstance(_BF_RUNALL[0], int) else None)
-expect("VELDO-0012 AC7: an absent .veldo/floors/ directory stands the whole check down and "
-       "returns clean, so validate.run_all's (count, output) over THIS repository is "
-       "byte-identical with the check added to it - which is the property the registration line "
-       "must not break. Asserted over the EXACT call run_all makes, and the registration in "
-       "validate.py now exists, so run_all's own term above already contains it",
-       _BF_RUNALL[0] == 0 and _BF_LIVE == (0, "") and _BF_WITH == _BF_RUNALL
-       and not (ROOT / ".veldo" / "floors").exists())
-expect("VELDO-0012 AC7: the stand-down is RECORDED with the reason it stood down rather than "
-       "being a silent pass - a reader can tell a repository that was CHECKED from one the rule "
-       "never asked anything of, and the record NAMES which of the two conditions fired",
-       len(BF.floor_standdowns()) == 1
-       and "no .veldo/floors/ directory" in BF.floor_standdowns()[0][1])
+expect("VELDO-0012 AC7: validate.run_all's (count, output) over THIS repository is byte-identical "
+       "with the check added to it, which is the property the registration line must not break. "
+       "Asserted over the EXACT call run_all makes. MEASURED IN WHATEVER STATE THIS REPOSITORY IS "
+       "IN and the state is reported rather than required: .veldo/floors/ present here = %r"
+       % (ROOT / ".veldo" / "floors").is_dir(),
+       _BF_RUNALL[0] == 0 and _BF_LIVE == (0, "") and _BF_WITH == _BF_RUNALL)
 del BF.FLOOR_STANDDOWNS[:]
 _BF_EMPTY = _bf_run(_bf_floor([], scope=None))
 expect("VELDO-0012 AC7: the OTHER stand-down condition is a DIFFERENT recorded reason - a floor "
@@ -777,12 +827,16 @@ def _bf_refs(rel, wanted):
 _BF_DISP_REFS = sorted(f for f in _BF_TEXTS if _bf_refs(f, "disposition_for"))
 _BF_DISP_TEXT = sorted(f for f in _BF_TEXTS
                        if not f.endswith(".py") and "disposition_for" in _BF_TEXTS[f])
-expect("VELDO-0012 AC7: NO GATE STAGE REFUSES ON A DISPOSITION STATE. Across the derived closure, "
-       "the resolver disposition_for is REFERENCED AS AN IDENTIFIER in exactly ONE file - the "
-       "module that defines it - by no other Python stage and by no shell stage at all, so "
-       "nothing the gate runs can refuse a change because a pin is unknown or blocked. The "
-       "precondition at ready and at claim is a later item, and this row reds the moment any gate "
-       "file starts calling the resolver",
+expect("VELDO-0012 AC7: NO GATE STAGE READS A DISPOSITION AT ALL, WHICH IS WHY NONE CAN REFUSE ON "
+       "ONE. Across the derived closure, the resolver disposition_for is REFERENCED AS AN IDENTIFIER "
+       "in exactly ONE file - the module that defines it - by no other Python stage and by no shell "
+       "stage at all. WHAT THIS IS AND IS NOT: not-read is STRICTLY STRONGER than not-refused-on, so "
+       "it proves the criterion and then some, and a later item that adds a legitimate non-refusing "
+       "READER will red this row and must amend it rather than route around it. It is also NARROWER "
+       "than the criterion in one direction, stated so nothing reads wider than it is: a stage could "
+       "in principle refuse by scanning a floor's text for `status:` without touching the resolver, "
+       "which this row does not exclude and the next clause is why it does not need to - the floor "
+       "check itself enforces nothing beyond well-formedness, asserted above",
        _BF_DISP_REFS == [".veldo/behavior_floor.py"] and _BF_DISP_TEXT == []
        and not _bf_refs(".veldo/validate_checks.py", "disposition_for"))
 expect("VELDO-0012 AC7 NEGATIVE CONTROL for the row above, in both directions. The AST scan finds "

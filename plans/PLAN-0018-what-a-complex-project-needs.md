@@ -434,6 +434,69 @@ price we already paid for it.
     the number named rather than silently accepted, and handed to the adversarial review to check for
     an unreachable branch or two causes reported under different names.
 
+### Found by the independent reviews of VELDO-0011 and VELDO-0012 (2026-08-12)
+Both reviewers drove every declared falsification themselves rather than reading for it. Eleven of
+the twelve criteria across the two items have PROVEN teeth: the mutation landed, was diffed, and
+reddened the row its own field names, with the paired control staying green so no refusal is a
+blanket one. The findings below are what survived that.
+
+34. **A DECLARED FALSIFICATION CAN NAME AN ASSERTION THAT IS STRUCTURALLY INCAPABLE OF FAILING, AND
+    THAT IS WORSE THAN DECLARING NONE.** VELDO-0012 AC7 said: delete the stand-down guard from
+    `check_floors_dir` and the byte-identity assertion over `run_all`'s output must red. It cannot.
+    On CPython `Path("missing").glob("*.yaml")` yields nothing and raises nothing, so with the guard
+    deleted the function still returns 0 and still prints nothing - the two behaviours are
+    OBSERVATIONALLY IDENTICAL in what that assertion measures. Driven: guard deleted in both twins,
+    suite unchanged at 87/3. The field read as proof the leg was defended while nothing defended it.
+    VELDO-0011 AC2 carried the same shape differently: its field named `.veldo/validate.py:669`, a
+    line the item never changes, so applying it verbatim is a no-op and an auditor could have
+    concluded a criterion with real teeth was vacuous. BOTH FIELDS ARE NOW CORRECTED AND BOTH KEEP
+    THE ORIGINAL WORDING beside the correction, because the mistake is the instructive part.
+    GENERALISED, and this is the load-bearing lesson for VELDO-0001: the rule makes an author name a
+    falsification, and nothing checks that the named assertion CAN fail. The check that would is a
+    real item - drive each declared mutation and require its named row to red - and it is what these
+    two reviews did by hand.
+35. **THE FIX FOR FINDING 30 RESTORED THE ONLY TEETH AC7 HAD, WHICH IS WHY THE ORDER MATTERED.**
+    The reviewer measured that with the registry cardinality row red for an unrelated reason, the
+    stand-down guard could be deleted with no change in the suite's verdict at all. Clearing the
+    registry so the row measures one call rather than process-wide accumulation put the teeth back:
+    driven again after the fix, deleting the guard reds exactly one named row. Two defects that each
+    hid the other.
+36. **AC3's CENTRAL PROPERTY WAS DEFENDED FOR ONE OF FOUR KEY SETS.** The floor's four key sets are
+    CLOSED by design so a ruling or a location-scoped exemption is unrepresentable. Only `PIN_KEYS`
+    was pinned by exact set equality; `FLOOR_KEYS`, `SCOPE_KEYS` and `OBSERVATION_KEYS` were guarded
+    only by a substring blacklist that omitted **module** - the very word the module's own comment
+    claims is unrepresentable - along with verdict, judgement, ruled, allow, legacy and grandfather.
+    Driven: `SCOPE_KEYS | {"modules_not_pinned", "verdict"}` left the suite unchanged at 87/3, and a
+    floor carrying `modules_not_pinned: legacy/**` and `verdict: incidental` then validated with
+    ZERO errors. A module-scoped exemption and a ruling, both representable, both undetected, with
+    the row that exists to forbid them green. FIXED with the three missing exact set equalities, and
+    the exact mutation now reds the named row. **A CLOSED SET'S TEETH ARE ITS ENUMERATION, never a
+    word list**: a blacklist can only forbid the words somebody thought of.
+37. **USING THE FEATURE ONCE REDDENED THE GATE, for the fifth recorded time in this repository.**
+    `not (ROOT / ".veldo" / "floors").exists()` was a conjunct of AC7's byte-identity row, so writing
+    one valid floor took the suite from 3 failed to 4. Every other conjunct held with the floor
+    present, so the clause contributed nothing to the property and only pinned today's emptiness.
+    FIXED in the shape finding 26 prescribes: the stand-down and its record are now driven
+    unconditionally over a path that CANNOT exist, and the live row states the property while
+    REPORTING which state it measured. Proven by using the feature: a real floor written, `run_all`
+    exit 0, the report reading `unknown / RULING_NOT_SETTLED`, full suite 4342 passed 0 failed.
+38. **THE PERMANENT GUARD CANNOT SEE THIS FAMILY, AND NOT FOR A FIXABLE REASON.**
+    `scripts/check_first_use.py` drives SANCTIONED WRITERS, deliberately, because a mutation reaching
+    past the writer would prove nothing. `.veldo/behavior_floor.py` writes nothing, ever, by design -
+    a floor is AUTHORED, not emitted - so there is no writer to drive and no `MUTATIONS` entry to
+    add. The guard's own documented limit 1 therefore still applies to floors. **OPEN, and its own
+    item:** extend the guard to a family whose use is authoring an artifact, which means letting an
+    entry declare a file to write and building its content through the module's own canonicalization.
+    Deliberately not smuggled into this change.
+39. **A READER WITH NO REPORTER QUOTED COVERAGE OVER THE RECORDS THAT HAPPENED TO PARSE.**
+    `floor_report` dropped an unreadable floor with a bare `continue` and then counted floors, pins
+    and surfaces - a coverage figure without the weakness that produced it, which is the one thing
+    the report's own contract forbids, and no row covered it. The sibling `continue` in `check_floor`
+    is correct because that path has a reporter; this one had none. FIXED: an `unreadable` list in
+    the report shape, named on the page and in the stand-down reason, with a driven row over two
+    floors where one is unparseable. Also fixed alongside: a pin with no `language` surfaced the
+    string `None` in `unanalyzed_languages`.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

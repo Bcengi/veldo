@@ -84,9 +84,16 @@ acceptance_criteria:
       every release.
   - id: AC2
     falsified_by: >
-      Restore the bare assignment at .veldo/validate.py:669 as the only write into the registry,
-      dropping the duplicate accumulation, and the assertion that a tree holding two plan files
-      declaring PLAN-9999 is refused with both filenames named must go red.
+      Replace the accumulation in id_paths in .veldo/release_contract.py with a single-value
+      assignment (`out[aid] = [Path(p)]`, one path per id) so a second file declaring an id
+      overwrites the first, and the assertion that a tree holding two plan files declaring PLAN-9999
+      is refused with BOTH filenames named must go red. CORRECTED, and the original is kept here
+      because following it literally would have produced the wrong verdict: this field used to name
+      .veldo/validate.py:669, which this item never changes - that line already is the bare
+      assignment, plan_registry is deliberately left alone, and a shipped assertion pins its
+      one-of-two behaviour. An auditor applying the old text verbatim would have found the mutation
+      a no-op, the suite green, and could have concluded the criterion was vacuous when the check
+      has real teeth. A falsification must name the file the item actually changes.
     text: >
       NO TWO ARTIFACTS SHARE AN ID, IN EITHER REGISTRY, THROUGH ONE SPELLING OF THE RULE. This is
       PLAN-0018 finding 24 (plans/PLAN-0018-what-a-complex-project-needs.md:357-361) and it is fixed

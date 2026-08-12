@@ -182,12 +182,17 @@ acceptance_criteria:
       specs/WARP-0720-approver-registry-declared.md does for the approver registry.
   - id: AC7
     falsified_by: >
-      Delete the `if not d.is_dir(): return 0` guard at the top of check_floors_dir in
-      .veldo/behavior_floor.py so an absent .veldo/floors/ directory raises instead of standing down,
-      and the assertion that validate.run_all's output over this repository is byte-identical with no
-      floors present must go red. That stand-down is the load-bearing leg of this criterion; the
-      second leg (no gate stage refuses on an unruled pin) is asserted by the derived-domain scan
-      described in the text.
+      Delete the `if not d.is_dir()` stand-down at the top of check_floors_dir in
+      .veldo/behavior_floor.py, and the assertion that an absent floors directory RECORDS a
+      stand-down naming its reason must go red, because the deletion removes the only call that
+      records one. CORRECTED AFTER MEASUREMENT, and the original is kept here because the mistake is
+      the instructive part: this field used to name the byte-identity assertion over run_all's
+      output, and that assertion CANNOT see this mutation - on CPython
+      `Path("missing").glob("*.yaml")` yields nothing and raises nothing, so with the guard gone the
+      function still returns 0 and still prints nothing. A declared falsification naming an
+      assertion that is structurally incapable of failing is worse than none, because it reads as
+      proof that the leg is defended. The second leg (no gate stage refuses on an unruled pin) is
+      asserted by the derived-domain scan described in the text.
     text: >
       ADOPTION SAFE, AND IT ENFORCES NOTHING. An absent .veldo/floors/ directory stands the whole
       check down and returns clean, exactly as .veldo/decision.py:219-227 does for decision records

@@ -605,7 +605,7 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
     rep = {"standdown": True, "reason": None, "floors": 0, "pins": 0,
            DISPOSITION_RULED: 0, DISPOSITION_UNKNOWN: 0, DISPOSITION_BLOCKED: 0,
            "enumerated_surfaces": 0, "unreachable_surfaces": 0,
-           "unanalyzed_languages": [], "dispositions": []}
+           "unanalyzed_languages": [], "dispositions": [], "unreadable": []}
     if not d.is_dir():
         rep["reason"] = ("no .veldo/floors/ directory: this repository has not adopted the "
                          "behaviour floor")
@@ -617,6 +617,10 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
         try:
             data = load_floor(p, parse)
         except FloorRecordError:
+            # NAMED, NEVER DROPPED. check_floor reports its own refusal, but this reader has no
+            # reporter, so a bare `continue` here would quote a coverage figure computed over the
+            # floors that happened to parse - which is the one thing this report must not do.
+            rep["unreadable"].append(p.name)
             continue
         rep["floors"] += 1
         scope = data.get("scope") if isinstance(data.get("scope"), dict) else {}
@@ -627,7 +631,7 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
                 continue
             rep["pins"] += 1
             if not analyzer_supported(pin.get("language")):
-                langs.add(pin.get("language"))
+                langs.add(pin.get("language") or "(no language stated)")
             disp = disposition_for(pin, root=base, parse=parse, settlements=setts, requests=reqs)
             disp["floor"] = p.name
             rep["dispositions"].append(disp)
@@ -636,6 +640,9 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
     if rep["pins"] == 0:
         rep["reason"] = ("no floor in .veldo/floors/ declares a pin, so there is no recorded "
                          "behaviour to read a disposition for")
+        if rep["unreadable"]:
+            rep["reason"] += (", and %d floor file(s) could not be read at all: %s"
+                              % (len(rep["unreadable"]), ", ".join(rep["unreadable"])))
         return rep
     rep["standdown"] = False
     return rep
@@ -652,6 +659,9 @@ def report_lines(rep):
              % (rep["floors"], rep["pins"], rep[DISPOSITION_RULED], rep[DISPOSITION_UNKNOWN],
                 rep[DISPOSITION_BLOCKED], rep["enumerated_surfaces"],
                 rep["unreachable_surfaces"])]
+    if rep.get("unreadable"):
+        lines.append("  %d floor file(s) COULD NOT BE READ and are absent from every count above: "
+                     "%s" % (len(rep["unreadable"]), ", ".join(rep["unreadable"])))
     if rep.get("unanalyzed_languages"):
         lines.append("  the shipped analyzers are %s only, so no analyzer covers: %s"
                      % (", ".join(ANALYZER_LANGUAGES), ", ".join(rep["unanalyzed_languages"])))
