@@ -2565,18 +2565,53 @@ _V27_PATTERNS = (_v27_VC.VERDICT_PATTERN, _v27_VC.DESIGN_VERDICT_PATTERN,
 # --- AC1: ONE ENUMERATION, and the two sets EQUAL over this repository's real corpus ------
 # THE SUBJECT IS THE SHIPPED PAIR, not a re-derivation: the projection's own domain function
 # and the validator's own corpus function, each called the way its own module calls it.
+#
+# THE INDEX IS NOT THE WORKING TREE, AND THIS ROW USED TO FORGET IT. The domain is a git
+# enumeration and the validated set is a disk enumeration, so an artifact an author has written
+# and not yet committed is in the second and not the first. That is the NORMAL FLOW - the corpus
+# owner says so in writing, `untracked` is a named bucket of divergence() and its docstring calls
+# it "Expected and not red: an author validating before committing is the normal flow" - and the
+# raw equality here contradicted the module it tests. MEASURED, and it is why this changed: with
+# ONE uncommitted verdict artifact on disk this row was the only red in a 4529-assertion run, so
+# every L2 reviewer writing a verdict turned the gate red until somebody committed it, and three
+# independent reviewers of this migration each reported it against a different item. A gate that
+# reds when a feature is USED is not gating that feature, it is refusing it.
+#
+# WHAT THE EQUALITY IS NOW, AND WHY IT STILL HAS TEETH. The comparison sets aside exactly the
+# owner's own `untracked` bucket and nothing else. That bucket is `disk_set - set(direct)` where
+# `direct` is an INDEPENDENT `git ls-files` read, NOT the difference between the two sets under
+# test, so subtracting it cannot make this row true by construction: it can only forgive paths
+# GIT ITSELF says it is not tracking. Both harmful directions survive untouched. A tracked
+# artifact the validator cannot see is still `entitled_not_validated` and still red. A tracked
+# artifact outside the domain is still `contradiction` and still red. A domain member git does
+# not report as tracked is still `overclaimed` and still red. The set that is forgiven is
+# ASSERTED to be exactly git's own answer, in both directions, so a later edit cannot widen the
+# forgiveness without reddening this row.
 _v27_domain_paths = set(EV22.tracked_verdicts(repo_root=str(ROOT)))
 _v27_validated = {str(Path(_p).relative_to(ROOT))
                   for _p in _v27_V._corpus(_v27_VC.VERDICT_PATTERN)}
 _v27_same_file = (Path(_v27_V._CORPUS.__file__).resolve()
                   == Path(_v27_VC.__file__).resolve())
 _v27_div = {_pat: _v27_VC.divergence(ROOT, _pat) for _pat in _V27_PATTERNS}
-expect("WARP-0727 AC1: THE ENTITLEMENT DOMAIN AND THE VALIDATED SET ARE ONE ENUMERATION, and over this repository's REAL corpus they are EQUAL IN BOTH DIRECTIONS. The projection's domain function and the contract validator's corpus function are asserted to load the SAME FILE as their owner, so this is one rule applied to two path sources and not two rules that happen to agree today; the pathspec carries NO WILDCARD in either form, which is the fix - a git pathspec `*` crosses `/` where a pathlib `*` does not - and for EVERY corpus pattern the owner declares, not only the verdict one, the entitled-not-validated set, the CONTRADICTION set, the OVERCLAIMED set and the misfiled set are each EMPTY. The contradiction set is the paths GIT ITSELF reports as tracked that the domain does not hold, and the overclaimed set is the reverse: both are asked of git through a route that shares no pathspec and no prefix arithmetic with the enumeration under test, which is what makes an empty answer here mean anything at all - derived from the domain instead, as it was at 098dc6a, it was arithmetically empty for every possible input, and its failing witness is now CONSTRUCTED and shown RED in the round 3 leg below. A PROPERTY OF EACH MEMBER IS ASSERTED AND NEVER A CARDINALITY: this repository's corpus grows, so nothing here pins how large it is",
+# The one bucket set aside, taken from the owner rather than recomputed here, and the committed
+# half of the validated set that the index is actually answerable for.
+_v27_untracked = set(_v27_div[_v27_VC.VERDICT_PATTERN]["untracked"])
+_v27_validated_tracked = _v27_validated - _v27_untracked
+# THE FORGIVEN SET IS ITSELF PINNED TO GIT'S OWN ANSWER, so this is a narrowing with a witness
+# rather than a hole. Recomputed here from the independent read, compared both ways.
+_v27_direct, _v27_direct_ok = _v27_VC.tracked_direct(ROOT)
+_v27_untracked_here = _v27_validated - set(_v27_direct)
+expect("WARP-0727 AC1: THE ENTITLEMENT DOMAIN AND THE VALIDATED SET ARE ONE ENUMERATION, and over this repository's REAL corpus they are EQUAL IN BOTH DIRECTIONS ONCE THE INDEX IS ALLOWED TO DIFFER FROM THE WORKING TREE, which is the one difference a single membership rule cannot remove and the only thing set aside here. The domain is a GIT enumeration and the validated set is a DISK enumeration, so an artifact an author has written and not yet committed belongs to the second and not the first; the corpus owner already computes that population as its `untracked` bucket and already declares it expected rather than red, and this row's earlier raw equality contradicted the module it tests. It was MEASURED as the only red in a 4529-assertion run with ONE uncommitted verdict artifact present, so writing a review turned the gate red until somebody committed it. WHAT IS SET ASIDE IS PINNED TO GIT'S OWN ANSWER AND NOTHING WIDER: `untracked` is `disk_set` minus an INDEPENDENT `git ls-files` read rather than the difference between the two sets under test, it is recomputed here from that independent read and required to be EQUAL in both directions, it is required to be a subset of the validated set, and it is required to be DISJOINT from the domain - so this is a narrowing with a witness and not a hole, and no later edit can widen the forgiveness without reddening this row. BOTH HARMFUL DIRECTIONS ARE UNTOUCHED, which is why the narrowing costs nothing: a tracked artifact no validator will see is still entitled-not-validated, a tracked artifact outside the domain is still a CONTRADICTION, and a domain member git does not report as tracked is still OVERCLAIMED. The projection's domain function and the contract validator's corpus function are asserted to load the SAME FILE as their owner, so this is one rule applied to two path sources and not two rules that happen to agree today; the pathspec carries NO WILDCARD in either form, which is the fix - a git pathspec `*` crosses `/` where a pathlib `*` does not - and for EVERY corpus pattern the owner declares, not only the verdict one, the entitled-not-validated set, the CONTRADICTION set, the OVERCLAIMED set and the misfiled set are each EMPTY. The contradiction set is the paths GIT ITSELF reports as tracked that the domain does not hold, and the overclaimed set is the reverse: both are asked of git through a route that shares no pathspec and no prefix arithmetic with the enumeration under test, which is what makes an empty answer here mean anything at all - derived from the domain instead, as it was at 098dc6a, it was arithmetically empty for every possible input, and its failing witness is now CONSTRUCTED and shown RED in the round 3 leg below. A PROPERTY OF EACH MEMBER IS ASSERTED AND NEVER A CARDINALITY: this repository's corpus grows, so nothing here pins how large it is",
        _v27_same_file
        and "*" not in EV22.corpus_pathspec(str(ROOT))[0]
        and EV22.corpus_pathspec(str(ROOT))[0].startswith(_v27_VC.CORPUS_PATHSPEC_MAGIC)
-       and _v27_domain_paths == _v27_validated
-       and _v27_domain_paths <= _v27_validated and _v27_validated <= _v27_domain_paths
+       and _v27_domain_paths == _v27_validated_tracked
+       and _v27_domain_paths <= _v27_validated_tracked
+       and _v27_validated_tracked <= _v27_domain_paths
+       and _v27_untracked == _v27_untracked_here
+       and _v27_untracked <= _v27_validated
+       and _v27_direct_ok
+       and not (_v27_untracked & _v27_domain_paths)
        and bool(_v27_domain_paths)
        and all(_v27_VC.corpus_member(_p, _v27_VC.VERDICT_PATTERN) for _p in _v27_domain_paths)
        and all(_v27_div[_pat]["git_available"] for _pat in _V27_PATTERNS)

@@ -492,4 +492,86 @@ expect("VELDO-0001 AC4: the checked module and the copy /veldo:init lays down ar
        (ROOT / ".veldo/validate_checks.py").read_bytes()
        == (ROOT / "engine/.veldo/validate_checks.py").read_bytes())
 
+# EVERY TEMPLATE AN AUTHOR IS POINTED AT MUST CARRY THE PROMPT, AND THIS REPOSITORY'S OWN DID NOT.
+# Found by the independent review of VELDO-0001 (F3). The rule shipped into the adopter copy at
+# engine/specs/TEMPLATE.md and NOT into specs/TEMPLATE.md, which is the file README.md tells an
+# author here to copy, and which additionally told them in writing that "Nothing checks this" after
+# validate.py had begun refusing it. So the rule survived locally only where somebody remembered
+# it, which is the exact failure AC4's own rationale names.
+#
+# WHY THIS IS A PROPERTY CHECK AND NOT A SYNC CHECK, stated because the obvious answer is wrong:
+# scripts/check_template_sync.sh excepts specs/TEMPLATE.md PERMANENTLY as per-repo, and rightly so,
+# because the two files legitimately differ - the local one carries the four-things block that the
+# shipped one does not. Byte-identity is therefore the wrong assertion and would have to be waived
+# forever, which is how this diverged unseen. What is asserted instead is the PROPERTY both copies
+# must have, over every template the repository offers an author, DERIVED by glob rather than
+# hand-listed so a third template cannot arrive unchecked.
+_fd_templates = sorted(list((ROOT / "specs").glob("TEMPLATE*.md"))
+                       + list((ROOT / "engine/specs").glob("TEMPLATE*.md")))
+_fd_tpl_text = {str(p.relative_to(ROOT)): p.read_text() for p in _fd_templates}
+
+
+def _fd_prompts_field(text, field):
+    """A KEY on its own line, never the word ANYWHERE in the text. This distinction is the whole
+    reason this helper exists rather than an `in` test: the first version of the row below used
+    `field in text` and stayed GREEN when the field was deleted from specs/TEMPLATE.md, because the
+    explanatory comment above it still contains the word. That is the same defect VELDO-0010 F1
+    names - a substring scan used to prove a presence - reproduced here while fixing it, and caught
+    only by driving the mutation. A commented-out key does not count either: an author copying the
+    template must find a line they fill in, not a line they first have to uncomment."""
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            continue
+        if stripped.startswith(field + ":"):
+            return True
+    return False
+
+
+expect("VELDO-0001 AC4: EVERY spec template this repository offers an author prompts for the "
+       "falsification field AS A KEY ON ITS OWN LINE, uncommented, derived by glob over specs/ and "
+       "engine/specs/ rather than hand-listed, and the set is non-empty so an empty glob cannot "
+       "satisfy it. A MENTION IN A COMMENT DOES NOT COUNT, which is not a detail: the first "
+       "version of this row tested `field in text` and stayed green with the field deleted, "
+       "because the comment explaining the field still contains its name. MEASURED BEFORE THE "
+       "FIX: specs/TEMPLATE.md carried neither this field nor behavior_bearing, "
+       "engine/specs/TEMPLATE-standing.md carried neither, engine/specs/TEMPLATE.md carried both, "
+       "and no assertion in this repository read either local copy at all",
+       bool(_fd_tpl_text)
+       and all(_fd_prompts_field(_t, FD.FALSIFICATION_FIELD)
+               for _t in _fd_tpl_text.values()))
+expect("VELDO-0001 AC4: every one of those templates also names behavior_bearing, because "
+       "falsified_by is required only on a behaviour-bearing spec and a template that prompts for "
+       "the field without naming the flag that makes it mandatory prompts for it in the one case "
+       "it is not needed. Named in a comment IS enough here and deliberately so, because the flag "
+       "is optional by design and a template that declared it live would force every spec written "
+       "from it to be behaviour-bearing",
+       bool(_fd_tpl_text)
+       and all("behavior_bearing" in _t for _t in _fd_tpl_text.values()))
+expect("VELDO-0001 AC4 NEGATIVE CONTROL, ADDITIVE: a template ADDED to the set that carries the "
+       "field ONLY inside a comment is refused, so the rows above hold over the set as it grows "
+       "and the comment-versus-key distinction is asserted rather than described",
+       (lambda _added: not all(
+           _fd_prompts_field(_t, FD.FALSIFICATION_FIELD) for _t in dict(
+               _fd_tpl_text, **{"specs/TEMPLATE-probe.md": _added}).values()))
+       ("---\nid: WARP-9999\nbehavior_bearing: true\nacceptance_criteria:\n  - id: AC1\n"
+        "    text: no prompt here\n    # falsified_by: mentioned but not offered\n---\n"))
+# A SPEC WRITTEN FROM THE LOCAL TEMPLATE SATISFIES THE ENFORCED CHECK, which is the behavioural
+# half: the row above proves the prompt is present, this proves the prompt is CORRECT. Same drive
+# as the engine-copy row earlier in this fragment, run against the copy an author here starts from.
+with tempfile.TemporaryDirectory() as _fd_d5:
+    _fd_local = (ROOT / "specs/TEMPLATE.md").read_text().replace(
+        "# behavior_bearing: true", "behavior_bearing: true")
+    _fd_local_spec = tmpfile(_fd_d5, "from-local-template.md", _fd_local)
+    _fd_local_stripped = tmpfile(_fd_d5, "from-local-stripped.md", _fd_re.sub(
+        r"(?m)^ *%s:.*\n" % FD.FALSIFICATION_FIELD, "", _fd_local))
+    expect("VELDO-0001 AC4: a behaviour-bearing spec written from THIS REPOSITORY'S OWN template "
+           "satisfies the check, so the field the local template asks for is the field the "
+           "validator enforces and not a near-miss spelling",
+           _fd_check(_fd_local_spec, enforce=True) == (0, ""))
+    expect("VELDO-0001 AC4 NEGATIVE CONTROL: the same spec with that field deleted is REFUSED, so "
+           "the row above is the field doing the work rather than the template being accepted for "
+           "some other reason",
+           _fd_check(_fd_local_stripped, enforce=True)[0] == 1)
+
 del _fd_ctx, _fd_io, _fd_re

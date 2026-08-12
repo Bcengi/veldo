@@ -1,0 +1,113 @@
+WARP-0727 AC1: THE REVIEW WORKFLOW REDDENED THE GATE. Driven falsification record.
+
+Reported independently by three L2 reviewers of this migration, each against a different item:
+VELDO-0002 F8, VELDO-0005 F8, VELDO-0007 F10. Owned by none of the nine remediation agents, so
+taken directly.
+
+THE DEFECT
+scripts/suites/13_warp_0623_codified_live.py, the WARP-0727 AC1 row, asserted raw set equality
+between the entitlement domain (a GIT enumeration, from events.tracked_verdicts) and the validated
+corpus (a DISK enumeration, from validate._corpus). An artifact an author has written and not yet
+committed is in the second and not the first, so any uncommitted verdict artifact reddened the row
+and therefore the whole gate.
+
+The corpus owner already disagreed with the suite in writing. verdict_corpus.divergence() computes
+`untracked` as `disk_set - set(direct)` and its docstring says: "the validated artifacts GIT ITSELF
+does not report as tracked. Expected and not red: an author validating before committing is the
+normal flow." So the suite contradicted the module it tests, and the shape is the one this
+repository has been burned by repeatedly: a live-state assertion that reddens on FIRST REAL USE of
+the feature it guards.
+
+REPRODUCTION, BEFORE ANY CHANGE
+Tree: a copy of the repository at cd3034f. Created ONE uncommitted verdict artifact:
+
+  $ mkdir -p proof/VELDO-9999 && cat > proof/VELDO-9999/verdict-l2.json   (a well-formed
+    veldo.verdict/v1 record, spec_id VELDO-9999, verdict pass)
+  $ git status --porcelain proof/
+  ?? proof/VELDO-9999/
+
+  $ python3 scripts/selftest.py
+  selftest: 4529 passed, 1 failed
+
+  $ python3 scripts/selftest.py --suite 13_warp_0623_codified_live
+  342:  SELFTEST FAIL: WARP-0727 AC1: THE ENTITLEMENT DOMAIN AND THE VALIDATED SET ARE ONE
+        ENUMERATION, and over this repository's REAL corpus they are EQUAL IN BOTH DIRECTIONS...
+  selftest (PARTIAL, 12 of 34 suites): 3511 passed, 1 failed
+
+ONE uncommitted file was the only red in a 4529-assertion run.
+
+THE FIX
+The comparison now sets aside exactly the owner's own `untracked` bucket and nothing else:
+
+  _v27_untracked = set(_v27_div[_v27_VC.VERDICT_PATTERN]["untracked"])
+  _v27_validated_tracked = _v27_validated - _v27_untracked
+  _v27_direct, _v27_direct_ok = _v27_VC.tracked_direct(ROOT)
+  _v27_untracked_here = _v27_validated - set(_v27_direct)
+
+and the conjuncts became:
+
+  _v27_domain_paths == _v27_validated_tracked
+  _v27_domain_paths <= _v27_validated_tracked
+  _v27_validated_tracked <= _v27_domain_paths
+  _v27_untracked == _v27_untracked_here      <- the forgiven set is pinned to git's own answer
+  _v27_untracked <= _v27_validated
+  _v27_direct_ok
+  not (_v27_untracked & _v27_domain_paths)   <- nothing tracked can be forgiven
+
+WHY THE NARROWING IS NOT A HOLE, verified in the code rather than from the docstring:
+`untracked` is `disk_set - set(direct)` where `direct` comes from tracked_direct(), an INDEPENDENT
+`git ls-files` read. It is NOT the difference between the two sets under test, so subtracting it
+cannot make the equality true by construction. It can only forgive paths git itself says it is not
+tracking. The three harmful legs are untouched and still asserted empty for every declared corpus
+pattern: entitled_not_validated, contradiction, overclaimed.
+
+The assertion's own sentence was rewritten, because it claimed plain equality and that is now an
+overclaim. It states what is set aside, why, and that both harmful directions survive.
+
+DRIVE A: WIDEN THE FORGIVENESS. The mutation the fix must not permit.
+  Mutation: _v27_untracked = set(_v27_validated)   (forgive every validated path)
+  Landed:  git diff shows
+           +_v27_untracked = set(_v27_validated)  # MUTATION: forgive every validated path
+  Result:  SELFTEST FAIL: WARP-0727 AC1: THE ENTITLEMENT DOMAIN AND THE VALIDATED SET...
+           selftest (PARTIAL, 12 of 34 suites): 3511 passed, 1 failed
+  RED, on the named row. The pin on the forgiven set holds.
+  Reverted from a pristine copy taken before the drive.
+
+DRIVE B: THE ADDITIVE CONTROL, IN THE REAL FLOW. The author commits.
+  Action:  git add proof/VELDO-9999/verdict-l2.json
+  Applied: git status --porcelain proof/ -> "A  proof/VELDO-9999/verdict-l2.json"
+  Measured through the owner:
+           in untracked bucket: False
+           in contradiction   : False
+           entitled_not_validated: []   overclaimed: []   misfiled: []
+  Result:  0 SELFTEST FAIL, 3512 passed, 0 failed.
+  GREEN in both states, untracked and tracked, which is the intended contract. The row is not
+  simply always-green either: see drives A and C2, which red it.
+
+DRIVE C, DISCARDED AND RECORDED AS DISCARDED. Narrowing corpus_member with a literal
+`parts[1].startswith('VELDO-9')` reddened the row, but `contradiction` measured [] and five
+collateral rows fired, including the literal-scope guard reacting to my mutation's own
+digit-bearing string. It reddened for the wrong reason, so it proves nothing about the leg I was
+aiming at and is not counted as evidence.
+
+DRIVE C2: THE HARMFUL DIRECTION STILL BITES. A tracked member the domain does not hold.
+  Mutation, digit-free and in the projection rather than the owner:
+    .veldo/events.py tracked_verdicts:
+    -    return _VC.tracked_corpus(repo_root or ROOT, _VC.VERDICT_PATTERN)
+    +    return sorted(_VC.tracked_corpus(repo_root or ROOT, _VC.VERDICT_PATTERN))[:-1]
+  Landed:  git diff shows both lines above.
+  Result:  SELFTEST FAIL: WARP-0727 AC1: THE ENTITLEMENT DOMAIN AND THE VALIDATED SET...
+           selftest (PARTIAL, 12 of 34 suites): 3480 passed, 32 failed
+  RED on the named row. Declared honestly: this mutation is NOT surgical. It edits only the root
+  copy of events.py, so the engine byte-identity rows fire too, and the 0722/0723 families that
+  depend on the projection fire as well. What it establishes is the one thing it was run for: a
+  domain that misses a tracked member reds this row.
+  Reverted from a pristine copy taken before the drive.
+
+FOOTPRINT
+One file: scripts/suites/13_warp_0623_codified_live.py. It has NO engine twin
+(engine/scripts/suites/ carries no 13_*) and check_template_sync.sh does not pair suites, so no
+twin sync is required. Verified rather than assumed.
+
+The fake artifact was removed from the index and the disk before the patch was produced, so the
+patch carries the suite change alone.

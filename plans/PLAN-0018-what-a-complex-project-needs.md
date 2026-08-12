@@ -557,6 +557,72 @@ that reading would not have, and two of them were checks that could not fail.
     the record it stamps. VELDO-0007's AC5 is the same shape and is worth the same treatment when its
     approval lands.
 
+### Found by the twelve independent reviews of PLAN-0018 (2026-08-12)
+Twelve L2 reviews, one per item: 0 pass, 2 pass_with_notes, 10 FAIL. 13 blockers, 44 majors, 48
+minors, and of 61 criteria 43 confirmed, 11 REFUTED and 7 unevidenced. The reviews drove the
+declared falsifications rather than reading them, which is why they found what reading did not.
+
+46. **USING THE REVIEW FEATURE REDDENED THE GATE, AND THREE REVIEWERS FOUND IT INDEPENDENTLY.**
+    WARP-0727 AC1 asserted raw set equality between the entitlement domain, a GIT enumeration, and
+    the validated corpus, a DISK enumeration. An author who has written a verdict artifact and not
+    yet committed it is in the second and not the first, so **one uncommitted verdict was the only
+    red in a 4529-assertion run** and every L2 reviewer turned the gate red by doing their job.
+    Reported as VELDO-0002 F8, VELDO-0005 F8 and VELDO-0007 F10, each against a different item and
+    none of them the item under review, which is what independent means.
+    THE SUITE CONTRADICTED THE MODULE IT TESTS, IN WRITING. `verdict_corpus.divergence()` already
+    computes the population as its `untracked` bucket and its docstring already says "Expected and
+    not red: an author validating before committing is the normal flow." The assertion disagreed
+    with the contract it was asserting over.
+    FIXED by setting aside exactly that bucket and nothing else. **The narrowing is safe for a
+    reason that had to be checked in the code rather than taken from the docstring:** `untracked` is
+    `disk_set - set(direct)` where `direct` is an INDEPENDENT `git ls-files` read, not the
+    difference between the two sets under test, so subtracting it cannot make the equality true by
+    construction. It can only forgive what git itself says it is not tracking. The forgiven set is
+    then pinned to that independent read in both directions and required to be disjoint from the
+    domain, so no later edit can widen the forgiveness without reddening the row, and the three
+    harmful legs are untouched: entitled_not_validated, contradiction and overclaimed all still
+    required empty. Driven three ways: forgiving every validated path REDS, a domain that drops a
+    tracked member REDS, and the real flow of committing the artifact stays green.
+    A FOURTH DRIVE WAS DISCARDED AND IS RECORDED AS DISCARDED, because it reddened for the wrong
+    reason: narrowing `corpus_member` with a literal `startswith('VELDO-9')` reddened the row while
+    `contradiction` measured empty, and the literal-scope guard fired on the mutation's own
+    digit-bearing string. **A mutation that reds the right row for the wrong reason is not evidence,
+    and the honest move is to say so rather than count it.**
+    THE GENERAL LESSON, WHICH IS THE ONE WORTH KEEPING: **a gate check that reddens when a feature
+    is USED is not gating that feature, it is refusing it.** Same family as findings 26 and 39, in
+    its fourth dress: an assertion over live state whose required answer is an empty set or an exact
+    equality, invisible to code review, and visible the first time somebody uses the thing.
+
+47. **THE RULE SHIPPED TO ADOPTERS AND NOT TO US, SO LOCALLY IT SURVIVED ONLY WHERE SOMEBODY
+    REMEMBERED.** VELDO-0001 F3. The falsification prompt went into `engine/specs/TEMPLATE.md`, the
+    copy an adopter installs, and NOT into `specs/TEMPLATE.md`, which is the file `README.md` tells
+    an author in this repository to copy. The local template additionally told them in writing that
+    "Nothing checks this" **after `validate.py` had begun refusing it**, so the one document an
+    author starts from stated the opposite of the rule. `engine/specs/TEMPLATE-standing.md`, offered
+    by the spec skills as the alternative, declared acceptance criteria and no falsification field at
+    all. No assertion in the repository read either local file.
+    WHY IT COULD NEVER BE CAUGHT, and why the fix is not a sync check:
+    `scripts/check_template_sync.sh` excepts `specs/TEMPLATE.md` PERMANENTLY as per-repo, and
+    correctly, because the two copies legitimately differ - the local one carries the four-things
+    block the shipped one does not. **Byte-identity was the wrong assertion, so it was waived
+    forever, and the waiver is where the divergence lived.** Fixed by asserting the PROPERTY both
+    copies must have, over every template the repository offers an author, DERIVED by glob rather
+    than hand-listed so a third template cannot arrive unchecked. The glob immediately caught
+    `TEMPLATE-standing.md`, which I had not fixed.
+48. **I REPRODUCED THE DEFECT I WAS FIXING, INSIDE THE FIX, AND ONLY DRIVING CAUGHT IT.** The first
+    version of finding 47's check tested `field in text`. It stayed GREEN with the field deleted from
+    the template, **because the comment explaining the field still contains the field's name.** That
+    is exactly VELDO-0010 F1 - a substring scan used to prove a presence - committed by the person
+    who had read that finding an hour earlier, in the check written to close a different instance of
+    it. Fixed by requiring the field as an uncommented KEY on its own line, with an additive control
+    that a template carrying the name only inside a comment is refused.
+    **THE LESSON IS ABOUT THE METHOD AND NOT ABOUT THE MISTAKE. Reading a finding does not
+    inoculate you against it.** The reason this one cost minutes instead of shipping is that the
+    mutation was driven rather than the check being read, and driving is the only step in this
+    process that would have told me. Third recorded appearance of the substring-scan family, after
+    VELDO-0010 F1 and VELDO-0008 F1's `version(ROOT)[0] in stdout`, which could not fail in the one
+    state it existed to cover.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
