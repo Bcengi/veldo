@@ -20,6 +20,8 @@ footprint:
   - ".veldo/validate_checks.py"
   - "engine/.veldo/validate_checks.py"
   - "engine/specs/TEMPLATE.md"
+  - "specs/TEMPLATE.md"
+  - "engine/specs/TEMPLATE-standing.md"
   - "docs/method.md"
   - "scripts/suites/17_veldo_0001_falsification_declared.py"
   - "specs/VELDO-0001-every-criterion-declares-its-own-falsification.md"

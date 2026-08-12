@@ -258,13 +258,15 @@ expect("VELDO-0012 AC1: an unreadable floor is refused BY NAME rather than skipp
        and BF.FLOOR_UNREADABLE in _bf_run(_bf_floor([_bf_pin()], schema="veldo.floor/v9"))[1]
        and BF.FLOOR_UNREADABLE in _bf_run("schema: %s\nid: F\nversion: 1\npins: yes\n"
                                           % BF.SCHEMA)[1])
-expect("VELDO-0012 AC1: the causes are NINE DIFFERENT NAMES, so a refusal tells an author which "
-       "one they hit rather than that a floor is invalid, and the two DISPOSITION reasons are "
-       "among them and distinct from every refusal cause",
-       len(BF.CAUSES) == 9 and len({BF.FLOOR_UNREADABLE, BF.PIN_FIELD_MISSING,
-                                    BF.PIN_VOCAB_UNKNOWN, BF.PIN_KEY_UNRECOGNIZED,
-                                    BF.DIGEST_MISMATCH, BF.DUPLICATE_PIN_ID, BF.SCOPE_MISSING,
-                                    BF.RULING_NOT_SETTLED, BF.RULING_NOT_CARRIED}) == 9)
+_BF_CAUSE_NAMES = {BF.FLOOR_UNREADABLE, BF.PIN_FIELD_MISSING, BF.PIN_VOCAB_UNKNOWN,
+                   BF.PIN_KEY_UNRECOGNIZED, BF.DIGEST_MISMATCH, BF.DUPLICATE_PIN_ID,
+                   BF.SCOPE_MISSING, BF.RULING_NOT_SETTLED, BF.RULING_NOT_CARRIED,
+                   BF.RULING_BINDING_MISMATCH, BF.RULING_OPTION_OFF_RECORD}
+expect("VELDO-0012 AC1: the causes are ELEVEN DIFFERENT NAMES, so a refusal tells an author which "
+       "one they hit rather than that a floor is invalid, and the FOUR DISPOSITION reasons are "
+       "among them and distinct from every refusal cause and from each other. Pinned by EXACT SET "
+       "EQUALITY rather than by a count, so adding a cause without naming it here reds this row",
+       BF.CAUSES == _BF_CAUSE_NAMES and len(_BF_CAUSE_NAMES) == 11)
 
 # ---------------------------------------------------------------------------------------
 # AC2. THE OBSERVATION DIGEST IS DERIVED AND RE-VERIFIED, NEVER TYPED. The load-bearing
@@ -356,6 +358,32 @@ expect("VELDO-0012 AC3: the key set is CLOSED AT EVERY LEVEL, so there is nowher
                                "waived_paths": "legacy"}))[1]
        and BF.PIN_KEY_UNRECOGNIZED in _bf_run(_bf_floor(
            [_bf_pin(obs_extra={"disposition": "incidental"})]))[1])
+# THE CALL SITE, NOT ONLY THE ENUMERATION, WHICH IS WHERE A REVIEW FOUND THE HOLE. validate_floor
+# returned EARLY for a pins-less floor BEFORE _validate_scope ever ran, so the scope block's closed
+# key set was enforced only when the floor declared a pin: a floor carrying scope.waived_paths:
+# legacy/** and scope.disposition: incidental with NO pins validated with ZERO errors and stood down
+# as clean. That is the same defect one level down from the blacklist the row above replaced - the
+# enumeration was closed and the CALL was conditional - and it is the artifact this design exists to
+# make impossible, sitting in a protected directory reading `waived_paths: legacy/**`.
+_BF_PINLESS_EXEMPT = _bf_floor([], scope={"method": "none", "waived_paths": "legacy/**",
+                                          "modules_not_pinned": "billing", "ruled_by": "dmitry",
+                                          "disposition": "incidental"})
+_BF_PE_N, _BF_PE_OUT = _bf_run(_BF_PINLESS_EXEMPT)
+expect("VELDO-0012 AC3: A FLOOR THAT DECLARES NO PINS IS NOT A HOLE IN THE CLOSED KEY SET. A "
+       "pins-less floor whose scope block carries waived_paths, modules_not_pinned, ruled_by and "
+       "disposition is refused by PIN_KEY_UNRECOGNIZED ONCE PER KEY, naming each - the scope block "
+       "is validated whenever it is PRESENT, not only when the floor happens to pin something",
+       _BF_PE_N == 4 and _BF_PE_OUT.count(BF.PIN_KEY_UNRECOGNIZED) == 4
+       and all("'%s'" % _bf_k in _BF_PE_OUT for _bf_k in ("waived_paths", "modules_not_pinned",
+                                                          "ruled_by", "disposition")))
+expect("VELDO-0012 AC3 NEGATIVE CONTROL, ADDITIVE: a pins-less floor whose scope block is "
+       "LEGITIMATE - a method plus an enumerated surface the pass reached and pinned nothing on, and "
+       "an unreachable one - is still accepted printing nothing, and so is a pins-less floor with no "
+       "scope block at all, so the row above is the closed key set rather than a refusal of every "
+       "floor that pins nothing",
+       _bf_run(_bf_floor([], scope={"method": "read every public function by hand",
+                                    "enumerated": [_BF_S1], "unreachable": [_BF_S3]})) == (0, "")
+       and _bf_run(_bf_floor([], scope=None)) == (0, ""))
 expect("VELDO-0012 AC3: NO KEY ANYWHERE IN THE ARTIFACT CARRIES A RULING OR AN EXEMPTION, AND "
        "NONE SCOPES ONE TO A LOCATION, so a path, glob or module scoped exemption is not merely "
        "refused, it is unrepresentable. ALL FOUR closed sets are pinned by EXACT SET EQUALITY, "
@@ -389,6 +417,7 @@ expect("VELDO-0012 AC3: NO KEY ANYWHERE IN THE ARTIFACT CARRIES A RULING OR AN E
 # ---------------------------------------------------------------------------------------
 _BF_PIN = _bf_pin()
 _BF_DIGEST = BF.observation_digest(_BF_PIN)
+_BF_DREF = ".veldo/decisions/d.yaml"
 
 
 def _bf_settlement(digest=None, chosen=None, schema=BF.SETTLEMENT_SCHEMA, decision="decided",
@@ -406,11 +435,38 @@ def _bf_settlement(digest=None, chosen=None, schema=BF.SETTLEMENT_SCHEMA, decisi
     return rec
 
 
-def _bf_request(status=BF.REQUEST_ACCEPTED, touchpoint=BF.REQUEST_TOUCHPOINT, rid="REQ-9"):
+def _bf_request(status=BF.REQUEST_ACCEPTED, touchpoint=BF.REQUEST_TOUCHPOINT, rid="REQ-9",
+                digest=None, ref=_BF_DREF):
+    """An accepted decision_choice request BOUND TO THIS OBSERVATION by its own
+    bound_artifact.digest, which is the field the receipt path copies into the settlement's
+    bound_digest (.veldo/request_reconcile.py:451), so in a settlement the channel wrote the two are
+    the same value. `digest` is what the transfer rows re-point to bind a DIFFERENT artifact."""
     return {"schema": BF.REQUEST_SCHEMA, "id": rid, "version": 1, "touchpoint": touchpoint,
             "tier": "high", "status": status,
-            "bound_artifact": {"kind": "decision", "ref": ".veldo/decisions/d.yaml",
-                               "digest": "sha256:aaaaaaaaaaaaaaaa"}}
+            "bound_artifact": {"kind": "decision", "ref": ref,
+                               "digest": _BF_DIGEST if digest is None else digest}}
+
+
+def _bf_decision(chosen="load_bearing", status="decided", by="dmitry", at="2026-08-12T00:00:00Z",
+                 options=None, drop=(), schema=None):
+    """A veldo.decision/v1 DECISION RECORD in the shape .veldo/decision.py validates: an elaborated
+    option space (each option an id, a summary and its dead_end) and a decision block A HUMAN filled
+    in (chosen, decided_by, decided_at, .veldo/decision.py:176-190). This is where a ruling actually
+    lives, and the resolver reads it through the request's bound_artifact.ref rather than trusting a
+    key typed onto a settlement. It shares the veldo.decision/v1 schema string with the settlement
+    and is a DIFFERENT shape: status decided plus a decision MAPPING, never a decision STRING."""
+    rec = {"schema": BF.SETTLEMENT_SCHEMA if schema is None else schema, "id": "DEC-1",
+           "version": 1, "status": status,
+           "options": [{"id": o, "summary": "the %s reading of this observation" % o,
+                        "dead_end": "when a later item consumes the disposition"}
+                       for o in (sorted(BF.RULINGS) if options is None else options)],
+           "decision": {"chosen": chosen, "decided_by": by, "decided_at": at}}
+    for k in drop:
+        rec["decision"].pop(k, None)
+    return rec
+
+
+_BF_DECS = {_BF_DREF: _bf_decision()}
 
 
 _BF_FORGED = BF.disposition_for(_BF_PIN, settlements=[_bf_settlement()], requests=[])
@@ -441,24 +497,107 @@ expect("VELDO-0012 AC4: a settlement that is not a decided veldo.decision/v1 doe
                           requests=[_bf_request()])["disposition"] == BF.DISPOSITION_UNKNOWN
        and BF.disposition_for(_BF_PIN, settlements=[_bf_settlement(decision="rejected")],
                               requests=[_bf_request()])["disposition"] == BF.DISPOSITION_UNKNOWN)
-_BF_RULED = BF.disposition_for(_BF_PIN, settlements=[_bf_settlement(chosen="load_bearing")],
-                               requests=[_bf_request()])
+_BF_RULED = BF.disposition_for(_BF_PIN, settlements=[_bf_settlement()],
+                               requests=[_bf_request()], decisions=_BF_DECS)
 expect("VELDO-0012 AC4 POSITIVE CONTROL: a settlement matching the RECOMPUTED digest, decided, "
-       "with an ACCEPTED decision_choice request behind it and a chosen option that resolves, is "
-       "the ONE shape that rules - so the rows above are the channel and not a resolver that "
-       "never rules",
+       "with an ACCEPTED decision_choice request behind it that is BOUND TO THAT SAME DIGEST, and a "
+       "decided decision record behind THAT carrying a human's chosen option, is the ONE shape that "
+       "rules - so the rows above are the channel and not a resolver that never rules. THE "
+       "ATTRIBUTION IS READ, NOT ASSERTED: the reason carries the decided_by and decided_at this "
+       "resolver actually read off the decision record",
        _BF_RULED["disposition"] == BF.DISPOSITION_RULED
        and _BF_RULED["ruling"] == "load_bearing" and _BF_RULED["request"] == "REQ-9"
-       and _BF_RULED["digest"] == _BF_DIGEST)
+       and _BF_RULED["digest"] == _BF_DIGEST
+       and "dmitry" in _BF_RULED["reason"] and "2026-08-12T00:00:00Z" in _BF_RULED["reason"])
 expect("VELDO-0012 AC4: THE JOIN IS THE DIGEST AND NOTHING ELSE, so mutating the recorded "
        "observation changes the digest and the SAME settlement stops matching - a granted ruling "
        "cannot be moved onto a behaviour nobody looked at",
        BF.disposition_for(_bf_pin(recorded=_BF_REC1 + " and it also trims tabs"),
-                          settlements=[_bf_settlement(chosen="load_bearing")],
-                          requests=[_bf_request()])["disposition"] == BF.DISPOSITION_UNKNOWN
-       and BF.disposition_for(_bf_pin(surface=_BF_S2),
-                              settlements=[_bf_settlement(chosen="load_bearing")],
-                              requests=[_bf_request()])["disposition"] == BF.DISPOSITION_UNKNOWN)
+                          settlements=[_bf_settlement()], requests=[_bf_request()],
+                          decisions=_BF_DECS)["disposition"] == BF.DISPOSITION_UNKNOWN
+       and BF.disposition_for(_bf_pin(surface=_BF_S2), settlements=[_bf_settlement()],
+                              requests=[_bf_request()],
+                              decisions=_BF_DECS)["disposition"] == BF.DISPOSITION_UNKNOWN)
+
+# THE TRANSFER LEG, WHICH IS THE HARM THIS ITEM EXISTS TO PREVENT AND WHICH A REVIEW FOUND OPEN.
+# The resolver used to check the named request for schema, id, touchpoint and status ONLY, and never
+# compared the request's OWN bound_artifact.digest to the recomputed observation digest - so a
+# settlement could name a REAL accepted decision_choice request that a human settled about a
+# DIFFERENT artifact, and it ruled this pin. The comparison is free: the receipt path SETS a
+# settlement's bound_digest from that exact field (.veldo/request_reconcile.py:451).
+_BF_XFER = BF.disposition_for(_BF_PIN, settlements=[_bf_settlement(chosen="incidental")],
+                              requests=[_bf_request(digest="sha256:deadbeefdeadbeef")],
+                              decisions=_BF_DECS)
+expect("VELDO-0012 AC4: A RULING NEVER TRANSFERS FROM ANOTHER ARTIFACT. A settlement carrying THIS "
+       "observation's digest that names a REAL accepted decision_choice request bound to a "
+       "DIFFERENT artifact rules NOTHING: the pin is unknown and the reason names "
+       "RULING_BINDING_MISMATCH, the request, and BOTH digests, because a settlement whose "
+       "bound_digest disagrees with the request's own binding was not written by the channel from "
+       "that request",
+       _BF_XFER["disposition"] == BF.DISPOSITION_UNKNOWN
+       and _BF_XFER["ruling"] is None
+       and BF.RULING_BINDING_MISMATCH in _BF_XFER["reason"]
+       and "REQ-9" in _BF_XFER["reason"]
+       and "sha256:deadbeefdeadbeef" in _BF_XFER["reason"] and _BF_DIGEST in _BF_XFER["reason"])
+expect("VELDO-0012 AC4 NEGATIVE CONTROL for the transfer row, and it is ADDITIVE: the SAME "
+       "settlement and the SAME decision record with the request's binding RESTORED to this "
+       "observation's digest rules again, and a mismatch is a DIFFERENT NAME from nobody having "
+       "ruled at all - so the row above is the binding comparison and not a resolver that stopped "
+       "resolving",
+       BF.disposition_for(_BF_PIN, settlements=[_bf_settlement(chosen="incidental")],
+                          requests=[_bf_request()],
+                          decisions={_BF_DREF: _bf_decision(chosen="incidental")}
+                          )["disposition"] == BF.DISPOSITION_RULED
+       and BF.RULING_BINDING_MISMATCH != BF.RULING_NOT_SETTLED
+       and BF.RULING_NOT_SETTLED in _BF_FORGED["reason"]
+       and BF.RULING_BINDING_MISMATCH not in _BF_FORGED["reason"])
+
+# THE FORGED OPTION, THE OTHER HALF OF THE SAME REVIEW FINDING. The resolver used to read a
+# top-level `chosen` key off the settlement AT FACE VALUE, and the shipped receipt path writes no
+# option at all - so the only reachable route to `ruled` was a record no shipped writer can produce,
+# and writing one by hand produced a reason asserting "an attributed human" nobody had read.
+_BF_OFFREC = BF.disposition_for(_BF_PIN, settlements=[_bf_settlement(chosen="incidental")],
+                                requests=[_bf_request()], decisions={})
+expect("VELDO-0012 AC4: AN OPTION TYPED ONTO A SETTLEMENT IS NOT A RULING. A settlement carrying "
+       "chosen: incidental whose request binds NO decided decision record BLOCKS by name with "
+       "RULING_OPTION_OFF_RECORD, names the option it refused to take, and rules nothing - the "
+       "shipped receipt path writes decision, decided_by and bound_digest and no option AT ALL, so "
+       "an option sitting here was typed rather than settled through the channel",
+       _BF_OFFREC["disposition"] == BF.DISPOSITION_BLOCKED
+       and _BF_OFFREC["ruling"] is None
+       and BF.RULING_OPTION_OFF_RECORD in _BF_OFFREC["reason"]
+       and "incidental" in _BF_OFFREC["reason"]
+       and BF.RULING_OPTION_OFF_RECORD != BF.RULING_NOT_CARRIED)
+expect("VELDO-0012 AC4: the settlement's option is COMPARED, never trusted and never ignored. It "
+       "is accepted only as a CORROBORATION of the option the decision record carries: the same "
+       "option rules, a DIFFERENT one from the record's blocks by the same name rather than letting "
+       "either record win, and no option at all leaves the record's own option ruling",
+       BF.disposition_for(_BF_PIN, settlements=[_bf_settlement(chosen="load_bearing")],
+                          requests=[_bf_request()],
+                          decisions=_BF_DECS)["disposition"] == BF.DISPOSITION_RULED
+       and BF.RULING_OPTION_OFF_RECORD in BF.disposition_for(
+           _BF_PIN, settlements=[_bf_settlement(chosen="defect")], requests=[_bf_request()],
+           decisions=_BF_DECS)["reason"]
+       and BF.disposition_for(_BF_PIN, settlements=[_bf_settlement()], requests=[_bf_request()],
+                              decisions=_BF_DECS)["ruling"] == "load_bearing")
+for _bf_label, _bf_dec in (
+        ("a decision record that is still a DRAFT", _bf_decision(status="draft")),
+        ("a decision record whose chosen option is not one it DECLARES",
+         _bf_decision(chosen="load_bearing", options=["incidental", "defect"])),
+        ("a decision record whose chosen option is outside the RULING vocabulary",
+         _bf_decision(chosen="probably_fine", options=["probably_fine"])),
+        ("a decision record with no decided_by", _bf_decision(drop=("decided_by",))),
+        ("a decision record with no decided_at", _bf_decision(drop=("decided_at",))),
+        ("a request pointed at a SETTLEMENT rather than a decision record",
+         _bf_settlement(chosen="load_bearing"))):
+    _bf_d = BF.disposition_for(_BF_PIN, settlements=[_bf_settlement()], requests=[_bf_request()],
+                              decisions={_BF_DREF: _bf_dec})
+    expect("VELDO-0012 AC4: %s carries no ruling - the pin BLOCKS with RULING_NOT_CARRIED and is "
+           "NEVER ruled, because the option must resolve to one of the record's own declared "
+           "options, to a member of the ruling vocabulary, and to a human who is named with a "
+           "date" % _bf_label,
+           _bf_d["disposition"] == BF.DISPOSITION_BLOCKED and _bf_d["ruling"] is None
+           and BF.RULING_NOT_CARRIED in _bf_d["reason"])
 expect("VELDO-0012 AC4: THE FLOOR CARRIES NO POINTER TO THE RULING IN EITHER DIRECTION - no key "
        "in the pin, the observation, the scope or the floor names a request, a settlement, a "
        "decision or a ticket, so the join cannot be re-pointed by editing the floor",
@@ -479,15 +618,25 @@ with tempfile.TemporaryDirectory() as _bf_fsd:
     _bf_root = Path(_bf_fsd)
     (_bf_root / ".veldo" / "settlements").mkdir(parents=True)
     (_bf_root / ".veldo" / "requests").mkdir(parents=True)
+    (_bf_root / ".veldo" / "decisions").mkdir(parents=True)
     (_bf_root / ".veldo" / "settlements" / "REQ-9-c2.json").write_text(
-        json.dumps(_bf_settlement(chosen="defect"), indent=2, sort_keys=True))
+        json.dumps(_bf_settlement(), indent=2, sort_keys=True))
     (_bf_root / ".veldo" / "requests" / "REQ-9.yaml").write_text(
         "\n".join(_bf_emit(_bf_request(), 0)) + "\n")
+    (_bf_root / _BF_DREF).write_text(
+        "\n".join(_bf_emit(_bf_decision(chosen="defect"), 0)) + "\n")
     _bf_fs = BF.disposition_for(_BF_PIN, root=_bf_root, parse=V.parse_yamlish)
     expect("VELDO-0012 AC4: the resolver reads the REAL record paths the receipt path writes - a "
-           "settlement under .veldo/settlements/ and its request under .veldo/requests/ resolve "
-           "to a ruling through the filesystem, not only through injected dicts",
+           "settlement under .veldo/settlements/, its request under .veldo/requests/ and the "
+           "decision record that request BINDS all resolve through the filesystem, not only "
+           "through injected dicts, and the ruling is the option the record carries",
            _bf_fs["disposition"] == BF.DISPOSITION_RULED and _bf_fs["ruling"] == "defect")
+    (_bf_root / _BF_DREF).unlink()
+    expect("VELDO-0012 AC4: delete the DECISION RECORD and the same settlement and request on disk "
+           "stop ruling - they BLOCK, because a human settled something here and no record says "
+           "which way, which is the state the shipped channel produces today",
+           BF.disposition_for(_BF_PIN, root=_bf_root,
+                              parse=V.parse_yamlish)["disposition"] == BF.DISPOSITION_BLOCKED)
     (_bf_root / ".veldo" / "requests" / "REQ-9.yaml").unlink()
     expect("VELDO-0012 AC4: delete the request record and the SAME settlement file on disk stops "
            "ruling, which is the forged-file leg proven over the filesystem too",
@@ -503,11 +652,12 @@ with tempfile.TemporaryDirectory() as _bf_fsd:
 # silently reported as unknown must go red with it.
 # ---------------------------------------------------------------------------------------
 _BF_BLOCKED = BF.disposition_for(_BF_PIN, settlements=[_bf_settlement()],
-                                 requests=[_bf_request()])
+                                 requests=[_bf_request()], decisions={})
 expect("VELDO-0012 AC5: a settlement that matches the pin by digest, is decided, and has an "
-       "ACCEPTED decision_choice request behind it but carries NO chosen option resolves to "
-       "BLOCKED with RULING_NOT_CARRIED - never to a ruling, never to a default. This is "
-       "PLAN-0016's own no-bypass rule applied rather than routed around",
+       "ACCEPTED decision_choice request bound to that same digest behind it, while NOTHING it "
+       "binds carries an option, resolves to BLOCKED with RULING_NOT_CARRIED - never to a ruling, "
+       "never to a default. This is PLAN-0016's own no-bypass rule applied rather than routed "
+       "around",
        _BF_BLOCKED["disposition"] == BF.DISPOSITION_BLOCKED
        and BF.RULING_NOT_CARRIED in _BF_BLOCKED["reason"]
        and _BF_BLOCKED["ruling"] is None and _BF_BLOCKED["request"] == "REQ-9")
@@ -521,13 +671,17 @@ expect("VELDO-0012 AC5 COMPANION: a blocked pin is NEVER reported as ruled and N
        and BF.RULING_NOT_SETTLED != BF.RULING_NOT_CARRIED
        and BF.RULING_NOT_SETTLED in BF.disposition_for(_BF_PIN, settlements=[],
                                                        requests=[])["reason"])
-expect("VELDO-0012 AC5: a chosen option OUTSIDE the ruling vocabulary blocks the same way rather "
-       "than being taken at face value, and the reason names the three options the repository "
-       "would have accepted",
+expect("VELDO-0012 AC5: a chosen option OUTSIDE the ruling vocabulary blocks rather than being "
+       "taken at face value - it is refused as an option no record declares "
+       "(RULING_OPTION_OFF_RECORD) - and the reason of the carried-nothing state names the three "
+       "options the repository would have accepted",
        BF.disposition_for(_BF_PIN, settlements=[_bf_settlement(chosen="probably_fine")],
-                          requests=[_bf_request()])["disposition"] == BF.DISPOSITION_BLOCKED
-       and "load_bearing" in BF.disposition_for(_BF_PIN, settlements=[_bf_settlement()],
-                                                requests=[_bf_request()])["reason"])
+                          requests=[_bf_request()],
+                          decisions=_BF_DECS)["disposition"] == BF.DISPOSITION_BLOCKED
+       and BF.RULING_OPTION_OFF_RECORD in BF.disposition_for(
+           _BF_PIN, settlements=[_bf_settlement(chosen="probably_fine")], requests=[_bf_request()],
+           decisions=_BF_DECS)["reason"]
+       and "load_bearing" in _BF_BLOCKED["reason"])
 # THE CLAIM ABOUT THE SHIPPED CHANNEL, DRIVEN RATHER THAN QUOTED. AC5's whole premise is that the
 # inbound edge writes no chosen option; asserting that against the real module is what makes
 # BLOCKED the honest reading today instead of a state nothing can reach.
@@ -535,6 +689,7 @@ _bf_rrspec = importlib.util.spec_from_file_location("veldo_request_reconcile_for
                                                     ROOT / ".veldo" / "request_reconcile.py")
 _BF_RR = importlib.util.module_from_spec(_bf_rrspec)
 _bf_rrspec.loader.exec_module(_BF_RR)
+_BF_RR_SRC = (ROOT / ".veldo" / "request_reconcile.py").read_text()
 _BF_SHIPPED = _BF_RR._settlement_record(
     {"id": "REQ-9", "touchpoint": "decision_choice"}, ["dmitry"], _BF_DIGEST, "c2",
     {"ts": "2026-08-11T00:00:00Z"}, "accept")
@@ -543,14 +698,29 @@ expect("VELDO-0012 AC5: THE SHIPPED INBOUND EDGE REALLY DOES NOT CARRY THE OPTIO
        "veldo.decision/v1 record carrying decision, decided_by and bound_digest and NO chosen "
        "key at all, and the accept word it derives is exactly the one this resolver matches on - "
        "so BLOCKED is what today's channel produces and not an unreachable state",
-       "chosen" not in _BF_SHIPPED
+       BF.SETTLEMENT_OPTION_KEY not in _BF_SHIPPED
        and _BF_SHIPPED["schema"] == BF.SETTLEMENT_SCHEMA
        and _BF_SHIPPED["decision"] == BF.SETTLEMENT_DECIDED == "decided"
        and _BF_SHIPPED["decided_by"] == "dmitry"
        and _BF_SHIPPED["bound_digest"] == _BF_DIGEST
        and sorted(_BF_RR._DECISION_WORD) == ["accept", "reject"]
-       and BF.disposition_for(_BF_PIN, settlements=[_BF_SHIPPED],
-                              requests=[_bf_request()])["disposition"] == BF.DISPOSITION_BLOCKED)
+       and BF.disposition_for(_BF_PIN, settlements=[_BF_SHIPPED], requests=[_bf_request()],
+                              decisions={})["disposition"] == BF.DISPOSITION_BLOCKED)
+# AND THE OTHER HALF OF THE SAME CLAIM, WHICH IS WHY AN OPTION ON A SETTLEMENT BLOCKS. The shipped
+# writer takes the settlement's bound_digest STRAIGHT from the request's bound_artifact.digest, so
+# comparing the request's binding to the recomputed observation digest costs nothing and is exactly
+# what makes a transferred ruling unrepresentable. Driven against the real module rather than quoted.
+expect("VELDO-0012 AC4: THE COMPARISON THIS RESOLVER ADDED IS FREE, DRIVEN AGAINST THE SHIPPED "
+       "WRITER. request_reconcile._settlement_record sets bound_digest to the digest it is handed, "
+       "which the reconcile reads out of the request's own bound_artifact (the `displayed` value), "
+       "so a channel-written settlement and its request always agree - and the resolver's new "
+       "binding check therefore refuses only the pairs the channel could not have produced",
+       _BF_RR._settlement_record({"id": "REQ-9", "touchpoint": "decision_choice"}, ["dmitry"],
+                                 "sha256:1234567812345678", "c2",
+                                 {"ts": "2026-08-11T00:00:00Z"},
+                                 "accept")["bound_digest"] == "sha256:1234567812345678"
+       and "bound_artifact" in _bf_re.search(r"displayed = .*", _BF_RR_SRC).group(0)
+       and "digest" in _bf_re.search(r"displayed = .*", _BF_RR_SRC).group(0))
 
 # THE REPORT: counts BESIDE the weakness that produced them, and a per-pin line carrying the
 # reason, because a reader who cannot tell unknown from blocked will assume the first.
@@ -565,13 +735,18 @@ with tempfile.TemporaryDirectory() as _bf_rd:
                  reproduces="app/src/test/RenderTest.kt::empty")],
         scope={"method": "by hand", "enumerated": [_BF_S1, _BF_S2, ".veldo/Example.kt::render"],
                "unreachable": [_BF_S3, ".veldo/Example.kt::send"]}))
+    _BF_PIN2_DIGEST = BF.observation_digest(
+        _bf_pin(pid="PIN-2", surface=_BF_S2, recorded=_BF_REC2,
+                reproduces="tests/test_example.py::test_render"))
     _BF_REP = BF.floor_report(fdir=_bf_rdir, root=Path(_bf_rd), parse=V.parse_yamlish,
-                              settlements=[_bf_settlement(), _bf_settlement(
-                                  digest=BF.observation_digest(
-                                      _bf_pin(pid="PIN-2", surface=_BF_S2, recorded=_BF_REC2,
-                                              reproduces="tests/test_example.py::test_render")),
-                                  chosen="incidental", request_id="REQ-9")],
-                              requests=[_bf_request()])
+                              settlements=[_bf_settlement(),
+                                           _bf_settlement(digest=_BF_PIN2_DIGEST,
+                                                          request_id="REQ-10")],
+                              requests=[_bf_request(),
+                                        _bf_request(rid="REQ-10", digest=_BF_PIN2_DIGEST,
+                                                    ref=".veldo/decisions/d2.yaml")],
+                              decisions={".veldo/decisions/d2.yaml":
+                                         _bf_decision(chosen="incidental")})
     expect("VELDO-0012 AC5: the report carries the pin, ruled, unknown and blocked counts BESIDE "
            "the scope block's enumerated-surface and unreachable-surface counts, so no coverage "
            "figure is quotable without the weakness that produced it, and the three disposition "
@@ -629,6 +804,62 @@ with tempfile.TemporaryDirectory() as _bf_ud:
            and (_BF_UREP["floors"], _BF_UREP["pins"]) == (1, 1)
            and _BF_UREP["standdown"] is False
            and any("COULD NOT BE READ" in ln and "broken.yaml" in ln for ln in _BF_ULINES))
+
+# AND ONE EXTENSION AWAY FROM IT, WHICH IS WHERE A REVIEW FOUND THE SAME DEFECT STILL OPEN. Every
+# reader iterated `*.yaml`, so a floor written as contracts.yml was not validated, not counted, not
+# named and not reported: a human reading a PROTECTED directory saw a signed-off exemption that the
+# machine reported as absent, which is the confident zero the row above exists to refuse.
+with tempfile.TemporaryDirectory() as _bf_yd:
+    _bf_ydir = Path(_bf_yd) / ".veldo" / "floors"
+    _bf_ydir.mkdir(parents=True)
+    (_bf_ydir / "good.yaml").write_text(_bf_floor([_bf_pin()]))
+    (_bf_ydir / "contracts.yml").write_text(
+        "schema: %s\nid: FLOOR-yml\nversion: 1\nstatus: load_bearing\ndecided_by: dmitry\n"
+        "reason: the whole legacy tree is incidental, signed off\nexempt_paths: legacy/**\n"
+        % BF.SCHEMA)
+    (_bf_ydir / "archive").mkdir()
+    _BF_YN, _BF_YOUT = _bf_capture(lambda: BFC.check_floors(floors_dir=_bf_ydir,
+                                                           root=Path(_bf_yd)))
+    expect("VELDO-0012 AC1: AN ENTRY THE *.yaml RULE DOES NOT CLAIM IS REFUSED BY NAME, never "
+           "skipped - a floor written as contracts.yml and a subdirectory parked beside the floors "
+           "are each named with FLOOR_UNREADABLE, because a record in a protected directory that no "
+           "reader validates, counts or names is an input the machine reports as absent",
+           _BF_YN == 2 and _BF_YOUT.count(BF.FLOOR_UNREADABLE) == 2
+           and "contracts.yml" in _BF_YOUT and "archive" in _BF_YOUT)
+    expect("VELDO-0012 AC1 NEGATIVE CONTROL, ADDITIVE: the well-formed good.yaml sitting in the "
+           "SAME directory is still accepted - it contributes no refusal of its own and its pin is "
+           "still counted by the report - so the row above is the unclaimed entry and not the check "
+           "refusing a directory that contains anything unusual",
+           _bf_run(_bf_floor([_bf_pin()])) == (0, "")
+           and BF.unclaimed_entries(_bf_ydir) == ["archive", "contracts.yml"])
+    _BF_YREP = BF.floor_report(fdir=_bf_ydir, root=Path(_bf_yd), parse=V.parse_yamlish,
+                               settlements=[], requests=[])
+    _BF_YLINES = BF.report_lines(_BF_YREP)
+    expect("VELDO-0012 AC5: THE REPORT NAMES WHAT IT DID NOT READ. The unclaimed entries appear in "
+           "the report dict and on the page BESIDE the counts, and the counts themselves are the "
+           "ones from the floors the rule DID claim, so no coverage figure is quotable while an "
+           "input sits unread next to it",
+           _BF_YREP["unclaimed"] == ["archive", "contracts.yml"]
+           and (_BF_YREP["floors"], _BF_YREP["pins"]) == (1, 1)
+           and _BF_YREP["standdown"] is False
+           and any("NOT CLAIMED" in ln and "contracts.yml" in ln and "archive" in ln
+                   for ln in _BF_YLINES))
+with tempfile.TemporaryDirectory() as _bf_yd2:
+    _bf_ydir2 = Path(_bf_yd2) / ".veldo" / "floors"
+    _bf_ydir2.mkdir(parents=True)
+    (_bf_ydir2 / "contracts.yml").write_text("schema: %s\nid: F\nversion: 1\n" % BF.SCHEMA)
+    _BF_Y2REP = BF.floor_report(fdir=_bf_ydir2, root=Path(_bf_yd2), parse=V.parse_yamlish,
+                                settlements=[], requests=[])
+    expect("VELDO-0012 AC5: AND THE STAND-DOWN OVER AN UNREAD INPUT IS NOT A ZERO. A floors "
+           "directory holding ONLY a file the *.yaml rule does not claim still stands down, and the "
+           "stand-down reason NAMES the file rather than reporting that no floor declares a pin, "
+           "because a stand-down measured over an input nobody read is exactly the confident zero "
+           "this report refuses to print",
+           _BF_Y2REP["standdown"] is True
+           and _BF_Y2REP["unclaimed"] == ["contracts.yml"]
+           and "contracts.yml" in _BF_Y2REP["reason"]
+           and "not a zero" in _BF_Y2REP["reason"]
+           and any("contracts.yml" in ln for ln in BF.report_lines(_BF_Y2REP)))
 
 # ---------------------------------------------------------------------------------------
 # AC6. THE FLOOR AND THE SETTLED RULINGS SIT UNDER protected_paths, BECAUSE THE VALIDATOR IS NOT

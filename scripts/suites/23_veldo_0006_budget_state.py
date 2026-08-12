@@ -6,12 +6,24 @@ runs, so its declared prerequisite closure is ITSELF ALONE:
 
   python3 scripts/selftest.py --suite 23_veldo_0006_budget_state
 
-WHAT IS UNDER TEST. .veldo/budget_state.py, driven directly, AND the claim that every number in it
-comes from .veldo/governor.py rather than a second implementation - which is asserted by calling the
-governor's own functions over the same inputs and requiring equality, not by reading the source.
+WHAT IS UNDER TEST. .veldo/budget_state.py, driven directly, AND the claim that its pacing numbers
+come from .veldo/governor.py rather than a second implementation - which is asserted TWO ways,
+because one of them cannot fail for the defect the criterion names. Equality against the governor's
+own functions catches a copy that DIVERGED. INTERCEPTION - swapping the organ loader for one that
+records every call made through the governor, then requiring the report's worker count and resume
+time to BE values those calls returned - catches a FAITHFUL copy, which is the one that looks right
+until it drifts. An independent review drove AC3's declared mutation (a verbatim copy-paste of
+governor.desired_workers / resume_at inside the module) and the whole suite stayed green.
+
+THE EVENT SHAPES ARE THE LIVE ONES. Measured 2026-08-12: the live stream carries 1173 events and
+NOT ONE of them has a tokens field. Every fixture here that means "no recorded spend" is therefore
+driven BOTH ways: with an empty list, and with events that carry no tokens field at all, because the
+second is the shape this repository actually has and the first was the only one asserted.
 
 TIME IS A PARAMETER EVERYWHERE. Every row passes now_epoch explicitly, so no row depends on the wall
-clock and none can pass or fail because of when the suite ran.
+clock and none can pass or fail because of when the suite ran. The one exception is the live-claim
+fixture in AC4, whose heartbeat must be fresh by claim.py's own contract; it stamps the heartbeat
+from the clock deliberately and asserts a COUNT, never a time.
 
 EVERY CRITERION'S BLOCK IS WRAPPED, so a raise reds a NAMED row instead of shortening the run.
 """
@@ -34,18 +46,32 @@ def _bs_windows(session_tokens=1000.0, weekly_tokens=10000.0):
             BSG.Window("weekly", 7 * 86400, weekly_tokens)]
 
 
+def _bs_at(ago_seconds, now=_BS_NOW):
+    """A timestamp at a known offset from now, stamped the way the stream stamps them."""
+    import datetime as _bs_dt
+    return _bs_dt.datetime.fromtimestamp(
+        now - ago_seconds, _bs_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def _bs_event(tokens, ago_seconds, now=_BS_NOW):
     """One spend event at a known offset from now, stamped the way the stream stamps them."""
-    import datetime as _bs_dt
-    at = _bs_dt.datetime.fromtimestamp(now - ago_seconds, _bs_dt.timezone.utc)
     return {"schema": "veldo.event/v1", "type": "gate.passed", "tokens": tokens,
-            "at": at.strftime("%Y-%m-%dT%H:%M:%SZ")}
+            "at": _bs_at(ago_seconds, now)}
+
+
+def _bs_non_spend_event(ago_seconds, now=_BS_NOW, kind="gate.passed"):
+    """AN EVENT WITH NO TOKENS FIELD AT ALL - the only shape the live stream has (measured
+    2026-08-12: 1173 events, 0 carrying a tokens field). Not a spend event, and the whole refusal
+    this item exists for depends on the module knowing that."""
+    return {"schema": "veldo.event/v1", "type": kind, "commit": "deadbeef",
+            "at": _bs_at(ago_seconds, now)}
 
 
 # ---------------------------------------------------------------------------------------
 # AC1. NO RECORDED SPEND IS NOT ZERO SPEND.
 #
-# FALSIFIED BY: treat an empty spend history as zero tokens spent, and the row below must go red.
+# FALSIFIED BY: treat an empty spend history as zero tokens spent, OR drop the rule that decides
+# which events carry a recorded spend, and the rows below must go red.
 # ---------------------------------------------------------------------------------------
 
 
@@ -62,6 +88,39 @@ def _bs_ac1():
            and rep["spend_events"] == 0
            and any("UNMEASURED" in ln and "no remaining figure" in ln for ln in lines))
 
+    # THE SHAPE THE LIVE STREAM ACTUALLY HAS, which no row exercised before. An empty list is not
+    # the case this repository is in: it has 1173 events and none of them is a spend.
+    nonspend = [_bs_non_spend_event(60), _bs_non_spend_event(1200)]
+    repn = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=nonspend,
+                            per_worker_rate=1.0, max_workers=8)
+    linesn = BS.report_lines(repn)
+    expect("VELDO-0006 AC1: EVENTS THAT ARE NOT SPEND EVENTS DO NOT MAKE A WINDOW MEASURED. Two "
+           "gate.passed events inside the session horizon carrying NO tokens field - the ONLY shape "
+           "the live stream has, measured 2026-08-12 at 1173 events and zero with a tokens field - "
+           "leave every window UNMEASURED with no used and no remaining figure and the spend count "
+           "at zero. The rule that separates a spend reading from any other event is the whole of "
+           "what stands between this stream and 'the entire budget remains', and it is the "
+           "governor's own rule rather than a second spelling of it",
+           len(nonspend) == 2 and all("tokens" not in e for e in nonspend)
+           and repn["spend_events"] == 0
+           and all(w["state"] == BS.UNMEASURED for w in repn["windows"])
+           and all(w["used"] is None and w["remaining"] is None for w in repn["windows"])
+           and all(w["recorded_events_in_horizon"] == 0 for w in repn["windows"])
+           and not any("remaining, from" in ln for ln in linesn))
+
+    mixed = [_bs_non_spend_event(30), _bs_event(250, 60), _bs_non_spend_event(90)]
+    repm = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=mixed,
+                            per_worker_rate=1.0, max_workers=8)
+    expect("VELDO-0006 AC1 NEGATIVE CONTROL: ADD one spend event to those two non-spend events and "
+           "the same window measures it - one recorded event in the horizon out of three events, "
+           "the spend total from the spend alone. So UNMEASURED is a measurement of the stream and "
+           "the count is a count of READINGS rather than of events",
+           len(mixed) == 3 and repm["spend_events"] == 1
+           and repm["windows"][0]["recorded_events_in_horizon"] == 1
+           and repm["windows"][0]["state"] == BS.MEASURED
+           and repm["windows"][0]["used"] == 250.0
+           and repm["windows"][0]["remaining"] == 750.0)
+
     rep2 = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW,
                             events=[_bs_event(250, 60)], per_worker_rate=1.0, max_workers=8)
     session = rep2["windows"][0]
@@ -69,7 +128,7 @@ def _bs_ac1():
            "same window reports a REAL used and remaining figure, so UNMEASURED is a measurement of "
            "the stream rather than this module's only answer. The two fixtures differ by exactly one "
            "event",
-           session["state"] == "measured" and session["used"] == 250.0
+           session["state"] == BS.MEASURED and session["used"] == 250.0
            and session["remaining"] == 750.0
            and session["recorded_events_in_horizon"] == 1)
 
@@ -79,8 +138,26 @@ def _bs_ac1():
            "while the longer window measures it - the horizon is what decides, per window, so a "
            "spend from two hours ago cannot make a one-hour window look measured",
            rep3["windows"][0]["state"] == BS.UNMEASURED
-           and rep3["windows"][1]["state"] == "measured"
+           and rep3["windows"][1]["state"] == BS.MEASURED
            and rep3["windows"][1]["used"] == 250.0)
+
+    # THE TAXONOMY'S OTHER HALF: a window with spend totalling zero is distinct from UNMEASURED and
+    # is not "budget available" either. Reachable through the sanctioned writer: events.py takes
+    # --tokens 0.
+    repz = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=[_bs_event(0, 60)],
+                            per_worker_rate=1.0, max_workers=8)
+    zwin = repz["windows"][0]
+    linesz = BS.report_lines(repz)
+    expect("VELDO-0006 AC1: A RECORDED SPEND TOTALLING ZERO IS NOT AVAILABLE BUDGET EITHER, and it "
+           "is not UNMEASURED. The declared taxonomy keeps them distinct because they mean "
+           "different things: one stream was never instrumented, the other is connected and "
+           "measured no consumption, which is an idle window OR a miscounting instrument. So the "
+           "state is ZERO_RECORDED, the reading is counted, and no remaining figure is quoted",
+           zwin["state"] == BS.ZERO_RECORDED and BS.ZERO_RECORDED != BS.UNMEASURED
+           and zwin["recorded_events_in_horizon"] == 1 and zwin["used"] == 0
+           and zwin["remaining"] is None
+           and any("ZERO_RECORDED" in ln and "not a remaining figure" in ln for ln in linesz)
+           and not any("1000 remaining" in ln for ln in linesz))
 
 
 _bs_block("AC1", _bs_ac1)
@@ -112,8 +189,31 @@ def _bs_ac2():
            "measurement of the rate rather than a label the module always applies",
            rep2["posture"] == BS.POSTURE_PACING
            and "burn is measured" in rep2["posture_note"]
+           and rep2["rate_corroborated"] is True and rep2["rate_used"] == 0.05
            and rep2["desired_workers"] == BSG.desired_workers(
                _bs_windows(), [_bs_event(100, 60)], _BS_NOW, 0.05, 8))
+
+    # THE POSTURE MAY NOT CONTRADICT THE WINDOWS IN THE SAME REPORT. The rate is the CALLER's
+    # argument; the stream is the evidence for it.
+    supplied = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW,
+                                events=[_bs_non_spend_event(60)], per_worker_rate=1.0,
+                                max_workers=8)
+    slines = BS.report_lines(supplied)
+    expect("VELDO-0006 AC2: A RATE THE STREAM DOES NOT CORROBORATE IS NOT A MEASUREMENT. The rate "
+           "arrives as an argument this module never measured, so a caller passing 1.0 over a "
+           "stream with no reading inside any horizon used to get 'burn is measured at 1.0 tokens "
+           "per worker per second' printed directly above 'UNMEASURED - no recorded spend inside "
+           "the horizon'. The posture stays BOOTSTRAP, the rate handed to the governor is the "
+           "honest 0.0, the supplied number is named as uncorroborated, and NO line claims burn is "
+           "measured",
+           supplied["posture"] == BS.POSTURE_BOOTSTRAP
+           and supplied["per_worker_rate"] == 1.0
+           and supplied["rate_corroborated"] is False and supplied["rate_used"] == 0.0
+           and BS.RATE_UNCORROBORATED in supplied["posture_note"]
+           and "supplied: 1.0" in supplied["posture_note"]
+           and not any("burn is measured" in ln for ln in slines)
+           and supplied["desired_workers"] == BSG.desired_workers(
+               _bs_windows(), [_bs_non_spend_event(60)], _BS_NOW, 0.0, 8))
 
     spent = BS.budget_report(windows=_bs_windows(session_tokens=100.0), now_epoch=_BS_NOW,
                              events=[_bs_event(150, 60)], per_worker_rate=0.05, max_workers=8)
@@ -132,10 +232,46 @@ _bs_block("AC2", _bs_ac2)
 
 
 # ---------------------------------------------------------------------------------------
-# AC3. EVERY NUMBER COMES FROM THE GOVERNOR, NOT A SECOND IMPLEMENTATION.
+# AC3. NO SECOND IMPLEMENTATION OF THE PACING RULES.
 #
-# FALSIFIED BY: compute the worker count or the resume time here, and the row below must go red.
+# FALSIFIED BY: compute the worker count or the resume time here - EVEN AS A FAITHFUL COPY of the
+# governor's arithmetic - and the interception rows below must go red.
 # ---------------------------------------------------------------------------------------
+
+
+def _bs_gov_spy():
+    """(install, restore, calls): budget_state's organ loader, wrapped so every call made THROUGH
+    the governor is recorded as {function: [returned values]}.
+
+    THIS IS WHAT EQUALITY CANNOT DO. Equality against BSG.desired_workers is satisfied by a
+    faithful copy-paste inside budget_state, which is precisely the duplication AC3 calls the
+    defect ('both copies look right'). Recording the calls asks the other question: was the number
+    in the report PRODUCED BY the governor, or merely equal to what the governor would have said."""
+    calls = {}
+    real = BS._organ
+    paced = ("desired_workers", "resume_at", "windowed_spend", "measure_per_worker_rate")
+
+    class _BSSpy:
+        def __init__(self, mod):
+            self._mod = mod
+
+        def __getattr__(self, name):
+            attr = getattr(self._mod, name)
+            if name not in paced:
+                return attr
+
+            def _recorded(*a, **k):
+                out = attr(*a, **k)
+                calls.setdefault(name, []).append(out)
+                return out
+            return _recorded
+
+    def _install():
+        BS._organ = lambda name: (_BSSpy(real(name)) if name == "governor" else real(name))
+
+    def _restore():
+        BS._organ = real
+    return _install, _restore, calls
 
 
 def _bs_ac3():
@@ -160,10 +296,61 @@ def _bs_ac3():
     rep2 = BS.budget_report(windows=Wo, now_epoch=_BS_NOW, events=over, per_worker_rate=0.02,
                             max_workers=6)
     expect("VELDO-0006 AC3: the RESUME TIME equals governor.resume_at over the same inputs, and it "
-           "is only reported in the SPENT posture - the one posture where an operator needs it",
+           "is present ONLY in the SPENT posture - the one posture where an operator needs it - "
+           "while staying a declared key with a None value everywhere else, so a consumer reading "
+           "it never meets a KeyError",
            rep2["resume_at"] == BSG.resume_at(Wo, over, _BS_NOW)
-           and "resume_at" not in BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW,
-                                                   events=[], max_workers=6))
+           and BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW,
+                                events=[], max_workers=6)["resume_at"] is None)
+
+    # INTERCEPTION. The declared falsification is a SECOND IMPLEMENTATION, faithful or not, and
+    # equality cannot see a faithful one. These two rows can.
+    install, restore, calls = _bs_gov_spy()
+    install()
+    try:
+        spent = BS.budget_report(windows=Wo, now_epoch=_BS_NOW, events=over, per_worker_rate=0.02,
+                                 max_workers=6)
+    finally:
+        restore()
+    expect("VELDO-0006 AC3: the WORKER COUNT is not merely EQUAL to governor.desired_workers, it IS "
+           "a value that function returned when this report was built - proved by recording every "
+           "call made through the governor. This is the row AC3's own declared mutation must red: a "
+           "faithful copy-paste of the governor's arithmetic inside this module satisfies equality "
+           "and records no call at all",
+           bool(calls.get("desired_workers"))
+           and spent["desired_workers"] in calls["desired_workers"])
+    expect("VELDO-0006 AC3: the RESUME TIME is likewise a value governor.resume_at returned on this "
+           "call, not a number computed here that happens to agree. Two implementations of one rule "
+           "look right until they drift, and the drift is what nobody sees",
+           bool(calls.get("resume_at")) and spent["resume_at"] in calls["resume_at"])
+    expect("VELDO-0006 AC3: THE HORIZON CUT IS THE GOVERNOR'S TOO. Counting the readings inside a "
+           "window is windowed_spend asked a different question rather than a local `t >= now - "
+           "seconds`, so the governor's own function is called at least twice per window and the "
+           "recorded-event counts are what those calls returned",
+           len(calls.get("windowed_spend", [])) >= 2 * len(Wo)
+           and [w["recorded_events_in_horizon"] for w in spent["windows"]] == [1, 1])
+    install2, restore2, calls2 = _bs_gov_spy()
+    install2()
+    try:
+        boot = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=[], max_workers=6)
+    finally:
+        restore2()
+    expect("VELDO-0006 AC3 NEGATIVE CONTROL: the interception measures THIS module's calls and is "
+           "not an always-true observation about the recorder - over a report that never reaches "
+           "the SPENT posture the same recorder sees no resume_at call at all, while still seeing "
+           "the windowed spend and the worker count. So a recorded call is evidence about the code "
+           "path that ran",
+           boot["resume_at"] is None and not calls2.get("resume_at")
+           and bool(calls2.get("windowed_spend")) and bool(calls2.get("desired_workers")))
+
+    # WHAT IS DERIVED HERE IS NAMED, so the criterion's own text is true of the code. `remaining`
+    # is the window's budget minus the governor's used, and the state and posture labels are this
+    # module's presentation. None of them is pacing arithmetic.
+    expect("VELDO-0006 AC3: the figures this module DERIVES are named and are exactly the "
+           "presentation ones - what remains against a window's budget is its tokens minus the "
+           "governor's used, and nothing else here does arithmetic the governor also does",
+           [w["remaining"] for w in rep["windows"]]
+           == [max(0.0, w.tokens - BSG.windowed_spend(evs, _BS_NOW, w.seconds)) for w in W])
 
 
 _bs_block("AC3", _bs_ac3)
@@ -172,7 +359,8 @@ _bs_block("AC3", _bs_ac3)
 # ---------------------------------------------------------------------------------------
 # AC4. LOSING A WINDOW MUST COST PACING AND NOT WORK, AND THE REPORT SAYS WHAT SURVIVES.
 #
-# FALSIFIED BY: delete the survival section, and the row below must go red.
+# FALSIFIED BY: delete the survival section, and the first row below must go red. Report an
+# unreadable half as zero, and the UNKNOWN rows below must go red.
 # ---------------------------------------------------------------------------------------
 
 
@@ -186,26 +374,75 @@ def _bs_ac4():
            "whose claims AGE OUT of the ledger and return to the queue. On 2026-08-10 and 2026-08-11 "
            "two sessions hit limits and 85 agents died mid-flight; what makes stopping safe now is "
            "not this module but VELDO-0002 and VELDO-0003, and this names it so an operator reads "
-           "what is at risk instead of guessing",
-           isinstance(s["concluded_artifacts"], int) and s["concluded_artifacts"] > 0
-           and isinstance(s["claimed_units"], int)
+           "what is at risk instead of guessing. Asserted as SHAPE and never as today's counts: a "
+           "row pinning the corpus size reddens on the first day the corpus changes",
+           isinstance(s["concluded_artifacts"], int) and s["concluded_artifacts"] >= 0
+           and isinstance(s["claimed_units"], int) and s["claimed_units"] >= 0
            and s["stale_after_seconds"] == V._VC._organ(
                "claim", ROOT / ".veldo" / "claim.py").STALE_AFTER_SECONDS
-           and any("survives stopping" in ln for ln in lines))
-
-    unreadable = BS.survival(root=Path(tempfile.gettempdir()) / "no-such-veldo-tree-at-all")
-    expect("VELDO-0006 AC4: over a tree with no corpus the survival read reports UNKNOWN rather "
-           "than zero. 'Nothing is at risk' and 'I could not tell what is at risk' are opposite "
-           "reassurances, and this module claims nothing it did not measure",
-           unreadable["concluded_artifacts"] == 0 or unreadable["concluded_artifacts"] is None)
+           and any("survives stopping" in ln for ln in lines)
+           and rep["at_risk"] == [])
 
     with tempfile.TemporaryDirectory() as d:
+        absent = Path(d) / "tree-that-was-never-created"
+        unreadable = BS.survival(root=absent)
         rep2 = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=[], max_workers=4,
-                               root=Path(d), claims_root=str(Path(d) / "claims"))
-        expect("VELDO-0006 AC4: with an EMPTY claims directory the claimed-unit count is a real "
-               "zero and is reported as such, so the UNKNOWN above is a measurement of an "
-               "unreadable ledger rather than the module's only answer about the ledger",
-               rep2["survives"]["claimed_units"] == 0)
+                                root=absent)
+        lines2 = BS.report_lines(rep2)
+        expect("VELDO-0006 AC4: over a tree with no corpus the survival read reports UNKNOWN rather "
+               "than zero, FOR BOTH HALVES, and the report LINE says UNKNOWN and lists the risk it "
+               "could not measure. 'Nothing is at risk' and 'I could not tell what is at risk' are "
+               "opposite reassurances, and a confident zero here is the exact sentence this item "
+               "exists to refuse. The row this replaces accepted `== 0 or is None`, so it accepted "
+               "the defect it was written to catch",
+               unreadable["concluded_artifacts"] is None
+               and unreadable["claimed_units"] is None
+               and BS.ARTIFACTS_UNKNOWN in (unreadable["artifacts"] or "")
+               and any("UNKNOWN concluded artifact set(s)" in ln for ln in lines2)
+               and any("UNKNOWN claimed unit(s)" in ln for ln in lines2)
+               and len(rep2["at_risk"]) == 2)
+
+        # NEGATIVE CONTROL, ADDITIVE: build the corpus and the ledger this read looks for, and the
+        # same call answers with real counts. So UNKNOWN is a measurement of what was readable.
+        tree = Path(d) / "tree"
+        (tree / "proof" / "VELDO-9999").mkdir(parents=True)
+        (tree / "proof" / "VELDO-9999" / "verdict.json").write_text('{"schema": "veldo.verdict/v1"}')
+        (tree / "proof" / "VELDO-9999" / "manifest.json").write_text('{"schema": "veldo.proof/v1"}')
+        (tree / "claims").mkdir()
+        built = BS.survival(root=tree, claims_root=str(tree))
+        expect("VELDO-0006 AC4 NEGATIVE CONTROL: with ONE concluded bundle on disk and an empty "
+               "claims directory the same read answers 1 and 0 - a real zero for the ledger, "
+               "reported as zero. So the UNKNOWN above is a measurement of an unreadable half "
+               "rather than this module's only answer, and the two controls differ by what EXISTS "
+               "rather than by which path was passed",
+               built["concluded_artifacts"] == 1 and built["artifacts"] is None
+               and built["claimed_units"] == 0 and built["ledger"] is None
+               and built["claims_root"] == str(tree / "claims"))
+
+        import datetime as _bs_dt
+        import json as _bs_json
+        (tree / "claims" / "VELDO-9999.json").write_text(_bs_json.dumps(
+            {"unit_id": "VELDO-9999", "holder": "veldo-0006-suite",
+             "heartbeat_at": _bs_dt.datetime.now(_bs_dt.timezone.utc).strftime(
+                 "%Y-%m-%dT%H:%M:%SZ")}))
+        claimed = BS.survival(root=tree, claims_root=str(tree))
+        expect("VELDO-0006 AC4 NEGATIVE CONTROL: ADD one live claim to that ledger and the count "
+               "follows it, so the claimed-unit figure is read from the ledger rather than "
+               "defaulted. This is the half an operator needs before stopping: those units return "
+               "to the queue when the claim ages out",
+               claimed["claimed_units"] == 1
+               and claimed["stale_after_seconds"] == built["stale_after_seconds"])
+
+        foreign = BS.survival(root=tree)
+        expect("VELDO-0006 AC4: A SURVIVAL REPORT ABOUT ANOTHER TREE DOES NOT QUOTE THIS PROCESS'S "
+               "LEDGER. claim.claims_root resolves from the running process, so with no claims root "
+               "given for that tree the honest answer is UNKNOWN with the reason named - not this "
+               "tree's live claims presented as that one's risk. The artifact half, which does "
+               "honour the root, still answers",
+               foreign["claimed_units"] is None
+               and foreign["ledger"] == BS.LEDGER_FOREIGN_TREE
+               and foreign["concluded_artifacts"] == 1
+               and foreign["stale_after_seconds"] == built["stale_after_seconds"])
 
 
 _bs_block("AC4", _bs_ac4)
@@ -233,36 +470,91 @@ def _bs_ac5():
            "the stand-down is a measurement of the configuration rather than the module's only "
            "behaviour",
            rep2["stood_down"] is False and rep2["posture"] == BS.POSTURE_BOOTSTRAP)
-    expect("VELDO-0006 AC5: the report carries ONE KEY SHAPE whether it stood down or not, so a "
-           "consumer never guesses whether a key is missing or genuinely empty",
-           sorted(k for k in rep if k != "resume_at") == sorted(BS.REPORT_KEYS)
-           and sorted(k for k in rep2 if k != "resume_at") == sorted(BS.REPORT_KEYS))
+    expect("VELDO-0006 AC5: the report carries ONE KEY SHAPE whether it stood down or not, with NO "
+           "exception for any posture-dependent key, so a consumer never guesses whether a key is "
+           "missing or genuinely empty. The version of this row that excluded resume_at from both "
+           "sides was asserting the claim with the counter-example carved out",
+           sorted(rep) == sorted(BS.REPORT_KEYS) and sorted(rep2) == sorted(BS.REPORT_KEYS)
+           and "resume_at" in BS.REPORT_KEYS)
 
     import ast as _bs_a
     src = (ROOT / ".veldo" / "budget_state.py").read_text()
-    names = set()
-    for node in _bs_a.walk(_bs_a.parse(src)):
-        if isinstance(node, _bs_a.Name):
-            names.add(node.id)
-        elif isinstance(node, _bs_a.Attribute):
-            names.add(node.attr)
-    expect("VELDO-0006 AC5: IT PACES NOTHING AND WAITS FOR NOTHING. No sleep, no spawn, no waiter "
-           "and no worker retirement is referenced - the module makes no decision that changes what "
-           "runs, which is what lets an operator run it at any moment without consequence. AST "
-           "identifiers, not substrings, because prose describing what it refuses to do is prose",
-           not (names & {"sleep", "spawn", "retire", "wait_until", "Popen", "Thread", "Process"}))
+    tree = _bs_a.parse(src)
+    local = {n.name for n in _bs_a.walk(tree)
+             if isinstance(n, (_bs_a.FunctionDef, _bs_a.AsyncFunctionDef, _bs_a.ClassDef))}
+    called = set()
+    for node in _bs_a.walk(tree):
+        if isinstance(node, _bs_a.Call):
+            f = node.func
+            called.add(f.attr if isinstance(f, _bs_a.Attribute) else getattr(f, "id", "?"))
+    imported = set()
+    for node in _bs_a.walk(tree):
+        if isinstance(node, _bs_a.Import):
+            imported.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, _bs_a.ImportFrom):
+            imported.add((node.module or "").split(".")[0])
 
-    def _bs_loads(path):
+    # AN ALLOWLIST, NOT A DENYLIST. The row this replaces proved an absence with a fixed deny-list
+    # of {sleep, spawn, retire, wait_until, Popen, Thread, Process}, and a review added
+    # subprocess.run(['/bin/sleep', ...]) plus os.system(...) while the suite stayed green: the two
+    # most ordinary spellings of spawning and waiting were not on the list. A denylist of names is a
+    # promise that whoever adds the next one is on it. This fails CLOSED instead: every call in the
+    # module resolves to a function defined IN the module or to a name declared here, and every
+    # import is declared here, so a new external call or import reds this row until someone states
+    # why it belongs in a read model that must be safe to run at any moment.
+    allowed_calls = {
+        # builtins a read model may use
+        "all", "any", "dict", "int", "isinstance", "len", "list", "max", "min", "sorted", "str",
+        "sum", "float", "bool",
+        # the organ loader, spelled once in _organ
+        "spec_from_file_location", "module_from_spec", "exec_module",
+        # reading a path and a JSON line
+        "Path", "read_text", "is_file", "is_dir", "resolve", "splitlines", "strip", "loads",
+        "append", "get",
+        # THE GOVERNOR'S OWN FUNCTIONS - the only pacing arithmetic this module may use
+        "windowed_spend", "desired_workers", "resume_at", "target_rate", "_tokens_at",
+        # the two organs the survival read consults
+        "work_report", "claimed_units", "claims_root",
+    }
+    allowed_imports = {"importlib", "json", "pathlib"}
+    stray_calls = sorted(called - allowed_calls - local)
+    stray_imports = sorted(imported - allowed_imports)
+    expect("VELDO-0006 AC5: IT PACES NOTHING AND WAITS FOR NOTHING, proved by an ALLOWLIST that "
+           "fails closed rather than a denylist of the spellings someone thought of. Every call in "
+           "the module is either a function defined in it or one of the declared names - the "
+           "loader, a path read, a JSON parse, or one of the governor's own pacing functions - and "
+           "every import is declared. subprocess.run and os.system are not on the list, and neither "
+           "is anything else that could change what runs. Stray calls %r, stray imports %r"
+           % (stray_calls, stray_imports),
+           stray_calls == [] and stray_imports == []
+           and not (called & {"sleep", "spawn", "retire", "wait_until", "Popen", "Thread",
+                              "Process", "run", "system", "fork", "call", "check_output"})
+           and len(allowed_calls & called) >= 8)
+
+    def _bs_loads_budget_state(path):
+        """Whether one stage LOADS the read model, which is NOT the same as naming it: /veldo:init
+        legitimately lists .veldo/budget_state.py among the files it ships, and a check that read
+        the name as a load would refuse the module being installed at all. So a python stage is read
+        through the AST - a literal naming the module passed to a loader call - and a shell stage is
+        read as text, because a shell stage's only way to reach it is to run it."""
+        import re as _bs_re
         try:
-            tree = _bs_a.parse(path.read_text())
-        except (OSError, SyntaxError):
+            text = path.read_text(errors="replace")
+        except OSError:
             return False
-        for node in _bs_a.walk(tree):
+        if path.suffix != ".py":
+            return bool(_bs_re.search(r"budget_state", text))
+        try:
+            tree_ = _bs_a.parse(text)
+        except SyntaxError:
+            return False
+        for node in _bs_a.walk(tree_):
             if not isinstance(node, _bs_a.Call):
                 continue
             fname = (node.func.attr if isinstance(node.func, _bs_a.Attribute)
                      else getattr(node.func, "id", ""))
-            if fname not in ("spec_from_file_location", "_organ", "_load", "_sibling"):
+            if fname not in ("spec_from_file_location", "_organ", "_load", "_sibling",
+                             "import_module", "module_from_spec"):
                 continue
             for arg in list(node.args) + [kw.value for kw in node.keywords]:
                 if isinstance(arg, _bs_a.Constant) and isinstance(arg.value, str) \
@@ -270,12 +562,82 @@ def _bs_ac5():
                     return True
         return False
 
-    expect("VELDO-0006 AC5: NO GATE STAGE LOADS THIS. It is a read model an operator runs, so a gate "
-           "that consulted it would turn a budget observation into a landing condition. Asserted "
-           "over LOADS via the AST, because /veldo:init legitimately NAMES it in order to ship it",
-           sorted(p.name for p in list((ROOT / ".veldo").glob("*.py"))
-                  + list((ROOT / "scripts").glob("*.py"))
-                  if p.name != "budget_state.py" and _bs_loads(p)) == [])
+    def _bs_names(path):
+        """The sibling scripts and organs one script NAMES: a literal path token that resolves to a
+        file in this repository, or an organ loaded by bare name. Both spellings, because .veldo
+        modules are loaded by name and scripts are named by path."""
+        import re as _bs_re
+        try:
+            text = path.read_text(errors="replace")
+        except OSError:
+            return set()
+        out = set()
+        for tok in _bs_re.findall(r"[A-Za-z0-9_./-]+\.(?:py|sh)", text):
+            p = (ROOT / tok.lstrip("./")).resolve()
+            if p.is_file() and str(p).startswith(str(ROOT.resolve())):
+                out.add(p)
+        for name in _bs_re.findall(r"(?:_organ|_sibling|_load)\(\s*[\"']([A-Za-z0-9_]+)[\"']", text):
+            p = (ROOT / ".veldo" / (name + ".py")).resolve()
+            if p.is_file():
+                out.add(p)
+        return out
+
+    # THE PROPERTY IS ABOUT GATE STAGES, so the set walked is derived from the gate itself. The row
+    # this replaces scanned EVERY .veldo/*.py and scripts/*.py and required the result to be empty,
+    # which pins this repository's current emptiness as an invariant: a reviewer added a 24-line
+    # operator console that only prints report_lines and the row went red, so the check reddened for
+    # the first person to put the read model on the operator's path the spec title names. That is the
+    # defect class scripts/check_first_use.py exists to forbid.
+    import re as _bs_re
+    gate = (ROOT / "scripts" / "verify.sh").read_text()
+    stages = set()
+    for tok in _bs_re.findall(r"[A-Za-z0-9_./-]+\.(?:py|sh)", gate):
+        p = (ROOT / tok.lstrip("./")).resolve()
+        if p.is_file():
+            stages.add(p)
+    closure, frontier = set(stages), set(stages)
+    while frontier:
+        nxt = set()
+        for p in frontier:
+            # A SUITE IS THE TEST OF A MODULE, NOT A CONSUMER OF IT: the unit stage's fragments load
+            # what they assert over, and one that could not load its subject could not test it. So
+            # the walk does not follow into scripts/suites, and says so rather than pretending the
+            # gate never reaches them.
+            if "suites" in p.parts:
+                continue
+            nxt |= _bs_names(p)
+        frontier = nxt - closure
+        closure |= frontier
+    loaders = sorted(p.name for p in closure
+                     if p.name != "budget_state.py" and _bs_loads_budget_state(p))
+    expect("VELDO-0006 AC5: NO GATE STAGE LOADS THIS. It is a read model an operator runs, so a "
+           "gate that consulted it would turn a budget observation into a landing condition. "
+           "Derived from scripts/verify.sh itself and walked transitively through the stages it "
+           "runs, rather than by sweeping the repository and requiring today's emptiness: putting "
+           "the read model on an operator's path is the point of the item and must not redden the "
+           "gate. Loaders found among the gate's own stages: %r" % (loaders,),
+           loaders == [] and len(stages) >= 5 and len(closure) >= 10)
+
+    with tempfile.TemporaryDirectory() as d:
+        probe = Path(d) / "probe_stage.py"
+        probe.write_text("import importlib.util\n"
+                         "m = importlib.util.spec_from_file_location('x', '.veldo/budget_state.py')\n")
+        organ_probe = Path(d) / "probe_organ.py"
+        organ_probe.write_text('def go():\n    return _organ("budget_state")\n')
+        shell_probe = Path(d) / "probe_stage.sh"
+        shell_probe.write_text("#!/usr/bin/env bash\npython3 .veldo/budget_state.py\n")
+        names_probe = Path(d) / "probe_names_only.py"
+        names_probe.write_text('SHIPPED = [".veldo/budget_state.py", ".veldo/governor.py"]\n')
+        expect("VELDO-0006 AC5 NEGATIVE CONTROL: the detector REPORTS a load when there is one, in "
+               "all three spellings a stage could use - a literal module path, an organ load by "
+               "name, and a shell stage running the file - proved on synthetic stages rather than on "
+               "the repository, so the green row above is not green because the walker cannot see "
+               "anything. And it does NOT report a stage that merely NAMES the module in a list of "
+               "files, because /veldo:init does exactly that in order to ship it",
+               _bs_loads_budget_state(probe) and _bs_loads_budget_state(organ_probe)
+               and _bs_loads_budget_state(shell_probe)
+               and not _bs_loads_budget_state(names_probe)
+               and (ROOT / ".veldo" / "budget_state.py").resolve() in _bs_names(organ_probe))
 
 
 _bs_block("AC5", _bs_ac5)

@@ -18,6 +18,10 @@ the wall clock for no extra teeth.
 
 EVERY CRITERION'S BLOCK IS WRAPPED, so a raise reds a NAMED row instead of shortening the run.
 """
+import ast as _iar_ast
+import hashlib as _iar_hl
+import os as _iar_os
+import re as _iar_re
 import shutil as _iar_sh
 import subprocess as _iar_sp
 import sys as _iar_sys
@@ -33,6 +37,69 @@ def _iar_block(label, fn):
                % (label, _iar_e), False)
 
 
+def _iar_inventory(root):
+    """relative path -> (size, mtime_ns, sha256) for EVERY entry under root, recursively.
+
+    THE OBSERVATION AC4 RESTS ON, AND IT EXCLUDES NOTHING. The assertion this replaced was
+    `git status --porcelain` equality, which cannot see a path outside the repository nor an
+    ignored path inside it: a review wrote into $HOME on every call and into .veldo/trackers.json
+    and scripts/__pycache__/l2probe.txt and the suite stayed at 47 passed / 0 failed. An inventory
+    that skipped __pycache__ would have missed one of those exactly, so nothing is skipped and the
+    interpreter's own bytecode caching is suppressed with PYTHONDONTWRITEBYTECODE instead: a cache
+    the interpreter writes is not this stage writing, while a file the stage writes with any name at
+    all, inside __pycache__ included, still moves an entry here. Directories and symlinks are
+    entries too, so an empty directory or a relinked path is a change.
+
+    THE MODIFICATION TIME IS PART OF THE RECORD, AND THAT WAS FOUND BY DRIVING. Content and path
+    alone leave an IDEMPOTENT write invisible: the review's mutation writes the same bytes on every
+    call, so by the second call the digest and the size are unchanged and a content-only inventory
+    reported a clean tree while the file had just been clobbered again. st_mtime_ns moves on any
+    rewrite, identical bytes included."""
+    root = Path(root)
+    inv = {}
+    for p in sorted(root.rglob("*")):
+        rel = p.relative_to(root).as_posix()
+        try:
+            st = p.lstat()
+            if p.is_symlink():
+                inv[rel] = ("symlink", st.st_mtime_ns, _iar_os.readlink(p))
+            elif p.is_dir():
+                inv[rel] = ("dir", st.st_mtime_ns, "")
+            else:
+                data = p.read_bytes()
+                inv[rel] = (len(data), st.st_mtime_ns, _iar_hl.sha256(data).hexdigest())
+        except OSError as _iar_e:                # a path that cannot be read is still an OBSERVATION
+            inv[rel] = ("unreadable", 0, str(_iar_e))
+    return inv
+
+
+def _iar_changed(before, after):
+    """The entries that differ, so a red row NAMES the paths that moved rather than only failing."""
+    return sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
+
+
+def _iar_dotted(node):
+    """The dotted spelling of a call target: subprocess.run, os.system, run."""
+    bits = []
+    while isinstance(node, _iar_ast.Attribute):
+        bits.append(node.attr)
+        node = node.value
+    if isinstance(node, _iar_ast.Name):
+        bits.append(node.id)
+    return ".".join(reversed(bits))
+
+
+# EVERY WAY THIS FILE COULD START A CHILD, and every keyword that would detach one or interpose a
+# shell. The identifier scan below cannot see a keyword argument, which is how start_new_session=True
+# passed it, so the keywords are asserted as keywords.
+_IAR_LAUNCHERS = {"subprocess.run", "subprocess.Popen", "subprocess.call", "subprocess.check_call",
+                  "subprocess.check_output", "os.system", "os.popen", "os.spawnv", "os.spawnl",
+                  "os.posix_spawn", "os.fork", "os.forkpty", "pty.spawn"}
+_IAR_DETACHING = {"start_new_session", "preexec_fn", "creationflags", "process_group", "shell"}
+_IAR_LAUNCH_OK = {"cwd", "capture_output", "text", "timeout", "env", "check", "input", "encoding",
+                  "errors", "stdin", "stdout", "stderr", "bufsize"}
+
+
 # ONE full run, shared by the rows below, because composing and installing seven packs is the
 # expensive part and doing it per row would multiply the cost with no gain in teeth.
 _IAR_OK, _IAR_REP = IAR.check()
@@ -44,6 +111,13 @@ _IAR_LINES = IAR.report_lines(_IAR_REP)
 #
 # FALSIFIED BY: point the installer at this repository's own scaffolder, and the row below
 # (no engine/ in the tree it ran from) must go red.
+#
+# FOUND VACUOUS BY A REVIEW AND FIXED HERE. Both rows used to read `installed_from` and
+# `pack_has_engine_dir`, which describe the directory install_and_run was HANDED. Swapping the
+# launched executable for this repository's own scaffolder therefore left every row green while the
+# stage printed `(engine/ present: False)` for all seven packs and every install had in fact been
+# laid from engine/ - the 1.0 shape, reported as its own absence. The rows now read the argv the
+# child was handed and the tree derived from it.
 # ---------------------------------------------------------------------------------------
 
 
@@ -52,17 +126,24 @@ def _iar_ac1():
            "PACK shape, where the base has been laid into the pack and the pack root IS the template "
            "source. That absence is the exact condition 1.0 broke on, and running from this "
            "repository (which HAS engine/) is what hid it, because every test ran against the one "
-           "tree nobody installs",
+           "tree nobody installs. Asserted on the tree the EXECUTED scaffolder belongs to, derived "
+           "from the argv the child received, never on the directory the function was passed",
            _IAR_REP["results"]
-           and all(r["pack_has_engine_dir"] is False for r in _IAR_REP["results"]))
-    expect("VELDO-0007 AC1: the scaffolder that ran is the PACK'S OWN copy, asserted by the path "
-           "each result records - under the composed pack, never under this repository",
-           all(r["installed_from"].endswith("/packs/" + r["pack"])
-               for r in _IAR_REP["results"]))
-    expect("VELDO-0007 AC1 NEGATIVE CONTROL: THIS repository does have engine/, so the property "
-           "above is a real distinction rather than one that holds everywhere. Were the installer "
-           "pointed here, the row above would red",
-           (ROOT / "engine").is_dir())
+           and all(r["scaffolder_tree_has_engine_dir"] is False for r in _IAR_REP["results"]))
+    expect("VELDO-0007 AC1: the scaffolder that ran is the PACK'S OWN copy - the executable path "
+           "recorded from the child's own argv is the pack directory plus %s, and it sits under "
+           "/packs/<pack>, so the launch is under the composed pack and never under this repository"
+           % IAR.SCAFFOLDER,
+           _IAR_REP["results"]
+           and all(Path(r["scaffolder_ran"]) == Path(r["installed_from"]) / IAR.SCAFFOLDER
+                   and r["scaffolder_ran"].endswith("/packs/%s/%s" % (r["pack"], IAR.SCAFFOLDER))
+                   and Path(r["scaffolder_tree"]).resolve() != ROOT.resolve()
+                   for r in _IAR_REP["results"]))
+    expect("VELDO-0007 AC1 NEGATIVE CONTROL: the alternative the falsification names EXISTS and is "
+           "the opposite shape - THIS repository carries %s and DOES have engine/ - so the two rows "
+           "above are a measurement of which tree ran rather than a property that holds everywhere. "
+           "Point the launch here and both go red" % IAR.SCAFFOLDER,
+           (ROOT / "engine").is_dir() and (ROOT / IAR.SCAFFOLDER).is_file())
 
 
 _iar_block("AC1", _iar_ac1)
@@ -200,38 +281,165 @@ _iar_block("AC3", _iar_ac3)
 # ---------------------------------------------------------------------------------------
 # AC4. IT TOUCHES NOTHING OUTSIDE A TEMPORARY DIRECTORY.
 #
-# FALSIFIED BY: write anywhere outside the temporary directory, and the row below must go red.
+# FALSIFIED BY: write anywhere outside the temporary directory, and the rows below must go red.
+#
+# WHAT WAS WRONG, AND IT WAS THE WHOLE CRITERION. This block used to compare
+# `git status --porcelain` before and after, plus an AST scan of identifiers. That proxy is blind to
+# three things at once, and a review drove all three with the suite at 47 passed / 0 failed: a write
+# into $HOME (outside the repository), writes to .veldo/trackers.json and
+# scripts/__pycache__/l2probe.txt (ignored INSIDE the repository, so invisible to git status), and
+# start_new_session=True in the launcher (a keyword argument, so invisible to an identifier scan).
+#
+# SO THE PROXY IS GONE AND THE WRITES ARE OBSERVED. The stage is run as a subprocess in a sandbox
+# where every root it could legitimately write to is DECLARED - its own copy of the working tree, its
+# own HOME, its own TMPDIR - and a recursive inventory of path, size and sha256 over the first two is
+# required to be identical across the run while the run demonstrably did the work. The copy is of the
+# WORKING TREE and not a clone of HEAD, so a mutation under review is inside the thing observed; a
+# clone would run the committed code and report green about a mutation it never executed.
 # ---------------------------------------------------------------------------------------
 
 
 def _iar_ac4():
-    before = _iar_sp.run(["git", "status", "--porcelain"], cwd=str(ROOT),
-                         capture_output=True, text=True).stdout
-    ok2, rep2 = IAR.check(only=_IAR_REP["composed"][0])
-    after = _iar_sp.run(["git", "status", "--porcelain"], cwd=str(ROOT),
-                        capture_output=True, text=True).stdout
-    expect("VELDO-0007 AC4: the repository's own tracked state is UNCHANGED across a full run - "
-           "compose, install and a nested gate is a great deal of writing, and every byte of it "
-           "lands under a temporary directory. A check that mutated the tree it is checking is the "
-           "shape that makes a green gate meaningless",
-           before == after and ok2 is True)
-    expect("VELDO-0007 AC4: the temporary directory is REMOVED - the paths every result recorded no "
-           "longer exist after the run returns, so a sweep of runs cannot fill the disk",
-           all(not Path(r["installed_from"]).exists() for r in rep2["results"]))
+    sand = Path(tempfile.mkdtemp(prefix="veldo-0007-write-scope-"))
+    try:
+        repo, home, run_tmp = sand / "repo", sand / "home", sand / "tmp"
+        cp = _iar_sp.run(["cp", "-a", str(ROOT), str(repo)], capture_output=True, text=True)
+        home.mkdir()
+        (home / ".veldo-write-scope-sentinel").write_text(
+            "a byte written outside a temporary directory lands in here\n")
+        run_tmp.mkdir()
+        expect("VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a "
+               "clone of HEAD, so a mutation under review is inside the tree being observed - and "
+               "the copy carries the stage and its git directory, so the run below is the real "
+               "compose-install-gate path rather than a fixture",
+               cp.returncode == 0 and (repo / "scripts" / "check_install_and_run.py").is_file()
+               and (repo / ".git").is_dir())
+        env = dict(_iar_os.environ, HOME=str(home), TMPDIR=str(run_tmp),
+                   PYTHONDONTWRITEBYTECODE="1")
+        b_repo, b_home = _iar_inventory(repo), _iar_inventory(home)
+        proc = _iar_sp.run([_iar_sys.executable, "scripts/check_install_and_run.py",
+                            "--pack", _IAR_REP["composed"][0]],
+                           cwd=str(repo), env=env, capture_output=True, text=True, timeout=900)
+        a_repo, a_home = _iar_inventory(repo), _iar_inventory(home)
+        laid = _iar_re.search(r"installed (\d+) file\(s\) from (\S+)", proc.stdout)
+        expect("VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows "
+               "below being vacuous: the sandboxed stage composed with the real publisher, installed "
+               "and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid "
+               "down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the "
+               "bytes went where the criterion says they go. Said: %r"
+               % (proc.stdout.strip()[-300:] + proc.stderr.strip()[-200:],),
+               proc.returncode == 0 and "install-and-run: pass" in proc.stdout
+               and laid is not None and int(laid.group(1)) > 10
+               and laid.group(2).startswith(str(run_tmp) + "/"))
+        expect("VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - "
+               "every path, size, modification time and sha256 identical, GIT-IGNORED PATHS INCLUDED, "
+               "which is the half a `git status` comparison could not see: a review wrote "
+               ".veldo/trackers.json (the one file the ignore rule exists to protect) and a file "
+               "inside scripts/__pycache__ and every row stayed green. Entries that moved: %r"
+               % (_iar_changed(b_repo, a_repo)[:6],),
+               _iar_changed(b_repo, a_repo) == [])
+        expect("VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a "
+               "HOME of its own and that directory, sentinel file included, is byte-identical "
+               "afterwards. A review's probe wrote a 36-byte file into $HOME on every single call "
+               "and no row noticed, because the old assertion could only see tracked paths inside "
+               "this one tree. Entries that moved: %r" % (_iar_changed(b_home, a_home)[:6],),
+               _iar_changed(b_home, a_home) == [])
+        expect("VELDO-0007 AC4: the temporary directory is REMOVED - the TMPDIR handed to that run "
+               "holds no veldo-install-and-run-* tree once it returned, so a sweep of runs cannot "
+               "fill the disk. Asserted over the directory this row created, never over the "
+               "machine's /tmp, because the machine's temp directory is live state nobody owns",
+               [p.name for p in run_tmp.glob("veldo-install-and-run-*")] == [])
+    finally:
+        _iar_sh.rmtree(sand, ignore_errors=True)
 
-    import ast as _iar_ast
+    # AND THE SAME OBSERVATION AGAINST THE LIVE TREE, driven in-process, because the sandbox above
+    # cannot see a write to an absolute path that escapes it. PYTHONDONTWRITEBYTECODE is set for the
+    # window so that the interpreter's own caching (publish.py loads a module by path, which writes a
+    # .pyc) is not mistaken for this stage writing; an explicit write of any name is still caught.
+    _iar_pyc = _iar_os.environ.get("PYTHONDONTWRITEBYTECODE")
+    _iar_os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
+    try:
+        b_live = _iar_inventory(ROOT)
+        ok2, rep2 = IAR.check(only=_IAR_REP["composed"][0])
+        a_live = _iar_inventory(ROOT)
+    finally:
+        if _iar_pyc is None:
+            _iar_os.environ.pop("PYTHONDONTWRITEBYTECODE", None)
+        else:
+            _iar_os.environ["PYTHONDONTWRITEBYTECODE"] = _iar_pyc
+    expect("VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole "
+           "tree inventoried by path, size, modification time and sha256 before and after, "
+           "ignored paths and .git included, with the run PASSING so the identity is across work "
+           "rather than across a no-op. A check that mutated the tree it is checking is the shape "
+           "that makes a green gate meaningless. Entries that moved: %r"
+           % (_iar_changed(b_live, a_live)[:6],),
+           _iar_changed(b_live, a_live) == [] and ok2 is True and rep2["results"])
+
     src = (ROOT / "scripts" / "check_install_and_run.py").read_text()
+    _iar_mod = _iar_ast.parse(src)
     names = set()
-    for node in _iar_ast.walk(_iar_ast.parse(src)):
+    for node in _iar_ast.walk(_iar_mod):
         if isinstance(node, _iar_ast.Attribute):
             names.add(node.attr)
         elif isinstance(node, _iar_ast.Name):
             names.add(node.id)
-    expect("VELDO-0007 AC4: it makes no network call and starts no detached process - no urlopen, "
-           "no requests, no Popen, no fork, no daemon. AST identifiers rather than substrings, "
-           "because prose describing what it refuses to do is prose",
-           not (names & {"urlopen", "requests", "Popen", "fork", "daemon", "socket"})
+    expect("VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no "
+           "second process-launch mechanism. AST identifiers rather than substrings, because prose "
+           "describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a "
+           "keyword argument has no identifier, which is why start_new_session=True passed this scan "
+           "untouched, and the two rows below are what carry it",
+           not (names & {"urlopen", "requests", "socket", "urlretrieve", "Popen", "fork", "forkpty",
+                         "daemon"})
            and "mkdtemp" in names and "rmtree" in names)
+
+    launches = [(n.lineno, sorted(k.arg for k in n.keywords if k.arg))
+                for n in _iar_ast.walk(_iar_mod)
+                if isinstance(n, _iar_ast.Call) and _iar_dotted(n.func) in _IAR_LAUNCHERS]
+    funnel = [n for n in _iar_ast.walk(_iar_mod)
+              if isinstance(n, _iar_ast.FunctionDef) and n.name == "_run"]
+    expect("VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE "
+           "helper (_run), asserted over the file's own call graph, which is what makes the keyword "
+           "observation below a statement about EVERY child rather than about one call site. Launch "
+           "sites found: %r" % (launches,),
+           len(launches) == 1 and len(funnel) == 1
+           and all(funnel[0].lineno <= ln <= funnel[0].end_lineno for ln, _ in launches))
+    expect("VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD "
+           "ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, "
+           "and every keyword passed is one of the declared benign set, so a spelling nobody thought "
+           "of is red too. A review added start_new_session=True and the identifier scan above could "
+           "not see it. Keywords found: %r" % ([kw for _, kw in launches],),
+           launches and all(not (set(kw) & _IAR_DETACHING) and set(kw) <= _IAR_LAUNCH_OK
+                            for _, kw in launches))
+
+    # AND DRIVEN, not only read: the static rows can be evaded by a computed kwargs dict, and a
+    # dynamic recorder only sees what it drives, so both are here.
+    class _IarRecorder:
+        def __init__(self, real):
+            self._real, self.calls = real, []
+
+        def run(self, *a, **kw):
+            # THE NAMES, not the values: env carries the whole environment and a failing row has to
+            # be readable. The names are what the assertion is about.
+            self.calls.append(sorted(kw))
+            return self._real.run(*a, **kw)
+
+        def __getattr__(self, k):
+            return getattr(self._real, k)
+
+    _iar_real_sp = IAR.subprocess
+    IAR.subprocess = _IarRecorder(_iar_real_sp)
+    try:
+        child = IAR._run([_iar_sys.executable, "-c", "print('veldo-0007 child ran')"])
+    finally:
+        _iar_rec, IAR.subprocess = IAR.subprocess, _iar_real_sp
+    expect("VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and "
+           "its output came back, and the keyword arguments it actually passed were RECORDED - no "
+           "detaching spelling among them, all within the benign set. Recorded: %r"
+           % (_iar_rec.calls,),
+           child.returncode == 0 and "veldo-0007 child ran" in child.stdout
+           and _iar_rec.calls
+           and all(not (set(kw) & _IAR_DETACHING) and set(kw) <= _IAR_LAUNCH_OK
+                   for kw in _iar_rec.calls))
 
 
 _iar_block("AC4", _iar_ac4)

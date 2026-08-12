@@ -623,6 +623,102 @@ declared falsifications rather than reading them, which is why they found what r
     VELDO-0010 F1 and VELDO-0008 F1's `version(ROOT)[0] in stdout`, which could not fail in the one
     state it existed to cover.
 
+49. **TWO WORKERS COULD HOLD ONE TASK, AND A RELEASE BY ONE SILENTLY FREED THE OTHER.** VELDO-0003
+    F1, a real defect and not a weak check. `tasks.py` validated no id FORMAT - its
+    `TASK_ID_PREFIX` constant was declared and never used - and `.veldo/claim.py:_safe()` maps every
+    character outside `[A-Za-z0-9._-]` to `_`, so `TASK_0001` and `TASK/0001` are **two distinct
+    tasks to the contract and ONE file to the ledger.** Both harms measured on this tree: a live
+    claim on one refused the other, producing the spec's own named risk of a task nobody can take;
+    and worker-a holding both, then releasing only one, freed a task worker-a was still working,
+    which worker-b was then GRANTED.
+    FIXED WHERE IT BELONGS, which is the part worth keeping: the refusal lives in the one place that
+    knows the id-to-path mapping, so **no caller can route around it**, rather than in a validator
+    that every future caller would have to remember to consult. An id the ledger cannot store
+    faithfully raises out of the ledger rather than becoming a fifth claim answer, because a
+    malformed key is a bug to surface and not a claimant to arbitrate between.
+    The reviewer's own example could not tell the namespace rule from the ledger rule, since
+    `TASK_0001` violates both. A second pair carrying the `TASK-` prefix on both sides isolates them.
+50. **A VERSION COULD BE INVENTED TWICE OVER, AND ONE OF THE TWO WAS A SUBSTRING SCAN AGAIN.**
+    VELDO-0008 F1 and F2. An empty or non-version declaration was answered as this installation's
+    identity with **exit 0 and a green gate**: with every manifest declaring `TBD` the CLI printed
+    `TBD (from .claude-plugin/marketplace.json)`, and with `""` it printed a leading space and
+    exited zero, defeating AC4's stated guarantee that a script capturing the output can never
+    silently receive a guess. Separately the canonical read took `plugins[0]` POSITIONALLY and never
+    matched the entry named veldo, so a co-hosted plugin listed first made the reader answer a
+    version veldo does not declare **while naming both veldo packs as the ones disagreeing, which is
+    the inverse of the diagnosis the criterion promises.**
+    Now shape-checked where it is read, read BY IDENTITY, a top-level `version` beside the list is a
+    schema version that does not shadow the entry, and two entries claiming the name is an
+    AMBIGUITY that refuses rather than a tie-break to guess at.
+    THE ROW THAT WAS SUPPOSED TO CATCH F1 WAS `version(ROOT)[0] in stdout`, **which cannot fail when
+    the declaration is the empty string** - the one state it existed to cover. Second instance of the
+    substring-scan family in this round, and see finding 48 for the third, which was mine.
+51. **THE FIX SHAPE FOR A LIVE-STATE PIN, WHICH IS THE PART THAT GENERALISES.** VELDO-0005 F1. The
+    item claimed it gates nothing and gated the whole repository: `_dc_live['unresolved'] == []` and
+    `not (ROOT / 'design').is_dir()`, both over live state, both inside a required unit stage, and
+    the suite docstring nine lines above said no row pins today's manifest. One correct declaration
+    about a non-Claude pack root reddened the gate.
+    **The wrong fix is a narrower pin. The right fix is to assert the PROPERTY the pin was standing
+    in for:** NO ACCUSATION THIS ORGAN MAKES ABOUT THIS REPOSITORY IS FALSE, with every accused
+    segment stat'ed independently under every root the tree declares, and the row saying in its own
+    text that it requires none of the counts to be any particular value. A real stale declaration
+    still reds it; growth does not. The design leg got the same treatment: instead of pinning the
+    ABSENCE of a directory, it asserts that the finding kinds the module DECLARES are exactly the
+    kinds a driven report EMITS, so naming a third kind without building its leg reds the row.
+    AND THE STATED REASON HAD BEEN FALSE. "This repository has no design/ directory at all" was
+    wrong: `docs/design/` holds 19 documents, one of which is the design PLAN-0018 observation 18
+    names as having died with nothing noticing - the observation that produced this very work item.
+    **Narrowing scope is legitimate; a false reason with a green assertion certifying it is not.**
+52. **A HUMAN RULING WAS FORGEABLE, AND WORSE, TRANSFERABLE.** VELDO-0012 F1, the most serious
+    blocker of the round. The behaviour floor exists so the machine may only DRAFT what the code does
+    today while a human rules on it. Three fields in that chain were read at face value: the
+    settlement's `bound_digest` (typed, never recomputed), the settlement's own `chosen` key, and a
+    `request_id` checked only for schema, id, touchpoint and status. So a `ruled` disposition was
+    reachable **with no human act at all, using only files the machine can author.**
+    THE TRANSFER LEG IS THE ONE THAT SHOULD FRIGHTEN US: a settlement could name a REAL accepted
+    request that a human had genuinely settled **about a different artifact**, and it ruled this pin.
+    The comparison that closes it was free all along - the shipped receipt path already sets
+    `bound_digest` FROM the request's own `bound_artifact.digest` - so nothing had to be built, only
+    compared. Now every field in the join is compared against something else and none is trusted.
+53. **A PROXY THAT COULD NOT SEE WHAT IT CLAIMED, AND THE THING ONLY DRIVING FOUND.** VELDO-0007 F1.
+    AC4's headline - IT TOUCHES NOTHING OUTSIDE A TEMPORARY DIRECTORY - was proven with `git status
+    --porcelain` on this repository, which is blind to **every path outside the repository and every
+    git-ignored path inside it**, and the companion no-detached-process claim was an AST scan over
+    identifiers, blind to keyword arguments. Three mutations the spec's own falsified_by describes
+    each left the suite at 47 passed, 0 failed.
+    Replaced with an observation instead of a proxy: a recursive inventory of path, size,
+    modification time and sha256, over the repository under check AND over the process's own HOME,
+    across a sandboxed run and an in-process run.
+    **THE MTIME IS IN THERE BECAUSE DRIVING PUT IT THERE.** A content-only inventory was tried first
+    and the reviewer's second mutation was INVISIBLE to it, because that mutation writes the same
+    bytes on every run. Reading the mutation would never have shown this; running it did.
+54. **A UNIVERSAL CLAIM ASSERTED FOR ONE FIFTH OF ITS DOMAIN.** VELDO-0004 F1. AC4 promises every
+    CONTRADICTED settlement carries the predicate, the target read and what was found - the property
+    the whole item exists for, since the 2026-08-10 audit had 5 of 15 accusations overturned on
+    challenge. It was asserted for exactly one of five mechanical predicates, and `path_absent` did
+    not appear once in the suite fragment, so evidence could be stripped from four contradiction
+    paths with the suite fully green. F2 was worse in kind: `promise_report` raised an uncaught
+    `TypeError` on an integer needle, taking the ENTIRE report down with it, because
+    `parse_yamlish` coerces a digit scalar to int and `needle: 200` is the obvious way to claim a
+    document says 200. The module has a six-name refusal taxonomy precisely so that class is named
+    rather than thrown. Suite went from 53 rows to 82.
+55. **THE NEWLY REQUIRED PACKAGING SLOT IS LOAD SENSITIVE, AND A FLAKY REQUIRED CHECK IS WORSE THAN A
+    MISSING ONE.** Found by using it, not by reading it. VELDO-0007's stage composes seven packs and
+    runs each scaffolded repository's OWN full gate, with a 900 second per-subprocess timeout. During
+    the remediation round, with nine agents each running their own gates on the same machine, two of
+    its rows went red in a run where the same suite passed 28/0 standalone moments later and
+    `python3 scripts/check_install_and_run.py` passed all seven packs with every adopter gate GREEN.
+    The cause is contention against that timeout, not the change under test.
+    **This matters because the slot became REQUIRED today.** A required check that reddens for
+    reasons unrelated to the change teaches people to re-run until green, and a gate people re-run
+    until green has stopped being a gate. It is also the exact shape this plan warns about from the
+    other direction: a check that fails when the repository is being USED.
+    TWO THINGS TO FIX, both recorded rather than done, because both are design choices rather than
+    typos: the timeout should be a declared budget the stage REPORTS against rather than a silent
+    900, and the two failing rows print nothing but their own names, so a reader cannot tell a
+    timeout from a genuinely red adopter gate. The CHECK already quotes the adopter's gate tail on
+    failure; the SUITE ROW throws that away by reducing it to a boolean.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

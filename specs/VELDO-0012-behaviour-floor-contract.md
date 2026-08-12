@@ -58,27 +58,39 @@ observability:
     scope block's enumerated-surface and unreachable-surface counts, so no coverage figure is
     quotable without the weakness that produced it. A floor never reports a percentage of an area.
   error_taxonomy: >
-    Named, distinguishable causes rather than one undifferentiated refusal: FLOOR_UNREADABLE,
+    Named, distinguishable causes rather than one undifferentiated refusal: FLOOR_UNREADABLE (an
+    unparseable floor, and an entry in the floors directory the *.yaml rule does not claim),
     PIN_FIELD_MISSING, PIN_VOCAB_UNKNOWN, PIN_KEY_UNRECOGNIZED (the shape that would be an inline
-    ruling), DIGEST_MISMATCH, DUPLICATE_PIN_ID, SCOPE_MISSING for the resolution states,
-    RULING_NOT_SETTLED (nothing settled carries this observation) and RULING_NOT_CARRIED (a human
-    settled a decision on this observation and the inbound edge carried no chosen option). The last
-    two must never collapse into one name: the first means nobody has ruled and the second means the
-    channel is incomplete, and the fix is a different person's job in each case.
+    ruling), DIGEST_MISMATCH, DUPLICATE_PIN_ID, SCOPE_MISSING, and for the resolution states
+    RULING_NOT_SETTLED (nothing settled carries this observation), RULING_NOT_CARRIED (a human
+    settled a decision on this observation and no record it binds carries an option in the ruling
+    vocabulary), RULING_BINDING_MISMATCH (a settlement carrying this observation's digest names an
+    accepted request bound to a DIFFERENT artifact) and RULING_OPTION_OFF_RECORD (an option typed
+    onto a settlement that no decided decision record corroborates, which the shipped receipt path
+    cannot have written). Those four must never collapse into one name: nobody has ruled, the
+    channel carried no option, the records disagree about what this settlement binds, and somebody
+    typed a ruling into a settlement are four different facts, and the fix is a different person's
+    job in each case.
 acceptance_criteria:
   - id: AC1
     falsified_by: >
       Widen STATUSES in .veldo/behavior_floor.py from its single member unknown to also admit
       load_bearing, and the negative-fixture assertion that a pin declaring status load_bearing is
       refused by PIN_VOCAB_UNKNOWN must go red while the well-formed fixture must still be accepted,
-      so the refusal is discriminating rather than a blanket rejection.
+      so the refusal is discriminating rather than a blanket rejection. ADDED AFTER REVIEW, for the
+      record-shape half: replace the unclaimed-entry loop in check_floors_dir with a loop over an
+      empty list, so an entry the *.yaml rule does not claim is skipped again, and the assertion that
+      a floor written as contracts.yml and a subdirectory parked beside the floors are each refused
+      by name must go red while the well-formed good.yaml in the same directory stays accepted.
     text: >
       THE ARTIFACT EXISTS AND THE ONLY STATUS A MACHINE MAY WRITE IS unknown. veldo.behavior_floor/v1
       is a per-area record under .veldo/floors/*.yaml holding pins and one scope block, validated
       structurally in the shape .veldo/arch.py and .veldo/decision.py already establish: required
       fields present, closed vocabularies honored, duplicate pin ids refused across the set (the rule
-      .veldo/decision.py:239-241 already applies to decision ids), and every internal reference
-      resolving. A pin carries id, surface, language, fidelity from the closed vocabulary {exact,
+      .veldo/decision.py:239-241 already applies to decision ids), every internal reference resolving,
+      and every entry in the floors directory CLAIMED: a file the *.yaml rule does not claim is
+      refused by name rather than skipped, because a record no reader validates, counts or names is an
+      input the machine reports as absent while a human reading a protected directory sees it. A pin carries id, surface, language, fidelity from the closed vocabulary {exact,
       proxy}, an observation block holding what was recorded and its digest, a reproduces reference
       naming the test IN THE ADOPTING REPOSITORY'S OWN SUITE that reproduces the observation, and a
       status whose vocabulary has exactly ONE member, unknown. The floor's scope block names the
@@ -109,38 +121,71 @@ acceptance_criteria:
     falsified_by: >
       Delete the unrecognized-key refusal from .veldo/behavior_floor.py's pin validator so unknown
       keys are ignored instead of refused, and the three assertions over a fixture planting
-      decided_by, reason, and exempt_paths on one pin must go red (one per planted key).
+      decided_by, reason, and exempt_paths on one pin must go red (one per planted key). ADDED AFTER
+      REVIEW, for the CALL SITE rather than the enumeration: delete the scope validation that runs
+      before validate_floor's pins-less early return, and the assertion that a floor with NO pins
+      whose scope block carries waived_paths, modules_not_pinned, ruled_by and disposition is refused
+      once per key must go red, while the paired control (a pins-less floor with a legitimate scope
+      block, and one with no scope block at all) must stay green. A closed enumeration behind a
+      conditional call is the same defect one level down.
     text: >
-      NO RULING AND NO EXEMPTION IS REPRESENTABLE IN THE FLOOR AT ALL. The pin's key set is CLOSED:
-      any unrecognized key is refused by name, which makes decided_by, decided_at, reason,
-      disposition, waived and exempt structurally unwriteable inside a floor rather than merely
-      discouraged. And no key addresses a LOCATION: no path, glob, module or pattern scoped exemption
-      is representable, because a path exemption exempts a location forever and the load-bearing
-      behaviour that appears there next year is invisible, which is the mechanism
+      NO RULING AND NO EXEMPTION IS REPRESENTABLE IN THE FLOOR AT ALL. Every key set is CLOSED at
+      every level of the artifact, and each level is checked WHENEVER THAT LEVEL IS PRESENT rather
+      than only when the floor declares pins: any unrecognized key is refused by name, which makes
+      decided_by, decided_at, reason, disposition, waived and exempt structurally unwriteable inside a
+      floor rather than merely discouraged. And no key EXEMPTS a LOCATION: no path, glob, module or
+      pattern scoped exemption is representable, because a path exemption exempts a location forever
+      and the load-bearing behaviour that appears there next year is invisible, which is the mechanism
       specs/WARP-1310-honest-migration.md already refuses for secrets and this contract does not
-      reintroduce under a friendlier name. The refusal is in the SCHEMA rather than in prose because
-      prose instructions do not execute: the floor is a file the agent under the gate can open, so
-      the only real answer is that there is nowhere in it for a ruling to go.
+      reintroduce under a friendlier name. The claim is deliberately narrower than "no key addresses a
+      location": a pin's surface names a file and a function and area names an architecture area,
+      because a floor has to say WHAT it pins, and a surface grants nothing on its own since a pin
+      reads unknown until a human rules on its observation. The refusal is in the SCHEMA rather than
+      in prose because prose instructions do not execute: the floor is a file the agent under the gate
+      can open, so the only real answer is that there is nowhere in it for a ruling to go.
   - id: AC4
     falsified_by: >
       Have disposition_for fall back to the settlement record's own decided_by when the request
       lookup returns nothing, and the assertion that a settlement carrying the pin's digest with no
       accepted veldo.request/v1 record behind it leaves the pin unknown with RULING_NOT_SETTLED must
-      go red.
+      go red. ADDED AFTER REVIEW, one per field that used to be trusted, because a review authored a
+      complete ruling with NO human act. (a) Delete the comparison of the accepted request's own
+      bound_artifact.digest against the recomputed observation digest, and the assertion that a
+      settlement naming a REAL accepted request bound to a DIFFERENT artifact leaves the pin unknown
+      with RULING_BINDING_MISMATCH must go red, while the paired control with the binding restored must
+      still rule. (b) Make the resolver read the settlement's own `chosen` key at face value again, and
+      the assertion that a settlement carrying an option no decided decision record corroborates
+      BLOCKS with RULING_OPTION_OFF_RECORD must go red, while the corroborated case must still rule.
     text: >
       A RULING IS RESOLVED ONLY FROM A DECISION THAT WENT THROUGH THE TICKET CHANNEL, JOINED TO THE
       OBSERVATION BY DIGEST, AND THE FLOOR HOLDS NO POINTER TO IT. A read-only disposition_for(pin)
-      resolves a ruling only when a settlement record under .veldo/settlements/ (the records the
-      PLAN-0016 receipt path writes, .veldo/request_reconcile.py:353-390) has schema
+      resolves a ruling only when ALL of it holds, and EVERY FIELD IN IT IS COMPARED AGAINST ANOTHER
+      RECORD rather than read at face value: a settlement record under .veldo/settlements/ (the records
+      the PLAN-0016 receipt path writes, .veldo/request_reconcile.py:353-390) has schema
       veldo.decision/v1, decision "decided", and bound_digest EQUAL to the pin's recomputed
-      observation digest, AND its request_id resolves to a veldo.request/v1 record whose touchpoint is
+      observation digest; its request_id resolves to a veldo.request/v1 record whose touchpoint is
       decision_choice and whose status is accepted (.veldo/request.py:74-77, and the accepted-binding
-      rule at .veldo/request.py:273-274). Anything else leaves the pin unknown. The floor carries NO
-      reference to the ruling in either direction: the join is the digest and nothing else, so
-      mutating the recorded observation changes the digest and the same settlement stops matching,
-      which is C4 of the on-ramp design made mechanical. NEGATIVE CONTROL, and it is the leg that
-      matters: a hand-written settlement carrying the right digest with no accepted request behind it
-      rules nothing, so a forged file is not a ruling.
+      rule at .veldo/request.py:273-274); THAT RECORD'S OWN bound_artifact.digest is the same recomputed
+      digest, which is free because the receipt path SETS the settlement's bound_digest from exactly
+      that field (.veldo/request_reconcile.py:451), so the two disagreeing means the channel did not
+      write this settlement from that request; and the ruling itself is the option A HUMAN CHOSE on the
+      decision record that request binds by bound_artifact.ref, resolved the way
+      .veldo/request.py:315-338 already resolves that same reference, required to be decided with an
+      attributed decided_by and decided_at and to resolve BOTH to one of that record's own declared
+      options (.veldo/decision.py:176-190) and to a member of the ruling vocabulary. An option typed
+      onto the settlement is never a ruling: the shipped receipt path writes no option at all, so one
+      sitting there was typed rather than settled, and it is accepted only as a corroboration of the
+      decision record's option and BLOCKS by name otherwise. Anything else leaves the pin unknown or
+      blocked. The floor carries NO reference to the ruling in either direction: the join is the digest
+      and nothing else, so mutating the recorded observation changes the digest and the same settlement
+      stops matching, which is C4 of the on-ramp design made mechanical. NEGATIVE CONTROL, and it is
+      the leg that matters: a hand-written settlement carrying the right digest with no accepted
+      request behind it rules nothing, and neither does one whose request was settled about a different
+      artifact, so a forged file is not a ruling. WHAT THIS DOES NOT CLAIM, because a review proved the
+      stronger claim false: every record in the chain is a file, so an actor able to write a consistent
+      set of them across .veldo/floors/, .veldo/requests/, .veldo/decisions/ and .veldo/settlements/
+      still authors a record set that reads as ruled. That is closed by AC6's protected-path rules plus
+      the requirement that a consumer read a TRACKED record, and never by this reader.
   - id: AC5
     falsified_by: >
       Map the settlement word "decided" onto load_bearing when no chosen option is present, and the
@@ -154,12 +199,17 @@ acceptance_criteria:
       carrying decision, decided_by and bound_digest and NEVER the chosen option
       (.veldo/request_reconcile.py:247-256), while a decided veldo.decision/v1 requires a chosen
       option that resolves (.veldo/decision.py:183-190). So a settlement that matches a pin by digest
-      but carries no chosen option resolving to the ruling vocabulary resolves to BLOCKED with the
-      reason named: never to a ruling, never to a default, and never quietly back to unknown as if
-      nobody had decided anything. This is PLAN-0016's own rule applied rather than routed around
-      (plans/PLAN-0016-human-decisions-through-jira.md:77-85: no decision is captured outside the
-      channel and an unsupported kind BLOCKS with the reason named), and the missing option carrier is
-      a work item of that plan, named in the notes below and deliberately not invented here.
+      and whose bound request carries no decided decision record with an option in the ruling
+      vocabulary resolves to BLOCKED with the reason named: never to a ruling, never to a default, and
+      never quietly back to unknown as if nobody had decided anything. An option typed onto the
+      settlement itself does not lift the block either; it changes which name fires
+      (RULING_OPTION_OFF_RECORD rather than RULING_NOT_CARRIED), because a record the shipped writer
+      cannot have produced is a different problem from an incomplete channel. This is PLAN-0016's own
+      rule applied rather than routed around (plans/PLAN-0016-human-decisions-through-jira.md:77-85: no
+      decision is captured outside the channel and an unsupported kind BLOCKS with the reason named),
+      and the settlement-side option carrier is a work item of that plan, named in the notes below and
+      deliberately not invented here: rather than inventing a field, the resolver reads the option a
+      human already chose on the decision record the request binds.
   - id: AC6
     falsified_by: >
       Remove the .veldo/floors/* entry from protected_paths in .veldo/policy.yaml and the assertion
@@ -292,11 +342,21 @@ whoever the approver registry names for the tier, under the separation rules, pe
 A pin ruling is a three-way choice, and the inbound edge derives only accept or reject from board
 states (`.veldo/request_reconcile.py:104-107`). Its settlement record carries `decision`, `decided_by`
 and `bound_digest` and never the CHOSEN OPTION (`:247-256`), while a decided `veldo.decision/v1`
-requires a chosen option that resolves (`.veldo/decision.py:183-190`). So today a human can settle a
-decision on a pin's observation and the repository cannot learn WHICH way they ruled. AC5 makes that
-state explicit and named (`RULING_NOT_CARRIED`) instead of guessing, and the option carrier is work for
-PLAN-0016, which owns that edge. Until it lands, every pin reads unknown or blocked, which is the
-honest reading and is exactly what PLAN-0016's own no-bypass rule prescribes.
+requires a chosen option that resolves (`.veldo/decision.py:183-190`). So the SETTLEMENT cannot say
+which way a human ruled. AC5 makes that state explicit and named (`RULING_NOT_CARRIED`) instead of
+guessing, and the settlement-side option carrier is work for PLAN-0016, which owns that edge.
+
+Where the option DOES live today, and why reading it there is not an invention: a `decision_choice`
+request binds a `veldo.decision/v1` DECISION RECORD by `bound_artifact.ref`, and that record carries
+the option a human chose among its own declared options, validated by the shipped decision organ and
+already resolved through that exact reference by `.veldo/request.py:315-338` to derive the request's
+tier. So AC4 reads the ruling from the record the touchpoint is ABOUT, and never from a key typed onto
+a settlement. Until the settlement-side carrier lands, a pin reads `ruled` only when such a record
+exists, decided and attributed, and otherwise reads unknown or blocked, which is the honest reading and
+is exactly what PLAN-0016's own no-bypass rule prescribes. A REVIEW CORRECTED AN EARLIER CLAIM HERE:
+this paragraph used to say every pin reads unknown or blocked until the carrier lands, while the
+resolver accepted a top-level `chosen` key on a settlement at face value, so the only reachable route
+to `ruled` was a record no shipped writer can produce. That route is now refused by name.
 
 ### The language scope, declared rather than implied
 
@@ -370,9 +430,14 @@ estimate machinery, with no second cost model.
   invented a fourth decision surface in a plan that forbids one.
 - WHERE A PIN'S OBSERVATION LIVES. The reproducing test lives in the ADOPTING REPOSITORY'S OWN SUITE in
   its own framework and the floor holds a reference to it plus the digest of the observation it asserts.
-  A method that generates a parallel test system will be deleted by the first engineer who meets it, and
-  the digest is what makes the reference load bearing rather than decorative. Reversible: choosing the
-  other option changes the shape of the `reproduces` field and nothing else in this contract.
+  A method that generates a parallel test system will be deleted by the first engineer who meets it.
+  STATED HONESTLY AFTER A REVIEW MEASURED IT: the digest covers `surface` and the recorded observation
+  ONLY (`OBSERVATION_DIGEST_FIELDS`), so it does NOT make the `reproduces` reference load bearing - a
+  pin can point at any test, and re-pointing it does not change the digest or disturb a granted ruling.
+  What the digest makes immovable is the OBSERVATION a human ruled on. Whether `reproduces` and
+  `fidelity` belong inside the digest is a real question for the item that consumes them, and this
+  contract does not pretend they are covered. Reversible: choosing the other option changes the shape of
+  the `reproduces` field and nothing else in this contract.
 
 ### The decisions left OPEN, and what each blocks
 

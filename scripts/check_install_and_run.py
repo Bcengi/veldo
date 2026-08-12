@@ -13,7 +13,12 @@ composed pack, because every test runs against this repository, which is the one
 installs.
 
 SO THIS RUNS THE COMPOSED PACK'S OWN SCAFFOLDER, and asserts the tree it ran from has no engine/
-directory, because that absence is the condition that broke.
+directory, because that absence is the condition that broke. THE EXECUTABLE ACTUALLY LAUNCHED IS
+WRITTEN DOWN, taken from the argv the child was handed, and the tree the templates came from is
+derived from THAT path: a review pointed the launch at this repository's own scaffolder and every
+provenance row stayed green, because the result recorded the directory this function was PASSED and
+derived engine/ presence from that same directory. A record of an argument is not a record of a
+launch.
 
 FOUR STAGES, EACH FAILING BY ITS OWN NAME, because each is a different broken part of an adopter's
 first ten minutes:
@@ -35,8 +40,9 @@ scaffolded repository fail with "template missing" - the 1.0 defect, reintroduce
 on a new file is often telling you to stage it, not to change it.
 
 IT WRITES ONLY INSIDE A TEMPORARY DIRECTORY, which it removes. It makes no network call and starts
-no detached process. Producing a public tree and publishing it are two acts and this performs only
-the first.
+no detached process: every child goes through _run, which is the ONE launcher in this file so that
+what is asserted about its keyword arguments is true of every child. Producing a public tree and
+publishing it are two acts and this performs only the first.
 """
 import argparse
 import os
@@ -70,6 +76,9 @@ def composed_packs(pub_root):
                   if p.is_dir() and (p / SCAFFOLDER).is_file())
 
 
+# THE ONE LAUNCHER. Every child this stage starts comes through here, which is what makes an
+# assertion about this call's keyword arguments an assertion about every child: no session is
+# detached, no shell is interposed, nothing is left running when the call returns.
 def _run(argv, cwd=None, timeout=900):
     return subprocess.run([str(a) for a in argv], cwd=str(cwd) if cwd else None,
                           capture_output=True, text=True, timeout=timeout,
@@ -87,16 +96,31 @@ def install_and_run(pack_dir, target, gate=True):
     """Initialise target from THIS COMPOSED PACK and run the scaffolded repository's own gate.
 
     Returns a dict naming what happened at each stage. The scaffolder is the PACK'S copy, and the
-    absence of engine/ in the pack is recorded because it is the condition 1.0 broke on."""
+    absence of engine/ in the TREE THE SCAFFOLDER ACTUALLY RAN FROM is recorded because it is the
+    condition 1.0 broke on.
+
+    scaffolder_ran is read out of the argv the child is handed, and scaffolder_tree is derived from
+    that path by stripping SCAFFOLDER off its tail, so neither can disagree with the launch. The
+    older record (installed_from plus engine/ presence computed from the same directory) described
+    the ARGUMENT, and a review swapped the launched executable for this repository's own with every
+    provenance row still green and the run reporting, falsely, that it had installed from a tree with
+    no engine/ - the exact 1.0 shape, reported as its own absence."""
     pack_dir, target = Path(pack_dir), Path(target)
     out = {"pack": pack_dir.name, "installed_from": str(pack_dir),
            "pack_has_engine_dir": (pack_dir / "engine").is_dir(),
+           "scaffolder_ran": None, "scaffolder_tree": None,
+           "scaffolder_tree_has_engine_dir": None,
            "init_returncode": None, "init_tail": "", "files_created": None,
            "gate_returncode": None, "gate_tail": "", "failure": None}
     target.mkdir(parents=True, exist_ok=True)
     _run(["git", "init", "-q", "."], cwd=target)
 
-    init = _run([sys.executable, pack_dir / SCAFFOLDER, "."], cwd=target)
+    argv = [sys.executable, pack_dir / SCAFFOLDER, "."]
+    out["scaffolder_ran"] = str(argv[1])
+    ran_from = Path(out["scaffolder_ran"]).parents[len(Path(SCAFFOLDER).parts) - 1]
+    out["scaffolder_tree"] = str(ran_from)
+    out["scaffolder_tree_has_engine_dir"] = (ran_from / "engine").is_dir()
+    init = _run(argv, cwd=target)
     out["init_returncode"] = init.returncode
     out["init_tail"] = (init.stdout + init.stderr).strip()[-800:]
     created = sum(1 for _ in target.rglob("*") if _.is_file())
@@ -169,9 +193,14 @@ def report_lines(report):
                  % (len(report["composed"]), ", ".join(report["composed"])))
     for r in report["results"]:
         state = "GREEN" if r["failure"] is None else r["failure"]
-        lines.append("  %-12s installed %d file(s) from %s (engine/ present: %s) -> adopter gate %s"
+        # BOTH PATHS, because they answer different questions and the line used to answer only the
+        # first while sounding like it answered the second: the pack it installed FROM is where the
+        # bytes were written, and the scaffolder it RAN is the provenance claim. They agree except in
+        # the one case this stage exists to catch, and then the difference is on the line.
+        lines.append("  %-12s installed %d file(s) from %s (scaffolder run: %s, engine/ in that "
+                     "tree: %s) -> adopter gate %s"
                      % (r["pack"], r["files_created"] or 0, r["installed_from"],
-                        r["pack_has_engine_dir"], state))
+                        r["scaffolder_ran"], r["scaffolder_tree_has_engine_dir"], state))
         if r["failure"] == FAIL_INIT and r["init_tail"]:
             lines.append("    init said: %s" % r["init_tail"].replace("\n", "\n      "))
         if r["failure"] == FAIL_GATE and r["gate_tail"]:

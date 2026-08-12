@@ -7,6 +7,18 @@ and the obvious report would announce that the entire budget remains. The truth 
 was ever recorded, and those are different facts with opposite consequences - the first invites an
 operator to spend, the second says the instrument is not connected.
 
+THE WHOLE REFUSAL RESTS ON ONE PREDICATE, so it is single-sourced and asserted. What separates
+"no recorded spend" from "a recorded spend of zero" is the rule for what counts as a spend
+READING, and that rule is the governor's `_tokens_at` (a tokens field plus a parseable timestamp)
+called from here rather than respelled here. An independent review removed the local respelling of
+it and the whole suite stayed green while the module announced the full budget as remaining over
+1173 live events, none of which carried a spend field. The suite now feeds events that carry NO
+tokens field - the only shape the live stream has - and requires UNMEASURED.
+
+AND A THIRD STATE, because the taxonomy names it: a window whose readings TOTAL ZERO is
+ZERO_RECORDED, distinct from UNMEASURED and equally not "budget available". A stream that recorded
+consumption of zero is either idle or miscounting, and neither is a licence to spend the window.
+
 AND A SECOND THING NOBODY WAS TOLD. The governor's own contract is that a per-worker rate of zero
 or less means burn is not measured yet, and it then permits max_workers. That is correct for the
 governor - it cannot pace what it cannot measure - but it is dangerous as a SILENT state, because
@@ -17,17 +29,33 @@ never paced anything here. So this report names the POSTURE:
   BOOTSTRAP  no burn is measured, so the governor PERMITS the maximum and is NOT pacing
   SPENT      a window's budget is used up inside its trailing horizon; zero until it rolls
 
-EVERY NUMBER COMES FROM THE GOVERNOR. The worker count, the windowed spend and the resume time are
-governor.desired_workers, governor.windowed_spend and governor.resume_at called over the same
-inputs. A read model that recomputed the pacing arithmetic would be two implementations of one
-rule, which is this repository's most repeated defect and the one that diverges quietly because
-both copies look right.
+THE RATE IS AN ARGUMENT, SO IT IS CORROBORATED AGAINST THE STREAM. The per-worker rate is measured
+by the caller (governor.measure_per_worker_rate) and handed in, which means a caller can hand in a
+number this module never measured. It used to print "burn is measured at 1.0 tokens per worker per
+second" directly above "UNMEASURED - no recorded spend inside the horizon". Now a rate no reading
+inside any window's horizon corroborates is NOT repeated as a measurement: the posture stays
+BOOTSTRAP and the rate handed to the governor is 0.0, its own honest bootstrap value.
+
+WHAT COMES FROM THE GOVERNOR AND WHAT IS DERIVED HERE, NAMED SEPARATELY, because the blanket claim
+that every number came from the governor was not true of the shipped code and a review said so.
+FROM THE GOVERNOR, BY CALLING IT: the windowed spend (windowed_spend), the worker count
+(desired_workers), the resume time (resume_at), each window's target rate (Window.target_rate),
+the rule for what counts as a recorded spend (_tokens_at), and the trailing-horizon cut - which is
+windowed_spend asked a DIFFERENT QUESTION, over the same events with each reading's value replaced
+by 1, so the governor COUNTS the readings inside the horizon instead of totalling them. DERIVED
+HERE and nowhere else: what remains against a window's budget (its tokens minus the governor's
+used), the window's state label, the posture label, and the prose. No pacing arithmetic is
+respelled here, and the suite proves the single sourcing BY INTERCEPTION - the worker count and the
+resume time in the report are the values a call into the governor returned on that call - because
+equality against a second implementation only ever catches a copy that DIVERGED, never a faithful
+one, and the faithful copy is the one that diverges quietly later.
 
 WHAT MAKES STOPPING SAFE IS NOT THIS MODULE. Concluded work is artifacts on disk, and a claimed
 unit's claim AGES OUT of the ledger so the unit returns to the queue - the properties VELDO-0002
 and VELDO-0003 landed. This report names them with the counts it measured, so an operator deciding
-whether to stop reads what is at risk instead of guessing, and an absent ledger is reported as
-unknown rather than as nothing at risk.
+whether to stop reads what is at risk instead of guessing. NEITHER HALF MAY ANSWER ZERO WHEN IT
+COULD NOT READ: an absent corpus root is UNKNOWN rather than a corpus of zero, and a survival
+report about ANOTHER tree does not quote this process's claim ledger.
 
 IT PACES NOTHING. No decision here changes what runs; it spawns nothing and never sleeps.
 """
@@ -45,14 +73,31 @@ POSTURES = (POSTURE_PACING, POSTURE_BOOTSTRAP, POSTURE_SPENT)
 # A window with NO recorded spend inside its horizon. Distinct from a window whose recorded spend
 # totals zero, and neither is "budget available".
 UNMEASURED = "UNMEASURED"
+# A window with readings inside its horizon that TOTAL ZERO. The stream is connected and measured
+# no consumption, which the taxonomy keeps distinct from UNMEASURED and equally does not report as
+# budget available: an idle window and a miscounting instrument look identical from here.
+ZERO_RECORDED = "ZERO_RECORDED"
+# A window with readings totalling more than zero and less than its budget.
+MEASURED = "measured"
+WINDOW_STATES = (UNMEASURED, ZERO_RECORDED, MEASURED, POSTURE_SPENT)
 
 STAND_DOWN_NO_WINDOWS = ("no budget window is configured here: nobody declared a budget, which is "
                          "NOT the same fact as the budget being fine")
 LEDGER_UNKNOWN = ("the claim ledger could not be read, so what is at risk from stopping is "
                   "UNKNOWN rather than nothing")
+LEDGER_FOREIGN_TREE = ("this survival report is about another tree and no claims root was given "
+                       "for it: the ledger resolves from the running process, so quoting it here "
+                       "would report one tree's risk about another. UNKNOWN rather than a count")
+ARTIFACTS_UNKNOWN = ("the artifact corpus could not be read, so what survives stopping as "
+                     "concluded work is UNKNOWN rather than nothing")
+RATE_UNCORROBORATED = ("a per-worker rate was PASSED IN and this report will not repeat it as a "
+                       "measurement: no reading inside any window's horizon carries a recorded "
+                       "spend, so nothing on the stream corroborates it and the rate handed to the "
+                       "governor is 0.0, the governor's own honest bootstrap value")
 
 REPORT_KEYS = ("stood_down", "reason", "posture", "posture_note", "windows", "desired_workers",
-               "per_worker_rate", "spend_events", "survives", "at_risk")
+               "per_worker_rate", "rate_corroborated", "rate_used", "resume_at", "spend_events",
+               "survives", "at_risk")
 
 
 def _organ(name):
@@ -83,48 +128,85 @@ def read_events(path=None, root=None):
     return out
 
 
-def spend_events(events):
-    """The events carrying a token spend. THE COUNT IS THE POINT: zero of them means the stream was
-    never instrumented, which is what makes a zero total meaningless."""
-    return [e for e in events if e.get("tokens") is not None]
+def spend_events(events, gov=None):
+    """The events carrying a token spend, BY THE GOVERNOR'S OWN RULE FOR WHAT A READING IS.
+
+    THE COUNT IS THE POINT: zero of them means the stream was never instrumented, which is what
+    makes a zero total meaningless. So the predicate that decides it is not spelled here. It is
+    governor._tokens_at, asked one event at a time, and the reach for a name with an underscore is
+    deliberate: the alternative is a second spelling of the one rule that separates "no recorded
+    spend" from "a recorded spend of zero", and two spellings of that rule is the defect this item
+    was written about. `gov` is injectable so a caller that already loaded the governor does not
+    load it twice."""
+    g = gov if gov is not None else _organ("governor")
+    return [e for e in events if g._tokens_at([e])]
+
+
+def recorded_in_horizon(gov, spends, now_epoch, seconds):
+    """HOW MANY readings sit inside the trailing horizon, using the governor's own horizon rule.
+
+    windowed_spend already parses the timestamps and applies the cut; asked over the same events
+    with each reading's value replaced by 1 it COUNTS the readings instead of totalling them. Same
+    parse, same cut, same definition of a reading, one implementation - a local `t >= now - seconds`
+    here would be a second spelling of the governor's own line."""
+    return int(gov.windowed_spend([dict(e, tokens=1) for e in spends], now_epoch, seconds))
 
 
 def survival(root=None, claims_root=None):
-    """What survives stopping right now, measured rather than asserted.
+    """What survives stopping right now, measured rather than asserted, and UNKNOWN when it could
+    not be measured.
 
     Concluded work is ARTIFACTS: they are on disk and stopping cannot touch them. A CLAIMED unit
     survives differently - its claim ages out of the ledger and the unit returns to the queue - so
-    the two are counted separately. An unreadable ledger is UNKNOWN, never nothing at risk."""
+    the two are counted separately.
+
+    NEITHER HALF MAY ANSWER ZERO WHEN IT COULD NOT READ. "Nothing is at risk" and "I could not tell
+    what is at risk" are opposite reassurances, and the first is the confident zero this whole item
+    exists to refuse. An absent corpus root is UNKNOWN rather than a corpus of zero. And the claim
+    ledger is a property of a TREE while claim.claims_root resolves it from the RUNNING PROCESS, so
+    a survival report about another tree with no claims root given for it reports UNKNOWN instead of
+    quoting this tree's live claims as that one's risk."""
     base = Path(root) if root is not None else ROOT
-    out = {"concluded_artifacts": None, "claimed_units": None, "ledger": None,
-           "stale_after_seconds": None}
+    out = {"concluded_artifacts": None, "claimed_units": None, "artifacts": None, "ledger": None,
+           "claims_root": None, "stale_after_seconds": None}
     try:
         ws = _organ("work_state")
-        rep = ws.work_report(root=base, runs_root=str(base / "no-runs-root-for-this-read"))
-        out["concluded_artifacts"] = rep["counts"][ws.DONE]
+        vc = _organ("verdict_corpus")
+        corpus = base / vc.PROOF_ROOT
+        if corpus.is_dir():
+            rep = ws.work_report(root=base, runs_root=str(base / "no-runs-root-for-this-read"))
+            out["concluded_artifacts"] = rep["counts"][ws.DONE]
+        else:
+            out["artifacts"] = "%s (no corpus root at %s)" % (ARTIFACTS_UNKNOWN, corpus)
     except Exception as e:                        # noqa: BLE001 - an unreadable corpus is UNKNOWN
         out["concluded_artifacts"] = None
-        out["ledger"] = "work state unreadable: %s" % e
+        out["artifacts"] = "%s (%s)" % (ARTIFACTS_UNKNOWN, e)
     try:
         cl = _organ("claim")
-        out["claimed_units"] = len(cl.claimed_units(root=claims_root))
         out["stale_after_seconds"] = cl.STALE_AFTER_SECONDS
-    except Exception:                             # noqa: BLE001 - absent or unreadable ledger
+        if claims_root is None and base.resolve() != ROOT.resolve():
+            out["ledger"] = LEDGER_FOREIGN_TREE
+        else:
+            out["claims_root"] = cl.claims_root(claims_root)
+            out["claimed_units"] = len(cl.claimed_units(root=claims_root))
+    except Exception as e:                        # noqa: BLE001 - absent or unreadable ledger
         out["claimed_units"] = None
-        out["ledger"] = LEDGER_UNKNOWN
+        out["ledger"] = "%s (%s)" % (LEDGER_UNKNOWN, e)
     return out
 
 
 def budget_report(windows=(), root=None, now_epoch=None, per_worker_rate=0.0, max_workers=1,
                   events=None, limit_cooldown_until=None, claims_root=None):
-    """ONE key shape whether it stood down or not.
+    """ONE key shape whether it stood down or not, with no posture-dependent key.
 
-    windows is a list of governor.Window. per_worker_rate is the MEASURED burn per worker; the
-    caller measures it with governor.measure_per_worker_rate, and zero or less is the honest
-    bootstrap value rather than a default that looks like a measurement."""
+    windows is a list of governor.Window. per_worker_rate is the burn per worker the CALLER
+    measured with governor.measure_per_worker_rate; zero or less is the honest bootstrap value
+    rather than a default that looks like a measurement, and a positive value no reading inside any
+    horizon corroborates is not repeated as a measurement either (rate_used falls back to 0.0)."""
     base = Path(root) if root is not None else ROOT
     rep = {"stood_down": True, "reason": None, "posture": None, "posture_note": None,
            "windows": [], "desired_workers": None, "per_worker_rate": per_worker_rate,
+           "rate_corroborated": None, "rate_used": None, "resume_at": None,
            "spend_events": 0, "survives": {}, "at_risk": []}
     if not windows:
         rep["reason"] = STAND_DOWN_NO_WINDOWS
@@ -132,29 +214,40 @@ def budget_report(windows=(), root=None, now_epoch=None, per_worker_rate=0.0, ma
 
     gov = _organ("governor")
     evs = read_events(root=base) if events is None else list(events)
-    spends = spend_events(evs)
+    spends = spend_events(evs, gov)
     rep["spend_events"] = len(spends)
     now = now_epoch if now_epoch is not None else 0.0
 
     spent_window = None
     for w in windows:
-        inside = [e for e in spends
-                  if gov.M.parse_at(e) is not None
-                  and gov.M.parse_at(e).timestamp() >= now - w.seconds]
+        recorded = recorded_in_horizon(gov, spends, now, w.seconds)
         used = gov.windowed_spend(evs, now, w.seconds)
-        row = {"name": w.name, "horizon_seconds": w.seconds, "tokens": w.tokens,
-               "recorded_events_in_horizon": len(inside),
-               "used": None if not inside else used,
-               "remaining": None if not inside else max(0.0, w.tokens - used),
-               "target_rate": w.target_rate(),
-               "state": UNMEASURED if not inside else (
-                   POSTURE_SPENT if used >= w.tokens else "measured")}
-        rep["windows"].append(row)
-        if row["state"] == POSTURE_SPENT:
+        if not recorded:
+            state, shown, remaining = UNMEASURED, None, None
+        elif used >= w.tokens:
+            state, shown, remaining = POSTURE_SPENT, used, max(0.0, w.tokens - used)
+        elif used <= 0:
+            state, shown, remaining = ZERO_RECORDED, used, None
+        else:
+            state, shown, remaining = MEASURED, used, max(0.0, w.tokens - used)
+        rep["windows"].append({"name": w.name, "horizon_seconds": w.seconds, "tokens": w.tokens,
+                               "recorded_events_in_horizon": recorded, "used": shown,
+                               "remaining": remaining, "target_rate": w.target_rate(),
+                               "state": state})
+        if state == POSTURE_SPENT:
             spent_window = w
 
+    # THE RATE IS CORROBORATED OR IT IS NOT USED. The caller supplies it; the stream is the
+    # evidence for it. With no reading inside any window's horizon there is no evidence, so the
+    # rate handed to the governor is the governor's own bootstrap value rather than a number
+    # nothing here measured.
+    corroborated = any(row["recorded_events_in_horizon"] > 0 for row in rep["windows"])
+    rate_used = per_worker_rate if corroborated else 0.0
+    rep["rate_corroborated"] = corroborated
+    rep["rate_used"] = rate_used
+
     rep["desired_workers"] = gov.desired_workers(
-        list(windows), evs, now, per_worker_rate, max_workers,
+        list(windows), evs, now, rate_used, max_workers,
         limit_cooldown_until=limit_cooldown_until)
 
     if spent_window is not None:
@@ -164,23 +257,30 @@ def budget_report(windows=(), root=None, now_epoch=None, per_worker_rate=0.0, ma
             "until it rolls; the resume time is when enough of the oldest spend ages out"
             % spent_window.name)
         rep["resume_at"] = gov.resume_at(list(windows), evs, now)
-    elif per_worker_rate <= 0:
+    elif rate_used <= 0:
         rep["posture"] = POSTURE_BOOTSTRAP
         rep["posture_note"] = (
             "NO BURN IS MEASURED, so the governor PERMITS %s worker(s) rather than pacing them. "
-            "The worker count below is a PERMISSION, not a pace. %d event(s) in the stream carry a "
-            "token spend: with none, a windowed total of zero means the instrument was never "
-            "connected, not that the budget is untouched"
-            % (rep["desired_workers"], len(spends)))
+            "The worker count below is a PERMISSION, not a pace. %s"
+            % (rep["desired_workers"],
+               ("NOT ONE event in the stream carries a token spend, so a windowed total of zero "
+                "means the instrument was never connected, not that the budget is untouched")
+               if not spends else
+               ("%d event(s) in the stream carry a token spend, and a window with none of them "
+                "inside its horizon is UNMEASURED rather than untouched" % len(spends))))
+        if per_worker_rate > 0:
+            rep["posture_note"] += ". %s (supplied: %s)" % (RATE_UNCORROBORATED, per_worker_rate)
     else:
         rep["posture"] = POSTURE_PACING
         rep["posture_note"] = (
             "burn is measured at %s tokens per worker per second, so the worker count is derived "
-            "from the tighter window's target rate" % per_worker_rate)
+            "from the tighter window's target rate" % rate_used)
 
     rep["survives"] = survival(base, claims_root)
     if rep["survives"]["claimed_units"] is None:
-        rep["at_risk"].append(LEDGER_UNKNOWN)
+        rep["at_risk"].append(rep["survives"]["ledger"] or LEDGER_UNKNOWN)
+    if rep["survives"]["concluded_artifacts"] is None:
+        rep["at_risk"].append(rep["survives"]["artifacts"] or ARTIFACTS_UNKNOWN)
     rep["stood_down"] = False
     return rep
 
@@ -195,6 +295,12 @@ def report_lines(rep):
             lines.append("  %s (%.0fs horizon, %.0f tokens): UNMEASURED - no recorded spend inside "
                          "the horizon, so there is no remaining figure to quote"
                          % (w["name"], w["horizon_seconds"], w["tokens"]))
+        elif w["state"] == ZERO_RECORDED:
+            lines.append("  %s (%.0fs horizon, %.0f tokens): ZERO_RECORDED - %d recorded event(s) "
+                         "inside the horizon total ZERO tokens, so the stream is connected and "
+                         "measured no consumption; that is not a remaining figure to spend against"
+                         % (w["name"], w["horizon_seconds"], w["tokens"],
+                            w["recorded_events_in_horizon"]))
         else:
             lines.append("  %s (%.0fs horizon): %.0f of %.0f used, %.0f remaining, from %d "
                          "recorded event(s)"

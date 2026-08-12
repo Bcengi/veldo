@@ -1,0 +1,89 @@
+schema: veldo.decision/v1
+id: VELDO-DEC-0001
+version: 1
+title: Whether the gate DRIVES each declared falsification, and at what moment
+status: draft
+problem_class: verification
+owner: Dmitry Grinberg
+reversal_cost: costly
+risk: high
+
+context: >
+  VELDO-0001 made every behaviour-bearing criterion declare the single edit that must make its
+  check fail. Nothing drives that edit. The twelve independent reviews of PLAN-0018 drove them by
+  hand and the result is the reason this record exists. Two of VELDO-0007's own criteria were
+  vacuous and only driving showed it. VELDO-0002 AC5, VELDO-0006 AC3 and VELDO-0010 AC5 each named
+  a mutation that leaves the suite fully green, so the criterion could not fail for the defect its
+  own text names. A declared falsification is worth nothing until it is driven, and reading one
+  cannot tell you whether it has teeth. This is outside PLAN-0018's approved scope, which is why it
+  is a record and not a commit.
+
+options:
+  - id: every-run
+    summary: >
+      Drive every behaviour-bearing criterion's declared mutation on every gate run. Apply, prove
+      it landed, require the named row to red, revert.
+    dead_end: >
+      Dead-ends on wall-clock the moment the corpus grows. One drive costs a mutation plus a suite
+      run plus a revert, and this repository already carries 4530 assertions across 34 suites and
+      several hundred criteria. The gate stops being something anybody runs before pushing, and a
+      gate people skip protects nothing.
+  - id: changed-footprint
+    summary: >
+      Drive only the criteria whose spec or declared footprint the commit touches, at ready and at
+      landing rather than on every run.
+    dead_end: >
+      Dead-ends when a criterion's teeth depend on a file outside its declared footprint, which is
+      exactly how the two vacuous VELDO-0007 criteria survived. The footprint is author-declared,
+      so this option trusts the same declaration it is meant to be checking.
+  - id: proof-time-record
+    summary: >
+      Drive once per item while its proof bundle is produced, record each drive with the row that
+      reddened, and have the gate check the RECORD rather than re-drive.
+    dead_end: >
+      Dead-ends the moment the code moves after the proof was written, because the record then
+      describes a tree that no longer exists. Needs a commit binding and a staleness rule, or it
+      becomes a claim about history presented as a claim about now.
+  - id: rotating-sample
+    summary: >
+      Drive a rotating subset each run, with a floor on how stale any criterion's last drive may be.
+    dead_end: >
+      Dead-ends on the criterion that ships before its turn comes up. A sampling floor bounds the
+      average and says nothing about the specific check that was vacuous on the day it landed.
+
+assumptions:
+  - id: drive-is-affordable
+    statement: >
+      Driving one mutation is cheap enough that some policy above is runnable at all.
+    signal: >
+      Measured wall-clock of one complete drive over this repository, being mutate, run the named
+      suite, revert.
+    breach: >
+      One drive costs more than the entire current gate, at which point only proof-time recording
+      survives as an option.
+  - id: row-is-identifiable
+    statement: >
+      The row a criterion names can be resolved mechanically from its falsified_by clause, without
+      a human deciding which assertion was meant.
+    signal: >
+      The share of behaviour-bearing criteria whose falsified_by resolves to exactly one assertion
+      in exactly one suite.
+    breach: >
+      A human has to disambiguate for any criterion, because a mechanism that needs a human to say
+      which row counts cannot gate.
+  - id: revert-is-clean
+    statement: >
+      A mutation can be applied and reverted leaving the tree byte-identical, so a drive cannot
+      corrupt the working tree it ran in.
+    signal: >
+      git status and a content digest of the touched files after each drive completes.
+    breach: >
+      Any drive leaves a modified or untracked file behind.
+  - id: mutation-actually-lands
+    statement: >
+      Every drive proves its mutation landed before believing the result, because a mutation that
+      quietly failed to apply produces a green that means nothing.
+    signal: >
+      A non-zero substitution count and a changed digest asserted for every drive.
+    breach: >
+      Any drive reports a result without having asserted that its edit applied.

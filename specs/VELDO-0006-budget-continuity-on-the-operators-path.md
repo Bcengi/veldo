@@ -32,80 +32,117 @@ protected_paths: []
 behavior_bearing: true
 observability:
   logs: >
-    One report, per window: the trailing horizon, the tokens recorded inside it, what remains, the
-    target rate against the measured rate, and when the window rolls. It says which POSTURE the
+    One report, per window: the trailing horizon, the readings recorded inside it, what remains, the
+    target rate against the corroborated rate, and when the window rolls. It says which POSTURE the
     governor is in by name, and when it is bootstrapping it says that the pacing it would do is not
-    happening rather than printing a comfortable number.
+    happening rather than printing a comfortable number. It also names what survives stopping and,
+    for each half it could not read, prints UNKNOWN and lists it as a risk it could not measure.
   error_taxonomy: >
     Three postures, never collapsed, because an operator acts differently in each: PACING (burn is
     measured and the worker count is derived from it), BOOTSTRAP (no burn is measured, so the governor
     permits the maximum and is NOT pacing) and SPENT (a window's budget is used up in its trailing
     horizon, so the answer is zero workers until it rolls). A window with NO RECORDED SPEND AT ALL is
-    UNMEASURED, which is distinct from a window with spend totalling zero, and neither is reported as
-    "budget available".
+    UNMEASURED, which is distinct from a window whose recorded spend totals zero (ZERO_RECORDED), and
+    NEITHER is reported as "budget available": no remaining figure is quoted for either. What survives
+    stopping has its own two-valued taxonomy per half - a measured count, or UNKNOWN with the reason
+    named (an absent corpus root, an unreadable ledger, or a ledger belonging to another tree) - and
+    UNKNOWN is never rendered as zero.
 acceptance_criteria:
   - id: AC1
     falsified_by: >
       Make the report treat an empty spend history as zero tokens spent in .veldo/budget_state.py
-      instead of UNMEASURED, and the assertion that a repository with no recorded spend reports
-      UNMEASURED and BOOTSTRAP rather than a remaining budget must go red.
+      instead of UNMEASURED, OR remove the rule in spend_events that decides which events carry a
+      recorded spend, OR collapse a window whose readings total zero into an ordinary measured
+      window, and the assertion that a repository with no recorded spend reports UNMEASURED and
+      BOOTSTRAP rather than a remaining budget must go red.
     text: >
       NO RECORDED SPEND IS NOT ZERO SPEND, AND THIS REPOSITORY IS THE CASE. MEASURED on 2026-08-12:
       the live event stream carries ZERO events with a spend field, so the obvious report would say
       the whole budget remains. The truth is that nothing was ever recorded, and those are different
       facts with opposite consequences - the first invites an operator to spend, the second says the
       instrument is not connected. A window with no spend inside its horizon is UNMEASURED, reported
-      by name. NEGATIVE CONTROL: with one recorded spend event the same window reports a real
-      remaining figure, so UNMEASURED is a measurement of the stream and not the module's only answer.
+      by name, and a window whose readings TOTAL ZERO is ZERO_RECORDED - also not a remaining figure,
+      because a connected instrument reporting no consumption is an idle window or a miscounting one
+      and an operator must know which. THE STREAM'S ONLY SHAPE IS THE HARD CASE, so it is the one
+      driven: its 1173 events carry no tokens field at all, and the whole refusal rests on the single
+      rule that separates a spend reading from any other event, which is the governor's own rule
+      rather than a second spelling of it. An empty list alone does not exercise that rule.
+      NEGATIVE CONTROL: with one recorded spend event added to those non-spend events the same window
+      reports a real used and remaining figure, so UNMEASURED is a measurement of the stream and not
+      the module's only answer.
   - id: AC2
     falsified_by: >
-      Report the posture as PACING whenever windows are configured in .veldo/budget_state.py, and the
-      assertion that an unmeasured burn rate reports BOOTSTRAP and says the governor is permitting the
-      maximum rather than pacing must go red.
+      Report the posture as PACING whenever windows are configured in .veldo/budget_state.py, or
+      repeat a caller-supplied burn rate as a measurement when no reading inside any window's horizon
+      corroborates it, and the assertion that an unmeasured burn rate reports BOOTSTRAP and says the
+      governor is permitting the maximum rather than pacing must go red.
     text: >
       BOOTSTRAP IS SAID OUT LOUD, BECAUSE IT MEANS THE PACING IS NOT HAPPENING. The governor's own
       contract is that a per-worker rate of zero or less means burn is not measured yet and it permits
       max_workers. That is correct for the governor and dangerous as a silent state: in this
       repository burn has NEVER been measured, so the pacing this plan promises has never paced
       anything here. The report names the posture - PACING, BOOTSTRAP or SPENT - and in BOOTSTRAP it
-      says the worker count is a permission rather than a pace. NEGATIVE CONTROL: with a measured rate
-      the posture is PACING and the derived worker count matches the governor's own function called
-      directly, so the posture is derived rather than asserted.
+      says the worker count is a permission rather than a pace. AND THE RATE IS CORROBORATED AGAINST
+      THE STREAM, because it arrives as the CALLER'S argument and this module never measured it: a
+      positive rate that no reading inside any window's horizon supports is not repeated as a
+      measurement, the posture stays BOOTSTRAP, and the rate handed to the governor is 0.0. So the
+      report cannot print "burn is measured at 1.0 tokens per worker per second" directly above
+      "UNMEASURED - no recorded spend inside the horizon", which is what it did.
+      NEGATIVE CONTROL: with a measured rate the posture is PACING and the derived worker count
+      matches the governor's own function called directly, so the posture is derived rather than
+      asserted.
   - id: AC3
     falsified_by: >
-      Compute the worker count and the resume time inside .veldo/budget_state.py instead of calling
-      governor.desired_workers and governor.resume_at, and the assertion that every number in the
-      report equals the governor's own function over the same inputs must go red.
+      Compute the worker count or the resume time inside .veldo/budget_state.py instead of calling
+      governor.desired_workers and governor.resume_at - as a FAITHFUL copy of the governor's
+      arithmetic and not only as a divergent one - and the assertion that those numbers ARE the values
+      a call into the governor returned must go red.
     text: >
-      EVERY NUMBER COMES FROM THE GOVERNOR, NOT FROM A SECOND IMPLEMENTATION. The worker count, the
-      windowed spend and the resume time are the governor's own functions called over the same inputs,
-      and the suite asserts equality against them directly. A read model that recomputed the pacing
-      arithmetic would be two implementations of one rule, which is this repository's most repeated
-      defect, and the one that would diverge silently because both would look right.
+      NO SECOND IMPLEMENTATION OF THE PACING RULES, AND EQUALITY ALONE CANNOT PROVE THAT. The worker
+      count, the windowed spend, the resume time, each window's target rate, the rule for what counts
+      as a recorded spend and the trailing-horizon cut are the governor's own functions called over the
+      same inputs. The suite asserts equality against them directly AND, because equality is satisfied
+      by a faithful copy-paste inside this module - the exact duplication this criterion refuses, since
+      both copies look right until they drift - it also INTERCEPTS the organ load and requires the
+      report's worker count and resume time to BE values a call into the governor returned on that
+      call. An independent review drove the earlier version of this falsification and nothing went red.
+      WHAT THE READ MODEL DERIVES IS NAMED RATHER THAN CLAIMED AWAY: what remains against a window's
+      budget, the window's state label and the posture label are computed here, they are presentation
+      rather than pacing arithmetic, and the suite says so.
   - id: AC4
     falsified_by: >
-      Delete the survival section from the report in .veldo/budget_state.py, and the assertion that
-      the report names what survives stopping right now - concluded artifacts, and claimed units whose
-      claims age out - must go red.
+      Delete the survival section from the report in .veldo/budget_state.py, or report a half it
+      could not read as zero instead of UNKNOWN, and the assertion that the report names what survives
+      stopping right now - concluded artifacts, and claimed units whose claims age out - must go red.
     text: >
       LOSING A WINDOW MUST COST PACING AND NOT WORK, AND THE REPORT SAYS WHAT SURVIVES. On 2026-08-10
       and 2026-08-11 two sessions hit limits and 85 agents died mid-flight. What makes stopping safe
       now is not this item: it is that concluded work is ARTIFACTS on disk and a claimed unit's claim
       AGES OUT of the ledger, so the unit returns to the queue. This report names both, with the
       counts it measured, so an operator deciding whether to stop reads what is at risk instead of
-      guessing. IT CLAIMS NOTHING IT DID NOT MEASURE: an unreadable or absent ledger is reported as
-      such rather than as nothing at risk.
+      guessing. IT CLAIMS NOTHING IT DID NOT MEASURE, FOR BOTH HALVES: an absent corpus root is
+      UNKNOWN rather than a corpus of zero, an unreadable ledger is UNKNOWN rather than nothing at
+      risk, each is listed as a risk it could not measure, and a survival report about ANOTHER tree
+      does not quote the running process's ledger as that tree's risk. "Nothing is at risk" and "I
+      could not tell what is at risk" are opposite reassurances. NEGATIVE CONTROL: build the corpus
+      and the ledger and the same read answers with real counts, including a real zero.
   - id: AC5
     falsified_by: >
-      Remove the absent-configuration stand-down from .veldo/budget_state.py, and the assertion that
-      a repository configuring no window stands the report down by name while keeping ONE key shape
-      must go red.
+      Remove the absent-configuration stand-down from .veldo/budget_state.py, or make any key of the
+      report exist in one posture and not another, and the assertion that a repository configuring no
+      window stands the report down by name while keeping ONE key shape must go red.
     text: >
       ADOPTION SAFE, AND IT PACES NOTHING. A repository that configures no budget window stands the
-      report down by name: "nobody declared a budget here" is not "the budget is fine". This module
-      makes no pacing decision, spawns nothing, sleeps never, and no gate stage loads it - it is a
-      read model an operator runs. NEGATIVE CONTROL: with a window configured the same report answers,
-      so the stand-down is a measurement rather than the module's only behaviour.
+      report down by name: "nobody declared a budget here" is not "the budget is fine". The report
+      carries ONE key shape with NO exception for a posture-dependent key, so a consumer reading
+      resume_at outside the SPENT posture meets None rather than a KeyError. This module makes no
+      pacing decision, spawns nothing and sleeps never, proved by an ALLOWLIST of the calls and
+      imports it may contain rather than a denylist of the spellings someone thought of - a denylist
+      let subprocess.run and os.system straight through. And NO GATE STAGE LOADS IT, asserted over the
+      stages scripts/verify.sh actually runs and the modules they load, never by requiring that
+      nothing in the repository uses it: an operator putting this read model on their path is the
+      POINT of the item and must not redden the gate. NEGATIVE CONTROL: with a window configured the
+      same report answers, so the stand-down is a measurement rather than the module's only behaviour.
 required_evidence: [unit]
 rollback: >
   Delete .veldo/budget_state.py and its suite fragment. The governor, the fleet and the ledger are
@@ -136,10 +173,23 @@ in, and to refuse to turn "nothing was recorded" into "plenty remains".
 
 ## Why this recomputes nothing
 
-The worker count, the windowed spend and the resume time all come from `.veldo/governor.py` by
-calling it. A read model that reimplemented the pacing arithmetic would be two implementations of one
-rule - the defect this repository has shipped more than once - and the failure mode is the quiet one,
-because both copies look right until they disagree.
+The worker count, the windowed spend, the resume time, each window's target rate, the rule for what
+counts as a recorded spend and the trailing-horizon cut all come from `.veldo/governor.py` by calling
+it. The horizon cut is `windowed_spend` asked a different question - the same events with each
+reading's value replaced by 1, so the governor counts the readings inside the horizon instead of
+totalling them - because a local `t >= now - seconds` here would be a second spelling of the
+governor's own line. A read model that reimplemented the pacing arithmetic would be two
+implementations of one rule - the defect this repository has shipped more than once - and the failure
+mode is the quiet one, because both copies look right until they disagree.
+
+Which is exactly why the suite does not stop at equality. Equality against the governor's functions
+is satisfied by a faithful copy-paste, so it can only ever catch a copy that has ALREADY diverged;
+the duplication itself stays invisible. An independent review proved that by driving this item's own
+declared falsification - a verbatim copy of `desired_workers` and `resume_at` inside the read model -
+and watching the whole suite stay green. So the suite now intercepts the organ load and requires the
+report's worker count and resume time to BE the values a call into the governor returned. What this
+module genuinely derives - what remains against a window's budget, the window's state label, the
+posture label - is named as derived instead of being covered by a blanket claim that was not true.
 
 ## What actually makes stopping safe
 

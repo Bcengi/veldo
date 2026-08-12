@@ -1,0 +1,105 @@
+schema: veldo.decision/v1
+id: VELDO-DEC-0002
+version: 1
+title: How the live-state pin class is caught, given that fixing instances has not stopped it
+status: draft
+problem_class: verification
+owner: Dmitry Grinberg
+reversal_cost: reversible
+risk: standard
+
+context: >
+  An assertion over live repository state whose required answer is an empty set, an exact count or
+  the absence of a path reddens the gate the first time somebody uses the feature it guards. This
+  repository has now been bitten by it four separate times and has a check built specifically for
+  it, scripts/check_first_use.py, which did not see any of them. Measured instances from the
+  PLAN-0018 reviews. VELDO-0003 AC5 pins the set of consumers of the task read model to empty, so
+  wiring the read model anywhere reds the gate. VELDO-0005 pins the unresolved-capability list to
+  empty and the absence of a top-level design directory. VELDO-0006 AC5 pins the set of loaders of
+  the budget read model to empty. VELDO-0009 AC4 pins the live tree's four-state answer to
+  UNSTAMPED, so running the documented scaffolder on this repository reds the gate. Finding 46 is a
+  fifth in a different dress. check_first_use cannot see any of them, and says so in its own
+  documented limitation 1, because its MUTATIONS table drives only .veldo/spend.py. Fixing the five
+  instances leaves the class intact, which is why this is a decision and not a patch.
+
+options:
+  - id: extend-the-table
+    summary: >
+      Add every organ to the MUTATIONS table by hand, so each one gets the additive mutation that
+      proves its pin would be caught.
+    dead_end: >
+      Dead-ends because it is a hand-kept enumeration of a set that already exists elsewhere, which
+      is the duplicated-enumeration defect this repository has been bitten by twice and which
+      VELDO-0002 AC5 was itself refuted for. It is stale the day an organ lands without an entry,
+      and nothing reds when that happens.
+  - id: derive-from-the-manifest
+    summary: >
+      Derive the mutation set from the declared capability manifest, so a new organ is covered
+      because it is declared rather than because somebody remembered.
+    dead_end: >
+      Dead-ends for a live set that no capability declares. The absence of a directory, the count of
+      items in a ledger and the emptiness of a consumer list are not capabilities, so three of the
+      four measured instances stay invisible.
+  - id: forbid-the-shape
+    summary: >
+      Refuse the SHAPE instead of driving it. A rule over the suite sources that rejects an
+      assertion comparing a live enumeration against an empty literal or a bare count.
+    dead_end: >
+      Dead-ends on a pin spelled through an intermediate variable or a helper, because a syntactic
+      rule cannot follow the value without dataflow. Three of the four measured instances assign to
+      a local first, so this option catches the class only for the spellings that are already
+      obvious.
+  - id: both-layers
+    summary: >
+      The shape rule as the cheap always-on guard against the obvious spellings, plus derivation
+      from the manifest for the organs that are declared, each covering what the other cannot.
+    dead_end: >
+      Dead-ends when the two layers disagree about a given assertion and no one owns the
+      reconciliation, at which point the gate carries two answers and the weaker one wins by being
+      the one that passes.
+  - id: assert-the-property-instead
+    summary: >
+      Leave the checking mechanism alone and change what the criteria are allowed to assert. A
+      criterion may assert that no consumer REFUSES anything, or that the gate's own stage list does
+      not contain the organ, but never that the set of consumers is empty.
+    dead_end: >
+      Dead-ends as a policy with no enforcement. It is a rule about how authors write assertions,
+      and a rule that only exists in prose is one nobody is stopped by, which is the failure mode
+      this repository already has a name for.
+
+assumptions:
+  - id: it-is-a-class
+    statement: >
+      This is a recurring class worth a general mechanism rather than four instance fixes.
+    signal: >
+      The count of blockers and majors in a review round whose root cause is an assertion over live
+      state requiring an empty set, an exact count or an absent path.
+    breach: >
+      A full review round produces fewer than two, at which point the instances are cheaper than
+      the mechanism.
+  - id: catches-the-known-four
+    statement: >
+      Whatever is chosen catches the instances already measured, because a guard that misses the
+      cases that motivated it is a claim rather than a guard.
+    signal: >
+      The chosen mechanism run against VELDO-0003 AC5, VELDO-0005, VELDO-0006 AC5 and VELDO-0009
+      AC4 as they were written before their fixes.
+    breach: >
+      It misses any one of the four.
+  - id: no-false-positives
+    statement: >
+      The guard does not redden assertions that are legitimately about live state, of which this
+      repository has many.
+    signal: >
+      The full gate over the current corpus with the guard armed, and the list of rows it names.
+    breach: >
+      Any row it names turns out on inspection to be a legitimate assertion.
+  - id: the-guard-is-itself-driven
+    statement: >
+      The guard's own coverage claim is driven rather than declared, since a guard against vacuous
+      checks that is itself vacuous is the worst artifact in the repository.
+    signal: >
+      An additive mutation that introduces a fresh live-state pin, applied and proven landed, with
+      the guard required to red on it.
+    breach: >
+      The guard reports coverage without any mutation having been driven against it.

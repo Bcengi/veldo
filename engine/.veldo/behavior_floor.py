@@ -43,8 +43,37 @@ So the design, and each half is enforced here rather than asked for in prose:
   decision_choice touchpoint (.veldo/request.py:74-77) whose settlement the receipt path
   writes to .veldo/settlements/ (.veldo/request_reconcile.py:353-390), and disposition_for
   resolves one ONLY from a settlement whose bound_digest equals the RECOMPUTED observation
-  digest AND whose request_id resolves to an accepted veldo.request/v1 record. A
-  hand-written settlement with no accepted request behind it rules NOTHING.
+  digest, whose request_id resolves to an accepted veldo.request/v1 record BOUND TO THAT SAME
+  RECOMPUTED DIGEST, and whose ruling is the option a human chose on the decision record that
+  request binds. A hand-written settlement with no accepted request behind it rules NOTHING.
+
+  EVERY FIELD IN THE JOIN IS COMPARED AGAINST SOMETHING ELSE, AND NONE IS READ AT FACE VALUE.
+  This is the correction a review drove and it is the reason to read the resolver rather than
+  its docstring. Three fields used to be trusted: the settlement's bound_digest (typed), the
+  settlement's own `chosen` key (typed), and a request_id checked only for schema, id,
+  touchpoint and status. That made a `ruled` disposition reachable with NO human act, and
+  worse, TRANSFERABLE: a settlement could name a REAL accepted request a human had settled
+  about a DIFFERENT artifact and it ruled this pin. Now:
+    the settlement's bound_digest is compared to the RECOMPUTED observation digest;
+    the request's OWN bound_artifact.digest is compared to that same recomputed digest, which
+      is free because the receipt path SETS the settlement's bound_digest from exactly that
+      field (.veldo/request_reconcile.py:451), so the two disagreeing means the settlement was
+      not written by the channel from that request (RULING_BINDING_MISMATCH);
+    the ruling is the option a HUMAN CHOSE on the decision record the request binds by
+      bound_artifact.ref, resolved the way .veldo/request.py:315-338 already resolves that
+      exact reference, and required to resolve to one of that record's OWN declared options
+      (.veldo/decision.py:176-190) as well as to a member of RULINGS. Its decided_by and
+      decided_at are READ, not assumed by a reason string;
+    a `chosen` key on the SETTLEMENT is never a ruling. The shipped receipt path writes no
+      option at all (.veldo/request_reconcile.py:247-256), so an option sitting on a settlement
+      was typed rather than settled; it is accepted only as a corroboration of the option the
+      decision record carries and BLOCKS by name otherwise (RULING_OPTION_OFF_RECORD).
+  WHAT THIS DOES NOT CLOSE, stated rather than implied: every record above is a file, so an
+  actor who can write .veldo/floors/, .veldo/requests/, .veldo/decisions/ AND .veldo/settlements/
+  consistently can still author a record set that reads as ruled. That is closed by the
+  protected-path rules those records sit under plus the requirement that a consumer read a
+  TRACKED record, not by this reader: the integrity of a disposition is the integrity of a
+  reviewed change (AC6), never its own validation.
 
   THE JOIN IS A DIGEST THE VALIDATOR RECOMPUTES, NEVER ONE IT TRUSTS. This is the
   load-bearing property of the whole item. observation_digest is derived from the pin's
@@ -63,14 +92,17 @@ is a THREE-way choice, and the inbound edge derives only accept or reject from b
 states (.veldo/request_reconcile.py:104-107); its settlement carries decision, decided_by
 and bound_digest and NEVER the chosen option (.veldo/request_reconcile.py:247-256), while
 a decided veldo.decision/v1 requires a chosen option that resolves
-(.veldo/decision.py:183-190). So today a human can settle a decision on a pin's
-observation and the repository cannot learn WHICH way they ruled. That state is BLOCKED
-with RULING_NOT_CARRIED: never a ruling, never a default, and never quietly back to
-unknown as if nobody had decided anything. RULING_NOT_SETTLED and RULING_NOT_CARRIED must
-never collapse into one name - the first means nobody has ruled and the second means the
-channel is incomplete, and the fix is a different person's job in each case. The option
-carrier is a PLAN-0016 work item because it is PLAN-0016's edge, and it is deliberately
-not invented here.
+(.veldo/decision.py:183-190). So a human can settle a decision on a pin's observation and
+the SETTLEMENT cannot say WHICH way they ruled. That state is BLOCKED with
+RULING_NOT_CARRIED: never a ruling, never a default, and never quietly back to unknown as
+if nobody had decided anything. RULING_NOT_SETTLED, RULING_NOT_CARRIED and
+RULING_OPTION_OFF_RECORD must never collapse into one name - the first means nobody has
+ruled, the second means the channel carried no option, the third means an option was typed
+onto a settlement the channel does not write options into, and the fix is a different
+person's job in each of the three. The settlement-side option carrier is a PLAN-0016 work
+item because it is PLAN-0016's edge, and it is deliberately not invented here: instead of
+inventing a field, the resolver reads the option a human already chose on the DECISION
+RECORD the request binds, which is the record the whole decision_choice touchpoint is about.
 
 THE LANGUAGE SCOPE, DECLARED RATHER THAN IMPLIED. The shipped shape analyzers are PYTHON
 ONLY: .veldo/shape_gate.py:174-181 filters the changed set to paths ending .py before any
@@ -94,9 +126,11 @@ TWO POSTURES, both shared with the decision and request organs this mirrors:
   down, and a stand-down is never a silent pass.
   FAIL CLOSED. The moment a floor exists, anything malformed refuses by NAME: an
   unreadable floor, a missing pin field, an out-of-vocabulary status or fidelity, an
-  unrecognized key (the shape an inline ruling would take), a declared digest that is not
-  the recomputed one, a duplicate pin id across the set, or a scope block that does not
-  say what the pass could not reach.
+  unrecognized key (the shape an inline ruling would take, refused at every level of the
+  artifact WHENEVER THAT LEVEL IS PRESENT and not only when the floor declares pins), a
+  declared digest that is not the recomputed one, a duplicate pin id across the set, a scope
+  block that does not say what the pass could not reach, or an entry in the floors directory
+  that the *.yaml rule does not claim and therefore no reader records.
 
 Dependency free by construction: the caller (.veldo/validate_checks.py) passes in the
 front-matter parser and the failure reporter it already owns, so this module adds no
@@ -166,14 +200,19 @@ PIN_KEY_UNRECOGNIZED = "PIN_KEY_UNRECOGNIZED"
 DIGEST_MISMATCH = "DIGEST_MISMATCH"
 DUPLICATE_PIN_ID = "DUPLICATE_PIN_ID"
 SCOPE_MISSING = "SCOPE_MISSING"
-# The two DISPOSITION reasons. Not refusals: a read reports them, no change is refused for
-# either, and they must never collapse into one name.
+# The FOUR DISPOSITION reasons. Not refusals: a read reports them, no change is refused for any of
+# them, and they must never collapse into one name, because the fix is a different person's job in
+# each case (nobody has ruled / the channel carried no option / the records disagree about what this
+# settlement binds / an option was typed onto a settlement rather than chosen on a record).
 RULING_NOT_SETTLED = "RULING_NOT_SETTLED"
 RULING_NOT_CARRIED = "RULING_NOT_CARRIED"
+RULING_BINDING_MISMATCH = "RULING_BINDING_MISMATCH"
+RULING_OPTION_OFF_RECORD = "RULING_OPTION_OFF_RECORD"
 
 CAUSES = {FLOOR_UNREADABLE, PIN_FIELD_MISSING, PIN_VOCAB_UNKNOWN, PIN_KEY_UNRECOGNIZED,
           DIGEST_MISMATCH, DUPLICATE_PIN_ID, SCOPE_MISSING,
-          RULING_NOT_SETTLED, RULING_NOT_CARRIED}
+          RULING_NOT_SETTLED, RULING_NOT_CARRIED, RULING_BINDING_MISMATCH,
+          RULING_OPTION_OFF_RECORD}
 
 # The settlement shape a ruling must arrive in, read from the records PLAN-0016's receipt
 # path already writes (.veldo/request_reconcile.py:96-107 and :247-259). Named here so the
@@ -183,6 +222,18 @@ SETTLEMENT_DECIDED = "decided"
 REQUEST_SCHEMA = "veldo.request/v1"
 REQUEST_TOUCHPOINT = "decision_choice"
 REQUEST_ACCEPTED = "accepted"
+
+# The DECISION RECORD a decision_choice request binds by bound_artifact.ref: the veldo.decision/v1
+# record whose own decision block carries the option A HUMAN CHOSE among that record's declared
+# options (.veldo/decision.py:176-190), which is where the ruling actually lives. It shares the
+# veldo.decision/v1 schema string with the settlement and is a DIFFERENT SHAPE - a decision record
+# carries status "decided" and a decision MAPPING, a settlement carries a decision STRING - so a
+# request pointed at a settlement resolves no option and the two can never be confused.
+DECISION_STATUS_DECIDED = "decided"
+# The key a settlement would carry an option in IF the channel ever wrote one. Read here ONLY to be
+# compared against the decision record's option, never as a ruling: the shipped receipt path writes
+# no option at all, so an option sitting on a settlement was typed rather than settled.
+SETTLEMENT_OPTION_KEY = "chosen"
 
 # The stand-down REGISTRY: which floors the check stood down for and why, recorded rather
 # than printed, so the gate check leaves run_all's output byte-identical while a reader can
@@ -298,6 +349,10 @@ def _validate_scope(scope, pins, name, fail):
     floor that does not say what it did not look at is a coverage claim wearing an
     artifact's clothes. Returns (errors, enumerated, unreachable)."""
     if not isinstance(scope, dict):
+        if not pins:
+            return (fail(name, "%s: the floor carries a scope block that is not a mapping - a scope "
+                               "block says which surfaces were enumerated, by what method, and "
+                               "which the pass COULD NOT REACH" % SCOPE_MISSING), [], [])
         return (fail(name, "%s: a floor with pins carries no scope block - a floor that does not "
                            "say which surfaces were enumerated, by what method, and which it "
                            "COULD NOT REACH is a coverage claim wearing an artifact's clothes"
@@ -404,6 +459,15 @@ def validate_floor(data, root, floor_path, fail):
         return errs + fail(name, "%s: pins must be a list of pins (%r)" % (FLOOR_UNREADABLE, pins))
     pins = _as_list(pins)
     if not pins:
+        # THE SCOPE BLOCK'S CLOSED KEY SET IS ENFORCED WHENEVER A SCOPE BLOCK IS PRESENT, not only
+        # when the floor declares pins. A review drove the gap: this early return used to run BEFORE
+        # _validate_scope, so a floor with no pins carrying scope.waived_paths: legacy/** and
+        # scope.disposition: incidental validated with ZERO errors. The enumeration was already
+        # closed; the CALL SITE was conditional, which is the same defect one level down. A pins-less
+        # floor with no scope block is still a stand-down rather than a refusal, because AC1 refuses
+        # a missing scope block only for a floor that pins something.
+        if data.get("scope") is not None:
+            errs += _validate_scope(data.get("scope"), pins, name, fail)[0]
         _standdown(name, "the floor declares no pins, so there is nothing to validate and "
                          "nothing to read a disposition for")
         return errs
@@ -438,6 +502,22 @@ def check_floor(path, root, required, parse, fail):
     return validate_floor(data, root, p, fail)
 
 
+def unclaimed_entries(fdir):
+    """Every entry in the floors directory that the *.yaml rule does NOT claim, by name, sorted.
+
+    A file in .veldo/floors/ named contracts.yml, or a subdirectory of floors, is read by NOTHING:
+    not validated, not counted, not named. That is a confident zero over an input nobody recorded,
+    and it is one extension away from the unreadable-floor defect the report already refuses to
+    commit - a human reading a PROTECTED directory sees a record the machine reports as absent. So
+    the reader ENUMERATES what it did not claim instead of skipping it, and the check refuses it by
+    name: the floors directory holds floors, and a record parked next to them under another
+    extension is either a floor nobody validates or a file that does not belong there."""
+    d = Path(fdir)
+    if not d.is_dir():
+        return []
+    return sorted(p.name for p in d.iterdir() if not (p.is_file() and p.name.endswith(".yaml")))
+
+
 def check_floors_dir(fdir, root, parse, fail):
     """The gate entry point over the per-repo floors. ADOPTION SAFE: an absent
     .veldo/floors/ directory stands the whole check down and returns clean, exactly as
@@ -445,7 +525,9 @@ def check_floors_dir(fdir, root, parse, fail):
     unaffected and adding this check refuses nothing anywhere. Present floors each fail
     closed on anything malformed, and a pin id declared by more than one floor is refused
     (a duplicate id is an ambiguous reference across the set, the rule
-    .veldo/decision.py:239-241 already applies to decision ids).
+    .veldo/decision.py:239-241 already applies to decision ids). An entry the *.yaml rule does
+    not claim is REFUSED BY NAME rather than skipped, because a file no reader claims is an
+    input nobody records (see unclaimed_entries).
 
     ENFORCES NOTHING BEYOND WELL-FORMEDNESS: no change is refused because a pin is unknown
     or blocked. This never calls disposition_for."""
@@ -454,6 +536,13 @@ def check_floors_dir(fdir, root, parse, fail):
         return _standdown(d, "no .veldo/floors/ directory: a repository that has not adopted "
                              "the behaviour floor is byte-identically unaffected")
     errs = 0
+    for entry in unclaimed_entries(d):
+        errs += fail(str(d), "%s: %r sits in the floors directory and the *.yaml rule does not claim "
+                             "it, so no reader validates it, counts it or names it - a record parked "
+                             "in a PROTECTED directory under another extension is a signed-off "
+                             "exemption the machine would report as absent. Rename it to *.yaml so "
+                             "it is validated, or move it out of .veldo/floors/" % (FLOOR_UNREADABLE,
+                                                                                   entry))
     ids = {}
     for p in sorted(d.glob("*.yaml")):
         errs += check_floor(p, root, False, parse, fail)
@@ -506,20 +595,95 @@ def _load_requests(root, parse):
     return out
 
 
-def _accepted_request(request_id, requests):
-    """The veldo.request/v1 record that carries this settlement, ONLY when it is a
-    decision_choice touchpoint whose status is accepted (.veldo/request.py:74-77, and the
-    accepted-binding rule at .veldo/request.py:273-274). Anything else returns None, which
-    leaves the pin unknown: a settlement file with no accepted request behind it is a
-    forgery, not a ruling."""
+def _bound_artifact_digest(req):
+    """A request's OWN binding: bound_artifact.digest, the polymorphic per-touchpoint digest the
+    settlement reader for that touchpoint checks (.veldo/request.py:258-274). The receipt path SETS
+    a settlement's bound_digest from this exact field (.veldo/request_reconcile.py:451)."""
+    ba = req.get("bound_artifact") if isinstance(req, dict) else None
+    return ba.get("digest") if isinstance(ba, dict) else None
+
+
+def _named_accepted_requests(request_id, requests):
+    """Every accepted decision_choice veldo.request/v1 record the settlement NAMES, whatever that
+    record is bound to (.veldo/request.py:74-77, and the accepted-binding rule at :273-274). The
+    binding is NOT checked here: this is the set the resolver then compares bindings over, and the
+    set a mismatch is NAMED from, so "no such request" and "a request bound to something else" are
+    never reported as the same fact."""
     if not _is_str(request_id):
-        return None
-    for req in requests:
-        if (req.get("schema") == REQUEST_SCHEMA and req.get("id") == request_id
-                and req.get("touchpoint") == REQUEST_TOUCHPOINT
-                and req.get("status") == REQUEST_ACCEPTED):
+        return []
+    return [req for req in requests
+            if req.get("schema") == REQUEST_SCHEMA and req.get("id") == request_id
+            and req.get("touchpoint") == REQUEST_TOUCHPOINT
+            and req.get("status") == REQUEST_ACCEPTED]
+
+
+def _accepted_request(request_id, requests, digest):
+    """The veldo.request/v1 record that carries this settlement, ONLY when it is an accepted
+    decision_choice record AND ITS OWN bound_artifact.digest IS THE DIGEST OF THIS OBSERVATION.
+    Anything else returns None, which leaves the pin unknown: a settlement file with no accepted
+    request behind it is a forgery, not a ruling.
+
+    THE BINDING COMPARISON IS THE HALF A REVIEW FOUND MISSING, and it costs nothing: the receipt
+    path sets a settlement's bound_digest FROM this field (.veldo/request_reconcile.py:451), so in a
+    settlement the channel wrote the two are the same value by construction. Without the comparison
+    a settlement could name a REAL accepted request that a human settled about a DIFFERENT artifact
+    and it would rule this pin - which is exactly the transfer the digest join exists to prevent."""
+    for req in _named_accepted_requests(request_id, requests):
+        if _bound_artifact_digest(req) == digest:
             return req
     return None
+
+
+def _bound_decision_record(req, root, parse, decisions):
+    """The DECISION RECORD the request binds by bound_artifact.ref, resolved exactly the way
+    .veldo/request.py:315-338 already resolves that same reference: a repo-relative path read with
+    the CALLER's parser, so there is no second parser here and no dependency on decision.py. Only a
+    veldo.decision/v1 record whose status is decided and whose decision is a MAPPING qualifies, so a
+    request pointed at a settlement (decision is a STRING there) resolves nothing.
+
+    decisions may be injected as a mapping {ref: parsed record} (the suite does); when it is not,
+    the record is read from root. Read only, like everything else here."""
+    ref = (req.get("bound_artifact") or {}).get("ref") if isinstance(req.get("bound_artifact"), dict) else None
+    if not _is_str(ref):
+        return None
+    if decisions is not None:
+        rec = decisions.get(ref)
+    else:
+        p = Path(root or ".") / ref
+        if parse is None or not p.is_file():
+            return None
+        try:
+            rec = parse(p.read_text())
+        except (OSError, ValueError):
+            return None
+    if not isinstance(rec, dict) or rec.get("schema") != SETTLEMENT_SCHEMA:
+        return None
+    if rec.get("status") != DECISION_STATUS_DECIDED or not isinstance(rec.get("decision"), dict):
+        return None
+    return rec
+
+
+def _human_option(rec):
+    """The option A HUMAN CHOSE on a bound decision record, as (chosen, decided_by, decided_at), or
+    None when any leg does not resolve. THE ATTRIBUTION IS READ RATHER THAN ASSERTED: a reason string
+    that names an attributed human without reading one is the defect this replaced.
+
+    Two references must resolve, in the shape the rest of this module already requires of a floor:
+    the chosen option must be one of the record's OWN declared options (.veldo/decision.py:176-190),
+    and it must be a member of RULINGS, because a human's decision about anything OTHER than a pin's
+    disposition rules no pin."""
+    if not isinstance(rec, dict):
+        return None
+    d = rec.get("decision")
+    if not isinstance(d, dict):
+        return None
+    chosen, by, at = d.get("chosen"), d.get("decided_by"), d.get("decided_at")
+    if not (_is_str(chosen) and _is_str(by) and _is_str(at)):
+        return None
+    declared = {o.get("id") for o in _as_list(rec.get("options")) if isinstance(o, dict)}
+    if chosen not in declared or chosen not in RULINGS:
+        return None
+    return (chosen, by, at)
 
 
 def _matching_settlements(digest, settlements):
@@ -532,66 +696,118 @@ def _matching_settlements(digest, settlements):
     return sorted(out, key=lambda s: (str(s.get("request_id")), str(s.get("changelog_id"))))
 
 
-def disposition_for(pin, root=None, parse=None, settlements=None, requests=None):
+def disposition_for(pin, root=None, parse=None, settlements=None, requests=None, decisions=None):
     """READ-ONLY: what a human has said about ONE pin's observation, or why nothing is
     known. Returns {pin, digest, disposition, reason, ruling, request}.
 
     A RULING IS RESOLVED ONLY FROM A DECISION THAT WENT THROUGH THE TICKET CHANNEL, JOINED
     TO THE OBSERVATION BY DIGEST, AND THE FLOOR HOLDS NO POINTER TO IT. The join is the
     digest and nothing else, in ONE direction, so mutating the recorded observation changes
-    the digest and the same settlement stops matching.
+    the digest and the same settlement stops matching. EVERY FIELD IN IT IS COMPARED AGAINST
+    SOMETHING ELSE and none is read at face value.
 
       ruled    a settlement matches the recomputed digest, its request_id resolves to an
-               ACCEPTED decision_choice veldo.request/v1 record, and the chosen option
-               resolves to a member of RULINGS.
-      blocked  all of that holds and the settlement carries NO chosen option that resolves
-               (RULING_NOT_CARRIED). This is today's state for every real ruling: the
-               inbound edge derives only accept or reject and never writes the option, so
-               the repository cannot learn WHICH way a human ruled. It BLOCKS with the
-               reason named - never a ruling, never a default, and never quietly back to
-               unknown as if nobody had decided anything, which is PLAN-0016's own
+               ACCEPTED decision_choice veldo.request/v1 record WHOSE OWN bound_artifact.digest
+               is that same recomputed digest, and the decision record that request binds by
+               bound_artifact.ref is decided with an attributed decided_by/decided_at and a
+               chosen option that resolves BOTH to one of its own declared options and to a
+               member of RULINGS. An option typed onto the settlement is not a ruling; it is
+               accepted only when it EQUALS the option that record carries.
+      blocked  the settlement and its bound request hold and the ruling does not resolve.
+               RULING_NOT_CARRIED: no decided decision record behind the request carries an
+               option in RULINGS. This is today's state for every real ruling, because the
+               inbound edge derives only accept or reject and the settlement it writes carries
+               no option at all. RULING_OPTION_OFF_RECORD: the settlement carries an option no
+               decided record corroborates, which the shipped writer cannot have produced. Both
+               BLOCK with the reason named - never a ruling, never a default, and never quietly
+               back to unknown as if nobody had decided anything, which is PLAN-0016's own
                no-bypass rule applied rather than routed around.
-      unknown  nothing settled carries this observation, or what does has no accepted
-               request behind it (RULING_NOT_SETTLED). NOBODY HAS RULED.
+      unknown  nothing settled carries this observation (RULING_NOT_SETTLED), or what does
+               names an accepted request bound to a DIFFERENT artifact
+               (RULING_BINDING_MISMATCH, named rather than dropped). NOBODY HAS RULED.
 
-    settlements/requests may be injected as lists of parsed records (the suite does); when
-    they are not, they are read from root. This function never writes and never refuses."""
+    settlements/requests may be injected as lists of parsed records and decisions as a mapping
+    {ref: record} (the suite does both); when they are not, they are read from root. This
+    function never writes and never refuses."""
     digest = observation_digest(pin)
     pid = pin.get("id") if isinstance(pin, dict) else None
     setts = settlements if settlements is not None else _load_settlements(root)
     reqs = requests if requests is not None else _load_requests(root, parse)
-    blocked = None
+    off_record, not_carried, mismatch = None, None, None
     for s in _matching_settlements(digest, setts):
-        req = _accepted_request(s.get("request_id"), reqs)
+        req = _accepted_request(s.get("request_id"), reqs, digest)
         if req is None:
+            # NAMED, NEVER DROPPED: a settlement that carries this observation's digest while the
+            # accepted request it names is bound to something else is a different fact from no
+            # request at all, and it is the shape a transferred ruling takes.
+            for other in _named_accepted_requests(s.get("request_id"), reqs):
+                if mismatch is None:
+                    mismatch = {"pin": pid, "digest": digest,
+                                "disposition": DISPOSITION_UNKNOWN, "ruling": None,
+                                "request": other.get("id"),
+                                "reason": "%s: a settlement carrying this observation's digest "
+                                          "names the accepted request %s, but that request is "
+                                          "bound to %r rather than to this observation's "
+                                          "recomputed digest %r. The receipt path sets a "
+                                          "settlement's bound_digest FROM the request's "
+                                          "bound_artifact.digest, so the two disagreeing means "
+                                          "the channel did not write this settlement from that "
+                                          "request. NOBODY HAS RULED this observation, and a "
+                                          "human's decision about a DIFFERENT artifact is never "
+                                          "transferred onto it"
+                                          % (RULING_BINDING_MISMATCH, other.get("id"),
+                                             _bound_artifact_digest(other), digest)}
             continue
-        chosen = s.get("chosen")
-        if _is_str(chosen) and chosen in RULINGS:
+        typed = s.get(SETTLEMENT_OPTION_KEY)
+        option = _human_option(_bound_decision_record(req, root, parse, decisions))
+        if option is not None and (typed is None or typed == option[0]):
+            chosen, by, at = option
             return {"pin": pid, "digest": digest, "disposition": DISPOSITION_RULED,
                     "ruling": chosen, "request": req.get("id"),
-                    "reason": "ruled %s by an attributed human through request %s, bound to this "
-                              "observation's recomputed digest" % (chosen, req.get("id"))}
-        if blocked is None:
-            blocked = {"pin": pid, "digest": digest, "disposition": DISPOSITION_BLOCKED,
-                       "ruling": None, "request": req.get("id"),
-                       "reason": "%s: a human settled a decision on this observation through "
-                                 "request %s and the inbound edge carried no chosen option, so "
-                                 "the repository cannot learn WHICH of %s they chose. BLOCKED "
-                                 "with the reason named rather than defaulted; the option "
-                                 "carrier is a PLAN-0016 work item"
-                                 % (RULING_NOT_CARRIED, req.get("id"), sorted(RULINGS))}
-    if blocked is not None:
-        return blocked
+                    "reason": "ruled %s by %s on %s: the option that human chose among the "
+                              "declared options of the decision record accepted request %s binds, "
+                              "which is bound in turn to this observation's RECOMPUTED digest %s. "
+                              "Nothing here is read at face value: the settlement's binding, the "
+                              "request's binding and the option are each compared against another "
+                              "record" % (chosen, by, at, req.get("id"), digest)}
+        if typed is not None and off_record is None:
+            off_record = {"pin": pid, "digest": digest, "disposition": DISPOSITION_BLOCKED,
+                          "ruling": None, "request": req.get("id"),
+                          "reason": "%s: this settlement carries the option %r, and NO decided "
+                                    "decision record behind request %s carries that option among "
+                                    "its declared ones. The shipped receipt path writes a "
+                                    "settlement with decision, decided_by and bound_digest and no "
+                                    "option AT ALL, so an option here was typed rather than chosen "
+                                    "through the channel and it rules NOTHING. BLOCKED with the "
+                                    "reason named: the ruling is read from the record a human "
+                                    "decided, never from the settlement"
+                                    % (RULING_OPTION_OFF_RECORD, typed, req.get("id"))}
+        elif not_carried is None:
+            not_carried = {"pin": pid, "digest": digest, "disposition": DISPOSITION_BLOCKED,
+                           "ruling": None, "request": req.get("id"),
+                           "reason": "%s: a human settled a decision on this observation through "
+                                     "request %s and no decided decision record it binds carries "
+                                     "an option in %s, so the repository cannot learn WHICH of "
+                                     "them they chose. BLOCKED with the reason named rather than "
+                                     "defaulted; the settlement-side option carrier is a "
+                                     "PLAN-0016 work item"
+                                     % (RULING_NOT_CARRIED, req.get("id"), sorted(RULINGS))}
+    # A typed option nobody decided is the more urgent fact, so it is reported ahead of an
+    # incomplete channel; a mismatch is reported only when nothing settled bound this observation.
+    for candidate in (off_record, not_carried, mismatch):
+        if candidate is not None:
+            return candidate
     return {"pin": pid, "digest": digest, "disposition": DISPOSITION_UNKNOWN, "ruling": None,
             "request": None,
             "reason": "%s: nothing settled through the ticket channel carries this observation's "
-                      "digest with an accepted decision_choice request behind it. NOBODY HAS "
-                      "RULED - which is a different fact from a human having ruled unreadably"
-                      % RULING_NOT_SETTLED}
+                      "digest with an accepted decision_choice request BOUND TO IT behind it. "
+                      "NOBODY HAS RULED - which is a different fact from a human having ruled "
+                      "unreadably" % RULING_NOT_SETTLED}
 
 
 # --- the report: counts BESIDE the weakness that produced them --------------------------
-def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=None):
+def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=None,
+                 decisions=None):
     """The read-only floor report. ONE key shape whether it stood down or not, so a
     consumer never guesses whether a key is missing or genuinely empty.
 
@@ -605,11 +821,14 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
     rep = {"standdown": True, "reason": None, "floors": 0, "pins": 0,
            DISPOSITION_RULED: 0, DISPOSITION_UNKNOWN: 0, DISPOSITION_BLOCKED: 0,
            "enumerated_surfaces": 0, "unreachable_surfaces": 0,
-           "unanalyzed_languages": [], "dispositions": [], "unreadable": []}
+           "unanalyzed_languages": [], "dispositions": [], "unreadable": [], "unclaimed": []}
     if not d.is_dir():
         rep["reason"] = ("no .veldo/floors/ directory: this repository has not adopted the "
                          "behaviour floor")
         return rep
+    # NAMED BEFORE ANYTHING IS COUNTED: an entry the *.yaml rule does not claim is an input this
+    # reader did not read, so it appears in the report rather than behind the counts.
+    rep["unclaimed"] = unclaimed_entries(d)
     setts = settlements if settlements is not None else _load_settlements(base)
     reqs = requests if requests is not None else _load_requests(base, parse)
     langs = set()
@@ -632,7 +851,8 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
             rep["pins"] += 1
             if not analyzer_supported(pin.get("language")):
                 langs.add(pin.get("language") or "(no language stated)")
-            disp = disposition_for(pin, root=base, parse=parse, settlements=setts, requests=reqs)
+            disp = disposition_for(pin, root=base, parse=parse, settlements=setts, requests=reqs,
+                                   decisions=decisions)
             disp["floor"] = p.name
             rep["dispositions"].append(disp)
             rep[disp["disposition"]] += 1
@@ -643,6 +863,10 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
         if rep["unreadable"]:
             rep["reason"] += (", and %d floor file(s) could not be read at all: %s"
                               % (len(rep["unreadable"]), ", ".join(rep["unreadable"])))
+        if rep["unclaimed"]:
+            rep["reason"] += (", and %d entry/entries in the directory are not *.yaml so no reader "
+                              "claims them: %s. A stand-down over an unread input is not a zero"
+                              % (len(rep["unclaimed"]), ", ".join(rep["unclaimed"])))
         return rep
     rep["standdown"] = False
     return rep
@@ -662,6 +886,10 @@ def report_lines(rep):
     if rep.get("unreadable"):
         lines.append("  %d floor file(s) COULD NOT BE READ and are absent from every count above: "
                      "%s" % (len(rep["unreadable"]), ", ".join(rep["unreadable"])))
+    if rep.get("unclaimed"):
+        lines.append("  %d entry/entries in the floors directory are NOT CLAIMED by the *.yaml rule "
+                     "and no reader validates or counts them: %s"
+                     % (len(rep["unclaimed"]), ", ".join(rep["unclaimed"])))
     if rep.get("unanalyzed_languages"):
         lines.append("  the shipped analyzers are %s only, so no analyzer covers: %s"
                      % (", ".join(ANALYZER_LANGUAGES), ", ".join(rep["unanalyzed_languages"])))

@@ -30,10 +30,15 @@ protected_paths:
 behavior_bearing: true
 observability:
   logs: >
-    One line per pack: the pack name, the file count init laid down, and whether that repository's own
-    gate went green, with the nested gate's own last lines quoted on failure so a reader sees WHY the
-    adopter's gate failed rather than only that it did. The stage prints the composed pack set it
-    derived and the count, so a run that composed nothing is visible rather than silently clean.
+    One line per pack: the pack name, the file count init laid down, the pack directory it installed
+    FROM, THE SCAFFOLDER PATH IT ACTUALLY LAUNCHED with whether that tree carries an engine/
+    directory, and whether that repository's own gate went green, with the nested gate's own last
+    lines quoted on failure so a reader sees WHY the adopter's gate failed rather than only that it
+    did. The executed path is on the line because the line used to name only the directory handed in,
+    which read identically whichever scaffolder ran and made the engine/ clause a provenance claim
+    that could be false while sounding measured. The stage prints the
+    composed pack set it derived and the count, so a run that composed nothing is visible rather than
+    silently clean.
   error_taxonomy: >
     COMPOSE_FAILED (the publisher could not produce a tree at all), NO_PACKS_COMPOSED (it produced a
     tree with no composed pack, which would make every later assertion vacuous), INIT_FAILED (init
@@ -46,7 +51,9 @@ acceptance_criteria:
     falsified_by: >
       Point the installer at this repository's own .veldo/init_scaffold.py instead of the COMPOSED
       pack's copy in scripts/check_install_and_run.py, and the assertion that the scaffolder was run
-      from a tree containing no engine/ directory must go red.
+      from a tree containing no engine/ directory must go red. The tree asserted is the one the
+      EXECUTED path belongs to, read out of the argv the child was handed: a record of the directory
+      the installer was PASSED leaves this mutation green, which is how it shipped.
     text: >
       IT INSTALLS FROM THE COMPOSED PACK, NOT FROM THIS REPOSITORY, AND THAT IS THE ENTIRE POINT. In
       this repository the template base is a separate tree at engine/; in a composed pack the base has
@@ -54,7 +61,10 @@ acceptance_criteria:
       1.0 shipped uninstallable because init assumed the first shape, and every test ran against this
       repository - the one tree nobody installs. So the stage runs the COMPOSED PACK'S OWN
       init_scaffold.py, and asserts the tree it ran from has no engine/ directory, because that
-      absence is the condition that broke.
+      absence is the condition that broke. THE TREE IT RAN FROM IS DERIVED FROM THE EXECUTABLE THE
+      CHILD WAS HANDED, never from the directory the installer was passed: those two agree in every
+      case except the one this criterion exists to catch, which is why a review pointing the launch
+      at this repository left the old rows green.
   - id: AC2
     falsified_by: >
       Replace the derived pack set in scripts/check_install_and_run.py with a hand-written list naming
@@ -71,27 +81,44 @@ acceptance_criteria:
     falsified_by: >
       Ignore the nested gate's exit status in scripts/check_install_and_run.py and report success
       whenever init laid files, and the assertion that a scaffolded repository whose own gate FAILS
-      makes the stage red - driven by breaking a required substrate file in the composed pack - must go
-      red.
+      makes the stage red - driven by writing an INVALID STARTER PLAN into the composed pack, which
+      init lays down happily and the adopter's own gate then refuses - must go red. Corrupting a
+      required substrate file does NOT drive this row, and this text used to say it did: that
+      corruption breaks init before the gate is ever consulted, so the failure is INIT_FAILED and
+      that row accepts either name. The suite carries both; only the invalid starter plan isolates
+      the gate's exit status.
     text: >
       THE ADOPTER'S OWN GATE MUST GO GREEN, AND THE PROOF IS A BROKEN ONE GOING RED. Laying files down
       is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a repository whose
       gate is red is worse, because the adopter's first act fails and the failure looks like their
       fault. The stage runs the scaffolded repository's OWN scripts/verify.sh and requires exit zero,
-      and the suite proves that assertion has teeth by corrupting a required substrate file inside a
-      composed pack and requiring the stage to fail. On failure the nested gate's last lines are
-      quoted, because "their gate failed" without the reason sends nobody anywhere.
+      and the suite proves that assertion has teeth twice over inside a real composed pack: by
+      corrupting a required substrate file, which breaks init and must fail by one of the two named
+      failures, and by writing an invalid starter plan, which init lays down happily so the ONLY
+      thing that can refuse it is the adopter's own gate. The second is the row that isolates the
+      exit status; the first alone left a deleted gate check green. On failure the nested gate's last
+      lines are quoted, because "their gate failed" without the reason sends nobody anywhere.
   - id: AC4
     falsified_by: >
-      Make scripts/check_install_and_run.py write anywhere outside its temporary directory, or leave
-      its temporary directory behind, and the assertion that the repository tree is byte-identical
-      before and after the stage runs must go red.
+      Make scripts/check_install_and_run.py write anywhere outside its temporary directory - into
+      $HOME, or into a git-ignored path inside the repository, which are the two blind spots that let
+      this criterion ship unasserted - or leave its temporary directory behind, or detach its children
+      with start_new_session=True, and the assertion that the inventory of the repository under check
+      and of the process's own HOME is identical across the run must go red.
     text: >
       IT TOUCHES NOTHING OUTSIDE A TEMPORARY DIRECTORY. The stage composes, installs and runs a nested
       gate, which is a great deal of writing, and every byte of it lands under a temporary directory
-      that is removed. The suite asserts the repository's own tracked state is unchanged across a run,
-      because a check that mutates the tree it is checking is the shape that makes a green gate
-      meaningless. It also runs no network call and starts no detached process.
+      that is removed. THE SUITE OBSERVES THE WRITES RATHER THAN A PROXY FOR THEM: it runs the stage
+      in a sandbox where every root it could legitimately write to is declared - its own copy of the
+      working tree, its own HOME, its own TMPDIR - and requires a recursive inventory of path, size,
+      modification time and digest over the first two to be identical across a run that demonstrably
+      did the work, plus the same inventory over THIS repository across a real in-process run. A
+      comparison of `git status --porcelain` was the first attempt and it is blind twice over, to
+      every path outside the repository and to every ignored path inside it, so a review wrote into
+      $HOME on every call and clobbered .veldo/trackers.json with every row still green. It also makes
+      no network call and starts no detached process, the second asserted on the launch call's own
+      KEYWORD ARGUMENTS through the one helper every child goes through, because a keyword argument
+      has no identifier for a scan to find.
   - id: AC5
     falsified_by: >
       Declare the stage as `na` in scripts/verify.sh, or name the script in an `na:` slot without
