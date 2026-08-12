@@ -344,12 +344,20 @@ class RunScope:
             return PARTIAL_FAILED_EXIT if failed else PARTIAL_PASSED_EXIT
         return 1 if failed else 0
 
-    def verify_stamp_payload(self, commit, status, at, checks_run, checks_na):
+    def verify_stamp_payload(self, commit, status, at, checks_run, checks_na,
+                             veldo_version=None):
         """The record .veldo/last_verify carries. See the module docstring: verify.sh writes
-        that file in shell and this has no production caller yet, deliberately."""
+        that file in shell and this has no production caller yet, deliberately.
+
+        veldo_version is the version that PRODUCED the run (VELDO-0010), and None is a real
+        value rather than a missing one: the gate writes null when the version cannot be read,
+        because a gate record is exactly where an invented version would be believed. The key
+        set here is asserted EQUAL to verify.sh's own printf keys, which is how this stayed in
+        step - adding the field to the gate reddened that assertion until it was added here."""
         self._refuse("write the verify stamp (.veldo/last_verify)")
         return {"commit": commit, "status": status, "at": at,
-                "checks_run": checks_run, "checks_na": checks_na}
+                "checks_run": checks_run, "checks_na": checks_na,
+                "veldo_version": veldo_version}
 
     def unit_evidence_check(self, failed):
         """The `checks` entry a proof artifact carries for the unit slot, which is what

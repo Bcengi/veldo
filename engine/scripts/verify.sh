@@ -143,8 +143,10 @@ COMMIT=$(git rev-parse --verify HEAD 2>/dev/null || echo "no-git")
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 mkdir -p .veldo
 if [ "$FAIL" -eq 0 ]; then STATUS=green; EVENT=gate.passed; else STATUS=red; EVENT=gate.failed; fi
-printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d}\n' \
-  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" > .veldo/last_verify
+VELDO_VERSION=$(python3 .veldo/version.py 2>/dev/null | awk '{print $1}')
+if [ -n "$VELDO_VERSION" ]; then VERSION_JSON="\"$VELDO_VERSION\""; else VERSION_JSON=null; fi
+printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s}\n' \
+  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" > .veldo/last_verify
 printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d}\n' \
   "$EVENT" "$COMMIT" "$TS" "$RAN" >> .veldo/events.jsonl
 

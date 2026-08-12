@@ -202,31 +202,28 @@ _VP_STAMPED = _VP_STAMPS
 
 
 def _vp_ac5():
-    if _VP_STAMPED:
-        expect("VELDO-0010 AC5: the gate stamps the producing version into .veldo/last_verify, so "
-               "every gate record says which version produced it",
-               _VP_STAMPED)
-    else:
-        expect("VELDO-0010 AC5 REPORTS RATHER THAN REFUSES, and says exactly why: the gate stamps "
-               ".veldo/last_verify from scripts/verify.sh, a PROTECTED PATH, so adding the producing "
-               "version there needs Dmitry's recorded commit-bound approval. Asserted here is the "
-               "TRUE state - the gate carries no version stamp and this item does not touch it - plus "
-               "the thing that makes the registration worth making: the evidence half works and the "
-               "version is readable. It flips to asserting the stamp when the approval lands, the "
-               "same posture VELDO-0001 and VELDO-0007 use",
-               not _VP_STAMPED
-               and _VP_DECLARES_NO_PROTECTED
-               and VP.version(ROOT)[0] is not None)
-    expect("VELDO-0010 AC5: the gate DOES already stamp a record - the commit and the status - so the "
-           "version is the one thing missing from it rather than the record being absent, which is "
-           "what makes the held line a one-line change",
-           "last_verify" in _VP_GATE and '"commit"' in _VP_GATE)
-    expect("VELDO-0010 AC5 THE TEETH, and it took driving to find them: IF THE GATE MENTIONS A "
-           "PRODUCING VERSION IT MUST ACTUALLY WRITE THE KEY. A half-done registration - a marker or "
-           "a comment in the gate with no field in the record it stamps - is the failure this row "
-           "exists for, and with a single posture flag BOTH branches were satisfiable so nothing "
-           "caught it. Mentioning without stamping is now red whichever posture the gate is in",
+    # UNCONDITIONAL, for the reason VELDO-0007's twin records: the reporting branch existed only while
+    # the protected-path edit waited for approval, Dmitry approved it on 2026-08-12, and a posture
+    # derived from the live gate cannot catch its own removal - with the stamp gone, both branches
+    # passed. Ledger finding 45.
+    expect("VELDO-0010 AC5: the gate STAMPS the producing version into the record it writes, so every "
+           "gate run says which version produced it. Both this repository's gate and the SHIPPED "
+           "template carry it, because an adopter's gate output should name its version too",
+           _VP_STAMPS
+           and '"veldo_version":' in (ROOT / "engine/scripts/verify.sh").read_text())
+    expect("VELDO-0010 AC5: MENTIONING a producing version without WRITING the key is red - a marker "
+           "or a comment in the gate with no field in the record it stamps is a half-done "
+           "registration, and this is the row that catches it",
            _VP_MENTIONS == _VP_STAMPS)
+    expect("VELDO-0010 AC5: the stamp is NULL rather than a guessed string when the version cannot be "
+           "read. A gate record is exactly where an invented version would be believed, and "
+           "VELDO-0008's rule is that an installation reporting a number it invented sends a bug "
+           "report to the wrong tree",
+           "VERSION_JSON=null" in _VP_GATE
+           and "VERSION_JSON=null" in (ROOT / "engine/scripts/verify.sh").read_text())
+    expect("VELDO-0010 AC5: the record the gate stamps carries the commit and the status beside the "
+           "version, so the three facts a reader needs about a gate run are in one place",
+           "last_verify" in _VP_GATE and '"commit"' in _VP_GATE)
 
 
 _vp_block("AC5", _vp_ac5)

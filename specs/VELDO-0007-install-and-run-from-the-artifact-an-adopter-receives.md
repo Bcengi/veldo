@@ -94,11 +94,19 @@ acceptance_criteria:
       meaningless. It also runs no network call and starts no detached process.
   - id: AC5
     falsified_by: >
-      Declare the stage as `na` in scripts/verify.sh, and the assertion that this repository's gate
-      carries it as `required:` must go red.
+      Declare the stage as `na` in scripts/verify.sh, or name the script in an `na:` slot without
+      requiring it, and the assertions that this repository's gate carries it as `required:` and that
+      mentioning it equals requiring it must go red.
     text: >
       IT IS A REQUIRED CATALOG ITEM IN THIS REPOSITORY'S GATE, because a proof that only runs when
-      somebody remembers is the state this item exists to leave. IT IS DELIBERATELY NOT IN THE SHIPPED
+      somebody remembers is the state this item exists to leave. LANDED, not pending: Dmitry approved
+      the protected-path edit on 2026-08-12 and it sits in the EXISTING packaging slot, because
+      composing the published packs and proving a stranger can install and run them IS packaging
+      verification, and a new catalog name would have changed a vocabulary the approval did not cover.
+      THE CRITERION IS UNCONDITIONAL AND ITS REPORTING BRANCH IS GONE, which driving forced: while the
+      posture was derived from the live gate, REMOVING the registration entirely satisfied both
+      branches, so the enforcing state could be silently reverted. A posture cannot catch its own
+      removal. IT IS DELIBERATELY NOT IN THE SHIPPED
       TEMPLATE, and that was CORRECTED BY THIS REPOSITORY'S OWN CAPABILITY-HONESTY CHECK: the script
       does not ship to an adopter, and an adopter does not publish packs, so a slot demanding it in
       their gate would be a required check they cannot run. The capability is marked scope: repo-only

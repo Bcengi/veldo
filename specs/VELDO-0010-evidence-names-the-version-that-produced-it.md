@@ -17,6 +17,14 @@ plan: PLAN-0018
 work: W9
 placement: [contracts]
 footprint:
+  # THE APPROVED GATE EDIT. Dmitry approved the version stamp on 2026-08-12; it lands in BOTH gates
+  # because an adopter's gate output should name its version too, and both are protected paths.
+  - "scripts/verify.sh"
+  - "engine/scripts/verify.sh"
+  # DECLARED BECAUSE THE GATE EDIT CAUSED IT: run_scope declares the stamp's key set and a shipped
+  # assertion parses verify.sh's own printf to require the two match, so adding the field to the gate
+  # reddened that check until the payload carried it too. The coupling worked exactly as designed.
+  - "scripts/run_scope.py"
   - ".veldo/version.py"
   - "engine/.veldo/version.py"
   - ".veldo/capabilities.yaml"
@@ -30,7 +38,9 @@ footprint:
   - "scripts/suites/requires.json"
   - "specs/VELDO-0010-evidence-names-the-version-that-produced-it.md"
   - "specs/index.md"
-protected_paths: []
+protected_paths:
+  - "scripts/verify.sh"
+  - "engine/scripts/verify.sh"
 behavior_bearing: true
 observability:
   logs: >
@@ -89,16 +99,18 @@ acceptance_criteria:
       recording.
   - id: AC5
     falsified_by: >
-      Declare a version slot in scripts/verify.sh, and the assertion that the gate-output half is NOT
-      yet written and that scripts/verify.sh is unchanged by this item must go red.
+      Remove the version field from the record the gate stamps in scripts/verify.sh, or leave a bare
+      mention of a producing version without writing the key, and the assertions that the gate stamps
+      it and that mentioning equals stamping must go red.
     text: >
-      THE GATE-OUTPUT HALF IS SPECIFIED AND NOT WRITTEN, AND THIS CRITERION SAYS SO RATHER THAN
-      PRETENDING. The gate stamps .veldo/last_verify at scripts/verify.sh, a PROTECTED PATH, so adding
-      the producing version there needs Dmitry's recorded commit-bound approval. This item lands the
-      evidence half and asserts the true state of the other: scripts/verify.sh carries no version
-      stamp and is not in this item's footprint. It flips to asserting the stamp when the approval
-      lands, the same posture VELDO-0001 and VELDO-0007 use, because a criterion that quietly passed
-      while unwritten is the false coverage this project keeps finding.
+      THE GATE STAMPS THE PRODUCING VERSION, IN BOTH GATES. Dmitry approved the protected-path edit on
+      2026-08-12, so .veldo/last_verify now carries the version beside the commit and the status, and
+      the shipped template does too because an adopter's gate output should name its version as well.
+      THE VALUE IS NULL RATHER THAN A GUESSED STRING when the version cannot be read: a gate record is
+      exactly where an invented version would be believed. THE CRITERION IS UNCONDITIONAL AND ITS
+      REPORTING BRANCH IS GONE, which driving forced twice - first because a single posture flag let a
+      bare marker pass, then because a posture derived from the live gate satisfied both branches when
+      the stamp was removed entirely. A posture cannot catch its own removal.
 required_evidence: [unit]
 rollback: >
   Delete the provenance reader from .veldo/version.py and its suite fragment. No bundle changes, no

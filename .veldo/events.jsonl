@@ -1150,3 +1150,6 @@
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"1036e20e79ce2ebab96fc18368fbc53f9b54ff5c","at":"2026-08-12T09:51:35Z","producer":"verify.sh","checks_run":7}
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"900ef6cabad832824a01e8484ade0238a70cfe7d","at":"2026-08-12T10:00:52Z","producer":"verify.sh","checks_run":7}
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"900ef6cabad832824a01e8484ade0238a70cfe7d","at":"2026-08-12T10:04:37Z","producer":"verify.sh","checks_run":7}
+{"schema":"veldo.event/v1","type":"gate.failed","commit":"90c35a92a45a0e1ea1784dda139038dc5934a0fd","at":"2026-08-12T10:37:49Z","producer":"verify.sh","checks_run":8}
+{"schema":"veldo.event/v1","type":"gate.failed","commit":"90c35a92a45a0e1ea1784dda139038dc5934a0fd","at":"2026-08-12T10:43:09Z","producer":"verify.sh","checks_run":8}
+{"schema":"veldo.event/v1","type":"gate.passed","commit":"90c35a92a45a0e1ea1784dda139038dc5934a0fd","at":"2026-08-12T10:47:21Z","producer":"verify.sh","checks_run":8}

@@ -253,38 +253,43 @@ _iar_block("AC4", _iar_ac4)
 # template would be a required check they cannot run.
 # ---------------------------------------------------------------------------------------
 
-_IAR_SLOT = "CHECK_install_and_run"
+_IAR_STAGE = "scripts/check_install_and_run.py"
 _IAR_GATES = ("scripts/verify.sh",)
-_IAR_DECLARED = {g: (_IAR_SLOT in (ROOT / g).read_text()) for g in _IAR_GATES}
-_IAR_REQUIRED = {g: ('%s="required:' % _IAR_SLOT) in (ROOT / g).read_text() for g in _IAR_GATES}
+# BY ITS COMMAND, not by a slot name. It landed in the EXISTING packaging slot - composing the
+# published packs and proving an adopter can install and run them IS packaging verification - so
+# asserting a slot name would pin a catalog vocabulary this item never added.
+_IAR_DECLARED = {g: (_IAR_STAGE in (ROOT / g).read_text()) for g in _IAR_GATES}
+_IAR_REQUIRED = {g: any(ln.strip().startswith("CHECK_") and '="required:' in ln
+                        and _IAR_STAGE in ln
+                        for ln in (ROOT / g).read_text().splitlines())
+                 for g in _IAR_GATES}
 _IAR_REGISTERED = all(_IAR_REQUIRED.values())
 
 
 def _iar_ac5():
-    if _IAR_REGISTERED:
-        expect("VELDO-0007 AC5: the stage is declared `required:` in this repository's gate, so the "
-               "proof of the adopter's experience runs on every gate run rather than when somebody "
-               "remembers. Deliberately NOT in the shipped template: the script does not ship and an "
-               "adopter does not publish packs, so a slot there would be a required check they "
-               "cannot run",
-               all(_IAR_REQUIRED.values())
-               and "CHECK_install_and_run" not in (ROOT / "engine/scripts/verify.sh").read_text())
-    else:
-        expect("VELDO-0007 AC5 REPORTS RATHER THAN REFUSES, and says exactly why: the stage is NOT "
-               "yet a catalog item, because declaring it edits scripts/verify.sh and "
-               "engine/scripts/verify.sh, which are PROTECTED PATHS needing Dmitry's recorded "
-               "commit-bound approval. Asserted here is the true state - the slot is absent from "
-               "both gates - plus the thing that must hold for the registration to be worth making: "
-               "the checker RUNS and passes over the real artifact. It flips to refusing when the "
-               "approval lands, the same posture VELDO-0001 used, because a criterion that quietly "
-               "passed while unregistered is the false coverage this project keeps finding. It also "
-               "asserts the slot is absent from the SHIPPED template and must STAY absent, which is "
-               "not pending anything: an adopter cannot run a script that does not ship to them",
-               not any(_IAR_DECLARED.values()) and _IAR_OK is True
-               and "CHECK_install_and_run" not in (ROOT / "engine/scripts/verify.sh").read_text())
-    expect("VELDO-0007 AC5: the checker is EXECUTABLE as a stage would run it - invoked as a "
-           "subprocess with no arguments over one pack, exiting zero - so the registration, when it "
-           "lands, cannot be the first time anybody ran it that way",
+    # UNCONDITIONAL, AND THE BRANCH IS GONE ON PURPOSE. This criterion used to REPORT while the
+    # protected-path edit waited for approval. Dmitry approved it on 2026-08-12 and the registration
+    # landed, so the pending state no longer exists - and DRIVING PROVED THE BRANCH HAD TO GO: with
+    # the registration removed entirely, both branches of the posture passed (declared False equals
+    # required False), so the enforcing state could be silently reverted to reporting. A posture
+    # derived from the live gate cannot catch its own removal. Ledger finding 45, second instance.
+    expect("VELDO-0007 AC5: the install-and-run stage is declared `required:` in this repository's "
+           "gate, so the proof of an adopter's first ten minutes runs on EVERY gate run rather than "
+           "when somebody remembers. Asserted BY ITS COMMAND, not by a slot name: it landed in the "
+           "existing packaging slot, because composing the published packs and proving a stranger can "
+           "install and run them IS packaging verification",
+           all(_IAR_REQUIRED.values()) and _IAR_REQUIRED)
+    expect("VELDO-0007 AC5: MENTIONING the stage without REQUIRING it is red - a gate naming the "
+           "script in an `na:` slot or a comment is a half-done registration, which is the failure "
+           "this row exists for now that the real one has landed",
+           _IAR_DECLARED == _IAR_REQUIRED)
+    expect("VELDO-0007 AC5: it is DELIBERATELY ABSENT from the shipped template, and must stay "
+           "absent: the script does not ship to an adopter and an adopter does not publish packs, so "
+           "a required slot in their gate would be a check they cannot run. Corrected by this "
+           "repository's own capability-honesty check rather than by me",
+           _IAR_STAGE not in (ROOT / "engine/scripts/verify.sh").read_text())
+    expect("VELDO-0007 AC5: the checker is EXECUTABLE as a stage runs it - invoked as a subprocess "
+           "over one pack, exiting zero",
            _iar_sp.run([_iar_sys.executable, str(ROOT / "scripts" / "check_install_and_run.py"),
                         "--pack", _IAR_REP["composed"][0]],
                        cwd=str(ROOT), capture_output=True, text=True).returncode == 0)

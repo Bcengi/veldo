@@ -33,7 +33,7 @@ CHECK_generated="required:bash scripts/check_generated.sh"
 CHECK_docs="required:bash scripts/check_docs.sh"
 CHECK_performance="na:no performance thresholds declared"
 CHECK_coverage="na:no coverage floor declared"
-CHECK_packaging="na:not packaged"
+CHECK_packaging="required:python3 scripts/check_install_and_run.py"
 CHECK_deploy_dry_run="na:no automated deployment path yet"
 CHECK_extra="required:bash scripts/check_template_sync.sh"
 # Configured for the VELDO home repository (docs + plugin templates + plans):
@@ -156,8 +156,10 @@ COMMIT=$(git rev-parse --verify HEAD 2>/dev/null || echo "no-git")
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 mkdir -p .veldo
 if [ "$FAIL" -eq 0 ]; then STATUS=green; EVENT=gate.passed; else STATUS=red; EVENT=gate.failed; fi
-printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d}\n' \
-  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" > .veldo/last_verify
+VELDO_VERSION=$(python3 .veldo/version.py 2>/dev/null | awk '{print $1}')
+if [ -n "$VELDO_VERSION" ]; then VERSION_JSON="\"$VELDO_VERSION\""; else VERSION_JSON=null; fi
+printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s}\n' \
+  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" > .veldo/last_verify
 printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d}\n' \
   "$EVENT" "$COMMIT" "$TS" "$RAN" >> .veldo/events.jsonl
 
