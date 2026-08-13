@@ -69,6 +69,23 @@ from pathlib import Path
 
 SCHEMA = "veldo.decision_review/v1"
 DISPOSITIONS = {"defensible", "reframe", "refuted"}
+# WHICH OUTCOMES SUPPORT A DECIDED RECORD, and it is ONE enumeration because the gate and the refusal
+# message must not be able to disagree about it. Ledger finding 69's sibling, finding 65: this gate
+# counted that a review EXISTED and never read what it SAID, so a review whose disposition is `refuted`
+# satisfied it and the gate went green on a decision its own adversarial review rejects. Measured
+# 2026-08-13 on VELDO-DEC-0001, whose round-two reviewer found it and wrote "nothing mechanical stops
+# this record; only the owner will".
+# `reframe` is NOT here on purpose. A reframe says the framing did not survive, and the honest response
+# is a new version of the record which makes that review stale by construction. Accepting reframe would
+# make the version bump cosmetic, which is precisely what the same reviewer caught me doing.
+SUPPORTING_DISPOSITIONS = {"defensible"}
+# THE OWNER'S ESCAPE HATCH, and the reason it exists rather than a clean-only rule. Dmitry decided this
+# on 2026-08-13 after being shown that clean-only can DEADLOCK: both records went to adversarial attack
+# twice that night and came back `reframe` both times, so a rule accepting nothing else would have left
+# him unable to decide anything. He keeps the authority; what changes is that overriding becomes an
+# ARTIFACT instead of happening silently.
+OVERRIDE_KEY = "review_override"
+OVERRIDE_REQUIRED = ("by", "at", "reason")
 PROBLEM_CLASS_VERDICTS = {"honest", "anchored_to_scale"}
 DEAD_END_VERDICTS = {"holds", "does_not_hold"}
 ASSUMPTION_VERDICTS = {"load_bearing", "not_load_bearing"}
@@ -341,10 +358,11 @@ def _valid_bound_reviews_by_decision(reviews_dir, decisions_dir, root, parse, fa
     decided-requires-review gate cannot be satisfied by a malformed or partial review. Errors are
     reported through fail as a side effect (the reviews are validated here, once)."""
     counts = {}
+    seen = {}
     errs = 0
     d = Path(reviews_dir)
     if not d.is_dir():
-        return counts, errs
+        return counts, seen, errs
     ids = {}
     for p in sorted(d.glob("*.yaml")):
         try:
@@ -360,14 +378,21 @@ def _valid_bound_reviews_by_decision(reviews_dir, decisions_dir, root, parse, fa
         b = bind_review(data, decision, str(p), fail)
         errs += v + b
         if v == 0 and b == 0:
-            counts[data.get("decision")] = counts.get(data.get("decision"), 0) + 1
+            did = data.get("decision")
+            seen.setdefault(did, []).append((rid, data.get("disposition")))
+            # ONLY A SUPPORTING DISPOSITION COUNTS TOWARD THE TIER'S REQUIREMENT. A valid, bound review
+            # that REFUSES the framing is still recorded above, because the refusal is the useful part
+            # and the operator must be able to read it; it simply does not vouch for the decision.
+            if data.get("disposition") in SUPPORTING_DISPOSITIONS:
+                counts[did] = counts.get(did, 0) + 1
     for rid, files in sorted(ids.items()):
         if len(files) > 1:
             errs += fail(str(d), "duplicate decision review id %r across reviews: %s" % (rid, ", ".join(sorted(files))))
-    return counts, errs
+    return counts, seen, errs
 
 
-def decided_requires_review(decisions_dir, bound_counts, root, parse, fail, required_for, load_decision):
+def decided_requires_review(decisions_dir, bound_counts, root, parse, fail, required_for,
+                            load_decision, reviews_seen=None):
     """The gate W6 adds to W5: a decision may move to `decided` only once a recorded adversarial
     review exists for it, and scrutiny scales with reversal cost (D5). For each decision record
     whose status is `decided`, require at least required_for(risk) bound, valid reviews (the tier's
@@ -389,8 +414,66 @@ def decided_requires_review(decisions_dir, bound_counts, root, parse, fail, requ
         risk = data.get("risk")
         need = required_for(risk)
         have = bound_counts.get(did, 0)
-        if have < need:
-            errs += fail(str(p), "decision %r is decided but carries %d bound adversarial review(s); its risk tier %r requires %d (a foundational choice is decided only after it is adversarially reviewed, and scrutiny scales with reversal cost, D5)" % (did, have, risk, need))
+        # THE REFUSAL NAMES WHAT IT FOUND, because "carries 0 reviews" is a lie when a review exists and
+        # refuses. An operator reading the old message would have gone looking for a missing file.
+        found = (reviews_seen or {}).get(did) or []
+        detail = (", ".join("%s=%s" % (r or "?", dp or "?") for r, dp in sorted(found))
+                  if found else "none bound")
+        # AN OVERRIDE IS VALIDATED WHENEVER IT IS PRESENT, never only when it is NEEDED. Driven
+        # 2026-08-13 while writing this: checking it after the sufficiency test left the check
+        # UNREACHABLE for a record that already had a supporting review, so an override claiming to
+        # overrule a review that AGREES went unexamined - the misleading-record class this very check
+        # exists to refuse, in the check itself. Found by driving all six cases rather than the two
+        # obvious ones.
+        ov = data.get(OVERRIDE_KEY)
+        if ov is not None:
+            errs += _override_problems(ov, did, found, str(p), fail)
+        if have >= need:
+            continue
+        if ov is not None:
+            continue
+        errs += fail(str(p), "decision %r is decided but carries %d review(s) with a supporting "
+                             "disposition; its risk tier %r requires %d. Reviews bound to it: %s. A "
+                             "disposition of %s does NOT support a decided record: it says the framing "
+                             "did not survive, and the honest response is a new version of the record. "
+                             "To decide anyway, record a %s block naming the review(s) you are "
+                             "overriding, who you are and why"
+                     % (did, have, risk, need, detail,
+                        sorted(set(DISPOSITIONS) - set(SUPPORTING_DISPOSITIONS)), OVERRIDE_KEY))
+    return errs
+
+
+def _override_problems(ov, did, found, where, fail):
+    """Whether the owner's recorded override of a refusing review is well formed.
+
+    IT MUST NAME THE REVIEW IT OVERRIDES, and that review must actually be one that refuses. An
+    override naming a `defensible` review is a claim that something was overridden when nothing was,
+    which is the misleading-record class this ledger keeps finding; it is refused rather than ignored."""
+    errs = 0
+    if not isinstance(ov, dict):
+        return fail(where, "%s on decision %r must be a mapping carrying %s and a non-empty reviews list"
+                    % (OVERRIDE_KEY, did, list(OVERRIDE_REQUIRED)))
+    for field in OVERRIDE_REQUIRED:
+        if not _is_str(ov.get(field)):
+            errs += fail(where, "%s on decision %r: missing or empty %s. An override is a HUMAN act on "
+                                "the record, so it names the human and the date and gives the reason"
+                         % (OVERRIDE_KEY, did, field))
+    named = ov.get("reviews")
+    if not isinstance(named, list) or not named or not all(_is_str(x) for x in named):
+        return errs + fail(where, "%s on decision %r: reviews must be a non-empty list of review ids, "
+                                  "because an override that names nothing cannot be audited"
+                           % (OVERRIDE_KEY, did))
+    by_id = {r: dp for r, dp in found}
+    for rid in named:
+        if rid not in by_id:
+            errs += fail(where, "%s on decision %r names review %r, which is not bound to this decision "
+                                "(bound: %s). An override may only override a review that exists"
+                         % (OVERRIDE_KEY, did, rid, sorted(by_id) or "none"))
+        elif by_id[rid] in SUPPORTING_DISPOSITIONS:
+            errs += fail(where, "%s on decision %r names review %r, whose disposition is %r and already "
+                                "SUPPORTS the record. Overriding a review that agrees with you records "
+                                "an override that did not happen"
+                         % (OVERRIDE_KEY, did, rid, by_id[rid]))
     return errs
 
 
@@ -426,6 +509,8 @@ def check_reviews(reviews_dir, decisions_dir, root, parse, fail, required_for, l
     ddir = Path(decisions_dir)
     if not rdir.is_dir() and not ddir.is_dir():
         return 0
-    bound_counts, errs = _valid_bound_reviews_by_decision(rdir, ddir, root, parse, fail, load_decision)
-    errs += decided_requires_review(ddir, bound_counts, root, parse, fail, required_for, load_decision)
+    bound_counts, reviews_seen, errs = _valid_bound_reviews_by_decision(
+        rdir, ddir, root, parse, fail, load_decision)
+    errs += decided_requires_review(ddir, bound_counts, root, parse, fail, required_for, load_decision,
+                                    reviews_seen=reviews_seen)
     return errs

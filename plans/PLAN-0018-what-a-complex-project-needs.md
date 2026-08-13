@@ -978,6 +978,36 @@ declared falsifications rather than reading them, which is why they found what r
     rather than where it was standing. **That is a change to a PROTECTED path and to the shipped stamp
     contract, so it needs Dmitry rather than a decision taken at one in the morning.**
 
+70. **FINDING 65 FIXED UNDER DMITRY'S DECISION: THE GATE NOW READS THE REVIEW'S VERDICT, AND THE OWNER
+    CAN OVERRIDE ON THE RECORD.** He decided this on 2026-08-13: "agree with review or explicit
+    override".
+    THE DEFECT: `decided_requires_review` counted that a bound review EXISTED and never read its
+    `disposition`, so a review whose verdict is `refuted` satisfied the tier's requirement and the gate
+    went GREEN on a decision its own adversarial review rejects. Found by the round-two reviewer of
+    VELDO-DEC-0001, whose words were "nothing mechanical stops this record; only the owner will" - and
+    it was right, because I had to revert both records by hand.
+    THE SHAPE, THIRD APPEARANCE: a check whose subject is the EXISTENCE of an artifact rather than what
+    the artifact SAYS. Ledger 49 was `work_state` calling an item done because a verdict FILE existed;
+    ledger 68 was a bundle claiming evidence its own file does not carry; this is the same defect inside
+    the machinery built to enforce against exactly that class.
+    THE FIX, and the second half is his rather than mine. `SUPPORTING_DISPOSITIONS = {"defensible"}` is
+    ONE enumeration so the gate and its refusal message cannot disagree. `reframe` is deliberately NOT
+    supporting: it says the framing did not survive, and the honest response is a new version of the
+    record, which makes that review stale by construction - accepting it would make a version bump
+    cosmetic, which is precisely what the same reviewer caught me doing. **And clean-only would have
+    DEADLOCKED us, measured: both records went to attack twice on 2026-08-12 and came back `reframe`
+    both times.** So a `review_override` block lets him decide anyway, naming the review, himself and
+    the reason. He keeps the authority; what changes is that overriding is an ARTIFACT rather than a
+    silence.
+    THE OVERRIDE IS ITSELF REFUSED WHEN IT LIES. It must name a review that is actually bound to the
+    decision, and that review's disposition must NOT already support the record: overriding a review
+    that agrees with you records an override that did not happen.
+    **AND THE FIRST VERSION OF THAT CHECK WAS UNREACHABLE, found by driving all six cases rather than
+    the two obvious ones.** It validated the override only when the supporting count was INSUFFICIENT,
+    so a spurious override on a record that already passed was never examined - the misleading-record
+    class, inside the check written to refuse it. The override is now validated whenever it is present.
+    Six rows pin all of it; reverting to existence-counting reds the two that name it.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

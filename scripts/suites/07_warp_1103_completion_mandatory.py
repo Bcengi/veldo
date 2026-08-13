@@ -387,6 +387,53 @@ expect("WARP-1106 TEETH: a decided record with its sole bound review present pas
 expect("WARP-1106 TEETH: deleting the sole bound review of a decided record turns the gate RED",
        _dr_gate({"d.yaml": _DR_DECIDED_HIGH}, {}) > 0)
 
+# THE GATE READS THE REVIEW'S VERDICT, WHICH FOR MOST OF THIS ITEM'S LIFE IT DID NOT. Ledger finding 65,
+# found by the round-two reviewer of VELDO-DEC-0001 on 2026-08-13: decided_requires_review counted that a
+# bound review EXISTED and never looked at its disposition, so a review whose verdict is `refuted`
+# satisfied the tier's requirement and the gate went GREEN on a decision its own adversarial review
+# rejects. In that reviewer's words, nothing mechanical stopped the record; only the owner would.
+# Same defect family as ledger 49 (work_state called an item done because a verdict FILE existed) and 68
+# (a bundle claiming evidence its file does not carry): a check whose subject is the EXISTENCE of an
+# artifact rather than what the artifact SAYS.
+_DR_REFUTED = _DR_REVIEW_BOUND.replace("disposition: defensible", "disposition: refuted")
+_DR_REFRAME = _DR_REVIEW_BOUND.replace("disposition: defensible", "disposition: reframe")
+# Dmitry's decision, 2026-08-13: clean-only could DEADLOCK, measured - both records went to attack twice
+# that night and came back `reframe` both times. So he keeps the authority through a RECORDED override,
+# and what changes is that overriding stops being silent.
+_DR_OVERRIDE = ("review_override:\n  by: Dmitry Grinberg\n  at: 2026-08-13\n"
+                "  reason: the direction stands and the reframe concerns the framing rather than the choice\n"
+                "  reviews: [%s]\n")
+_DR_REV_ID = "DR-FIX"          # the id GOOD_REVIEW actually declares, read from it rather than guessed
+
+
+def _dr_override(review_ids):
+    return _DR_DECIDED_HIGH.rstrip("\n") + "\n" + (_DR_OVERRIDE % ", ".join(review_ids))
+
+
+expect("WARP-1106 finding 65: a REFUTED review does NOT satisfy the tier's requirement. Before this, "
+       "the gate counted it and went green on a decision its own review rejects",
+       _dr_gate({"d.yaml": _DR_DECIDED_HIGH}, {"r.yaml": _DR_REFUTED}) > 0)
+expect("WARP-1106 finding 65: a REFRAME review does not satisfy it either. A reframe says the framing "
+       "did not survive, and the honest response is a NEW VERSION of the record, which makes that review "
+       "stale by construction. Accepting it would make a version bump cosmetic, which is exactly what "
+       "the round-two reviewer caught",
+       _dr_gate({"d.yaml": _DR_DECIDED_HIGH}, {"r.yaml": _DR_REFRAME}) > 0)
+expect("WARP-1106 finding 65 NEGATIVE CONTROL: the SAME record with the SAME review at `defensible` "
+       "passes, so the rows above measure the disposition rather than some other defect in the fixture",
+       _dr_gate({"d.yaml": _DR_DECIDED_HIGH}, {"r.yaml": _DR_REVIEW_BOUND}) == 0)
+expect("WARP-1106 finding 65: the OWNER'S RECORDED OVERRIDE lets a refuted review be decided anyway, "
+       "naming the review, the human and the reason. Dmitry chose this over clean-only because "
+       "clean-only can deadlock, and it makes overriding an artifact instead of a silence",
+       _dr_gate({"d.yaml": _dr_override([_DR_REV_ID])}, {"r.yaml": _DR_REFUTED}) == 0)
+expect("WARP-1106 finding 65: an override naming a review that is NOT BOUND to the decision is refused, "
+       "so an override cannot be satisfied by citing something that does not exist",
+       _dr_gate({"d.yaml": _dr_override(["REV-DOES-NOT-EXIST"])}, {"r.yaml": _DR_REFUTED}) > 0)
+expect("WARP-1106 finding 65: an override naming a review that ALREADY SUPPORTS the record is refused. "
+       "Overriding a review that agrees with you records an override that did not happen, and that is "
+       "the misleading-record class this whole family is about. DRIVEN WHILE WRITING THE FIX: the first "
+       "version validated the override only when it was NEEDED, so this case was unreachable and passed",
+       _dr_gate({"d.yaml": _dr_override([_DR_REV_ID])}, {"r.yaml": _DR_REVIEW_BOUND}) > 0)
+
 # AC6 the extended engine surface is byte-identical across the canonical copies (the gate's
 # pack-drift and template-sync checks cover all packs; assert the root vs engine pair
 # here as fast extra teeth), and the capability is declared mechanical.
