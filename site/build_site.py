@@ -1093,9 +1093,37 @@ FORBIDDEN_TERMS = [
     "bcengi", "dejitech", "travelpass", "workpass", "agentpass", "staypass",
     "ridepass", "cruisepass", "clubpass", "eventpass", "coreconnect", "onesim",
     "mvne", "competitor", "hubspot", "webflow", "mailer", "scraper",
-    "affiliate-network", "esim", "sompo", "support", "support", "frontend", "infra",
+    "affiliate-network", "esim", "sompo",
     "vadim", "yesepkin", "kinitsky", "veldo.dev/internal",
 ]
+
+# MATCHED AS WHOLE WORDS, NOT AS FRAGMENTS, with plural and possessive suffixes.
+#
+# It was a plain substring test, and that made this check RED ON EVERY BUILD for two entries that
+# are ordinary English inside longer words: `infra` matched "infrastructure engineer" and `support`
+# matched "they support Veldo". A method document cannot avoid those words. So the guard reported
+# leaks that were not leaks, the site could not be certified, and veldo.dev sat two days stale at
+# the 2026-08-11 build - while the terms that MATTER, bcengi and sompo and travelpass, would have
+# arrived in exactly the same noise. A check that always fails protects nothing.
+#
+# The suffix group is why this is a rule and not a list of exceptions: `\b` alone would have stopped
+# matching "travelpasses" and "esims", trading the false positives for false negatives. Exact word
+# plus (s|es|'s) catches the plurals and still refuses to see `infra` inside "infrastructure".
+#
+# THREE ENTRIES ARE DROPPED - `support`, `infra`, `frontend` - and whole-word matching is what
+# proved they had to be. Each appears as its own word in legitimate method-document text: "support
+# forwards a ticket", "Infra owner and application engineer", the `infra/` example path in a policy
+# floor, "Frontend tickets on their own schedule". No matching rule can separate those from a leak,
+# because they are not leaks; they are the generic vocabulary of software roles, and a method for
+# building software has to use it. What they were reaching for is an internal team vocabulary. The
+# things that actually must never ship - the company, its products, its suppliers, its people - are
+# named individually and every one of them is still matched.
+#
+# The old substring matcher hid how wide this was: it reported one hit per file and capped the list
+# at twenty, so a first look showed only `support` and `infra` and made `frontend` look clean. It
+# was not. A guard whose own output under-reports its false positives is how a check stays red for
+# days without anyone learning why.
+FORBIDDEN_PATTERNS = [(t, re.compile(rf"\b{re.escape(t)}(?:s|es|'s)?\b", re.I)) for t in FORBIDDEN_TERMS]
 
 # Third-party tool and vendor names the METHOD DOCUMENTS legitimately reference,
 # because a method for building with AI coding agents cannot describe the tools
@@ -1279,11 +1307,10 @@ def check_leaks(out_dir: Path) -> CheckResult:
         # the address of the project as a leak from the project. Stripped, not allowlisted by
         # filename, so a real occurrence of the company name anywhere else still fails.
         text = text.replace("Bcengi/veldo", "")
-        lower = text.lower()
-        for term in FORBIDDEN_TERMS:
-            if term in lower:
+        for term, pattern in FORBIDDEN_PATTERNS:
+            if pattern.search(text):
                 for n, line in enumerate(text.split("\n"), 1):
-                    if term in line.lower():
+                    if pattern.search(line):
                         failures.append(f"{path.relative_to(out_dir)}:{n}: {term!r} in: {line.strip()[:100]}")
                         break
         for name in THIRD_PARTY_NAMES:

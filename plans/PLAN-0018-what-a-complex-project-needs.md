@@ -1264,6 +1264,31 @@ declared falsifications rather than reading them, which is why they found what r
     quietly forked again. Bound to the positive control that the same spec with its id untouched
     validates with zero problems.
 
+78. **THE SITE'S LEAK GUARD WAS RED ON EVERY BUILD, SO THE BOOK'S FRONT DOOR SAT TWO DAYS STALE.**
+    Dmitry, 2026-08-13, asked whether veldo was pushed "including website". It was not:
+    `veldo.dev` is live but serving the 2026-08-11 `gh-pages` build, because `site/build_site.py`
+    exits non-zero and refuses to certify its output. The reason is its own leak scan. Three entries on
+    the forbidden-terms list are ordinary English - `support`, `infra`, `frontend` - and the scan was a
+    plain substring test, so "infrastructure engineer" and "they support Veldo" were reported as company
+    leaks. **A guard that fails on every build protects nothing: the terms that matter, `bcengi` and
+    `sompo` and `travelpass`, would have arrived in exactly the same noise and been scrolled past.**
+
+    **THE GUARD'S OWN OUTPUT HID HOW WIDE THE PROBLEM WAS.** It reported one hit per file and capped the
+    list at twenty, so the first look showed only `support` and `infra` and made `frontend` look clean.
+    It was not clean - `Frontend tickets on their own schedule` is in the web-developer document. I told
+    him `frontend` could be kept on that first reading and was wrong; whole-word matching is what
+    surfaced the third one. **An under-reporting failure message is how a red check stays unexplained
+    for days.**
+
+    Fixed as a rule rather than a list of exceptions: whole-word matching with a plural and possessive
+    suffix group, `\b<term>(?:s|es|'s)?\b`. `\b` ALONE would have traded the false positives for false
+    negatives, stopping `travelpasses` and `eSIMs` from matching at all. The three generic role words
+    are dropped, because no matching rule can separate them from a leak - they are not leaks, they are
+    the vocabulary of software roles, and a method for building software must use it. Driven: seeded
+    `Bcengi`, `travelpasses`, `eSIMs`, `Sompo` and `Yesepkin` into a built page, each CAUGHT; the
+    blocking `infrastructure engineer` no longer flagged; clean tree passes; the builder's own negative
+    control still forces the check to fail as it must. Build exits 0 and is byte-identical twice over.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
