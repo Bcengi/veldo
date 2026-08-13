@@ -1692,18 +1692,53 @@ expect("WARP-1210 AC3 REAL STATE: this repository's committed stream carries NO 
        # gate. The teeth are kept and are now the harder claim: whichever branch this tree is in, the
        # cost column and the stand-down code must AGREE with each other, so a stand-down printed
        # alongside real data is still caught, and so is data reported with no stand-down cleared.
-       (_m10_real["closed_events"] == 0 and _m10_real["receipts_read"] == 0
-        and RPT10.support_empty(_m10_real) is True)
+       # THE OTHER HALF OF THE SAME DEFUSAL, and it was left pinned when the cost half was fixed.
+       # Ledger 75: `closed_events == 0 and receipts_read == 0` is a POPULATION pinned to today's
+       # emptiness, so the first reconciliation record this repository writes through the sanctioned
+       # path reds this row - measured. Same door, other hinge: the cost column above was branched on
+       # what it measured and this was not, which is the partial-vacuity shape the 2026-08-13 rate
+       # measurement found in three other assertions. Branched now, and the teeth are the harder claim
+       # either way: the emptiness verdict must AGREE with the counts, so an empty verdict beside real
+       # data is caught and so is data with the verdict still saying empty.
+       ((_m10_real["closed_events"] == 0 and _m10_real["receipts_read"] == 0
+         and RPT10.support_empty(_m10_real) is True)
+        or ((_m10_real["closed_events"] > 0 or _m10_real["receipts_read"] > 0)
+            and RPT10.support_empty(_m10_real) is False))
        and ((_m10_real_in["area_cost"] == {}
              and _m10_real["incidents_per_area"]["cost_standdown"] == C10.SUPPORT_NO_AREA_COST_DATA)
             or (_m10_real_in["area_cost"] != {}
                 and _m10_real["incidents_per_area"]["cost_standdown"] is None)))
-expect("WARP-1210 AC3 REAL STATE: the rendered section here is ONE honest empty-state line, not a row of zeros and not an error - and NOTHING was skipped on this tree (every entry of every store this repository has is a record), so read_skipped is empty and the section is byte-identical to what it rendered before the skipped entries were surfaced",
-       [_l.strip() for _l in RPT10.support_lines(_m10_real)][1:]
-       == ["no incident lifecycle event and no reconciliation receipt recorded: standing down as an "
-           "honest empty state, not a row of zeros (adoption safe)"]
-       and _m10_real["read_skipped"] == []
-       and all(_r.get("skipped") == [] for _r in _m10_real_in["source_reads"]))
+_M10_REAL_BODY = [_l.strip() for _l in RPT10.support_lines(_m10_real)][1:]
+# WHAT THIS TREE HOLDS, read off the COUNTS rather than off any verdict about them - the independent
+# fact both the emptiness verdict and the rendered body are then held against.
+_M10_REAL_NOTHING = (_m10_real["closed_events"] == 0 and _m10_real["receipts_read"] == 0)
+_M10_REAL_EMPTY_LINE = ("no incident lifecycle event and no reconciliation receipt recorded: standing "
+                        "down as an honest empty state, not a row of zeros (adoption safe)")
+expect("WARP-1210 AC3 REAL STATE: the rendered section AGREES with what this tree holds - the one honest empty-state line while nothing is recorded, real authenticated arithmetic once something is, a row of zeros or an error in NEITHER case - and read_skipped ACCOUNTS FOR every entry the readers skipped rather than being asserted empty",
+       # BRANCHED ON WHAT IT MEASURED, NEVER PINNED TO TODAY'S EMPTINESS. Ledger 75: the third and last
+       # instance of the pin in this one block. The earlier form REQUIRED the body to be exactly the
+       # empty-state line and REQUIRED read_skipped to be empty, so the first reconciliation record this
+       # repository writes through the sanctioned path reddened it - measured on a copy, not argued.
+       # The teeth are kept and sharpened: the body must agree with the emptiness verdict in BOTH
+       # directions, so an empty-state line printed beside real data is caught and so is real arithmetic
+       # printed while the verdict still says empty; and read_skipped must ACCOUNT FOR every skip the
+       # readers reported, which still catches a skip dropped between reader and report but does not
+       # require this tree to be tidy. That the vocabulary owner resolves here is asserted above, not
+       # assumed, which is what lets this row read support_empty as the whole story.
+       # THE BRANCH IS SELECTED BY THE DATA, NEVER BY THE VERDICT IT IS CHECKING. Driven falsification
+       # caught the first form of this row: selecting the branch on support_empty and then checking a
+       # render that support_empty also decides made the row a TAUTOLOGY - `support_empty -> True`
+       # reddened 14 rows in this fragment and 37 in the next, and this row STAYED GREEN, because one
+       # function lying consistently agrees with itself. The counts are the independent thing, so the
+       # verdict and the render are both held against THEM and the mutation reds this row by name.
+       (RPT10.support_empty(_m10_real) is _M10_REAL_NOTHING)
+       and ((_M10_REAL_NOTHING and _M10_REAL_BODY == [_M10_REAL_EMPTY_LINE])
+            or (not _M10_REAL_NOTHING
+                and _M10_REAL_EMPTY_LINE not in _M10_REAL_BODY
+                and any(_l.startswith("authenticated:") for _l in _M10_REAL_BODY)))
+       and not any("Traceback" in _l or "Error" in _l for _l in _M10_REAL_BODY)
+       and (len(_m10_real["read_skipped"])
+            == sum(len(_r.get("skipped") or []) for _r in _m10_real_in["source_reads"])))
 
 # AC4 HONEST DENOMINATORS AND NO INVENTED PRECISION.
 _m10_empty = _m10_go(receipts=[])

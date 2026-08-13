@@ -3324,6 +3324,27 @@ if not _m10_no_history([(".veldo/metrics.py", _m10_pre_rev)], "historical corrob
 _M10_LOOP_STREAM = [_e for _e in _M10_BASE_STREAM if _e["type"] != _M10_CLOSED]
 _m10_new_text = DB10.render_text(_M10_LOOP_STREAM)
 _m10_new_html = DB10.render_html(_M10_LOOP_STREAM)
+# THE RECORD STORES, named ONCE for this whole fragment and used at every place that needs them: the
+# copies that must not bring them, and the fixture that creates them itself. Ledger 75: none of these
+# directories exists in this repository TODAY, so every copy brought nothing, `mkdir()` succeeded and
+# the adoption-safe case looked proven. Once an operator records their FIRST incident the day changes
+# in two ways at once - a copy that withheld nothing raised FileExistsError on the bare mkdir and took
+# a whole fragment down, and a render that read the real store stopped being the empty state a row
+# below REQUIRED. Both were reproduced by writing one record and one receipt. exist_ok would have
+# silenced the crash and left the OPERATOR'S REAL RECORDS inside fixtures whose contract is a store
+# "holding nothing else", trading a loud failure for a contaminated assertion, so the copies WITHHOLD
+# instead and the mkdir stays bare - a withholding that stops working still fails loud.
+_M10_RECORD_STORES = ("incidents", "reconciliations")
+# A ROOT WITH NO RECORDS BY CONSTRUCTION, which is what "a repository with no incident events" has to
+# mean for the empty-state row below to keep exercising the empty state on every tree rather than only
+# on one that happens to be new. The engine and the item's own spec are copied; the stores are not.
+_m10_norec_root = Path(tempfile.mkdtemp(prefix="veldo1210norec")) / "repo"
+_m10_sh.copytree(ROOT / ".veldo", _m10_norec_root / ".veldo",
+                 ignore=_m10_sh.ignore_patterns("__pycache__", "examples", *_M10_RECORD_STORES))
+(_m10_norec_root / "specs").mkdir()
+_m10_sh.copy(ROOT / "specs/WARP-1210-the-support-numbers.md", _m10_norec_root / "specs")
+_m10_norec_text = DB10.render_text(_M10_LOOP_STREAM, root=_m10_norec_root)
+_m10_norec_html = DB10.render_html(_M10_LOOP_STREAM, root=_m10_norec_root)
 _m10_db_pre_rev, _m10_db_pre_src, _m10_db_pre = _m10_exec_pre(
     ".veldo/dashboard.py", ("def support_figures", "metrics_support"),
     "render_text = render_html = None")
@@ -3351,10 +3372,16 @@ expect("WARP-1210 AC6: the support section is APPENDED after every pre-existing 
        _m10_new_text.index("  support numbers (WARP-1210") > _m10_new_text.index("entropy - cost")
        and _m10_new_html.index("Support numbers -") > _m10_new_html.index("Entropy - cost")
        and _m10_new_html.index("Support numbers -") < _m10_new_html.index("<footer>"))
-expect("WARP-1210 AC6: a repository with NO incident events renders the section as the honest empty state in BOTH human surfaces, and no pre-existing figure moved",
-       "no incident lifecycle event and no reconciliation receipt recorded" in _m10_new_text
-       and "no incidents recorded" in _m10_new_html
-       and "3.0 h" in _m10_new_text and "50.0%" in _m10_new_text)
+expect("WARP-1210 AC6: a repository with NO incident events - record-free BY CONSTRUCTION rather than by being new - renders the section as the honest empty state in BOTH human surfaces, and no pre-existing figure moved",
+       # RENDERED OVER A ROOT THAT HOLDS NO RECORDS BY CONSTRUCTION. Ledger 75: this row read the REAL
+       # repository's stores while claiming to describe one with no incident events, so the first
+       # incident recorded here turned the empty state into real arithmetic and reddened it - measured
+       # on a copy. Branching on what the live tree holds would have kept it green while quietly no
+       # longer exercising the empty state at all, which is the check this row exists for, so the
+       # fixture is constructed instead and the claim is now true by construction on every tree.
+       "no incident lifecycle event and no reconciliation receipt recorded" in _m10_norec_text
+       and "no incidents recorded" in _m10_norec_html
+       and "3.0 h" in _m10_norec_text and "50.0%" in _m10_norec_text)
 
 # --- WARP-1210 ROUND-7: the round-6 blockers and the notes it ranked. R6-B2(a) is asserted with the skip
 # measurement above (the one REAL defect: a skip-NAMED container lost a record); what follows is the loop
@@ -4003,11 +4030,11 @@ def _m10_r9_engine(base, depth):
     root and this suite never writes into the repository it is asserting (the round-6 pattern)."""
     root = Path(base) / ("engine%d" % depth)
     _m10_sh.copytree(ROOT / ".veldo", root / ".veldo",
-                     ignore=_m10_sh.ignore_patterns("__pycache__", "examples"))
+                     ignore=_m10_sh.ignore_patterns("__pycache__", "examples", *_M10_RECORD_STORES))
     (root / "specs").mkdir()
     _m10_sh.copy(ROOT / "specs/WARP-1210-the-support-numbers.md", root / "specs")
-    (root / ".veldo" / "incidents").mkdir()
-    (root / ".veldo" / "reconciliations").mkdir()
+    for _m10_r9_store in _M10_RECORD_STORES:
+        (root / ".veldo" / _m10_r9_store).mkdir()
     (root / ".veldo" / "incidents" / "INC-R9.yaml").write_text(
         _m10_record_text("INC-R9", "2026-07-24T02:00:00Z", restored="2026-07-24T03:30:00Z"))
     (root / ".veldo" / "reconciliations" / "REC-R9.json").write_text(json.dumps(_m10_receipt("INC-R9")))
@@ -6116,7 +6143,18 @@ expect("WARP-1210 AC6: the metrics CLI renders the support section in both modes
        _m10_cli.returncode == 0 and _m10_cli_json.returncode == 0
        and "support numbers (WARP-1210 W10" in _m10_cli.stdout
        and "open emergency debt:" in _m10_cli.stdout
-       and json.loads(_m10_cli_json.stdout)["support"]["closed_events"] == 0
+       # THE TWO SURFACES MUST AGREE, WHICH IS THE HARDER CLAIM. Ledger 75: this read
+       # `closed_events == 0`, a CONFIDENT ZERO pinned to today's emptiness, so the first incident this
+       # repository closes reddened the gate over a correct CLI - measured. What matters here is that
+       # the machine surface and the human surface tell the same story about the same tree, and that
+       # holds whichever branch the tree is in: an empty-state sentence printed beside a non-zero count
+       # is caught, and so is real arithmetic printed while the counts say nothing was recorded.
+       and isinstance(json.loads(_m10_cli_json.stdout)["support"]["closed_events"], int)
+       and json.loads(_m10_cli_json.stdout)["support"]["closed_events"] >= 0
+       and ((json.loads(_m10_cli_json.stdout)["support"]["closed_events"] == 0
+             and json.loads(_m10_cli_json.stdout)["support"]["receipts_read"] == 0)
+            == ("no incident lifecycle event and no reconciliation receipt recorded"
+                in _m10_cli.stdout))
        # the machine surface over THIS repository's real state: renderable, so the full model - which is
        # the converse of R5-B1's withholding and the reason the fix is not "refuse always"
        and json.loads(_m10_cli_json.stdout)["support"]["renderable"] is True

@@ -1141,6 +1141,57 @@ declared falsifications rather than reading them, which is why they found what r
     percent against its own 50 percent minimum. Caution would have been shipping them; the hold-back was
     correctness.
 
+75. **THE GATE DIED ON THE FIRST LEGITIMATE USE OF AN ORGAN IT SHIPS, AND FOUR MORE ROWS WERE WRONG
+    BEHIND IT.** Dmitry, 2026-08-13: "Fix fix fix". The trigger was one operator action the product
+    invites: recording the first incident and its reconciliation receipt. `.veldo/incidents` and
+    `.veldo/reconciliations` do not exist in this repository today, which is the only reason five
+    assertions across two suites were green.
+
+    **Reproduced before it was diagnosed, and the reproduction is the whole finding.** One incident
+    record, one receipt and one closing event written into a scratch copy the way an operator's own
+    records land on disk. Result: `scripts/suites/12_warp_1210_hardening_four.py` raised
+    `FileExistsError` out of a bare `mkdir()` on a store the `copytree` above it had just brought,
+    taking the entire fragment down with it, and four assertions reddened - three in suite 11, one more
+    in suite 12 once the crash stopped hiding them. **A gate check satisfied only while nobody has used
+    the feature is the 35th sub-family of this ledger's dominant defect, and this instance is the worst
+    shape of it: not a wrong answer but a CRASH, on the first real use, in the gate that is supposed to
+    be the thing you trust.**
+
+    **THE FIRST TWO REPAIRS WERE BOTH WRONG, AND THE SECOND WAS WRONG IN THE WAY THIS LEDGER EXISTS TO
+    CATCH.** The first was `exist_ok=True` on the mkdir. It silences the crash and leaves the
+    OPERATOR'S REAL RECORDS inside a fixture whose own docstring says its store holds "nothing else",
+    trading a loud failure for a contaminated assertion - so the copies WITHHOLD the stores instead,
+    named once for the fragment and used at every site, and the mkdir stays bare so a withholding that
+    stops working still fails loud. It also went into the wrong function: a sweep of all seven copy
+    sites showed the one that crashed was not the one edited, and the comment it carried claimed a
+    reproduction that did not apply there. **The second was branching the empty-state row on what the
+    live tree holds.** That keeps it green while quietly no longer exercising the empty state at all,
+    which is the only reason the row exists. It renders over a root that is record-free BY
+    CONSTRUCTION now, so the claim is true on every tree instead of on a new one.
+
+    **DRIVEN FALSIFICATION CAUGHT A TAUTOLOGY IN THE FIX ITSELF, WHICH IS THE SECOND TIME TODAY.**
+    The repaired render row selected its branch on `support_empty` and then checked a rendering that
+    `support_empty` also decides. Mutating that function to always answer "empty" reddened 14 rows in
+    one suite and 37 in the next - and left the repaired row GREEN, because one function lying
+    consistently agrees with itself. The branch is selected by the COUNTS now, the independent fact,
+    and the same mutation reds the row by name. **An assertion that cross-checks a function against
+    its own output is not a check. Both new forms are driven: mutation applied, landing proven, the
+    NAMED row red, and green again on revert.**
+
+    Five rows repaired, all five proven in both directions - with an operator's records present and on
+    an untouched tree - and the two organs that most invite this pin now read their own state instead
+    of assuming it: the emptiness verdict must agree with the counts, the two CLI surfaces must agree
+    with each other, and `read_skipped` must ACCOUNT FOR every skip its readers reported rather than
+    be asserted empty.
+
+    **THE OTHER SIX COPY SITES WERE DRIVEN, NOT REASONED ABOUT.** Seven places copy `.veldo` into a
+    fixture; only one then created a store, which is why only one crashed. The remaining six can
+    inherit an operator's records silently, which is the worse shape because nothing raises - so they
+    were run with the records present rather than argued safe. All six stayed green, in suite 12 and in
+    suite 15, so no wrong answer is reachable through them and they are recorded here rather than
+    changed. That is a MEASUREMENT with a date on it, not a guarantee: any new assertion downstream of
+    those copies inherits the exposure, and the withholding idiom above is what it should use.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
