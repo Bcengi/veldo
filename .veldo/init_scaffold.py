@@ -76,6 +76,24 @@ _FILES = [
     # be a false requirement.
     ".veldo/work_state.py",
     ".veldo/tasks.py",
+    # THE ORGANS work_state.py LOADS, ADDED 2026-08-13 BECAUSE IT CRASHED WITHOUT THEM. Ledger
+    # finding 61: init laid work_state.py down and laid down neither of these, so PLAN-0018's
+    # headline command exited 1 with `FileNotFoundError: .veldo/executor.py` in every adopter tree.
+    # MEASURED on a fixture carrying exactly what init lays down, before this line existed.
+    # An organ whose loader ships without it is not a smaller install, it is a broken one, and
+    # VELDO-0007's stage could not see it because that stage proves the adopter's GATE runs rather
+    # than that the product runs. Dmitry directed both repairs on 2026-08-13: these two ship, AND
+    # work_state names an absent organ instead of dying, because the second covers the next one.
+    # Both are tracked here and in engine/, which finding 44 requires: the publisher derives the
+    # public tree from TRACKED files, so an untracked organ the scaffolder demands makes every
+    # scaffolded repository uninstallable.
+    ".veldo/executor.py",
+    ".veldo/runlog.py",
+    # REACHED THROUGH executor.py, and the repository's own transitive closure check caught the
+    # omission the moment the two above were added: "every .veldo module reachable from ANY laid
+    # script is itself laid". Laying an organ without what IT loads is the same broken install one
+    # level down, which is why that check follows the chain rather than naming its links.
+    ".veldo/plan.py",
     ".veldo/promises.py",
     ".veldo/declared.py",
     ".veldo/budget_state.py",

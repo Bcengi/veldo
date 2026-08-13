@@ -1,0 +1,348 @@
+schema: veldo.decision_review/v1
+id: REV3-DEC-0001
+version: 1
+decision: VELDO-DEC-0001
+decision_version: 3
+reviewer: second-round adversarial review, delegated fresh context, claude-opus-5[1m], dispatched over
+  VELDO-DEC-0001 version 3 with no involvement in authoring the record, the plan, the twelve reviews or
+  REV-DEC-0001. Every number below was measured by this reviewer on a throwaway copy of the tree at
+  commit 292367d plus the working-tree edits, under /tmp; the source tree was read and never written
+  to. Where a figure is inherited rather than re-measured it says so.
+disposition: reframe
+recommendation: THE CHOICE SURVIVES AND THE RECORD DOES NOT. This reviewer built the chosen mechanism
+  for a real criterion and drove it, so the direction is now evidenced rather than argued: VELDO-0001
+  AC1's declared mutation applied to an in-process copy of .veldo/validate_checks.py flips the
+  predicate from 2 problems to 0 while the accepting fixture stays accepted, at a MEASURED 0.0024 s per
+  drive, mean of 20, which is 0.55 s for all 227 behaviour-bearing criteria. So the option's own
+  dead_end clause that the in-memory cost is UNMEASURED is answered in one pass by anyone who tries,
+  and the note's SCOPE IS SET BY MEASUREMENT deferral defers a measurement that costs minutes. What
+  must not stand is the record. FIRST, THE ASSUMPTION SET WAS NOT TOUCHED. It is byte-identical to the
+  version the prior review refuted, and the assumptions are the only part of a decision record that
+  becomes a living tripwire: `python3 .veldo/validate.py all` on this tree prints four unmonitored
+  tripwires for this decision, one per assumption, so these four sentences and no others will be
+  monitored after the decision. Under the chosen option one of them (revert-is-clean) can never
+  breach, one (drive-is-affordable) measures an operation the chosen option abolished and names the
+  refuted option as the survivor of its own breach, one (row-is-identifiable) is already breached by
+  the record's own note while its breach clause still declares that breach fatal to every option
+  including the chosen one, and the load-bearing one the prior review prescribed is absent: that a
+  drive is believed only from a GREEN baseline, reddening a row in the criterion's own row set, with
+  the paired control staying green. The chosen option is NAMED for a paired control that appears
+  nowhere in the part of the record that gets monitored. SECOND, THE OPTION'S DEAD END IS AIMED AT THE
+  WRONG FAILURE, and this is the new finding of this round. It names seam reachability, which this
+  reviewer measured as a 68 of 227 residue and which is therefore the honest minority the record says
+  it is, and it names an unmeasured cost, which is now measured and does not bite. It misses the
+  failure that decides the mechanism: a mutation applied to a module COPY is not applied to the object
+  the shipped assertion runs against. Fragment 17 states this in its own docstring, that it drives
+  V._VC, "the module instance .veldo/validate.py itself loaded ... rather than a second copy with test
+  wiring", and shared.py states that its namespace is one namespace for all 34 fragments and "a
+  fragment that REBINDS a name here changes what every later fragment sees". Driven both ways by this
+  reviewer: the mutated copy is not the shipped object and every shipped row stays green, so a paired
+  control over a copy proves a property of a copy nobody gates on, which is ledger finding 40's defect
+  exactly, a mutation reaching a different path from the row; and rebinding the shared name to reach
+  the real row leaks the mutated module to every later fragment, in a namespace scripts/suite_equiv.py
+  already reports DEFECTIVE and ORDER_DEPENDENT, with nothing to detect the leak because the only
+  isolation assumption in the record watches `git status` and a digest of TOUCHED FILES and no file was
+  touched. THIRD, THE PROBLEM CLASS IS UNREPAIRED FROM ROUND ONE. The title is still a scheduling
+  question, "and at what moment", while the chosen option's own summary says there is "no scheduling
+  question", so the record's title now contradicts its decision. FOURTH, ONE STATED MEASUREMENT DOES
+  NOT REPRODUCE. The note's 6 resolve to one, 80 to none, 141 to more than one is produced by no
+  attribution method this reviewer could construct: the prior review's 10 / 81 / 136 with median 5 and
+  maximum 32 reproduces EXACTLY under adjacency matching, a looser containment match gives 16 / 73 /
+  138 with median 6 and maximum 33, and the note has taken the bucket statistics of the second method
+  and the bucket counts of neither, in the direction that makes its own conclusion stronger. Every
+  timing figure in the note DOES reproduce. FIFTH, THREE OF THE FOUR MISSING OPTIONS THE PRIOR REVIEW
+  NAMED WERE DROPPED WITHOUT A RECORDED REASON, including the only one that answers ledger finding 62,
+  and the one that was adopted was the one the prior review explicitly offered as "the upper bound the
+  others are measured against" and "a floor for the module-level majority and not a universal
+  mechanism". Adopting the yardstick and discarding the three revisions the recommendation actually
+  prescribed is how a round-two record takes a prescription's name and not its substance. WHAT TO DO,
+  in the order that matters. Move the record off `decided` or rewrite the four assumptions before any
+  code is written, because the assumptions are what W7 will monitor and three of the four are now
+  wrong for the option that was chosen. Add the green-baseline-plus-row-set-plus-control assumption.
+  Replace revert-is-clean with ISOLATION stated over the SUITE NAMESPACE and not the tree, measured as
+  the shared bindings and sys.modules being identical before and after each drive. Restate
+  row-is-identifiable as the row SET being mechanically derivable and non-empty, which is true for 146
+  of 227 today. Restate drive-is-affordable's signal over the per-run TOTAL with a comparator
+  .veldo/tripwire.py can actually parse, and delete the breach clause that names proof-time-record as
+  the survivor. Extend the chosen option's dead_end to name the reach problem and the residue by
+  count. And note one thing about the organ itself, because it changes what this review can do: this
+  review is valid and bound, so `decided_requires_review` will now count it and the gate will go
+  GREEN on a record this review says must not stand. The disposition is never read by
+  decided_requires_review. A count of reviews is being used as a certificate of review outcome, which
+  is the WARP-0730 shape one level up, and nothing mechanical will stop this record. Only the owner
+  will.
+problem_class_challenge:
+  verdict: anchored_to_scale
+  finding: The prior round judged this anchored_to_scale and prescribed restating the class as where
+    the drive LIVES so that it cannot be skipped or claimed, rather than which moment a gate schedules
+    it at. The title and the framing are unchanged at version 3, so the same verdict stands, and it is
+    now worse than a leftover: the record chose an option whose own summary opens "No record and no
+    scheduling question", under a title that asks "and at what moment". A record whose title states a
+    question its decision dissolves cannot be read by anybody later without re-deriving what was
+    actually decided. Two measurements of this reviewer's own, both against the premise the title
+    carries, that a drive is an operation on the working tree. ONE, the premise is not forced: the
+    chosen mechanism, built and driven here for VELDO-0001 AC1, applies the declared mutation to an
+    in-process module copy at 0.0024 s per drive, mean of 20, so the whole population of 227
+    behaviour-bearing criteria costs 0.55 s of copying, and the tree is never touched. TWO, the cost
+    figures that generated the ordering of the four original options reproduce exactly and refute the
+    ordering rather than supporting it: the unit stage is 106.8 s here against the 105.8 s the record
+    cites, the twelve VELDO-era fragments cost 11.7 s together, the per-criterion sum over the 61
+    criteria of VELDO-0001 to VELDO-0012 is 59.79 s, the sum over all 146 mechanically attributable
+    criteria at per-suite granularity is 1777 s or 29.6 min, and the 4.3 h that the every-run dead end
+    rests on is 146 times the full stage. Stated as a class the problem is that a declared property's
+    FALSIFIABILITY is never exercised, and PLAN-0018 C2 already states the class-level answer the
+    record still does not adopt as its own title: the proof IS a driven mutation with the mutation
+    asserted to have applied.
+option_challenges:
+  - option: every-run
+    dead_end_verdict: does_not_hold
+    finding: This reviewer independently reproduces the prior round's refutation and agrees with it, so
+      only the new part is spelled out. Reproduced on a throwaway copy: unit stage 106.8 s; fragment 17
+      closure 0.065 s; the twelve VELDO-era fragments 11.7 s together; the per-criterion sum for the 61
+      criteria of the twelve motivating items 59.79 s; all 146 attributable criteria 1777 s at
+      per-suite granularity against 4.33 h under the full-suite reading the dead end silently assumes.
+      The dead end's own arithmetic ("4530 assertions across 34 suites") reads the suite as
+      indivisible while scripts/suites/requires.json ships a measured per-fragment closure for every
+      one of the 34, so the granularity the dead end is stated at is not the granularity the
+      falsified_by clauses name. THE NEW FINDING IS AN INTERNAL CONTRADICTION AT VERSION 3. The chosen
+      option drives every criterion on every run of its own suite. That IS every-run, at a granularity
+      this dead end does not distinguish, so version 3 simultaneously refuses driving on every run as
+      unaffordable and chooses driving on every run as the mechanism. Measured, the chosen granularity
+      is affordable: 227 module copies cost 0.55 s and the criterion rows that would be re-executed are
+      1031 of the 4134 literal assertion labels, each attributed to exactly one criterion, so the added
+      row work is a quarter of the corpus and not a second corpus. Either this dead end is rewritten to
+      say WHICH every-run is dead (the one where each drive re-runs all 34 suites in a subprocess) or
+      it reads as a refusal of the option that was chosen.
+  - option: changed-footprint
+    dead_end_verdict: holds
+    finding: The conclusion holds, and this reviewer confirms the prior round's finding that the REASON
+      the record gives for it is false about this repository's own ledger, because that reason survives
+      unedited into version 3 after a bound review documented it in detail. Ledger finding 40 says both
+      vacuous VELDO-0007 criteria were mutation-to-row relationships inside the item's own files, an
+      accept-either-outcome assertion and a guard living in a function no row called, not
+      out-of-footprint dependencies. Version 3 still asserts that an out-of-footprint dependency "is
+      exactly how the two vacuous VELDO-0007 criteria survived". This matters more at round two than at
+      round one: the framing uses this false reason to eliminate an option, a bound review corrected it
+      with citations, and the correction was not applied while an option was added on the same review's
+      authority. The dead end's real support, unchanged from the prior round and still uncited in the
+      record, is findings 34, 35 and 62, teeth depending on CPython glob behaviour, teeth destroyed by
+      an unrelated sibling row being red, and a fixture that reddened only in the union of nine items.
+      And .veldo/validate_checks.py:258 still records in its own docstring that enforcing the declared
+      footprint against the actual diff is WARP-1102 and is not done, so the footprint remains a
+      structurally validated declaration with nothing comparing it to what a commit touched.
+  - option: proof-time-record
+    dead_end_verdict: holds
+    finding: Holds, and understated in exactly the way the prior round measured; version 3's note now
+      agrees, so this reviewer records agreement and adds only what the note still leaves out. The
+      forgery surface was not removed by choosing a different option, it was RELOCATED. Under
+      proof-time-record the artifact the gate reads is a YAML record the author writes; under
+      in-suite-paired-control the artifact is a mutation the author writes in Python, in the same suite
+      fragment as the assertion it is supposed to falsify, and nothing compares that mutation against
+      the criterion's prose falsified_by clause. The record's own eliminating phrase for
+      changed-footprint applies unchanged: it trusts the same declaration it is meant to be checking.
+      The ledger has recorded four times that the author's own test code is precisely where teethless
+      checks get written (findings 42, 48, 56 and 60, two of them written within an hour of each other
+      by the person documenting the class), so moving the falsification INTO that artifact class is not
+      obviously safer than a record, it is less visible, because a reviewer diffs a new YAML file and
+      nobody diffs a test's mutation against a spec's prose. That is a reason to add the mutation-as-
+      data missing option below, not a reason to keep this one.
+  - option: rotating-sample
+    dead_end_verdict: holds
+    finding: Holds, for the reason given and for the stronger reason the prior round added, which this
+      reviewer confirms rather than repeats: a sampling floor bounds an average and every measured
+      incident in the ledger is a statement about one specific criterion on the day it landed, findings
+      34, 40, 45, 46, 53, 56 and 60, with finding 60 being two teethless checks by one author inside
+      one hour, a rate no rotation period bounds. One addition specific to version 3. Under the chosen
+      option this option is not merely dominated on cost, it is INEXPRESSIBLE: rotation needs
+      persistent state saying whose turn it was, and persistent state is the artifact the chosen option
+      exists to delete. So if the chosen option is ever narrowed to a subset for cost reasons, the
+      subset cannot be a rotation without reintroducing the record, and the record must say so or the
+      cheap retreat from a cost problem will quietly rebuild the option this framing rejected twice.
+  - option: in-suite-paired-control
+    dead_end_verdict: does_not_hold
+    finding: THE DEAD END IS AIMED AT THE WRONG FAILURE, and both clauses it does state are weaker than
+      it thinks. CLAUSE ONE, seam reachability, is honest and is the minority it claims: measured over
+      the 227 behaviour-bearing criteria that declare a falsification, 159 clauses name only .py
+      subjects and 68 name a non-.py subject or no path at all, of which 43 name no path at all and 6
+      name a shell script or the gate. So the residue is 68 of 227, 30 percent, and the record's "the
+      majority and NOT all" holds, though the record still does not NAME the residue it says must be
+      named rather than assumed empty. CLAUSE TWO is not a dead end at all, it is an absent
+      measurement: "the in-memory cost is UNMEASURED as of version 3". This reviewer measured it by
+      building the mechanism. VELDO-0001 AC1's declared mutation, deleting the per-criterion loop in
+      falsification_problems, applied to the source of .veldo/validate_checks.py with the substitution
+      count asserted non-zero, exec'd as a module copy in memory and wired the way validate.py wires
+      the real one: the refusing fixture goes from 2 problems to 0, the accepting fixture stays
+      accepted, and the whole drive costs 0.0024 s, mean of 20 iterations. All 227 criteria therefore
+      cost 0.55 s of copying, and the rows that would be re-executed are 1031 of the 4134 literal
+      labels. The cost clause does not bite. WHAT THE DEAD END MISSES IS THE ONLY THING THAT DECIDES
+      THE OPTION, and it is structural rather than empirical. A mutation applied to a module COPY is
+      not applied to the object the shipped assertion runs against, and this suite architecture says so
+      about itself in two places. Fragment 17's docstring: the rows are driven through V._VC, "the
+      module instance .veldo/validate.py itself loaded and handed the ONE front-matter parser and the
+      ONE failure reporter, so these assertions exercise the same object the validator uses rather
+      than a second copy with test wiring". shared.py's docstring: "THERE IS ONE NAMESPACE AND IT IS
+      THIS MODULE'S ... a fragment that REBINDS a name here changes what every later fragment sees",
+      and scripts/suites/manifest.json records that suite_equiv over this manifest returns DEFECTIVE
+      with every fragment PASSES_IN_AGGREGATE_FAILS_ALONE and the reversed order ORDER_DEPENDENT. Both
+      horns driven by this reviewer. HORN ONE: after the drive, the mutated copy is not the shipped
+      object and the shipped instance still answers unmutated, so every shipped row stayed green while
+      the falsification "passed". That is a criterion proving its teeth against a path the gate does
+      not run, which is ledger finding 40's defect verbatim, a mutation reaching a different path from
+      the row, and it is reachable here BY DEFAULT rather than by mistake. HORN TWO: rebinding the
+      shared name to reach the real row succeeds and leaks, driven, the later fragments now read the
+      mutated module, and the leak is invisible to every observation the record carries because
+      nothing in the tree changed and assumption revert-is-clean's entire signal is git status plus a
+      digest of the TOUCHED FILES. So the option's claim that "nothing is written down, no party has
+      to be trusted, no tree edit happens and there is nothing to revert" is true about the TREE and
+      false about the thing that now carries the risk: there is a namespace to revert, in a namespace
+      the repository has already measured as order dependent, and the record removed the only
+      isolation property it had while pointing the survivor at the wrong subject. A third gap, smaller
+      and worth one sentence: the mutation is re-derived from the criterion's prose on every run by
+      whoever writes the fragment, and 43 of the 227 clauses name no path at all, so for those the
+      in-suite mutation cannot be derived mechanically from what the criterion says.
+missing_options:
+  - summary: Make the declared falsification MACHINE-APPLICABLE in the spec, being the subject, the
+      pattern and the replacement as data, so whichever lane drives it applies the criterion's own
+      mutation rather than one re-authored at drive time by the party under test.
+    finding: This is upstream of all five options and none of them contains it, which is why the
+      forgery surface moved rather than closed when the chosen option replaced the record. Every
+      option assumes a prose falsified_by clause can be turned into a mutation by whoever drives it,
+      and that turning is a human act each time. Measured: of the 227 behaviour-bearing criteria that
+      declare a falsification, 43 name no path at all in the clause, so for those there is nothing to
+      apply mechanically and the drive is whatever the driver decided it meant; the 12 drives this
+      repository has actually recorded were each hand-built by a reviewer from prose. Under the chosen
+      option this is sharper than under a record, because the mutation now lives in the author's own
+      suite fragment beside the assertion it must falsify, unchecked against the criterion, and the
+      ledger records four times over that the author's own test code is where teethless checks get
+      written (findings 42, 48, 56, 60). Precedent in tree: scripts/check_first_use.py already carries
+      its mutations as a MUTATIONS table with the stated extension rule "A NEW ENTRY IN MUTATIONS,
+      never a pattern match", and .veldo/validate_checks.py already parses each clause structurally, so
+      this is a field on an existing artifact rather than a new organ. It is also the only thing that
+      makes an in-suite control auditable: with the mutation as data, the control and the criterion can
+      be compared, and without it the control is one more self-authored assertion.
+  - summary: Drive the SHIPPED assertion in a child interpreter per criterion, with the module under
+      test shadowed by its mutated source, so the mutation reaches the row the criterion names without
+      any shared namespace to leak into.
+    finding: The framing has never contained the option that survives this review's attack on the
+      chosen one. In-suite driving must either mutate a copy, which leaves the shipped row green and
+      proves nothing about it, or rebind the shared module, which mutates a namespace shared by all 34
+      fragments that scripts/suites/manifest.json already reports ORDER_DEPENDENT and DEFECTIVE. A
+      child process removes the fork: the parent writes the mutated module into a throwaway directory
+      that precedes the real one on the path, runs the criterion's own suite closure in the child, and
+      requires the criterion's row set to red while the paired control stays green, with the parent's
+      own namespace untouched by construction. The cost is already measured and is the cost this
+      framing was arguing about: 59.79 s for the 61 criteria of the twelve motivating items and 1777 s
+      for all 146 attributable ones, and the isolation is the practice this repository already follows
+      everywhere it drives anything, scripts/check_first_use.py copying the tree twice and stating in
+      its docstring that other lanes edit scripts/suites while it runs. It also composes with the
+      landing union below, which no in-process control can, and it needs no seam per criterion, which
+      the prior review named as the chosen option's largest cost.
+  - summary: Re-execute the drive at LANDING over the union of what is landing, in the integration slot
+      that already drives mutations, rather than only inside each item's own suite.
+    finding: The prior review named this and version 3 dropped it with no reason recorded, and it is
+      the one thing the chosen option cannot do by construction, so the drop is a loss of coverage
+      rather than a simplification. Ledger finding 62 is the evidence and it is unanswered at version 3:
+      "each of the nine remediation copies was GREEN on its own and the interaction existed only in the
+      union ... Nine green copies are not a green repository, and the only thing that found this was one
+      gate over all of them at once." An in-suite paired control is per suite, per copy, and green in
+      each copy, which is precisely the state finding 62 says is not evidence. Ledger finding 35 is the
+      same fact one level down and also unaddressed: a criterion's only teeth were destroyed by an
+      unrelated sibling row being red, so teeth are a function of suite STATE, and a control that runs
+      inside that state without asserting the state was green first can pass on a suite where the
+      criterion has no teeth at all. The slot exists: scripts/check_first_use.py already copies the
+      tree, applies a sanctioned mutation, proves it landed, runs the whole suite and compares against a
+      baseline, in the integration slot of the gate, at a documented cost of about one nested selftest.
+  - summary: Name the drive in the L2 review contract, so the party that has actually produced every
+      measured yield keeps doing it under a contract rather than by habit.
+    finding: Also named by the prior review, also dropped at version 3, and the record's own context
+      paragraph is still the argument for it: the motivation is that "the twelve independent reviews of
+      PLAN-0018 drove them by hand and the result is the reason this record exists". The chosen option
+      relocates the drive to the party whose criterion is under test and removes it from the party whose
+      driving produced the evidence. docs/method.md locates it in review, .veldo/policy.yaml already
+      requires one L2 review at standard and high and two at critical at min_independence L2, so the
+      dispatch and the independence are already paid for. This is not an alternative to the chosen
+      mechanism and should not be recorded as one: it is the lane that catches the mutation that was
+      written to pass, which is the failure an author-written in-suite control cannot catch about
+      itself. WARP-0730's constraint applies and is easy to honour, in that a review REPORTS and never
+      certifies.
+assumption_challenges:
+  - assumption: drive-is-affordable
+    verdict: load_bearing
+    finding: Load bearing, because it is still the only quantity that discriminates the options, and
+      now mis-specified in a third way on top of the two the prior round measured. Unchanged and still
+      wrong: the signal measures ONE drive while every policy turns on the per-run TOTAL, and the
+      breach threshold "more than the entire current gate" is a moving denominator that
+      .veldo/tripwire.py cannot express, since a reading must carry either a value with a comparator
+      and a threshold it can parse or a manual review with an expiry. THE NEW DEFECT IS THAT THE SIGNAL
+      NO LONGER DESCRIBES THE CHOSEN MECHANISM. It reads "one complete drive over this repository, being
+      mutate, run the named suite, revert", and the chosen option abolishes all three of those verbs:
+      nothing is mutated on disk, no named suite is run as a separate act, nothing is reverted. A
+      tripwire whose signal names an operation the decision removed will be answered either by a
+      reading of the wrong thing or by nothing at all. Worse, the breach clause concludes "at which
+      point only proof-time recording survives as an option", and the record's own note says
+      proof-time-record did not survive, so a live assumption's breach clause now points at a refuted
+      option as the fallback. Re-measured, the quantity itself is comfortable at every granularity that
+      matters: the module copy the chosen mechanism needs is 0.0024 s, mean of 20, so 227 criteria cost
+      0.55 s; the unit stage is 106.8 s; the twelve VELDO-era fragments are 11.7 s; 61 criteria at
+      per-suite granularity are 59.79 s; 146 are 1777 s. Restate the signal over the per-run total of
+      the chosen mechanism, with a comparator the tripwire organ parses, and delete the fallback clause.
+  - assumption: row-is-identifiable
+    verdict: load_bearing
+    finding: Load bearing under every option including the chosen one, and now in the worst possible
+      state: the record's own decision note DOCUMENTS the breach while the assumption's statement,
+      signal and breach clause are unedited, so version 3 says in one place that a criterion does not
+      resolve to one assertion and in another that it does. Re-measured over the read-only tree, and
+      this is the one figure in the note that does not reproduce. The population is 227 exactly, and
+      the label corpus is 4134 literal labels plus 133 built dynamically, both matching the prior round
+      exactly. Attribution by adjacency, the spec id immediately followed by the criterion id, gives 10
+      criteria resolving to exactly one row, 81 to none and 136 to more than one, median 5 and maximum
+      32, which reproduces REV-DEC-0001 to the digit. A looser containment match, spec id and criterion
+      id anywhere in the label, gives 16, 73 and 138, median 6 and maximum 33. The note's 6, 80 and 141
+      is produced by neither, while its median 6 and maximum 33 belong to the second method, so the note
+      has combined the bucket statistics of one measurement with bucket counts that no measurement
+      here yields, in the direction that strengthens its own conclusion. The conclusion survives
+      anyway: at 10 or at 16, a one-row lookup is unbuildable for 217 or 211 of 227, so the finding is
+      that a re-measurement was asserted and did not reproduce, not that the choice was wrong. THE
+      LOAD-BEARING PROPERTY IS STILL NOT WHAT THE RECORD SAYS. It is that a criterion's ROW SET is
+      mechanically derivable and non-empty, which holds for 146 of 227 today, that at least one member
+      reds under the declared mutation, and that the paired control does not. Left as written, this
+      assumption fires on day one under a breach clause that declares the whole mechanism ungateable.
+  - assumption: revert-is-clean
+    verdict: not_load_bearing
+    finding: Not load bearing, and at version 3 it is worse than the wrong proxy the prior round found
+      it to be: under the chosen option it CANNOT BREACH. Its breach is "any drive leaves a modified or
+      untracked file behind", and the chosen option's own summary is that "no tree edit happens and
+      there is nothing to revert", so the only readings this tripwire can ever take are zero, which
+      .veldo/tripwire.py will accept forever against any comparator. A record whose entire subject is
+      that a declared falsification is worth nothing until it is driven is about to ship a monitored
+      assumption that cannot fail. That is the record reproducing its own defect class inside itself,
+      the pattern ledger finding 48 names as reading a finding not inoculating you against it. And the
+      property it is standing in for has moved, which is the part that must not be lost: the chosen
+      option's real isolation question is the SUITE NAMESPACE, not the tree. Driven here: rebinding the
+      shared module name to reach a shipped row leaks the mutated module to every later fragment, in
+      the one namespace shared.py says all 34 fragments execute into, and git status plus a digest of
+      touched files sees exactly none of it, because no file was touched. Ledger finding 53 already
+      refuted this signal from the other side, that git status is blind to every path outside the
+      repository and every ignored path inside it and that a content-only inventory could not see a
+      mutation writing identical bytes. Replace it with isolation stated over the namespace the drive
+      runs in: the shared bindings and sys.modules identical before and after every drive, asserted per
+      drive, which is both true under the chosen option and capable of being false.
+  - assumption: mutation-actually-lands
+    verdict: load_bearing
+    finding: Load bearing, correctly identified, and now insufficient in a way that is SPECIFIC to the
+      option version 3 chose, which is why this is not a repeat of the prior round's note. Its signal,
+      a non-zero substitution count plus a changed digest, is satisfied in full by the drive this
+      reviewer ran against a module COPY, where the substitution landed, the digest changed, the
+      predicate flipped, and every shipped assertion in the suite stayed green because the copy is not
+      the object the rows use. So under the chosen option "the mutation landed" and "the mutation
+      landed where the check lives" come apart, and this assumption only asserts the first. That is
+      ledger finding 34's defect with the sign reversed: there a mutation named a line the item never
+      changes and was a no-op, here a mutation applies perfectly to an object nothing gates on. The
+      complete condition is already written down in the repository and still absent from this record:
+      PLAN-0018 says of the twelve reviews that "the mutation landed, was diffed, and reddened the row
+      its own field names, with the paired control staying green so no refusal is a blanket one", and
+      ledger findings 35 and 46 are the two halves the record omits, a drive from a non-green baseline
+      proving nothing and a mutation that reds the right row for the wrong reason not being evidence.
+      Add that as its own assumption before this is built, and extend this one to require that the
+      mutated module is the object the criterion's rows resolve to, since that is now the failure that
+      is reachable by default rather than by mistake.

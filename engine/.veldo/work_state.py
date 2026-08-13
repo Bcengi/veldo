@@ -76,9 +76,21 @@ STANDDOWN_NO_REGISTRY = ("no run registry exists under the git common dir: no ru
                          "flight, so the run half of this report answers nothing")
 STANDDOWN_NO_GIT = ("the run registry root cannot be resolved because this tree has no git "
                     "common dir, so the run half of this report answers nothing")
+# THE ORGAN THIS READER NEEDS IS NOT IN THIS TREE. Two of them are absent from what
+# .veldo/init_scaffold.py lays down, so this is the state EVERY adopter is in until finding 61's
+# other repair lands: the report says which organ it could not find and which half of the answer
+# went with it, instead of exiting 1 with a traceback.
+STANDDOWN_NO_ORGAN = ("the organ that declares which verdict values conclude a review "
+                      "(.veldo/executor.py) is not in this tree, so DONE is unanswerable here and "
+                      "no item is reported done or not done: an item's state is UNKNOWN rather than "
+                      "queued, because reporting queued would state that nothing has been reviewed")
+STANDDOWN_NO_RUNLOG = ("the run registry organ (.veldo/runlog.py) is not in this tree, so the run "
+                       "half answers nothing: this is a different fact from no run being in flight")
 
 REPORT_KEYS = ("runs_stood_down", "runs_standdown_reason", "corpus_patterns", "items", "runs",
-               "counts", "unrecorded", "unconcluded")
+               "counts", "unrecorded", "unconcluded",
+               # The artifact half can stand down too, for the same reason the run half can.
+               "artifacts_stood_down", "artifacts_standdown_reason", "unanswerable")
 
 # HOW THIS READER FINDS THE CORPUS PATTERNS IT WALKS: a module-level name in verdict_corpus
 # ending in this suffix, whose value is a string, IS one of that module's declared corpus
@@ -90,6 +102,9 @@ REPORT_KEYS = ("runs_stood_down", "runs_standdown_reason", "corpus_patterns", "i
 CORPUS_PATTERN_SUFFIX = "_PATTERN"
 
 
+ORGAN_ABSENT = "ORGAN_ABSENT"
+
+
 def _sibling(name):
     """Load a sibling organ BY PATH, the idiom every organ in this directory uses. Kept to one
     place so there is one spelling of where a sibling lives."""
@@ -98,6 +113,25 @@ def _sibling(name):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+def _sibling_or_none(name):
+    """The same load, answering None when the organ is not in this tree instead of raising.
+
+    THIS EXISTS BECAUSE THE HEADLINE COMMAND CRASHED FOR EVERY ADOPTER, and the crash was not a bug
+    in the loading, it was a bug in assuming. MEASURED 2026-08-13 on a fixture carrying exactly the
+    25 modules `.veldo/init_scaffold.py` lays down: `python3 .veldo/work_state.py report` exited 1
+    with `FileNotFoundError: .veldo/executor.py`, because init lays this module down and lays down
+    neither `executor.py` nor `runlog.py`. PLAN-0018's O1 promises an operator can ask what is done
+    after a session died; every adopter got a traceback. Ledger finding 61.
+    Dmitry directed BOTH repairs on 2026-08-13: init ships the two organs, AND this reader names an
+    absent organ instead of dying, because the second is what protects against the NEXT one. A
+    traceback out of a read model is this project's confident zero in its most expensive form - a run
+    that could not look is indistinguishable from a run that found nothing."""
+    path = ROOT / ".veldo" / (name + ".py")
+    if not path.is_file():
+        return None
+    return _sibling(name)
 
 
 def corpus_patterns():
@@ -119,7 +153,9 @@ def passing_verdicts():
     executor.PASSING_VERDICTS, whose own words are "a review verdict that lets the loop proceed to
     merge readiness. Anything else is a failed cycle". Never re-spelled here, for the reason
     corpus_patterns states: one enumeration, kept in the module that owns it."""
-    ex = _sibling("executor")
+    ex = _sibling_or_none("executor")
+    if ex is None:
+        return None      # NOT an empty set: unknown and measured-empty invite opposite decisions.
     return frozenset(ex.PASSING_VERDICTS)
 
 
@@ -170,7 +206,12 @@ def verdict_records(entry, root=None, vc=None, passing=None):
     out = []
     for rel in sorted(entry.get(vc.VERDICT_PATTERN) or []):
         v = recorded_verdict(rel, root)
-        out.append({"path": rel, "verdict": v, "concludes": v in passing})
+        out.append({"path": rel, "verdict": v,
+                    # UNKNOWN, never False. With the organ that DECLARES the passing values absent,
+                    # this reader does not know whether a verdict concludes; answering False would
+                    # silently demote every reviewed item to not-done, which is the confident zero
+                    # wearing the opposite sign.
+                    "concludes": None if passing is None else v in passing})
     return out
 
 
@@ -187,6 +228,8 @@ def concluded(entry, root=None, records=None, vc=None, passing=None):
     if not entry.get(vc.MANIFEST_PATTERN):
         return False
     recs = verdict_records(entry, root, vc=vc, passing=passing) if records is None else records
+    if any(r["concludes"] is None for r in recs):
+        return None      # The rule is unreadable in this tree, so DONE is unanswerable, not False.
     return any(r["concludes"] for r in recs)
 
 
@@ -264,23 +307,34 @@ def work_report(root=None, runs_root=None, now_epoch=None):
     guesses whether a key is missing or genuinely empty."""
     base = Path(root) if root is not None else ROOT
     rep = {"runs_stood_down": True, "runs_standdown_reason": None,
+           "artifacts_stood_down": False, "artifacts_standdown_reason": None,
            "corpus_patterns": list(corpus_patterns()), "items": {}, "runs": [],
-           "counts": {s: 0 for s in STATES}, "unrecorded": [], "unconcluded": []}
+           "counts": {s: 0 for s in STATES}, "unrecorded": [], "unconcluded": [],
+           "unanswerable": []}
 
     arts = artifact_items(base)
     specs = ready_specs(base)
     # Loaded ONCE for the whole report and passed down, never once per item.
     vc = _sibling("verdict_corpus")
     passing = passing_verdicts()
+    if passing is None:
+        rep["artifacts_stood_down"] = True
+        rep["artifacts_standdown_reason"] = STANDDOWN_NO_ORGAN
 
     # THE RUN HALF. It stands down loudly rather than reporting zero.
-    rl = _sibling("runlog")
+    rl = _sibling_or_none("runlog")
     claimed = {}
-    try:
-        rroot = rl.runs_root(runs_root)
-    except Exception:                                # noqa: BLE001 - no git, no registry root
+    if rl is None:
         rroot = None
-    if rroot is None:
+        rep["runs_standdown_reason"] = STANDDOWN_NO_RUNLOG
+    else:
+        try:
+            rroot = rl.runs_root(runs_root)
+        except Exception:                            # noqa: BLE001 - no git, no registry root
+            rroot = None
+    if rl is None:
+        pass                                         # reason already recorded above
+    elif rroot is None:
         rep["runs_standdown_reason"] = STANDDOWN_NO_GIT
     elif not os.path.isdir(rroot):
         rep["runs_standdown_reason"] = STANDDOWN_NO_REGISTRY
@@ -303,8 +357,15 @@ def work_report(root=None, runs_root=None, now_epoch=None):
     for sid in sorted(set(arts) | set(specs) | set(claimed)):
         entry = arts.get(sid, {})
         records = verdict_records(entry, base, vc=vc, passing=passing)
-        is_done = concluded(entry, base, records=records, vc=vc)
-        state = DONE if is_done else (UNCONCLUDED if sid in claimed else QUEUED)
+        is_done = concluded(entry, base, records=records, vc=vc, passing=passing)
+        # UNANSWERABLE is not a fifth bucket, it is the ABSENCE of an answer: with the organ that
+        # declares the passing verdict values missing, this reader cannot say done and cannot say
+        # queued either, because queued would assert that nothing has been reviewed. The item is
+        # carried with its state None and the stand-down reason above says why.
+        if is_done is None:
+            state = None
+        else:
+            state = DONE if is_done else (UNCONCLUDED if sid in claimed else QUEUED)
         rep["items"][sid] = {
             "state": state,
             "artifacts": sorted(p for paths in entry.values() for p in paths),
@@ -312,7 +373,14 @@ def work_report(root=None, runs_root=None, now_epoch=None):
             "spec_status": (specs.get(sid) or {}).get("status"),
             "claims": claimed.get(sid, []),
         }
-        rep["counts"][state] += 1
+        # AN UNANSWERABLE ITEM IS COUNTED IN NO BUCKET, and counted as unanswerable instead. Driven
+        # 2026-08-13: incrementing counts[None] raised KeyError out of the CLI, so the repair for a
+        # crash introduced a crash, reachable only with a real bundle present and invisible over the
+        # empty fixture that had been used to check it.
+        if state is None:
+            rep["unanswerable"].append(sid)
+        else:
+            rep["counts"][state] += 1
 
     # DISAGREEMENT, IN BOTH DIRECTIONS, because they are different failures. A claim with no
     # artifacts may be half-finished work; artifacts nobody claimed COMPLETED off the record,
@@ -332,6 +400,14 @@ def report_lines(rep):
     c = rep["counts"]
     lines = ["work state: %d done, %d unconcluded, %d queued (artifacts decide done, never a "
              "run's own word)" % (c[DONE], c[UNCONCLUDED], c[QUEUED])]
+    # THE ARTIFACT HALF STANDS DOWN FIRST WHEN IT STANDS DOWN AT ALL, because the headline counts
+    # above are its product and a reader who does not know they are unanswerable will act on them.
+    # Recorded and NOT reported is the defect VELDO-0001 F2 names: with only the flag set in the
+    # report dict, the three zeros above read to an operator exactly like a measurement.
+    if rep.get("artifacts_stood_down"):
+        lines.insert(0, "ARTIFACT HALF STOOD DOWN: %d item(s) UNANSWERABLE and counted in no bucket "
+                     "above. %s" % (len(rep.get("unanswerable") or []),
+                                    rep.get("artifacts_standdown_reason")))
     if rep["runs_stood_down"]:
         lines.append("  run half STOOD DOWN, recorded rather than reported as zero: %s"
                      % rep["runs_standdown_reason"])

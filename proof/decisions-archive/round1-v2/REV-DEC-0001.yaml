@@ -1,0 +1,310 @@
+schema: veldo.decision_review/v1
+id: REV-DEC-0001
+version: 1
+decision: VELDO-DEC-0001
+decision_version: 2
+reviewer: delegated fresh context, claude-opus-5[1m], adversarial decision review dispatched over
+  VELDO-DEC-0001 with no prior involvement in authoring the record, the plan or the twelve reviews;
+  every number below was measured by this reviewer on a throwaway copy of the tree at commit
+  292367d, and the source tree was not written to
+disposition: reframe
+recommendation: Do not move this record to decided on its present framing. The DIRECTION is right and
+  the evidence supports it: any policy that actually drives beats the status quo, and driving while
+  the evidence is produced is the cheapest trigger. What does not survive attack is the second half
+  of the chosen option, that the gate checks the RECORD rather than re-drive. As specified in the
+  draft spec that implements it, the record is a self-authored attestation to an event no other party
+  can witness or reproduce: VELDO-0013 AC4 checks only that the cited row EXISTS in the corpus, and
+  no criterion requires the record to carry the mutation, the baseline it was driven from, or the
+  paired control. That is the shape this repository already ejected from its own merge rule at a cost
+  it recorded, policy.yaml merge_rule NO VERDICT CLAUSE, WARP-0730: "A verdict is an artifact the
+  agent can write, so that clause asked an agent to certify itself and cost nine build rounds of
+  forgery guards", and it is ledger finding 52 in its second dress, where three fields read at face
+  value made a human ruling reachable with no human act. Finding 52's fix is the sentence to apply
+  here: every field in the join is compared against something else and none is trusted. Three
+  revisions would make a yes mean what the record says it means. ONE, make the recorded drive
+  RE-EXECUTABLE rather than narrated: the record carries the mutation itself, the baseline commit,
+  the row set and the observed before and after counts, so a reviewer or the gate can re-run it and
+  the audit is a reproduction rather than a reading. This is exactly the shape scripts/check_first_use.py
+  already ships as its MUTATIONS table. TWO, put the re-execution where this repository already
+  drives mutations, the integration slot of scripts/verify.sh, over the LANDING UNION rather than
+  per item, because ledger finding 62 measured that nine separately green copies were not a green
+  repository and only one gate over all of them at once found it. Measured cost of the whole
+  landing-time drive for the 61 criteria of VELDO-0001 to VELDO-0012 is 59.8 s of suite time, against
+  a unit stage this reviewer measured at 105.8 s and a check_first_use stage the repository documents
+  at about 90 s. THREE, name the drive in the L2 review contract, since policy.yaml already requires
+  one L2 review at standard and high and two at critical, docs/method.md already says the
+  falsification exists to make "the reviewer's first question mechanical, which is to apply that
+  change and watch the check go red", and every measured yield in the ledger came from a party other
+  than the author driving. Also fix the assumption set before it becomes tripwires: assumption
+  row-is-identifiable is already breached under its own wording and would fire on day one for the
+  wrong reason, assumption revert-is-clean is not the property that bears load, and the assumption
+  the evidence names most often is absent, being that the drive reds for the DECLARED reason from a
+  GREEN baseline with the paired control staying green, per ledger findings 35 and 46.
+problem_class_challenge:
+  verdict: anchored_to_scale
+  finding: The title states the class as a SCHEDULING question, "whether the gate DRIVES each
+    declared falsification, and at what moment", and every option is a point on that one axis. That
+    framing carries an unexamined premise about what a drive IS, being mutate the working tree, run
+    the suite, revert, and the premise is a property of today's harness rather than of the problem.
+    Measured on a copy at commit 292367d: the full unit suite is 105.8 s over 4639 assertions in 34
+    suites, but this repository SHIPS a subset runner, WARP-0717, and 12 of the 34 fragments,
+    including every VELDO-era one, have a measured prerequisite closure of themselves alone. Driving
+    all 61 criteria of VELDO-0001 to VELDO-0012, the twelve items whose reviews produced this record,
+    costs 59.8 s of suite wall clock in total, and the falsification rule's own fragment answers in
+    0.07 s. Driving every one of the 146 criteria in this repository that has a mechanically
+    attributable row costs 29.6 min at that granularity and 4.3 h only if each drive re-runs all 34
+    suites, which is the cost the every-run dead end silently assumes. Dmitry's own recorded remedy
+    measures the same thing from the other side: five criteria, one script, about a minute, including
+    the fresh copies. So the wall-clock argument that generates the ordering of this option space was
+    never measured, and when measured it does not hold at the granularity the falsified_by clauses
+    actually name. State as a class, the problem is that a declared property's FALSIFIABILITY is
+    never exercised, and PLAN-0018 C2 already states the class-level answer in the plan this record
+    serves: "Every check added here must be able to fail, and the proof is a driven mutation with the
+    mutation asserted to have applied". C2 says the proof IS the driven mutation. A record of a drive
+    is a different object, and the class question is where the drive lives so that it cannot be
+    skipped or claimed, not which moment the gate schedules it at.
+option_challenges:
+  - option: every-run
+    dead_end_verdict: does_not_hold
+    finding: The dead end is asserted over a cost nobody measured and is stated at the wrong
+      granularity. "One drive costs a mutation plus a suite run plus a revert" plus "4530 assertions
+      across 34 suites" reads the suite as indivisible, and it is not: WARP-0717 shipped the subset
+      runner precisely so a row can be run against its measured prerequisite closure, and
+      proof/WARP-0717/timings.txt already records the spread from 0.07 s to 59.80 s. Measured by this
+      reviewer on a copy, per-fragment closure runs: fragment 17, the falsification rule's own, 0.07 s;
+      fragments 17 to 27, every VELDO-era item, all closure 1, 11.7 s for the twelve of them; the sum
+      over all 61 criteria of the twelve motivating items, 59.8 s; the sum over all 146 attributable
+      criteria in the repository, 1773 s. The full-suite reading of the same 146 is 4.3 h, so the dead
+      end holds ONLY under the assumption the record does not state. Against a gate whose unit stage
+      this reviewer measured at 105.8 s and whose integration slot already pays a documented nested
+      full selftest of about 90 s plus seven composed packs at up to 900 s each, ledger finding 55, a
+      one-minute drive of the current plan's criteria is not the thing that would make anyone skip the
+      gate. WHERE IT DOES BITE, and this is the honest boundary: the tail. Fragments 12 and 13 cost
+      57.5 s and 44.1 s of closure and together are most of the 29.6 min, so a per-drive budget that
+      the stage REPORTS against, which is what ledger finding 55 already prescribes for the same
+      reason, is the missing part rather than a different option. The real reason a naive every-run
+      cannot be complete is not wall clock at all: it is that 81 of 227 criteria have no
+      mechanically attributable row, which is assumption row-is-identifiable, not affordability.
+  - option: changed-footprint
+    dead_end_verdict: holds
+    finding: The conclusion holds and the reason given for it is FALSE about this repository's own
+      ledger, which matters because the framing uses that reason to eliminate the option. The record
+      says teeth depending on a file outside the declared footprint "is exactly how the two vacuous
+      VELDO-0007 criteria survived". Ledger finding 40 says otherwise, in detail: the adopter-gate
+      criterion was vacuous because it accepted either INIT_FAILED or ADOPTER_GATE_RED so the mutation
+      broke init before the gate was consulted, and the vacuous-run criterion was vacuous because the
+      NO_PACKS_COMPOSED guard lives inside check() while every row tested composed_packs() over a
+      fixture. Neither is an out-of-footprint dependency; both are mutation-to-row relationships
+      inside the item's own files. This is the ledger's own recurring defect, finding 51's "a false
+      reason with a green assertion certifying it" and finding 55's "I filled the gap with a plausible
+      story instead of going to find the run that had recorded something". The dead end survives on
+      three instances the record does not cite and should: finding 34, where VELDO-0012 AC7's teeth
+      depended on CPython's glob behaviour and therefore on no file in any footprint; finding 35,
+      where the same criterion's only teeth were destroyed by an unrelated sibling row being red, so
+      teeth are a function of suite STATE and not of the file set; and finding 62, where a fixture
+      went red only in the union of nine items, so the file that moved the teeth was in ANOTHER item's
+      footprint. There is a second, independent reason the option cannot be trusted as written:
+      .veldo/validate_checks.py:258 records that mechanically enforcing the declared footprint against
+      the actual diff is WARP-1102 and is NOT DONE, so the footprint today is a structurally validated
+      declaration and nothing compares it to what a commit touched.
+  - option: proof-time-record
+    dead_end_verdict: holds
+    finding: It holds, it is understated, and its stated mitigation inherits the dead ends of the two
+      options the framing rejects. UNDERSTATED, and this is the load-bearing finding of this review:
+      the dead end names staleness, being a record describing a tree that has moved, and misses that
+      the record is a self-authored attestation to an event no other party can witness or reproduce.
+      Read the draft spec that implements this option, specs/VELDO-0013: AC4 requires only that the
+      cited row EXIST in the suite corpus, by its own text; no criterion requires the record to carry
+      the mutation, the baseline it was driven from, the before and after counts, or the paired
+      control. So a record asserting "mutation M reddened row R" is accepted when R exists and the
+      commit is fresh, and a typed record is indistinguishable from a driven one. That is the exact
+      shape policy.yaml's merge_rule removed from this repository, WARP-0730: "A verdict is an
+      artifact the agent can write, so that clause asked an agent to certify itself and cost nine
+      build rounds of forgery guards", and it is ledger finding 52 one level up, where the settlement's
+      bound_digest, its own chosen key and a request_id checked only for schema made a ruled
+      disposition reachable "with no human act at all, using only files the machine can author". A
+      commit binding does not make an unwitnessed claim witnessed: a forged record binds to a fresh
+      commit exactly as easily as a real one. And the item reproduces at the record layer the defect
+      it exists to fix at the criterion layer, which is the pattern ledger finding 48 records under
+      "reading a finding does not inoculate you against it": VELDO-0013 AC2's own argument is that a
+      partial record is refused BECAUSE it reads as coverage, and an undriven record reads as coverage
+      by the same argument while nothing distinguishes it. THE INHERITANCE. The mitigation the dead end
+      names, a staleness rule, must pick a granularity, and both choices are already rejected
+      elsewhere in this framing. Whole-tree staleness invalidates every record on any commit, so at
+      the union or the merge it collapses into every-run's cost at the one moment that matters, which
+      is finding 62's union. Footprint-scoped staleness is what VELDO-0013 AC3 actually chooses, "when
+      the item's own footprint has changed since that commit", and that is changed-footprint's dead
+      end verbatim, resting on an author-declared footprint whose enforcement against the diff is
+      recorded as not built. It inherits the same dead end a second time through the row: with no
+      mechanical resolution from falsified_by, the row in the record is the author's own mapping,
+      unchecked against the criterion it claims to prove, which is the framing's own phrase, "trusts
+      the same declaration it is meant to be checking". WHAT SURVIVES, stated because it is true: the
+      TRIGGER is right. Driving while the evidence is produced is cheap, is what the plan's C2 asks
+      for, and would have caught every measured instance, VELDO-0002 AC5 among them, where the
+      reviewer drove faithfully and measured 43 passed 0 failed against a 43 passed 0 failed baseline.
+      The defect is not when the drive happens. It is that the artifact the gate reads cannot be
+      re-executed by anyone.
+  - option: rotating-sample
+    dead_end_verdict: holds
+    finding: The dead end holds as written and is the strongest of the four, because it is structural
+      rather than empirical: a sampling floor bounds an average and every measured incident in this
+      ledger is a statement about one specific criterion on the day it landed. Findings 34, 40, 45, 46,
+      53, 56 and 60 are each one criterion whose check could not fail at the moment it was believed,
+      and finding 60 is two such checks written by the same author within one hour, which is a rate no
+      rotation period bounds. Two things the record does not say and should. First, the option is
+      DOMINATED rather than merely dead-ended: sampling exists to ration a cost, and the cost it
+      rations is 59.8 s for the population that motivated this record, so it buys nothing at the
+      measured price. Second, a rotating sample is the one option that would actively mislead, because
+      a staleness floor per criterion is a NUMBER the gate can report as coverage, and this repository
+      has recorded four times that a coverage figure computed over what happened to be measured is the
+      defect, finding 39 being the clearest, where a reader with no reporter quoted coverage over the
+      records that happened to parse.
+missing_options:
+  - summary: Drive in the independent review lane and make the per-criterion drive part of the L2
+      review contract, rather than in the author's own proof-time evidence.
+    finding: The framing never considers the one lane where driving has actually paid, and the
+      omission is visible in the record's own context paragraph: the motivation is that "the twelve
+      independent reviews of PLAN-0018 drove them by hand", and the chosen option then relocates the
+      drive to the party whose criterion is under test. docs/method.md section 2.2 states the purpose
+      of falsified_by as making "the reviewer's first question mechanical, which is to apply that
+      change and watch the check go red", so the method itself locates the drive in review.
+      policy.yaml already requires one L2 review at standard and high and two at critical, at
+      min_independence L2 with a fresh-context different model, so the dispatch, the independence
+      property and the cost are already paid, and this reviewer verified the yield: across the twelve
+      verdict-l2.json records, 13 blockers and 11 refuted criteria, with every criterion note in
+      VELDO-0002 opening "DROVE THE DECLARED FALSIFICATION" and recording the baseline, the mutation,
+      the diff that proved it landed, the reddened row and the control. The record shape the reviewers
+      used is strictly richer than the one VELDO-0013 specifies. The honest tension to keep: WARP-0730
+      removed verdict-certifies-merge, so this must REPORT and not certify, which is what a review
+      already does.
+  - summary: Re-execute the drive in the integration slot of the gate that already drives mutations,
+      over the LANDING UNION rather than per item.
+    finding: All four options are positions on when the gate reads or performs a drive, and none
+      proposes the slot where this repository already performs one. scripts/check_first_use.py copies
+      the tree twice, applies a sanctioned mutation, proves it observably landed, runs the WHOLE suite
+      over the result, compares against a lazily computed baseline, and fails loud on every way it
+      could fail to answer; it documents its own cost as one nested full selftest of about 90 s plus
+      two copies of about a second, and it sits in the integration slot of scripts/verify.sh. Its
+      documented limitation 1 is that it only drives what its MUTATIONS table names, and its stated
+      extension rule is "A NEW ENTRY IN MUTATIONS, never a pattern match", so extending it is the
+      designed path rather than a new organ. Driving the union at landing is also the only answer to
+      ledger finding 62, "Nine green copies are not a green repository, and the only thing that found
+      this was one gate over all of them at once", which no per-item record can address by
+      construction. Measured landing-time cost for the current plan's 61 criteria: 59.8 s of suite
+      time plus about one second per tree copy.
+  - summary: Record the MUTATION as data rather than the outcome as prose, so any party can
+      re-execute the drive and the gate's cheap check and the expensive re-run read one artifact.
+    finding: This is the smallest change that removes the forgery surface without giving up the
+      chosen option's trigger or its cost profile, and the framing does not contain it: all four
+      options treat the recorded drive as a claim to be read, never as a program to be run. The record
+      would carry the mutation itself, the baseline commit, the mechanically derived row set, and the
+      before and after pass and fail counts. The gate then checks shape and freshness on every run, as
+      the chosen option wants, and re-executes in the expensive lane, and a reviewer's audit becomes a
+      reproduction rather than a reading. Precedent and evidence, both in-tree: check_first_use's
+      MUTATIONS table is exactly this artifact; ledger finding 60's lesson is that "a property that
+      only a differently shaped tree can exhibit needs a SEAM to be asked about that tree, so the seam
+      is part of the fix and not a convenience"; and ledger finding 46 discarded a fourth drive that
+      reddened the right row for the wrong reason, which is a judgement nobody can make from a
+      narrated outcome and anybody can make from a re-runnable one. It also generalises findings 56
+      and 57's rule for a protected path, that it "cannot be proven by reading it, only by running
+      it", from files to evidence.
+  - summary: Make falsifiability an in-suite paired control on an injected seam, so the mutation is
+      applied to a copy of the module in process and no artifact, tree edit or revert exists at all.
+    finding: This dissolves the question the title asks rather than answering it, which is why its
+      absence is the clearest sign the framing is anchored. Every option assumes a drive is an
+      operation on the working TREE, and that assumption is what generates the cost problem, the
+      revert-is-clean assumption and the record. If a criterion's fragment applies its declared
+      mutation to an in-process copy of the module under an injected seam and asserts the named row's
+      predicate flips while the control holds, then the drive runs with the suite at suite cost, no
+      gate run mutates anything, there is nothing to revert, nothing to bind to a commit and nothing
+      to forge, and staleness is impossible because the mutation is re-derived on every run. The
+      repository already uses this technique where it has needed it: ledger finding 40 fixed a vacuous
+      criterion "by injecting a composer seam, the way fleet.py's spawner and waiter are injected",
+      finding 60 fixed another by giving tracked_files a root parameter so the publisher itself could
+      be asked about a fixture tree, and scripts/suite_labels.py already injects on the AST in a
+      child's memory while asserting the target file's sha256 unchanged. NAMED HONESTLY: this is the
+      most invasive of the four, it needs a seam per criterion and it cannot express a mutation to a
+      shell script or to a template, so it is a floor for the module-level majority and not a
+      universal mechanism. It belongs in the option space as the upper bound the others are measured
+      against, and it is missing.
+assumption_challenges:
+  - assumption: drive-is-affordable
+    verdict: load_bearing
+    finding: Load bearing, since it is the only quantity that discriminates the four options, and
+      mis-specified in two ways that matter. FIRST, the signal measures ONE drive while the decision
+      turns on the per-run TOTAL, being the count of criteria driven times the per-drive cost, so the
+      breach as written can stay false while every-run is already impossible, and it can stay true
+      while a single drive of an expensive fragment blows a pre-push budget. Measured: fragment
+      closures range from 0.07 s to 57.45 s, a factor of 800, so no single number answers this. SECOND,
+      the breach threshold is defined against a moving denominator, "more than the entire current
+      gate", which the tripwire organ cannot express: .veldo/tripwire.py requires either a
+      machine-comparable comparator and threshold or a manual review with an expiry, and the current
+      gate's cost is neither. Then the part that reads as advocacy rather than measurement: the breach
+      clause concludes "at which point only proof-time recording survives as an option", which
+      presumes the conclusion the record recommends. Measured today the assumption HOLDS with three
+      orders of magnitude of headroom at the granularity the falsified_by clauses name, 0.07 s for the
+      falsification rule's own fragment and 59.8 s for all 61 criteria of the motivating items, and
+      Dmitry's own recorded remedy independently measures five criteria driven with fresh copies in
+      about a minute. So the one assumption that could have eliminated three options argues, when
+      actually measured, for keeping them.
+  - assumption: row-is-identifiable
+    verdict: load_bearing
+    finding: Load bearing under every option including the chosen one, and ALREADY BREACHED under its
+      own wording, which means it would fire on day one for the wrong reason and its breach clause
+      would then read as refuting the whole decision. Measured over the read-only tree: 227
+      behaviour-bearing criteria declare falsified_by; the suite corpus carries 4134 assertion labels
+      with a literal first argument and 133 built dynamically; attributing rows to a criterion by the
+      label convention the suites already use, being the spec id followed by the criterion id, exactly
+      10 criteria resolve to EXACTLY ONE row, 136 resolve to more than one with a median of 5 and a
+      maximum of 32, and 81 resolve to none at all. So the assumption's own signal, "the share whose
+      falsified_by resolves to exactly one assertion in exactly one suite", is 10 of 227, and its
+      breach, "a human has to disambiguate for any criterion", is met today. Its breach clause,
+      "a mechanism that needs a human to say which row counts cannot gate", would then kill all four
+      options rather than select among them. The load-bearing property is not uniqueness: it is that a
+      criterion's ROW SET is mechanically derivable and non-empty, that at least one member reds under
+      the declared mutation and that the paired control does not, which the label convention already
+      supports for 146 of 227 while the remaining 81 are a labelling gap with a name, 69 of them in
+      WARP-era shipped specs and 12 in the two unbuilt drafts. This assumption also silently changes
+      role under the chosen option: the author resolves the row by hand at drive time and types it in,
+      and VELDO-0013 AC4 then checks only that the row EXISTS, never that it is the row the criterion
+      names, so the chosen implementation drops this assumption rather than satisfying it.
+  - assumption: revert-is-clean
+    verdict: not_load_bearing
+    finding: Not load bearing, and its signal is the exact proxy this repository's reviews refuted.
+      The property that bears load is ISOLATION, and reverting is one weak implementation of it that
+      the repository's own practice already abandoned. Every drive in the measured record was
+      performed on a scratch COPY: the twelve verdicts each say so, PLAN-0018 records "the mutation
+      applied to a fresh copy, proven landed, the named row required to red, then reverted", Dmitry's
+      recorded remedy says fresh copy, and scripts/check_first_use.py copies the pristine tree once
+      and then copies THAT copy, stating the reason in its own docstring, "Other lanes edit
+      scripts/suites/ while this runs". Under the chosen option the point is moot in the other
+      direction too, since VELDO-0013's risk paragraph states that no gate run mutates the tree at
+      all. The signal, "git status and a content digest of the touched files after each drive", is
+      refuted twice over by ledger finding 53: git status is blind to every path outside the
+      repository and every git-ignored path inside it, and a content-only inventory was tried first
+      and could not see a mutation that writes the same bytes on every run, which is why that finding's
+      replacement inventory carries path, size, MTIME and sha256 over the repository AND the process's
+      own HOME. Digesting only the TOUCHED files also assumes the answer, since the risk is a write
+      nobody expected. Replace this assumption with isolation, being that a drive happens in a
+      throwaway tree and its full-tree and HOME inventory is unchanged, and it becomes both true and
+      measurable.
+  - assumption: mutation-actually-lands
+    verdict: load_bearing
+    finding: Load bearing, correctly identified, and incomplete in the way the ledger has already
+      measured twice. It is real: ledger finding 34 records VELDO-0011 AC2 naming .veldo/validate.py:669,
+      a line the item never changes, so applying it verbatim is a no-op and the green means nothing,
+      and the signal chosen, a non-zero substitution count plus a changed digest, is the right shape
+      for that. What it does not cover is the companion fact that the same evidence base names more
+      often: landing plus a red row is still not evidence. Ledger finding 46 discarded a drive that
+      reddened the named row for the wrong reason and recorded the discard, "a mutation that reds the
+      right row for the wrong reason is not evidence, and the honest move is to say so rather than
+      count it". Ledger finding 35 shows the same fact from the other side, where a criterion's only
+      teeth were invisible because a sibling row was already red, so a drive from a non-green baseline
+      proves nothing and the ledger's rule is "Re-drive after fixing anything". PLAN-0018's own
+      description of the twelve reviews states the complete condition, "the mutation landed, was
+      diffed, and reddened the row its own field names, with the paired control staying green so no
+      refusal is a blanket one". So the record carries the weakest of the three facts and omits the two
+      that the measured incidents turn on, and neither appears in VELDO-0013's criteria either. The
+      missing assumption belongs in this record before it is decided: a drive is believed only when it
+      starts from a GREEN baseline, reds a row in the criterion's own row set, and leaves the paired
+      control green.

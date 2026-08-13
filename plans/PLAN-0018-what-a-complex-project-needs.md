@@ -109,6 +109,9 @@ feature_tree:
   - id: F6
     title: A running installation can say what it is
     outcome_refs: [O3]
+  - id: F7
+    title: The method's own checks are provably able to fail
+    outcome_refs: [O3]
 
 work:
   - item: W1
@@ -165,6 +168,28 @@ work:
     feature_refs: [F6]
     depends_on: [VELDO-0008]
     order: 90
+  # ADDED 2026-08-13 UNDER DMITRY'S RECORDED DECISIONS, not unilaterally. This plan is `status:
+  # ready, approved_by: dmitry`, so adding a work item changes an approved scope. Both items exist
+  # because the twelve independent reviews of W1 to W9 found that the dominant defect class in this
+  # project is a check that cannot fail for the defect its own criterion names, and the two decisions
+  # below are what he chose to do about it. Each is bound to its decision record rather than to a
+  # conversation.
+  - item: W10
+    spec: VELDO-0013
+    title: A declared falsification is DRIVEN once per item and recorded against the commit it was
+      driven at, so a vacuous criterion is caught when the evidence is written
+    feature_refs: [F7]
+    depends_on: []
+    order: 100
+    decision: VELDO-DEC-0001
+  - item: W11
+    spec: VELDO-0014
+    title: What a criterion may assert about the live repository, stated as a rule and enforced where a
+      scan can see it, with its blind spots reported rather than implied
+    feature_refs: [F7]
+    depends_on: []
+    order: 110
+    decision: VELDO-DEC-0002
 
 regression:
   journeys:
@@ -843,6 +868,66 @@ declared falsifications rather than reading them, which is why they found what r
     `budget_state.survival()` consumes VELDO-0002's concluded-artifact semantics, so a change to what
     "done" means necessarily moves it. **Nine green copies are not a green repository, and the only
     thing that found this was one gate over all of them at once.**
+
+63. **THE FIX SHAPE FOR A POPULATION PIN, APPLIED TO THE ONE THAT WAS STILL LIVE.** VELDO-0003 AC5
+    asserted `_ts_loaders == []` over a glob of `.veldo/*.py` and `scripts/*.py`. DRIVEN before the
+    fix: adding `_load("tasks", ".veldo/tasks.py")` to `.veldo/work.py`, exactly how that file already
+    loads frontier.py and claim.py, took the suite to 66 passed 1 failed on that row alone. **So the
+    advisory consumers this organ EXISTS to serve were the thing that reddened the required unit
+    stage.** Two earlier attempts to drive it stayed green and that is worth recording: the detector
+    only inspects DIRECT `Constant` arguments, so a computed path or a prefixed module name is
+    invisible to it, and my first two mutations used both. A detector nobody has driven is a detector
+    whose reach is unknown.
+    FIXED by changing the DOMAIN, not the comparison, per VELDO-DEC-0002: the subject is now the
+    GATE'S OWN STAGES, derived from validate.run_all's module loads plus the stage scripts verify.sh
+    names. A gate stage loading this organ is a DEFECT and its set may be required empty forever; the
+    set of FILES that load it is a POPULATION a legitimate use joins. Driven both ways: the advisory
+    consumer that used to red is now green, and a load added to `validate.run_all` reds the named row.
+64. **THE REPAIR FOR A CRASH INTRODUCED A CRASH, AND ONLY A REAL FIXTURE FOUND IT.** Finding 61's fix
+    gives `work_state` an unanswerable state when the organ declaring the passing verdicts is absent.
+    Setting `state = None` then hit `rep["counts"][state] += 1` and raised `KeyError: None` out of the
+    CLI. **The empty fixture I had been checking against never reached that line**, because it has no
+    items; the crash needed one real proof bundle to appear. Fixed with an `unanswerable` bucket
+    counted in no state.
+    AND THE FIRST VERSION RECORDED THE STAND-DOWN WITHOUT REPORTING IT. The flag was set in the report
+    dict and `report_lines` never printed it, so an operator saw three zeros that read exactly like a
+    measurement. That is VELDO-0001 F2's defect in a new place. The stand-down now leads the report and
+    names how many items are unanswerable.
+    BOTH REPAIRS DMITRY DIRECTED ARE DONE AND DRIVEN: init lays down `executor.py` and `runlog.py`
+    (both already tracked, which finding 44 requires), and the reader names an absent organ instead of
+    dying. Measured on a fixture carrying exactly what init lays down: exit 0 where it was exit 1, and
+    with `executor.py` removed the first line of the report is the stand-down rather than a zero.
+65. **THE CHECK THAT REFUSES AN UNREVIEWED DECISION NEVER READS THE REVIEW'S VERDICT.** Found by the
+    round-two reviewer of VELDO-DEC-0001. `decided_requires_review` counts bound reviews against the
+    tier's requirement and never looks at `disposition`. **So a review whose disposition is `refuted`
+    satisfies it, and the gate goes GREEN on a decision its own adversarial review rejects.** The
+    reviewer's words: nothing mechanical stops this record, only the owner will.
+    This is the same family as every other finding here, in the machinery built to enforce the family:
+    a check whose subject is the EXISTENCE of an artifact rather than what the artifact SAYS. Ledger
+    finding 49 is the identical shape in `work_state.concluded`, fixed the same day. **The gate that
+    caught me twice tonight has the defect it caught me for.** Recorded, not fixed: the fix is a
+    contract question about which dispositions may support a decided record, and it belongs with
+    VELDO-DEC-0001 rather than being guessed at.
+66. **ROUND TWO REFUTED BOTH REFRAMES, AND THE SECOND FAILURE WAS TAKING A PRESCRIPTION'S NAME WITHOUT
+    ITS SUBSTANCE.** Both version-3 records came back `reframe` again.
+    THE CHOSEN OPTION FOR DEC-0001 DOES NOT WORK, and the reviewer proved it by BUILDING it: mutation
+    applied to an in-process copy of `validate_checks.py`, 0.0024 s per drive. **A module COPY is not
+    the object the shipped assertion runs against** - fragment 17 drives `V._VC` deliberately, "the
+    same object the validator uses rather than a second copy with test wiring" - so the control passes
+    while every shipped row stays green. That reproduces finding 40's defect BY DEFAULT inside the
+    mechanism meant to prevent it. Reaching the real row needs rebinding shared.py's single namespace,
+    which leaks into every later fragment.
+    AND THE REWRITE WAS NOT FAITHFUL. Measured by diff: the version-3 record is version 2 plus two
+    blocks. All four prescribed assumption repairs were skipped, the assumption set is byte-identical
+    to the refuted version, three of four missing options were dropped with no reason recorded, and the
+    adopted option's own "under an injected seam" requirement was dropped in the copying. **The
+    artifacts kept the refuted substance while the record took the new name**, including PLAN-0018's
+    W11 title and specs/VELDO-0014, which still build the discriminator that was refuted.
+    A COUNT WITHOUT ITS METHOD IS NOT A MEASUREMENT. The reviewer said my criterion census reproduces
+    under no method; it reproduces exactly under mine (adjacency: 6 one, 80 none, 141 many, median 6,
+    max 33) and theirs gives 10/81/136 under a looser reading. Both readings support the same
+    conclusion. **The error was quoting the count without stating the method that produced it**, which
+    is this ledger's own disease in a smaller size.
 
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here

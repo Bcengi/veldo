@@ -1,6 +1,6 @@
 schema: veldo.decision/v1
 id: VELDO-DEC-0002
-version: 1
+version: 3
 title: How the live-state pin class is caught, given that fixing instances has not stopped it
 status: draft
 problem_class: verification
@@ -67,6 +67,38 @@ options:
       and a rule that only exists in prose is one nobody is stopped by, which is the failure mode
       this repository already has a name for.
 
+  - id: policy-enforced-by-shape
+    summary: >
+      Change what a criterion is ALLOWED to assert about the live repository, and enforce the
+      mechanisable half automatically. Permitted: a property, being that nothing here refuses a
+      change, or that no accusation this organ makes is false. Forbidden: an assertion that a live
+      set is empty, that a live count is an exact number, or that a path does not exist. The
+      automatic rule covers the spellings a scan can see; the rest is a rule reviewers apply, in the
+      same way the ASCII-hyphen rule is applied.
+    dead_end: >
+      Dead-ends if the automatic half is ever treated as the whole rule, because a pin spelled
+      through an intermediate variable stays invisible to it and a green scan would then read as
+      compliance. It has to report what it CANNOT see, or it becomes the thing it forbids.
+      ADDED AT VERSION 2: the five options first recorded here did not contain what was actually
+      chosen. Recording a yes against the nearest single option would have misstated the decision.
+
+  - id: defect-set-discriminator-driven
+    summary: >
+      Replace the discriminator and flip the enforcement. THE RULE: a criterion may require a live set
+      to be EMPTY only when every member of that set is a DEFECT by construction, so growth cannot add
+      to it; it may never pin a POPULATION set, which using the feature adds to. Equivalently, the
+      enumeration's domain must be a declared closure rather than a sweep of the source tree. THE
+      ENFORCEMENT: the behavioural drive in scripts/check_first_use.py gains two entry kinds, one that
+      AUTHORS an artifact through the module's own canonicalization and one that adds a legitimate
+      consumer, which reaches 4 of the 4 measured instances; the text scan is advisory only, because it
+      reaches 1 of 4. Prescribed by REV-DEC-0002 from its missing options 1 and 2.
+    dead_end: >
+      Dead-ends where defect-versus-population is genuinely ambiguous, because the distinction is a
+      judgement about what the set MEANS and no scan can make it. An author who believes a population
+      set is a defect set will write the pin and the drive will only catch it once somebody actually
+      adds a member. So this narrows the class rather than closing it, and the residue is the pin whose
+      first counterexample has not been authored yet.
+
 assumptions:
   - id: it-is-a-class
     statement: >
@@ -103,3 +135,5 @@ assumptions:
       the guard required to red on it.
     breach: >
       The guard reports coverage without any mutation having been driven against it.
+
+

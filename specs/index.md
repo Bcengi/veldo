@@ -37,6 +37,8 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | WARP-1704 | The public tree is DERIVED from a declared manifest and proven offline, because a curated | ready | high | dmitry | required | WARP-1704-publication-pipeline.md |
 | WARP-1711 | History-dependent proofs in a flattened repository - the three assertions and one reconciler | ready | standard | dmitry | not_required | WARP-1711-history-dependent-proofs-in-a-flattened-repository.md |
 | WARP-0620 | The live-sandbox proof of the inbound edge - execute the codified path against a real board for | blocked | high | dmitry | required | WARP-0620-live-sandbox-proof.md |
+| VELDO-0013 | A declared falsification is DRIVEN once per item and recorded against the commit it was driven | draft | standard | dmitry | not_required | VELDO-0013-a-declared-falsification-is-driven-and-recorded.md |
+| VELDO-0014 | What a criterion may assert about the live repository - a stated rule that a check describes a | draft | standard | dmitry | not_required | VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
@@ -502,8 +504,8 @@ Ready frontier: WARP-1702 (W2).
 
 ### PLAN-0018 - What a complex project needs and Veldo lacks - the organs this migration proved missing, and the accumulating ledger of every finding it produced
 
-Status ready, revision 1, owner dmitry. 0/9 work items shipped.
-Ready frontier: VELDO-0008 (W7).
+Status ready, revision 1, owner dmitry. 0/11 work items shipped.
+Ready frontier: VELDO-0008 (W7), VELDO-0013 (W10), VELDO-0014 (W11).
 Open decision D1 blocks: VELDO-0002.
 Open decision D2 blocks: VELDO-0003.
 Open decision D3 blocks: VELDO-0004.
@@ -520,4 +522,6 @@ Open decision D4 blocks: VELDO-0007.
 | W7 | VELDO-0008 | veldo version - the CLI can answer what it is, from one declaration | - | ready (frontier) |
 | W8 | VELDO-0009 | init stamps the version into the repository it lays down, so substrate drift has a detector | VELDO-0008 | waiting: VELDO-0008 |
 | W9 | VELDO-0010 | The gate output and the proof bundle name the version that produced them | VELDO-0008 | waiting: VELDO-0008 |
+| W10 | VELDO-0013 | A declared falsification is DRIVEN once per item and recorded against the commit it was driven at, so a vacuous criterion is caught when the evidence is written | - | draft (frontier) |
+| W11 | VELDO-0014 | What a criterion may assert about the live repository, stated as a rule and enforced where a scan can see it, with its blind spots reported rather than implied | - | draft (frontier) |
 

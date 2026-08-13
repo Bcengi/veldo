@@ -1,0 +1,445 @@
+schema: veldo.decision_review/v1
+id: REV-DEC-0002-R2
+version: 1
+decision: VELDO-DEC-0002
+decision_version: 3
+reviewer: >
+  Second-round fresh-context adversarial reviewer, Claude Opus 5 (model id claude-opus-5[1m]) running
+  as a Claude Code subagent, L2 independence per .veldo/policy.yaml. No involvement in PLAN-0018, in
+  any of the fourteen VELDO items, in REV-DEC-0002, or in the version 3 rewrite of this record.
+  Read-only over /home/dmitry/projects/veldo: every measurement below was taken from a COPY of that
+  tree at commit 292367d plus its uncommitted working-tree edits, copied 2026-08-12 at 21:03 local,
+  and every run happened inside that copy outside the repository. The tree was being edited by the
+  owner while I read it, so each figure names what it measured and when.
+recommendation: >
+  THE REWRITE IS HALF FAITHFUL, AND THE HALF IT DROPPED IS EVERY PART THAT WOULD HAVE CREATED A WATCH
+  OR CHANGED AN ARTIFACT. Measured, not inferred: `git diff .veldo/decisions/0002-live-state-pin-class.yaml`
+  shows version 3 is the committed version 1 plus two option entries plus a decision block. The
+  context is byte-identical, all five original dead_ends are byte-identical, and all four assumptions
+  are byte-identical. So the prescriptions that could be satisfied by writing prose into a new option
+  and into the note were satisfied, and the prescriptions that required editing the context, adding an
+  assumption, repairing three signals, absorbing a routed finding or rewriting a refuted dead_end were
+  not. The discriminator really was rewritten in the prescribed terms and the enforcement split really
+  was flipped, and I credit both; what is missing is the machinery that would have made either of them
+  fail loudly if wrong.
+  THE NEW OPTION HAS ITS OWN HOLE, AND IT IS THE SAME HOLE VERSION 2 WAS REFUTED FOR. Its rule says
+  "Equivalently, the enumeration's domain must be a declared closure rather than a sweep of the source
+  tree." That is not equivalent, and as written it forbids the gate's own entry point:
+  scripts/selftest.py line 69 enumerates `SUITES.glob("*.py")`, a sweep of a source directory, and
+  refuses when its difference against the manifest is non-empty (SUITE_NOT_ENUMERATED, line 72). Every
+  member of that difference is a defect by construction, so clause one permits it and clause two
+  condemns it. A rule whose two halves disagree about the file that runs the suite is the version 2
+  failure reproduced inside the option that was written to replace it. Delete the "Equivalently" or
+  demote it to a heuristic that only ever narrows a domain, never a licence to forbid a sweep.
+  ITS COVERAGE CLAIM DOES NOT SURVIVE PER-INSTANCE ATTRIBUTION. "Two entry kinds ... which reaches 4
+  of the 4 measured instances" is inherited from REV-DEC-0002 and not re-derived. VELDO-0009 AC4 is
+  reached by driving .veldo/init_scaffold.py, which has main(argv) at line 350 taking exactly one
+  target and writes .veldo/installed.json (STAMP, line 176): that is the EXISTING sanctioned-CLI-writer
+  kind, so it needs a TABLE ENTRY and not a new kind, which is `extend-the-table`. VELDO-0005's two
+  reddenings were `mkdir design` and one correct capability declaration under a non-Claude pack root,
+  and neither is "authoring an artifact through the module's own canonicalization" nor "adding a
+  legitimate consumer": nothing in .veldo authors a design directory and capabilities.yaml has no
+  sanctioned writer. So the two named kinds span 2 of 4, the third needs an ordinary entry, and the
+  fourth needs a kind the record does not name. The enforcement half is therefore a hand-kept table of
+  recipes, one per family, which is exactly the option this record dead-ends as "stale the day an organ
+  lands without an entry, and nothing reds when that happens". That dead end now belongs to the chosen
+  option and is recorded nowhere.
+  AND "NO FALSE-POSITIVE CLASS BY CONSTRUCTION" IS FALSE, MEASURED ON THE LIVE TREE AT THIS HOUR. Two
+  rows pin an exact count over live repository state and are RED right now:
+  scripts/suites/27_veldo_0010_evidence_provenance.py:96 `V.run_all() == 0`, and
+  scripts/suites/18_veldo_0012_behaviour_floor_contract.py:962 `_BF_RUNALL[0] == 0` inside a row whose
+  own text says it is "MEASURED IN WHATEVER STATE THIS REPOSITORY IS IN and the state is reported
+  rather than required". I measured the copy at 4638 passed, 2 failed, and those are the two. The cause
+  is that bumping VELDO-DEC-0001 and VELDO-DEC-0002 to version 3 made both bound reviews stale, so
+  `python3 .veldo/validate.py all` reports 6 problems. Every member of run_all's error set is a defect
+  by construction, so the chosen rule PERMITS both rows, and they still redden the gate the moment
+  somebody uses the decision organ the way it is meant to be used. Defect-by-construction bounds what
+  GROWTH can add; it does not bound the states an ordinary workflow passes through. A drive with an
+  entry for the decision layer would name both rows as pins when their red is correct, which is the
+  false-positive class the summary denies and finding 46 already named ("a mutation that reds the right
+  row for the wrong reason is not evidence").
+  WHAT VERSION 4 MUST DO, and none of it is large. Fix the context's own facts in the CONTEXT, because
+  a reader who stops at "bitten by it four separate times" and "fixing the five instances" is reading a
+  claim the note refutes twelve lines later. Add the assumption REV-DEC-0002 prescribed, that the rule
+  can tell a defect set from a population set, with a signal and a breach, because
+  `python3 .veldo/validate.py all` enumerates tripwires per ASSUMPTION ID and can never monitor a risk
+  that lives in a dead_end. Add a second assumption that the family set is complete, since that is
+  where the chosen enforcement's residue actually sits. Restate no-false-positives against a drive, and
+  give the-guard-is-itself-driven the three legs the prior review asked for or replace it, since as
+  worded it can no longer fail. Record the cost: I measured one nested full selftest at 109 s over 4640
+  assertions, and with the tree red the drive pays the lazy baseline too, so each new family is about
+  109 s added to a REQUIRED gate slot that finding 55 already measured going red under concurrent load.
+  Settle finding 59 in the record, in either direction, since the ledger routes it here by name. And
+  fix or withdraw the downstream artifacts, because they still carry version 2: PLAN-0018's W11 title
+  says "enforced where a scan can see it", and specs/VELDO-0014 says in writing that Dmitry chose
+  `policy-enforced-by-shape`, builds PIN_EMPTY_LITERAL, PIN_EXACT_COUNT and PIN_PATH_ABSENT as its
+  taxonomy, and does not name scripts/check_first_use.py anywhere in its footprint. The record chose the
+  drive and the only spec builds the scan.
+  ONE PLACE I DISAGREE WITH THE PRIOR REVIEW, in the record's favour: reversal_cost `reversible` and the
+  standard tier are defensible at version 3. The tier worry rested on rewriting rows across a corpus
+  where 935 conditions carry a forbidden shape; under the defect-set rule the dominant idiom stays
+  legal, so the rewrite shrinks to the population pins actually found, and reverting is deleting a table
+  entry and a paragraph.
+  FINALLY, SO NOTHING IS MISREAD: this review binds and validates, so once it lands the gate stops
+  reporting VELDO-DEC-0002 as decided with too few reviews, whatever my disposition says. Reviews
+  report and do not certify (WARP-0730). If the framing above is wrong the human has to act on it,
+  because the gate will not.
+disposition: reframe
+
+problem_class_challenge:
+  verdict: anchored_to_scale
+  finding: >
+    The class is real, it is not a scale artefact, and the mechanism claims still check out at version
+    3. scripts/check_first_use.py still holds exactly ONE MUTATIONS entry, whose writer is
+    .veldo/spend.py, and its documented limitation 1 still says a suite pinning some other live set
+    stays invisible there and that the extension rule is "A NEW ENTRY IN `MUTATIONS`, never a pattern
+    match". scripts/verify.sh line 20 still runs it as `CHECK_integration="required:..."`. So the
+    framing's factual spine holds. Four anchors nonetheless, one of them new at version 3 and worse
+    than the one it replaced.
+    ONE, THE CONTEXT WAS NOT CORRECTED, ONLY CONTRADICTED. The prior review asked version 3 to correct
+    two claims in the record's own context. The context is byte-identical: it still says the repository
+    "has now been bitten by it four separate times" and that "fixing the five instances leaves the
+    class intact", while the note says the ledger holds at least eleven and that one of the five was
+    never fixed. A record that carries a wrong number and its correction in two places has not been
+    corrected; it has acquired a contradiction, and the wrong number is the one in the section a reader
+    reads first. It also anchors the framing to one review round: eleven instances across three rounds
+    is a class, four in this round is a batch of patches.
+    TWO, THE ENFORCEMENT HALF NOW STAYS HOME AND ONLY THE ADVISORY HALF SHIPS. This is the prior
+    review's second anchor inverted, and it is the strongest C6 objection available at version 3.
+    MEASURED: `find . -name "check_first_use*"` returns exactly one path, scripts/check_first_use.py.
+    There is no engine/scripts/check_first_use.py, engine/scripts holds six files and that is not one of
+    them, and grep finds no `check_first_use` entry in .veldo/capabilities.yaml. Meanwhile
+    specs/VELDO-0014's footprint ships engine/.veldo/live_state_pins.py and engine/docs/method.md. So
+    under version 3 an adopter receives the rule as prose plus a scan that refuses nothing, and receives
+    none of the mechanism the record calls the enforcing half. At version 2 the shipped half at least
+    intended to enforce. C6 forbids anchoring a design to the current deployment footprint, and
+    "the drive runs here" is that anchor. Finding 47 measured this exact asymmetry from the other side.
+    THREE, THE RECORD STILL REGULATES THE WRONG ARTIFACT. Every measured instance is a SUITE ROW, and
+    the new option still opens "a criterion may require a live set to be EMPTY only when ...". W11's
+    title and VELDO-0014's title inherit it verbatim. The drive half does bind rows in effect, which is
+    the one place the version 3 rewrite quietly improves this, but the RULE half still binds prose a
+    reviewer reads rather than the artifact that carries the defect.
+    FOUR, AND THIS IS THE MEASUREMENT THAT SHOULD SETTLE THE PROBLEM CLASS QUESTION: the class is live
+    in the required unit stage RIGHT NOW, through two rows this record does not name, and the trigger
+    was the owner's own use of the decision organ. `V.run_all() == 0` at
+    scripts/suites/27_veldo_0010_evidence_provenance.py:96 and `_BF_RUNALL[0] == 0` at
+    scripts/suites/18_veldo_0012_behaviour_floor_contract.py:962 are the two failures in my measured
+    4638 passed / 2 failed, and `python3 .veldo/validate.py all` in the same copy reports 6 problems,
+    four of them because REV-DEC-0001 and REV-DEC-0002 are pinned to decision_version 2 while both
+    records now say 3, and two of them because each record is decided carrying zero valid bound reviews.
+    A count of live contract errors required to be zero is the record's own PIN_EXACT_COUNT shape, it is
+    in a required stage, and the second row claims in its own text that it requires no particular state
+    while requiring zero. The framing's own instance list is a snapshot of one round, which is what
+    "anchored to scale" means here; the honest problem class is any assertion whose required answer is a
+    property of the tree at a moment, including the moment a legitimate workflow is halfway through.
+
+option_challenges:
+  - option: extend-the-table
+    dead_end_verdict: does_not_hold
+    finding: >
+      I agree with the prior review and will not re-litigate it: a MUTATIONS entry is a recipe, being a
+      sanctioned writer, an argv and a probe, and nothing in this repository enumerates recipes, so the
+      duplicated-enumeration charge misidentifies what the table holds. Re-checked: MUTATIONS still has
+      one entry and check_first_use's own docstring still says a token count is not derivable from
+      inside the repository, which is why a record is the only way that corpus is non-empty. The half
+      that holds is the narrower one: nothing reds when an organ lands with no entry, because limitation
+      1 is documented and not enforced.
+      WHAT IS NEW AT VERSION 3 IS THAT THIS DEAD END NOW GOVERNS THE CHOSEN OPTION. The chosen
+      enforcement is this table plus two kinds, and one of the four measured instances (VELDO-0009 AC4,
+      via .veldo/init_scaffold.py, main at line 350, STAMP at line 176) is reachable only by adding an
+      ordinary entry of the EXISTING kind. So the record has dead-ended, with an argument it left
+      standing, the mechanism it then chose. Either this dead_end is rewritten to the true one and
+      inherited explicitly by defect-set-discriminator-driven, or a reader concludes the framing ranked
+      the same mechanism twice and got two answers.
+      A second reason the dead end as written is unsafe to keep: it says the set "already exists
+      elsewhere", which invites somebody to derive the table from init_scaffold._FILES or from
+      validate_checks.py's path inventory. That derivation cannot produce a probe or an argv, so it
+      would produce a table of entries that drive nothing, which is the vacuous-guard shape of finding
+      40 in a new dress.
+
+  - option: derive-from-the-manifest
+    dead_end_verdict: holds
+    finding: >
+      Holds, and I confirm the prior review's stronger form by measurement rather than argument.
+      .veldo/capabilities.yaml declares capabilities and their homes; a consumer list, a four-state
+      drift answer, a registry cardinality and the absence of a directory are none of them
+      capabilities, so all four measured instances are outside what any manifest declares. I also
+      confirm the vacuity floor concern is real in this repository and not only in an adopter tree:
+      the capability-honesty organ's own live rows are written as EQUALITIES between two independent
+      enumerations (22_veldo_0005_declared_vs_shipped.py line 349 asserts the organ's undeclared set
+      equals a derivation done in the suite and says in its own text that it requires neither count to
+      be anything), which is what a derived-coverage option would have to do to stay honest, and which
+      by itself proves nothing about coverage.
+      One addition, because it is the reason this option cannot be rescued by making the manifest
+      richer: capabilities.yaml is 271 KB of declarations and has no sanctioned writer, so a mutation
+      family derived from it would have to be authored by hand anyway. The derivation moves the
+      hand-keeping from the table to the manifest without removing it.
+
+  - option: forbid-the-shape
+    dead_end_verdict: holds
+    finding: >
+      Holds. I RE-MEASURED the two figures the record and the prior review both rest on, with my own
+      scan over the copy, and one reproduces exactly while the other reproduces only within a
+      definitional band. Definition used: every expect() call in scripts/suites/*.py by AST, and a
+      condition is SHAPED when its source text carries `== []`, `== {}`, `== set()`, `== 0`,
+      `.is_dir()` or `.exists()`. Result: 4268 expect() calls, of which 935 are shaped, broken down as
+      507 empty-list, 428 exact-zero, 36 exists, 29 empty-dict, 8 empty-set, 4 is_dir. So "935 of 935
+      shaped conditions" and the 4267 total both check out (my 4268 is one higher because the working
+      tree carries the uncommitted VELDO-0003 fix).
+      THE 260 I COULD NOT REPRODUCE UNDER THE RECORD'S OWN WORDING, and the honest range matters
+      because it is the number that justifies demoting the scan. Requiring the COMPARED name to be
+      assigned from an expression mentioning ROOT gives 15. Admitting ANY name in the condition that is
+      ROOT-derived gives 226, and loosening "live" to include glob, read_text, rglob or a walk gives
+      252. So 260 is credible as a one-hop count under the looser readings and is off by an order of
+      magnitude under the stricter one. The record should say which it means, because the difference is
+      between a triage burden of 250 rows and a triage burden of 15, and only the first supports "the
+      scan cannot enforce".
+      The dead end itself is right for the wrong reason, as the prior review measured: the barrier is
+      not the intermediate variable, which one dataflow hop surmounts, it is the helper predicate and
+      the inter-module spelling. My own two live specimens are of the second kind:
+      `V.run_all() == 0` is a call whose subject is the whole repository, and `_BF_RUNALL[0] == 0` is a
+      subscript of a captured tuple. A text scan can flag the shape of both and can tell nothing about
+      whether either is legitimate.
+
+  - option: both-layers
+    dead_end_verdict: does_not_hold
+    finding: >
+      Does not hold, and the reason is mechanical: scripts/verify.sh line 20 marks the integration slot
+      `required:` and line 19 the unit slot, and any red required slot reds the gate, so two layers
+      disagreeing about one assertion produce a red from the stronger layer. The weaker layer cannot
+      win by passing. There is no reconciliation to own.
+      THE PART THAT MATTERS AT VERSION 3: the chosen option IS both-layers. A behavioural drive that
+      enforces plus a text scan that reports is two layers over one property, with the same
+      disagreement question and the same second maintenance stream, and VELDO-0014 AC4 makes the
+      scan's report-only posture an unconditional assertion so the layers can never be reconciled by
+      arming the weaker one. A framing that refuses an option and then chooses its shape owes the
+      reader the sentence explaining what changed. The honest version of this dead end is the one the
+      prior review named, being a second stream of false positives and a second thing to maintain, and
+      the chosen option should carry it.
+
+  - option: assert-the-property-instead
+    dead_end_verdict: does_not_hold
+    finding: >
+      Does not hold, and version 3 makes the contradiction sharper rather than resolving it. The
+      recorded dead end is "a policy with no enforcement". At version 3 the rule half of the chosen
+      option is exactly that: the drive enforces nothing about what an author may ASSERT (it detects a
+      row that reddens under a use), and VELDO-0014 AC4 requires the scan to exit zero on every
+      finding. So the discriminator itself is enforced by nobody, which is this option, while this
+      option stays refused.
+      And enforcement for it does exist, in the sibling record. VELDO-DEC-0001 is now decided on
+      `in-suite-paired-control`: each suite applies its criterion's declared mutation to an in-process
+      copy and requires the named assertion to fail. A live-state row's declared falsification is
+      precisely "the state where the set is NON-EMPTY", so a criterion asserting over the live tree can
+      be required to carry that paired control, and driving it is the enforcement. The two records were
+      decided in the same working-tree edit, and the second still says the first's mechanism does not
+      exist.
+
+  - option: policy-enforced-by-shape
+    dead_end_verdict: does_not_hold
+    finding: >
+      Does not hold, and version 3 left the refuted text in place. The recorded dead end is a
+      conditional false-negative risk. The failure that fires first, measured by the prior review and
+      re-checked by me in the code, is the opposite: the forbidden list condemns this repository's own
+      correct remedies. Re-verified: 23_veldo_0006_budget_state.py line 622 still requires
+      `loaders == [] and len(stages) >= 5 and len(closure) >= 10`, and the commit stat for 33f10f5
+      confirms that commit changed both scripts/suites/23_veldo_0006_budget_state.py and
+      .veldo/decisions/0002-live-state-pin-class.yaml, so the rule and the fix it forbids really were
+      written in one commit.
+      TWO THINGS THE RECORD OWES HERE AND DOES NOT PAY. First, this option's dead_end is where a reader
+      looks to learn why it lost, and it says nothing about why it lost; the reason lives in the
+      decision note, which a future reader of the option space is not required to read. Second, the
+      field carries provenance ("ADDED AT VERSION 2: the five options first recorded here did not
+      contain what was actually chosen") inside a normative field, so the one place that should now say
+      THE RULE FORBIDS ITS OWN BEST KNOWN FIX instead says why the option was added.
+      And the substance of this option is what is actually being built. specs/VELDO-0014 states that
+      Dmitry chose `policy-enforced-by-shape`, its error taxonomy is PIN_EMPTY_LITERAL,
+      PIN_EXACT_COUNT and PIN_PATH_ABSENT, its AC5 puts the three forbidden shapes into docs/method.md
+      and both copies of it, and PLAN-0018's W11 title says "enforced where a scan can see it". A
+      refuted option that keeps its spec is not a refuted option.
+
+  - option: defect-set-discriminator-driven
+    dead_end_verdict: does_not_hold
+    finding: >
+      The direction is right and the dead end as written is aimed at the wrong failure. It records the
+      ambiguity residue, being an author who believes a population set is a defect set. That residue is
+      real. Three failures fire before it, and two of them are measured.
+      ONE, THE RULE'S SECOND CLAUSE FORBIDS THE GATE'S OWN ENTRY POINT. "Equivalently, the
+      enumeration's domain must be a declared closure rather than a sweep of the source tree" is not
+      equivalent to the defect-set clause and disagrees with it on this repository's own code.
+      scripts/selftest.py line 69 computes `ON_DISK = sorted(p.name for p in SUITES.glob("*.py"))` and
+      line 72 refuses with SUITE_NOT_ENUMERATED when that set differs from the manifest;
+      scripts/suite_equiv.py lines 202 to 208 do the same in both directions and stop the experiment.
+      The domain is a sweep of a source directory, the required answer is an empty difference, every
+      member of that difference is a defect by construction, and the row is load bearing: a suite file
+      nobody enumerated silently does not run. Clause one permits it, clause two condemns it. This is
+      the version 2 failure, being a rule that forbids the repository's own correct construct, rebuilt
+      inside the option written to replace it. The two clauses are separate rules: defect against
+      population is a question about MEMBERSHIP, declared closure against sweep is a question about the
+      DOMAIN, and only the first is a licence to require an emptiness.
+      TWO, THE COVERAGE CLAIM IS NOT TRUE OF THE TWO KINDS IT NAMES. Attributed per instance:
+      VELDO-0003 AC5 and VELDO-0006 AC5 need the consumer kind; VELDO-0009 AC4 needs a driven
+      .veldo/init_scaffold.py, which has main(argv) at line 350 taking exactly one target and writes
+      .veldo/installed.json at STAMP line 176, so it is the EXISTING sanctioned-writer kind and its
+      coverage is a table entry, which is `extend-the-table`; and VELDO-0005's two reddenings, being
+      `mkdir design` and one correct capability declaration under a non-Claude pack root, are neither
+      an authoring through a module's canonicalization nor a consumer, because no module authors a
+      design directory and capabilities.yaml has no sanctioned writer. So the honest tally is two of
+      four for the new kinds, one of four for an ordinary entry, and one of four for a kind the record
+      does not name. The enforcement is a hand-kept enumeration of families, its completeness is
+      declared and not driven, and NOTHING REDS when an organ lands without an entry. That is
+      extend-the-table's true dead end, inherited and unrecorded.
+      THREE, "WITH NO FALSE-POSITIVE CLASS" IS FALSE, AND I MEASURED THE COUNTEREXAMPLE ON THE LIVE
+      TREE. Two rows pin an exact count over live state and are red in my copy right now:
+      27_veldo_0010_evidence_provenance.py line 96 `V.run_all() == 0`, and
+      18_veldo_0012_behaviour_floor_contract.py line 962 `_BF_RUNALL[0] == 0`. Full suite in the copy:
+      4638 passed, 2 failed, and those two are the failures. `python3 .veldo/validate.py all` in the
+      same copy reports 6 problems, four of them created by bumping the two decision records to version
+      3 while their reviews name version 2. Run_all's error set is a defect set by construction, so the
+      chosen rule PERMITS both rows, and both redden the gate for somebody who used the decision organ
+      correctly. A drive carrying an entry for the decision layer would name them as pins, and their
+      red is CORRECT, which is a false positive of exactly finding 46's kind. Defect-by-construction
+      bounds what growth adds and says nothing about the intermediate states of a legitimate workflow,
+      so the discriminator is necessary and not sufficient.
+      FOUR, THE COST IS UNRECORDED AND IT LANDS IN A REQUIRED SLOT. MEASURED on this machine over the
+      copy: one full nested selftest is 109.0 s at 4638 passing assertions, and a second identical run
+      with two legitimate consumers added took 108.7 s. check_first_use pays one nested run per family
+      plus a lazy baseline whenever anything failed, and the tree is red today, so the baseline is not
+      hypothetical. Three or four families is five to eight minutes added to `CHECK_integration`, which
+      verify.sh line 20 marks required, and finding 55 measured that same slot going red under nine
+      concurrent agents. The sibling record's new option names its unmeasured cost in its own dead_end
+      ("the in-memory cost is UNMEASURED as of version 3"); this one names none.
+      WHAT I TRIED AND FAILED TO BREAK, recorded because a review that only lists hits is not a
+      measurement. I drove the consumer kind against the current tree: a 24-line .veldo/budget_console.py
+      loading the budget read model, and `TS = _load("veldo_tasks_wk", ".veldo/tasks.py")` added to
+      .veldo/work.py. Baseline 4638 passed 2 failed; mutated 4638 passed 2 failed with identical failure
+      names. So the VELDO-0006 AC5 fix and the uncommitted VELDO-0003 AC5 fix both survive their own
+      drive, the consumer kind produced no false positive on this corpus, and no undeclared-module or
+      file-set row objected to a new .veldo module. That leg of the prior review's argument stands.
+
+missing_options:
+  - summary: >
+      Split the chosen option in two and choose only the membership rule. Rule A, a required emptiness
+      is legal only over a set every member of which is a defect by construction. Rule B, a live
+      enumeration whose domain is a sweep of a source directory must state the property its emptiness
+      stands for. Keep A as the licence and demote B to a review prompt, rather than binding them with
+      "Equivalently".
+    finding: >
+      The merge is what created the new option's worst clause, so unmerging is the smallest possible
+      repair and it is not cosmetic. Under the merged rule scripts/selftest.py line 69 and
+      scripts/suite_equiv.py line 202 are both forbidden, and they are the enumeration guard that makes
+      every other assertion in this repository mean anything. Under A alone they are permitted, the
+      VELDO-0006 and VELDO-0003 remedies are permitted, and the two rows I measured red today are
+      permitted and remain wrong for a reason A cannot express, which is the honest residue to record.
+      B still earns its place as guidance, because the DOMAIN narrowing is what both remediations
+      actually did.
+  - summary: >
+      Enforce the rule through the falsification organ instead of through a scan or a table: any
+      criterion whose subject is the live tree must carry, in the same criterion, the paired NON-EMPTY
+      control, and VELDO-DEC-0001's chosen in-suite-paired-control drives it whenever that suite runs.
+    finding: >
+      REV-DEC-0002 offered this as its third missing option. Version 3 cites "missing options 1 and 2"
+      and drops the third silently, and the drop is now more expensive than it was, because the sibling
+      record has since been decided on exactly the organ this needs: VELDO-DEC-0001 chose
+      in-suite-paired-control, whose whole claim is that a criterion's declared mutation is applied to
+      an in-process copy and the named assertion required to fail, with no artifact, no scheduling
+      question and nothing to revert. A live-state row's falsification is the non-empty state, which is
+      the cheapest paired control in the family. This is also the only candidate that scales to an
+      adopter tree, because it ships inside the suite the adopter writes rather than inside a script
+      this repository keeps. Two records decided in one edit, and the second still argues its only
+      credible enforcement path does not exist.
+  - summary: >
+      One refusal-bearing enumeration of the live tree. Every reader of the tracked set goes through a
+      single enumeration that REFUSES BY NAME when it cannot answer honestly (an unmerged index, a
+      dirty working tree against a git-derived domain), rather than four readers each consuming a wrong
+      answer as truth.
+    finding: >
+      Finding 59 says in the ledger, in its own words, that this belongs with VELDO-DEC-0002's
+      one-enumeration question rather than being guessed at, and it is reproduced deterministically
+      there: a file left `UU` after a half-finished merge makes `git ls-files` print it three times and
+      reddened three gate rows. REV-DEC-0002 asked version 3 to widen the class deliberately or to say
+      in the record that finding 59 is not this class. Version 3 does neither, so the ledger routes a
+      finding to a record that does not mention it, which is how a routed finding becomes nobody's. It
+      is also the same defect from the other side as the two rows I measured red today: there, a gate
+      row takes a transient legitimate state as a defect; in finding 59, several stages take a wrong
+      enumeration as truth. Both are answered by making the live read own its own honesty, and neither
+      is answered by a rule about comparisons.
+
+assumption_challenges:
+  - assumption: it-is-a-class
+    verdict: load_bearing
+    finding: >
+      Load bearing, satisfied far beyond the record's claim, and its SIGNAL is unchanged at version 3
+      despite the prior review's prescription. I confirm the ledger count independently: findings 14,
+      26 (four suites at once), 30, 37 (which calls itself the fifth recorded time), 46, 51 and 59, plus
+      the four this record names, and I can add a twelfth and thirteenth from tonight, being
+      27_veldo_0010_evidence_provenance.py line 96 and 18_veldo_0012_behaviour_floor_contract.py line
+      962, both red in my copy at this hour.
+      The signal is still "the count of blockers and majors in a review round" with a breach at fewer
+      than two in a full round, so it still retires the mechanism at the moment the mechanism starts
+      working, and it now also undercounts by construction: neither of tonight's two instances was
+      found by a review round, they were found by running the suite after somebody edited a decision
+      record. The honest signal is the count of live-state pins that redden a gate over a corpus the
+      mechanism has not already cleaned, plus a count over any adopter tree, since that is where the
+      class stays open under version 3's shipping split.
+  - assumption: catches-the-known-four
+    verdict: load_bearing
+    finding: >
+      Load bearing, and the chosen option no longer breaches it the way version 2 did, which I confirm
+      rather than assume: the drive reaches the four instances, subject to the attribution correction in
+      the option challenge above, being that one of them needs an ordinary table entry and one needs a
+      kind the record does not name. The breach condition still bites the record for a different reason.
+      THE SIGNAL IS NOW UNRUNNABLE AS WORDED, and worse than it was, because the instances are being
+      fixed. It says to run the chosen mechanism against the four "as they were written before their
+      fixes". VELDO-0006 AC5 and VELDO-0005 were fixed in earlier commits, and VELDO-0003 AC5 was fixed
+      in the UNCOMMITTED working tree while this review was running: scripts/suites/20_veldo_0003_task_source.py
+      now derives its domain from the gate's own stages, cites this record's version 3 rule in its own
+      comment, and my drive confirms the fix works, since wiring `_load("veldo_tasks_wk", ".veldo/tasks.py")`
+      into .veldo/work.py leaves the suite at 4638 passed 2 failed with identical names. So three of the
+      four pre-fix forms now exist only in git history, and the signal has to name the commits it
+      reconstructs them from or it cannot be run at all.
+      And the leg the prior review prescribed is still absent: the mechanism must ALSO be shown to stay
+      GREEN on each instance's post-fix form, or it cannot distinguish catching the defect from
+      catching the idiom. That leg is cheap, I ran the part of it that exists, and it is the only leg
+      that would have caught the version 2 rule condemning `loaders == []`.
+  - assumption: no-false-positives
+    verdict: load_bearing
+    finding: >
+      Load bearing, still breached at the framing stage, and its signal no longer matches the chosen
+      mechanism. The signal says "the full gate over the current corpus with the guard armed, and the
+      list of rows it names". At version 3 nothing is armed over the corpus: VELDO-0014 AC4 makes the
+      scan exit zero on every finding, and the drive names rows only for the families somebody wrote an
+      entry for, so the signal's list is empty by construction and the assumption cannot breach. That is
+      finding 34's shape, a declared falsification that cannot fail, on the assumption the prior review
+      called the one most likely to be false.
+      The breach itself is already reachable, and I measured it rather than argued it. The two rows red
+      in my copy tonight, `V.run_all() == 0` and `_BF_RUNALL[0] == 0`, are defect-set pins the chosen
+      rule PERMITS, and a drive carrying an entry for the decision layer would name both while their
+      red is correct. So the false positive at version 3 is not a scan condemning a legitimate idiom, it
+      is a DRIVE naming a row whose red is honest, because a legitimate workflow passes through a state
+      the gate should refuse. Restate the signal against the drive, being the rows a family's mutation
+      names, each classified as pin or honest red, and set the breach at any honest red named as a pin.
+  - assumption: the-guard-is-itself-driven
+    verdict: not_load_bearing
+    finding: >
+      NOT load bearing at version 3, and this is a change from the prior round rather than a
+      disagreement with it: at version 2 the guard was a scan and this assumption was the sharp one,
+      because an easy additive mutation would have satisfied it while proving nothing. The chosen
+      mechanism dissolves it. check_first_use IS a drive, and its own code refuses to report coverage it
+      did not measure: `_apply` raises CannotAnswer when the probe does not increase ("the mutation did
+      not land ... so it has measured nothing"), `main` returns 2 on any CannotAnswer, and an empty
+      MUTATIONS table is refused as "a blank table is an undeclared check, which is red by design". So
+      the recorded breach, being that the guard reports coverage without any mutation having been
+      driven, is unreachable by construction for the chosen option. An assumption whose breach cannot
+      occur is not watching anything, and leaving it in place means one of four tripwires is spent on a
+      tautology.
+      REPLACE IT WITH THE TWO THAT ARE NOW LOAD BEARING, and both are the prior review's prescription
+      that version 3 did not implement. First, THE RULE CAN TELL A DEFECT SET FROM A POPULATION SET,
+      with a signal that is the classification of a named sample of live rows, including at least
+      selftest.py's SUITE_NOT_ENUMERATED difference, 22_veldo_0005's defect buckets, 13_warp_0623's
+      five live empties and tonight's two run_all rows, and a breach when the rule condemns any row a
+      human calls legitimate or permits any row that reddens under legitimate use. Second, THE FAMILY
+      SET IS COMPLETE, with a signal being the organs and artifact kinds a legitimate use can create
+      against the families the table drives, and a breach when an organ lands with no entry and nothing
+      reds. Both matter more than the one they replace, and neither can be monitored where the record
+      currently keeps this risk: `python3 .veldo/validate.py all` enumerates tripwires per ASSUMPTION
+      ID, so a risk recorded only in a dead_end is watched by nothing.

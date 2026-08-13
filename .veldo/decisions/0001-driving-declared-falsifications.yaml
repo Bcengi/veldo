@@ -1,6 +1,6 @@
 schema: veldo.decision/v1
 id: VELDO-DEC-0001
-version: 1
+version: 3
 title: Whether the gate DRIVES each declared falsification, and at what moment
 status: draft
 problem_class: verification
@@ -51,6 +51,22 @@ options:
       Dead-ends on the criterion that ships before its turn comes up. A sampling floor bounds the
       average and says nothing about the specific check that was vacuous on the day it landed.
 
+  - id: in-suite-paired-control
+    summary: >
+      No record and no scheduling question. Each suite applies its criterion's declared mutation to an
+      IN-PROCESS copy of the module under test and requires the assertion the criterion names to fail,
+      then continues. Falsifiability becomes an ordinary assertion that runs whenever its own suite
+      runs, so nothing is written down, no party has to be trusted, no tree edit happens and there is
+      nothing to revert. Prescribed by REV-DEC-0001 as the option the framing omitted.
+    dead_end: >
+      Dead-ends where a criterion's subject cannot be reached through a seam: a property of the git
+      index, of a subprocess, or of the filesystem outside the module cannot be falsified by mutating a
+      module copy in memory. Those criteria need a real edit somewhere, so this option covers the
+      majority and NOT all of them, and the residue must be named rather than assumed empty.
+      It also dead-ends on cost if a suite drives every criterion on every run without measurement:
+      the in-memory cost is UNMEASURED as of version 3, and the per-suite subprocess figures below are
+      not a substitute for it.
+
 assumptions:
   - id: drive-is-affordable
     statement: >
@@ -87,3 +103,5 @@ assumptions:
       A non-zero substitution count and a changed digest asserted for every drive.
     breach: >
       Any drive reports a result without having asserted that its edit applied.
+
+
