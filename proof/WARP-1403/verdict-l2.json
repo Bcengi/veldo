@@ -1,0 +1,151 @@
+{
+ "schema": "veldo.verdict/v1",
+ "spec_id": "WARP-1403",
+ "commit": "7b6c0059faae8299a95716b05820097599469e05",
+ "reviewer": "claude-opus-5[1m] (independent L2, delegated fresh context, no part in building this item)",
+ "reviewed_at": "2026-08-13T06:00:00Z",
+ "verdict": "fail",
+ "method": {
+  "isolation": "cp -a of the tree into a scratch copy; every mutation applied, git-diffed, run and reverted there. /home/dmitry/projects/veldo was never written to and is at the same HEAD with a clean status.",
+  "baseline": "python3 scripts/selftest.py --suite 16_warp_1403_sizing_pass -> 16_warp_1403_sizing_pass 42 passed, selftest 68 passed 0 failed",
+  "declared_falsifications_driven": 29,
+  "declared_must_red": 27,
+  "declared_must_red_that_reddened_a_named_row": 26,
+  "declared_must_stay_green": 2,
+  "declared_must_stay_green_that_held": 2,
+  "additional_reviewer_mutations": 15,
+  "additional_reviewer_mutations_leaving_the_suite_green": 4,
+  "note_on_the_declarations": "This spec declares NO falsified_by on any criterion (see F7), so the declared falsifications I drove are the 'Driven:' clauses of its three remediation rounds and its delivery notes. Every mutation, its git diff, the rows that reddened and the additive controls are in WARP-1403-driven.txt.",
+  "companion": "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/WARP-1403-driven.txt"
+ },
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "confirmed",
+   "note": "Clean, and the strongest criterion here. Drove three declared mutations. LiveSizingAgent.size returning a fabricated range instead of raising: 1 RED, the named fail-loud row, with the injected-agent positive control GREEN, which is what makes it attributable to the seam. A try/except fallback around the agent call in size(): 2 RED, the fail-loud row and the propagation row, exactly as declared. layer_from taking its bounds from the brief's prior instead of the judgement: 4 RED including the anti-vacuity row, so the range provably comes from the agent. The file agent's absent-file refusal and the two-judgements-one-brief control are real assertions over real fixtures. No finding against this criterion."
+  },
+  {
+   "id": "AC2",
+   "status": "confirmed",
+   "note": "Clean. Re-spelling the point refusal locally with W2's exact wording: 3 RED, including the named one-spelling row and the point row, so the FETCH and not merely the behaviour is asserted (the local copy kept the point refusal and lost the inverted, non-integer and non-positive ones). The accepted provenance set is a genuine equality against spend.BASES rather than a list. Neutering _brief_unit's unit-count check: 1 RED on the driven unit row. Two of my own probes confirm the constants are pinned rather than self-referential: MIN_REASONING_CHARS 40 -> 1 reds a named row, and adding `confidence` to RECORD_OPTIONAL reds a named row. Only gap, reported as F10 and not as a refutation: the single-line rule drives the newline arm and not the tab arm (deleting the tab check leaves the suite at 42/0), and it omits carriage return entirely."
+  },
+  {
+   "id": "AC3",
+   "status": "refuted",
+   "note": "The reach half of this criterion is the best work in the item and I could not break it: the four set equalities over the parsed call surface and the pinned execution-target set each have teeth, driven one at a time - subprocess under an alias, __import__(\"socket\"), os.popen, eval, getattr(os, \"sys\"+\"tem\"), a spec_from_file_location outside _mod, and a _mod target reached through a variable are 1 RED each on the row they name. The DIGEST half is refuted, twice. (1) F2: the digest binds the code's INVENTORY, not the code. Rewriting a footprint file from `return cents >= 0` to `return cents <= 0` (same 41 bytes, same 2 lines) leaves the brief dict byte-identical and the digest identical, and the stale judgement then validates CLEAN and builds a layer - while the criterion's headline says the digest is 'sensitive to all four things it claims to bind (spec, code, ledger, prior)' and the spec says a moved code base makes it 'REFUSED rather than reused'. The suite's attribution fixture only ever moves a file from ABSENT to EXISTING, the one half of the domain where a size change is guaranteed. (2) F8: 'a footprint entry that leaves the repository is refused BEFORE anything is read' is a string check on the entry; a symlink inside the tree pointing outside it is read and its size reported. Separately F1 belongs here as much as to AC5: the stale-digest refusal this criterion names is asserted only by calling validate_judgement directly, never on the composition path that commits the record."
+  },
+  {
+   "id": "AC4",
+   "status": "confirmed",
+   "note": "Every declared leg drove and held, including the third round's repair, which I re-drove with the sanctioned writer's own record in the live log. Control first: `python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000` with the module untouched leaves the suite at 42 passed 0 failed, so using the feature does not red the gate - the defect the third round existed to remove is genuinely gone. With that record present, hardcoding anchor_available to NO is 4 RED and tokens_recorded = 0 beside a present key is 4 RED, both including the real-log leg; and the attribution probe (`if len(evs) > 900: return {... spend_events: 0 ...}`, the old finding hardcoded for this repository's log) is EXACTLY 1 RED, the real-log leg alone, which is the isolated proof. The per-field omission, the mixed-ledger basis for token_spend_events, both remaining vocabulary refusals, the self-cost writer, the ceiling report, the envelope and the prior agreement all red their named rows. THE EXCEPTION, carried as F5 rather than as a refutation because the criterion's stated equalities do hold: the number it reports can be wrong. tokens_recorded sums with int(), spend.validate accepts a fractional figure, and two events carrying 0.4 and 0.6 tokens produce token_anchor_available yes, token_spend_events 2 and tokens_recorded 0 over 1.0 tokens recorded - a zero that reads like a measurement beside a flag saying there is an anchor, which is this block's own stated reason for existing. The suite's independent recount is a second spelling of 'numeric' and the SAME spelling of int(), so both sides move together. Minor pin worth naming and not worth fixing: the leg asserts events > 900 over the live log, which is growth-safe and does not ship (the fragment is not in publish.py's INCLUDE, verified over the produced tree)."
+  },
+  {
+   "id": "AC5",
+   "status": "refuted",
+   "note": "The stand-down legs are real and driven: making check_dir create the judgements directory reds the named row, the CLI legs run as real processes, the present-but-broken and misfiled refusals name the file, and the load-bearing quadruple over the real validate.check_spec (no estimate, structural-only, a real sizing layer, a MALFORMED judgement -> identical 0) has a working negative control. Refuted on two counts. (1) F3: 'nor in any other engine module names this module' makes the criterion's own subject a POPULATION whose required answer is the empty set, over live repository state. Driven: adding `.veldo/sizing_pass.py` to .veldo/init_scaffold.py's lay-down list - which PLAN-0014 W10 requires verbatim - reds the row, and so does a 12-line advisory reader that only calls layer_of. PLAN-0018 finding 63 already prescribes the fix for this exact shape and this item did not take it. (2) F4: the twin byte-identity row is offered as evidence that 'what an adopter is handed is the code this repository runs and proves'. Byte-identity is true and that sentence is false: publish.py ships engine/.veldo/sizing_pass.py and its example and withholds engine/.veldo/estimate.py, so in every one of the seven composed packs `vocab` and `brief` die with an uncaught FileNotFoundError while `check` exits 0. The spec names this OPEN and RED and it is still red at this HEAD - which is the state the module is shipping in today, not a future risk."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "severity_l2": "blocker",
+   "confirmed_by_running": true,
+   "category": "check-cannot-fail-for-its-own-defect",
+   "text": "THE BINDING IS ASSERTED OFF THE PATH THAT COMMITS THE RECORD. size() is the only path that produces a committed estimate, and the one-token mutation `layer_from(judgement, b)` -> `layer_from(judgement)` in size() leaves the suite at 42 passed, 0 failed. With it applied, a judgement carrying the digest of a DIFFERENT brief composes into a VALID estimate record. AC3 says 'a judgement whose digest is stale or whose spec is another spec is REFUSED rather than reused' and the spec says that field 'carries most of this item's integrity'; the only rows that exercise it call validate_judgement(rec, brief) directly. The declared falsification (dropping the comparison inside _binding_problems) reds two rows, so the inner RULE has teeth while its CALL SITE has none - PLAN-0018 finding 40's shape, on the path the criterion is actually about. The layer also silently loses all eight brief_* inputs and nothing notices.",
+   "evidence": "batch3 A6: mutation git-diffed in both twins, suite '16_warp_1403_sizing_pass 42 passed / selftest 68 passed, 0 failed' - identical to baseline. Then attack_a6.py in a scratch engine: unmutated, size() REFUSES ('brief_digest dc265ed... does not match the brief actually read (35d4ca8...)'); mutated, 'size() ACCEPTED the stale judgement. committed range: (50000, 1200000) | layer low/high: (300000, 1200000) | layer inputs: [brief_digest, model, self_cost_basis, self_cost_bps_of_low, self_cost_ceiling_bps, self_cost_tokens, self_cost_within_ceiling] | record valid: True'. FIX SHAPE: one row driving size() with a judgement bound to another brief and requiring the refusal, plus a row asserting the composed layer's inputs carry the eight brief_* keys.",
+   "severity": "blocking"
+  },
+  {
+   "id": "F2",
+   "severity_l2": "blocker",
+   "confirmed_by_running": true,
+   "category": "record-whose-subject-is-not-what-it-names",
+   "text": "THE DIGEST BINDS THE CODE'S INVENTORY, NOT THE CODE. code_facts records paths, a byte count and a line count per footprint entry; _file_facts already calls read_bytes() and throws the content away. So any edit that preserves size leaves the digest byte-identical, and a judgement made against the old code is silently reused. That is the ordinary edit: an inverted comparison, an identifier renamed to the same length, a changed constant. Measured: `return cents >= 0` -> `return cents <= 0` (41 bytes, 2 lines both ways) gives an IDENTICAL brief dict and digest cc4fc534b515..., the stale judgement validates clean, and layer_from builds the layer. This is the item's stated catastrophic failure mode arriving through the mechanism built to prevent it: W5 later scores a real actual against a prediction about different code, which is what poisons the calibration curve. Compounding it, the brief carries no code CONTENT at all (entry, kind, matched, paths, bytes, lines), so what the agent actually reads is never digested at all, while the spec's headline is that the agent 'reads the spec AND the code'. The suite cannot see any of it because its attribution fixture only moves a file from ABSENT to EXISTING - PLAN-0018 finding 54's shape, a universal claim asserted over the half of the domain where it cannot fail.",
+   "evidence": "attack_digest.py: 'BEFORE digest: cc4fc534b51512b3d139644bc16e5cab7f20d4c269338c9c114ac2517d50eb17' / 'AFTER digest: cc4fc534b51512b3d139644bc16e5cab7f20d4c269338c9c114ac2517d50eb17' / 'DIGEST UNCHANGED AFTER A SEMANTIC CODE CHANGE: True' / 'brief dicts identical: True' / 'STALE JUDGEMENT STILL VALIDATES CLEAN AGAINST THE NEW BRIEF: True' / 'AND IT BUILDS A LAYER: {low: 100000, high: 400000}'. Controls in the same run: removing the file changes the digest, adding one line changes the digest. FIX SHAPE: put a sha256 of each matched file's bytes in its entry - hashlib is already imported and already in the module's allowlisted import set, and the bytes are already in hand - and add a row that mutates content at constant size and requires the refusal.",
+   "severity": "blocking"
+  },
+  {
+   "id": "F3",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "category": "live-state-pin-reds-on-first-legitimate-use",
+   "text": "THE AC5 SWEEP REQUIRES A LIVE POPULATION TO BE EMPTY, AND THIS ITEM'S OWN PLAN REQUIRES JOINING IT. The row sweeps .veldo/*.py, engine/.veldo/*.py, scripts/*.py and scripts/*.sh and requires that no file names this module's path (publish.py excepted) and none loads it. PLAN-0014 W10 says: 'land the schemas, derivations, estimator layers ... in the canonical engine so /veldo:init lays them down'. Laying it down IS naming it, and .veldo/init_scaffold.py is inside the swept domain and not in the exemption. PLAN-0018 finding 63 fixed exactly this shape for VELDO-0003 by changing the DOMAIN to the gate's own stages, with the reasoning spelled out - 'a gate stage loading this organ is a DEFECT and its set may be required empty forever; the set of FILES that load it is a POPULATION a legitimate use joins' - and the criterion here is still written over the population. Seventh recorded appearance of the family in this repository.",
+   "evidence": "batch3 A1: `.veldo/sizing_pass.py` added to init_scaffold.py's lay-down list beside .veldo/version.py, git-diffed; suite 42 -> 41 passed, 1 failed, and the row is 'WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE AND NOTHING ANYWHERE LOADS IT'. batch3 A2: a 12-line advisory reader .veldo/estimate_console.py that loads the module only to call layer_of and gates nothing - same single row RED. FIX SHAPE: scope the subject to the commands scripts/verify.sh runs plus validate.run_all's module loads, as finding 63 prescribes, and keep the population as a report.",
+   "severity": "note"
+  },
+  {
+   "id": "F4",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "category": "prose-claiming-coverage-is-not-coverage",
+   "text": "THE MODULE SHIPS TODAY AND CANNOT RUN IN THE TREE IT SHIPS TO, AND THE ROW OFFERED AS EVIDENCE CERTIFIES THE OPPOSITE. Verified by producing the tree rather than by reading the manifest: publish.py's INCLUDE carries engine/** and its EXCLUDE withholds engine/.veldo/estimate.py, so the public tree and all seven composed packs receive .veldo/sizing_pass.py and .veldo/examples/sizing-judgement-example.yaml and no estimate.py. Every entry point loads it through _estimate(), and `E = _estimate()` in _cli sits OUTSIDE the try that catches OSError, so an adopter gets a raw traceback rather than a named refusal. AC5's row asserts the twins are byte-identical 'so what an adopter is handed is the code this repository runs and proves' - the byte-identity is true and the sentence it supports is false, which is precisely the class this repository records as prose claiming coverage. The spec names the hold-back as OPEN and says the invariant worth asserting - a SHIPPING engine module never loads a HELD-BACK one - is red today. It is still red at this HEAD, and it is the condition under which the capability is already in strangers' trees.",
+   "evidence": "python3 scripts/publish.py <dest> -> '420 file(s)', 'composed 7 pack(s)'. `ls engine/.veldo/sizing_pass.py` -> 48189 bytes; `ls engine/.veldo/estimate.py` -> No such file or directory; `ls engine/.veldo/examples/ | grep sizing` -> sizing-judgement-example.yaml. In packs/claude: `python3 .veldo/sizing_pass.py vocab` -> Traceback ... _cli_vocab -> _estimate -> _mod -> \"FileNotFoundError: [Errno 2] No such file or directory: '.../packs/claude/.veldo/estimate.py'\", exit 1; `brief --spec specs/TEMPLATE.md` -> the same traceback; `check` -> 'standing down (this is not a finding)', exit 0. FIX SHAPE: the two EXCLUDE lines, or shipping estimate.py under its own review - and either way an assertion that every module in the produced tree can load its own _mod targets from that tree.",
+   "severity": "note"
+  },
+  {
+   "id": "F5",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "category": "confident-zero",
+   "text": "tokens_recorded IS TRUNCATED WITH int() AND THE INDEPENDENT RECOUNT SHARES THE TRUNCATION. spend.validate accepts any non-negative number, so a fractional figure is recordable through the sanctioned writer's API (spend.validate('WARP-9600','harness_reported',tokens=0.4) returns []). ledger_state then reports anchor_available yes, token_anchor_available yes, token_spend_events 2 and tokens_recorded 0 over 1.0 tokens actually recorded. That is the exact sentence AC4 exists to prevent, in its own words: 'a zero because tokens were never recorded, printed as a measurement, next to a flag saying there IS an anchor'. The third round's repair was a recount 'by a second spelling of numeric ... so the two sides of every equality cannot move together under a mutation' - it is a second spelling of numeric and the SAME spelling of int(), so the equality is satisfied while both sides are wrong. No fixture in the file uses a fractional or zero token figure.",
+   "evidence": "attack_misc.py: 'ledger_state over two events carrying 0.4 and 0.6 tokens: {anchor_available: yes, events: 2, specs_with_spend: 2, spend_events: 2, token_anchor_available: yes, token_spend_events: 2, tokens_recorded: 0}'. batch3 A5: summing WITHOUT the truncation (the more correct answer) reds only the AC3 reach equality - incidentally, because the bare `int(` call vanished from the parsed call set - and moves no ledger row. FIX SHAPE: refuse a non-integer tokens figure at the ledger boundary by name, or sum without truncating and have the recount compute its side from a different expression than the module's.",
+   "severity": "note"
+  },
+  {
+   "id": "F6",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "category": "integrity-field-optional-by-default",
+   "text": "THE BRIEF BINDING IS AN OPTIONAL ARGUMENT, WHICH IS WHAT MAKES F1 INVISIBLE. layer_from(judgement, brief_rec=None) validates the judgement in isolation and builds a layer whose inputs.brief_digest is whatever the judgement claimed, with no brief to compare it to; the record builder accepts it and the record validates. Nothing in the criteria says a layer may not exist unbound, and the suite itself uses this path for the shipped example judgement. A field the spec calls the item's integrity should not be reachable-past by omitting an argument.",
+   "evidence": "attack_misc.py: layer_from on a judgement carrying brief_digest 'dede...de' with no brief -> layer {layer: sizing_pass, basis: agent_judgement, low: 1, high: 2}, inputs.brief_digest 'dede...de', 'and it builds a VALID estimate record: True | committed range (1, 2) | calibration uncalibrated'. FIX SHAPE: make the brief required for a layer that will be committed (a separate validate-only entry point if an unbound check is wanted), or assert that no path from a judgement to a record can omit it.",
+   "severity": "note"
+  },
+  {
+   "id": "F7",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "category": "spec-contract-gap",
+   "text": "THE ITEM DECLARES NO falsified_by ON ANY CRITERION, AND THE RULE THAT WOULD ASK IT WAS WRITTEN BECAUSE OF THIS EXACT LAYER. validate_checks.py has FALSIFICATION_ENFORCED = True since 01bcdf3 (2026-08-11) and its own comment states the reason: 'An independent review of this repository's estimation layer produced 34 confirmed findings and almost every one is the same sentence: a property the module claims that nothing asserts.' The check's presence gate reads the RAW front matter for behavior_bearing, and WARP-1403 declares none, so check_falsification_declared stands it down with 'declares no behavior_bearing field, so the rule does not reach it'. WARP-1401 through WARP-1408 all declare none; WARP-1409 declares one and carries 8 falsified_by. The gate reports it out loud over the real corpus and nobody has to act on it. Concretely for this review: the 27 must-red mutations I drove came from delivery-note PROSE, so no criterion is bound to a named mutation and an auditor cannot tell which row a criterion's teeth live in - which is what the rule exists to fix.",
+   "evidence": "grep -c '^behavior_bearing:' specs/WARP-1403-sizing-pass.md -> 0; grep -c falsified_by -> 0. 48 of 215 specs carry the field. The gate's own line: 'falsified_by STANDS DOWN ... falsification migration: 45 spec(s) declare behaviour of 213, 45 already comply, 0 would be refused (0 criterion(s): none), 168 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3)'. check_falsification_declared(specs/WARP-1403-sizing-pass.md) reaches _falsification_stand_down at validate_checks.py:913.",
+   "severity": "note"
+  },
+  {
+   "id": "F8",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "category": "string-check-used-to-prove-a-path-property",
+   "text": "THE ESCAPE REFUSAL IS A STRING CHECK AND A SYMLINK WALKS THROUGH IT. _refuse_escape rejects a leading / or ~ and a '..' component; it never resolves the path. A footprint entry naming a symlink inside the tree that points outside it is opened and measured, so the criterion's 'refused BEFORE anything is read' does not fire and 'a brief that could read outside the tree is a brief that could be pointed at a secret' is true of this brief. Only bytes and lines reach the brief, so the exposure is a size oracle rather than content, which is why this is minor rather than major - but the read happens and the declared refusal is the thing that did not.",
+   "evidence": "attack_misc.py: code_facts(['linked_secret.py'], root=d) where that path is a symlink to a file in another tmpdir -> [{entry: linked_secret.py, kind: file, matched: 1, bytes: 50, lines: 3}] against an outside file of exactly 50 bytes and 3 lines, while '../outside.py' and '/etc/hostname' are refused by name in the same run. FIX SHAPE: (base / e).resolve() must be under base.resolve(), refused by name when it is not, with a symlink fixture as the driven row.",
+   "severity": "note"
+  },
+  {
+   "id": "F9",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "category": "false-claim-in-delivery-notes",
+   "text": "'NO MUTATION CRASHES IT NOW' IS FALSE, AND ONE DECLARED FALSIFICATION IS THE PROOF. The delivery notes record, correctly, that a crash is strictly worse than a red because it makes a run that found nothing look like a run that could not look, and then claim the fragment is now crash-proof. Two mutations abort it. The spec's own declared spelling `_mod(\"../../etc/veldo_probe.py\", ...)` placed on the validation path takes the fragment down with a traceback at line 348 and reds three AC1 rows while the AC3 execution-target row it is DECLARED to red is never reached; re-driven off the hot path it reds that row alone, and D15/D16 red it too, so the row has teeth by another route and the declaration is what is wrong. Second crash: code_facts no longer setting ent['bytes']/ent['lines'] aborts the fragment at the code-facts row with 0 reds. Exit is non-zero in both cases so nothing goes green, but this fragment holds itself to a stated standard it does not meet.",
+   "evidence": "WARP-1403-driven.txt D14: diff proven in both twins, 'after mutation' summary is a traceback at 16_warp_1403_sizing_pass.py line 348, 3 RED, all AC1. D14b (same call in a function nothing calls): 1 RED, 'AC3 AND THE ONE DOOR THOSE EQUALITIES LEAVE'. batch3 A3: 0 RED and a traceback. FIX SHAPE: wrap the two remaining bare-subscript reads of a code_facts entry and of validate_judgement in the fragment's existing crash-into-data helpers, and correct the note.",
+   "severity": "note"
+  },
+  {
+   "id": "F10",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "category": "unasserted-arms",
+   "text": "THREE ARMS WITH NO ROW, each driven and each leaving the suite at 42 passed, 0 failed: _line_problems no longer refusing a TAB (only the newline arm is driven, and carriage return is in neither); assert_prior_agrees accepting any number of prior layers (only the value-mismatch arm is driven, not the cardinality arm its message names); and load_dir's duplicate-spec arm, which is also unreachable, since read_judgement already requires the record's spec to equal the filename stem, so two files can never claim one spec. Related dead end worth one line: a reasoning containing a bare CR validates clean, builds a layer, renders a record, and the ONE parser then refuses to read that record back - unreachable through parse_judgement because splitlines() folds the CR at read time, so it is an API-only hole and not a CLI one.",
+   "evidence": "batch3 A7, A13, A14: each git-diffed in both twins, each 'selftest 68 passed, 0 failed'. attack_misc.py ATTACK P: reasoning with '\\r' -> validate_judgement clean, then \"ValueError: expected 'key: value' near: 'and then more'\" from the parser over the rendered record; the '#'-leading case IS refused by the renderer, which is the docstring's claim working for the character it thought of.",
+   "severity": "note"
+  }
+ ],
+ "discarded": [
+  {
+   "claim": "ledger_state reports specs_with_spend 0 beside spend_events 1 for a record written by the sanctioned writer",
+   "why_discarded": "An artifact of my own probe, which injected an emit that bypasses events.make_event. make_event maps spec -> spec_id and correlation_id, so the real writer's events carry the key ledger_state reads, and the real-log arm computes specs_with_spend correctly with a live record present. Recorded because a finding that reds for the wrong reason is not evidence."
+  },
+  {
+   "claim": "the full gate is red at this HEAD",
+   "why_discarded": "The red is mine. I exported PYTHONDONTWRITEBYTECODE=1 for the gate run; scripts/suites/12_warp_1210_hardening_four.py:5916 puts a FIFO at a __pycache__ path that is never created when bytecode writing is off, so os.mkfifo raised FileNotFoundError, the unit stage aborted, and the first-use stage went red as a consequence of that abort. Measured both ways: that suite is '249 passed' without the variable and crashes with it. Nothing here is attributable to WARP-1403, whose fragment is 42 passed / 0 failed in every run."
+  }
+ ],
+ "summary": "DO NOT SHIP, and the reason is not the hold-back bullet the item already admits. FAIL on two blockers, both in the mechanism the spec calls the item's integrity. (1) The brief binding is asserted off the path that commits a record: changing `layer_from(judgement, b)` to `layer_from(judgement)` inside size() leaves the suite at 42 passed / 0 failed, and with it a judgement carrying the digest of a DIFFERENT brief composes into a valid committed estimate. The declared falsification reds the inner rule; nothing guards its call site. (2) The digest binds the code's INVENTORY rather than the code: a footprint file rewritten from `>= 0` to `<= 0` at identical bytes and lines leaves the brief and digest byte-identical and the stale judgement validates clean, so W5 would later score a real actual against a prediction about different code - the exact failure the item says it exists to make impossible. Both are cheap to fix and both need a driven row before this ships. Five majors: the AC5 sweep requires a live population to be empty and PLAN-0014 W10's own required lay-down reds it (finding 63's prescribed fix was available and not taken); the module ALREADY SHIPS while engine/.veldo/estimate.py is withheld, so `vocab` and `brief` die with an uncaught FileNotFoundError in all seven composed packs while the suite's twin-identity row certifies that adopters get 'the code this repository runs and proves'; tokens_recorded truncates with int() and the independent recount shares the truncation, so 1.0 recorded tokens report as 0 beside token_anchor_available yes - AC4's own named defect; the brief binding is an optional argument; and the item declares no falsified_by on any criterion because it never opted into behavior_bearing, exempting the plan the rule was written for from the rule. WHAT IS GENUINELY GOOD, and it is a lot: AC1 and AC2 are clean under attack, the four set equalities over the parsed call surface plus the pinned execution-target set defeated every reach I tried, and the third round's real-log repair is real - one sanctioned `spend.py record` with the module untouched keeps the suite at 42/0, while hardcoding the stand-down is 4 RED and the attribution probe is exactly 1 RED on the leg alone. 27 declared must-red falsifications driven, 26 reddened a row the declaration names (the 27th crashed the fragment instead, and the row it names reds under two adjacent spellings); 2 declared must-stay-green held. Ship verdict: do-not-ship until F1 and F2 carry driven rows and F4's shipped tree can load what it imports."
+}

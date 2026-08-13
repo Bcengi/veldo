@@ -1,0 +1,770 @@
+WARP-1407 - INDEPENDENT L2 REVIEW, DRIVEN FALSIFICATIONS AND ATTACKS
+====================================================================
+reviewer:   delegated fresh context (Claude Opus 5, 1M), independent L2
+commit:     7b6c0059faae8299a95716b05820097599469e05
+isolation:  cp -a /home/dmitry/projects/veldo <scratch>/est-review/work-WARP-1407
+            every command below ran in that copy; /home/dmitry/projects/veldo was never written to.
+reviewed:   2026-08-13
+
+WHERE THE DECLARED FALSIFICATIONS LIVE, AND IT IS NOT THE SPEC.
+specs/WARP-1407-judgment-load-second-axis.md declares NO falsified_by on any criterion (it carries
+no behavior_bearing field, and validate_checks.falsification_gated exempts an absent field), so
+there is no per-criterion mutation to drive. The item's declared falsifications are the SIXTEEN
+numbered breaks in the docstring of scripts/suites/15_warp_1407_judgment_load.py, and all sixteen
+are driven below. Its sibling in the same plan, WARP-1409, declares eight falsified_by clauses, so
+the omission is a choice this item made rather than a rule it lacked.
+
+BASELINE, unmodified copy:
+  $ python3 scripts/selftest.py --suite 15_warp_1407_judgment_load
+    15_warp_1407_judgment_load                      61 passed    0.51s
+  selftest (PARTIAL, 1 of 34 suites): 87 passed, 0 failed in 0.51s
+
+  $ bash scripts/verify.sh          (4m02s, run once, alone)
+  selftest: 4723 passed, 0 failed
+  GATE: GREEN (7b6c0059faae8299a95716b05820097599469e05)
+
+METHOD PER MUTATION: apply one edit to the scratch copy, print `git diff` to prove it landed, run
+the suite, read the red row, `git checkout --` to revert, confirm zero outstanding changes. An edit
+that matched nothing aborts before the run, so a no-op sed can never be mistaken for a check with
+no teeth.
+
+RESULT: 16 of 16 declared falsifications drove and reddened a row the criterion names. Declared #2
+needed one faithful re-expression: the literal edit (adding str to the isinstance allow-list) makes
+`value < 0` raise TypeError and takes the fragment down mid-run, which is a mutation that deletes
+coverage rather than one that reds a row, so it is recorded as M2 and re-driven as M2b.
+
+Then four attacks of my own (A1 to A4) and eight probes (P1 to P8) against what the declarations do
+not cover. Three of them found wrong answers with the suite fully green.
+
+==================================================================
+MUTATION: M1 (declared #1): classify's missing-axis branch disabled - an unrecorded axis falls through to the median comparison
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..8eadfea 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -384,7 +384,7 @@ def classify(rows, min_population=MIN_POPULATION):
+         row = dict(r)
+         missing = [n for n, known in (("tokens", r["tokens_known"]),
+                                       ("judgment minutes", r["judgment_known"])) if not known]
+-        if missing:
++        if False:  # MUTATION M1
+             row["shape"] = SHAPE_UNKNOWN
+             row["shape_reason"] = ("not recorded: %s (an unrecorded axis is never read as a low one)"
+                                    % " and ".join(missing))
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC3: and it is NOT classified cheap - the shape is unknown and the reason names the axis that is missing
+  15_warp_1407_judgment_load                      60 passed    0.50s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.50s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M2 (declared #2): _figure_problem tolerant of a string figure
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..5419e07 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -153,7 +153,7 @@ def _figure_problem(field, event, value):
+     if not isinstance(event, dict):
+         return ("event %r is not a mapping: the caller owns reading the log and hands this module "
+                 "parsed events" % (event,))
+-    if isinstance(value, bool) or not isinstance(value, (int, float)):
++    if isinstance(value, bool) or not isinstance(value, (int, float, str)):  # MUTATION M2
+         return ("%s on a %r event for %s must be a number, got %r: a figure this module cannot read "
+                 "is refused rather than skipped, because a skipped figure leaves the axis marked "
+                 "recorded and smaller than it is"
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC4: a string human_minutes is refused BY NAME (the field and the value in the message)
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1407/scripts/suites/15_warp_1407_judgment_load.py", line 459, in <module>
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+
+NOTE ON M2, recorded rather than smoothed over: the literal edit is not a usable mutation. Once a
+string is inside the isinstance allow-list, `_figure_problem` reaches `if value < 0` and raises
+TypeError: '<' not supported between instances of 'str' and 'int' out of check_log at fragment line
+459, which ABORTS the fragment. That is a mutation that deletes coverage rather than one that reds a
+row (ledger finding 67's shape), so it is re-driven faithfully as M2b below: the judge returns None
+for a string, which is what "tolerant of a string figure" has to mean for the run to complete.
+Full traceback tail from the M2 run:
+    File ".../judgment_load.py", line 306, in check_log
+      problem = _figure_problem(field, e, v)
+    File ".../judgment_load.py", line 161, in _figure_problem
+      if value < 0:
+  TypeError: '<' not supported between instances of 'str' and 'int'
+
+==================================================================
+MUTATION: M2b (declared #2, faithful): _figure_problem accepts a string figure as well formed (returns None)
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..2e133d5 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -153,6 +153,8 @@ def _figure_problem(field, event, value):
+     if not isinstance(event, dict):
+         return ("event %r is not a mapping: the caller owns reading the log and hands this module "
+                 "parsed events" % (event,))
++    if isinstance(value, str):  # MUTATION M2b: a string figure is tolerated
++        return None
+     if isinstance(value, bool) or not isinstance(value, (int, float)):
+         return ("%s on a %r event for %s must be a number, got %r: a figure this module cannot read "
+                 "is refused rather than skipped, because a skipped figure leaves the axis marked "
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC4: a string human_minutes is refused BY NAME (the field and the value in the message)
+  SELFTEST FAIL: WARP-1407 AC4: check_log reports EVERY malformed figure through the caller's reporter
+  SELFTEST FAIL: WARP-1407 AC4: the raise and the report come from ONE judge, so they name the same value
+  15_warp_1407_judgment_load                      58 passed    0.49s
+selftest (PARTIAL, 1 of 34 suites): 84 passed, 3 failed in 0.49s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M3 (declared #3): FIXTURE break - human_minutes dropped from the seeded verdict event
+TARGET:   scripts/suites/15_warp_1407_judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/scripts/suites/15_warp_1407_judgment_load.py b/scripts/suites/15_warp_1407_judgment_load.py
+index f9784d9..0947a8a 100644
+--- a/scripts/suites/15_warp_1407_judgment_load.py
++++ b/scripts/suites/15_warp_1407_judgment_load.py
+@@ -120,7 +120,7 @@ def _jl_ev(etype, spec, **kw):
+ # ---------------------------------------------------------------------------------------
+ _JL_EVENTS = [
+     _jl_ev("spec.shipped", "WARP-9401", tokens=100, human_minutes=10),
+-    _jl_ev("verdict.recorded", "WARP-9402", human_minutes=20),
++    _jl_ev("verdict.recorded", "WARP-9402"),  # MUTATION M3
+     _jl_ev("approval.recorded", "WARP-9402", human_minutes=40),
+     _jl_ev("spec.shipped", "WARP-9402", tokens=50),
+     _jl_ev("spec.shipped", "WARP-9403", tokens=1000, human_minutes=5),
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC1: the pair carries both axes for a spec whose figures were recorded
+  SELFTEST FAIL: WARP-1407 AC1: the judgment axis is split by the kind of judgment the minutes paid for
+  SELFTEST FAIL: WARP-1407 AC1: the pair line carries both axes, the split and the shape
+  SELFTEST FAIL: WARP-1407 AC1: the per-plan roll-up sums the pair and names the declared item count
+  SELFTEST FAIL: WARP-1407 AC1: the rendered plan line carries the declared denominator and every column in its own place, and a plan the item map does not declare renders '(not declared)' rather than a number of its own
+  SELFTEST FAIL: WARP-1407 AC2: the reference is the repository's own medians over the both-axes rows, reported with its population
+  SELFTEST FAIL: WARP-1407 AC3: this module's axis totals equal the corpus's own totals for every seeded spec, and the compared figures are not all zero
+  15_warp_1407_judgment_load                      54 passed    0.49s
+selftest (PARTIAL, 1 of 34 suites): 80 passed, 7 failed in 0.49s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M4 (declared #4): _num truncates a fractional figure
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..7dbeccb 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -482,7 +482,7 @@ def _num(value):
+     """A figure as text without rounding a lie into it: an integral value prints as an integer, a
+     fractional one keeps two decimals. `%d` would silently truncate, and a module whose subject is
+     not printing figures that are not there should not print a figure smaller than the one it read."""
+-    return "%d" % value if float(value).is_integer() else "%.2f" % value
++    return "%d" % value  # MUTATION M4
+ 
+ 
+ def _axis(value, known, unit):
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC1: a fractional figure renders without being truncated, and an integral one renders as an integer
+  15_warp_1407_judgment_load                      60 passed    0.50s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.50s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M5 (declared #5): coverage re-derives classifiable from the module floor instead of reading the reference it was handed
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..1f82328 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -433,7 +433,7 @@ def coverage(rows, gap=None, ref=None):
+         "episodes_known": eps,
+         "episodes_coverage": round(eps / n, 4) if n else 0.0,
+         "usable_as_second_axis": mk > 0,
+-        "classifiable": bool(ref["usable"]),
++        "classifiable": both >= MIN_POPULATION,  # MUTATION M5
+         "unattributed": dict(gap) if gap else {"events": 0, "minutes": 0, "tokens": 0},
+     }
+ 
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC2: classifiable is READ from the reference, not re-derived from the module's own floor
+  15_warp_1407_judgment_load                      60 passed    0.52s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.52s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M6 (declared #6): the median comparison relaxed from strictly-above to at-or-above
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..02c242b 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -392,8 +392,8 @@ def classify(rows, min_population=MIN_POPULATION):
+             row["shape"] = SHAPE_UNKNOWN
+             row["shape_reason"] = "no reference population: %s" % ref["reason"]
+         else:
+-            hi_tokens = r["tokens"] > ref["median_tokens"]
+-            hi_minutes = r["judgment_minutes"] > ref["median_judgment_minutes"]
++            hi_tokens = r["tokens"] >= ref["median_tokens"]  # MUTATION M6
++            hi_minutes = r["judgment_minutes"] >= ref["median_judgment_minutes"]
+             row["shape"] = (SHAPE_EXPENSIVE_BOTH if hi_tokens and hi_minutes
+                             else SHAPE_CHEAP_BUILD_EXPENSIVE_APPROVE if hi_minutes
+                             else SHAPE_EXPENSIVE_BUILD_CHEAP_APPROVE if hi_tokens
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC2: a record exactly at both medians is cheap on both, never expensive - the comparison is strictly above the median
+  15_warp_1407_judgment_load                      60 passed    0.51s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.51s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M7 (declared #7): build() appends a real state file under ROOT
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..e55752a 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -516,6 +516,8 @@ def build(corpus, events, plan_items=None):
+     back."""
+     rows = [pair(r, events) for r in corpus]
+     rows, ref = classify(rows)
++    with (ROOT / ".veldo/judgment_load_state.jsonl").open("a") as _fh:  # MUTATION M7
++        _fh.write(json.dumps({"rows": len(rows)}) + "\n")
+     return {
+         "schema": SCHEMA,
+         "rows": rows,
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC5: reporting over the tree the module RESOLVES against leaves that tree byte-identical, and the derivation demonstrably ran over it (six rows, six records, a rendered report) rather than standing down
+  15_warp_1407_judgment_load                      60 passed    0.50s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.50s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M8 (declared #8): minutes_coverage hardcoded to 1.0
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..1d32d83 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -424,7 +424,7 @@ def coverage(rows, gap=None, ref=None):
+     return {
+         "records": n,
+         "minutes_known": mk,
+-        "minutes_coverage": round(mk / n, 4) if n else 0.0,
++        "minutes_coverage": 1.0,  # MUTATION M8
+         "tokens_known": tk,
+         "tokens_coverage": round(tk / n, 4) if n else 0.0,
+         "pair_known": both,
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC2: coverage counts AND percentages over the seeded log, every published figure
+  SELFTEST FAIL: WARP-1407 AC2 NEGATIVE CONTROL: with no figure anywhere the same six rows are produced and coverage reports zero known and zero percent, not zero cost - while the episode coverage, which IS recorded, stays where it was
+  SELFTEST FAIL: WARP-1407 AC2: the rendered coverage line carries every count with its own percentage, and on the log carrying no figure it reads 0.0 percent rather than a confident full coverage
+  15_warp_1407_judgment_load                      58 passed    0.50s
+selftest (PARTIAL, 1 of 34 suites): 84 passed, 3 failed in 0.50s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M9 (declared #9): episodes_known hardcoded to 0
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..23ee6f1 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -430,7 +430,7 @@ def coverage(rows, gap=None, ref=None):
+         "pair_known": both,
+         "pair_coverage": round(both / n, 4) if n else 0.0,
+         "split_known": split,
+-        "episodes_known": eps,
++        "episodes_known": 0,  # MUTATION M9
+         "episodes_coverage": round(eps / n, 4) if n else 0.0,
+         "usable_as_second_axis": mk > 0,
+         "classifiable": bool(ref["usable"]),
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC2: coverage counts AND percentages over the seeded log, every published figure
+  SELFTEST FAIL: WARP-1407 AC2 NEGATIVE CONTROL: with no figure anywhere the same six rows are produced and coverage reports zero known and zero percent, not zero cost - while the episode coverage, which IS recorded, stays where it was
+  SELFTEST FAIL: WARP-1407 AC2: the rendered coverage line carries every count with its own percentage, and on the log carrying no figure it reads 0.0 percent rather than a confident full coverage
+  15_warp_1407_judgment_load                      58 passed    0.47s
+selftest (PARTIAL, 1 of 34 suites): 84 passed, 3 failed in 0.47s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M10 (declared #10): the plan denominator fallback prints the plan own spec count instead of (not declared)
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..d0bfe9b 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -541,7 +541,7 @@ def render(report):
+         out.append("  %-14s %3d of %s work item spec(s) in the corpus  toe %s tok (%d known)  "
+                    "judgment %s min (%d known)  episodes %d"
+                    % (plan, b["specs"],
+-                      b["work_items"] if b["work_items"] is not None else "(not declared)",
++                      b["work_items"] if b["work_items"] is not None else b["specs"],  # MUTATION M10
+                       _num(b["tokens"]), b["tokens_known"],
+                       _num(b["judgment_minutes"]), b["minutes_known"], b["episodes"]))
+     out.append("")
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC1: the rendered plan line carries the declared denominator and every column in its own place, and a plan the item map does not declare renders '(not declared)' rather than a number of its own
+  15_warp_1407_judgment_load                      60 passed    0.49s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.49s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M11 (declared #11): the plan line token column fed the minutes figure and its known-count fed the spec count
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..a658902 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -542,7 +542,7 @@ def render(report):
+                    "judgment %s min (%d known)  episodes %d"
+                    % (plan, b["specs"],
+                       b["work_items"] if b["work_items"] is not None else "(not declared)",
+-                      _num(b["tokens"]), b["tokens_known"],
++                      _num(b["judgment_minutes"]), b["specs"],  # MUTATION M11
+                       _num(b["judgment_minutes"]), b["minutes_known"], b["episodes"]))
+     out.append("")
+     out.append("coverage: %d record(s); judgment minutes known on %d (%.1f%%), tokens on %d "
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC1: the rendered plan line carries the declared denominator and every column in its own place, and a plan the item map does not declare renders '(not declared)' rather than a number of its own
+  15_warp_1407_judgment_load                      60 passed    0.49s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.49s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M12 (declared #12): the NOT CLASSIFIABLE YET banner deleted
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..8f99cf3 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -561,7 +561,7 @@ def render(report):
+                    "log. The recorder exists (.veldo/spend.py record --human-minutes); nobody has "
+                    "called it. Every shape above is unknown for that reason, and a zero here would "
+                    "be a lie rather than a measurement.")
+-    if not cov["classifiable"]:
++    if False:  # MUTATION M12
+         out.append("NOT CLASSIFIABLE YET: %s" % ref["reason"])
+     return "\n".join(out)
+ 
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC2: the report SAYS the axis is unusable when nothing is recorded, in words, rather than printing zeros, and says the same about the labels it therefore withholds
+  15_warp_1407_judgment_load                      60 passed    0.48s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.48s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M13 (declared #13): approval_required inverted to == not_required
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..5fe9730 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -325,7 +325,7 @@ def pair(record, events):
+         # The approval SURFACE, read off the spec's own front matter by the corpus (the one feature
+         # reader). It is the mechanical reason a change costs a human anything at all, so it travels
+         # with the pair rather than being looked up separately by each surface.
+-        "approval_required": features.get("human_approval") == "required",
++        "approval_required": features.get("human_approval") == "not_required",  # MUTATION M13
+         "protected_touch": bool(features.get("protected_touch")),
+         "tokens": tk["tokens"],
+         "tokens_known": tk["tokens_recorded"],
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC1: the pair carries the approval surface the spec declared, true for the one fixture that declared it and false for every fixture that did not
+  15_warp_1407_judgment_load                      60 passed    0.48s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.48s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M14 (declared #14): protected_touch replaced with the constant False
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..f9699b9 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -326,7 +326,7 @@ def pair(record, events):
+         # reader). It is the mechanical reason a change costs a human anything at all, so it travels
+         # with the pair rather than being looked up separately by each surface.
+         "approval_required": features.get("human_approval") == "required",
+-        "protected_touch": bool(features.get("protected_touch")),
++        "protected_touch": False,  # MUTATION M14
+         "tokens": tk["tokens"],
+         "tokens_known": tk["tokens_recorded"],
+         "judgment_minutes": mn["minutes"],
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC1: the pair carries protected_touch from the corpus - true for a footprint inside the protected pattern, false for one outside it, and false everywhere when the corpus was built with no protected patterns at all
+  15_warp_1407_judgment_load                      60 passed    0.49s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.49s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M15 (declared #15): the reference: line of the report blanked
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..ce1d424 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -551,7 +551,7 @@ def render(report):
+                   cov["tokens_known"], 100 * cov["tokens_coverage"],
+                   cov["pair_known"], 100 * cov["pair_coverage"],
+                   cov["split_known"], cov["episodes_known"]))
+-    out.append("reference: %s" % (ref["reason"] or "none"))
++    out.append("reference: ")  # MUTATION M15
+     gap = cov["unattributed"]
+     out.append("unattributable: %d event(s) carrying %s minute(s) and %s token(s) name no spec, so "
+                "no pair can hold them"
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC2: the report SAYS the axis is unusable when nothing is recorded, in words, rather than printing zeros, and says the same about the labels it therefore withholds
+  SELFTEST FAIL: WARP-1407 AC2 NEGATIVE CONTROL: both banners are absent when minutes ARE recorded and the population carries the labels, so neither is a banner that always prints
+  15_warp_1407_judgment_load                      59 passed    0.50s
+selftest (PARTIAL, 1 of 34 suites): 85 passed, 2 failed in 0.50s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: M16 (declared #16): split_known hardcoded to 0 in the coverage block
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..9f5aa59 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -429,7 +429,7 @@ def coverage(rows, gap=None, ref=None):
+         "tokens_coverage": round(tk / n, 4) if n else 0.0,
+         "pair_known": both,
+         "pair_coverage": round(both / n, 4) if n else 0.0,
+-        "split_known": split,
++        "split_known": 0,  # MUTATION M16
+         "episodes_known": eps,
+         "episodes_coverage": round(eps / n, 4) if n else 0.0,
+         "usable_as_second_axis": mk > 0,
+--- suite run ---
+  selector    --suite 15_warp_1407_judgment_load
+  running     1 of 34 suites: 15_warp_1407_judgment_load
+  SELFTEST FAIL: WARP-1407 AC2: coverage counts AND percentages over the seeded log, every published figure
+  SELFTEST FAIL: WARP-1407 AC2: the rendered coverage line carries every count with its own percentage, and on the log carrying no figure it reads 0.0 percent rather than a confident full coverage
+  15_warp_1407_judgment_load                      59 passed    0.50s
+selftest (PARTIAL, 1 of 34 suites): 85 passed, 2 failed in 0.50s
+--- revert ---
+reverted clean: 0 change(s) outstanding
+
+==================================================================
+MUTATION: A1 (MINE): minutes_recorded derived from the TOTAL instead of from whether a figure was recorded - a recorded zero then reads as never recorded, which is the exact distinction AC2 says is load bearing
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..3b961ad 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -216,3 +216,3 @@ def minutes_for(events, spec_id):
+         "events_with_minutes": carrying,
+-        "minutes_recorded": carrying > 0,
++        "minutes_recorded": total > 0,  # ATTACK A1
+         "split_known": any(by_kind[k] for k in SPLIT_KINDS),
+--- suite run ---
+  15_warp_1407_judgment_load                      61 passed    0.48s
+selftest (PARTIAL, 1 of 34 suites): 87 passed, 0 failed in 0.48s
+--- revert ---
+reverted, outstanding changes: 0
+
+==================================================================
+MUTATION: A2 (MINE): tokens_recorded derived from the TOTAL instead of the count of events carrying the field
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..ca365f8 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -238,3 +238,3 @@ def tokens_for(events, spec_id):
+         carrying += 1
+-    return {"tokens": total, "events_with_tokens": carrying, "tokens_recorded": carrying > 0}
++    return {"tokens": total, "events_with_tokens": carrying, "tokens_recorded": total > 0}  # ATTACK A2
+ 
+--- suite run ---
+  15_warp_1407_judgment_load                      61 passed    0.48s
+selftest (PARTIAL, 1 of 34 suites): 87 passed, 0 failed in 0.48s
+--- revert ---
+reverted, outstanding changes: 0
+
+==================================================================
+MUTATION: A3 (MINE): _mine no longer attributes by correlation_id (the other half of the ONE selector)
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..5c0088b 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -130,4 +130,3 @@ def _mine(event, spec_id):
+     over the same seeded events. Two enumerations of one set are proven equal, not assumed."""
+-    return (event.get("spec_id") == spec_id
+-            or event.get("correlation_id") == spec_id)
++    return event.get("spec_id") == spec_id  # ATTACK A3
+ 
+--- suite run ---
+  15_warp_1407_judgment_load                      61 passed    0.48s
+selftest (PARTIAL, 1 of 34 suites): 87 passed, 0 failed in 0.48s
+--- revert ---
+reverted, outstanding changes: 0
+
+==================================================================
+MUTATION: A4 (MINE, ADDITIVE FIX-SHAPE CONTROL): the per-plan line rendered through _axis, so an axis with 0 of N known prints the WORDS instead of a zero - the suite PINS the zero and reds
+TARGET:   .veldo/judgment_load.py
+------------------------------------------------------------------
+--- git diff (proof the edit landed) ---
+diff --git a/.veldo/judgment_load.py b/.veldo/judgment_load.py
+index d4fa8ed..e348118 100644
+--- a/.veldo/judgment_load.py
++++ b/.veldo/judgment_load.py
+@@ -540,8 +540,8 @@ def render(report):
+         b = report["plans"][plan]
+-        out.append("  %-14s %3d of %s work item spec(s) in the corpus  toe %s tok (%d known)  "
+-                   "judgment %s min (%d known)  episodes %d"
++        out.append("  %-14s %3d of %s work item spec(s) in the corpus  toe %s (%d known)  "
++                   "judgment %s (%d known)  episodes %d"
+                    % (plan, b["specs"],
+                       b["work_items"] if b["work_items"] is not None else "(not declared)",
+-                      _num(b["tokens"]), b["tokens_known"],
+-                      _num(b["judgment_minutes"]), b["minutes_known"], b["episodes"]))
++                      _axis(b["tokens"], b["tokens_known"] > 0, "tok"), b["tokens_known"],  # FIX-SHAPE
++                      _axis(b["judgment_minutes"], b["minutes_known"] > 0, "min"), b["minutes_known"], b["episodes"]))
+     out.append("")
+--- suite run ---
+  SELFTEST FAIL: WARP-1407 AC1: the rendered plan line carries the declared denominator and every column in its own place, and a plan the item map does not declare renders '(not declared)' rather than a number of its own
+  15_warp_1407_judgment_load                      60 passed    0.52s
+selftest (PARTIAL, 1 of 34 suites): 86 passed, 1 failed in 0.52s
+--- revert ---
+reverted, outstanding changes: 0
+
+==================================================================
+ADDITIVE CONTROL: A FIXTURE THE SUITE DOES NOT HAVE (it ADDS things)
+==================================================================
+The suite has no fixture carrying a figure RECORDED AS ZERO, which is the exact pair of facts
+AC2 calls load bearing. I ADD one seeded spec (WARP-9407, a verdict event with human_minutes=0
+and tokens=0) and ONE assertion naming the distinction, and run the UNMODIFIED module.
+
+control applied
+--- git diff (proof the control landed) ---
+diff --git a/scripts/suites/15_warp_1407_judgment_load.py b/scripts/suites/15_warp_1407_judgment_load.py
+index f9784d9..51740f0 100644
+--- a/scripts/suites/15_warp_1407_judgment_load.py
++++ b/scripts/suites/15_warp_1407_judgment_load.py
+@@ -133,4 +133,7 @@ _JL_EVENTS = [
+     _jl_ev("verdict.recorded", "WARP-9406"),
+     _jl_ev("verdict.recorded", "WARP-9406"),
++    # ADDITIVE CONTROL (reviewer): a figure RECORDED AS ZERO, which is not the same fact
++    # as a figure never recorded. No fixture in this suite carried one.
++    _jl_ev("verdict.recorded", "WARP-9407", human_minutes=0, tokens=0),
+ ]
+ _JL_SPECS = {
+@@ -141,4 +144,5 @@ _JL_SPECS = {
+     "WARP-9405": {"plan": "PLAN-9401"},
+     "WARP-9406": {},
++    "WARP-9407": {},
+ }
+ _JL_IDS = sorted(_JL_SPECS)
+@@ -169,4 +173,10 @@ expect("WARP-1407 fixture: the seeded corpus holds exactly the six shipped fixtu
+ # AC1. THE PAIR IS ONE VALUE, DERIVED PER SPEC, AND ONE RENDERER SHOWS IT.
+ # ---------------------------------------------------------------------------------------
++expect("WARP-1407 AC2 (reviewer control): a figure RECORDED AS ZERO is RECORDED, not missing - minutes_known and tokens_known are True, the total is 0, the split is known, and the rendered line shows the figure rather than the words",
++       (_JL_ROWS["WARP-9407"]["judgment_known"], _JL_ROWS["WARP-9407"]["judgment_minutes"],
++        _JL_ROWS["WARP-9407"]["tokens_known"], _JL_ROWS["WARP-9407"]["split_known"])
++       == (True, 0, True, True)
++       and "judgment 0 min" in JL.pair_line(_JL_ROWS["WARP-9407"])
++       and "not recorded" not in JL.pair_line(_JL_ROWS["WARP-9407"]))
+ expect("WARP-1407 AC1: the pair carries both axes for a spec whose figures were recorded",
+        (_JL_ROWS["WARP-9402"]["tokens"], _JL_ROWS["WARP-9402"]["tokens_known"],
+--- suite run, module UNMODIFIED ---
+  SELFTEST FAIL: WARP-1407 AC2 (reviewer control): a figure RECORDED AS ZERO is RECORDED, not missing - minutes_known and tokens_known are True, the total is 0, the split is known, and the rendered line shows the figure rather than the words
+  15_warp_1407_judgment_load                      48 passed    0.51s
+selftest (PARTIAL, 1 of 34 suites): 74 passed, 14 failed in 0.51s
+
+The added row FAILS against the shipped module. Which element, measured:
+   judgment_known    = True   ok
+   judgment_minutes  = 0   ok
+   tokens_known      = True   ok
+   split_known       = False   <= WRONG: the split was recorded, as zero
+--- revert ---
+reverted, outstanding: 0
+==================================================================
+PROBES: WRONG ANSWERS THE SUITE DOES NOT SEE (command output)
+==================================================================
+
+--- P1: a figure RECORDED AS ZERO on a review event. minutes_for is right, split_known is not.
+minutes_for([verdict.recorded human_minutes=0]) ->
+   {'minutes': 0, 'by_kind': {'review': 0, 'approval': 0, 'ship_bulk': 0, 'other': 0}, 'events_with_minutes': 1, 'minutes_recorded': True, 'split_known': False}
+pair_line -> WARP-9407    toe 0 tok            judgment 0 min            [split not recorded]  episodes 1  shape unknown
+  the split WAS recorded (a verdict event carried the field) and the line says it was not.
+
+--- P2: NaN and +Infinity pass the ONE judge (_figure_problem), which AC4 says must raise.
+  _figure_problem(human_minutes, nan) -> None
+  _figure_problem(human_minutes, inf) -> None
+  _figure_problem(human_minutes, -inf) -> "human_minutes on a 'spec.shipped' event for S cannot be negative, got -inf"
+  json.loads('{"human_minutes": NaN}') -> {'human_minutes': nan}  (events.read_log uses json.loads)
+  spend.validate(..., human_minutes=nan) -> ["basis must be one of ['agent_estimate', 'harness_reported', 'partial_session', 'reconstructed'] (a number with no stated provenance is one a later analysis will over-trust), got 'measured'"]
+
+--- P3: one NaN figure labels its own spec cheap AND moves the median under its neighbours.
+  NaN on the FIRST row -> median_judgment_minutes 15.0 [('S0', 'cheap_on_both'), ('S1', 'cheap_on_both'), ('S2', 'expensive_on_both'), ('S3', 'expensive_on_both')]
+  NaN on the LAST row -> median_judgment_minutes 25.0 [('S1', 'cheap_on_both'), ('S2', 'expensive_to_build_cheap_to_approve'), ('S3', 'expensive_on_both'), ('S0', 'cheap_on_both')]
+  the same four figures, two log orders, two different medians and two different label sets.
+
+--- P4: the banner is a claim about THE LOG, computed from shipped-corpus rows.
+CASE A: 45 minutes recorded on an event naming no spec
+    unattributable: 1 event(s) carrying 45 minute(s) and 900 token(s) name no spec, so no pair can hold them
+    NOT USABLE AS A SECOND AXIS YET: no human minutes are recorded anywhere in this log. The recorder exists (.veldo/spend.py record --human-minutes); nobody has called it. Every shape above is unknown for that reason, and a zero here would be a lie rather than a measurement.
+CASE B: 45 minutes recorded on a spec that has not shipped, so it is not in the corpus
+    NOT USABLE AS A SECOND AXIS YET: no human minutes are recorded anywhere in this log. The recorder exists (.veldo/spend.py record --human-minutes); nobody has called it. Every shape above is unknown for that reason, and a zero here would be a lie rather than a measurement.
+
+--- P5: this repository's own report, every plan line, today (18 of 18).
+per plan:
+  (no plan)       34 of (not declared) work item spec(s) in the corpus  toe 0 tok (0 known)  judgment 0 min (0 known)  episodes 43
+  PLAN-0001       12 of 12 work item spec(s) in the corpus  toe 0 tok (0 known)  judgment 0 min (0 known)  episodes 12
+  PLAN-0002        4 of 4 work item spec(s) in the corpus  toe 0 tok (0 known)  judgment 0 min (0 known)  episodes 0
+  PLAN-0003       20 of 20 work item spec(s) in the corpus  toe 0 tok (0 known)  judgment 0 min (0 known)  episodes 20
+  PLAN-0004        7 of 7 work item spec(s) in the corpus  toe 0 tok (0 known)  judgment 0 min (0 known)  episodes 7
+  PLAN-0005        6 of 6 work item spec(s) in the corpus  toe 0 tok (0 known)  judgment 0 min (0 known)  episodes 6
+  PLAN-0006        8 of 8 work item spec(s) in the corpus  toe 0 tok (0 known)  judgment 0 min (0 known)  episodes 8
+  count of plan lines printing an unrecorded axis as a zero:
+    toe 0 tok (0 known):      18
+    judgment 0 min (0 known): 18
+
+--- P6: live measurement behind the criteria prose
+   records 174 | episodes total 170 (AC3 text says 167)
+   rows with episodes 141 | minutes_known 0 | tokens_known 0
+   usable_as_second_axis False | episodes_coverage 0.8103
+
+--- P7: correlation-id-only events in the live log (why A3 is latent rather than live)
+   events 1192 | with spec_id 188 | correlation_id only 0 | neither 1004
+
+--- P8: engine copy is byte-identical and the drift check has teeth
+   diff: identical
+   FAIL: .veldo/judgment_load.py drifted from engine/.veldo/judgment_load.py
+template sync: FAIL
+   reverted
+==================================================================
+SHIP READINESS: THE MODULE IN A TREE SHAPED LIKE AN ADOPTER'S
+==================================================================
+
+publish.py today EXCLUDES engine/.veldo/judgment_load.py. Its siblings toe_corpus.py and
+spend.py are NOT excluded, so they already ship. init_scaffold._FILES lays down neither:
+   laid down by init: judgment_load.py   False
+   laid down by init: toe_corpus.py      False
+   laid down by init: spend.py           False
+   laid down by init: events.py          True
+   laid down by init: validate.py        True
+   laid down by init: policy_check.py    True
+
+scripts/suites/ is not in publish.py INCLUDE and the packs carry no suites, so no test for this
+module travels with it and no adopter gate runs its rows:
+0
+   engine/scripts/verify.sh mentions selftest 0 time(s)
+   suite files under packs/: 0
+
+--- A tree carrying EXACTLY what init lays down, plus this module (the shape ledger 61 names)
+$ python3 .veldo/judgment_load.py report      -> exit 1
+     File "/tmp/adopter-bpwcyza1/.veldo/judgment_load.py", line 122, in _load
+       spec.loader.exec_module(mod)
+     File "<frozen importlib._bootstrap_external>", line 991, in exec_module
+     File "<frozen importlib._bootstrap_external>", line 1128, in get_code
+     File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+   FileNotFoundError: [Errno 2] No such file or directory: '/tmp/adopter-bpwcyza1/.veldo/toe_corpus.py'
+
+$ python3 .veldo/judgment_load.py report       -> exit 0  first line: EFFORT IS A PAIR: tokens of effort, and human-judgment load.
+$ python3 .veldo/judgment_load.py report --all -> exit 0  first line: EFFORT IS A PAIR: tokens of effort, and human-judgment load.
+$ python3 .veldo/judgment_load.py check        -> exit 0  first line: judgment load: 0 malformed figure(s) in 0 event(s)
+   (with the sibling present the CLI is adoption safe over an absent plans/ and specs/ too:
+    plans/ removed -> exit 0
+    specs/ removed -> exit 0
+
+--- The same adopter tree with ONE shipped spec whose minutes were recorded as NaN, end to end
+$ python3 .veldo/judgment_load.py check   -> exit 0
+   judgment load: 0 malformed figure(s) in 1 event(s)
+
+$ python3 .veldo/judgment_load.py report   -> exit 0
+   EFFORT IS A PAIR: tokens of effort, and human-judgment load.
+   
+     ADOPT-0001   toe 5 tok            judgment nan min          [split not recorded]  episodes 0  shape unknown
+   
+   per plan:
+     (no plan)        1 of (not declared) work item spec(s) in the corpus  toe 5 tok (1 known)  judgment nan min (1 known)  episodes 0
+   
+   coverage: 1 record(s); judgment minutes known on 1 (100.0%), tokens on 1 (100.0%), both on 1 (100.0%); judgment split known on 0; episodes on 0
+

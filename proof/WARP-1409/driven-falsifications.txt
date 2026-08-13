@@ -1,0 +1,640 @@
+WARP-1409 - DRIVEN FALSIFICATIONS AND ATTACKS, L2 INDEPENDENT REVIEW
+commit under review: 7b6c0059faae8299a95716b05820097599469e05
+isolated copy:       /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1409   (cp -a of /home/dmitry/projects/veldo; the shared tree was never written)
+runner:              python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+generated:           2026-08-13T09:30:38Z
+
+METHOD. Every mutation is applied by a script that COUNTS its anchor first and exits non-zero
+unless it matched exactly once, because a replacement that matched nothing looks identical to a
+check with no teeth. Every mutation of .veldo/cost_to_change.py or .veldo/toe_corpus.py is applied
+to BOTH engine twins, so the byte-identity row stays green and the reds that remain are
+attributable to the behaviour change alone. Four of the twelve declared mutations are ADDITIVE
+(AC5b adds a second enumeration, AC6b adds a load to a required gate stage, AC7a adds a fifth
+loader call, AC7b adds an import) and each reddens the row its own field names.
+
+==================================================================================
+BASELINE
+==================================================================================
+$ git status --porcelain | wc -l
+0
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  /tmp/tmp784xrdux: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the re
+   WARP-1409 AC8: the NON-EMPTY half of the git-reader control STANDS DOWN, and this is recorded rather than passed: this history begins with the commits naming WARP-1401 already in place (its oldest revision is a root commit), so no revision of it earlier than that exists here to resolve, and none can appear later. The ABSENT half - a spec id no commit names answering with empty lists and zero co
+   WARP-1409 AC2: the LIVE half of the git-path join in repo_report STANDS DOWN, and this is recorded rather than passed: this history begins with the commits naming any spec of the live actuals corpus already in place (its oldest revision is a root commit), so no revision of it earlier than that exists here to resolve, and none can appear later. The git-path join is proven BEHAVIOURALLY in the wi
+  15_warp_1409_cost_to_change_per_area            40 passed    1.18s
+selftest (PARTIAL, 1 of 34 suites): 66 passed, 0 failed in 1.18s
+
+==================================================================================
+AC1 DECLARED: delete the `if declared:` early return in attribute at .veldo/cost_to_change.py:267-269
+REQUIRED RED (the row the declaration names): suite:210 declaration-wins, and suite:990 the live map reading WARP-1401 back as basis placement
+==================================================================================
+$ python3 m1409_ac1.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -266,5 +266,2 @@ def attribute(rec, contract, arch, fm=None, paths=None):
+     declared = sorted(arch.footprint_areas(fm, contract)) if isinstance(fm, dict) else []
+-    if declared:
+-        return {"spec": spec, "areas": declared, "basis": BY_PLACEMENT,
+-                "basis_label": BASIS_LABELS[BY_PLACEMENT], "paths_considered": len(paths)}
+     hit = set()
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -266,5 +266,2 @@ def attribute(rec, contract, arch, fm=None, paths=None):
+     declared = sorted(arch.footprint_areas(fm, contract)) if isinstance(fm, dict) else []
+-    if declared:
+-        return {"spec": spec, "areas": declared, "basis": BY_PLACEMENT,
+-                "basis_label": BASIS_LABELS[BY_PLACEMENT], "paths_considered": len(paths)}
+     hit = set()
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC1: A SPEC THAT DECLARES A RESOLVING PLACEMENT IS JOINED ON THE DECLARATION, and the declaration WINS over the paths. The record is attributed to alpha with basis 'placement' even though the paths handed in point at beta, because a 
+  SELFTEST FAIL: WARP-1409 AC2 NEGATIVE CONTROL: THE PLACEMENT-ONLY REPORT CARRIES NO GIT-PATH WARNING ANYWHERE. git_path_attributed is false, the git_path count is 0, there is no notice key at all, the bases map holds only 'placement', and the label's own tex
+  SELFTEST FAIL: WARP-1409 AC3: THE SPECS INSIDE THE AREAS AND THE SPECS OUTSIDE THEM PARTITION THE CORPUS EXACTLY, asserted as SET EQUALITY and DISJOINTNESS over one enumeration and not as a pair of counts that could both be wrong the same way. Every corpus s
+  SELFTEST FAIL: WARP-1409 AC3: THE COVERAGE FIGURES ARE DERIVED FROM THE SAME PARTITION THEY DESCRIBE. records equals the corpus length, attributed plus unattributed equals records, and area_memberships equals the total number of (record, area) pairs, which i
+  SELFTEST FAIL: WARP-1409 AC3: THE CYCLE SUMS ARE THE RECORDED ONES AND GATE FAILURES STAY SEPARATE FROM PASSES, because failures are the rework signal and a map that merged them could not show rework at all. Three records in alpha at 1 pass and 2 failures ea
+  SELFTEST FAIL: WARP-1409 AC4: THE RENDERED TEXT PRINTS gate_passes=None RATHER THAN 0 for the same records, so the human surface cannot show a confident zero the JSON does not carry, and it names the basis and the gate-event coverage beside the figure. NEGAT
+  SELFTEST FAIL: WARP-1409 AC1 AND AC2, THE WIRING: repo_report COMPOSES BOTH JOINS AND EVERY ARGUMENT IS OBSERVABLE. Driven with a loader that answers the four sibling paths from known data. It asks for exactly .veldo/validate.py, .veldo/toe_corpus.py, .veldo
+  SELFTEST FAIL: WARP-1409 AC2 NEGATIVE CONTROL ON THE WIRING: WITH THE GIT READER ANSWERING NOTHING, THE SAME COMPOSITION LOSES ITS GIT-PATH ATTRIBUTION AND FABRICATES NOTHING IN ITS PLACE. One input differs - git_touched returns no files for any spec - and W
+  SELFTEST FAIL: WARP-1409 AC1 AND AC3 OVER THE REAL REPOSITORY: repo_report() AGGREGATES THE WHOLE ACTUALS CORPUS AND PARTITIONS IT, asserted as a SET EQUALITY against a corpus built independently from the same three readers (toe_corpus.build over metrics.loa
+  15_warp_1409_cost_to_change_per_area            32 passed    1.18s
+selftest (PARTIAL, 1 of 34 suites): 58 passed, 9 failed in 1.18s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC2 DECLARED: stamp BY_PLACEMENT instead of BY_GIT_PATH in the stand-down return at :275-276
+REQUIRED RED (the row the declaration names): suite:251-258 in-the-data attribution; suite:270-274 placement-only control must STAY GREEN
+==================================================================================
+$ python3 m1409_ac2.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -274,4 +274,4 @@ def attribute(rec, contract, arch, fm=None, paths=None):
+     if hit:
+-        return {"spec": spec, "areas": sorted(hit), "basis": BY_GIT_PATH,
+-                "basis_label": BASIS_LABELS[BY_GIT_PATH], "paths_considered": len(paths)}
++        return {"spec": spec, "areas": sorted(hit), "basis": BY_PLACEMENT,
++                "basis_label": BASIS_LABELS[BY_PLACEMENT], "paths_considered": len(paths)}
+     return {"spec": spec, "areas": [], "basis": UNATTRIBUTED,
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -274,4 +274,4 @@ def attribute(rec, contract, arch, fm=None, paths=None):
+     if hit:
+-        return {"spec": spec, "areas": sorted(hit), "basis": BY_GIT_PATH,
+-                "basis_label": BASIS_LABELS[BY_GIT_PATH], "paths_considered": len(paths)}
++        return {"spec": spec, "areas": sorted(hit), "basis": BY_PLACEMENT,
++                "basis_label": BASIS_LABELS[BY_PLACEMENT], "paths_considered": len(paths)}
+     return {"spec": spec, "areas": [], "basis": UNATTRIBUTED,
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC1 NEGATIVE CONTROL: THE SAME RECORD WITH THE DECLARATION REMOVED STOPS BEING PLACEMENT-ATTRIBUTED. One input differs (the front matter is absent) and the answer changes: basis becomes 'git_path' and the area becomes beta, the one t
+  SELFTEST FAIL: WARP-1409 AC2: A RECORD WITH NO PLACEMENT IS ATTRIBUTED BY GIT PATH AND THE REPORT SAYS SO IN THE DATA, not only in a comment or in the rendered text. The area carries attribution {'git_path': 1} and attribution_basis 'git_path', the member en
+  SELFTEST FAIL: WARP-1409 AC3: THE COVERAGE FIGURES ARE DERIVED FROM THE SAME PARTITION THEY DESCRIBE. records equals the corpus length, attributed plus unattributed equals records, and area_memberships equals the total number of (record, area) pairs, which i
+  SELFTEST FAIL: WARP-1409 AC1 AND AC2, THE WIRING: repo_report COMPOSES BOTH JOINS AND EVERY ARGUMENT IS OBSERVABLE. Driven with a loader that answers the four sibling paths from known data. It asks for exactly .veldo/validate.py, .veldo/toe_corpus.py, .veldo
+  SELFTEST FAIL: WARP-1409 AC2: THE RENDERED TEXT CARRIES THE GIT-PATH WARNING AND THE SAME FIGURES THE JSON DOES, drawn from the report rather than recomputed, so the human surface and the machine surface cannot disagree. A stand-down renders one honest line 
+  15_warp_1409_cost_to_change_per_area            35 passed    1.14s
+selftest (PARTIAL, 1 of 34 suites): 61 passed, 5 failed in 1.14s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC3 DECLARED: default an unattributable record into the first declared area (report at :404-406)
+REQUIRED RED (the row the declaration names): suite:315-318 partition set equality, suite:326-330 memberships identity, suite:992 WARP-0100 unattributed
+==================================================================================
+$ python3 m1409_ac3.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -404,4 +404,3 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
+         if not att["areas"]:
+-            unattributed.append(att)
+-            continue
++            att["areas"] = sorted(arch.area_ids(contract))[:1]
+         # A change that touched two areas contributes its recorded cost to EACH of them: the
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -404,4 +404,3 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
+         if not att["areas"]:
+-            unattributed.append(att)
+-            continue
++            att["areas"] = sorted(arch.area_ids(contract))[:1]
+         # A change that touched two areas contributes its recorded cost to EACH of them: the
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC2 NEGATIVE CONTROL, THE FALLBACK CANNOT FABRICATE: THE SAME PLACEMENT-FREE RECORD WITH NO PATHS AVAILABLE IS UNATTRIBUTED, NOT PLACED. It lands in no area, it is counted in unattributed.records, and its spec id appears in the unatt
+  SELFTEST FAIL: WARP-1409 AC3: THE SPECS INSIDE THE AREAS AND THE SPECS OUTSIDE THEM PARTITION THE CORPUS EXACTLY, asserted as SET EQUALITY and DISJOINTNESS over one enumeration and not as a pair of counts that could both be wrong the same way. Every corpus s
+  SELFTEST FAIL: WARP-1409 AC3: THE COVERAGE FIGURES ARE DERIVED FROM THE SAME PARTITION THEY DESCRIBE. records equals the corpus length, attributed plus unattributed equals records, and area_memberships equals the total number of (record, area) pairs, which i
+  SELFTEST FAIL: WARP-1409 AC3: THE CYCLE SUMS ARE THE RECORDED ONES AND GATE FAILURES STAY SEPARATE FROM PASSES, because failures are the rework signal and a map that merged them could not show rework at all. Three records in alpha at 1 pass and 2 failures ea
+  SELFTEST FAIL: WARP-1409 AC4: THE RENDERED TEXT PRINTS gate_passes=None RATHER THAN 0 for the same records, so the human surface cannot show a confident zero the JSON does not carry, and it names the basis and the gate-event coverage beside the figure. NEGAT
+  SELFTEST FAIL: WARP-1409 AC1 AND AC2, THE WIRING: repo_report COMPOSES BOTH JOINS AND EVERY ARGUMENT IS OBSERVABLE. Driven with a loader that answers the four sibling paths from known data. It asks for exactly .veldo/validate.py, .veldo/toe_corpus.py, .veldo
+  SELFTEST FAIL: WARP-1409 AC2 NEGATIVE CONTROL ON THE WIRING: WITH THE GIT READER ANSWERING NOTHING, THE SAME COMPOSITION LOSES ITS GIT-PATH ATTRIBUTION AND FABRICATES NOTHING IN ITS PLACE. One input differs - git_touched returns no files for any spec - and W
+  SELFTEST FAIL: WARP-1409 AC1 AND AC3 OVER THE REAL REPOSITORY: repo_report() AGGREGATES THE WHOLE ACTUALS CORPUS AND PARTITIONS IT, asserted as a SET EQUALITY against a corpus built independently from the same three readers (toe_corpus.build over metrics.loa
+  15_warp_1409_cost_to_change_per_area            32 passed    1.15s
+selftest (PARTIAL, 1 of 34 suites): 58 passed, 8 failed in 1.15s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC4 DECLARED (load-bearing leg): delete the unrecorded guard in _sum_cost at :345-347
+REQUIRED RED (the row the declaration names): suite:433-439 unknown cost, suite:1088 live per-area equality, suite:1167-1171 cost stand-down arm; suite:453-460 positive control must STAY GREEN
+==================================================================================
+$ python3 m1409_ac4a.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -344,5 +344,2 @@ def _sum_cost(records):
+     for f in COST_FIELDS:
+-        if not known:
+-            out[f] = None
+-            continue
+         total = sum((r.get("spend") or {}).get(f, 0) for r in known)
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -344,5 +344,2 @@ def _sum_cost(records):
+     for f in COST_FIELDS:
+-        if not known:
+-            out[f] = None
+-            continue
+         total = sum((r.get("spend") or {}).get(f, 0) for r in known)
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC4: AN AREA WHOSE RECORDS CARRY NO RECORDED SPEND REPORTS ITS COST FIELDS AS None WITH cost_known FALSE, NEVER AS A CONFIDENT ZERO. WARP-1401 measured the reason: not one event in this repository carries tokens, cost_usd or human_mi
+  SELFTEST FAIL: WARP-1409 AC2: THE RENDERED TEXT CARRIES THE GIT-PATH WARNING AND THE SAME FIGURES THE JSON DOES, drawn from the report rather than recomputed, so the human surface and the machine surface cannot disagree. A stand-down renders one honest line 
+  SELFTEST FAIL: WARP-1409 AC4 OVER THE REAL REPOSITORY: THE TWO GAPS ARE NUMBERS IN THE LIVE MAP AND NOT PROSE IN THE SPEC, AND EACH NUMBER IS ASSERTED AGAINST AN EXPECTATION DERIVED FROM THE INDEPENDENTLY BUILT CORPUS RATHER THAN AGAINST TODAY'S EMPTINESS. P
+  SELFTEST FAIL: WARP-1409 AC4 OVER THE REAL REPOSITORY, THE COST STAND-DOWN ARM: not one record in this repository's corpus carries spend AS READ ON THIS RUN, so every cost field of every area is None with cost_basis 'unrecorded' rather than a confident zero,
+  15_warp_1409_cost_to_change_per_area            36 passed    1.16s
+selftest (PARTIAL, 1 of 34 suites): 62 passed, 4 failed in 1.16s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC4 DECLARED (the gate-cycle twin): delete the `if count else None` at :323
+REQUIRED RED (the row the declaration names): suite:395-408 and suite:1205-1209
+==================================================================================
+$ python3 m1409_ac4b.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -322,3 +322,3 @@ def _sum_cycles(records):
+         for f in fields:
+-            out[f] = sums[f] if count else None
++            out[f] = sums[f]
+     out["cycles_known"] = known
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -322,3 +322,3 @@ def _sum_cycles(records):
+         for f in fields:
+-            out[f] = sums[f] if count else None
++            out[f] = sums[f]
+     out["cycles_known"] = known
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC4: AN AREA WHOSE RECORDS CARRY NO GATE EVENT REPORTS gate_passes AND gate_failures AS None WITH gate_basis 'unrecorded', NEVER AS A CONFIDENT ZERO - and it does so in the DATA, which is AC2's own stated principle, not in the spec p
+  SELFTEST FAIL: WARP-1409 AC4: THE RENDERED TEXT PRINTS gate_passes=None RATHER THAN 0 for the same records, so the human surface cannot show a confident zero the JSON does not carry, and it names the basis and the gate-event coverage beside the figure. NEGAT
+  SELFTEST FAIL: WARP-1409 AC4 OVER THE REAL REPOSITORY: THE TWO GAPS ARE NUMBERS IN THE LIVE MAP AND NOT PROSE IN THE SPEC, AND EACH NUMBER IS ASSERTED AGAINST AN EXPECTATION DERIVED FROM THE INDEPENDENTLY BUILT CORPUS RATHER THAN AGAINST TODAY'S EMPTINESS. P
+  SELFTEST FAIL: WARP-1409 AC4 OVER THE REAL REPOSITORY, THE GATE STAND-DOWN ARM: not one gate.passed or gate.failed event reaches a record AS READ ON THIS RUN - the emitter writes a commit and no spec id or correlation id - so gate_passes and gate_failures ar
+  15_warp_1409_cost_to_change_per_area            36 passed    1.15s
+selftest (PARTIAL, 1 of 34 suites): 62 passed, 4 failed in 1.15s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC5 DECLARED (load-bearing leg): delete the refuse_malformed(corpus) call in report at :393
+REQUIRED RED (the row the declaration names): suite:509-518 eight shapes, suite:523-525 named spec, suite:527-532 duplicate; suite:534-539 positive control must STAY GREEN
+==================================================================================
+$ python3 m1409_ac5a.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -392,3 +392,2 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
+                          "repository that records none is byte-identically unaffected)")
+-    refuse_malformed(corpus)
+     fm_of = fm_of if fm_of is not None else (lambda _s: None)
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -392,3 +392,2 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
+                          "repository that records none is byte-identically unaffected)")
+-    refuse_malformed(corpus)
+     fm_of = fm_of if fm_of is not None else (lambda _s: None)
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC5: EVERY MALFORMED ACTUALS RECORD IS REFUSED BY NAME, driven for EIGHT planted shapes: not a mapping, a foreign schema, no spec id, a negative gate-failure count, a non-numeric one, a spend block that is not a mapping, a non-boolea
+  SELFTEST FAIL: WARP-1409 AC5: THE REFUSAL NAMES THE SPEC THE BAD RECORD BELONGS TO, not only the index, so a corpus of 174 records points at the one that is wrong. Checked on the negative-count shape, whose spec id is known
+  SELFTEST FAIL: WARP-1409 AC5: A DUPLICATE SPEC IS REFUSED, because the same record counted twice inflates every area it touches and a per-area cost that double-counts one change is wrong in the direction nobody checks. The message names the spec and the indi
+  15_warp_1409_cost_to_change_per_area            37 passed    1.15s
+selftest (PARTIAL, 1 of 34 suites): 63 passed, 3 failed in 1.15s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC5 DECLARED (one-enumeration leg, ADDITIVE): give check_corpus a second problem list at :212
+REQUIRED RED (the row the declaration names): suite:548-558
+==================================================================================
+$ python3 m1409_ac5b.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -211,3 +211,11 @@ def check_corpus(corpus, fail, name="toe actuals corpus"):
+     come from the one enumeration above so this surface and the refusal below cannot diverge."""
+-    return sum(fail(name, msg) for msg in corpus_problems(corpus))
++    return sum(fail(name, msg) for msg in _second_problem_spelling(corpus))
++
++
++def _second_problem_spelling(corpus):
++    """A SECOND enumeration of what is wrong with a corpus - the defect AC5 forbids."""
++    if not isinstance(corpus, list):
++        return ["the actuals corpus must be a list"]
++    return ["record %d is invalid" % i for i, r in enumerate(corpus)
++            if record_problems(r, "record %d" % i)]
+ 
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -211,3 +211,11 @@ def check_corpus(corpus, fail, name="toe actuals corpus"):
+     come from the one enumeration above so this surface and the refusal below cannot diverge."""
+-    return sum(fail(name, msg) for msg in corpus_problems(corpus))
++    return sum(fail(name, msg) for msg in _second_problem_spelling(corpus))
++
++
++def _second_problem_spelling(corpus):
++    """A SECOND enumeration of what is wrong with a corpus - the defect AC5 forbids."""
++    if not isinstance(corpus, list):
++        return ["the actuals corpus must be a list"]
++    return ["record %d is invalid" % i for i, r in enumerate(corpus)
++            if record_problems(r, "record %d" % i)]
+ 
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC5: THE GATE-SHAPED REPORTER IS AN INJECTED fail AND THE TWO SURFACES READ ONE ENUMERATION. check_corpus is driven with the real validate.fail and returns a positive count for a malformed corpus and exactly 0 for the well-formed one
+  15_warp_1409_cost_to_change_per_area            39 passed    1.16s
+selftest (PARTIAL, 1 of 34 suites): 65 passed, 1 failed in 1.16s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC6 DECLARED (load-bearing leg): delete the empty-corpus stand-down in report at :390-392
+REQUIRED RED (the row the declaration names): suite:565-585 including the coverage-block key equality at :584
+==================================================================================
+$ python3 m1409_ac6a.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -389,5 +389,2 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
+                          "byte-identically unaffected)")
+-    if not corpus:
+-        return standdown("no toe actuals records (adoption safe: nothing to aggregate, and a "
+-                         "repository that records none is byte-identically unaffected)")
+     refuse_malformed(corpus)
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -389,5 +389,2 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
+                          "byte-identically unaffected)")
+-    if not corpus:
+-        return standdown("no toe actuals records (adoption safe: nothing to aggregate, and a "
+-                         "repository that records none is byte-identically unaffected)")
+     refuse_malformed(corpus)
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC6: WITH NO ACTUALS RECORDS THE WHOLE DERIVATION STANDS DOWN SILENTLY, and with no architecture contract it stands down too. Each returns a report with standdown true, a reason naming which condition it was, empty areas and zeroed c
+  SELFTEST FAIL: WARP-1409 AC2: THE RENDERED TEXT CARRIES THE GIT-PATH WARNING AND THE SAME FIGURES THE JSON DOES, drawn from the report rather than recomputed, so the human surface and the machine surface cannot disagree. A stand-down renders one honest line 
+  15_warp_1409_cost_to_change_per_area            38 passed    1.19s
+selftest (PARTIAL, 1 of 34 suites): 64 passed, 2 failed in 1.19s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC6 DECLARED (outside-the-gate leg, ADDITIVE): make a required gate stage load the module
+REQUIRED RED (the row the declaration names): suite:868
+==================================================================================
+$ python3 m1409_ac6b.py      # asserts its own anchor matched exactly once
+applied to scripts/secret_inventory.py
+applied to scripts/secret_inventory.py
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/scripts/secret_inventory.py b/scripts/secret_inventory.py
+@@ -19,2 +19,4 @@ from pathlib import Path
+ 
++CTC = None            # a REQUIRED gate stage now consuming the per-area cost map
++
+ MAX_BLOB = 2_000_000        # a blob larger than this is a binary or a dataset, not a config file
+@@ -29,2 +31,6 @@ def _load(name, path):
+ 
++def _ctc_report(root):
++    return _load("ctc", Path(root) / ".veldo/cost_to_change.py").repo_report(root=root)
++
++
+ def _git(root, *args):
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC6: NO GATE STAGE CONSUMES THIS MODULE'S OUTPUT. The string cost_to_change appears in NONE of the files in the derived gate closure asserted above, so nothing the gate runs can fail because a per-area cost map was unavailable, malfo
+  15_warp_1409_cost_to_change_per_area            39 passed    1.20s
+selftest (PARTIAL, 1 of 34 suites): 65 passed, 1 failed in 1.20s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC7 DECLARED (ADDITIVE): add a fifth loader call for .veldo/entropy.py in repo_report at :558-561
+REQUIRED RED (the row the declaration names): suite:750-751
+==================================================================================
+$ python3 m1409_ac7a.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -561,2 +561,3 @@ def repo_report(root=None, load=None):
+     PC = load("veldo_policy_check_ctc", ".veldo/policy_check.py")
++    load("veldo_entropy_ctc", ".veldo/entropy.py")
+     arch, contract = V.load_repo_contract(repo_root=str(base))
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -561,2 +561,3 @@ def repo_report(root=None, load=None):
+     PC = load("veldo_policy_check_ctc", ".veldo/policy_check.py")
++    load("veldo_entropy_ctc", ".veldo/entropy.py")
+     arch, contract = V.load_repo_contract(repo_root=str(base))
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC1 AND AC2, THE WIRING: repo_report COMPOSES BOTH JOINS AND EVERY ARGUMENT IS OBSERVABLE. Driven with a loader that answers the four sibling paths from known data. It asks for exactly .veldo/validate.py, .veldo/toe_corpus.py, .veldo
+  SELFTEST FAIL: WARP-1409 AC2 NEGATIVE CONTROL ON THE WIRING: WITH THE GIT READER ANSWERING NOTHING, THE SAME COMPOSITION LOSES ITS GIT-PATH ATTRIBUTION AND FABRICATES NOTHING IN ITS PLACE. One input differs - git_touched returns no files for any spec - and W
+  SELFTEST FAIL: WARP-1409 AC7: THE CROSS-PLAN SEAM IS SOFT (PLAN-0014 C6), ASSERTED AS THE MODULE'S WHOLE DEPENDENCY SURFACE. Every sibling .veldo/cost_to_change.py can reach arrives through a loader call with a literal path, and that set is exactly validate,
+  15_warp_1409_cost_to_change_per_area            37 passed    1.19s
+selftest (PARTIAL, 1 of 34 suites): 63 passed, 3 failed in 1.19s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC7 DECLARED (no-spawn leg, ADDITIVE): import subprocess into the module
+REQUIRED RED (the row the declaration names): suite:777
+==================================================================================
+$ python3 m1409_ac7b.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -83,2 +83,3 @@ import argparse
+ import importlib.util
++import subprocess
+ import json
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -83,2 +83,3 @@ import argparse
+ import importlib.util
++import subprocess
+ import json
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC7: THE MODULE STARTS NOTHING. Its source contains no spawn primitive at all (no subprocess, Popen, os.system, os.fork, threading, multiprocessing, nohup, setsid or daemon), so the derivation is a pure function over injected data th
+  15_warp_1409_cost_to_change_per_area            39 passed    1.16s
+selftest (PARTIAL, 1 of 34 suites): 65 passed, 1 failed in 1.16s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+AC8 DECLARED: rename the files_touched count key at .veldo/toe_corpus.py:176 to files
+REQUIRED RED (the row the declaration names): suite:887-890 and suite:900-901
+==================================================================================
+$ python3 m1409_ac8.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/toe_corpus.py', 'engine/.veldo/toe_corpus.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/toe_corpus.py b/.veldo/toe_corpus.py
+@@ -175,3 +175,3 @@ def files_touched(spec_id):
+     t = git_touched(spec_id)
+-    return {"commits": len(t["commits"]), "files_touched": len(t["files"])}
++    return {"commits": len(t["commits"]), "files": len(t["files"])}
+ 
+diff --git a/engine/.veldo/toe_corpus.py b/engine/.veldo/toe_corpus.py
+@@ -175,3 +175,3 @@ def files_touched(spec_id):
+     t = git_touched(spec_id)
+-    return {"commits": len(t["commits"]), "files_touched": len(t["files"])}
++    return {"commits": len(t["commits"]), "files": len(t["files"])}
+ 
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  SELFTEST FAIL: WARP-1409 AC8: toe_corpus.files_touched COUNTS EXACTLY WHAT git_touched READS, driven over a real spec id in this repository's own history. Its returned keys are unchanged (commits and files_touched) so the WARP-1401 corpus record is byte-iden
+  SELFTEST FAIL: WARP-1409 AC8: a spec id NO commit names yields empty lists and zero counts rather than an exception, on both views of the one git read
+  15_warp_1409_cost_to_change_per_area            38 passed    1.16s
+selftest (PARTIAL, 1 of 34 suites): 64 passed, 2 failed in 1.16s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+ATTACK 1 (NOT declared): gut git_touched so the ONE reader the stand-down join depends on reads nothing, in BOTH twins
+REQUIRED RED (the row the declaration names): NOTHING - and that is the finding (F2)
+==================================================================================
+$ python3 a1409_gut_git_touched.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/toe_corpus.py', 'engine/.veldo/toe_corpus.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/toe_corpus.py b/.veldo/toe_corpus.py
+@@ -158,4 +158,4 @@ def git_touched(spec_id):
+     second-spelling defect in a new place. `files_touched` below counts exactly this."""
+-    out = _run(["git", "log", "--format=%H", "--grep", spec_id, "--all"])
+-    shas = [s for s in out.split() if s]
++    out = ""
++    shas = []
+     files = set()
+diff --git a/engine/.veldo/toe_corpus.py b/engine/.veldo/toe_corpus.py
+@@ -158,4 +158,4 @@ def git_touched(spec_id):
+     second-spelling defect in a new place. `files_touched` below counts exactly this."""
+-    out = _run(["git", "log", "--format=%H", "--grep", spec_id, "--all"])
+-    shas = [s for s in out.split() if s]
++    out = ""
++    shas = []
+     files = set()
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  15_warp_1409_cost_to_change_per_area            40 passed    0.15s
+selftest (PARTIAL, 1 of 34 suites): 66 passed, 0 failed in 0.15s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+ATTACK 2 (NOT declared): files_touched hardcoded to zeros, keys unchanged
+REQUIRED RED (the row the declaration names): NOTHING - and that is the finding (F3)
+==================================================================================
+$ python3 a1409_gut_files_touched.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/toe_corpus.py', 'engine/.veldo/toe_corpus.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/toe_corpus.py b/.veldo/toe_corpus.py
+@@ -174,4 +174,3 @@ def files_touched(spec_id):
+     which commits a spec's change is."""
+-    t = git_touched(spec_id)
+-    return {"commits": len(t["commits"]), "files_touched": len(t["files"])}
++    return {"commits": 0, "files_touched": 0}
+ 
+diff --git a/engine/.veldo/toe_corpus.py b/engine/.veldo/toe_corpus.py
+@@ -174,4 +174,3 @@ def files_touched(spec_id):
+     which commits a spec's change is."""
+-    t = git_touched(spec_id)
+-    return {"commits": len(t["commits"]), "files_touched": len(t["files"])}
++    return {"commits": 0, "files_touched": 0}
+ 
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  15_warp_1409_cost_to_change_per_area            40 passed    0.50s
+selftest (PARTIAL, 1 of 34 suites): 66 passed, 0 failed in 0.50s
+$ git checkout -- . ; git status --porcelain | wc -l
+0
+
+==================================================================================
+ATTACK 3 (NOT declared, ADDITIVE): report() writes a file into .veldo, which AC6 says it never does
+REQUIRED RED (the row the declaration names): NOTHING - and that is the finding (F4)
+==================================================================================
+$ python3 a1409_write.py      # asserts its own anchor matched exactly once
+applied to both twins: ('.veldo/cost_to_change.py', 'engine/.veldo/cost_to_change.py')
+$ git --no-pager diff -U1     # proof the edit landed
+diff --git a/.veldo/cost_to_change.py b/.veldo/cost_to_change.py
+@@ -393,2 +393,3 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
+     refuse_malformed(corpus)
++    (Path(ROOT) / ".veldo" / "ctc_side_effect.json").write_text(json.dumps({"wrote": True}))
+     fm_of = fm_of if fm_of is not None else (lambda _s: None)
+diff --git a/engine/.veldo/cost_to_change.py b/engine/.veldo/cost_to_change.py
+@@ -393,2 +393,3 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
+     refuse_malformed(corpus)
++    (Path(ROOT) / ".veldo" / "ctc_side_effect.json").write_text(json.dumps({"wrote": True}))
+     fm_of = fm_of if fm_of is not None else (lambda _s: None)
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+  selector    --suite 15_warp_1409_cost_to_change_per_area
+  running     1 of 34 suites: 15_warp_1409_cost_to_change_per_area
+  15_warp_1409_cost_to_change_per_area            40 passed    1.15s
+selftest (PARTIAL, 1 of 34 suites): 66 passed, 0 failed in 1.15s
+$ git checkout -- . ; git status --porcelain | wc -l
+1
+
+==================================================================================
+ATTACK 3 AFTERMATH: the file report() wrote really existed
+==================================================================================
+(recorded when the mutation ran: -rw-rw-r-- 15 bytes .veldo/ctc_side_effect.json,
+ suite 40 passed 0 failed, so no row observed the write)
+
+==================================================================================
+FIRST REAL USE (the ledger-26 test), with the sanctioned writer
+==================================================================================
+$ python3 scripts/selftest.py            # baseline, whole suite set, before any use
+selftest: 4723 passed, 0 failed
+$ python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000
+{"at": "2026-08-13T09:18:28Z", "correlation_id": "WARP-0100", "id": "e46b559f5b54", "producer": "events.py", "schema": "veldo.event/v1", "spec_id": "WARP-0100", "spend_basis": "harness_reported", "tokens": 750000, "type": "spec.shipped"}
+$ python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area
+15_warp_1409_cost_to_change_per_area            40 passed    1.17s
+selftest (PARTIAL, 1 of 34 suites): 66 passed, 0 failed in 1.17s
+$ python3 scripts/selftest.py            # the WHOLE suite set, after using the feature
+selftest: 4723 passed, 0 failed
+  -> THE LANDMINE CLASS IS CLOSED. Recording spend reds nothing, anywhere. Credit where due.
+
+$ python3 .veldo/cost_to_change.py       # what the map then SAYS
+  records 174, attributed 66, unattributed 108 (by placement 66, by git path 0)
+  CYCLES: NO RECORD IN THIS CORPUS CARRIES A GATE PASS OR A GATE FAILURE, ...
+  area contracts: 31 change(s), attribution placement
+    cost: tokens=None cost_usd=None human_minutes=None (unrecorded, spend on 0 of 31)
+  [... every one of the ten areas identical: tokens=None, cost_basis unrecorded ...]
+$ python3 - (repo_report() read back)
+usable_as_cost_ground_truth: True
+cost_known_records: 1
+cost_notice present: False
+WARP-0100 unattributed: True
+per-area tokens: {'contracts': None, 'distribution': None, 'docs': None, 'enforcement': None, 'engine': None, 'fleet': None, 'loop': None, 'metrics': None, 'runners': None, 'tracker': None}
+per-area cost_basis: ['unrecorded']
+  -> F1. The blunt boolean says the map is usable as cost ground truth; every cost figure in it
+     is None; the cost_notice that exists to EXPLAIN the None has been suppressed by the very
+     act of recording spend; and the 750000 tokens appear in no figure anywhere, because
+     WARP-0100 is UNATTRIBUTED and the unattributed block carries only records/specs/reason.
+     AC4's live RECORDED arm passed over this state: its per-area legs iterate
+     _w1409_live_areas_of.get(_s, ()), which is EMPTY for an unattributed spec, so every
+     all(...) in that arm is vacuously true.
+
+==================================================================================
+THE STAND-DOWN GUARD, MEASURED (F2)
+==================================================================================
+shared.no_history routes a leg through history_begins_with(rel), which runs
+  git log --format=%H --reverse -- <rel>   and returns True when the result is EMPTY.
+WARP-1409 hands it a PROSE SENTENCE where the mechanism wants a module path:
+history_begins_with('the commits naming WARP-1401'                         ) = True    revisions found: 0
+history_begins_with('the commits naming any spec of the live actuals corpus') = True    revisions found: 0
+history_begins_with('.veldo/toe_corpus.py'                                 ) = True    revisions found: 1
+history_begins_with('.veldo/cost_to_change.py'                             ) = True    revisions found: 2
+  -> a path that does not exist can never have a revision, so the guard the mechanism uses to
+     separate an ABSENT INPUT from a BROKEN READER answers True in EVERY repository forever.
+     shared.py's own docstring: 'False in every other case, including a repository with history
+     whose revision lookup failed - that is a defect and the caller must assert exactly as it
+     always did.' ATTACK 1 above is that defect, and it is green.
+
+==================================================================================
+REPO_REPORT(root=X) HONOURS X FOR TWO OF FIVE INPUTS (F5)
+==================================================================================
+toe_corpus.ROOT   : <the repository the module lives in>
+metrics LOG path  : <that same repository>/.veldo/events.jsonl
+repo_report(root=OTHER TREE holding ONE shipped spec): records=1 areas=['metrics']
+  git reader consulted: <this repository>  (NOT the root that was passed)
+  -> contract and specs come from the root; the EVENT STREAM, the GIT HISTORY and the
+     PROTECTED PATTERNS come from wherever the module lives.
+
+==================================================================================
+THE TWIN IS ALREADY GATE-GUARDED, CONTRARY TO THE SUITE'S OWN TEXT (F6)
+==================================================================================
+$ printf '\n# drift probe\n' >> engine/.veldo/cost_to_change.py ; bash scripts/check_template_sync.sh
+   FAIL: .veldo/cost_to_change.py drifted from engine/.veldo/cost_to_change.py
+template sync: FAIL
+exit=1
+  -> the suite asserts in its own text 'Nothing else in this repository compares either pair',
+     and the spec's Out-of-scope records the gate-level enforcement as 'a one-line-per-pair
+     change to that script ... recorded here rather than made'. check_template_sync.sh derives
+     its pairs from `git ls-files engine` (122 compared) and already enforces both.
+
+==================================================================================
+SHIP READINESS: WHAT AN ADOPTER RECEIVES (F0)
+==================================================================================
+init lays down 43 files. PLAN-0014 estimation layer:
+   .veldo/cost_to_change.py         laid down by /veldo:init: False
+   .veldo/toe_corpus.py             laid down by /veldo:init: False
+   .veldo/metrics.py                laid down by /veldo:init: False
+   .veldo/spend.py                  laid down by /veldo:init: False
+   .veldo/policy_check.py           laid down by /veldo:init: True
+   .veldo/validate.py               laid down by /veldo:init: True
+   .veldo/arch.py                   laid down by /veldo:init: True
+FIXTURE: exactly what /veldo:init lays down, plus the module under review, hand-installed
+$ python3 .veldo/cost_to_change.py
+exit: 1
+stderr tail: FileNotFoundError: [Errno 2] No such file or directory: '<fixture>/.veldo/toe_corpus.py'
+  -> ledger finding 61's exact shape and its exact measurement method. Removing the four
+     publish.py EXCLUDE lines ships a FILE, not a CAPABILITY.
+
+==================================================================================
+THE SPEC'S PUBLISHED FIGURES, RE-MEASURED AT THIS COMMIT
+==================================================================================
+  records            spec 174  measured 174
+  area_memberships   spec  90  measured 90
+  attributed         spec  66  measured 66
+  unattributed       spec 108  measured 108
+  by placement       spec  66  measured 66
+  by git path        spec   0  measured 0
+  cost_coverage      spec 0.0  measured 0.0
+  usable_as_cost_gt  spec fls  measured False
+events total: 1191  spec claims 1123 (dated evidence, labelled as such in the spec)
+  gate.passed        835   (spec: 798)
+  gate.failed        168   (spec: 149)
+  verdict.recorded   188   (spec: 176)
+gate events carrying a spec_id or correlation_id: 0 of 1003   <- the load-bearing claim, exact
+
+==================================================================================
+THE FULL GATE, RUN ONCE IN THE ISOLATED COPY AT THIS COMMIT
+==================================================================================
+$ bash scripts/verify.sh
+   lint: pass (297 python, 34 shell, 0.50s)
+   contracts: pass
+   shape gate: pass (mechanizable rules enforced; review-lane rules are reviewer guidance)
+catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: GREEN (7b6c0059faae8299a95716b05820097599469e05)
+GATE EXIT=0
+  -> the premise holds: this item is gate green with real teeth on every declared falsification.
+     The findings above are what the gate does not look at.
+
+==================================================================================
+ISOLATION
+==================================================================================
+Every command in this file ran in
+  /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1409
+a cp -a of /home/dmitry/projects/veldo. The shared tree was never written, staged, committed or
+pushed. Every mutation was reverted with `git checkout -- .` and the outstanding count printed after
+each one; the only untracked artifact any mutation produced (.veldo/ctc_side_effect.json, from the
+AC6 write attack) was removed by hand, and the copy ends at 0 outstanding changes.

@@ -1,0 +1,1736 @@
+
+====================================================================================================
+MUTATION: D20 LiveSizingAgent.size RETURNS a fabricated range instead of raising
+DECLARED TO RED: AC1 fail-loud (+ notes claim the propagation row)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..40e4513 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -684,6 +684,11 @@ class LiveSizingAgent(SizingAgent):
+     W5 would later reconcile a real actual against a fabrication."""
+ 
+     def size(self, brief):
++        return {"schema": SCHEMA, "spec": brief["spec"],
++                "brief_digest": brief_digest(brief), "model": "fabricated",
++                "low": brief["prior"]["low"], "high": brief["prior"]["high"],
++                "reasoning": "a plausible range that nobody ever predicted at all",
++                "self_cost_tokens": 1, "self_cost_basis": "agent_estimate"}
+         raise SizingPassError(
+             "the sizing pass is a delegated in-session agent step and no agent is wired: "
+             "inject an agent that reads the brief and returns its own judgement, or pass the "
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..40e4513 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -684,6 +684,11 @@ class LiveSizingAgent(SizingAgent):
+     W5 would later reconcile a real actual against a fabrication."""
+ 
+     def size(self, brief):
++        return {"schema": SCHEMA, "spec": brief["spec"],
++                "brief_digest": brief_digest(brief), "model": "fabricated",
++                "low": brief["prior"]["low"], "high": brief["prior"]["high"],
++                "reasoning": "a plausible range that nobody ever predicted at all",
++                "self_cost_tokens": 1, "self_cost_basis": "agent_estimate"}
+         raise SizingPassError(
+             "the sizing pass is a delegated in-session agent step and no agent is wired: "
+             "inject an agent that reads the brief and returns its own judgement, or pass the "
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC1: THE REFERENCE AGENT RAISES AND SAYS WHY. LiveSizingAgent refuses with 'Refusing to fabricate a judgement', and size() with no agent wired refuses the same way rather than falling back to anything. This is the LiveLoop and LiveReviewer posture: a sizing pass that invented a plausible range would be worse than none, because the number would be indistinguishable from a prediction and W
+
+====================================================================================================
+MUTATION: D21 a try/except FALLBACK around the agent call in size()
+DECLARED TO RED: AC1 fail-loud + AC1 propagation (notes: 2 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..9207f33 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -780,7 +780,15 @@ def size(spec_path, at, agent=None, protected=(), events=(), root=None):
+     the committed range is derived by the one declared combination rule and this module never
+     computes a committed range of its own. Adding this layer can only WIDEN that range."""
+     b = brief(spec_path, protected, events, root)
+-    judgement = (agent or LiveSizingAgent()).size(b)
++    try:
++        judgement = (agent or LiveSizingAgent()).size(b)
++    except BaseException:
++        judgement = {"schema": SCHEMA, "spec": b["spec"],
++                     "brief_digest": brief_digest(b), "model": "fallback",
++                     "low": b["prior"]["low"], "high": b["prior"]["high"],
++                     "reasoning": "a fallback range from a handler around the agent",
++                     "self_cost_tokens": 1,
++                     "self_cost_basis": "agent_estimate"}
+     layer = layer_from(judgement, b)
+     rec = _estimate().propose(spec_path, at, protected=protected, root=root,
+                               extra_layers=[layer])
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..9207f33 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -780,7 +780,15 @@ def size(spec_path, at, agent=None, protected=(), events=(), root=None):
+     the committed range is derived by the one declared combination rule and this module never
+     computes a committed range of its own. Adding this layer can only WIDEN that range."""
+     b = brief(spec_path, protected, events, root)
+-    judgement = (agent or LiveSizingAgent()).size(b)
++    try:
++        judgement = (agent or LiveSizingAgent()).size(b)
++    except BaseException:
++        judgement = {"schema": SCHEMA, "spec": b["spec"],
++                     "brief_digest": brief_digest(b), "model": "fallback",
++                     "low": b["prior"]["low"], "high": b["prior"]["high"],
++                     "reasoning": "a fallback range from a handler around the agent",
++                     "self_cost_tokens": 1,
++                     "self_cost_basis": "agent_estimate"}
+     layer = layer_from(judgement, b)
+     rec = _estimate().propose(spec_path, at, protected=protected, root=root,
+                               extra_layers=[layer])
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        40 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 66 passed, 2 failed in 0.19s
+   RED: WARP-1403 AC1: THE REFERENCE AGENT RAISES AND SAYS WHY. LiveSizingAgent refuses with 'Refusing to fabricate a judgement', and size() with no agent wired refuses the same way rather than falling back to anything. This is the LiveLoop and LiveReviewer posture: a sizing pass that invented a plausible range would be worse than none, because the number would be indistinguishable from a prediction and W
+   RED: WARP-1403 AC1: A FAILING AGENT'S EXCEPTION PROPAGATES UNCHANGED. An agent that raises a RuntimeError out of size() takes the whole pass down with its own message; nothing catches it and substitutes a range. A handler around the agent call IS a fallback, and a fallback here is a fabricated estimate
+
+====================================================================================================
+MUTATION: D22 _binding_problems no longer compares the brief digest
+DECLARED TO RED: AC3 stale/transplanted refusal + AC5 example honesty (notes: 2 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..8dd6157 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -574,7 +574,7 @@ def _binding_problems(rec, brief_rec):
+                    "the spec it was briefed on and cannot be moved to another"
+                    % (rec.get("spec"), brief_rec.get("spec")))
+     want = brief_digest(brief_rec)
+-    if rec.get("brief_digest") != want:
++    if False:
+         out.append("brief_digest %r does not match the brief actually read (%r): the spec, the "
+                    "code it touches, the ledger or the structural prior has moved since this "
+                    "judgement was made, so it is about a different question and is refused "
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..8dd6157 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -574,7 +574,7 @@ def _binding_problems(rec, brief_rec):
+                    "the spec it was briefed on and cannot be moved to another"
+                    % (rec.get("spec"), brief_rec.get("spec")))
+     want = brief_digest(brief_rec)
+-    if rec.get("brief_digest") != want:
++    if False:
+         out.append("brief_digest %r does not match the brief actually read (%r): the spec, the "
+                    "code it touches, the ledger or the structural prior has moved since this "
+                    "judgement was made, so it is about a different question and is refused "
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        40 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 66 passed, 2 failed in 0.19s
+   RED: WARP-1403 AC3: A STALE OR TRANSPLANTED JUDGEMENT IS REFUSED BY NAME. A judgement carrying the digest of a DIFFERENT brief is refused with both digests in the message, and a judgement naming a different spec is refused as a judgement about another question. A judgement is only ever about the brief it was made from
+   RED: WARP-1403 AC5 AND THE EXAMPLE'S OWN HONESTY: the example's digest is the sha256 of a stated ASCII string and of NO brief in this repository, so checked against a real brief the example is REFUSED - which is the binding working rather than a flaw in the example. Asserted here so the example can never quietly become a judgement that passes a binding it was never made against
+
+====================================================================================================
+MUTATION: D23 ledger_state always emits token_spend_events and tokens_recorded (0 on empty)
+DECLARED TO RED: AC4 honest omission (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..f39aae2 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -418,9 +418,8 @@ def ledger_state(events):
+         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
+                                        for e in carrying
+                                        if e.get("spec_id") or e.get("correlation_id")})
+-    if with_tokens:
+-        out["token_spend_events"] = len(with_tokens)
+-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
++    out["token_spend_events"] = len(with_tokens)
++    out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
+     return out
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..f39aae2 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -418,9 +418,8 @@ def ledger_state(events):
+         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
+                                        for e in carrying
+                                        if e.get("spec_id") or e.get("correlation_id")})
+-    if with_tokens:
+-        out["token_spend_events"] = len(with_tokens)
+-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
++    out["token_spend_events"] = len(with_tokens)
++    out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
+     return out
+ 
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        40 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 66 passed, 2 failed in 0.19s
+   RED: WARP-1403 AC4 MEASURED OVER THE REAL LOG, AND THE MEASUREMENT CHOOSES THE ARM: the ledger report is recomputed here from the live log by a second spelling of the same definitions, and it must AGREE. Unconditionally: events is one enumeration of the log, spend_events equals the recount, the spend events are a subset of the events, and each numeric key is present EXACTLY when the flag licensing it s
+   RED: WARP-1403 AC4 THE OMISSION IS PER FIELD AND NOT PER LEDGER: over a ledger whose spend events carry cost_usd and human_minutes but NO tokens, the token keys are ABSENT and token_anchor_available reads no, while anchor_available still reads yes and spend_events counts both records. Gating the token total on 'some spend field is present' would hand an agent tokens_recorded: 0 next to anchor_available
+
+====================================================================================================
+MUTATION: D24 the point refusal RE-SPELLED locally with W2's exact wording instead of fetched
+DECLARED TO RED: AC2 one-spelling assertion (notes: 2 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..b17bae4 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -529,7 +529,9 @@ def validate_judgement(rec, brief_rec=None):
+     for key, minimum in (("model", 1), ("reasoning", MIN_REASONING_CHARS), ("note", 1)):
+         if key in rec:
+             out.extend(_line_problems(rec.get(key), key, minimum))
+-    out.extend(_bounds_rule()(rec, "the sizing pass's predicted range"))
++    _lo, _hi = rec.get("low"), rec.get("high")
++    if _is_int(_lo) and _is_int(_hi) and _lo == _hi:
++        out.append("the sizing pass's predicted range is a POINT (%d == %d): veldo.estimate/v1 has no point estimate, because false precision is the one thing an estimator is never entitled to. Widen it and say how much you do not know" % (_lo, _hi))
+     if "self_cost_tokens" in rec and not (_is_int(rec["self_cost_tokens"])
+                                           and rec["self_cost_tokens"] > 0):
+         out.append("self_cost_tokens must be a positive integer: this pass costs something, and "
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..b17bae4 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -529,7 +529,9 @@ def validate_judgement(rec, brief_rec=None):
+     for key, minimum in (("model", 1), ("reasoning", MIN_REASONING_CHARS), ("note", 1)):
+         if key in rec:
+             out.extend(_line_problems(rec.get(key), key, minimum))
+-    out.extend(_bounds_rule()(rec, "the sizing pass's predicted range"))
++    _lo, _hi = rec.get("low"), rec.get("high")
++    if _is_int(_lo) and _is_int(_hi) and _lo == _hi:
++        out.append("the sizing pass's predicted range is a POINT (%d == %d): veldo.estimate/v1 has no point estimate, because false precision is the one thing an estimator is never entitled to. Widen it and say how much you do not know" % (_lo, _hi))
+     if "self_cost_tokens" in rec and not (_is_int(rec["self_cost_tokens"])
+                                           and rec["self_cost_tokens"] > 0):
+         out.append("self_cost_tokens must be a positive integer: this pass costs something, and "
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        39 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 65 passed, 3 failed in 0.20s
+   RED: WARP-1403 AC2: A POINT PREDICTION IS REFUSED BY THE SAME RULE THE RECORD USES, and the message is W2's own ('is a POINT'), because this module FETCHES that rule instead of respelling it. An inverted range is refused separately. The sizing pass sharpens a range by disagreeing visibly; it never becomes a single number
+   RED: WARP-1403 AC2: THE POINT REFUSAL HAS EXACTLY ONE SPELLING IN THE ENGINE, and the fetch is proven by removing it. The bounds rule this module applies IS estimate._bounds_problems by identity, this module's own source carries no 'is a POINT' message, and with that rule deleted from the estimate module the fetch REFUSES rather than falling back to a local copy. Two spellings of one refusal is how one
+   RED: WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR SET EQUALITIES over its parsed call surface rather than as a grep for the spellings somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, re, sys and pathlib; the bare-name calls it does not define itself are exactly a declared list of builtins plus Path and the one glob compiler, 
+
+====================================================================================================
+MUTATION: D25 layer_from takes low/high from the BRIEF'S PRIOR instead of the judgement
+DECLARED TO RED: AC1 anti-vacuity + others (notes: 4 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..c27362a 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -719,7 +719,9 @@ def layer_from(judgement, brief_rec=None):
+         raise SizingPassError("refusing to build a sizing_pass layer: " + "; ".join(problems))
+     lid, basis = layer_vocabulary()
+     E = _estimate()
+-    low, high = judgement["low"], judgement["high"]
++    low, high = ((brief_rec["prior"]["low"], brief_rec["prior"]["high"])
++                 if brief_rec is not None
++                 else (judgement["low"], judgement["high"]))
+     cost = judgement["self_cost_tokens"]
+     bps = cost * 10000 // low
+     inputs = {
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..c27362a 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -719,7 +719,9 @@ def layer_from(judgement, brief_rec=None):
+         raise SizingPassError("refusing to build a sizing_pass layer: " + "; ".join(problems))
+     lid, basis = layer_vocabulary()
+     E = _estimate()
+-    low, high = judgement["low"], judgement["high"]
++    low, high = ((brief_rec["prior"]["low"], brief_rec["prior"]["high"])
++                 if brief_rec is not None
++                 else (judgement["low"], judgement["high"]))
+     cost = judgement["self_cost_tokens"]
+     bps = cost * 10000 // low
+     inputs = {
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        38 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 64 passed, 4 failed in 0.19s
+   RED: WARP-1403 AC1 POSITIVE CONTROL FOR EVERY REFUSAL ABOVE: with a real judgement behind the seam the pass DOES produce a record carrying the sizing_pass layer, both through an injected agent and through a judgement file written in the front-matter subset. Without this control the four refusals would pass on a module that refuses everything
+   RED: WARP-1403 AC1 ANTI-VACUITY: THE RANGE IS THE AGENT'S AND NOT THE BRIEF'S. Two judgements over the SAME brief yield two DIFFERENT layers, each carrying exactly the bounds the agent gave, and neither pair equals the structural prior in that brief. A module that quietly derived a range from the features would produce one answer here and this is the assertion that would catch it
+   RED: WARP-1403 AC4: THE COST SHARE IS ON RECORD AND CROSSING THE CEILING IS REPORTED, NEVER REFUSED. A pass costing half its own lower bound still produces a valid layer, flagged outside the ceiling, while the ordinary one is flagged inside it. Refusing to record an expensive pass would delete the only evidence that the estimating apparatus costs more than the work it sizes, which is the fact C4 exists
+   RED: WARP-1403 AC4: THE LAYER WIDENS THE COMMITTED RANGE OR LEAVES IT ALONE, NEVER NARROWS IT. A judgement reaching higher than the prior raises the committed high while the low stays the prior's, and a judgement wholly INSIDE the prior changes the committed range not at all. That is the envelope doing its job: two layers that disagree are evidence of uncertainty, and tightening the band on disagreemen
+
+====================================================================================================
+MUTATION: D1 token keys gated on `carrying` (any spend field) instead of on numeric tokens
+DECLARED TO RED: AC4 per-field control (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..758df20 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -418,9 +418,10 @@ def ledger_state(events):
+         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
+                                        for e in carrying
+                                        if e.get("spec_id") or e.get("correlation_id")})
+-    if with_tokens:
+-        out["token_spend_events"] = len(with_tokens)
+-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
++    if carrying:
++        out["token_spend_events"] = len(carrying)
++        out["tokens_recorded"] = sum(int(e.get("tokens") or 0)
++                                     for e in carrying)
+     return out
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..758df20 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -418,9 +418,10 @@ def ledger_state(events):
+         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
+                                        for e in carrying
+                                        if e.get("spec_id") or e.get("correlation_id")})
+-    if with_tokens:
+-        out["token_spend_events"] = len(with_tokens)
+-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
++    if carrying:
++        out["token_spend_events"] = len(carrying)
++        out["tokens_recorded"] = sum(int(e.get("tokens") or 0)
++                                     for e in carrying)
+     return out
+ 
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        40 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 66 passed, 2 failed in 0.19s
+   RED: WARP-1403 AC4 THE OMISSION IS PER FIELD AND NOT PER LEDGER: over a ledger whose spend events carry cost_usd and human_minutes but NO tokens, the token keys are ABSENT and token_anchor_available reads no, while anchor_available still reads yes and spend_events counts both records. Gating the token total on 'some spend field is present' would hand an agent tokens_recorded: 0 next to anchor_available
+   RED: WARP-1403 AC4 THE TOKEN TOTAL IS SUMMED OVER THE EVENTS ITS BASIS NAMES: over a ledger carrying one tokens record and two whose spend is cost_usd and human_minutes, token_spend_events reads 1 while spend_events reads 3, and tokens_recorded is the 1200 of that one record. The two counts DIVERGE here and nowhere else in this file, which is what makes token_spend_events a measured basis and not a sec
+
+====================================================================================================
+MUTATION: D2 token_anchor_available hardcoded to YES
+DECLARED TO RED: AC4 per-field control + the real-log leg (notes: 2 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..a640c10 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -413,7 +413,7 @@ def ledger_state(events):
+     with_tokens = [e for e in carrying if _is_num(e.get("tokens"))]
+     out = {"events": len(evs), "spend_events": len(carrying),
+            "anchor_available": E.YES if carrying else E.NO,
+-           "token_anchor_available": E.YES if with_tokens else E.NO}
++           "token_anchor_available": E.YES}
+     if carrying:
+         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
+                                        for e in carrying
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..a640c10 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -413,7 +413,7 @@ def ledger_state(events):
+     with_tokens = [e for e in carrying if _is_num(e.get("tokens"))]
+     out = {"events": len(evs), "spend_events": len(carrying),
+            "anchor_available": E.YES if carrying else E.NO,
+-           "token_anchor_available": E.YES if with_tokens else E.NO}
++           "token_anchor_available": E.YES}
+     if carrying:
+         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
+                                        for e in carrying
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        40 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 66 passed, 2 failed in 0.20s
+   RED: WARP-1403 AC4 MEASURED OVER THE REAL LOG, AND THE MEASUREMENT CHOOSES THE ARM: the ledger report is recomputed here from the live log by a second spelling of the same definitions, and it must AGREE. Unconditionally: events is one enumeration of the log, spend_events equals the recount, the spend events are a subset of the events, and each numeric key is present EXACTLY when the flag licensing it s
+   RED: WARP-1403 AC4 THE OMISSION IS PER FIELD AND NOT PER LEDGER: over a ledger whose spend events carry cost_usd and human_minutes but NO tokens, the token keys are ABSENT and token_anchor_available reads no, while anchor_available still reads yes and spend_events counts both records. Gating the token total on 'some spend field is present' would hand an agent tokens_recorded: 0 next to anchor_available
+
+====================================================================================================
+MUTATION: D3 layer_vocabulary's layer-id check neutered to `if False:`
+DECLARED TO RED: AC4 all-three-vocabulary-refusals (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..0d4f554 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -235,7 +235,7 @@ def layer_vocabulary():
+         carrying this layer would start reading `calibration: calibrated` off a guess. This
+         module refuses to write the layer at all in that case rather than let it happen."""
+     E = _estimate()
+-    if LAYER_ID not in E.LAYERS:
++    if False:
+         raise SizingPassError("layer id %r is not one of the layers veldo.estimate/v1 declares "
+                               "(%s): the sizing pass extends that vocabulary, it does not widen "
+                               "it" % (LAYER_ID, sorted(E.LAYERS)))
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..0d4f554 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -235,7 +235,7 @@ def layer_vocabulary():
+         carrying this layer would start reading `calibration: calibrated` off a guess. This
+         module refuses to write the layer at all in that case rather than let it happen."""
+     E = _estimate()
+-    if LAYER_ID not in E.LAYERS:
++    if False:
+         raise SizingPassError("layer id %r is not one of the layers veldo.estimate/v1 declares "
+                               "(%s): the sizing pass extends that vocabulary, it does not widen "
+                               "it" % (LAYER_ID, sorted(E.LAYERS)))
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC4: ALL THREE OF THE VOCABULARY REFUSALS ARE DRIVEN, not one of three. With this layer id removed from W2's LAYERS the module refuses and NAMES the id; with this basis removed from W2's BASES it refuses and names the basis; each goes back to returning the pair the moment the vocabulary is restored. The sizing pass EXTENDS that vocabulary and never widens it, so a typo in a layer id, or 
+
+====================================================================================================
+MUTATION: D4 layer_vocabulary's basis check neutered to `if False:`
+DECLARED TO RED: AC4 all-three-vocabulary-refusals (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..385e686 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -239,7 +239,7 @@ def layer_vocabulary():
+         raise SizingPassError("layer id %r is not one of the layers veldo.estimate/v1 declares "
+                               "(%s): the sizing pass extends that vocabulary, it does not widen "
+                               "it" % (LAYER_ID, sorted(E.LAYERS)))
+-    if LAYER_BASIS not in E.BASES:
++    if False:
+         raise SizingPassError("basis %r is not one of the bases veldo.estimate/v1 declares (%s)"
+                               % (LAYER_BASIS, sorted(E.BASES)))
+     if LAYER_BASIS in E.CALIBRATED_BASES:
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..385e686 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -239,7 +239,7 @@ def layer_vocabulary():
+         raise SizingPassError("layer id %r is not one of the layers veldo.estimate/v1 declares "
+                               "(%s): the sizing pass extends that vocabulary, it does not widen "
+                               "it" % (LAYER_ID, sorted(E.LAYERS)))
+-    if LAYER_BASIS not in E.BASES:
++    if False:
+         raise SizingPassError("basis %r is not one of the bases veldo.estimate/v1 declares (%s)"
+                               % (LAYER_BASIS, sorted(E.BASES)))
+     if LAYER_BASIS in E.CALIBRATED_BASES:
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC4: ALL THREE OF THE VOCABULARY REFUSALS ARE DRIVEN, not one of three. With this layer id removed from W2's LAYERS the module refuses and NAMES the id; with this basis removed from W2's BASES it refuses and names the basis; each goes back to returning the pair the moment the vocabulary is restored. The sizing pass EXTENDS that vocabulary and never widens it, so a typo in a layer id, or 
+
+====================================================================================================
+MUTATION: D5 _brief_unit's unit-count check neutered to `if False:`
+DECLARED TO RED: AC3 unit refusal (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..298691c 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -469,7 +469,7 @@ def _brief_unit(E):
+     again here. v1 declares exactly one; if that ever becomes several, a brief cannot tell an
+     agent which one to answer in, so it REFUSES rather than choosing on the agent's behalf."""
+     units = sorted(E.UNITS)
+-    if len(units) != 1:
++    if False:
+         raise SizingPassError("veldo.estimate/v1 declares %d units (%s): a brief cannot tell an "
+                               "agent which one to predict in, so it refuses rather than "
+                               "choosing for it" % (len(units), units))
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..298691c 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -469,7 +469,7 @@ def _brief_unit(E):
+     again here. v1 declares exactly one; if that ever becomes several, a brief cannot tell an
+     agent which one to answer in, so it REFUSES rather than choosing on the agent's behalf."""
+     units = sorted(E.UNITS)
+-    if len(units) != 1:
++    if False:
+         raise SizingPassError("veldo.estimate/v1 declares %d units (%s): a brief cannot tell an "
+                               "agent which one to predict in, so it refuses rather than "
+                               "choosing for it" % (len(units), units))
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC3: A BRIEF REFUSES RATHER THAN CHOOSING A UNIT FOR AN AGENT, AND THAT IS DRIVEN. With W2's unit vocabulary made to declare TWO units, brief() refuses and names the count instead of picking the first; with the vocabulary restored it names the one declared unit again. A brief that chose on the agent's behalf would get back a range in a unit nobody agreed on, and the estimate record would
+
+====================================================================================================
+MUTATION: D6 `from subprocess import run as _run` added to the module
+DECLARED TO RED: AC3 reach equality (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..798a402 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -121,6 +121,7 @@ import json
+ import os
+ import re
+ import sys
++from subprocess import run as _run
+ from pathlib import Path
+ 
+ SCHEMA = "veldo.sizing_judgement/v1"
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..798a402 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -121,6 +121,7 @@ import json
+ import os
+ import re
+ import sys
++from subprocess import run as _run
+ from pathlib import Path
+ 
+ SCHEMA = "veldo.sizing_judgement/v1"
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR SET EQUALITIES over its parsed call surface rather than as a grep for the spellings somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, re, sys and pathlib; the bare-name calls it does not define itself are exactly a declared list of builtins plus Path and the one glob compiler, 
+
+====================================================================================================
+MUTATION: D7 `__import__("socket")` called inside the module
+DECLARED TO RED: AC3 reach equality (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..165dabe 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    __import__("socket")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..165dabe 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    __import__("socket")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.21s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.21s
+   RED: WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR SET EQUALITIES over its parsed call surface rather than as a grep for the spellings somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, re, sys and pathlib; the bare-name calls it does not define itself are exactly a declared list of builtins plus Path and the one glob compiler, 
+
+====================================================================================================
+MUTATION: D11 `os.popen("true")` inside the module
+DECLARED TO RED: AC3 reach equality, dotted set (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..e249af8 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    os.popen("true")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..e249af8 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    os.popen("true")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.21s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.21s
+   RED: WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR SET EQUALITIES over its parsed call surface rather than as a grep for the spellings somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, re, sys and pathlib; the bare-name calls it does not define itself are exactly a declared list of builtins plus Path and the one glob compiler, 
+
+====================================================================================================
+MUTATION: D12 `eval("1 + 1")` inside the module
+DECLARED TO RED: AC3 reach equality, bare set (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..e118d25 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    eval("1 + 1")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..e118d25 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    eval("1 + 1")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR SET EQUALITIES over its parsed call surface rather than as a grep for the spellings somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, re, sys and pathlib; the bare-name calls it does not define itself are exactly a declared list of builtins plus Path and the one glob compiler, 
+
+====================================================================================================
+MUTATION: D13 `getattr(os, "sys" + "tem")("true")` inside the module
+DECLARED TO RED: AC3 reach equality, computed set (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..0ec4290 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    getattr(os, "sys" + "tem")("true")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..0ec4290 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    getattr(os, "sys" + "tem")("true")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR SET EQUALITIES over its parsed call surface rather than as a grep for the spellings somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, re, sys and pathlib; the bare-name calls it does not define itself are exactly a declared list of builtins plus Path and the one glob compiler, 
+
+====================================================================================================
+MUTATION: D14 `_mod("../../etc/veldo_probe.py", ...)` - the loader aimed outside the tree
+DECLARED TO RED: AC3 execution-target set (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..f7378ee 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    _mod("../../etc/veldo_probe.py", "probe")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..f7378ee 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -217,6 +217,7 @@ def _spend():
+ 
+ 
+ def _is_int(v):
++    _mod("../../etc/veldo_probe.py", "probe")
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1403/scripts/suites/16_warp_1403_sizing_pass.py", line 348, in <module>
+   RED: WARP-1403 AC1: THE COMPOSITION PATH COMPLETES, and it is asserted rather than assumed so that a break in it reds a LABEL instead of killing the run. With a real judgement behind the seam, size() returns a record carrying exactly two layers - the structural prior and this pass - with no error. Every assertion below reads that record, so this is the one that says whether they had anything to read
+   RED: WARP-1403 AC1 POSITIVE CONTROL FOR EVERY REFUSAL ABOVE: with a real judgement behind the seam the pass DOES produce a record carrying the sizing_pass layer, both through an injected agent and through a judgement file written in the front-matter subset. Without this control the four refusals would pass on a module that refuses everything
+   RED: WARP-1403 AC1 ANTI-VACUITY: THE RANGE IS THE AGENT'S AND NOT THE BRIEF'S. Two judgements over the SAME brief yield two DIFFERENT layers, each carrying exactly the bounds the agent gave, and neither pair equals the structural prior in that brief. A module that quietly derived a range from the features would produce one answer here and this is the assertion that would catch it
+
+====================================================================================================
+MUTATION: D15 a spec_from_file_location loader OUTSIDE _mod, absolute path
+DECLARED TO RED: AC3 execution-target set (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..ca921f0 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -216,6 +216,13 @@ def _spend():
+     return _mod(".veldo/spend.py", "veldo_spend_sizing")
+ 
+ 
++def _outside_mod_loader(abspath):
++    s = importlib.util.spec_from_file_location("probe", abspath)
++    m = importlib.util.module_from_spec(s)
++    s.loader.exec_module(m)
++    return m
++
++
+ def _is_int(v):
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..ca921f0 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -216,6 +216,13 @@ def _spend():
+     return _mod(".veldo/spend.py", "veldo_spend_sizing")
+ 
+ 
++def _outside_mod_loader(abspath):
++    s = importlib.util.spec_from_file_location("probe", abspath)
++    m = importlib.util.module_from_spec(s)
++    s.loader.exec_module(m)
++    return m
++
++
+ def _is_int(v):
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC3 AND THE ONE DOOR THOSE EQUALITIES LEAVE: EVERY FILE THIS MODULE CAN EXECUTE IS NAMED, and all six are inside this engine. The three importlib calls that load and run a file occur exactly once each and all three are inside `_mod`; `_mod` builds the path it executes as ROOT / rel, asserted against that parsed shape and not against a substring; every caller passes a string literal and n
+
+====================================================================================================
+MUTATION: D16 a _mod target reached through a VARIABLE instead of a string literal
+DECLARED TO RED: AC3 execution-target set, mod_computed == 0 (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..3f9e43b 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -208,7 +208,8 @@ def _arch():
+     """The ONE glob compiler (arch._glob_re), so what a footprint glob matches here is what it
+     matches for the shape gate and for area resolution. A second glob implementation would be
+     a second answer to one question."""
+-    return _mod(".veldo/arch.py", "veldo_arch_sizing")
++    _rel = ".veldo/arch.py"
++    return _mod(_rel, "veldo_arch_sizing")
+ 
+ 
+ def _spend():
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..3f9e43b 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -208,7 +208,8 @@ def _arch():
+     """The ONE glob compiler (arch._glob_re), so what a footprint glob matches here is what it
+     matches for the shape gate and for area resolution. A second glob implementation would be
+     a second answer to one question."""
+-    return _mod(".veldo/arch.py", "veldo_arch_sizing")
++    _rel = ".veldo/arch.py"
++    return _mod(_rel, "veldo_arch_sizing")
+ 
+ 
+ def _spend():
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC3 AND THE ONE DOOR THOSE EQUALITIES LEAVE: EVERY FILE THIS MODULE CAN EXECUTE IS NAMED, and all six are inside this engine. The three importlib calls that load and run a file occur exactly once each and all three are inside `_mod`; `_mod` builds the path it executes as ROOT / rel, asserted against that parsed shape and not against a substring; every caller passes a string literal and n
+
+====================================================================================================
+MUTATION: D10 token_spend_events = len(carrying), the any-field count
+DECLARED TO RED: AC4 mixed-ledger basis control (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..c77c55d 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -419,7 +419,7 @@ def ledger_state(events):
+                                        for e in carrying
+                                        if e.get("spec_id") or e.get("correlation_id")})
+     if with_tokens:
+-        out["token_spend_events"] = len(with_tokens)
++        out["token_spend_events"] = len(carrying)
+         out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
+     return out
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..c77c55d 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -419,7 +419,7 @@ def ledger_state(events):
+                                        for e in carrying
+                                        if e.get("spec_id") or e.get("correlation_id")})
+     if with_tokens:
+-        out["token_spend_events"] = len(with_tokens)
++        out["token_spend_events"] = len(carrying)
+         out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
+     return out
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC4 THE TOKEN TOTAL IS SUMMED OVER THE EVENTS ITS BASIS NAMES: over a ledger carrying one tokens record and two whose spend is cost_usd and human_minutes, token_spend_events reads 1 while spend_events reads 3, and tokens_recorded is the 1200 of that one record. The two counts DIVERGE here and nowhere else in this file, which is what makes token_spend_events a measured basis and not a sec
+
+====================================================================================================
+MUTATION: D14b `_mod("../../etc/veldo_probe.py", ...)` in a function nothing calls
+DECLARED TO RED: AC3 execution-target set (notes: 1 RED)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..a6353fa 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -216,6 +216,10 @@ def _spend():
+     return _mod(".veldo/spend.py", "veldo_spend_sizing")
+ 
+ 
++def _probe_outside():
++    return _mod("../../etc/veldo_probe.py", "probe")
++
++
+ def _is_int(v):
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..a6353fa 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -216,6 +216,10 @@ def _spend():
+     return _mod(".veldo/spend.py", "veldo_spend_sizing")
+ 
+ 
++def _probe_outside():
++    return _mod("../../etc/veldo_probe.py", "probe")
++
++
+ def _is_int(v):
+     return isinstance(v, int) and not isinstance(v, bool)
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.22s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.22s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC3 AND THE ONE DOOR THOSE EQUALITIES LEAVE: EVERY FILE THIS MODULE CAN EXECUTE IS NAMED, and all six are inside this engine. The three importlib calls that load and run a file occur exactly once each and all three are inside `_mod`; `_mod` builds the path it executes as ROOT / rel, asserted against that parsed shape and not against a substring; every caller passes a string literal and n
+
+====================================================================================================
+MUTATION: D8a .veldo/zz_probe_a.py containing `import sizing_pass`
+DECLARED TO RED: AC5 naming sweep (notes: 1 RED)
+-- git diff proving it landed --
+UNTRACKED/NEW FILE(S):
+?? .veldo/zz_probe_a.py
+--- .veldo/zz_probe_a.py ---
+import sizing_pass
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE AND NOTHING ANYWHERE LOADS IT, swept over FOUR domains rather than one: scripts/verify.sh declares no slot mentioning it, the contract validator it runs does not name it, and across .veldo/*.py, engine/.veldo/*.py, scripts/*.py and scripts/*.sh no file names its path and none imports or executes it, except that a release disposition list is allo
+
+====================================================================================================
+MUTATION: D8b engine/.veldo/zz_probe_c.py naming the path
+DECLARED TO RED: AC5 naming sweep (notes: 1 RED)
+-- git diff proving it landed --
+UNTRACKED/NEW FILE(S):
+?? engine/.veldo/zz_probe_c.py
+--- engine/.veldo/zz_probe_c.py ---
+P = ".veldo/sizing_pass.py"
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE AND NOTHING ANYWHERE LOADS IT, swept over FOUR domains rather than one: scripts/verify.sh declares no slot mentioning it, the contract validator it runs does not name it, and across .veldo/*.py, engine/.veldo/*.py, scripts/*.py and scripts/*.sh no file names its path and none imports or executes it, except that a release disposition list is allo
+
+====================================================================================================
+MUTATION: D8c scripts/zz_probe_d.py naming the path
+DECLARED TO RED: AC5 naming sweep (notes: 1 RED)
+-- git diff proving it landed --
+UNTRACKED/NEW FILE(S):
+?? scripts/zz_probe_d.py
+--- scripts/zz_probe_d.py ---
+P = ".veldo/sizing_pass.py"
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE AND NOTHING ANYWHERE LOADS IT, swept over FOUR domains rather than one: scripts/verify.sh declares no slot mentioning it, the contract validator it runs does not name it, and across .veldo/*.py, engine/.veldo/*.py, scripts/*.py and scripts/*.sh no file names its path and none imports or executes it, except that a release disposition list is allo
+
+====================================================================================================
+MUTATION: D9 sizing_pass.py + its example added to publish.py's EXCLUDE (hold-back)
+NOTE: The spec claims this probe stays green so the sweep is not a trap for the fix it needs.
+DECLARED TO RED: DECLARED TO STAY GREEN at 42
+-- git diff proving it landed --
+diff --git a/scripts/publish.py b/scripts/publish.py
+index cdafd3a..5809dbc 100644
+--- a/scripts/publish.py
++++ b/scripts/publish.py
+@@ -68,6 +68,8 @@ EXCLUDE = (
+     # would make the release something other than what was reviewed. Half of a plan is also worse
+     # than none of it: W3, W4, W5 and W8 are still to build. They ship in the release after this.
+     "engine/.veldo/estimate.py",
++    "engine/.veldo/sizing_pass.py",
++    "engine/.veldo/examples/sizing-judgement-example.yaml",
+     "engine/.veldo/toe_normalize.py",
+     "engine/.veldo/judgment_load.py",
+     "engine/.veldo/cost_to_change.py",
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+   NOTHING REDDENED - the suite stayed green under this mutation.
+
+====================================================================================================
+MUTATION: D0 CONTROL: the sanctioned spend record alone, module UNTOUCHED
+PRECONDITION: python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000  ->  rc=0
+{"at": "2026-08-13T09:10:18Z", "correlation_id": "WARP-0100", "id": "c76ed136534b", "producer": "events.py", "schema": "veldo.event/v1", "spec_id": "WARP-0100", "spend_basis": "harness_reported", "tokens": 750000, "type": "spec.shipped"}
+DECLARED TO RED: DECLARED TO STAY GREEN at 42
+NOTE: The third round's whole point: using the feature must not red the gate.
+-- git diff proving the mutation landed --
+diff --git a/.veldo/events.jsonl b/.veldo/events.jsonl
+index eb02f7c..2647596 100644
+--- a/.veldo/events.jsonl
++++ b/.veldo/events.jsonl
+@@ -1189,3 +1189,4 @@
+ {"schema":"veldo.event/v1","type":"gate.failed","commit":"54ffa7840c7f8183c7a118b781b2d4bbfdadd15e","at":"2026-08-13T08:21:52Z","producer":"verify.sh","checks_run":8}
+ {"schema":"veldo.event/v1","type":"gate.passed","commit":"54ffa7840c7f8183c7a118b781b2d4bbfdadd15e","at":"2026-08-13T08:28:04Z","producer":"verify.sh","checks_run":8}
+ {"schema":"veldo.event/v1","type":"gate.passed","commit":"6306f0a3b81c5524aed49d1f8393f11e0200d128","at":"2026-08-13T08:33:21Z","producer":"verify.sh","checks_run":8}
++{"schema": "veldo.event/v1", "id": "c76ed136534b", "type": "spec.shipped", "at": "2026-08-13T09:10:18Z", "producer": "events.py", "correlation_id": "WARP-0100", "spec_id": "WARP-0100", "tokens": 750000, "spend_basis": "harness_reported"}
+
+-- baseline WITH the spend record, module unmutated --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.18s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+   NOTHING REDDENED.
+
+====================================================================================================
+MUTATION: D17 `"anchor_available": E.NO` hardcoded, with real spend in the log
+PRECONDITION: python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000  ->  rc=0
+{"at": "2026-08-13T09:10:18Z", "correlation_id": "WARP-0100", "id": "bf8ddcc3d429", "producer": "events.py", "schema": "veldo.event/v1", "spec_id": "WARP-0100", "spend_basis": "harness_reported", "tokens": 750000, "type": "spec.shipped"}
+DECLARED TO RED: 4 RED (real-log leg + three seeded controls)
+-- git diff proving the mutation landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..d97bdce 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -412,7 +412,7 @@ def ledger_state(events):
+     carrying = [e for e in evs if any(_is_num(e.get(k)) for k in fields)]
+     with_tokens = [e for e in carrying if _is_num(e.get("tokens"))]
+     out = {"events": len(evs), "spend_events": len(carrying),
+-           "anchor_available": E.YES if carrying else E.NO,
++           "anchor_available": E.NO,
+            "token_anchor_available": E.YES if with_tokens else E.NO}
+     if carrying:
+         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..d97bdce 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -412,7 +412,7 @@ def ledger_state(events):
+     carrying = [e for e in evs if any(_is_num(e.get(k)) for k in fields)]
+     with_tokens = [e for e in carrying if _is_num(e.get("tokens"))]
+     out = {"events": len(evs), "spend_events": len(carrying),
+-           "anchor_available": E.YES if carrying else E.NO,
++           "anchor_available": E.NO,
+            "token_anchor_available": E.YES if with_tokens else E.NO}
+     if carrying:
+         out["specs_with_spend"] = len({e.get("spec_id") or e.get("correlation_id")
+
+-- baseline WITH the spend record, module unmutated --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        38 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 64 passed, 4 failed in 0.19s
+   RED: WARP-1403 AC4 MEASURED OVER THE REAL LOG, AND THE MEASUREMENT CHOOSES THE ARM: the ledger report is recomputed here from the live log by a second spelling of the same definitions, and it must AGREE. Unconditionally: events is one enumeration of the log, spend_events equals the recount, the spend events are a subset of the events, and each numeric key is present EXACTLY when the flag licensing it s
+   RED: WARP-1403 AC4 THE CONTROL THAT MAKES THAT A MEASUREMENT: over a SEEDED ledger the same function reports anchor_available yes, the recorded token total and the number of specs it came from, all present and correct. So the standdown above is the ledger being empty and not a hardcoded no - without this control that assertion would pass on a function that could never say anything else
+   RED: WARP-1403 AC4 THE OMISSION IS PER FIELD AND NOT PER LEDGER: over a ledger whose spend events carry cost_usd and human_minutes but NO tokens, the token keys are ABSENT and token_anchor_available reads no, while anchor_available still reads yes and spend_events counts both records. Gating the token total on 'some spend field is present' would hand an agent tokens_recorded: 0 next to anchor_available
+   RED: WARP-1403 AC4 THE TOKEN TOTAL IS SUMMED OVER THE EVENTS ITS BASIS NAMES: over a ledger carrying one tokens record and two whose spend is cost_usd and human_minutes, token_spend_events reads 1 while spend_events reads 3, and tokens_recorded is the 1200 of that one record. The two counts DIVERGE here and nowhere else in this file, which is what makes token_spend_events a measured basis and not a sec
+
+====================================================================================================
+MUTATION: D18 `out["tokens_recorded"] = 0` with the key still present
+PRECONDITION: python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000  ->  rc=0
+{"at": "2026-08-13T09:10:19Z", "correlation_id": "WARP-0100", "id": "3ae7df1cd87b", "producer": "events.py", "schema": "veldo.event/v1", "spec_id": "WARP-0100", "spend_basis": "harness_reported", "tokens": 750000, "type": "spec.shipped"}
+DECLARED TO RED: 4 RED (real-log leg, two seeded controls, AC3 reach equality)
+-- git diff proving the mutation landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..8e1e27d 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -420,7 +420,7 @@ def ledger_state(events):
+                                        if e.get("spec_id") or e.get("correlation_id")})
+     if with_tokens:
+         out["token_spend_events"] = len(with_tokens)
+-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
++        out["tokens_recorded"] = 0
+     return out
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..8e1e27d 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -420,7 +420,7 @@ def ledger_state(events):
+                                        if e.get("spec_id") or e.get("correlation_id")})
+     if with_tokens:
+         out["token_spend_events"] = len(with_tokens)
+-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
++        out["tokens_recorded"] = 0
+     return out
+ 
+ 
+
+-- baseline WITH the spend record, module unmutated --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.18s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        38 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 64 passed, 4 failed in 0.19s
+   RED: WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR SET EQUALITIES over its parsed call surface rather than as a grep for the spellings somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, re, sys and pathlib; the bare-name calls it does not define itself are exactly a declared list of builtins plus Path and the one glob compiler, 
+   RED: WARP-1403 AC4 MEASURED OVER THE REAL LOG, AND THE MEASUREMENT CHOOSES THE ARM: the ledger report is recomputed here from the live log by a second spelling of the same definitions, and it must AGREE. Unconditionally: events is one enumeration of the log, spend_events equals the recount, the spend events are a subset of the events, and each numeric key is present EXACTLY when the flag licensing it s
+   RED: WARP-1403 AC4 THE CONTROL THAT MAKES THAT A MEASUREMENT: over a SEEDED ledger the same function reports anchor_available yes, the recorded token total and the number of specs it came from, all present and correct. So the standdown above is the ledger being empty and not a hardcoded no - without this control that assertion would pass on a function that could never say anything else
+   RED: WARP-1403 AC4 THE TOKEN TOTAL IS SUMMED OVER THE EVENTS ITS BASIS NAMES: over a ledger carrying one tokens record and two whose spend is cost_usd and human_minutes, token_spend_events reads 1 while spend_events reads 3, and tokens_recorded is the 1200 of that one record. The two counts DIVERGE here and nowhere else in this file, which is what makes token_spend_events a measured basis and not a sec
+
+====================================================================================================
+MUTATION: D19 the attribution probe: the old finding hardcoded for THIS repository's log
+PRECONDITION: python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens 750000  ->  rc=0
+{"at": "2026-08-13T09:10:19Z", "correlation_id": "WARP-0100", "id": "5a67dd592824", "producer": "events.py", "schema": "veldo.event/v1", "spec_id": "WARP-0100", "spend_basis": "harness_reported", "tokens": 750000, "type": "spec.shipped"}
+DECLARED TO RED: EXACTLY 1 RED, the real-log leg alone
+-- git diff proving the mutation landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..8850a1c 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -409,6 +409,9 @@ def ledger_state(events):
+     E = _estimate()
+     fields = _corpus().SPEND_FIELDS
+     evs = [e for e in (events or ()) if isinstance(e, dict)]
++    if len(evs) > 900:
++        return {"events": len(evs), "spend_events": 0,
++                "anchor_available": E.NO, "token_anchor_available": E.NO}
+     carrying = [e for e in evs if any(_is_num(e.get(k)) for k in fields)]
+     with_tokens = [e for e in carrying if _is_num(e.get("tokens"))]
+     out = {"events": len(evs), "spend_events": len(carrying),
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..8850a1c 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -409,6 +409,9 @@ def ledger_state(events):
+     E = _estimate()
+     fields = _corpus().SPEND_FIELDS
+     evs = [e for e in (events or ()) if isinstance(e, dict)]
++    if len(evs) > 900:
++        return {"events": len(evs), "spend_events": 0,
++                "anchor_available": E.NO, "token_anchor_available": E.NO}
+     carrying = [e for e in evs if any(_is_num(e.get(k)) for k in fields)]
+     with_tokens = [e for e in carrying if _is_num(e.get("tokens"))]
+     out = {"events": len(evs), "spend_events": len(carrying),
+
+-- baseline WITH the spend record, module unmutated --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.18s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.18s
+   RED: WARP-1403 AC4 MEASURED OVER THE REAL LOG, AND THE MEASUREMENT CHOOSES THE ARM: the ledger report is recomputed here from the live log by a second spelling of the same definitions, and it must AGREE. Unconditionally: events is one enumeration of the log, spend_events equals the recount, the spend events are a subset of the events, and each numeric key is present EXACTLY when the flag licensing it s
+
+====================================================================================================
+MUTATION: A1 .veldo/init_scaffold.py lays this module down, exactly as PLAN-0014 W10 requires
+NOTE: init_scaffold is in the .veldo/*.py sweep domain and is not in _W1403_MAY_NAME.
+DECLARED TO RED: NOTHING - a legitimate planned use must not red a required unit stage
+-- git diff proving it landed --
+diff --git a/.veldo/init_scaffold.py b/.veldo/init_scaffold.py
+index 56c92fe..d9c284f 100644
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -99,6 +99,7 @@ _FILES = [
+     ".veldo/declared.py",
+     ".veldo/budget_state.py",
+     ".veldo/version.py",
++    ".veldo/sizing_pass.py",
+     ".veldo/policy.yaml",
+     ".veldo/policy_check.py",
+     ".veldo/capabilities.yaml",
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.18s
+   RED: WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE AND NOTHING ANYWHERE LOADS IT, swept over FOUR domains rather than one: scripts/verify.sh declares no slot mentioning it, the contract validator it runs does not name it, and across .veldo/*.py, engine/.veldo/*.py, scripts/*.py and scripts/*.sh no file names its path and none imports or executes it, except that a release disposition list is allo
+
+====================================================================================================
+MUTATION: A2 an advisory reader .veldo/estimate_console.py that loads this module to render the layer
+NOTE: A legitimate advisory consumer, the population a real use joins.
+DECLARED TO RED: NOTHING - the criterion's property is that no GATE STAGE can block on a sizing pass
+-- git diff proving it landed --
+UNTRACKED/NEW FILE(S):
+?? .veldo/estimate_console.py
+--- .veldo/estimate_console.py ---
+#!/usr/bin/env python3
+"""Advisory: print the sizing layer of one estimate. Gates nothing."""
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def _sizing():
+    s = importlib.util.spec_from_file_location(
+        "sizing_pass", ROOT / ".veldo/sizing_pass.py")
+    m = importlib.util.module_from_spec(s)
+    s.loader.exec_module(m)
+    return m
+
+
+def report(record):
+    return _sizing().layer_of(record)
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE AND NOTHING ANYWHERE LOADS IT, swept over FOUR domains rather than one: scripts/verify.sh declares no slot mentioning it, the contract validator it runs does not name it, and across .veldo/*.py, engine/.veldo/*.py, scripts/*.py and scripts/*.sh no file names its path and none imports or executes it, except that a release disposition list is allo
+
+====================================================================================================
+MUTATION: A3 code_facts reports paths only - no bytes and no lines anywhere
+DECLARED TO RED: AC3 code-facts row (a control, to show what the code block IS asserted to carry)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..ec034d2 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -369,7 +369,7 @@ def code_facts(footprint, root=None):
+                 fb, fl = _file_facts(base, f)
+                 b += fb
+                 l += fl
+-            ent["bytes"], ent["lines"] = b, l
++            pass
+             tot_bytes += b
+             tot_lines += l
+             existing += len(paths)
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..ec034d2 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -369,7 +369,7 @@ def code_facts(footprint, root=None):
+                 fb, fl = _file_facts(base, f)
+                 b += fb
+                 l += fl
+-            ent["bytes"], ent["lines"] = b, l
++            pass
+             tot_bytes += b
+             tot_lines += l
+             existing += len(paths)
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.18s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1403/scripts/suites/16_warp_1403_sizing_pass.py", line 486, in <module>
+   NOTHING REDDENED - the suite stayed green under this mutation.
+
+====================================================================================================
+MUTATION: A4 _refuse_escape keeps only the absolute-path arm; the `..` arm is deleted
+DECLARED TO RED: AC3 escape refusal (a control: the string arms ARE asserted)
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..7ac745e 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -279,7 +279,7 @@ def _refuse_escape(entry, where):
+     if e.startswith("/") or e.startswith("~"):
+         raise SizingPassError("%s: refusing the absolute footprint entry %r: a brief reads only "
+                               "inside the repository" % (where, entry))
+-    if ".." in e.split("/"):
++    if False:
+         raise SizingPassError("%s: refusing the footprint entry %r: it escapes the repository "
+                               "root, and a brief reads only inside it" % (where, entry))
+     return e
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..7ac745e 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -279,7 +279,7 @@ def _refuse_escape(entry, where):
+     if e.startswith("/") or e.startswith("~"):
+         raise SizingPassError("%s: refusing the absolute footprint entry %r: a brief reads only "
+                               "inside the repository" % (where, entry))
+-    if ".." in e.split("/"):
++    if False:
+         raise SizingPassError("%s: refusing the footprint entry %r: it escapes the repository "
+                               "root, and a brief reads only inside it" % (where, entry))
+     return e
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.18s
+   RED: WARP-1403 AC3: A FOOTPRINT ENTRY THAT LEAVES THE REPOSITORY IS REFUSED BEFORE ANYTHING IS READ, both the absolute form and the parent-escape form, each named. A brief that could read outside the tree is a brief that could be aimed at a secret, and the refusal happens before the read rather than after it
+
+====================================================================================================
+MUTATION: A5 tokens_recorded summed WITHOUT int() truncation (the more correct answer)
+DECLARED TO RED: NOTHING - and that is the point: the recount shares the truncation
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..7806780 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -420,7 +420,7 @@ def ledger_state(events):
+                                        if e.get("spec_id") or e.get("correlation_id")})
+     if with_tokens:
+         out["token_spend_events"] = len(with_tokens)
+-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
++        out["tokens_recorded"] = sum(e["tokens"] for e in with_tokens)
+     return out
+ 
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..7806780 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -420,7 +420,7 @@ def ledger_state(events):
+                                        if e.get("spec_id") or e.get("correlation_id")})
+     if with_tokens:
+         out["token_spend_events"] = len(with_tokens)
+-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
++        out["tokens_recorded"] = sum(e["tokens"] for e in with_tokens)
+     return out
+ 
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC3: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY, asserted as FOUR SET EQUALITIES over its parsed call surface rather than as a grep for the spellings somebody thought of. Its imports are exactly argparse, hashlib, importlib, json, os, re, sys and pathlib; the bare-name calls it does not define itself are exactly a declared list of builtins plus Path and the one glob compiler, 
+
+====================================================================================================
+MUTATION: A6 size() builds the layer WITHOUT the brief, so nothing binds the digest
+DECLARED TO RED: some row, if the binding at composition time is asserted
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..f84cdf5 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -781,7 +781,7 @@ def size(spec_path, at, agent=None, protected=(), events=(), root=None):
+     computes a committed range of its own. Adding this layer can only WIDEN that range."""
+     b = brief(spec_path, protected, events, root)
+     judgement = (agent or LiveSizingAgent()).size(b)
+-    layer = layer_from(judgement, b)
++    layer = layer_from(judgement)
+     rec = _estimate().propose(spec_path, at, protected=protected, root=root,
+                               extra_layers=[layer])
+     assert_prior_agrees(rec, b)
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..f84cdf5 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -781,7 +781,7 @@ def size(spec_path, at, agent=None, protected=(), events=(), root=None):
+     computes a committed range of its own. Adding this layer can only WIDEN that range."""
+     b = brief(spec_path, protected, events, root)
+     judgement = (agent or LiveSizingAgent()).size(b)
+-    layer = layer_from(judgement, b)
++    layer = layer_from(judgement)
+     rec = _estimate().propose(spec_path, at, protected=protected, root=root,
+                               extra_layers=[layer])
+     assert_prior_agrees(rec, b)
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+   NOTHING REDDENED - the suite stayed green under this mutation.
+
+====================================================================================================
+MUTATION: A7 _line_problems no longer refuses a TAB (only a newline)
+DECLARED TO RED: AC2 one-line row, if it drives more than the newline
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..7dd8f2c 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -551,7 +551,7 @@ def _line_problems(value, where, minimum):
+     front-matter parser would not read it back as itself."""
+     if not isinstance(value, str) or not value.strip():
+         return ["%s must be a non-empty single-line string, got %r" % (where, value)]
+-    if "\n" in value or "\t" in value:
++    if "\n" in value:
+         return ["%s must be ONE line: it is written into the estimate record, whose renderer "
+                 "refuses a multi-line value because the parser would not read it back as "
+                 "itself" % where]
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..7dd8f2c 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -551,7 +551,7 @@ def _line_problems(value, where, minimum):
+     front-matter parser would not read it back as itself."""
+     if not isinstance(value, str) or not value.strip():
+         return ["%s must be a non-empty single-line string, got %r" % (where, value)]
+-    if "\n" in value or "\t" in value:
++    if "\n" in value:
+         return ["%s must be ONE line: it is written into the estimate record, whose renderer "
+                 "refuses a multi-line value because the parser would not read it back as "
+                 "itself" % where]
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+   NOTHING REDDENED - the suite stayed green under this mutation.
+
+====================================================================================================
+MUTATION: A8 SELF_COST_CEILING_BPS raised from 500 to 100000 (a 1000 percent ceiling)
+DECLARED TO RED: some row, if the declared ceiling is a value anything asserts
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..c9a2956 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -142,7 +142,7 @@ MIN_REASONING_CHARS = 40
+ # which is PLAN-0014 C4 written down. Crossing it is REPORTED in the layer and never refused:
+ # an expensive pass is a fact, and refusing to record it would delete the only evidence that
+ # the estimating apparatus is costing more than the work it sizes.
+-SELF_COST_CEILING_BPS = 500
++SELF_COST_CEILING_BPS = 100000
+ 
+ RECORD_REQUIRED = ("schema", "spec", "brief_digest", "model", "low", "high", "reasoning",
+                    "self_cost_tokens", "self_cost_basis")
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..c9a2956 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -142,7 +142,7 @@ MIN_REASONING_CHARS = 40
+ # which is PLAN-0014 C4 written down. Crossing it is REPORTED in the layer and never refused:
+ # an expensive pass is a fact, and refusing to record it would delete the only evidence that
+ # the estimating apparatus is costing more than the work it sizes.
+-SELF_COST_CEILING_BPS = 500
++SELF_COST_CEILING_BPS = 100000
+ 
+ RECORD_REQUIRED = ("schema", "spec", "brief_digest", "model", "low", "high", "reasoning",
+                    "self_cost_tokens", "self_cost_basis")
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC4: THE COST SHARE IS ON RECORD AND CROSSING THE CEILING IS REPORTED, NEVER REFUSED. A pass costing half its own lower bound still produces a valid layer, flagged outside the ceiling, while the ordinary one is flagged inside it. Refusing to record an expensive pass would delete the only evidence that the estimating apparatus costs more than the work it sizes, which is the fact C4 exists
+
+====================================================================================================
+MUTATION: A9 MIN_REASONING_CHARS dropped from 40 to 1 (any non-empty reasoning accepted)
+DECLARED TO RED: AC2 reasoning-floor row, if the floor is a value and not a self-referential constant
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..ab100b9 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -136,7 +136,7 @@ LAYER_BASIS = "agent_judgement"
+ 
+ # A floor on STATING a reason, not a judgement of its quality. "big" is not reasoning; whether
+ # a paragraph is good reasoning is a reviewer's call and no gate can make it.
+-MIN_REASONING_CHARS = 40
++MIN_REASONING_CHARS = 1
+ 
+ # WHAT THIS PASS IS ALLOWED TO COST, in basis points of its own lower bound (500 = 5 percent),
+ # which is PLAN-0014 C4 written down. Crossing it is REPORTED in the layer and never refused:
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..ab100b9 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -136,7 +136,7 @@ LAYER_BASIS = "agent_judgement"
+ 
+ # A floor on STATING a reason, not a judgement of its quality. "big" is not reasoning; whether
+ # a paragraph is good reasoning is a reviewer's call and no gate can make it.
+-MIN_REASONING_CHARS = 40
++MIN_REASONING_CHARS = 1
+ 
+ # WHAT THIS PASS IS ALLOWED TO COST, in basis points of its own lower bound (500 = 5 percent),
+ # which is PLAN-0014 C4 written down. Crossing it is REPORTED in the layer and never refused:
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.18s
+   RED: WARP-1403 AC2: THE MODEL IDENTITY IS REQUIRED AND THE REASONING HAS A FLOOR. An empty model is refused, a three-character reasoning is refused with the floor named, and a MULTI-LINE reasoning is refused because it becomes the estimate layer's note and that record's renderer would not read a multi-line value back as itself. The floor is on SAYING something; whether the reasoning is good is a review
+
+====================================================================================================
+MUTATION: A10 `confidence` added to RECORD_OPTIONAL - the schema silently widened
+DECLARED TO RED: some row, if the declared key set is pinned
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..ba51bff 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -146,7 +146,7 @@ SELF_COST_CEILING_BPS = 500
+ 
+ RECORD_REQUIRED = ("schema", "spec", "brief_digest", "model", "low", "high", "reasoning",
+                    "self_cost_tokens", "self_cost_basis")
+-RECORD_OPTIONAL = ("note",)
++RECORD_OPTIONAL = ("note", "confidence")
+ 
+ DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
+ 
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..ba51bff 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -146,7 +146,7 @@ SELF_COST_CEILING_BPS = 500
+ 
+ RECORD_REQUIRED = ("schema", "spec", "brief_digest", "model", "low", "high", "reasoning",
+                    "self_cost_tokens", "self_cost_basis")
+-RECORD_OPTIONAL = ("note",)
++RECORD_OPTIONAL = ("note", "confidence")
+ 
+ DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
+ 
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.18s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.19s
+   RED: WARP-1403 AC2: AN UNKNOWN KEY IS REFUSED RATHER THAN IGNORED, and a missing required key is NAMED. A schema that ignores what it does not recognise is a schema a later item smuggles a field past, and every reader that does not know the field keeps working while meaning something else
+
+====================================================================================================
+MUTATION: A11 _walk no longer skips *.pyc files
+DECLARED TO RED: AC3 glob row, if the bytecode half of the claim is driven
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..f264ad5 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -304,7 +304,7 @@ def _walk(base, start):
+     for dirpath, dirnames, filenames in os.walk(top):
+         dirnames[:] = sorted(d for d in dirnames if d not in WALK_SKIP_DIRS)
+         for fn in sorted(filenames):
+-            if fn.endswith(".pyc"):
++            if False:
+                 continue
+             out.append(str((Path(dirpath) / fn).relative_to(base)))
+     return sorted(out)
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..f264ad5 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -304,7 +304,7 @@ def _walk(base, start):
+     for dirpath, dirnames, filenames in os.walk(top):
+         dirnames[:] = sorted(d for d in dirnames if d not in WALK_SKIP_DIRS)
+         for fn in sorted(filenames):
+-            if fn.endswith(".pyc"):
++            if False:
+                 continue
+             out.append(str((Path(dirpath) / fn).relative_to(base)))
+     return sorted(out)
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.18s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.18s
+   RED: WARP-1403 AC3: A GLOB IS RESOLVED THROUGH THE ONE GLOB COMPILER, and a glob matching nothing is its own fact. 121 of 785 footprint entries in this repository carry a metacharacter, so a brief that refused to resolve them would be blind on one entry in six; and an unmatched pattern is counted apart from an absent literal because the literal is a file to create while the pattern is ambiguous. Byteco
+
+====================================================================================================
+MUTATION: A12 WALK_SKIP_DIRS emptied - .git and __pycache__ are walked
+DECLARED TO RED: AC3 glob row, if the directory half of the claim is driven
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..08655d0 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -153,7 +153,7 @@ DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
+ # Directories a brief never walks into: version control and bytecode are not the code a spec
+ # touches, and including them would make a brief's digest depend on whether anything had been
+ # imported recently.
+-WALK_SKIP_DIRS = ("__pycache__", ".git")
++WALK_SKIP_DIRS = ()
+ 
+ # WHAT THE AGENT IS ASKED FOR, carried IN the brief so the ask travels with the data rather
+ # than living in a prompt nobody can see afterwards. Every line here is also ENFORCED by
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..08655d0 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -153,7 +153,7 @@ DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
+ # Directories a brief never walks into: version control and bytecode are not the code a spec
+ # touches, and including them would make a brief's digest depend on whether anything had been
+ # imported recently.
+-WALK_SKIP_DIRS = ("__pycache__", ".git")
++WALK_SKIP_DIRS = ()
+ 
+ # WHAT THE AGENT IS ASKED FOR, carried IN the brief so the ask travels with the data rather
+ # than living in a prompt nobody can see afterwards. Every line here is also ENFORCED by
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.18s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.18s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.18s
+   RED: WARP-1403 AC3: A GLOB IS RESOLVED THROUGH THE ONE GLOB COMPILER, and a glob matching nothing is its own fact. 121 of 785 footprint entries in this repository carry a metacharacter, so a brief that refused to resolve them would be blind on one entry in six; and an unmatched pattern is counted apart from an absent literal because the literal is a file to create while the pattern is ambiguous. Byteco
+
+====================================================================================================
+MUTATION: A13 assert_prior_agrees accepts any number of prior layers
+DECLARED TO RED: AC4 prior row, if the cardinality arm is driven
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..7cd26ad 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -755,7 +755,7 @@ def assert_prior_agrees(record, brief_rec):
+     record whose prior is not the prior the judgement was made against."""
+     layers = [l for l in (record or {}).get("layers") or ()
+               if isinstance(l, dict) and l.get("layer") == brief_rec["prior"]["layer"]]
+-    if len(layers) != 1:
++    if False and len(layers) != 1:
+         raise SizingPassError("the record carries %d %r layer(s): a sizing pass composes with "
+                               "exactly one structural prior"
+                               % (len(layers), brief_rec["prior"]["layer"]))
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..7cd26ad 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -755,7 +755,7 @@ def assert_prior_agrees(record, brief_rec):
+     record whose prior is not the prior the judgement was made against."""
+     layers = [l for l in (record or {}).get("layers") or ()
+               if isinstance(l, dict) and l.get("layer") == brief_rec["prior"]["layer"]]
+-    if len(layers) != 1:
++    if False and len(layers) != 1:
+         raise SizingPassError("the record carries %d %r layer(s): a sizing pass composes with "
+                               "exactly one structural prior"
+                               % (len(layers), brief_rec["prior"]["layer"]))
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+   NOTHING REDDENED - the suite stayed green under this mutation.
+
+====================================================================================================
+MUTATION: A14 load_dir's duplicate-spec arm deleted
+DECLARED TO RED: AC5 fail-closed row, if the duplicate arm is reachable at all
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..7fc67c8 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -643,7 +643,7 @@ def load_dir(dirpath=None, root=None):
+         except (SizingPassError, OSError) as e:
+             problems.append(str(e))
+             continue
+-        if rec["spec"] in out:
++        if False:
+             problems.append("two judgements claim spec %r: %s" % (rec["spec"], p))
+             continue
+         out[rec["spec"]] = rec
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..7fc67c8 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -643,7 +643,7 @@ def load_dir(dirpath=None, root=None):
+         except (SizingPassError, OSError) as e:
+             problems.append(str(e))
+             continue
+-        if rec["spec"] in out:
++        if False:
+             problems.append("two judgements claim spec %r: %s" % (rec["spec"], p))
+             continue
+         out[rec["spec"]] = rec
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.19s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.19s
+   NOTHING REDDENED - the suite stayed green under this mutation.
+
+====================================================================================================
+MUTATION: A15 check_dir CREATES the judgements directory when it is absent
+DECLARED TO RED: AC5 stand-down row asserts the directory is STILL absent afterwards
+-- git diff proving it landed --
+diff --git a/.veldo/sizing_pass.py b/.veldo/sizing_pass.py
+index b104b76..dc7fb52 100644
+--- a/.veldo/sizing_pass.py
++++ b/.veldo/sizing_pass.py
+@@ -822,6 +822,7 @@ def check_dir(dirpath=None, root=None):
+     V = _validate()
+     d = Path(dirpath) if dirpath else judgements_dir(root)
+     if not d.is_dir():
++        d.mkdir(parents=True, exist_ok=True)
+         return 0, 0
+     n = errs = 0
+     for p in sorted(d.glob("*.yaml")):
+diff --git a/engine/.veldo/sizing_pass.py b/engine/.veldo/sizing_pass.py
+index b104b76..dc7fb52 100644
+--- a/engine/.veldo/sizing_pass.py
++++ b/engine/.veldo/sizing_pass.py
+@@ -822,6 +822,7 @@ def check_dir(dirpath=None, root=None):
+     V = _validate()
+     d = Path(dirpath) if dirpath else judgements_dir(root)
+     if not d.is_dir():
++        d.mkdir(parents=True, exist_ok=True)
+         return 0, 0
+     n = errs = 0
+     for p in sorted(d.glob("*.yaml")):
+
+-- baseline --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        42 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.20s
+-- after mutation --
+selector    --suite 16_warp_1403_sizing_pass || running     1 of 34 suites: 16_warp_1403_sizing_pass || 16_warp_1403_sizing_pass                        41 passed    0.20s || selftest (PARTIAL, 1 of 34 suites): 67 passed, 1 failed in 0.20s
+   RED: WARP-1403 AC5: WITH NO JUDGEMENTS PRESENT EVERY READER STANDS DOWN SILENTLY AND CREATES NOTHING. load_dir gives an empty set with no problems, judgement_for gives None, check_dir reports nothing checked, layer_of a structural-only record gives None, and the directory is STILL absent afterwards. A repository that never uses this is byte-identically unaffected, which is the only posture under which 
+
+====================================================================================================
+PART 3: ATTACKS BEYOND THE DECLARATIONS - measurements, not mutations.
+Each block below is command output. The module is UNMUTATED unless a mutation is shown.
+====================================================================================================
+
+### A-DIGEST: the brief digest binds the code's INVENTORY, not the code.
+$ python3 attack_digest.py
+BEFORE  code: [{'entry': 'src/charge.py', 'kind': 'file', 'matched': 1, 'paths': ['src/charge.py'], 'bytes': 41, 'lines': 2}]
+BEFORE  digest: cc4fc534b51512b3d139644bc16e5cab7f20d4c269338c9c114ac2517d50eb17
+judgement validates against its own brief: True
+AFTER   code: [{'entry': 'src/charge.py', 'kind': 'file', 'matched': 1, 'paths': ['src/charge.py'], 'bytes': 41, 'lines': 2}]
+AFTER   digest: cc4fc534b51512b3d139644bc16e5cab7f20d4c269338c9c114ac2517d50eb17
+DIGEST UNCHANGED AFTER A SEMANTIC CODE CHANGE: True
+brief dicts identical: True
+STALE JUDGEMENT STILL VALIDATES CLEAN AGAINST THE NEW BRIEF: True
+AND IT BUILDS A LAYER: {'layer': 'sizing_pass', 'basis': 'agent_judgement', 'low': 100000, 'high': 400000}
+CONTROL (file removed) digest differs: True
+CONTROL (one line added) digest differs: True
+
+WHAT THE BRIEF ACTUALLY HANDS THE AGENT ABOUT THE CODE: ['bytes', 'entry', 'kind', 'lines', 'matched', 'paths']
+
+----------------------------------------------------------------------------------------------------
+### A-MISC: the symlink escape, the truncated token total, the unbound layer, the CR reasoning.
+$ python3 attack_misc.py
+==========================================================================================
+ATTACK D: 'a brief reads only inside the repository' versus a symlink
+  code_facts over a symlink pointing OUTSIDE the tree:
+    [{"bytes": 50, "entry": "linked_secret.py", "kind": "file", "lines": 3, "matched": 1, "paths": ["linked_secret.py"]}]
+    outside file is 50 bytes / 3 lines; the brief reports bytes=50 lines=3
+  and the escape refusal, for contrast:
+    ../outside.py    REFUSED: footprint: refusing the footprint entry '../outside.py': it escapes th
+    /etc/hostname    REFUSED: footprint: refusing the absolute footprint entry '/etc/hostname': a br
+==========================================================================================
+ATTACK E: a fractional token figure, which spend.validate accepts
+  spend.validate('WARP-9600','harness_reported',tokens=0.4) -> []
+  ledger_state over two events carrying 0.4 and 0.6 tokens:
+    {"anchor_available": "yes", "events": 2, "specs_with_spend": 2, "spend_events": 2, "token_anchor_available": "yes", "token_spend_events": 2, "tokens_recorded": 0}
+  -> token_anchor_available='yes' beside tokens_recorded=0, over 1.0 tokens actually recorded
+  and with a recorded ZERO: {"anchor_available": "yes", "events": 1, "specs_with_spend": 1, "spend_events": 1, "token_anchor_available": "yes", "token_spend_events": 1, "tokens_recorded": 0}
+==========================================================================================
+ATTACK F: layer_from with NO brief - the digest is never checked at all
+  layer_from(judgement) with brief_rec=None -> {"basis": "agent_judgement", "high": 2, "layer": "sizing_pass", "low": 1}
+  inputs.brief_digest = dededededededededededededededededededededededededededededededede
+  and it builds a VALID estimate record: True | committed range (1, 2) | calibration uncalibrated
+==========================================================================================
+ATTACK P: the reasoning's spelling rules 'belong to the renderer'
+  carriage return      validate_judgement=clean | ValueError: expected 'key: value' near: 'and then more'
+  leading hash         validate_judgement=clean | ValueError: layer 1 key 'note': refusing to render '# a reason long enough to clear the stated floor h
+  colon space          validate_judgement=clean | ROUND TRIP OK
+  trailing backslash   validate_judgement=clean | ROUND TRIP OK
+
+----------------------------------------------------------------------------------------------------
+### A6-CONSEQUENCE: with size() composing WITHOUT the brief (the mutation that left the suite
+### at 42 passed / 0 failed, recorded above as A6), a STALE judgement commits a record.
+$ python3 attack_a6.py            # unmutated control
+UNMUTATED baseline
+digest of the brief size() will derive : 35d4ca88410a98e9f38d749d36b785e201f0863c3ed62cdfaba9b5ad791fa059
+digest the judgement carries (STALE)   : dc265edf5bda11bb685a9670b2a15ad7d4018d6e5949292b813af6aafc2c1fb5
+size() REFUSED: refusing to build a sizing_pass layer: brief_digest 'dc265edf5bda11bb685a9670b2a15ad7d4018d6e5949292b813af6aafc2c1fb5' does not match the brief actually read ('35d4ca88410a98e9f38d749d36b785e201f0863c
+$ python3 attack_a6.py --mutated  # size() -> layer_from(judgement)
+MUTATED: size() composes the layer with NO brief
+digest of the brief size() will derive : 35d4ca88410a98e9f38d749d36b785e201f0863c3ed62cdfaba9b5ad791fa059
+digest the judgement carries (STALE)   : dc265edf5bda11bb685a9670b2a15ad7d4018d6e5949292b813af6aafc2c1fb5
+size() ACCEPTED the stale judgement.
+  committed range: (50000, 1200000)
+  layer low/high : (300000, 1200000)
+  layer inputs   : ['brief_digest', 'model', 'self_cost_basis', 'self_cost_bps_of_low', 'self_cost_ceiling_bps', 'self_cost_tokens', 'self_cost_within_ceiling']
+  record valid   : True
+----------------------------------------------------------------------------------------------------
+### A-FALSIFIED-BY: the item declares none, and the rule stands it down.
+$ grep -c '^behavior_bearing:' specs/WARP-1403-sizing-pass.md ; grep -c falsified_by specs/WARP-1403-sizing-pass.md
+0
+0
+$ for f in specs/WARP-140*.md: behavior_bearing / falsified_by counts
+specs/WARP-1401-toe-ground-truth-corpus.md                 0 0
+specs/WARP-1402-estimate-record-and-structural-proxy.md    0 0
+specs/WARP-1403-sizing-pass.md                             0 0
+specs/WARP-1404-historical-analogy.md                      0 0
+specs/WARP-1405-reconciliation-and-estimator-accuracy.md   0 0
+specs/WARP-1406-normalization-stable-planning-unit.md      0 0
+specs/WARP-1407-judgment-load-second-axis.md               0 0
+specs/WARP-1408-budget-rollup-dollars-and-pacing.md        0 0
+specs/WARP-1409-cost-to-change-per-area.md                 1 8
+$ the gate's own line over the real corpus (from full-gate.log):
+falsification migration: 45 spec(s) declare behaviour of 213, 45 already comply, 0 would be refused (0 criterion(s): none), 168 stood down
+$ check_falsification_declared(specs/WARP-1403-sizing-pass.md) reaches _falsification_stand_down
+   at validate_checks.py:913, whose reason is:
+   'declares no behavior_bearing field, so the rule does not reach it'
+   FALSIFICATION_ENFORCED = True; FLIP = {'commit': '01bcdf3', 'date': '2026-08-11', 'posture': 'REFUSING'}
+
+----------------------------------------------------------------------------------------------------
+### A-ARTIFACTS: the capability has never been used in this repository.
+$ ls .veldo/sizings .veldo/estimates
+ls: cannot access '.veldo/sizings': No such file or directory
+ls: cannot access '.veldo/estimates': No such file or directory
+
+----------------------------------------------------------------------------------------------------
+### THE FULL GATE IN MY COPY, and why its red is MINE and not the item's.
+$ bash scripts/verify.sh   (run with PYTHONDONTWRITEBYTECODE=1 exported) -> GATE EXIT=1
+   unit: FAIL at scripts/suites/12_warp_1210_hardening_four.py:5916 os.mkfifo -> FileNotFoundError
+   integration/first-use: FAIL as a CONSEQUENCE (its mutated run produced 0 summary lines)
+$ python3 scripts/selftest.py --suite 12_warp_1210_hardening_four
+  12_warp_1210_hardening_four                    249 passed   43.96s   (0 failed)
+$ PYTHONDONTWRITEBYTECODE=1 python3 scripts/selftest.py --suite 12_warp_1210_hardening_four
+  os.mkfifo(str(_p)) -> FileNotFoundError    (the fifo target is a __pycache__ path that
+  is never created when bytecode writing is off). ATTRIBUTED TO MY OWN ENV VAR, not to WARP-1403.
+$ python3 scripts/selftest.py --suite 16_warp_1403_sizing_pass
+  selector    --suite 16_warp_1403_sizing_pass
+  running     1 of 34 suites: 16_warp_1403_sizing_pass
+  16_warp_1403_sizing_pass                        42 passed    0.15s
+selftest (PARTIAL, 1 of 34 suites): 68 passed, 0 failed in 0.15s
+----------------------------------------------------------------------------------------------------
+### A-SHIP: what publish.py actually ships, and what the shipped module does.
+$ python3 scripts/publish.py <dest>
+publish: 420 file(s) -> .../est-review/public
+publish: composed 7 pack(s) with the base: aider, antigravity, claude, codex, copilot, cursor, opencode
+publish: leak scan clean over the PRODUCED tree against 12 private name(s)
+
+$ ls -la engine/.veldo/sizing_pass.py engine/.veldo/estimate.py
+ls: cannot access 'engine/.veldo/estimate.py': No such file or directory
+-rw-rw-r-- 1 dmitry dmitry 48189 Aug 13 05:10 engine/.veldo/sizing_pass.py
+$ ls engine/.veldo/examples/ | grep -i sizing
+sizing-judgement-example.yaml
+$ ls packs/claude/.veldo/sizing_pass.py packs/claude/.veldo/estimate.py
+ls: cannot access 'packs/claude/.veldo/estimate.py': No such file or directory
+packs/claude/.veldo/sizing_pass.py
+
+$ cd packs/claude && python3 .veldo/sizing_pass.py vocab
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/public/packs/claude/.veldo/sizing_pass.py", line 185, in _mod
+    spec.loader.exec_module(mod)
+  File "<frozen importlib._bootstrap_external>", line 991, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1128, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/public/packs/claude/.veldo/estimate.py'
+   exit=1
+$ python3 .veldo/sizing_pass.py brief --spec specs/TEMPLATE.md
+  File "<frozen importlib._bootstrap_external>", line 1128, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/public/packs/claude/.veldo/estimate.py'
+$ python3 .veldo/sizing_pass.py check
+sizing judgements: none under /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/public/packs/claude/.veldo/sizings - standing down (this is not a finding)
+   exit=0

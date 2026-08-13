@@ -230,6 +230,16 @@ def _validate():
     return _mod(".veldo/validate.py", "veldo_validate_estimate")
 
 
+def _ledger():
+    """The claim ledger, for its ONE definition of an id that cannot be stored faithfully.
+
+    NOT a second spelling of that rule. `claim.unit_id_problem` already answers "why this id
+    cannot be a key", and it was hardened on 2026-08-12 when two task ids were found to collapse
+    into one claim record. An estimate record is keyed by a spec id in exactly the same way, so it
+    inherits the same rule from the same place rather than growing a near-miss copy of it."""
+    return _mod(".veldo/claim.py", "veldo_claim_estimate")
+
+
 def _corpus():
     """The ONE spec-feature reader and the ONE footprint reader (.veldo/toe_corpus.py). The
     proxy reads its features THROUGH this rather than re-deriving them, so the features an
@@ -626,13 +636,29 @@ def write_record(rec, dirpath=None, root=None, replace=False):
     problems = validate_record(rec)
     if problems:
         raise ValueError("refusing to write an invalid estimate record: " + "; ".join(problems))
+    # THE ID BECOMES A PATH HERE, SO IT IS REFUSED HERE. Measured 2026-08-13 by the independent
+    # review of WARP-1402 and reproduced: a spec whose `id:` is `../policy` is accepted by
+    # validate.check_spec with ZERO errors, and this function then wrote an estimate record OVER
+    # .veldo/policy.yaml - 3977 bytes down to 848 - with no `replace` and no refusal. That file
+    # declares which paths are PROTECTED and what the risk tiers are, so the writer could delete the
+    # policy that governs the writer.
+    # AND THE OVERWRITE GUARD BELOW DID NOT FAIL, IT WAS ASKED TOO EARLY. `p.exists()` ran before the
+    # `d.mkdir()` two lines down, so for `.veldo/estimates/../policy.yaml` it answered about a path
+    # that could not resolve yet and returned False; the write then ran after mkdir, when the same
+    # path resolved perfectly. A guard that is correct and consulted at the wrong moment is not a
+    # guard, and that ordering is fixed too.
+    problem = _ledger().unit_id_problem(rec["spec"])
+    if problem is not None:
+        raise ValueError("refusing to write an estimate record keyed by %r: %s. An estimate is keyed "
+                         "by a spec id the same way a claim is keyed by a unit id, so it obeys the "
+                         "same rule from the same place" % (rec["spec"], problem))
     d = Path(dirpath) if dirpath else records_dir(root)
+    d.mkdir(parents=True, exist_ok=True)
     p = d / ("%s.yaml" % rec["spec"])
     if p.exists() and not replace:
         raise ValueError("%s already carries a committed estimate for %s: refusing to "
                          "overwrite it, because an estimate edited after the work is not an "
                          "estimate. Pass replace to say you mean it" % (p, rec["spec"]))
-    d.mkdir(parents=True, exist_ok=True)
     p.write_text(render_record(rec))
     return p
 

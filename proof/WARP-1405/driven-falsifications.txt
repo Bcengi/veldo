@@ -1,0 +1,436 @@
+WARP-1405 L2 REVIEW - DRIVEN RECORD
+tree      : /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1405  (cp -a of /home/dmitry/projects/veldo, never written to)
+commit    : 7b6c0059faae8299a95716b05820097599469e05
+date      : 2026-08-13T09:23:39Z
+worktree  : 2 modified path(s) at start
+
+NOTE ON DECLARED FALSIFICATIONS. specs/WARP-1405-*.md declares NO falsified_by clause on any
+criterion (grep -c falsified_by == 0). The declared falsifications for this item are the 17
+numbered mutations in scripts/suites/15_warp_1405_reconciliation.py's module docstring. All 17
+are driven below. Every edit asserts it applied (the driver aborts unless the pattern occurs
+exactly once in EACH of the two module copies) and is proven with git diff before the suite runs.
+
+==================== BASELINE ====================
+  15_warp_1405_reconciliation                     53 passed    0.57s
+selftest (PARTIAL, 1 of 34 suites): 79 passed, 0 failed in 0.57s
+
+==================== PART 1: THE 13 MODULE MUTATIONS ====================
+############ MUTATION: M01
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 4 ----
+ engine/.veldo/toe_reconcile.py | 4 ----
+ 2 files changed, 8 deletions(-)
+-    if actual > high:
+-        return _pct(actual - high, high)
+-    if actual < low:
+-        return -_pct(low - actual, low)
+---- suite ----
+RED: WARP-1405 AC1: THE VARIANCE IS DERIVED AND AN EDITED ONE IS REFUSED BY NAME, with both the claimed percentage and the computed one in the message. This is 
+RED: WARP-1405 AC1: THE VARIANCE IS MEASURED AGAINST THE BOUND THE ACTUAL MISSED, and it is ZERO inside the range. Driven over the three cases directly: an actu
+RED: WARP-1405 AC1: THE COMMITTED EXAMPLE RECORD IS VALID AND ITS DERIVED FIELDS ARE RECOMPUTED HERE RATHER THAN READ, over real bytes on disk. This is the asse
+RED: WARP-1405 AC3: OVER THE PLANTED-BIAS LEDGER THE ACCURACY IS MEASURED AND IT IS BAD, which is the point: five actuals at 3x the structural point land ABOVE 
+RED: WARP-1405 AC3: THE REPORTED BIAS IS THE DIRECTION ITS OWN SHIPPED VOCABULARY SAYS IT IS, MEASURED WHERE THE COUNTS AND THE MEAN DISAGREE. Over a ledger of 
+RED: WARP-1405 AC4, THE CLAIM THIS ITEM EXISTS TO SUPPORT: RECALIBRATION MEASURABLY REDUCES THE PLANTED BIAS, AND IT IS SCORED OUT OF SAMPLE. Held out one recor
+RED: WARP-1405 AC4, THE POPULATION THE CLAIM IS MADE OVER: A DELTA IS ONLY EVER TAKEN BETWEEN TWO FIGURES OVER THE SAME RECORDS. Over a ledger of six valid reco
+RED: WARP-1405 AC4 NEGATIVE CONTROL ON THAT PAIRING: the SAME six-record ledger with the two unfittable records REMOVED is a ledger of four the refit still cann
+  15_warp_1405_reconciliation                     45 passed    0.55s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 8 failed in 0.55s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M02
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 4 ----
+ engine/.veldo/toe_reconcile.py | 4 ----
+ 2 files changed, 8 deletions(-)
+-    if actual < low:
+-        return "below"
+-    if actual > high:
+-        return "above"
+---- suite ----
+RED: WARP-1405 AC1: THE OUTCOME IS DERIVED AND A KINDER ONE IS REFUSED BY NAME. Filing an above-range actual as in_range is rejected with the computed outcome i
+RED: WARP-1405 AC1: THE COMMITTED EXAMPLE RECORD IS VALID AND ITS DERIVED FIELDS ARE RECOMPUTED HERE RATHER THAN READ, over real bytes on disk. This is the asse
+RED: WARP-1405 AC3: OVER THE PLANTED-BIAS LEDGER THE ACCURACY IS MEASURED AND IT IS BAD, which is the point: five actuals at 3x the structural point land ABOVE 
+RED: WARP-1405 AC3: THE REPORTED BIAS IS THE DIRECTION ITS OWN SHIPPED VOCABULARY SAYS IT IS, MEASURED WHERE THE COUNTS AND THE MEAN DISAGREE. Over a ledger of 
+RED: WARP-1405 AC3 ANTI-VACUITY ON THE SCORER: over a ledger deliberately built with two in range, one below and two above, the counts are exactly that, the hit
+RED: WARP-1405 AC3: THE TRAILING WINDOW IS THE LINE THE METHOD'S WRITING PROMISES, and it really slices. Over the last 2 of 5 records the figures are computed f
+RED: WARP-1405 AC3: THE CALIBRATION CURVE IS ONE POINT PER RECONCILIATION, IN ORDER, and each point's figures are the SAME function the headline number uses ove
+RED: WARP-1405 AC3: THE CURVE MOVES, which is the property a curve has to have to be one. Over the mixed ledger the cumulative hit rate is not constant across i
+RED: WARP-1405 AC4, THE CLAIM THIS ITEM EXISTS TO SUPPORT: RECALIBRATION MEASURABLY REDUCES THE PLANTED BIAS, AND IT IS SCORED OUT OF SAMPLE. Held out one recor
+RED: WARP-1405 AC4, THE POPULATION THE CLAIM IS MADE OVER: A DELTA IS ONLY EVER TAKEN BETWEEN TWO FIGURES OVER THE SAME RECORDS. Over a ledger of six valid reco
+  15_warp_1405_reconciliation                     43 passed    0.56s
+selftest (PARTIAL, 1 of 34 suites): 69 passed, 10 failed in 0.56s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M03
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 +-
+ engine/.veldo/toe_reconcile.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-    floor_applied = (hi_scale - lo_scale) * 100 < lo_scale * MIN_FITTED_SPREAD_PCT
++    floor_applied = False
+---- suite ----
+RED: WARP-1405 AC4: THE FLOOR UNDER A FITTED RANGE, which is false precision arriving through the back door. Five records agreeing EXACTLY would otherwise licen
+RED: WARP-1405 AC4: THE REFITTED LAYER'S RECORDED INPUTS REPRODUCE ITS OWN BOUNDS, recomputed here FROM THE LAYER ALONE with the arithmetic written out, in BOTH
+  15_warp_1405_reconciliation                     51 passed    0.54s
+selftest (PARTIAL, 1 of 34 suites): 77 passed, 2 failed in 0.54s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M04
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 +-
+ engine/.veldo/toe_reconcile.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-        if exclude is not None and r.get("spec") == exclude:
++        if False:
+---- suite ----
+RED: WARP-1405 AC4: LEAVE-ONE-OUT REALLY LEAVES ONE OUT. Excluding the largest-implied record moves the fitted scale and shrinks the sample by exactly one, and 
+  15_warp_1405_reconciliation                     52 passed    0.55s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.55s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M05
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 ++
+ engine/.veldo/toe_reconcile.py | 2 ++
+ 2 files changed, 4 insertions(+)
++        out["measured"] = True
++        out["hit_rate_pct"] = 0
+---- suite ----
+RED: WARP-1405 AC3, THE LOAD-BEARING HONESTY OF THIS ITEM: AN EMPTY LEDGER REPORTS NO MEASURED ACCURACY, NOT A SCORE OF ZERO. Every figure is None, `measured` i
+RED: WARP-1405 AC3 MEASURED OVER THE REAL EVENT LOG, AND THE BRANCH IS THE MEASUREMENT'S OWN: this repository's log is non-empty, and over EVERY spec id it name
+RED: WARP-1405 AC3: THE SURFACE ANYONE CAN INSPECT ACTUALLY RENDERS, BOTH WAYS. Driven as a real process over THIS repository the report exits 0, names the numb
+  15_warp_1405_reconciliation                     50 passed    0.59s
+selftest (PARTIAL, 1 of 34 suites): 76 passed, 3 failed in 0.59s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M06
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 +-
+ engine/.veldo/toe_reconcile.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-        if not replace:
++        if False:
+---- suite ----
+RED: WARP-1405 AC2: A RECORDED VARIANCE IS NOT SILENTLY REGRADED. A record whose bytes DIFFER from the one on disk is refused by name, and the explicit replace 
+  15_warp_1405_reconciliation                     52 passed    0.56s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.56s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M07
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 +-
+ engine/.veldo/toe_reconcile.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-    paired_before = accuracy([r for r in records if r.get("spec") in set(scored)])
++    paired_before = accuracy(records)
+---- suite ----
+RED: WARP-1405 AC4, THE POPULATION THE CLAIM IS MADE OVER: A DELTA IS ONLY EVER TAKEN BETWEEN TWO FIGURES OVER THE SAME RECORDS. Over a ledger of six valid reco
+  15_warp_1405_reconciliation                     52 passed    0.55s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.55s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M08
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 ++
+ engine/.veldo/toe_reconcile.py | 2 ++
+ 2 files changed, 4 insertions(+)
++            continue
++        if False:
+---- suite ----
+RED: WARP-1405 AC4, THE POPULATION THE CLAIM IS MADE OVER: A DELTA IS ONLY EVER TAKEN BETWEEN TWO FIGURES OVER THE SAME RECORDS. Over a ledger of six valid reco
+  15_warp_1405_reconciliation                     52 passed    0.56s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.56s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M09
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 4 ++--
+ engine/.veldo/toe_reconcile.py | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+-        "fitted_scale_low": fitted["scale_low"],
+-        "fitted_scale_high": fitted["scale_high"],
++        "fitted_scale_low": fitted["scale_low"] * 3,
++        "fitted_scale_high": fitted["scale_high"] * 7,
+---- suite ----
+RED: WARP-1405 AC4: THE REFITTED LAYER'S RECORDED INPUTS REPRODUCE ITS OWN BOUNDS, recomputed here FROM THE LAYER ALONE with the arithmetic written out, in BOTH
+  15_warp_1405_reconciliation                     52 passed    0.54s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.54s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M10
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 +-
+ engine/.veldo/toe_reconcile.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-        "half_spread_pct": HALF_SPREAD_PCT,
++        "half_spread_pct": HALF_SPREAD_PCT + 25,
+---- suite ----
+RED: WARP-1405 AC4: THE REFITTED LAYER'S RECORDED INPUTS REPRODUCE ITS OWN BOUNDS, recomputed here FROM THE LAYER ALONE with the arithmetic written out, in BOTH
+  15_warp_1405_reconciliation                     52 passed    0.56s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.56s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M11
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 4 ++--
+ engine/.veldo/toe_reconcile.py | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+-    out["bias"] = ("balanced" if out["counts"]["above"] == out["counts"]["below"] else
+-                   "under_estimating" if out["counts"]["above"] > out["counts"]["below"]
++    out["bias"] = ("balanced" if out["mean_error_pct"] == 0 else
++                   "under_estimating" if out["mean_error_pct"] > 0
+---- suite ----
+RED: WARP-1405 AC3: THE REPORTED BIAS IS THE DIRECTION ITS OWN SHIPPED VOCABULARY SAYS IT IS, MEASURED WHERE THE COUNTS AND THE MEAN DISAGREE. Over a ledger of 
+  15_warp_1405_reconciliation                     52 passed    0.54s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.54s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M12
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 3 +--
+ engine/.veldo/toe_reconcile.py | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+-        for problem in validate_record(rec, spec_id=p.stem):
+-            errs += V.fail(str(p), problem)
++        pass
+---- suite ----
+RED: WARP-1405 AC5: THE OPERATOR-FACING check IS THE SURFACE THAT EXISTS TO NAME A BROKEN RECORD, SO IT IS MEASURED OVER ONE. Over the same directory holding on
+  15_warp_1405_reconciliation                     52 passed    0.55s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.55s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M13
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 3 ++-
+ engine/.veldo/toe_reconcile.py | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+-                   % (len(usable), lo, hi, _pct(hi - lo, lo))),
++                   % (len(usable), lo, hi, _pct(hi - lo, lo))
++                   + ". VERDICT: the structure is WRONG and no scale will fix it"),
+---- suite ----
+RED: WARP-1405 AC4: DISAGREEMENT WIDENS THE RANGE INSTEAD OF HIDING IN IT, AND THE MODULE NEVER LABELS THE STRUCTURE RIGHT OR WRONG, asserted over the STRINGS A
+  15_warp_1405_reconciliation                     52 passed    0.54s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.54s
+---- restore ----
+outstanding changes to module: 0
+
+==================== PART 2: THE 4 LIVE-ARM MUTATIONS, SEEDED ====================
+--- ADDITIVE CONTROL A: the sanctioned spend writer ADDS one real event; suite must STAY GREEN
+{"at": "2026-08-13T09:23:48Z", "correlation_id": "WARP-0100", "id": "25ea4a4ebc2a", "producer": "events.py", "schema": "
+events.jsonl grew by: 2 line(s) added
+  15_warp_1405_reconciliation                     53 passed    0.54s
+selftest (PARTIAL, 1 of 34 suites): 79 passed, 0 failed in 0.54s
+
+############ MUTATION: M14 accuracy scores an empty ledger measured:True hit 0  [state: spend recorded, ledger empty - the state the docstring names]
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 ++
+ engine/.veldo/toe_reconcile.py | 2 ++
+ 2 files changed, 4 insertions(+)
++        out["measured"] = True
++        out["hit_rate_pct"] = 0
+---- suite ----
+RED: WARP-1405 AC3, THE LOAD-BEARING HONESTY OF THIS ITEM: AN EMPTY LEDGER REPORTS NO MEASURED ACCURACY, NOT A SCORE OF ZERO. Every figure is None, `measured` i
+RED: WARP-1405 AC3 MEASURED OVER THE REAL EVENT LOG, AND THE BRANCH IS THE MEASUREMENT'S OWN: this repository's log is non-empty, and over EVERY spec id it name
+RED: WARP-1405 AC3: THE SURFACE ANYONE CAN INSPECT ACTUALLY RENDERS, BOTH WAYS. Driven as a real process over THIS repository the report exits 0, names the numb
+  15_warp_1405_reconciliation                     50 passed    0.58s
+selftest (PARTIAL, 1 of 34 suites): 76 passed, 3 failed in 0.58s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M17 spend_for sums v//2  [state: spend recorded]  (target: toe_corpus.py, both copies)
+edit written to BOTH copies
+---- git diff proving it landed ----
+ .veldo/toe_corpus.py        | 2 +-
+ engine/.veldo/toe_corpus.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-                out[f] += v
++                out[f] += v // 2 if isinstance(v, int) else v / 2
+---- suite 15_warp_1405 ----
+RED: WARP-1405 AC3 MEASURED OVER THE REAL EVENT LOG, AND THE BRANCH IS THE MEASUREMENT'S OWN: this repository's log is non-empty, and over EVERY spec id it name
+  15_warp_1405_reconciliation                     52 passed    0.55s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.55s
+---- restore ----
+outstanding: 0
+
+--- ADDITIVE CONTROL B: the sanctioned ledger writer ADDS one real reconciliation record
+write_record -> created /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1405/.veldo/reconciliations/WARP-1405.yaml
+record: estimate_low=210000 estimate_high=1313000 actual=2626000 outcome=above error_pct=100
+suite must STAY GREEN with a real ledger present:
+  15_warp_1405_reconciliation                     53 passed    0.55s
+selftest (PARTIAL, 1 of 34 suites): 79 passed, 0 failed in 0.55s
+
+############ MUTATION: M15 error_pct_of returns 0 for an actual ABOVE the high  [state: spend + real reconciliation record]
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 +-
+ engine/.veldo/toe_reconcile.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-        return _pct(actual - high, high)
++        return 0
+---- suite ----
+RED: WARP-1405 AC1: THE VARIANCE IS DERIVED AND AN EDITED ONE IS REFUSED BY NAME, with both the claimed percentage and the computed one in the message. This is 
+RED: WARP-1405 AC1: THE VARIANCE IS MEASURED AGAINST THE BOUND THE ACTUAL MISSED, and it is ZERO inside the range. Driven over the three cases directly: an actu
+RED: WARP-1405 AC1: THE COMMITTED EXAMPLE RECORD IS VALID AND ITS DERIVED FIELDS ARE RECOMPUTED HERE RATHER THAN READ, over real bytes on disk. This is the asse
+RED: WARP-1405 AC3 MEASURED OVER THE REAL EVENT LOG, AND THE BRANCH IS THE MEASUREMENT'S OWN: this repository's log is non-empty, and over EVERY spec id it name
+RED: WARP-1405 AC3: OVER THE PLANTED-BIAS LEDGER THE ACCURACY IS MEASURED AND IT IS BAD, which is the point: five actuals at 3x the structural point land ABOVE 
+RED: WARP-1405 AC3: THE REPORTED BIAS IS THE DIRECTION ITS OWN SHIPPED VOCABULARY SAYS IT IS, MEASURED WHERE THE COUNTS AND THE MEAN DISAGREE. Over a ledger of 
+RED: WARP-1405 AC4, THE CLAIM THIS ITEM EXISTS TO SUPPORT: RECALIBRATION MEASURABLY REDUCES THE PLANTED BIAS, AND IT IS SCORED OUT OF SAMPLE. Held out one recor
+RED: WARP-1405 AC4, THE POPULATION THE CLAIM IS MADE OVER: A DELTA IS ONLY EVER TAKEN BETWEEN TWO FIGURES OVER THE SAME RECORDS. Over a ledger of six valid reco
+RED: WARP-1405 AC4 NEGATIVE CONTROL ON THAT PAIRING: the SAME six-record ledger with the two unfittable records REMOVED is a ledger of four the refit still cann
+  15_warp_1405_reconciliation                     44 passed    0.56s
+selftest (PARTIAL, 1 of 34 suites): 70 passed, 9 failed in 0.56s
+---- restore ----
+outstanding changes to module: 0
+
+############ MUTATION: M16 render reports a measured ledger as NOT MEASURED  [state: spend + real reconciliation record]
+edit written to BOTH copies
+---- git diff proving it landed (canonical copy) ----
+ .veldo/toe_reconcile.py        | 2 +-
+ engine/.veldo/toe_reconcile.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-    if acc["measured"]:
++    if False:
+---- suite ----
+RED: WARP-1405 AC3: THE SURFACE ANYONE CAN INSPECT ACTUALLY RENDERS, BOTH WAYS. Driven as a real process over THIS repository the report exits 0, names the numb
+  15_warp_1405_reconciliation                     52 passed    0.54s
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.54s
+---- restore ----
+outstanding changes to module: 0
+
+--- restore the tree to HEAD
+outstanding: 1 path(s)
+
+--- TEETH CHECK on M17 over the VIRGIN tree (no spend recorded): declared GREEN, confirmed
+############ MUTATION: M17-bis spend_for sums v//2  [state: virgin tree]  (target: toe_corpus.py, both copies)
+edit written to BOTH copies
+---- git diff proving it landed ----
+ .veldo/toe_corpus.py        | 2 +-
+ engine/.veldo/toe_corpus.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+-                out[f] += v
++                out[f] += v // 2 if isinstance(v, int) else v / 2
+---- suite 15_warp_1405 ----
+  15_warp_1405_reconciliation                     53 passed    0.57s
+selftest (PARTIAL, 1 of 34 suites): 79 passed, 0 failed in 0.57s
+---- restore ----
+outstanding: 0
+
+==================== PART 3: WHAT THE DECLARATIONS DO NOT COVER ====================
+
+---- F1 BLOCKER: the PUBLISHED tree ships this module without the dependency it needs ----
+$ grep -n 'estimate.py' scripts/publish.py   # the EXCLUDE list
+70:    "engine/.veldo/estimate.py",
+$ python3 -c '<publish.selected over tracked_files>'
+  engine/.veldo/toe_reconcile.py             PUBLISHED
+  engine/.veldo/estimate.py                  WITHHELD
+  engine/.veldo/toe_corpus.py                PUBLISHED
+  engine/.veldo/toe_analogy.py               PUBLISHED
+  engine/.veldo/toe_budget.py                PUBLISHED
+$ grep -l 'estimate.py' engine/.veldo/toe_*.py   # published modules that import the withheld one
+engine/.veldo/toe_analogy.py
+engine/.veldo/toe_budget.py
+engine/.veldo/toe_reconcile.py
+$ python3 scripts/publish.py <dest>
+  publish: 420 file(s) -> /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/pubtest-1405
+  publish: composed 7 pack(s) with the base: aider, antigravity, claude, codex, copilot, cursor, opencode
+  publish: leak scan clean over the PRODUCED tree against 12 private name(s)
+$ cd <dest>/packs/claude && for each subcommand: python3 .veldo/toe_reconcile.py <cmd>
+  ls: cannot access '.veldo/estimate.py': No such file or directory
+  [vocabulary] exit=0  last-stderr: 
+  [check] exit=0  last-stderr: 
+  [report] exit=1  last-stderr: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/claude-1000/-home-dmitry-projects-myda
+  [fit] exit=1  last-stderr: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/claude-1000/-home-dmitry-projects-myda
+  [reconcile --at 2026-08-13] exit=1  last-stderr: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/claude-1000/-home-dmitry-projects-myda
+  ADDITIVE CONTROL: add back the ONE withheld file, change nothing else
+  [report] exit=0 after adding estimate.py
+    reconciliations: 0 record(s) under /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/pubtest-1405/packs/claude/.veldo/reconciliations
+    accuracy: NOT MEASURED. no reconciliation records: the estimator has NO MEASURED ACCURACY yet, which is a fact about the ledger rather than a hit rate of zero (a hit rate of zero would mean it missed every time)
+
+---- F2 MAJOR: a floored refit range ONE ROUNDING STEP wide, claiming the floor was applied ----
+  5 real specs -> 5 real estimates -> real corpus -> pair -> fit -> recalibrated_layer
+  minimum realistic structural_weight_tenths (1 AC, risk low, no footprint) = 20
+  implied scales            = [1684, 1684, 1684, 1684, 1684]   dispersion = 0 percent
+  fitted scale              = 1684 (declared prior 25000)
+  THE SHIPPED LAYER        : low=3000 high=4000   high-low=1000  ROUND_STEP=1000  => 1 rounding step(s)
+  its own recorded inputs  : spread_floor_applied='yes'  min_fitted_spread_pct=50
+  actual spread            = 33 percent above the low   -> BELOW the declared floor: True
+  estimate.validate_record on a record carrying it: CLEAN, nothing refuses it
+  SWEEP over realistic weights 20..3000 x scales 200..200000: 1606759 floored cases,
+    violations of the declared floor: 146   narrowest spread: 25 percent at weight=26 scale=1684 (4000..5000)
+  the suite's floor assertion drives ONE point (weight=100, fitted scale=75000):
+    weight=100 scale=75000 -> 600000..938000  spread 56 percent  -> clears the floor, so the check cannot fail here
+
+---- F3 MAJOR: a malformed record reds the GATE, under a label about the EVENT LOG ----
+$ cat .veldo/reconciliations/WARP-0100.yaml
+  schema: veldo.toe_reconciliation/v1
+  spec: WARP-0100
+  actual: 5
+$ python3 .veldo/toe_reconcile.py check   # the module itself is CORRECT here
+    /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1405/.veldo/reconciliations/WARP-0100.yaml: missing required key 'error_pct'
+  reconciliations: 1 record(s) checked, 9 problem(s)
+$ python3 scripts/selftest.py --suite 15_warp_1405_reconciliation   # = CHECK_unit, declared required: in verify.sh
+  RED: WARP-1405 AC3 MEASURED OVER THE REAL EVENT LOG, AND THE BRANCH IS THE MEASUREMENT'S OWN: this repository's log is non-empty, and over EVERY spe
+selftest (PARTIAL, 1 of 34 suites): 78 passed, 1 failed in 0.54s
+$ grep -n '_w1405_live_probs == \[\]' scripts/suites/15_warp_1405_reconciliation.py
+  581:           and _w1405_live_probs == []
+
+---- F4 MAJOR: the reconcile CLI states spend it never measured, and pins THIS repository ----
+$ python3 .veldo/toe_reconcile.py reconcile --at 2026-08-13   [virgin tree]
+  nothing to reconcile: 0 committed estimate(s), and no shipped change carries a recorded actual. That is this repository's measured state (WARP-1401 measured 0 percent spend coverage), not a failure
+$ <after ONE sanctioned spend.py record>  toe_corpus.spend_for(events, 'WARP-0100'):
+   {'tokens': 750000, 'cost_usd': 0.0, 'human_minutes': 0, 'spend_recorded': True}
+$ python3 .veldo/toe_reconcile.py reconcile --at 2026-08-13   [same sentence, now false]
+  nothing to reconcile: 0 committed estimate(s), and no shipped change carries a recorded actual. That is this repository's measured state (WARP-1401 measured 0 percent spend coverage), not a failure
+$ the module docstring's pinned figures, re-measured over today's bytes:
+   docstring: 904 events, 148 shipped specs
+   measured : 1191 events, 174 shipped specs
+
+---- F5 MAJOR: 'so it cannot spawn a process' is false; measured ----
+  the suite's evidence: 'import subprocess' in the module source -> False
+  MEASURED subprocess.run calls made by build_view() (the `report` CLI's body): 183
+  first three: [['git', 'log', '--format=%H', '--grep', 'WARP-0100', '--all'], ['git', 'log', '--format=%H', '--grep', 'WARP-0101', '--all'], ['git', 'log', '--format=%H', '--grep', 'WARP-0102', '--all']]
+
+---- F6 MINOR: load_dir's duplicate-spec branch is unreachable ----
+  two files both declaring 'spec: A' -> 2 problem(s); any of them the duplicate message: False
+
+---- F7 MINOR: a tautological clause ----
+  sorted(ledger) == sorted(r["spec"] for r in recs): True (true by construction: load_dir keys BY that field)
+
+---- F9 MINOR: _repo_inputs is only partly rooted ----
+  1394:    estimates, problems = EST.load_dir(root=base)
+  1395:    corpus = C.build(specs_dir=base / "specs", events=M.load(),
+  1396:                     protected=PC.protected_patterns())
+  .veldo/metrics.py:121:def load():
+  .veldo/policy_check.py:50:def protected_patterns():
+
+==================== FINAL STATE ====================
+outstanding changes in the review copy: 1 path(s)
+   M .veldo/last_verify
+commit reviewed: 7b6c0059faae8299a95716b05820097599469e05
+the shared tree /home/dmitry/projects/veldo was never written to by this review.

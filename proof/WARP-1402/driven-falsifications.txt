@@ -1,0 +1,670 @@
+WARP-1402 - the estimate record and the structural proxy
+DRIVEN FALSIFICATIONS AND ATTACKS, independent L2 review
+reviewer: claude-opus-5[1m], delegated fresh context, no part in building this item
+commit reviewed: 7b6c0059faae8299a95716b05820097599469e05
+isolated copy: /tmp/.../est-review/work-WARP-1402 (cp -a). The shared tree
+  /home/dmitry/projects/veldo was never written, staged or committed.
+
+METHOD. The spec carries NO falsified_by clauses (it predates that field: the falsification
+migration posture reads REFUSING since 2026-08-11 and this spec declares none), so the declared
+falsifications are the thirteen recorded in the suite fragment's own docstring, items 1 to 8e,
+each stating how many rows it must red and which. Every one was applied to the isolated copy by
+a mutator that ASSERTS its own edit landed (it prints "MUTATOR FAILED - NOTHING DRIVEN" and
+reverts otherwise, which is what stops a sed that matched nothing from looking like a check with
+no teeth), proven with git diff, run, and reverted before the next. The mutation is applied to
+BOTH engine twins every time, because mutating one reds the byte-identity row and that red would
+mask the one under test.
+
+RESULT IN ONE LINE: 13 of 13 declared falsifications have teeth and red exactly the rows they
+name. Everything that follows was found by attacking what they do not cover.
+################################################################
+## BASELINE at the reviewed commit
+################################################################
+$ git rev-parse HEAD
+7b6c0059faae8299a95716b05820097599469e05
+$ git status --porcelain   (empty: isolated copy; the shared tree was never written)
+$ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  15_warp_1402_estimate_record                    46 passed    0.04s
+selftest (PARTIAL, 1 of 34 suites): 72 passed, 0 failed in 0.04s
+
+## PART 1 - THE THIRTEEN DECLARED FALSIFICATIONS (suite docstring items 1 to 8e)
+================================================================
+MUTATION: M1 [declared item 1] combine: min(lows) -> max(lows). CLAIMED 3 RED
+================================================================
+applied: 'return min(lows), max(highs)' -> 'return max(lows), max(highs)'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..1c88cf5 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -263,3 +263,3 @@ def combine(layers, rule="envelope"):
+                                                             l.get("high")) for l in layers]))
+-    return min(lows), max(highs)
++    return max(lows), max(highs)
+ 
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC2: THE ENVELOPE ONLY EVER WIDENS. A second layer reaching higher raises the committed high and a second layer wholly INSIDE the first does not narrow anything, both measured over a record built through the real build_record. Averag
+  SELFTEST FAIL: WARP-1402 AC3: THE COMMITTED EXAMPLE RECORD IS VALID, and it is checked as real bytes on disk rather than as a fixture built in this file, so the documented shape cannot drift from the shape the validator accepts. It carries two layers on purp
+  SELFTEST FAIL: WARP-1402 AC3 CONTROL ON THE EXAMPLE: its committed range is the ENVELOPE of its own two layers, recomputed here rather than read, so an example edited by hand into something the schema forbids reds this instead of teaching the wrong shape
+  15_warp_1402_estimate_record                    43 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 69 passed, 3 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M1 [declared item 1] combine: min(lows) -> max(lows). CLAIMED 3 RED
+
+================================================================
+MUTATION: M2 [declared item 2] expected_review_cycles drops PROTECTED_REWORK. CLAIMED 1 RED
+================================================================
+applied: 'return reviews + GATE_REWORK[gate_depth] + (PROTECTED_REWORK if protected_touch ' -> 'return reviews + GATE_REWORK[gate_depth]'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..ab9a9e3 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -680,3 +680,3 @@ def expected_review_cycles(reviews, gate_depth, protected_touch):
+                          % (gate_depth, sorted(GATE_REWORK)))
+-    return reviews + GATE_REWORK[gate_depth] + (PROTECTED_REWORK if protected_touch else 0)
++    return reviews + GATE_REWORK[gate_depth]
+ 
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC4: A PROTECTED-PATH TOUCH STRICTLY WIDENS THE RANGE, measured on the SAME spec with only the protected set changed, and the layer records the touch and the rework it charged for it. A protected path forces a recorded human approval
+  15_warp_1402_estimate_record                    45 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M2 [declared item 2] expected_review_cycles drops PROTECTED_REWORK. CLAIMED 1 RED
+
+================================================================
+MUTATION: M3 [declared item 3] validate_record accepts any calibration. CLAIMED 1 RED
+================================================================
+applied: '    if "calibration" in rec and rec["calibration"] in CALIBRATIONS \\\n           ' -> '    if False:'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 3 +--
+ engine/.veldo/estimate.py | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..dbf07d3 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -378,4 +378,3 @@ def validate_record(rec, spec_id=None):
+     derived = calibration_of([l for l in layers if isinstance(l, dict)])
+-    if "calibration" in rec and rec["calibration"] in CALIBRATIONS \
+-            and rec["calibration"] != derived:
++    if False:
+         out.append("calibration says %r but the layer bases support %r: calibration is "
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC3: A CLAIMED CALIBRATION IS REFUSED BY NAME. Flipping calibration to calibrated over an uncalibrated_prior layer is rejected with the derived value in the message, so a stated prior can never be dressed as a measurement on the way 
+  15_warp_1402_estimate_record                    45 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M3 [declared item 3] validate_record accepts any calibration. CLAIMED 1 RED
+
+================================================================
+MUTATION: M4 [declared item 4] the layer records a token scale that is not the one used. CLAIMED 1 RED
+================================================================
+applied: '"tokens_per_structural_unit": TOKENS_PER_STRUCTURAL_UNIT,' -> '"tokens_per_structural_unit": TOKENS_PER_STRUCTURAL_UNIT + 1000,'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..be4c191 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -775,3 +775,3 @@ def structural_proxy(spec_path, protected=(), root=None):
+             "structural_weight_tenths": weight_tenths,
+-            "tokens_per_structural_unit": TOKENS_PER_STRUCTURAL_UNIT,
++            "tokens_per_structural_unit": TOKENS_PER_STRUCTURAL_UNIT + 1000,
+             "spread_pct": SPREAD_PCT,
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC4: THE LAYER'S RECORDED INPUTS ARE SUFFICIENT TO REPRODUCE ITS OWN BOUNDS, recomputed here from the record alone: weight times scale, spread applied, rounded. THIS is what buys the plan its reconciliation: because the structural WE
+  15_warp_1402_estimate_record                    45 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M4 [declared item 4] the layer records a token scale that is not the one used. CLAIMED 1 RED
+
+================================================================
+MUTATION: M5 [declared item 5] propose stamps date.today(). CLAIMED 3 RED
+================================================================
+applied: '    return build_record(spec_id, at, layers)' -> '    import datetime\n    at = datetime.date.today().isoformat()\n    return build_'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 ++
+ engine/.veldo/estimate.py | 2 ++
+ 2 files changed, 4 insertions(+)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..4da1b58 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -807,2 +807,4 @@ def propose(spec_path, at, protected=(), root=None, extra_layers=()):
+         raise ValueError("refusing to estimate %s: it declares no spec id" % spec_path)
++    import datetime
++    at = datetime.date.today().isoformat()
+     return build_record(spec_id, at, layers)
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC4: committed_at IS THE DATE THE CALLER PASSED IN, AND NOTHING ELSE IN THE RECORD DEPENDS ON IT. The same fixture spec proposed at two DISTINCT declared dates gives two records that carry those two dates, that are otherwise IDENTICA
+  SELFTEST FAIL: WARP-1402 AC4: THE SAME DATE SURVIVES THE WRITE. build_record's seam and the file on disk carry the caller's date too, read back through the real reader, so the binding above is a property of the RECORD and not of one constructor. A record who
+  SELFTEST FAIL: WARP-1402 AC4: THE PROXY REACHES FOR NOTHING OUTSIDE THE REPOSITORY AND NAMES NO CLOCK. Its source names no subprocess, socket or urllib import, so it cannot spawn a process or open a connection, and it declares no daemon or timer (NG5); it al
+  15_warp_1402_estimate_record                    43 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 69 passed, 3 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M5 [declared item 5] propose stamps date.today(). CLAIMED 3 RED
+
+================================================================
+MUTATION: M5b [declared item 5 variant] propose reaches a clock INDIRECTLY. CLAIMED 2 RED, text property GREEN
+================================================================
+applied: '    return build_record(spec_id, at, layers)' -> '    at = __import__("dateti" + "me").datetime.utcnow().strftime("%Y-%m-%d")\n    '
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 1 +
+ engine/.veldo/estimate.py | 1 +
+ 2 files changed, 2 insertions(+)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..47a5a0c 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -807,2 +807,3 @@ def propose(spec_path, at, protected=(), root=None, extra_layers=()):
+         raise ValueError("refusing to estimate %s: it declares no spec id" % spec_path)
++    at = __import__("dateti" + "me").datetime.utcnow().strftime("%Y-%m-%d")
+     return build_record(spec_id, at, layers)
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC4: committed_at IS THE DATE THE CALLER PASSED IN, AND NOTHING ELSE IN THE RECORD DEPENDS ON IT. The same fixture spec proposed at two DISTINCT declared dates gives two records that carry those two dates, that are otherwise IDENTICA
+  SELFTEST FAIL: WARP-1402 AC4: THE SAME DATE SURVIVES THE WRITE. build_record's seam and the file on disk carry the caller's date too, read back through the real reader, so the binding above is a property of the RECORD and not of one constructor. A record who
+  15_warp_1402_estimate_record                    44 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 70 passed, 2 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M5b [declared item 5 variant] propose reaches a clock INDIRECTLY. CLAIMED 2 RED, text property GREEN
+
+================================================================
+MUTATION: M6 [declared item 6] build_record hardcodes committed_at to the fixture's own date. CLAIMED 2 RED
+================================================================
+applied: '    rec = {"schema": SCHEMA, "spec": spec_id, "unit": unit, "committed_at": at,' -> '    rec = {"schema": SCHEMA, "spec": spec_id, "unit": unit, "committed_at": "202'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..406cdd3 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -787,3 +787,3 @@ def build_record(spec_id, at, layers, unit="tokens", combination="envelope", not
+     low, high = combine(layers, combination)
+-    rec = {"schema": SCHEMA, "spec": spec_id, "unit": unit, "committed_at": at,
++    rec = {"schema": SCHEMA, "spec": spec_id, "unit": unit, "committed_at": "2026-08-10",
+            "calibration": calibration_of(layers), "combination": combination,
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC4: committed_at IS THE DATE THE CALLER PASSED IN, AND NOTHING ELSE IN THE RECORD DEPENDS ON IT. The same fixture spec proposed at two DISTINCT declared dates gives two records that carry those two dates, that are otherwise IDENTICA
+  SELFTEST FAIL: WARP-1402 AC4: THE SAME DATE SURVIVES THE WRITE. build_record's seam and the file on disk carry the caller's date too, read back through the real reader, so the binding above is a property of the RECORD and not of one constructor. A record who
+  15_warp_1402_estimate_record                    44 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 70 passed, 2 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M6 [declared item 6] build_record hardcodes committed_at to the fixture's own date. CLAIMED 2 RED
+
+================================================================
+MUTATION: M7 [declared item 7] the ORIGINAL inputs defect: renderer truthiness + no empty-map refusal. CLAIMED 2 RED
+================================================================
+applied: '        if "inputs" in l:\n            lines.append("    inputs:")' -> '        if l.get("inputs"):\n            lines.append("    inputs:")'
+applied: '    if not ins:\n        return ["%s is present but EMPTY: a layer that read no n' -> ''
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 7 +------
+ engine/.veldo/estimate.py | 7 +------
+ 2 files changed, 2 insertions(+), 12 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..908e76d 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -471,7 +471,2 @@ def _inputs_problems(ins, where):
+                 % (where, type(ins).__name__)]
+-    if not ins:
+-        return ["%s is present but EMPTY: a layer that read no numbers omits the key, because the "
+-                "front-matter subset this record is written in has no spelling for an empty map, "
+-                "so the key would be dropped on the way to disk and the record read back would "
+-                "not be the record that was validated" % where]
+     key_re = _validate()._KEY_RE
+@@ -552,3 +547,3 @@ def render_record(rec):
+             first = False
+-        if "inputs" in l:
++        if l.get("inputs"):
+             lines.append("    inputs:")
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC3: A RECORD validate_record CALLS VALID SURVIVES ITS OWN WRITE AND READ BACK IN EVERY STATE A LAYER'S `inputs` KEY CAN BE IN, and every state the writer cannot carry is REFUSED BY NAME with `inputs` in the message - as a ValueError
+  SELFTEST FAIL: WARP-1402 AC3: THE EMPTY INPUTS MAP IS REFUSED FOR THE REASON THAT MAKES IT WRONG, naming that the key would be dropped on the way to disk, and the SAME layer validates clean both with the key absent and with a non-empty map. That pair is what
+  15_warp_1402_estimate_record                    44 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 70 passed, 2 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M7 [declared item 7] the ORIGINAL inputs defect: renderer truthiness + no empty-map refusal. CLAIMED 2 RED
+
+================================================================
+MUTATION: M8 [declared item 8] the pre-fix null conflation: .get for inputs + null read as absence. CLAIMED 2 RED
+================================================================
+applied: 'out.extend(_inputs_problems(_optional(l, "inputs"), "%s inputs" % where))' -> 'out.extend(_inputs_problems(l.get("inputs"), "%s inputs" % where))'
+applied: '    if ins is None:\n        return [_null_problem(where)]' -> '    if ins is None:\n        return []'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 4 ++--
+ engine/.veldo/estimate.py | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..1c8486a 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -359,3 +359,3 @@ def validate_record(rec, spec_id=None):
+         out.extend(_note_problems(_optional(l, "note"), "%s's note" % where))
+-        out.extend(_inputs_problems(_optional(l, "inputs"), "%s inputs" % where))
++        out.extend(_inputs_problems(l.get("inputs"), "%s inputs" % where))
+ 
+@@ -467,3 +467,3 @@ def _inputs_problems(ins, where):
+     if ins is None:
+-        return [_null_problem(where)]
++        return []
+     if not isinstance(ins, dict):
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC3: A RECORD validate_record CALLS VALID SURVIVES ITS OWN WRITE AND READ BACK IN EVERY STATE A LAYER'S `inputs` KEY CAN BE IN, and every state the writer cannot carry is REFUSED BY NAME with `inputs` in the message - as a ValueError
+  SELFTEST FAIL: WARP-1402 AC3: EVERY KEY THIS SCHEMA DECLARES IS REFUSED WHEN IT IS PRESENT WITH A NULL VALUE, in the record scope and in the layer scope, AND THE FAILURE IS A REFUSAL AND NEVER A CRASH - each one driven through the real write_record and requi
+  15_warp_1402_estimate_record                    44 passed    0.04s
+selftest (PARTIAL, 1 of 34 suites): 70 passed, 2 failed in 0.04s
+--- $ git checkout -- . ; git status --porcelain
+END M8 [declared item 8] the pre-fix null conflation: .get for inputs + null read as absence. CLAIMED 2 RED
+
+================================================================
+MUTATION: M8a [declared item 8a] null branch removed from _inputs_problems ONLY. CLAIMED 1 RED, the sweep alone
+================================================================
+applied: '    if ins is None:\n        return [_null_problem(where)]' -> '    if ins is None:\n        pass'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..5c29617 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -467,3 +467,3 @@ def _inputs_problems(ins, where):
+     if ins is None:
+-        return [_null_problem(where)]
++        pass
+     if not isinstance(ins, dict):
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC3: EVERY KEY THIS SCHEMA DECLARES IS REFUSED WHEN IT IS PRESENT WITH A NULL VALUE, in the record scope and in the layer scope, AND THE FAILURE IS A REFUSAL AND NEVER A CRASH - each one driven through the real write_record and requi
+  15_warp_1402_estimate_record                    45 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M8a [declared item 8a] null branch removed from _inputs_problems ONLY. CLAIMED 1 RED, the sweep alone
+
+================================================================
+MUTATION: M8b [declared item 8b] null branch removed from _note_problems ONLY. CLAIMED 1 RED, the sweep
+================================================================
+applied: '    if note is None:\n        return [_null_problem(where)]' -> '    if note is None:\n        pass'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..8f2ba4d 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -431,3 +431,3 @@ def _note_problems(note, where):
+     if note is None:
+-        return [_null_problem(where)]
++        pass
+     if not isinstance(note, str) or not note.strip():
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC3: EVERY KEY THIS SCHEMA DECLARES IS REFUSED WHEN IT IS PRESENT WITH A NULL VALUE, in the record scope and in the layer scope, AND THE FAILURE IS A REFUSAL AND NEVER A CRASH - each one driven through the real write_record and requi
+  15_warp_1402_estimate_record                    45 passed    0.04s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.04s
+--- $ git checkout -- . ; git status --porcelain
+END M8b [declared item 8b] null branch removed from _note_problems ONLY. CLAIMED 1 RED, the sweep
+
+================================================================
+MUTATION: M8d [declared item 8d] the NULL row deleted from the suite's own shape table. CLAIMED 1 RED
+================================================================
+applied: '        (_W1402_NULL, None, False),\n' -> ''
+--- $ git --no-pager diff -U1 (proof it landed)
+ scripts/suites/15_warp_1402_estimate_record.py | 1 -
+ 1 file changed, 1 deletion(-)
+diff --git a/scripts/suites/15_warp_1402_estimate_record.py b/scripts/suites/15_warp_1402_estimate_record.py
+index 52be472..6f1df81 100644
+--- a/scripts/suites/15_warp_1402_estimate_record.py
++++ b/scripts/suites/15_warp_1402_estimate_record.py
+@@ -346,3 +346,2 @@ with tempfile.TemporaryDirectory() as _d:
+         (_W1402_ABSENT, _W1402_DROP, True),
+-        (_W1402_NULL, None, False),
+         (_W1402_EMPTY, {}, False),
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC3: A RECORD validate_record CALLS VALID SURVIVES ITS OWN WRITE AND READ BACK IN EVERY STATE A LAYER'S `inputs` KEY CAN BE IN, and every state the writer cannot carry is REFUSED BY NAME with `inputs` in the message - as a ValueError
+Traceback (most recent call last):
+KeyError: 'the key PRESENT and NULL, which is what a bare `inputs:` line parses to'
+--- $ git checkout -- . ; git status --porcelain
+END M8d [declared item 8d] the NULL row deleted from the suite's own shape table. CLAIMED 1 RED
+
+================================================================
+MUTATION: M8e [declared item 8e] render_record no longer asks the validator first. CLAIMED 1 RED
+================================================================
+applied: '    problems = validate_record(rec)\n    if problems:\n        raise ValueError("r' -> ''
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 4 ----
+ engine/.veldo/estimate.py | 4 ----
+ 2 files changed, 8 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..f468329 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -533,6 +533,2 @@ def render_record(rec):
+     door it came through."""
+-    problems = validate_record(rec)
+-    if problems:
+-        raise ValueError("refusing to render an invalid estimate record: "
+-                         + "; ".join(problems))
+     lines = []
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC3: A RECORD validate_record CALLS VALID SURVIVES ITS OWN WRITE AND READ BACK IN EVERY STATE A LAYER'S `inputs` KEY CAN BE IN, and every state the writer cannot carry is REFUSED BY NAME with `inputs` in the message - as a ValueError
+  15_warp_1402_estimate_record                    45 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END M8e [declared item 8e] render_record no longer asks the validator first. CLAIMED 1 RED
+
+
+## PART 2 - MUTATIONS THE DECLARATIONS DO NOT COVER
+================================================================
+MUTATION: A1 the LIVE-STATE PIN: repair .veldo/policy.yaml so the critical tier is readable
+================================================================
+applied: '  critical: {gate: expanded, reviews: 2, min_independence: L2, human_approval: t' -> '  critical: {gate: expanded, reviews: 2, min_independence: L2, human_approval: t'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/policy.yaml | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC4 MEASURED OVER THE REAL POLICY: the standard tier's review count and gate depth are READ FROM .veldo/policy.yaml (source: policy), and the critical tier's are NOT (source: default), because that tier is written across two lines an
+  15_warp_1402_estimate_record                    45 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END A1 the LIVE-STATE PIN: repair .veldo/policy.yaml so the critical tier is readable
+
+================================================================
+MUTATION: A2 a REQUIRED gate stage that BLOCKS work on an estimate, reached by a computed path
+================================================================
+applied: '#!/usr/bin/env bash' -> '#!/usr/bin/env bash\npython3 scripts/check_toe_commitment.py || exit 1'
+--- $ git --no-pager diff -U1 (proof it landed)
+ scripts/check_lint.sh | 1 +
+ 1 file changed, 1 insertion(+)
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  15_warp_1402_estimate_record                    46 passed    0.04s
+selftest (PARTIAL, 1 of 34 suites): 72 passed, 0 failed in 0.04s
+--- $ git checkout -- . ; git status --porcelain
+?? scripts/check_toe_commitment.py
+END A2 a REQUIRED gate stage that BLOCKS work on an estimate, reached by a computed path
+
+================================================================
+MUTATION: A3b the CONTRACT VALIDATOR itself made to refuse a spec whose estimate is malformed
+================================================================
+applied: 'def check_spec(path, repo_root=None):\n    errs = 0\n' -> 'def check_spec(path, repo_root=None):\n    errs = 0\n    import importlib.util as '
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/validate.py | 5 +++++
+ 1 file changed, 5 insertions(+)
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC5, THE LOAD-BEARING ONE: AN ESTIMATE CAN NEVER INVALIDATE A SPEC, measured by DRIVING the real validate.check_spec over a hermetic repository root three times - with no estimate, with a valid one written by the real writer, and wit
+  15_warp_1402_estimate_record                    45 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END A3b the CONTRACT VALIDATOR itself made to refuse a spec whose estimate is malformed
+
+================================================================
+MUTATION: A4 CONTROL: fix footprint_of to skip comment lines - is any assertion about either answer?
+================================================================
+applied: '    fm = _front_matter(text)\n    m = re.search(r"^footprint:\\n((?:\\s+-\\s+.*\\n)+)' -> '    fm = _front_matter(text)\n    fm = "\\n".join(l for l in fm.splitlines() if no'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/toe_corpus.py        | 1 +
+ engine/.veldo/toe_corpus.py | 1 +
+ 2 files changed, 2 insertions(+)
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  15_warp_1402_estimate_record                    46 passed    0.04s
+selftest (PARTIAL, 1 of 34 suites): 72 passed, 0 failed in 0.04s
+--- $ git checkout -- . ; git status --porcelain
+END A4 CONTROL: fix footprint_of to skip comment lines - is any assertion about either answer?
+
+
+## PART 3 - THE ADDITIVE CONTROL: USE THE FEATURE FOR REAL
+================================================================
+MUTATION: C1 commit two real estimates through the sanctioned CLI and require the suite to stay green
+================================================================
+propose --write WARP-1403 -> exit 0: wrote /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1402/.veldo/estimates/WARP-1403.yaml
+propose --write WARP-1408 -> exit 0: wrote /tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1402/.veldo/estimates/WARP-1408.yaml
+check -> exit 0: estimates: 2 record(s) checked, 0 problem(s)
+--- $ git --no-pager diff -U1 (proof it landed)
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  15_warp_1402_estimate_record                    46 passed    0.04s
+selftest (PARTIAL, 1 of 34 suites): 72 passed, 0 failed in 0.04s
+--- $ git checkout -- . ; git status --porcelain
+?? .veldo/estimates/
+END C1 commit two real estimates through the sanctioned CLI and require the suite to stay green
+
+
+FINAL STATE
+$ git status --porcelain
+################################################################
+## PART 4 - F1 THE WRITER ESCAPES ITS OWN DIRECTORY AND DESTROYS A PROTECTED FILE
+################################################################
+The record's `spec` is validated only as a non-empty string, and write_record joins it
+into a path. The contract validator does not constrain a spec id either (PLAN ids are
+format-checked, spec ids are not), so the shape below is a spec the gate calls VALID.
+
+$ python3 - # does check_spec object to a spec whose id is '../policy'?
+  /tmp/tmp0piqne4y: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+validate.check_spec errs = 0   (0 = the gate accepts this spec)
+
+END TO END THROUGH THE SANCTIONED CLI, in a throwaway tree that is a copy of .veldo:
+$ wc -c .veldo/policy.yaml ; head -1 .veldo/policy.yaml    # BEFORE
+3977 .veldo/policy.yaml
+schema: veldo.policy/v1
+$ python3 .veldo/estimate.py propose --spec specs/evil.md --at 2026-08-13 --write
+wrote /tmp/trav1402run/.veldo/estimates/../policy.yaml
+schema: veldo.estimate/v1
+spec: ../policy
+   exit: 0  (no --replace was needed: the guard only protects an existing ESTIMATE)
+$ wc -c .veldo/policy.yaml ; head -1 .veldo/policy.yaml    # AFTER
+849 .veldo/policy.yaml
+schema: veldo.estimate/v1
+
+AND THE VALIDATOR CALLS SUCH A RECORD VALID:
+validate_record(traversal id) = []
+write_record returned : /tmp/tmp9mrcv8j4/estimates/../victim/OWNED.yaml
+resolved to           : /tmp/tmp9mrcv8j4/victim/OWNED.yaml
+outside the estimates dir: True
+estimate_for reads it back through the same traversal: True
+
+################################################################
+## PART 5 - F2 THE HELD-BACK MODULE IS A DEPENDENCY OF FOUR MODULES THAT DO SHIP
+################################################################
+$ grep -n 'estimate.py' scripts/publish.py
+69:    # than none of it: W3, W4, W5 and W8 are still to build. They ship in the release after this.
+70:    "engine/.veldo/estimate.py",
+71:    "engine/.veldo/toe_normalize.py",
+
+$ for m in ...; do grep -o '".veldo/[a-z_]*.py"' engine/.veldo/$m.py; done
+sizing_pass    loads: ".veldo/arch.py" ".veldo/estimate.py" ".veldo/events.py" ".veldo/spend.py" ".veldo/toe_corpus.py" ".veldo/validate.py" 
+toe_analogy    loads: ".veldo/estimate.py" ".veldo/metrics.py" ".veldo/toe_corpus.py" ".veldo/toe_normalize.py" ".veldo/validate.py" 
+toe_reconcile  loads: ".veldo/estimate.py" ".veldo/metrics.py" ".veldo/policy_check.py" ".veldo/toe_corpus.py" ".veldo/validate.py" 
+toe_budget     loads: ".veldo/budget.py" ".veldo/estimate.py" ".veldo/toe_corpus.py" ".veldo/validate.py" 
+
+$ python3 scripts/publish.py /tmp/pub1402log      # the REAL writer of the public tree
+publish: 420 file(s) -> /tmp/pub1402log
+publish: composed 7 pack(s) with the base: aider, antigravity, claude, codex, copilot, cursor, opencode
+publish: leak scan clean over the PRODUCED tree against 12 private name(s)
+   engine/.veldo/estimate.py          ABSENT (held back)
+   engine/.veldo/toe_normalize.py     ABSENT (held back)
+   engine/.veldo/sizing_pass.py       PRESENT
+   engine/.veldo/toe_analogy.py       PRESENT
+   engine/.veldo/toe_reconcile.py     PRESENT
+   engine/.veldo/toe_budget.py        PRESENT
+   engine/.veldo/toe_corpus.py        PRESENT
+
+$ cd /tmp/pub1402log/packs/claude && python3 .veldo/sizing_pass.py vocab   # the composed adopter pack
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pub1402log/packs/claude/.veldo/estimate.py'
+$ python3 .veldo/toe_analogy.py report --spec <a spec>
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pub1402log/packs/claude/.veldo/estimate.py'
+$ python3 .veldo/toe_reconcile.py report
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pub1402log/packs/claude/.veldo/estimate.py'
+
+################################################################
+## PART 6 - F3 THE CONFIDENT ZERO IN THE RECORD'S OWN FEATURE READ
+################################################################
+footprint_of's regex requires the line after 'footprint:' to be a list item and stops at the
+first non-item line, so a COMMENT inside the block truncates or empties the read. The record
+then states regression_surface and protected_touch as measurements.
+
+$ sed -n '69,80p' .veldo/toe_corpus.py
+def footprint_of(text):
+    """The declared footprint of one spec, as a list of paths. ONE reader: `spec_features` counts
+    it and `build` tests it against the protected set, and an earlier draft of this module spelled
+    the same regex out in both places, which is the second-spelling defect this repository has a
+    named rule about. A spec with no footprint block has an empty one, not an exception."""
+    fm = _front_matter(text)
+    m = re.search(r"^footprint:\n((?:\s+-\s+.*\n)+)", fm, re.M)
+    if not m:
+        return []
+    return [f.strip().strip('"') for f in re.findall(r"^\s+-\s+(.+?)\s*$", m.group(1), re.M)]
+
+
+
+$ python3 -  # every spec whose record CHANGES when the block is read correctly
+spec         surf@HEAD surf REAL prot@H REAL   range@HEAD -> correct range
+VELDO-0008   6         13        no     no     180000-1125000
+VELDO-0010   0         13        no     yes    120000-750000
+VELDO-0011   4         16        no     no     160000-1000000
+VELDO-0012   6         15        no     yes    330000-2063000
+WARP-0717    0         9         no     no     120000-750000
+WARP-0722    0         15        no     yes    120000-750000
+WARP-0727    10        20        yes    yes    500000-3125000
+WARP-1409    2         9         no     no     200000-1250000
+
+specs whose declared footprint block the ONE reader under-reads: 8
+records stating protected_touch: no about a spec that DOES touch a protected path: 3
+
+$ python3 .veldo/estimate.py propose --spec specs/VELDO-0010-*.md --at 2026-08-13   # the worst case
+low: 120000
+high: 750000
+      expected_review_cycles: 2
+      protected_touch: no
+      regression_surface: 0
+   its spec declares 13 footprint entries, two of them protected paths:
+  - "scripts/verify.sh"
+  - "engine/scripts/verify.sh"
+  - "scripts/run_scope.py"
+  - ".veldo/version.py"
+
+AND WITH THE READER FIXED (control A4 above reds nothing anywhere):
+low: 375000
+high: 2344000
+      expected_review_cycles: 3
+      protected_touch: yes
+      regression_surface: 13
+$ python3 scripts/selftest.py    # the WHOLE repository, with the reader fixed
+selftest: 4723 passed, 0 failed
+
+################################################################
+################################################################
+## PART 7 - THE ADDITIVE CONTROL AT FULL SCALE, AND F4's ROUTING
+################################################################
+$ # two real estimates committed through the CLI, then the WHOLE gate suite
+check -> exit 0: estimates: 2 record(s) checked, 0 problem(s)
+WARP-1403.yaml
+WARP-1408.yaml
+selftest: 4723 passed, 0 failed
+
+$ # F4: the required gate stage that blocks on an estimate, over the WHOLE repository
+applied: 'CHECK_extra="required:bash scripts/check_template_sync.sh"' -> 'CHECK_extra="required:bash scripts/check_extra_toe.sh"'
+ scripts/verify.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+$ bash scripts/check_extra_toe.sh   # it really does block
+toe: GATE REFUSES WARP-1407-judgment-load-second-axis.md - no committed estimate; work is blocked
+toe: GATE REFUSES WARP-1408-budget-rollup-dollars-and-pacing.md - no committed estimate; work is blocked
+toe: GATE REFUSES WARP-1409-cost-to-change-per-area.md - no committed estimate; work is blocked
+$ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  15_warp_1402_estimate_record                    46 passed    0.04s
+selftest (PARTIAL, 1 of 34 suites): 72 passed, 0 failed in 0.04s
+$ python3 scripts/selftest.py       # the WHOLE repository: which item catches it?
+  SELFTEST FAIL: WARP-1409 AC6: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the precondition for any claim of the form 'no gate stage does X'. Parsed out of scripts/verify.sh: every 
+selftest: 4722 passed, 1 failed
+
+FINAL STATE
+$ git status --porcelain
+
+################################################################
+## PART 8 - PER-CRITERION TEETH FOR AC1 AND AC5, which the docstring table does not cover
+################################################################
+================================================================
+MUTATION: X1 [AC1] the POINT refusal deleted from _bounds_problems
+================================================================
+applied: '        if lo == hi:\n            out.append("%s is a POINT' -> '        if False:\n            out.append("%s is a POINT'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..b33fb19 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -399,3 +399,3 @@ def _bounds_problems(d, where):
+     if _is_int(lo) and _is_int(hi):
+-        if lo == hi:
++        if False:
+             out.append("%s is a POINT (%d == %d): veldo.estimate/v1 has no point estimate, "
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC1: A POINT IS REFUSED BY NAME. low equal to high is rejected and the message says POINT, on the record AND on the layer, so no shape of this schema can carry a single number. This is NG6 made structural: false precision is not a th
+  SELFTEST FAIL: WARP-1402 AC5, THE LOAD-BEARING ONE: AN ESTIMATE CAN NEVER INVALIDATE A SPEC, measured by DRIVING the real validate.check_spec over a hermetic repository root three times - with no estimate, with a valid one written by the real writer, and wit
+  15_warp_1402_estimate_record                    44 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 70 passed, 2 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END x1
+
+================================================================
+MUTATION: X2 [AC1] the unit vocabulary check deleted from validate_record
+================================================================
+applied: '    if "unit" in rec and rec["unit"] not in UNITS:' -> '    if False:'
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..5b0f4c3 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -304,3 +304,3 @@ def validate_record(rec, spec_id=None):
+                    % (spec_id, rec.get("spec")))
+-    if "unit" in rec and rec["unit"] not in UNITS:
++    if False:
+         out.append("unit must be one of %s (raw tokens are the recorded ground truth; a "
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC1: THE UNIT IS REQUIRED AND ITS VOCABULARY IS CLOSED. A missing unit is named as a missing required key, and an unknown one is refused with the declared set in the message. A range whose unit is unstated is two numbers, and this re
+  SELFTEST FAIL: WARP-1402 AC3: EVERY KEY THIS SCHEMA DECLARES IS REFUSED WHEN IT IS PRESENT WITH A NULL VALUE, in the record scope and in the layer scope, AND THE FAILURE IS A REFUSAL AND NEVER A CRASH - each one driven through the real write_record and requi
+  15_warp_1402_estimate_record                    44 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 70 passed, 2 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END x2
+
+================================================================
+MUTATION: X3 [AC5] load_dir CREATES the absent estimates directory instead of standing down
+================================================================
+applied: '    d = Path(dirpath) if dirpath else records_dir(root)\n    if not d.is_dir():\n ' -> '    d = Path(dirpath) if dirpath else records_dir(root)\n    if not d.is_dir():\n '
+--- $ git --no-pager diff -U1 (proof it landed)
+ .veldo/estimate.py        | 2 +-
+ engine/.veldo/estimate.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/.veldo/estimate.py b/.veldo/estimate.py
+index cd1bb3e..677ab82 100644
+--- a/.veldo/estimate.py
++++ b/.veldo/estimate.py
+@@ -596,3 +596,3 @@ def load_dir(dirpath=None, root=None):
+     if not d.is_dir():
+-        return {}, []
++        d.mkdir(parents=True, exist_ok=True)
+     out, problems = {}, []
+--- $ python3 scripts/selftest.py --suite 15_warp_1402_estimate_record
+  SELFTEST FAIL: WARP-1402 AC5: WITH NO RECORDS PRESENT EVERY READER STANDS DOWN SILENTLY AND CREATES NOTHING. load_dir gives an empty set with no problems, estimate_for gives None, check_dir reports nothing checked, and the directory is STILL absent afterward
+  15_warp_1402_estimate_record                    45 passed    0.05s
+selftest (PARTIAL, 1 of 34 suites): 71 passed, 1 failed in 0.05s
+--- $ git checkout -- . ; git status --porcelain
+END x3
+

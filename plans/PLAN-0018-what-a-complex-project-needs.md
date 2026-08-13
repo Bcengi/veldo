@@ -1034,6 +1034,62 @@ declared falsifications rather than reading them, which is why they found what r
     class, inside the check written to refuse it. The override is now validated whenever it is present.
     Six rows pin all of it; reverting to existence-counting reds the two that name it.
 
+71. **A SHIPPED WRITER COULD DESTROY THE FILE THAT DECLARES WHICH FILES ARE PROTECTED.** The most
+    serious defect found in this project's remediation, found by the independent review WARP-1402 had
+    never had, and REPRODUCED here before anything was changed.
+    MEASURED. A spec whose `id:` is `../policy` is accepted by `validate.check_spec` with ZERO errors.
+    Run the shipped writer on it and `.veldo/policy.yaml` goes from **3977 bytes to 848**, replaced by an
+    estimate record, with no `replace` flag and no refusal. **That file declares `protected_paths` and
+    the risk tiers, so the writer could delete the policy that governs the writer.** Done in a throwaway
+    copy on purpose; the live tree was never touched.
+    THE CAUSE IS MUNDANE AND THE SHAPE IS FAMILIAR: `write_record` did
+    `d / ("%s.yaml" % rec["spec"])`, and `spec` was validated only as a non-empty string. **This is
+    ledger finding 49's family - an id used as a path without being checked as one - and we fixed the
+    same class one layer down on 2026-08-12** when two task ids were found to collapse into one claim
+    record. That fix produced `claim.unit_id_problem`, the ONE definition of an id that cannot be stored
+    faithfully. This writer did not use it. **A rule we already own, in a module that did not ask for
+    it.**
+    AND THE OVERWRITE GUARD DID NOT FAIL, IT WAS ASKED TOO EARLY. `write_record` already refused to
+    overwrite an existing record. The guard ran `p.exists()` BEFORE `d.mkdir()`, so for
+    `.veldo/estimates/../policy.yaml` it asked about a path that could not resolve yet and got False;
+    the write then ran after the mkdir, when the same path resolved perfectly. **A guard that is correct
+    and consulted at the wrong moment is not a guard**, and it is a far quieter failure than a missing
+    one, because the code reads as protected.
+    FIXED both halves: the id is refused before it becomes a path, by delegation to the ledger's rule
+    rather than a second copy of it, and the directory is created before the existence question.
+    Four rows pin it. THE DRIVING TAUGHT ME SOMETHING ABOUT MY OWN ROWS: deleting the id rule reds the
+    row that requires the refusal to NAME the id, and does NOT red the row that requires the victim file
+    to survive - because with the ordering fixed, the overwrite guard now catches the traversal too.
+    That is defence in depth working, and it means the two rows attribute correctly: one says the file
+    lived, the other says WHICH rule saved it. A single row asserting only "it was refused" would have
+    been satisfiable by either and attributable to neither.
+    STILL OPEN AND RECORDED RATHER THAN FIXED: `validate.check_spec` accepts `id: ../policy` with zero
+    errors. The writer is now safe, so no wrong answer is reachable through it, but a spec id that is a
+    traversal is wrong on its own terms and the validator should say so. That touches the front-matter
+    contract over 214 specs, so it is a change to ask for rather than to make at six in the morning.
+
+72. **I WROTE A BRIEF USING A SEVERITY VOCABULARY THE VERDICT CONTRACT DOES NOT ACCEPT, AND AN AGENT
+    HAD ALREADY FLAGGED THAT EXACT MISMATCH.** The six estimation verdicts landed and `validate.py`
+    returned 53 problems: "list-shaped findings entries need severity blocking|note and text". I had
+    instructed all six reviewers to use `severity_l2` with `blocker`, `major`, `minor` - and nothing
+    else - because that is what the L2 review template says and what the twelve earlier verdicts used.
+    The VALIDATOR requires `severity` from `blocking|note`.
+    **THE MISMATCH WAS ALREADY ON RECORD.** A remediation agent reported it hours earlier and correctly
+    declined to fix it: "the L2 template's blocker|major|minor against validate.py's blocking|note - the
+    template is not in this tree at all and the validator is engine canon, so the reconciliation is
+    somebody else's decision". I read that report, filed it as somebody else's decision, and then wrote a
+    brief in the template's vocabulary rather than the validator's.
+    Fixed without losing anything: every finding now carries the contract's `severity` AND the richer
+    `severity_l2`, mapped blocker to blocking and major/minor to note.
+    **THE LESSON IS ABOUT BRIEFS, and it is the third one this round.** My briefs have now produced: two
+    paths for one patch file that resolved to a shared location and clobbered four agents' work; and a
+    severity vocabulary the gate refuses. **A brief is code that runs on ten agents at once, and I have
+    been writing it with less care than I would give a function.** The cheap discipline is to validate
+    one instance of whatever the brief asks for BEFORE dispatching it, which in both cases would have
+    taken under a minute.
+    STILL UNRECONCILED, and still not mine to settle: the template and the validator disagree about the
+    vocabulary. One of them should change. Recorded rather than chosen.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

@@ -1,0 +1,160 @@
+{
+ "schema": "veldo.verdict/v1",
+ "spec_id": "WARP-1407",
+ "commit": "7b6c0059faae8299a95716b05820097599469e05",
+ "reviewer": "Claude Opus 5 (1M context), delegated fresh context, independent L2 - no part in building this item",
+ "reviewed_at": "2026-08-13T09:40:00Z",
+ "verdict": "fail",
+ "summary": "SHIP VERDICT: do-not-ship, and the reason is one rendered line rather than the arithmetic. This item exists because 'a judgment axis that reported an unrecorded zero would price every approval-heavy change at nothing - the most expensive single mistake available to this item' (its own risk field). Its per-spec rows honour that: _axis prints the words 'not recorded' and there is deliberately no third rendering. Its PER-PLAN lines do not: render() formats the plan roll-up with _num instead of _axis, so every one of the 18 plan lines in this repository's own report today reads 'toe 0 tok (0 known)  judgment 0 min (0 known)' - a figure standing exactly where AC2 promises the words go, on the surface a reader skims to compare plans. The suite PINS that zero as correct (I rendered the plan line through _axis and the named AC1 plan-line row went red), so the check certifies the defect rather than catching it, which is this ledger's dominant family. The rest of the item is strong: all 16 declared falsifications drove and reddened rows their criteria name, the gate is green (4723 passed, 0 failed), the module really writes nothing (a state writer under a hermetic ROOT reds a named row), the kind map is bound to spend.SCHEMA_EVENT_TYPE, and both copies are byte-identical with a drift check that has teeth. But three more holes are reachable without touching the code: NaN and +Infinity pass the ONE judge, so an adopter's report prints 'judgment nan min' at '100.0%' coverage while `check` reports 0 malformed figures (AC4 refuted, driven end to end through the CLI); no fixture anywhere carries a figure RECORDED AS ZERO, so redefining minutes_recorded and tokens_recorded as `total > 0` leaves the suite at 61 passed 0 failed, and the shipped split_known already answers the recorded-zero case wrongly; and the report says 'no human minutes are recorded anywhere in this log ... nobody has called it' on the first minute anyone records against an unshipped spec, two lines under its own unattributable count proving it false. Fixes are small and local, roughly ten lines plus three fixtures: plan line through _axis, a finite check in _figure_problem, split_known from a count rather than a truthy sum, a recorded-zero fixture, a correlation-id fixture, the banner scoped to what it measured, and a named stand-down instead of a FileNotFoundError traceback when a sibling organ is absent. Re-review after those, and this ships.",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "confirmed",
+   "note": "Both axes with their own flags, the by-kind split, the episode count, approval_required and protected_touch are all present per record and all asserted in both directions; pair_line is the single rendering of a ROW and the report is asserted to contain pair_line(r) for every row; the plan roll-up carries the declared denominator from the one plan registry and stands down to '(not declared)'. Driven: dropping human_minutes from the seeded verdict event reds 7 rows across AC1, AC2 and AC3 (the item's docstring predicted 6); inverting approval_required reds the approval-surface row; constant-False protected_touch reds the protected row; the denominator fallback printing the plan's own spec count reds the whole-line pin; swapping the token column for the minutes column reds the same line, which is why pinning the line whole rather than the denominator alone was the right call. One note, and it is the door finding F1 walks through: the per-plan line is a SECOND rendering of the same pair that does not go through pair_line and does not obey _axis, so AC1's one-renderer property holds for rows by its own letter while the value it protects escapes through the plan line.",
+   "note_evidence": "WARP-1407-driven.txt M3, M10, M11, M13, M14"
+  },
+  {
+   "id": "AC2",
+   "status": "refuted",
+   "note": "The criterion the spec calls the one that matters most, and it is refuted on its own third clause: 'the rendered report prints the words where a figure would go'. It does, per spec row. It does not per plan row: 18 of 18 plan lines in this repository's report print 'toe 0 tok (0 known)  judgment 0 min (0 known)' over an axis with nothing recorded on it, and by_plan's own docstring claims the opposite ('never as a plan that cost no judgment'). Rendering those two columns through _axis reds the AC1 plan-line row, so the suite pins the zero. Second refutation: the distinction AC2 is built on - a zero because nobody spent a minute versus a zero because nobody recorded one - has NO fixture. Every seeded figure is non-zero, so `carrying > 0` and `total > 0` are indistinguishable to this suite; I redefined minutes_recorded as `total > 0` (61 passed, 0 failed) and tokens_recorded as `total > 0` (61 passed, 0 failed). The additive control I added, one seeded spec whose verdict event carries human_minutes=0 and tokens=0, FAILS against the unmodified module on split_known, which is a live wrong answer and not only a coverage gap. Everything else AC2 claims is real and has teeth: the coverage counts and percentages are pinned in both directions (a hardcoded 1.0 reds 3 rows), the four shapes are named from this repository's own medians with the strictly-above comparison (>= reds the at-the-median row), nothing is labelled below MIN_POPULATION, and classifiable is read from the reference rather than re-derived (proven by handing coverage a reference built on a different floor). The measured figures in the criterion text (174 shipped specs, 0 percent on both axes, usable_as_second_axis False) reproduce exactly today.",
+   "note_evidence": "WARP-1407-driven.txt A1, A2, A4, ADDITIVE CONTROL, P5; M1, M5, M6, M8, M9, M12, M15, M16"
+  },
+  {
+   "id": "AC3",
+   "status": "confirmed",
+   "note": "The row the item turns on is real and has teeth: WARP-9406 carries three review episodes and no recorded minute, keeps a zero total with judgment_known False and a shape of unknown naming the missing axis, and disabling classify's missing-axis branch reds exactly that row with the label it produces instead being cheap_on_both. The positive control (same episode count WITH minutes, classified) and the independent seeded-episode count are both present, and episodes are never scaled into minutes anywhere in the module. Two notes rather than a refutation. First, the corpus-equality claim ('two enumerations of one set are proven equal, not assumed') is proven over one shape only: no fixture uses correlation_id, so deleting the correlation half of _mine leaves the suite at 61 passed 0 failed while toe_corpus.cycles_for and spend_for both join on it (finding F5). Second, the criterion's parenthetical measurement has drifted: it says 167 episodes, the derivation reports 170 today; 141 of 174 and 81 percent still reproduce.",
+   "note_evidence": "WARP-1407-driven.txt M1, A3, P6, P7"
+  },
+  {
+   "id": "AC4",
+   "status": "refuted",
+   "note": "The headline is a TOTAL property - 'A human_minutes or tokens value that is not a non-negative number raises JudgmentLoadError naming the field, the event type and the value' - and NaN and +Infinity are not non-negative numbers and do not raise. _figure_problem returns None for both, because `nan < 0` and `inf < 0` are False; only -Infinity is caught. events.read_log parses with json.loads, which accepts the bare NaN and Infinity literals, so this is reachable from a log rather than only from an API call. Driven end to end in a tree carrying exactly what init lays down: `judgment_load.py check` prints '0 malformed figure(s) in 1 event(s)' and exits 0, and `report` prints 'judgment nan min' with 'judgment minutes known on 1 (100.0%)'. Worse than a bad cell: a single NaN inside the both-axes population moves the median (the same four figures give median 15.0 with the NaN first in the log and 25.0 with it last) and relabels its neighbours, and the NaN row itself is labelled cheap_on_both, which is the confident-cheap answer this item exists to refuse. Everything AC4 declares for the shapes it does model is solid: string, boolean and negative figures each raise with the field, the event type and the value in the message, a non-mapping is refused by name, check_log lists all three through validate.fail, the well-formed log raises nothing, and the raise and the report are string-identical from the one judge. The unattributable event is counted with its figures rather than dropped, in both directions. One further note: `report` and `check` disagree about the same log, because report only reads figures for specs the corpus holds, so a malformed figure on an unshipped spec is silently unread by the derivation while check names it (finding F8).",
+   "note_evidence": "WARP-1407-driven.txt M2, M2b, P2, P3, adopter section"
+  },
+  {
+   "id": "AC5",
+   "status": "confirmed",
+   "note": "Both halves hold and both are driven. The mixed signal: minutes recorded the way spend.py records them land in ship_bulk, count toward the total, leave split_known False and render '[split not recorded]' rather than an inferred approval figure; the negative control (minutes on a verdict or approval DO set the split) and the unmapped-type control (minutes into 'other', counted, never promoted) are both present; and the kind map is bound to JLSP.SCHEMA_EVENT_TYPE, so a drift in the recorder reds this rather than silently mis-splitting. The write-nothing half is asserted the right way round: the digest that matters covers the WHOLE tree the module resolves against, with JL.ROOT pointed at a hermetic repository, the call proven to have really run (six rows, six records, a rendered report), bytecode writing suppressed so no exclusion list is needed, and a positive control that one new file under .veldo/ moves the digest. I added a real append to ROOT/.veldo/judgment_load_state.jsonl inside build() and the named AC5 row went red (and the file appeared in the real tree too, from the live rows). One note: split_known is `any(by_kind[k] for k in SPLIT_KINDS)`, the truthiness of a SUM, so a split recorded AS ZERO reads as a split not recorded - the module's own headline distinction inverted in its own second flag (finding F3).",
+   "note_evidence": "WARP-1407-driven.txt M7, ADDITIVE CONTROL, P1, P8"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "severity_l2": "blocker",
+   "confirmed_by_running": true,
+   "text": "THE PER-PLAN LINES PRINT AN UNRECORDED AXIS AS A ZERO, AND THE SUITE PINS THAT AS CORRECT. render() formats the plan roll-up with _num, not _axis, so an axis with 0 of N records known prints '0 tok' and '0 min' instead of 'not recorded'. Over this repository today that is 18 of 18 plan lines: 'PLAN-0003  20 of 20 work item spec(s) in the corpus  toe 0 tok (0 known)  judgment 0 min (0 known)  episodes 20'. A reader comparing plans on the surface this module built for exactly that comparison reads twenty shipped specs that cost no judgment, which is the sentence the spec's own risk field calls the most expensive single mistake available to this item, and by_plan's docstring claims the opposite in writing ('never as a plan that cost no judgment'). The '(0 known)' beside it is a disclaimer next to a figure, and this repository has already ruled on that shape: ledger finding 64's first repair set a stand-down flag in the report dict and never printed it, so 'an operator saw three zeros that read exactly like a measurement', and the fix was to make the report SAY it. Worse, the suite does not merely miss this: it pins the exact zero-bearing line as the expected output, so the honest rendering is what turns the gate red.",
+   "evidence": "python3 .veldo/judgment_load.py report | grep -c 'judgment 0 min (0 known)' -> 18; same for 'toe 0 tok (0 known)' -> 18. FIX-SHAPE DRIVE (A4): plan columns rendered as _axis(b['tokens'], b['tokens_known'] > 0, 'tok') and _axis(b['judgment_minutes'], b['minutes_known'] > 0, 'min'), diff proven, suite -> 60 passed, 1 failed, the red row being 'WARP-1407 AC1: the rendered plan line carries the declared denominator and every column in its own place'. Baseline 61 passed, 0 failed. FIX: render both plan axes through _axis and re-pin the line; the denominator and column-order property the row exists for is preserved by the same whole-line pin.",
+   "file": ".veldo/judgment_load.py",
+   "line": 541,
+   "severity": "blocking"
+  },
+  {
+   "id": "F2",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "NaN AND +INFINITY PASS THE ONE JUDGE, WHICH REFUTES AC4 AND PRODUCES THE ONE LABEL THIS MODULE EXISTS TO REFUSE. _figure_problem accepts any float, then rejects only `value < 0`; NaN and +Infinity fail that comparison, so both are 'well formed'. events.read_log parses the log with json.loads, which accepts the bare NaN and Infinity literals, so the input is reachable from a log file and from any writer that hands a computed float to spend.record (spend.validate has the identical hole). Consequences measured: the row renders 'judgment nan min' and coverage reports '100.0%' pair known, so an unreadable figure raises the coverage number this module exists to keep honest; check_log, the gate-shaped spelling, reports 0 malformed figures over the same log; a NaN inside the both-axes population shifts the median depending on where it sits in the log, so it relabels OTHER specs that have nothing wrong with them; and the NaN row itself comes back cheap_on_both or expensive_to_build_cheap_to_approve, a cheap-to-approve verdict derived from a figure the module could not read.",
+   "evidence": "JL._figure_problem('human_minutes', ev, float('nan')) -> None; same for float('inf'); float('-inf') refused. In an adopter-shaped tree with one shipped spec and one event carrying human_minutes NaN: 'python3 .veldo/judgment_load.py check' -> exit 0, 'judgment load: 0 malformed figure(s) in 1 event(s)'; 'report' -> exit 0, 'ADOPT-0001   toe 5 tok  judgment nan min  [split not recorded]  episodes 0  shape unknown' and 'judgment minutes known on 1 (100.0%)'. Median shift: the same four figures [nan,10,20,30] give median_judgment_minutes 15.0 with the NaN first and 25.0 with it last, with two different label sets. FIX: one clause in _figure_problem - `not math.isfinite(value)` refused by name with the value - which both spellings inherit, since they consult the one judge.",
+   "file": ".veldo/judgment_load.py",
+   "line": 161,
+   "severity": "note"
+  },
+  {
+   "id": "F3",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "NO FIXTURE CARRIES A FIGURE RECORDED AS ZERO, SO THE DISTINCTION THE WHOLE ITEM RESTS ON IS UNASSERTED - AND ONE HALF OF IT IS ALREADY WRONG IN THE SHIPPED CODE. Every seeded figure is non-zero, which makes `carrying > 0` and `total > 0` indistinguishable to this suite: I redefined minutes_recorded as `total > 0` and the suite stayed at 61 passed, 0 failed, and the same for tokens_recorded. So the honesty flag both criteria hang on can be silently swapped for a semantically different definition with a fully green gate. The gap is not hypothetical: split_known is `any(by_kind[k] for k in SPLIT_KINDS)`, the truthiness of a SUM, so a verdict event carrying human_minutes=0 - a split that WAS recorded, as zero - renders '[split not recorded]'. That is the module's own thesis inverted inside its own second flag, and my additive control fails against the unmodified module on exactly that element.",
+   "evidence": "A1: minutes_recorded -> `total > 0`, diff proven, 61 passed 0 failed. A2: tokens_recorded -> `total > 0`, diff proven, 61 passed 0 failed. ADDITIVE CONTROL: one seeded spec WARP-9407 with _jl_ev('verdict.recorded', 'WARP-9407', human_minutes=0, tokens=0) plus one assertion; against the UNMODIFIED module the added row FAILS, measured judgment_known True, judgment_minutes 0, tokens_known True, split_known FALSE, pair_line 'toe 0 tok  judgment 0 min  [split not recorded]'. FIX: split_known from a COUNT of split-kind events carrying the field, not from the sum's truthiness, plus the recorded-zero fixture so both flags are pinned against a zero that was measured.",
+   "file": ".veldo/judgment_load.py",
+   "line": 218,
+   "severity": "note"
+  },
+  {
+   "id": "F4",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "THE BANNER MAKES A CLAIM ABOUT THE LOG FROM A COUNT OVER SHIPPED-CORPUS ROWS, AND IT GOES FALSE THE FIRST TIME ANYBODY USES THE RECORDER. usable_as_second_axis is `mk > 0` over the rows, and render() turns that into 'NOT USABLE AS A SECOND AXIS YET: no human minutes are recorded anywhere in this log. The recorder exists (.veldo/spend.py record --human-minutes); nobody has called it.' Two reachable states make that sentence false. Minutes recorded against a spec that has not shipped are invisible to the default shipped-only corpus, so the module tells the first agent who calls the recorder that nobody has called it. Minutes on an event naming no spec are counted in the unattributable block, so the report prints '1 event(s) carrying 45 minute(s)' and, two lines later, that there are none anywhere in the log - one page contradicting itself. Same family as ledger 46, 56, 68 and 69: a record whose subject is not what it appears to name, and it reddens (here, lies) on first real use.",
+   "evidence": "CASE A, in process: unattributable line 'unattributable: 1 event(s) carrying 45 minute(s) and 900 token(s) name no spec' printed immediately above 'NOT USABLE AS A SECOND AXIS YET: no human minutes are recorded anywhere in this log ... nobody has called it.' CASE B: minutes on spec S2, corpus holding only S1 -> same banner. No row in the suite relates usable_as_second_axis to the unattributable block or to a non-corpus spec. FIX: say what was measured - 'no human minutes are recorded on any of the N records in this report' - and let the unattributable count and an --all hint carry the rest, or compute the claim over the log the way unattributed() already does.",
+   "file": ".veldo/judgment_load.py",
+   "line": 559,
+   "severity": "note"
+  },
+  {
+   "id": "F5",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "HALF OF THE ONE ATTRIBUTION SELECTOR IS NEVER DRIVEN, AND ITS DOCSTRING CLAIMS OTHERWISE. _mine attributes an event by spec_id OR correlation_id, and its docstring says 'the selftest asserts THIS reader's totals equal the corpus reader's over the same seeded events. Two enumerations of one set are proven equal, not assumed.' No seeded event carries a correlation_id, so the equality is proven over a population that cannot exhibit a divergence in that half: deleting the correlation clause leaves the suite at 61 passed, 0 failed. toe_corpus.cycles_for and spend_for both join on spec_id OR correlation_id, so the two enumerations this module promises to keep equal would part company on the first correlation-attributed figure, silently and in the direction that UNDERSTATES an axis. Latent rather than live today (measured: 1192 events, 188 with spec_id, 0 with a correlation id and no spec id), which is exactly what ledger 58 calls an invisible defect rather than a small one.",
+   "evidence": "A3: `return event.get('spec_id') == spec_id`, diff proven, suite 61 passed 0 failed. Live census: events 1192, with spec_id 188, correlation_id only 0, neither 1004. FIX: one seeded event attributed by correlation_id only, carrying a figure, inside the existing corpus-equality row, so both halves of the selector participate in the equality that row exists to prove.",
+   "file": ".veldo/judgment_load.py",
+   "line": 131,
+   "severity": "note"
+  },
+  {
+   "id": "F6",
+   "severity_l2": "major",
+   "confirmed_by_running": true,
+   "text": "IN A TREE SHAPED LIKE AN ADOPTER'S THE CLI DIES WITH A RAW FileNotFoundError INSTEAD OF NAMING THE ABSENT ORGAN. _repo_report loads toe_corpus.py, events.py and validate.py by path with no guard (only policy_check.py is wrapped, in an except that happens to catch FileNotFoundError as an OSError). Measured on a fixture carrying exactly what init_scaffold lays down plus this module: 'python3 .veldo/judgment_load.py report' exits 1 with FileNotFoundError: '.../.veldo/toe_corpus.py'. That is ledger finding 61's shape, and the posture for it is not open: Dmitry directed on 2026-08-13 that a reader names an absent organ instead of dying, and work_state.py was repaired that way. This module has not inherited it. The shipping shape compounds it: init lays down neither judgment_load.py nor toe_corpus.py nor spend.py, no adopter gate stage invokes any of them, and scripts/suites is not published, so nothing an adopter runs would ever surface this. With the sibling present the CLI is properly adoption safe (absent plans/ and absent specs/ both exit 0), so the repair is only the stand-down.",
+   "evidence": "Fixture built from init_scaffold._FILES (43 files) plus engine/.veldo/judgment_load.py: report -> exit 1, FileNotFoundError '.veldo/toe_corpus.py'. Adding toe_corpus.py and spend.py: report, report --all and check all exit 0, and still exit 0 with plans/ removed and with specs/ removed. init_scaffold lay-down check: judgment_load.py False, toe_corpus.py False, spend.py False. packs/ carry 0 suite files; engine/scripts/verify.sh mentions selftest 0 times. FIX: catch the load failure and name the missing organ in the report the way work_state.py now does, and if this module ships, add it plus its siblings to the lay-down list (the transitive-closure check will then demand the rest).",
+   "file": ".veldo/judgment_load.py",
+   "line": 573,
+   "severity": "note"
+  },
+  {
+   "id": "F7",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "text": "A LIVE ROW REQUIRES AN EMPTY SET OVER AN APPEND-ONLY LOG. 'WARP-1407 LIVE: the real event log carries no malformed figure' asserts check_log(read_log()) == 0 inside a required gate stage. One malformed figure ever written makes that row permanently red with no remediation short of rewriting history - and the module's own docstring uses exactly this reasoning to explain why an unattributable event is COUNTED rather than refused ('the log is append-only, so that refusal would be unsatisfiable by construction'). The asymmetry is deliberate for the module and accidental for the suite. Low likelihood today because spend.py's CLI coerces --human-minutes and --tokens with type=int, which is also why the fractional rendering _num exists for a value the primary recorder cannot write.",
+   "evidence": "scripts/suites/15_warp_1407_judgment_load.py line 622; measured green today (0 malformed in 1192 events). FIX: report the count rather than requiring zero, or pin it with a recorded exception list, the way other live-state rows in this repository were narrowed after ledger 46 and 51.",
+   "file": "scripts/suites/15_warp_1407_judgment_load.py",
+   "line": 622,
+   "severity": "note"
+  },
+  {
+   "id": "F8",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "text": "report AND check DISAGREE ABOUT THE SAME LOG. AC4 says both spellings consult one judge 'so they cannot disagree about what is malformed', which is true of the judge and not of the two commands: the derivation only reads figures for specs the corpus holds, so a malformed figure on an event for an unshipped or unknown spec is never judged at all. Measured in an adopter tree whose only event carries human_minutes '12': report exits 0 and prints a clean page, check exits 1 and names the figure. Not a refutation of AC4's one-judge claim, but a reader who runs report and sees green has not learned what check would tell them.",
+   "evidence": "adopter tree, one event with human_minutes '12' and no matching shipped spec: 'report' -> exit 0, 'coverage: 0 record(s)'; 'check' -> exit 1, '.veldo/events.jsonl: event 0: human_minutes on a spec.shipped event for WARP-1 must be a number, got 12'. FIX: say in the report how many figures the derivation did not read, or run the judge over the whole log in report as well.",
+   "file": ".veldo/judgment_load.py",
+   "line": 604,
+   "severity": "note"
+  },
+  {
+   "id": "F9",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "text": "A MEASURED NUMBER INSIDE A CRITERION HAS DRIFTED. AC3's text says '(measured: 167 episodes across 141 of 174 shipped specs, 81 percent coverage)'. The derivation reports 170 episodes today; 141 of 174 and 81 percent still reproduce. The suite deliberately does NOT pin the live count, which is the right call and is why nothing went red, but a criterion that carries a figure in its own text is read as a claim about now. AC2's figures (174, 0 percent, 0 pairs, usable_as_second_axis False) all reproduce exactly.",
+   "evidence": "python3 .veldo/judgment_load.py report --json -> records 174, episodes total 170, rows with episodes 141, episodes_coverage 0.8103, minutes_known 0, tokens_known 0, usable_as_second_axis False. FIX: date the figure in the criterion, as the Outcome section already does with 'at the time of writing'.",
+   "file": "specs/WARP-1407-judgment-load-second-axis.md",
+   "line": 57,
+   "severity": "note"
+  },
+  {
+   "id": "F10",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "text": "THE ITEM DECLARES NO falsified_by ON ANY CRITERION, SO NOTHING MECHANICAL BINDS A CRITERION TO THE MUTATION THAT MUST RED IT. The spec carries no behavior_bearing field, and validate_checks.falsification_gated exempts an absent field, so the repository never asked. Its sibling WARP-1409 in the same plan declares eight. The sixteen mutations that DO exist live in the suite's module docstring as prose, which is a claim about work already done rather than a per-criterion contract a reviewer or a later gate can drive; they are also numbered against row counts that have since moved (declared #3 says 6 rows red, the drive reds 7). For an item whose whole subject is honest measurement, this is the one artifact its own method asks for and it is absent.",
+   "evidence": "grep -c falsified_by specs/WARP-1407-judgment-load-second-axis.md -> 0; specs/WARP-1409-cost-to-change-per-area.md -> 8, and that spec declares behavior_bearing: true. FIX: declare behavior_bearing: true and one falsified_by per criterion, drawn from the sixteen already driven.",
+   "file": "specs/WARP-1407-judgment-load-second-axis.md",
+   "line": 27,
+   "severity": "note"
+  },
+  {
+   "id": "F11",
+   "severity_l2": "minor",
+   "confirmed_by_running": true,
+   "text": "pair() ON A RECORD WITH NO 'spec' KEY ATTRIBUTES EVERY EVENT THAT NAMES NO SPEC. record.get('spec') yields None and _mine compares None == event.get('spec_id'), so a phantom row collects the figures of every unattributable event - the same figures unattributed() reports as belonging to nobody, counted twice on one page. Not reachable through toe_corpus.build, which skips a spec file with no id, so this is a hazard for any other caller of a public function rather than a live defect.",
+   "evidence": "Read of _mine (line 131) against pair (line 313); toe_corpus.build line 197 'if not f[\"spec_id\"]: continue' is what makes it unreachable today. FIX: refuse a record without a spec id by name, the way every other malformed input to this module is refused.",
+   "file": ".veldo/judgment_load.py",
+   "line": 313,
+   "severity": "note"
+  }
+ ],
+ "driven_falsifications": {
+  "declared": 16,
+  "driven": 16,
+  "with_teeth": 16,
+  "note": "All sixteen breaks declared in the suite's docstring were applied to a scratch copy, proven landed with git diff, run, and each reddened a row its criterion names. Declared #2 needed one faithful re-expression because the literal edit raises TypeError out of check_log and aborts the fragment, which is a mutation that deletes coverage rather than one that reds a row; recorded as M2 and re-driven as M2b. Baseline 61 passed 0 failed; full gate GREEN, selftest 4723 passed 0 failed.",
+  "record": "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/WARP-1407-driven.txt"
+ }
+}

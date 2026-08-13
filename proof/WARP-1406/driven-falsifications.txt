@@ -1,0 +1,1483 @@
+WARP-1406 - DRIVEN FALSIFICATIONS AND ATTACKS (independent L2 review)
+=====================================================================
+Reviewer: claude-opus-5[1m], delegated fresh context, independent L2
+Repository copy: /tmp/.../est-review/work-WARP-1406  (cp -a of ~/projects/veldo, never written to)
+Commit reviewed: 7b6c0059faae8299a95716b05820097599469e05  (working tree CLEAN in the copy)
+
+NOTE ON "DECLARED FALSIFICATION": specs/WARP-1406-normalization-stable-planning-unit.md declares NO
+`falsified_by` field on any criterion and no `behavior_bearing` field, so validate_checks'
+falsification gate never asks it (absent is exempt). Measured:
+
+  $ grep -c falsified_by specs/WARP-1406-normalization-stable-planning-unit.md
+  0
+  $ grep -c behavior_bearing specs/WARP-1406-normalization-stable-planning-unit.md
+  0
+
+Every mutation below is therefore DERIVED BY ME from the sentence in the criterion that names the
+property, and each is stated with the row it must redden BEFORE it was run.
+
+BASELINE (unmutated copy)
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  15_warp_1406_normalization                      34 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 60 passed, 0 failed in 0.92s
+
+===============================================================================
+MUTATION M1 (AC1) - the point is no longer the ratio tokens/peg (scaled by 1.1). MUST redden: 'AC1: every corpus record with recorded spend renders as a NORMALIZED POINT ... come out at 0.333, 0.667, 1.000, 1.333 and 1.667'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..030f4d3 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -486,3 +486,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         else:
+-            row["points"] = round(tokens / float(peg["tokens"]), POINT_DIGITS)
++            row["points"] = round(tokens / float(peg["tokens"]) * 1.1, POINT_DIGITS)
+         rows.append(row)
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1: every corpus record with recorded spend renders as a NORMALIZED POINT against the peg, and the peg's own change is exactly 1.000 pt. The five seeded changes at 1000, 2000, 3000, 4000 and 5000 tokens against a 3000-token peg come out at 0.333, 0.667, 1.000, 1.333 and 1.667, so the point is a ratio of tokens to the reference change and not a rescaled copy of the raw number
+  SELFTEST FAIL: WARP-1406 AC1, THE CONFIDENT ZERO THIS ITEM EXISTS TO REFUSE, ON THE PATH THAT ACTUALLY REACHES IT: a change whose spend WAS recorded but NOT IN TOKENS gets NO POINT, and its reason NAMES the field that was recorded and says the token count was not. The corpus sets spend_recorded for ANY of tokens, cost_usd or human_minutes and the shipped emitter's three spend flags are independent and optional, so a change costed in dollars or in human minutes arrives here with spend recorded and a token count of zero. Gating the point on that flag printed 0.000 pt as a measurement, counted the change in the POINTED denominator and added its zero to the total - the exact shape AC1 forbids in its own words. Driven over both shapes, and both reasons are DIFFERENT TEXT from the nothing-recorded reason, because 'recorded, but not in tokens' is a third fact and not the same silence
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows DO carry recorded spend and their recorded dollars are on the view, so the withheld points above are the TOKEN test firing and not the corpus having nothing to show; ADDING a token count to the cost-only change turns its point ON at 2.000 against the 1000-token peg, so the refusal is a rule rather than a blanket; and the SAME predicate governs the PEG, which derives to WARP-9422 over a sample of 2 rather than pulling a token-less change into the median. One predicate on both paths is the fix: the peg path already required a positive token count while the display path required only the flag, which is how two readers of one corpus disagreed about which changes were measured
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  SELFTEST FAIL: WARP-1406 AC1, THE FOURTH SHAPE, AND IT COMES OUT OF THE SANCTIONED WRITER: a spend record of tokens=0. `spend.validate(spec, 'harness_reported', tokens=0)` returns NO problems, so `veldo spend record --tokens 0` is legal, and the corpus reports that change with spend_recorded TRUE and every figure zero. It gets its OWN reason for two reasons that are both about the reader: naming a field is impossible, because a zero in the corpus spend block is the DEFAULT for a field nobody recorded and which field carried the recorded zero is unknowable; and 'no recorded spend' is FALSE about a change whose record is in the log, which sends that reader hunting for a missing record that is sitting right there. The row's reason is the ONLY thing the surface says about it, since the point is withheld either way, so a false reason is the whole output being wrong. Asserted through the shipped writer rather than over a hand-written envelope, because the claim is that the shape is REACHABLE
+  SELFTEST FAIL: WARP-1406 AC1: the rendered display carries the point FIRST and the raw tokens beside it, and a dollar column appears ONLY when a price is supplied. Driven through render_lines rather than described, because the display unit decision (D2) is only real in what a reader actually sees
+  SELFTEST FAIL: WARP-1406 AC4: WITH TWO ERAS DECLARED, THE PEG LANDS IN THE LATEST ERA THAT HAS CANDIDATES and rows measured in the OTHER era get NO POINT AT ALL, with the reason naming BOTH eras. A model that does more work per token makes the two token counts different units, so blending them would produce a total no model ever produced. The raw tokens are still on every one of those rows, and the era ledger is reported beside the view, so nothing is hidden - it is refused
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  SELFTEST FAIL: WARP-1406: the module lands in BOTH engine homes byte-identically, so what /veldo:init lays down for an adopter is what this repository runs (PLAN-0014 C5). Asserted as a byte comparison, because a copy that has drifted is worse than a copy that is missing: the missing one is obvious and the drifted one ships a different answer
+  15_warp_1406_normalization                      25 passed    0.91s
+selftest (PARTIAL, 1 of 34 suites): 51 passed, 9 failed in 0.91s
+
+$ git checkout -- .veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+NOTE after M1: a mutation applied to .veldo/toe_normalize.py ALONE also reddens the engine-twin
+byte-identity row, which muddies attribution. Every mutation from M2 on is applied to BOTH copies
+(.veldo/ and engine/.veldo/) so the twin row stays green and only the rows the property owns redden.
+
+===============================================================================
+MUTATION M2 (AC1 rounding) - the raw token column is rounded to the nearest 100 on its way to the row. MUST redden: 'AC1: THE RAW TOKENS AND THE RECORDED COST RIDE ON THE SAME ROW ... 3137 and 41 tokens'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..cf108df 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -459,3 +459,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         tokens = recorded_tokens(spend)
+-        row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
++        row = {"spec": r["spec"], "tokens": int(round(spend.get("tokens", 0), -2)),
+                "cost_usd": spend.get("cost_usd", 0),
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..cf108df 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -459,3 +459,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         tokens = recorded_tokens(spend)
+-        row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
++        row = {"spec": r["spec"], "tokens": int(round(spend.get("tokens", 0), -2)),
+                "cost_usd": spend.get("cost_usd", 0),
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1: THE RAW TOKENS AND THE RECORDED COST RIDE ON THE SAME ROW AS THE POINT, byte for byte the numbers the corpus recorded (D2: both units, the point primary on a planning surface and the raw ground truth one field away). Asserted as EQUALITY against the corpus's own spend block for EVERY row of TWO corpora rather than for a sample, and the second one carries deliberately NON-ROUND values - 3137 and 41 tokens, 12.37 and 0.0137 recorded usd - with the expected pairs PINNED to literals beside the equality. Both legs are needed: with fixture A alone every token value was a multiple of 100, so rounding the recorded actual to the nearest 100 passed, and every recorded cost was 0.0, so hard-coding the cost column to zero or scaling it by 100 passed as well. A rounded actual and a 100x money column are the two ways this display could look exactly like a working one while every plan built on it was wrong
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  15_warp_1406_normalization                      31 passed    0.90s
+selftest (PARTIAL, 1 of 34 suites): 57 passed, 3 failed in 0.90s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M3 (AC1 money rescale) - the recorded cost column is scaled 100x (cents-for-dollars, the reference_bcengi 100x shape). MUST redden: 'AC1: THE RAW TOKENS AND THE RECORDED COST RIDE ON THE SAME ROW'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..aa4b8c0 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -460,3 +460,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
+-               "cost_usd": spend.get("cost_usd", 0),
++               "cost_usd": spend.get("cost_usd", 0) * 100,
+                "spend_recorded": bool(spend.get("spend_recorded")),
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..aa4b8c0 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -460,3 +460,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
+-               "cost_usd": spend.get("cost_usd", 0),
++               "cost_usd": spend.get("cost_usd", 0) * 100,
+                "spend_recorded": bool(spend.get("spend_recorded")),
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1: THE RAW TOKENS AND THE RECORDED COST RIDE ON THE SAME ROW AS THE POINT, byte for byte the numbers the corpus recorded (D2: both units, the point primary on a planning surface and the raw ground truth one field away). Asserted as EQUALITY against the corpus's own spend block for EVERY row of TWO corpora rather than for a sample, and the second one carries deliberately NON-ROUND values - 3137 and 41 tokens, 12.37 and 0.0137 recorded usd - with the expected pairs PINNED to literals beside the equality. Both legs are needed: with fixture A alone every token value was a multiple of 100, so rounding the recorded actual to the nearest 100 passed, and every recorded cost was 0.0, so hard-coding the cost column to zero or scaling it by 100 passed as well. A rounded actual and a 100x money column are the two ways this display could look exactly like a working one while every plan built on it was wrong
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows DO carry recorded spend and their recorded dollars are on the view, so the withheld points above are the TOKEN test firing and not the corpus having nothing to show; ADDING a token count to the cost-only change turns its point ON at 2.000 against the 1000-token peg, so the refusal is a rule rather than a blanket; and the SAME predicate governs the PEG, which derives to WARP-9422 over a sample of 2 rather than pulling a token-less change into the median. One predicate on both paths is the fix: the peg path already required a positive token count while the display path required only the flag, which is how two readers of one corpus disagreed about which changes were measured
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  15_warp_1406_normalization                      31 passed    0.91s
+selftest (PARTIAL, 1 of 34 suites): 57 passed, 3 failed in 0.91s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M4 (AC1 confident zero, the defect the item exists to refuse) - the point gate becomes the corpus spend_recorded FLAG instead of recorded_tokens, so a change costed only in dollars prints 0.000 pt. MUST redden: 'AC1, THE CONFIDENT ZERO THIS ITEM EXISTS TO REFUSE' and the live-repository invariant row
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..6775e2d 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -458,3 +458,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         era, why = era_of(r["spec"], events, era_list, corpus_mod, parse_iso)
+-        tokens = recorded_tokens(spend)
++        tokens = (spend.get("tokens", 0) if spend.get("spend_recorded") else None)
+         row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..6775e2d 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -458,3 +458,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         era, why = era_of(r["spec"], events, era_list, corpus_mod, parse_iso)
+-        tokens = recorded_tokens(spend)
++        tokens = (spend.get("tokens", 0) if spend.get("spend_recorded") else None)
+         row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1, THE CONFIDENT ZERO THIS ITEM EXISTS TO REFUSE, ON THE PATH THAT ACTUALLY REACHES IT: a change whose spend WAS recorded but NOT IN TOKENS gets NO POINT, and its reason NAMES the field that was recorded and says the token count was not. The corpus sets spend_recorded for ANY of tokens, cost_usd or human_minutes and the shipped emitter's three spend flags are independent and optional, so a change costed in dollars or in human minutes arrives here with spend recorded and a token count of zero. Gating the point on that flag printed 0.000 pt as a measurement, counted the change in the POINTED denominator and added its zero to the total - the exact shape AC1 forbids in its own words. Driven over both shapes, and both reasons are DIFFERENT TEXT from the nothing-recorded reason, because 'recorded, but not in tokens' is a third fact and not the same silence
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows DO carry recorded spend and their recorded dollars are on the view, so the withheld points above are the TOKEN test firing and not the corpus having nothing to show; ADDING a token count to the cost-only change turns its point ON at 2.000 against the 1000-token peg, so the refusal is a rule rather than a blanket; and the SAME predicate governs the PEG, which derives to WARP-9422 over a sample of 2 rather than pulling a token-less change into the median. One predicate on both paths is the fix: the peg path already required a positive token count while the display path required only the flag, which is how two readers of one corpus disagreed about which changes were measured
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  SELFTEST FAIL: WARP-1406 AC1, THE FOURTH SHAPE, AND IT COMES OUT OF THE SANCTIONED WRITER: a spend record of tokens=0. `spend.validate(spec, 'harness_reported', tokens=0)` returns NO problems, so `veldo spend record --tokens 0` is legal, and the corpus reports that change with spend_recorded TRUE and every figure zero. It gets its OWN reason for two reasons that are both about the reader: naming a field is impossible, because a zero in the corpus spend block is the DEFAULT for a field nobody recorded and which field carried the recorded zero is unknowable; and 'no recorded spend' is FALSE about a change whose record is in the log, which sends that reader hunting for a missing record that is sitting right there. The row's reason is the ONLY thing the surface says about it, since the point is withheld either way, so a false reason is the whole output being wrong. Asserted through the shipped writer rather than over a hand-written envelope, because the claim is that the shape is REACHABLE
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE FOURTH REASON: the four shapes that reach the no-point branch produce FOUR DISTINCT reasons, asserted as a set of four across three fixtures, so the new branch did not swallow the nothing-recorded fact it sits beside - THAT row still says 'no recorded spend' and it is the only one that does. The recorded zero keeps its raw column and its recorded flag on the view, so the fact is REFUSED and not hidden. The SAME predicate governs the peg, which derives to the 7000-token change over a sample of ONE rather than pulling the recorded zero into the median. And the live event log's mtime_ns is unchanged across building a fixture through the real spend writer, so this suite measured the writer without recording anything into this repository
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  15_warp_1406_normalization                      28 passed    0.91s
+selftest (PARTIAL, 1 of 34 suites): 54 passed, 6 failed in 0.91s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M5 (the LIVE-repository invariant row) - an unmeasured change now gets a point of 0.000 instead of None: exactly the confident zero, over the real corpus with the peg forced in. MUST redden: 'OVER THIS REPOSITORY'S OWN CORPUS AND LOG, NO ROW EVER CARRIES A POINT WITHOUT A POSITIVE RECORDED TOKEN COUNT'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..49640c0 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -459,2 +459,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         tokens = recorded_tokens(spend)
++        tokens = 0 if tokens is None else tokens
+         row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..49640c0 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -459,2 +459,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+         tokens = recorded_tokens(spend)
++        tokens = 0 if tokens is None else tokens
+         row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1, THE CONFIDENT ZERO THIS ITEM EXISTS TO REFUSE, ON THE PATH THAT ACTUALLY REACHES IT: a change whose spend WAS recorded but NOT IN TOKENS gets NO POINT, and its reason NAMES the field that was recorded and says the token count was not. The corpus sets spend_recorded for ANY of tokens, cost_usd or human_minutes and the shipped emitter's three spend flags are independent and optional, so a change costed in dollars or in human minutes arrives here with spend recorded and a token count of zero. Gating the point on that flag printed 0.000 pt as a measurement, counted the change in the POINTED denominator and added its zero to the total - the exact shape AC1 forbids in its own words. Driven over both shapes, and both reasons are DIFFERENT TEXT from the nothing-recorded reason, because 'recorded, but not in tokens' is a third fact and not the same silence
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows DO carry recorded spend and their recorded dollars are on the view, so the withheld points above are the TOKEN test firing and not the corpus having nothing to show; ADDING a token count to the cost-only change turns its point ON at 2.000 against the 1000-token peg, so the refusal is a rule rather than a blanket; and the SAME predicate governs the PEG, which derives to WARP-9422 over a sample of 2 rather than pulling a token-less change into the median. One predicate on both paths is the fix: the peg path already required a positive token count while the display path required only the flag, which is how two readers of one corpus disagreed about which changes were measured
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  SELFTEST FAIL: WARP-1406 AC1, THE FOURTH SHAPE, AND IT COMES OUT OF THE SANCTIONED WRITER: a spend record of tokens=0. `spend.validate(spec, 'harness_reported', tokens=0)` returns NO problems, so `veldo spend record --tokens 0` is legal, and the corpus reports that change with spend_recorded TRUE and every figure zero. It gets its OWN reason for two reasons that are both about the reader: naming a field is impossible, because a zero in the corpus spend block is the DEFAULT for a field nobody recorded and which field carried the recorded zero is unknowable; and 'no recorded spend' is FALSE about a change whose record is in the log, which sends that reader hunting for a missing record that is sitting right there. The row's reason is the ONLY thing the surface says about it, since the point is withheld either way, so a false reason is the whole output being wrong. Asserted through the shipped writer rather than over a hand-written envelope, because the claim is that the shape is REACHABLE
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE FOURTH REASON: the four shapes that reach the no-point branch produce FOUR DISTINCT reasons, asserted as a set of four across three fixtures, so the new branch did not swallow the nothing-recorded fact it sits beside - THAT row still says 'no recorded spend' and it is the only one that does. The recorded zero keeps its raw column and its recorded flag on the view, so the fact is REFUSED and not hidden. The SAME predicate governs the peg, which derives to the 7000-token change over a sample of ONE rather than pulling the recorded zero into the median. And the live event log's mtime_ns is unchanged across building a fixture through the real spend writer, so this suite measured the writer without recording anything into this repository
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL: a record whose spend was NEVER RECORDED gets NO POINT AT ALL and a reason that says why, so the row generator is not simply a function that always emits a number. This is WARP-1401's finding carried into the display layer: a confident zero and an unmeasured change look identical once a zero is printed, and this repository's spend coverage is 0 percent, so that row is the COMMON case and not the exotic one
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  15_warp_1406_normalization                      27 passed    1.00s
+selftest (PARTIAL, 1 of 34 suites): 53 passed, 7 failed in 1.00s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M6 (the LIVE row, second attempt) - EVERY gate is defeated at once: any row is given a point whenever a peg is in force, so the live corpus's 174 unmeasured specs each get 0.000 pt. Establishes what the live row CAN see, after M5 showed what it cannot
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..a5de829 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -487,2 +487,4 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+             row["points"] = round(tokens / float(peg["tokens"]), POINT_DIGITS)
++        if peg.get("pegged") and row["points"] is None:
++            row["points"] = round((tokens or 0) / float(peg["tokens"]), POINT_DIGITS)
+         rows.append(row)
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..a5de829 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -487,2 +487,4 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+             row["points"] = round(tokens / float(peg["tokens"]), POINT_DIGITS)
++        if peg.get("pegged") and row["points"] is None:
++            row["points"] = round((tokens or 0) / float(peg["tokens"]), POINT_DIGITS)
+         rows.append(row)
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1, THE CONFIDENT ZERO THIS ITEM EXISTS TO REFUSE, ON THE PATH THAT ACTUALLY REACHES IT: a change whose spend WAS recorded but NOT IN TOKENS gets NO POINT, and its reason NAMES the field that was recorded and says the token count was not. The corpus sets spend_recorded for ANY of tokens, cost_usd or human_minutes and the shipped emitter's three spend flags are independent and optional, so a change costed in dollars or in human minutes arrives here with spend recorded and a token count of zero. Gating the point on that flag printed 0.000 pt as a measurement, counted the change in the POINTED denominator and added its zero to the total - the exact shape AC1 forbids in its own words. Driven over both shapes, and both reasons are DIFFERENT TEXT from the nothing-recorded reason, because 'recorded, but not in tokens' is a third fact and not the same silence
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows DO carry recorded spend and their recorded dollars are on the view, so the withheld points above are the TOKEN test firing and not the corpus having nothing to show; ADDING a token count to the cost-only change turns its point ON at 2.000 against the 1000-token peg, so the refusal is a rule rather than a blanket; and the SAME predicate governs the PEG, which derives to WARP-9422 over a sample of 2 rather than pulling a token-less change into the median. One predicate on both paths is the fix: the peg path already required a positive token count while the display path required only the flag, which is how two readers of one corpus disagreed about which changes were measured
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  SELFTEST FAIL: WARP-1406 AC1, THE FOURTH SHAPE, AND IT COMES OUT OF THE SANCTIONED WRITER: a spend record of tokens=0. `spend.validate(spec, 'harness_reported', tokens=0)` returns NO problems, so `veldo spend record --tokens 0` is legal, and the corpus reports that change with spend_recorded TRUE and every figure zero. It gets its OWN reason for two reasons that are both about the reader: naming a field is impossible, because a zero in the corpus spend block is the DEFAULT for a field nobody recorded and which field carried the recorded zero is unknowable; and 'no recorded spend' is FALSE about a change whose record is in the log, which sends that reader hunting for a missing record that is sitting right there. The row's reason is the ONLY thing the surface says about it, since the point is withheld either way, so a false reason is the whole output being wrong. Asserted through the shipped writer rather than over a hand-written envelope, because the claim is that the shape is REACHABLE
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL: a record whose spend was NEVER RECORDED gets NO POINT AT ALL and a reason that says why, so the row generator is not simply a function that always emits a number. This is WARP-1401's finding carried into the display layer: a confident zero and an unmeasured change look identical once a zero is printed, and this repository's spend coverage is 0 percent, so that row is the COMMON case and not the exotic one
+  SELFTEST FAIL: WARP-1406 AC4: WITH TWO ERAS DECLARED, THE PEG LANDS IN THE LATEST ERA THAT HAS CANDIDATES and rows measured in the OTHER era get NO POINT AT ALL, with the reason naming BOTH eras. A model that does more work per token makes the two token counts different units, so blending them would produce a total no model ever produced. The raw tokens are still on every one of those rows, and the era ledger is reported beside the view, so nothing is hidden - it is refused
+  SELFTEST FAIL: WARP-1406 AC4 NEGATIVE CONTROL: with ONE era - the same corpus, the same events, an EMPTY ledger - those same three rows all get points. So the withheld point above is the era rule firing, and not a function that refuses whatever it is shown. Both views are built from identical actuals, which is the same property AC3 asserts, observed from the other side
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  SELFTEST FAIL: WARP-1406 AC4: A CHANGE WHOSE OWN SPEND STRADDLES A CAPABILITY SHIFT GETS NO ERA AND NO POINT, and the reason says it SPANS eras. Its total is already a mixture of two units before any display touches it, so normalizing it would launder the mixture into a confident number. Separately, spend carrying NO READABLE UTC TIMESTAMP is reported as an UNKNOWN era rather than being assumed into the current one - three distinct facts (nothing recorded, unreadable, spans a shift), three distinct messages
+  SELFTEST FAIL: WARP-1406: OVER THIS REPOSITORY'S OWN CORPUS AND LOG, NO ROW EVER CARRIES A POINT WITHOUT A POSITIVE RECORDED TOKEN COUNT, and reading the view does not touch the log (mtime_ns unchanged). The invariant is the TOKEN count and not the spend_recorded flag, because the flag is true for a change costed only in dollars or only in minutes while the display divides tokens: asserting the flag here would have passed on the confident zero this item forbids. ASSERTED TWICE OVER THE REAL DATA, once through the shipped build_view and once with a valid peg FORCED IN, because today's live peg stands down for want of recorded token spend and a standing-down peg nulls every row for its own reason, which would make this leg unfalsifiable. Stated as an INVARIANT rather than as today's figure on purpose: WARP-1401 measured 0 percent spend coverage here, so today every row stands down with a reason, and the day an agent records its first spend this assertion must still hold rather than turning red for having been written as a snapshot
+  15_warp_1406_normalization                      24 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 50 passed, 10 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M7 (AC1 fourth reason) - the recorded-zero shape falls through to the 'no recorded spend' message, which is FALSE about a change whose record is in the log. MUST redden: 'AC1, THE FOURTH SHAPE' and 'AC1 NEGATIVE CONTROL FOR THE FOURTH REASON ... FOUR DISTINCT reasons'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..f83d879 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -469,7 +469,2 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+                                  "zero rather than a measurement" % ", ".join(recorded))
+-            elif spend.get("spend_recorded"):
+-                row["reason"] = ("spend WAS recorded for this change and every recorded figure is "
+-                                 "zero, so there is no field to name and nothing was measured: a "
+-                                 "point here would divide a recorded zero by the peg and present it "
+-                                 "as a measurement")
+             else:
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..f83d879 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -469,7 +469,2 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+                                  "zero rather than a measurement" % ", ".join(recorded))
+-            elif spend.get("spend_recorded"):
+-                row["reason"] = ("spend WAS recorded for this change and every recorded figure is "
+-                                 "zero, so there is no field to name and nothing was measured: a "
+-                                 "point here would divide a recorded zero by the peg and present it "
+-                                 "as a measurement")
+             else:
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1, THE FOURTH SHAPE, AND IT COMES OUT OF THE SANCTIONED WRITER: a spend record of tokens=0. `spend.validate(spec, 'harness_reported', tokens=0)` returns NO problems, so `veldo spend record --tokens 0` is legal, and the corpus reports that change with spend_recorded TRUE and every figure zero. It gets its OWN reason for two reasons that are both about the reader: naming a field is impossible, because a zero in the corpus spend block is the DEFAULT for a field nobody recorded and which field carried the recorded zero is unknowable; and 'no recorded spend' is FALSE about a change whose record is in the log, which sends that reader hunting for a missing record that is sitting right there. The row's reason is the ONLY thing the surface says about it, since the point is withheld either way, so a false reason is the whole output being wrong. Asserted through the shipped writer rather than over a hand-written envelope, because the claim is that the shape is REACHABLE
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE FOURTH REASON: the four shapes that reach the no-point branch produce FOUR DISTINCT reasons, asserted as a set of four across three fixtures, so the new branch did not swallow the nothing-recorded fact it sits beside - THAT row still says 'no recorded spend' and it is the only one that does. The recorded zero keeps its raw column and its recorded flag on the view, so the fact is REFUSED and not hidden. The SAME predicate governs the peg, which derives to the 7000-token change over a sample of ONE rather than pulling the recorded zero into the median. And the live event log's mtime_ns is unchanged across building a fixture through the real spend writer, so this suite measured the writer without recording anything into this repository
+  15_warp_1406_normalization                      32 passed    0.94s
+selftest (PARTIAL, 1 of 34 suites): 58 passed, 2 failed in 0.94s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M8 (AC1 the line must not print the recorded cost) - the RECORDED cost is appended to every rendered line ROUNDED to one decimal (12.4 rather than 12.37), which every literal-absence spelling would miss. MUST redden: 'AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..58a1591 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -532,2 +532,3 @@ def render_lines(view, price_per_1k_tokens=None):
+             line += " %10.2f usd" % (r["tokens"] / 1000.0 * price_per_1k_tokens)
++        line += " %8.1f rec" % r["cost_usd"]
+         if r["points"] is None:
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..58a1591 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -532,2 +532,3 @@ def render_lines(view, price_per_1k_tokens=None):
+             line += " %10.2f usd" % (r["tokens"] / 1000.0 * price_per_1k_tokens)
++        line += " %8.1f rec" % r["cost_usd"]
+         if r["points"] is None:
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  15_warp_1406_normalization                      33 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M9 (AC1, the exact defect the criterion names) - the money column shows the RECORDED cost on the very row whose tokens were never recorded, so the recorded 7.50 reaches the reader while no searched-for spelling is absent. MUST redden: the same complete-figure-list row
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..5577ab3 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -531,3 +531,5 @@ def render_lines(view, price_per_1k_tokens=None):
+         if price_per_1k_tokens is not None:
+-            line += " %10.2f usd" % (r["tokens"] / 1000.0 * price_per_1k_tokens)
++            _m = (r["cost_usd"] if r["points"] is None
++                  else r["tokens"] / 1000.0 * price_per_1k_tokens)
++            line += " %10.2f usd" % _m
+         if r["points"] is None:
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..5577ab3 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -531,3 +531,5 @@ def render_lines(view, price_per_1k_tokens=None):
+         if price_per_1k_tokens is not None:
+-            line += " %10.2f usd" % (r["tokens"] / 1000.0 * price_per_1k_tokens)
++            _m = (r["cost_usd"] if r["points"] is None
++                  else r["tokens"] / 1000.0 * price_per_1k_tokens)
++            line += " %10.2f usd" % _m
+         if r["points"] is None:
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  15_warp_1406_normalization                      33 passed    0.90s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.90s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M10 (AC1 roll-up) - points_total becomes a raw-token figure divided by 1000, a plausible-looking planning number that is not a sum of points. MUST redden: 'THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..dcb2af0 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -499,3 +499,3 @@ def summary(rows, era_list):
+         "unpointed": len(rows) - len(pointed),
+-        "points_total": round(sum(r["points"] for r in pointed), POINT_DIGITS),
++        "points_total": round(sum(r["tokens"] for r in pointed) / 1000.0, POINT_DIGITS),
+         "tokens_total": sum(r["tokens"] for r in rows),
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..dcb2af0 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -499,3 +499,3 @@ def summary(rows, era_list):
+         "unpointed": len(rows) - len(pointed),
+-        "points_total": round(sum(r["points"] for r in pointed), POINT_DIGITS),
++        "points_total": round(sum(r["tokens"] for r in pointed) / 1000.0, POINT_DIGITS),
+         "tokens_total": sum(r["tokens"] for r in rows),
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  15_warp_1406_normalization                      33 passed    0.95s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.95s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M11 (AC2 risk filter) - the high-risk change is no longer excluded from the peg sample. MUST redden: 'AC2: the derived peg is the MEDIAN standard-risk shipped change ... the HIGH-risk change at 9000 tokens is excluded'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..681fb50 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -374,3 +374,3 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+     for r in corpus:
+-        if (r.get("features") or {}).get("risk") != risk:
++        if False:
+             continue
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..681fb50 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -374,3 +374,3 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+     for r in corpus:
+-        if (r.get("features") or {}).get("risk") != risk:
++        if False:
+             continue
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC2: the derived peg is the MEDIAN standard-risk shipped change carrying recorded token spend, and it NAMES that change (D1: a corpus statistic, never a hand-picked favourite). Over the five seeded standard-risk changes the peg is WARP-9413 at 3000 tokens with a sample of 5, and the HIGH-risk change at 9000 tokens is excluded, which is what keeps a peg from drifting every time an unusually risky change ships
+  SELFTEST FAIL: WARP-1406 AC2: on an EVEN sample the peg is the LOWER MEDIAN, an OBSERVED change, and not the arithmetic middle of two of them. Over 1000, 2000, 3000 and 4000 tokens the peg is WARP-9412 at 2000 and explicitly NOT 2500, because a planner told the reference change is 2500 tokens has been handed a change that nobody ever made and cannot go and read
+  SELFTEST FAIL: WARP-1406 AC2 NEGATIVE CONTROL: a corpus with NO usable candidate yields pegged FALSE with the reason stated, never a fabricated peg and never a peg of zero, and every row of the resulting view says it has no peg in force. This is the case this repository is actually in - 174 shipped specs, 0 with recorded spend - so the standing-down path is the one that runs here today, and a peg of zero would have divided every displayed number by it
+  SELFTEST FAIL: WARP-1406 AC4: WITH TWO ERAS DECLARED, THE PEG LANDS IN THE LATEST ERA THAT HAS CANDIDATES and rows measured in the OTHER era get NO POINT AT ALL, with the reason naming BOTH eras. A model that does more work per token makes the two token counts different units, so blending them would produce a total no model ever produced. The raw tokens are still on every one of those rows, and the era ledger is reported beside the view, so nothing is hidden - it is refused
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  15_warp_1406_normalization                      29 passed    0.94s
+selftest (PARTIAL, 1 of 34 suites): 55 passed, 5 failed in 0.94s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M12 (AC2 the median is COMPUTED) - the peg becomes the middle element of the INPUT ORDER rather than of the sorted token counts, which is indistinguishable on the base fixture. MUST redden: 'AC2 TEETH: moving ONE change's recorded tokens MOVES THE PEG, from WARP-9413 at 3000 to WARP-9414 at 4000'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..b30fd42 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -391,3 +391,3 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+     era = max({c[0] for c in cands}, key=lambda name: (order.get(name, -1), name))
+-    inside = sorted((t, s) for e, t, s in cands if e == era)
++    inside = [(t, s) for e, t, s in cands if e == era]
+     tokens, spec = inside[(len(inside) - 1) // 2]
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..b30fd42 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -391,3 +391,3 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+     era = max({c[0] for c in cands}, key=lambda name: (order.get(name, -1), name))
+-    inside = sorted((t, s) for e, t, s in cands if e == era)
++    inside = [(t, s) for e, t, s in cands if e == era]
+     tokens, spec = inside[(len(inside) - 1) // 2]
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows DO carry recorded spend and their recorded dollars are on the view, so the withheld points above are the TOKEN test firing and not the corpus having nothing to show; ADDING a token count to the cost-only change turns its point ON at 2.000 against the 1000-token peg, so the refusal is a rule rather than a blanket; and the SAME predicate governs the PEG, which derives to WARP-9422 over a sample of 2 rather than pulling a token-less change into the median. One predicate on both paths is the fix: the peg path already required a positive token count while the display path required only the flag, which is how two readers of one corpus disagreed about which changes were measured
+  SELFTEST FAIL: WARP-1406 AC2 TEETH: moving ONE change's recorded tokens MOVES THE PEG, from WARP-9413 at 3000 to WARP-9414 at 4000. Without this leg the assertion above would pass unchanged on an implementation that returned the middle element of the INPUT ORDER, or the first candidate, or the last, none of which is a median. The corpus is deep-copied for this, so the unmutated fixture every later assertion uses is provably untouched
+  15_warp_1406_normalization                      32 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 58 passed, 2 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M13 (AC2 the LOWER median) - the UPPER median is taken, identical on every odd sample. MUST redden: 'AC2: on an EVEN sample the peg is the LOWER MEDIAN'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..f9fe511 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -392,3 +392,3 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+     inside = sorted((t, s) for e, t, s in cands if e == era)
+-    tokens, spec = inside[(len(inside) - 1) // 2]
++    tokens, spec = inside[len(inside) // 2]
+     return {"schema": SCHEMA_PEG, "pegged": True, "basis": PEG_DERIVED, "risk": risk,
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..f9fe511 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -392,3 +392,3 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+     inside = sorted((t, s) for e, t, s in cands if e == era)
+-    tokens, spec = inside[(len(inside) - 1) // 2]
++    tokens, spec = inside[len(inside) // 2]
+     return {"schema": SCHEMA_PEG, "pegged": True, "basis": PEG_DERIVED, "risk": risk,
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows DO carry recorded spend and their recorded dollars are on the view, so the withheld points above are the TOKEN test firing and not the corpus having nothing to show; ADDING a token count to the cost-only change turns its point ON at 2.000 against the 1000-token peg, so the refusal is a rule rather than a blanket; and the SAME predicate governs the PEG, which derives to WARP-9422 over a sample of 2 rather than pulling a token-less change into the median. One predicate on both paths is the fix: the peg path already required a positive token count while the display path required only the flag, which is how two readers of one corpus disagreed about which changes were measured
+  SELFTEST FAIL: WARP-1406 AC2: on an EVEN sample the peg is the LOWER MEDIAN, an OBSERVED change, and not the arithmetic middle of two of them. Over 1000, 2000, 3000 and 4000 tokens the peg is WARP-9412 at 2000 and explicitly NOT 2500, because a planner told the reference change is 2500 tokens has been handed a change that nobody ever made and cannot go and read
+  SELFTEST FAIL: WARP-1406 AC4: WITH TWO ERAS DECLARED, THE PEG LANDS IN THE LATEST ERA THAT HAS CANDIDATES and rows measured in the OTHER era get NO POINT AT ALL, with the reason naming BOTH eras. A model that does more work per token makes the two token counts different units, so blending them would produce a total no model ever produced. The raw tokens are still on every one of those rows, and the era ledger is reported beside the view, so nothing is hidden - it is refused
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  15_warp_1406_normalization                      30 passed    0.91s
+selftest (PARTIAL, 1 of 34 suites): 56 passed, 4 failed in 0.91s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M14 (AC2 stand-down) - an unpeggable corpus fabricates a peg of 1 token instead of standing down. MUST redden: 'AC2 NEGATIVE CONTROL: a corpus with NO usable candidate yields pegged FALSE with the reason stated'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..b45f852 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -385,4 +385,4 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+     if not cands:
+-        return {"schema": SCHEMA_PEG, "pegged": False, "basis": PEG_DERIVED, "risk": risk,
+-                "era": None, "tokens": None, "spec": None, "sample": 0,
++        return {"schema": SCHEMA_PEG, "pegged": True, "basis": PEG_DERIVED, "risk": risk,
++                "era": ERA_UNSTAMPED, "tokens": 1, "spec": None, "sample": 0,
+                 "reason": ("no shipped %s-risk change in the corpus carries recorded token spend "
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..b45f852 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -385,4 +385,4 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+     if not cands:
+-        return {"schema": SCHEMA_PEG, "pegged": False, "basis": PEG_DERIVED, "risk": risk,
+-                "era": None, "tokens": None, "spec": None, "sample": 0,
++        return {"schema": SCHEMA_PEG, "pegged": True, "basis": PEG_DERIVED, "risk": risk,
++                "era": ERA_UNSTAMPED, "tokens": 1, "spec": None, "sample": 0,
+                 "reason": ("no shipped %s-risk change in the corpus carries recorded token spend "
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC2 NEGATIVE CONTROL: a corpus with NO usable candidate yields pegged FALSE with the reason stated, never a fabricated peg and never a peg of zero, and every row of the resulting view says it has no peg in force. This is the case this repository is actually in - 174 shipped specs, 0 with recorded spend - so the standing-down path is the one that runs here today, and a peg of zero would have divided every displayed number by it
+  15_warp_1406_normalization                      33 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M15 (AC2 declared era must be one the ledger declares) - the era-known check is removed, so a typo'd era name is accepted and nulls every row for the wrong reason. MUST redden: 'AC2: a DECLARED PEG NAMING AN ERA THE LEDGER DOES NOT DECLARE is refused by name'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..2fb53aa 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -411,3 +411,3 @@ def resolve_peg(corpus, events, era_list, corpus_mod, parse_iso, declared=None,
+         known = [e["era"] for e in era_list]
+-        if declared["era"] not in known:
++        if False:
+             problems = ["era %r is not one the era ledger declares (it declares %s), so this peg "
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..2fb53aa 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -411,3 +411,3 @@ def resolve_peg(corpus, events, era_list, corpus_mod, parse_iso, declared=None,
+         known = [e["era"] for e in era_list]
+-        if declared["era"] not in known:
++        if False:
+             problems = ["era %r is not one the era ledger declares (it declares %s), so this peg "
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC2: a DECLARED PEG NAMING AN ERA THE LEDGER DOES NOT DECLARE is refused by name, and the message LISTS the eras that are declared. It is checked where the ledger is known rather than in the record validator, because a typo'd era name is otherwise accepted and then turns every row into a null for the wrong reason: named, but tracing a whole surface of missing numbers back to a spelling mistake is a bad afternoon. NEGATIVE CONTROL BESIDE IT: the same peg naming the era the ledger DOES declare is accepted
+  15_warp_1406_normalization                      33 passed    0.93s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.93s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M16 (AC2 a malformed declared peg is refused BY NAME) - the refusal is no longer reported to the caller (the reporter is skipped), so the message a human needs never appears. MUST redden: 'AC2: a DECLARED peg replaces the derived statistic ... a MALFORMED declared peg is refused by name'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..83becd2 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -415,3 +415,3 @@ def resolve_peg(corpus, events, era_list, corpus_mod, parse_iso, declared=None,
+     if problems:
+-        if report is not None:
++        if False:
+             for m in problems:
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..83becd2 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -415,3 +415,3 @@ def resolve_peg(corpus, events, era_list, corpus_mod, parse_iso, declared=None,
+     if problems:
+-        if report is not None:
++        if False:
+             for m in problems:
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC2: a DECLARED peg replaces the derived statistic and the view SAYS which basis it used, and a MALFORMED declared peg is refused by name and does NOT silently fall back to the derivation. Falling back would substitute a different reference change for the one a human wrote down, so every number on the surface would stop meaning what its owner thinks it means while looking completely normal
+  SELFTEST FAIL: WARP-1406 AC2: a DECLARED PEG NAMING AN ERA THE LEDGER DOES NOT DECLARE is refused by name, and the message LISTS the eras that are declared. It is checked where the ledger is known rather than in the record validator, because a typo'd era name is otherwise accepted and then turns every row into a null for the wrong reason: named, but tracing a whole surface of missing numbers back to a spelling mistake is a bad afternoon. NEGATIVE CONTROL BESIDE IT: the same peg naming the era the ledger DOES declare is accepted
+  15_warp_1406_normalization                      32 passed    0.90s
+selftest (PARTIAL, 1 of 34 suites): 58 passed, 2 failed in 0.90s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M17 (AC2 no silent fallback) - a malformed declared peg now falls back to the DERIVED statistic, which substitutes a different reference change for the one a human wrote down while every number still looks normal. MUST redden: 'AC2: ... a MALFORMED declared peg is refused by name and does NOT silently fall back to the derivation'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..76a647e 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -418,6 +418,3 @@ def resolve_peg(corpus, events, era_list, corpus_mod, parse_iso, declared=None,
+                 report(PEG_FILE, m)
+-        return {"schema": SCHEMA_PEG, "pegged": False, "basis": PEG_DECLARED, "risk": None,
+-                "era": declared.get("era") if isinstance(declared, dict) else None,
+-                "tokens": None, "spec": None, "sample": 0,
+-                "reason": "the declared peg is malformed: " + "; ".join(problems)}
++        return peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso)
+     return {"schema": SCHEMA_PEG, "pegged": True, "basis": PEG_DECLARED, "risk": None,
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..76a647e 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -418,6 +418,3 @@ def resolve_peg(corpus, events, era_list, corpus_mod, parse_iso, declared=None,
+                 report(PEG_FILE, m)
+-        return {"schema": SCHEMA_PEG, "pegged": False, "basis": PEG_DECLARED, "risk": None,
+-                "era": declared.get("era") if isinstance(declared, dict) else None,
+-                "tokens": None, "spec": None, "sample": 0,
+-                "reason": "the declared peg is malformed: " + "; ".join(problems)}
++        return peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso)
+     return {"schema": SCHEMA_PEG, "pegged": True, "basis": PEG_DECLARED, "risk": None,
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC2: a DECLARED peg replaces the derived statistic and the view SAYS which basis it used, and a MALFORMED declared peg is refused by name and does NOT silently fall back to the derivation. Falling back would substitute a different reference change for the one a human wrote down, so every number on the surface would stop meaning what its owner thinks it means while looking completely normal
+  SELFTEST FAIL: WARP-1406 AC2: a DECLARED PEG NAMING AN ERA THE LEDGER DOES NOT DECLARE is refused by name, and the message LISTS the eras that are declared. It is checked where the ledger is known rather than in the record validator, because a typo'd era name is otherwise accepted and then turns every row into a null for the wrong reason: named, but tracing a whole surface of missing numbers back to a spelling mistake is a bad afternoon. NEGATIVE CONTROL BESIDE IT: the same peg naming the era the ledger DOES declare is accepted
+  15_warp_1406_normalization                      32 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 58 passed, 2 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M18 (AC3 purity, the corpus leg) - normalize now MUTATES the corpus record it was handed. MUST redden: 'AC3, THE PROPERTY THIS ITEM EXISTS FOR: RE-PEGGING RE-RENDERS AND CHANGES NOTHING UNDERNEATH'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..05dc984 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -456,2 +456,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+     for r in corpus:
++        r["normalized"] = True
+         spend = r.get("spend") or {}
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..05dc984 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -456,2 +456,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+     for r in corpus:
++        r["normalized"] = True
+         spend = r.get("spend") or {}
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC3, THE PROPERTY THIS ITEM EXISTS FOR: RE-PEGGING RE-RENDERS AND CHANGES NOTHING UNDERNEATH. Two pegs and two prices are rendered over one seeded tree, and afterwards the actuals are BYTE-IDENTICAL (json.dumps sorted), the event log's BYTES AND mtime_ns are unchanged, and every seeded spec file's bytes are unchanged. The recorded number is the evidence, and evidence is not rewritten when the ruler changes
+  SELFTEST FAIL: WARP-1406 AC3: A PRICE CHANGE MOVES THE MONEY AND CANNOT MOVE A POINT, which is why a normalized planning number survives a price shift at all: a point is a ratio of tokens to tokens, so no price appears in it by construction. Two different prices are rendered over ONE view; the dollar column differs, the point column is identical, and the actuals are still byte-identical
+  15_warp_1406_normalization                      32 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 58 passed, 2 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M19 (AC3 purity, the on-disk write leg) - normalize now touches the repository's REAL event log (open for append plus utime), which the fixture legs cannot see because those functions never receive a path. MUST redden: the LIVE row's 'reading the view does not touch the log (mtime_ns unchanged)'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..9af55f8 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -455,2 +455,6 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+     rows = []
++    with open(str(ROOT / ".veldo" / "events.jsonl"), "a") as _f:
++        _f.write("")
++        import os as _os
++        _os.utime(str(ROOT / ".veldo" / "events.jsonl"))
+     for r in corpus:
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..9af55f8 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -455,2 +455,6 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+     rows = []
++    with open(str(ROOT / ".veldo" / "events.jsonl"), "a") as _f:
++        _f.write("")
++        import os as _os
++        _os.utime(str(ROOT / ".veldo" / "events.jsonl"))
+     for r in corpus:
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406: OVER THIS REPOSITORY'S OWN CORPUS AND LOG, NO ROW EVER CARRIES A POINT WITHOUT A POSITIVE RECORDED TOKEN COUNT, and reading the view does not touch the log (mtime_ns unchanged). The invariant is the TOKEN count and not the spend_recorded flag, because the flag is true for a change costed only in dollars or only in minutes while the display divides tokens: asserting the flag here would have passed on the confident zero this item forbids. ASSERTED TWICE OVER THE REAL DATA, once through the shipped build_view and once with a valid peg FORCED IN, because today's live peg stands down for want of recorded token spend and a standing-down peg nulls every row for its own reason, which would make this leg unfalsifiable. Stated as an INVARIANT rather than as today's figure on purpose: WARP-1401 measured 0 percent spend coverage here, so today every row stands down with a reason, and the day an agent records its first spend this assertion must still hold rather than turning red for having been written as a snapshot
+  15_warp_1406_normalization                      33 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M20 (AC3 a price cannot move a point) - the point cell is scaled by the supplied price, so a price shift re-sizes every plan. MUST redden: 'AC3: A PRICE CHANGE MOVES THE MONEY AND CANNOT MOVE A POINT'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..f452e70 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -528,3 +528,4 @@ def render_lines(view, price_per_1k_tokens=None):
+     for r in view["rows"]:
+-        cell = "%9.3f pt" % r["points"] if r["points"] is not None else "        - pt"
++        cell = ("%9.3f pt" % (r["points"] * (price_per_1k_tokens or 1.0))
++                if r["points"] is not None else "        - pt")
+         line = "%-14s %s %10d tok" % (r["spec"], cell, r["tokens"])
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..f452e70 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -528,3 +528,4 @@ def render_lines(view, price_per_1k_tokens=None):
+     for r in view["rows"]:
+-        cell = "%9.3f pt" % r["points"] if r["points"] is not None else "        - pt"
++        cell = ("%9.3f pt" % (r["points"] * (price_per_1k_tokens or 1.0))
++                if r["points"] is not None else "        - pt")
+         line = "%-14s %s %10d tok" % (r["spec"], cell, r["tokens"])
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS AND THE PRICE APPLIED TO THOSE TOKENS, AND NOTHING ELSE - SO IT DOES NOT PRINT THE RECORDED COST, which rides on the view ROW where a consumer reads it. Asserted as the COMPLETE ORDERED LIST OF FIGURES each line prints, for every row, at TWO prices, pinned to literals and bound to the fixture's own length. The recorded costs here are 12.37, 0.0137 and 7.50 and none of them can appear, because the figures are enumerated rather than searched: a check spelled as 'the string 12.37 is absent' passes on a line that appends the recorded cost ROUNDED (12.4), and on a money column that shows the recorded 7.50 on the very row whose tokens were never recorded, and both of those print the recorded cost to the reader. The 4.00 price puts the derived figure at 12.55 next to a recorded 12.37 on purpose: eyeballing that column cannot tell them apart. The whole line is then read INCLUDING the reason, where no figure belongs either, so a cost appended anywhere on a row reds this; and because a per-row check can only see rows, the render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced and unpriced, and the line count is the rows plus exactly those two, so the price adds one COLUMN and there is nowhere else in the render for a dollar figure to sit
+  SELFTEST FAIL: WARP-1406 AC3: A PRICE CHANGE MOVES THE MONEY AND CANNOT MOVE A POINT, which is why a normalized planning number survives a price shift at all: a point is a ratio of tokens to tokens, so no price appears in it by construction. Two different prices are rendered over ONE view; the dollar column differs, the point column is identical, and the actuals are still byte-identical
+  15_warp_1406_normalization                      32 passed    0.96s
+selftest (PARTIAL, 1 of 34 suites): 58 passed, 2 failed in 0.96s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M21 (AC4 the record round trips with EVERY field intact) - previous_model is dropped from the written key order, so the model an era REPLACED is silently lost on the way to disk. MUST redden: 'AC4: A CAPABILITY SHIFT IS A RECORDED LEDGER ENTRY THAT ROUND TRIPS THROUGH THE ONE PARSER'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..25bcca3 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -91,3 +91,3 @@ SHIFT_REQUIRED = ("schema", "id", "at", "model", "work_per_token")
+ # same in a diff. Only these keys are written; `id` doubles as the file name.
+-SHIFT_ORDER = ("schema", "id", "at", "model", "previous_model", "work_per_token", "note")
++SHIFT_ORDER = ("schema", "id", "at", "model", "work_per_token", "note")
+ 
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..25bcca3 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -91,3 +91,3 @@ SHIFT_REQUIRED = ("schema", "id", "at", "model", "work_per_token")
+ # same in a diff. Only these keys are written; `id` doubles as the file name.
+-SHIFT_ORDER = ("schema", "id", "at", "model", "previous_model", "work_per_token", "note")
++SHIFT_ORDER = ("schema", "id", "at", "model", "work_per_token", "note")
+ 
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1406/scripts/suites/15_warp_1406_normalization.py", line 710, in <module>
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M22 (AC4 append-only) - record_shift will overwrite an existing ledger entry, so a shift a past view was rendered against can be edited under it. MUST redden: 'AC4: THE LEDGER IS APPEND ONLY'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..0746b33 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -561,3 +561,3 @@ def record_shift(rec, eras_dir, parse_iso=None):
+     p = d / ("%s.yaml" % rec["id"])
+-    if p.exists():
++    if False:
+         raise ValueError("refusing to overwrite %s: the era ledger is append only, and a shift "
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..0746b33 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -561,3 +561,3 @@ def record_shift(rec, eras_dir, parse_iso=None):
+     p = d / ("%s.yaml" % rec["id"])
+-    if p.exists():
++    if False:
+         raise ValueError("refusing to overwrite %s: the era ledger is append only, and a shift "
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC4: THE LEDGER IS APPEND ONLY. Recording the same era id twice is REFUSED by name rather than overwriting the entry a past view was rendered against; a shift recorded wrongly is corrected by recording a NEW entry. Asserted by attempting it
+  15_warp_1406_normalization                      33 passed    0.95s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.95s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M21 (AC4 round trip) - previous_model dropped from SHIFT_ORDER, so the model an era
+  REPLACED is silently lost on the way to disk. Expected to redden: 'AC4: A CAPABILITY SHIFT IS A
+  RECORDED LEDGER ENTRY THAT ROUND TRIPS THROUGH THE ONE PARSER'.
+===============================================================================
+RESULT: NO ROW REDDENED. The fragment CRASHED and took the whole selftest down:
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1406/scripts/selftest.py", line 190, in <module>
+    exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1406/scripts/suites/15_warp_1406_normalization.py", line 710, in <module>
+    and _w1406_shifts[0]["previous_model"] == "model-one"
+        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'previous_model'
+
+$ echo $?  -> 1  (the gate does red, but with no 'N passed' summary line at all, so every
+   fragment after 15_warp_1406 in manifest order never runs and the operator reads a traceback
+   instead of the named row. Same family as PLAN-0018 finding 54's uncaught TypeError, and the
+   exact hazard .veldo/promises.py:173-175 names in writing about its own AC1.)
+
+===============================================================================
+MUTATION M23 (AC4 two eras are never blended) - a row measured in another era is given a point anyway, blending two models' tokens into one total. MUST redden: 'AC4: WITH TWO ERAS DECLARED, THE PEG LANDS IN THE LATEST ERA ... rows measured in the OTHER era get NO POINT AT ALL'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..ef7bb0f 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -481,3 +481,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+             row["reason"] = why
+-        elif era != peg.get("era"):
++        elif False:
+             row["reason"] = ("measured in era %r while the peg is in era %r: a model that does "
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..ef7bb0f 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -481,3 +481,3 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
+             row["reason"] = why
+-        elif era != peg.get("era"):
++        elif False:
+             row["reason"] = ("measured in era %r while the peg is in era %r: a model that does "
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC4: WITH TWO ERAS DECLARED, THE PEG LANDS IN THE LATEST ERA THAT HAS CANDIDATES and rows measured in the OTHER era get NO POINT AT ALL, with the reason naming BOTH eras. A model that does more work per token makes the two token counts different units, so blending them would produce a total no model ever produced. The raw tokens are still on every one of those rows, and the era ledger is reported beside the view, so nothing is hidden - it is refused
+  SELFTEST FAIL: WARP-1406 AC4 NEGATIVE CONTROL: with ONE era - the same corpus, the same events, an EMPTY ledger - those same three rows all get points. So the withheld point above is the era rule firing, and not a function that refuses whatever it is shown. Both views are built from identical actuals, which is the same property AC3 asserts, observed from the other side
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  15_warp_1406_normalization                      31 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 57 passed, 3 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M24 (AC4 the peg lands in the LATEST era with candidates) - the EARLIEST era wins instead, so planning is pegged to a model nobody runs. MUST redden: the same AC4 two-eras row
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..f5f17af 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -390,3 +390,3 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+                            "down rather than presenting a zero" % risk)}
+-    era = max({c[0] for c in cands}, key=lambda name: (order.get(name, -1), name))
++    era = min({c[0] for c in cands}, key=lambda name: (order.get(name, -1), name))
+     inside = sorted((t, s) for e, t, s in cands if e == era)
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..f5f17af 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -390,3 +390,3 @@ def peg_from_corpus(corpus, events, era_list, corpus_mod, parse_iso, risk=PEG_RI
+                            "down rather than presenting a zero" % risk)}
+-    era = max({c[0] for c in cands}, key=lambda name: (order.get(name, -1), name))
++    era = min({c[0] for c in cands}, key=lambda name: (order.get(name, -1), name))
+     inside = sorted((t, s) for e, t, s in cands if e == era)
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC4: WITH TWO ERAS DECLARED, THE PEG LANDS IN THE LATEST ERA THAT HAS CANDIDATES and rows measured in the OTHER era get NO POINT AT ALL, with the reason naming BOTH eras. A model that does more work per token makes the two token counts different units, so blending them would produce a total no model ever produced. The raw tokens are still on every one of those rows, and the era ledger is reported beside the view, so nothing is hidden - it is refused
+  SELFTEST FAIL: WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, over three fixtures, and the PRINTED bottom line is asserted with it. This is the line a planner sizes and budgets work with, and it was the one part of the module no assertion touched: probing single keys left points_total, tokens_total and eras_present free, so all three could be replaced with garbage while this suite stayed green. A whole-dict equality also reds when a key is silently ADDED, which per-key probing cannot see. Both units are present in every one: a normalized total with no raw total underneath is a number nobody can audit, and the token-less rows are counted as UNPOINTED rather than diluting the pointed denominator
+  SELFTEST FAIL: WARP-1406 AC4: A CHANGE WHOSE OWN SPEND STRADDLES A CAPABILITY SHIFT GETS NO ERA AND NO POINT, and the reason says it SPANS eras. Its total is already a mixture of two units before any display touches it, so normalizing it would launder the mixture into a confident number. Separately, spend carrying NO READABLE UTC TIMESTAMP is reported as an UNKNOWN era rather than being assumed into the current one - three distinct facts (nothing recorded, unreadable, spans a shift), three distinct messages
+  15_warp_1406_normalization                      31 passed    0.91s
+selftest (PARTIAL, 1 of 34 suites): 57 passed, 3 failed in 0.91s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M25 (AC4 three distinct facts) - the straddling change and the unreadable-timestamp change are folded into ONE undifferentiated silence, which is the fold this AC exists to forbid. MUST redden: 'AC4: A CHANGE WHOSE OWN SPEND STRADDLES A CAPABILITY SHIFT GETS NO ERA AND NO POINT ... three distinct facts, three distinct messages'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..685dbb7 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -297,9 +297,5 @@ def era_of(spec_id, events, era_list, corpus_mod, parse_iso):
+     found = [era_at(era_list, a, parse_iso) for a in ats]
+-    if any(f is None for f in found):
+-        return None, ("at least one spend event carries no readable UTC timestamp, so the era it "
+-                      "was measured in is unknown rather than assumed")
+-    uniq = sorted(set(found))
+-    if len(uniq) > 1:
+-        return None, ("spend spans %d eras (%s), so this total is itself a mixture of units and is "
+-                      "not normalized" % (len(uniq), ", ".join(uniq)))
++    uniq = sorted(set(f for f in found if f is not None))
++    if any(f is None for f in found) or len(uniq) > 1:
++        return None, ("this change cannot be placed in one era, so it is not normalized")
+     return uniq[0], None
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..685dbb7 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -297,9 +297,5 @@ def era_of(spec_id, events, era_list, corpus_mod, parse_iso):
+     found = [era_at(era_list, a, parse_iso) for a in ats]
+-    if any(f is None for f in found):
+-        return None, ("at least one spend event carries no readable UTC timestamp, so the era it "
+-                      "was measured in is unknown rather than assumed")
+-    uniq = sorted(set(found))
+-    if len(uniq) > 1:
+-        return None, ("spend spans %d eras (%s), so this total is itself a mixture of units and is "
+-                      "not normalized" % (len(uniq), ", ".join(uniq)))
++    uniq = sorted(set(f for f in found if f is not None))
++    if any(f is None for f in found) or len(uniq) > 1:
++        return None, ("this change cannot be placed in one era, so it is not normalized")
+     return uniq[0], None
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC4: A CHANGE WHOSE OWN SPEND STRADDLES A CAPABILITY SHIFT GETS NO ERA AND NO POINT, and the reason says it SPANS eras. Its total is already a mixture of two units before any display touches it, so normalizing it would launder the mixture into a confident number. Separately, spend carrying NO READABLE UTC TIMESTAMP is reported as an UNKNOWN era rather than being assumed into the current one - three distinct facts (nothing recorded, unreadable, spans a shift), three distinct messages
+  15_warp_1406_normalization                      33 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M26 (AC5 one of the eight hostile shapes) - the newline check is removed, so a note the record format cannot round trip is accepted. MUST redden: 'AC5: EVERY MALFORMED CAPABILITY-SHIFT RECORD IS REFUSED WITH A MESSAGE THAT NAMES WHAT IS WRONG, over EIGHT hostile shapes'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..dd95e02 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -175,3 +175,3 @@ def validate_shift(rec, parse_iso):
+     for k, v in sorted(rec.items()):
+-        if isinstance(v, str) and ("\n" in v or "\r" in v):
++        if False:
+             out.append("field %r carries a newline, which the record format cannot round trip" % k)
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..dd95e02 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -175,3 +175,3 @@ def validate_shift(rec, parse_iso):
+     for k, v in sorted(rec.items()):
+-        if isinstance(v, str) and ("\n" in v or "\r" in v):
++        if False:
+             out.append("field %r carries a newline, which the record format cannot round trip" % k)
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC5: EVERY MALFORMED CAPABILITY-SHIFT RECORD IS REFUSED WITH A MESSAGE THAT NAMES WHAT IS WRONG, over EIGHT hostile shapes: no model, the wrong schema, a timestamp with no UTC zone, a timestamp that is not one, a work_per_token outside the vocabulary, an id that would escape the ledger directory, a note carrying a newline the format cannot round trip, and a record that is not a map at all. A half-applied era is worse than none: it would swallow every actual on one side of an unreadable boundary while the view looked exactly like a working one. THE all() IS BOUND TO THE LENGTH OF ITS OWN LITERAL SOURCE, so an emptied shape list REDS this instead of passing over nothing
+  15_warp_1406_normalization                      33 passed    0.91s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.91s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M27 (AC5 negative control) - the validator refuses EVERY record, well-formed or not, which is the shape that makes all eight refusals worth nothing. MUST redden: 'AC5 NEGATIVE CONTROL: the WELL-FORMED shift record validates CLEAN'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..f12b1fe 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -153,3 +153,3 @@ def validate_shift(rec, parse_iso):
+         return ["a capability-shift record must be a map of fields, got %s" % type(rec).__name__]
+-    out = []
++    out = ["this validator refuses everything it is shown"]
+     for k in SHIFT_REQUIRED:
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..f12b1fe 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -153,3 +153,3 @@ def validate_shift(rec, parse_iso):
+         return ["a capability-shift record must be a map of fields, got %s" % type(rec).__name__]
+-    out = []
++    out = ["this validator refuses everything it is shown"]
+     for k in SHIFT_REQUIRED:
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1406/scripts/suites/15_warp_1406_normalization.py", line 691, in <module>
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M27 (AC5 negative control) - validate_shift refuses EVERY record, well-formed or not.
+  Expected to redden: 'AC5 NEGATIVE CONTROL: the WELL-FORMED shift record validates CLEAN'.
+===============================================================================
+$ git diff -U1 (both copies, one hunk each)
+-    out = []
++    out = ["this validator refuses everything it is shown"]
+
+RESULT: NO ROW REDDENED. Second crash, same shape as M21:
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1406/scripts/selftest.py", line 190, in <module>
+    exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1406/scripts/suites/15_warp_1406_normalization.py", line 691, in <module>
+    _w1406_written = NORM.record_shift(_W1406_SHIFT, _w1406_eras_dir, _W1406_ISO)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1406/.veldo/toe_normalize.py", line 558, in record_shift
+    raise ValueError("refusing to record a capability shift: " + "; ".join(problems))
+ValueError: refusing to record a capability shift: this validator refuses everything it is shown
+$ echo $? -> 1
+(So a validator that refuses everything is caught only as an unhandled ValueError out of
+ record_shift at fragment line 691, which is not wrapped, and again no suite summary is printed.)
+
+===============================================================================
+MUTATION M28 (AC5 a bad neighbour must not take the ledger down) - one malformed record now empties the whole ledger, so every era silently disappears and every row loses its era. MUST redden: 'AC5: A LEDGER DIRECTORY WITH BAD RECORDS FAILS CLOSED AND BY NAME ... the good one still loads'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..413338c 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -233,3 +233,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+                 errs += report(str(p), m)
+-            continue
++            return [], errs
+         keep.append(rec)
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..413338c 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -233,3 +233,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+                 errs += report(str(p), m)
+-            continue
++            return [], errs
+         keep.append(rec)
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  15_warp_1406_normalization                      34 passed    0.90s
+selftest (PARTIAL, 1 of 34 suites): 60 passed, 0 failed in 0.90s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M29 (AC5 adoption safety) - an absent ledger directory now NAGS through the reporter and counts a problem, so a repository that records nothing is no longer unaffected. MUST redden: 'AC5 ADOPTION SAFE: with NO ledger directory the ledger is empty, the problem count is zero, and the reporter is NEVER CALLED'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..a874620 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -221,3 +221,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+     if not d.is_dir():
+-        return [], 0
++        return [], report(str(d), "no era ledger directory: record your capability shifts")
+     errs, keep = 0, []
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..a874620 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -221,3 +221,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+     if not d.is_dir():
+-        return [], 0
++        return [], report(str(d), "no era ledger directory: record your capability shifts")
+     errs, keep = 0, []
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC5 ADOPTION SAFE: with NO ledger directory the ledger is empty, the problem count is zero, and the reporter is NEVER CALLED - not one line printed, so a repository that records no capability shift is byte-identically unaffected and is not nagged about a file it never asked for. Asserted as an EMPTY message list rather than as a count, because a check that only counts problems cannot tell silence from a warning
+  15_warp_1406_normalization                      33 passed    0.89s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.89s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M30 (AC5 fail closed, the branch that matters) - load_ledger now ACCEPTS every malformed record into the ledger and reports NOTHING: the 'half applied era' the module's own docstring calls worse than none. Expected to redden: 'AC5: A LEDGER DIRECTORY WITH BAD RECORDS FAILS CLOSED AND BY NAME'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..39bc593 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -231,5 +231,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+         if problems:
+-            for m in problems:
+-                errs += report(str(p), m)
+-            continue
++            pass
+         keep.append(rec)
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..39bc593 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -231,5 +231,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+         if problems:
+-            for m in problems:
+-                errs += report(str(p), m)
+-            continue
++            pass
+         keep.append(rec)
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  15_warp_1406_normalization                      34 passed    0.92s
+selftest (PARTIAL, 1 of 34 suites): 60 passed, 0 failed in 0.92s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M31 (AC5 fail closed, the duplicate-ID branch) - two ledger entries declaring the SAME era id at different instants are now both accepted, so one era name has two boundaries. Expected to redden: some named AC5 row
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..4f79397 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -238,3 +238,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+     for rec in sorted(keep, key=lambda r: (read_at(r["at"], parse_iso), r["id"])):
+-        if rec["id"] in seen_ids:
++        if False:
+             errs += report(str(d), "duplicate shift id %r: two entries claiming one era boundary "
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..4f79397 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -238,3 +238,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+     for rec in sorted(keep, key=lambda r: (read_at(r["at"], parse_iso), r["id"])):
+-        if rec["id"] in seen_ids:
++        if False:
+             errs += report(str(d), "duplicate shift id %r: two entries claiming one era boundary "
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  15_warp_1406_normalization                      34 passed    0.93s
+selftest (PARTIAL, 1 of 34 suites): 60 passed, 0 failed in 0.93s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M32 (AC5 fail closed, the same-instant branch) - two shifts taking effect at one instant are now both accepted. MUST redden: 'AC5: A LEDGER DIRECTORY WITH BAD RECORDS FAILS CLOSED AND BY NAME ... a second shift claiming the SAME INSTANT'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/toe_normalize.py b/.veldo/toe_normalize.py
+index b2cc814..becf23a 100644
+--- a/.veldo/toe_normalize.py
++++ b/.veldo/toe_normalize.py
+@@ -242,3 +242,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+             continue
+-        if rec["at"] in seen_at:
++        if False and rec["at"] in seen_at:
+             errs += report(str(d), "shifts %r and %r both take effect at %s, so no actual at that "
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..becf23a 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -242,3 +242,3 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
+             continue
+-        if rec["at"] in seen_at:
++        if False and rec["at"] in seen_at:
+             errs += report(str(d), "shifts %r and %r both take effect at %s, so no actual at that "
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406 AC5: A LEDGER DIRECTORY WITH BAD RECORDS FAILS CLOSED AND BY NAME. A record outside the parser subset is refused naming its FILE, and a second shift claiming the SAME INSTANT as another is refused naming both ids, because no actual at that instant would have one era. Neither bad record enters the ledger, so nothing is half applied, and the good one still loads: a bad neighbour does not take the ledger down
+  15_warp_1406_normalization                      33 passed    0.89s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.89s
+
+$ git checkout -- .veldo/toe_normalize.py engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+===============================================================================
+MUTATION M33 (AC5 'NO GATE STAGE CONSULTS THIS MODULE', the attack) - a REAL gate stage is added to validate.run_all (the module verify.sh invokes as '.veldo/validate.py all'): it loads toe_normalize, builds the view and REDDENS THE GATE when the planning view has no peg. Expected to redden: 'AC5: NO GATE STAGE CONSULTS THIS MODULE'
+===============================================================================
+$ git diff -U1
+diff --git a/.veldo/validate.py b/.veldo/validate.py
+index f07b572..2ac2586 100755
+--- a/.veldo/validate.py
++++ b/.veldo/validate.py
+@@ -827,4 +827,18 @@ def check_requests(requests_dir=None, root=None):
+ 
++def _toe_norm_stage():
++    """A GATE STAGE THAT CONSULTS NORMALIZATION: it loads the module, builds the view over this
++    repository and reddens the gate when the planning view carries no peg."""
++    import importlib.util as _iu
++    _s = _iu.spec_from_file_location("veldo_toe_norm_gate", ROOT / ".veldo/toe_normalize.py")
++    _m = _iu.module_from_spec(_s)
++    _s.loader.exec_module(_m)
++    view = _m.build_view(root=ROOT, report=lambda *a: 1)
++    if not view["peg"].get("pegged"):
++        return fail(".veldo/toe_normalize.py", "the normalized planning view has no peg in force")
++    return 0
++
++
+ def run_all():
+     errs = 0
++    errs += _toe_norm_stage()
+     errs += check_events(ROOT / ".veldo" / "events.jsonl")
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  15_warp_1406_normalization                      34 passed    0.94s
+selftest (PARTIAL, 1 of 34 suites): 60 passed, 0 failed in 0.94s
+
+$ git checkout -- .veldo/validate.py  (revert)
+(reverted, clean)
+--- the added stage really does redden the gate:
+  .veldo/toe_normalize.py: the normalized planning view has no peg in force
+exit=1
+
+=== ATTACK PROBES (shipped code, unmutated) ===
+### A1: a MEASURED change printed as 0.000 pt (a spread an ordinary repository has)
+    peg: 300000 tokens = 1.000 pt (median_standard_risk_shipped, era pre-ledger, spec WARP-8001, sample 3)
+    WARP-8001          1.000 pt     300000 tok     900.00 usd
+    WARP-8002          1.000 pt     300000 tok     900.00 usd
+    WARP-8003          0.000 pt          3 tok       0.01 usd
+    total: 2.0 pt over 3 change(s), 600003 raw tokens, 0 row(s) with no point, eras ['pre-ledger']
+    rows: [["WARP-8001", 1.0, 300000, null], ["WARP-8002", 1.0, 300000, null], ["WARP-8003", 0.0, 3, null]]
+
+### A2: the raw-token roll-up BLENDS two eras while the points refuse to
+    peg: 4000 tokens = 1.000 pt (median_standard_risk_shipped, era era-two, spec WARP-8102, sample 1)
+    WARP-8101              - pt       1000 tok  (measured in era 'pre-ledger' while the peg is in era 'era-two': a model that does different work per token makes these different units, so they are reported apart rather than blended)
+    WARP-8102          1.000 pt       4000 tok
+    total: 1.0 pt over 1 change(s), 5000 raw tokens, 1 row(s) with no point, eras ['era-two', 'pre-ledger']
+    summary: {"eras_declared": ["pre-ledger", "era-two"], "eras_present": ["era-two", "pre-ledger"], "pointed": 1, "points_total": 1.0, "rows": 2, "tokens_total": 5000, "unpointed": 1}
+
+### A3: the money column reports 0.00 usd for a change whose RECORDED cost is 7.50
+    peg: 1000 tokens = 1.000 pt (median_standard_risk_shipped, era pre-ledger, spec WARP-8201, sample 1)
+    WARP-8201          1.000 pt       1000 tok       2.00 usd
+    WARP-8202              - pt          0 tok       0.00 usd  (spend was recorded in cost_usd but NOT in tokens, and a point is a ratio of tokens to tokens, so a point here would be a confident zero rather than a measurement)
+    total: 1.0 pt over 1 change(s), 1000 raw tokens, 1 row(s) with no point, eras ['pre-ledger']
+
+### A4: a HUMAN-MINUTES event decides the era of a token measurement made wholly inside one era
+    peg: 4000 tokens = 1.000 pt (median_standard_risk_shipped, era era-two, spec WARP-8302, sample 1)
+    WARP-8301              - pt       4000 tok  (spend spans 2 eras (era-two, pre-ledger), so this total is itself a mixture of units and is not normalized)
+    WARP-8302          1.000 pt       4000 tok
+    total: 1.0 pt over 1 change(s), 8000 raw tokens, 1 row(s) with no point, eras ['era-two']
+    era_of(WARP-8301): (None, 'spend spans 2 eras (era-two, pre-ledger), so this total is itself a mixture of units and is not normalized')
+    its TOKEN events are all at 2026-01-05, i.e. wholly inside era-two
+### A5: the same-instant refusal compares the `at` STRING, so two spellings of ONE instant
+###     are both accepted and the era between them can hold nothing
+    the two `at` values parse to the SAME instant: True
+    problems reported: 0 []
+    ledger accepted: ['era-a', 'era-b']
+    eras: [{"era": "pre-ledger", "model": null, "from": null, "to": "2026-01-04T00:00:00Z", "work_per_token": null}, {"era": "era-a", "model": "m2", "from": "2026-01-04T00:00:00Z", "to": "2026-01-04T00:00:00+00:00", "work_per_token": "increased"}, {"era": "era-b", "model": "m3", "from": "2026-01-04T00:00:00+00:00", "to": null, "work_per_token": "increased"}]
+    era-a spans [2026-01-04T00:00:00Z, 2026-01-04T00:00:00+00:00) - HALF OPEN AND EMPTY.
+      era_at(2026-01-03T23:59:59Z) = 'pre-ledger'
+      era_at(2026-01-04T00:00:00Z) = 'era-b'
+      era_at(2026-01-05T00:00:00Z) = 'era-b'
+    -> era-a is declared, reported in eras_declared, and NO actual can ever be in it.
+
+### A6: a NEGATIVE recorded token count produces a self-contradictory reason
+    peg: 1000 tokens = 1.000 pt (median_standard_risk_shipped, era pre-ledger, spec WARP-8401, sample 1)
+    WARP-8401          1.000 pt       1000 tok       1.00 usd
+    WARP-8402              - pt         -5 tok      -0.01 usd  (spend was recorded in tokens but NOT in tokens, and a point is a ratio of tokens to tokens, so a point here would be a confident zero rather than a measurement)
+    total: 1.0 pt over 1 change(s), 995 raw tokens, 1 row(s) with no point, eras ['pre-ledger']
+
+### A7: points_total is a sum of ROUNDED points, so many small measured changes total zero
+    bottom line: total: 6010.0 pt over 12 change(s), 601000 raw tokens, 0 row(s) with no point, eras ['pre-ledger']
+    points_total reported: 6010.0  true ratio total: 6010.0
+    the ten 100-token changes contribute exactly 0.0 pt each: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+### A7 (corrected fixture): points_total is a sum of ROUNDED points, so a measured change can
+###     contribute exactly ZERO to the number a planner sizes work with
+    peg: 300000 tokens (spec WARP-8602, sample 15)
+    the five 100-token MEASURED changes: [0.0, 0.0, 0.0, 0.0, 0.0]
+    rendered: WARP-8700          0.000 pt        100 tok
+    bottom line: total: 10.0 pt over 15 change(s), 3000500 raw tokens, 0 row(s) with no point, eras ['pre-ledger']
+    points_total reported: 10.0   true sum of ratios: 10.001667
+
+### A6 reachability: does the gate's own event validator refuse a negative token count?
+    validate.check_events over a log carrying tokens:-5 -> 0 problem(s)
+
+===============================================================================
+MUTATION M34 (engine twin) - the ENGINE copy alone is edited by one line, the drift shape the row names. MUST redden: 'the module lands in BOTH engine homes byte-identically'
+===============================================================================
+$ git diff -U1
+diff --git a/engine/.veldo/toe_normalize.py b/engine/.veldo/toe_normalize.py
+index b2cc814..617856a 100644
+--- a/engine/.veldo/toe_normalize.py
++++ b/engine/.veldo/toe_normalize.py
+@@ -1,3 +1,3 @@
+ #!/usr/bin/env python3
+-"""Normalization: the stable planning unit over raw-token ground truth (WARP-1406, W6 of PLAN-0014).
++"""Normalization: the stable planning unit over raw-token ground truth (WARP-1406, W6, DRIFTED).
+ 
+
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization  (tail)
+  selector    --suite 15_warp_1406_normalization
+  running     1 of 34 suites: 15_warp_1406_normalization
+  SELFTEST FAIL: WARP-1406: the module lands in BOTH engine homes byte-identically, so what /veldo:init lays down for an adopter is what this repository runs (PLAN-0014 C5). Asserted as a byte comparison, because a copy that has drifted is worse than a copy that is missing: the missing one is obvious and the drifted one ships a different answer
+  15_warp_1406_normalization                      33 passed    0.91s
+selftest (PARTIAL, 1 of 34 suites): 59 passed, 1 failed in 0.91s
+
+$ git checkout -- engine/.veldo/toe_normalize.py  (revert)
+(reverted, clean)
+
+=== SHIP-READINESS PROBES (no mutation; the shipped artifacts as they are) ===
+
+### S1: THE MODULE CANNOT RUN IN THE TREE THE SHIPPED INSTALLER PRODUCES.
+$ T=$(mktemp -d); python3 .veldo/init_scaffold.py "$T"          -> exit 0
+$ ls "$T/.veldo"/*.py | wc -l                                    -> 28
+    toe_normalize.py   ABSENT
+    toe_corpus.py      ABSENT
+    metrics.py         ABSENT
+    validate.py        PRESENT
+    spend.py           ABSENT
+$ cp engine/.veldo/toe_normalize.py "$T/.veldo/"   # exactly what removing the publish exclusion gives
+$ cd "$T" && python3 .veldo/toe_normalize.py report
+  Traceback (most recent call last):
+    File ".../.veldo/toe_normalize.py", line 653, in _cli
+      view = build_view(price_per_1k_tokens=...)
+    File ".../.veldo/toe_normalize.py", line 603, in build_view
+      corpus_mod = _corpus_module()
+    File ".../.veldo/toe_normalize.py", line 116, in _corpus_module
+      return _sibling("veldo_toe_corpus_norm", ".veldo/toe_corpus.py")
+  FileNotFoundError: [Errno 2] No such file or directory: '.../.veldo/toe_corpus.py'
+  EXIT=1
+    -> PLAN-0018 finding 61, verbatim, in a new module: init lays down neither this module nor the
+       two siblings it loads, so the documented entry point is a traceback for every adopter.
+
+### S2: THE CAPABILITY IS NOT DECLARED AND HAS NO DOCUMENT AND NO CLI VERB.
+$ grep -c "toe_normalize" .veldo/capabilities.yaml                              -> 0
+$ grep -rln "Tokens of Effort|normalized point|toe_normalize" docs/ README.md VELDO.md -> (nothing)
+$ grep -rn "toe_normalize" bin/ .claude* docs/ engine/docs 2>/dev/null           -> (nothing)
+    -> capabilities.yaml declares toe_ground_truth_corpus and spend_recording, and nothing for
+       normalization. WARP-1410 (W10) is the item that owns "record capabilities honestly", the
+       /veldo:init lay-down and making the docs true, and specs/index.md line 453 lists it as
+       "waiting: WARP-1403, WARP-1404, WARP-1405, WARP-1406, WARP-1407, WARP-1408, WARP-1409".
+
+### S3: THE ITEM'S OWN BOOKKEEPING SAYS IT HAS NOT BEEN BUILT.
+$ grep -n "WARP-1406" specs/index.md
+  33:  | WARP-1406 | ... | ready | standard | dmitry | not_required | ... |
+  440: Ready frontier: WARP-1402 (W2), WARP-1406 (W6), WARP-1407 (W7), WARP-1409 (W9).
+$ ls -d proof/WARP-140*                                          -> No such file or directory
+    -> status `ready`, on the ready frontier, and NO proof bundle for any PLAN-0014 item, so there
+       is no manifest, no per-criterion evidence claim and no driven-falsifications record to audit
+       this verdict against. This review IS the item's only independent evidence.
+
+### S4: BASELINE FULL GATE ON THE REVIEWED TREE
+$ bash scripts/verify.sh   ->  4m01s, exit 0
+  catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
+  GATE: GREEN (7b6c0059faae8299a95716b05820097599469e05)
+  (and, on the same run: "falsification migration: 45 spec(s) declare behaviour of 213, 45 already
+   comply, 0 would be refused, 168 stood down" - WARP-1406 is one of the 168.)
+
+===============================================================================
+ADDITIVE CONTROL C1 - USING THE FEATURE FOR REAL MUST NOT REDDEN ANYTHING.
+  (PLAN-0018 finding 46: a check that reddens when a feature is USED is refusing it, and this
+   suite reads live state in three places - the era ledger, the event log and the corpus.)
+===============================================================================
+$ python3 .veldo/toe_normalize.py record-shift --id era-first-model --at 2026-08-01T00:00:00Z --model model-two --previous-model model-one --work-per-token increased --note first recorded shift
+/tmp/claude-1000/-home-dmitry-projects-myday/44b01d2e-70df-4b27-8687-62188cce6732/scratchpad/est-review/work-WARP-1406/.veldo/toe_eras/era-first-model.yaml
+$ cat .veldo/toe_eras/era-first-model.yaml
+schema: veldo.toe_capability_shift/v1
+id: era-first-model
+at: 2026-08-01T00:00:00Z
+model: model-two
+previous_model: model-one
+work_per_token: increased
+note: first recorded shift
+$ python3 .veldo/spend.py record --spec WARP-1406 --basis harness_reported --tokens 750000 --cost-usd 11.25 --human-minutes 40
+{"at": "2026-08-13T09:25:54Z", "correlation_id": "WARP-1406", "cost_usd": 11.25, "human_minutes": 40, "id": "ba0378b5f6ce", "producer": "events.py", "schema": "veldo.event/v1", "spec_id": "WARP-1406", "spend_basis": "harness_reported", "tokens": 750000, "type": "spec.shipped"}
+$ git status --porcelain
+ M .veldo/events.jsonl
+ M .veldo/last_verify
+?? .veldo/toe_eras/
+$ python3 .veldo/toe_normalize.py report --price-per-1k-tokens 3.0   (first lines)
+peg: NONE, standing down. no shipped standard-risk change in the corpus carries recorded token spend in a readable era, so there is nothing to peg to and this view stands down rather than presenting a zero
+WARP-0100              - pt          0 tok       0.00 usd  (no recorded spend, so a point here would be a confident zero rather than a measurement)
+WARP-0101              - pt          0 tok       0.00 usd  (no recorded spend, so a point here would be a confident zero rather than a measurement)
+WARP-0102              - pt          0 tok       0.00 usd  (no recorded spend, so a point here would be a confident zero rather than a measurement)
+  ...
+WARP-1701              - pt          0 tok       0.00 usd  (no recorded spend, so a point here would be a confident zero rather than a measurement)
+total: 0 pt over 0 change(s), 0 raw tokens, 174 row(s) with no point, eras none
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization
+selftest (PARTIAL, 1 of 34 suites): 60 passed, 0 failed in 0.94s
+
+/bin/bash: line 1: ready: command not found
+--- C1 continued: the spend above was recorded against WARP-1406, whose status is , so the
+    corpus (shipped changes only) never saw it. Recording against SHIPPED specs instead:
+$ grep -m1 '^status:' specs/WARP-1401-toe-ground-truth-corpus.md
+status: shipped
+$ python3 .veldo/spend.py record --spec WARP-1401 --basis harness_reported --tokens ... 
+  recorded
+$ python3 .veldo/spend.py record --spec WARP-0727 --basis harness_reported --tokens ... 
+  recorded
+$ python3 .veldo/spend.py record --spec WARP-1103 --basis harness_reported --tokens ... 
+  recorded
+$ python3 .veldo/toe_normalize.py report --price-per-1k-tokens 3.0 | head -2
+peg: 208901 tokens = 1.000 pt (median_standard_risk_shipped, era era-first-model, spec WARP-1401, sample 1)
+WARP-0100              - pt          0 tok       0.00 usd  (no recorded spend, so a point here would be a confident zero rather than a measurement)
+$ ... the rows that now carry spend, and the bottom line:
+peg: 208901 tokens = 1.000 pt (median_standard_risk_shipped, era era-first-model, spec WARP-1401, sample 1)
+WARP-0727          0.988 pt     206442 tok     619.33 usd
+WARP-1103          1.054 pt     220217 tok     660.65 usd
+WARP-1401          1.000 pt     208901 tok     626.70 usd
+total: 3.042 pt over 3 change(s), 635560 raw tokens, 171 row(s) with no point, eras ['era-first-model']
+$ python3 .veldo/toe_normalize.py peg
+{"basis": "median_standard_risk_shipped", "era": "era-first-model", "pegged": true, "reason": null, "risk": "standard", "sample": 1, "schema": "veldo.toe_peg/v1", "spec": "WARP-1401", "tokens": 208901}
+$ python3 scripts/selftest.py --suite 15_warp_1406_normalization
+selftest (PARTIAL, 1 of 34 suites): 60 passed, 0 failed in 0.91s
+
+--- why sample is 1 while three rows carry points: the peg SAMPLE counts standard-risk
+    candidates only, and the two other rows are other tiers, yet they are still POINTED
+    WARP-1401 risk: risk: standard - a new derivation module
+    WARP-0727 risk: risk: critical - this is the guard that 
+    WARP-1103 risk: risk: high - the footprint crosses from 
+    -> a peg whose BASIS is 'median_standard_risk_shipped' over a SAMPLE OF ONE is presented with
+       three decimals of point precision; sample is disclosed on the line, nothing stands down.
+
+===============================================================================
+TALLY - 34 derived falsifications driven, 27 reddened the row they named
+===============================================================================
+  AC1  M1  point is not tokens/peg .............................. TEETH (named row red)
+  AC1  M2  raw token column rounded to nearest 100 .............. TEETH
+  AC1  M3  recorded cost column scaled 100x ..................... TEETH
+  AC1  M4  point gate becomes spend_recorded (confident zero) ... TEETH
+  AC1  M5  unmeasured change gets 0.000 instead of None ......... NO TEETH for the LIVE row it
+                                                                  targeted (7 fixture rows red)
+  AC1  M6  every gate defeated at once .......................... TEETH (live row red)
+  AC1  M7  the recorded-zero reason collapsed into no-spend ..... TEETH
+  AC1  M8  recorded cost appended to every line, rounded ........ TEETH
+  AC1  M9  recorded cost put in the money column ................ TEETH
+  AC1  M10 points_total replaced by a raw-token figure .......... TEETH
+  AC2  M11 risk filter removed from the peg sample .............. TEETH
+  AC2  M12 peg = middle of INPUT order, not of sorted counts .... TEETH
+  AC2  M13 UPPER median taken ................................... TEETH
+  AC2  M14 unpeggable corpus fabricates a peg of 1 token ........ TEETH
+  AC2  M15 declared era no longer checked against the ledger .... TEETH
+  AC2  M16 malformed declared peg no longer reported ............ TEETH
+  AC2  M17 malformed declared peg falls back to the derivation .. TEETH
+  AC3  M18 normalize mutates the corpus it was handed ........... TEETH
+  AC3  M19 normalize touches the real event log ................. TEETH (live row red)
+  AC3  M20 the point cell is scaled by the price ................ TEETH
+  AC4  M21 previous_model dropped from the written key order .... NO TEETH - KeyError CRASH
+  AC4  M22 record_shift overwrites an existing entry ............ TEETH
+  AC4  M23 a row from another era is given a point .............. TEETH
+  AC4  M24 the peg lands in the EARLIEST era .................... TEETH
+  AC4  M25 straddle and unreadable folded into one reason ....... TEETH
+  AC5  M26 the newline check removed ............................ TEETH
+  AC5  M27 the validator refuses everything ..................... NO TEETH - ValueError CRASH
+  AC5  M28 one bad record empties the whole ledger .............. NO TEETH - 60 passed, 0 failed
+  AC5  M29 an absent ledger directory nags ...................... TEETH
+  AC5  M30 load_ledger ACCEPTS every malformed record .......... NO TEETH - 60 passed, 0 failed
+  AC5  M31 duplicate era ids both accepted ...................... NO TEETH - 60 passed, 0 failed
+  AC5  M32 two shifts at one instant both accepted .............. TEETH
+  AC5  M33 a REAL gate stage consults the module and reddens
+           the build (validate.run_all; gate exit 1 proven) ..... NO TEETH - 60 passed, 0 failed
+  C5   M34 engine twin drifts by one line ....................... TEETH
+
+  ADDITIVE CONTROL C1: recording a capability shift through the shipped CLI and three real spends
+  through the shipped writer leaves the suite at 60 passed, 0 failed, and the view lights up
+  correctly (peg WARP-1401 at 208901 tokens, three pointed rows, 171 standing down). No live-state
+  pin: using the feature does not redden anything.

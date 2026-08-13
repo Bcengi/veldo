@@ -805,4 +805,47 @@ with tempfile.TemporaryDirectory() as _d:
            and "estimate.py" not in _w1402_gate_text
            and "estimate.py" not in (ROOT / ".veldo/validate.py").read_text())
 
+# THE SPEC ID BECOMES A PATH, AND UNTIL 2026-08-13 IT WAS REFUSED NOWHERE. Ledger finding 71, found by
+# the independent review this item had never had, and REPRODUCED before being fixed: a spec whose `id:`
+# is `../policy` is accepted by validate.check_spec with ZERO errors, and write_record then wrote an
+# estimate record OVER .veldo/policy.yaml, 3977 bytes down to 848, with no `replace` and no refusal.
+# That file declares which paths are PROTECTED and what the risk tiers are, so a shipped writer could
+# delete the policy that governs it.
+# THE OVERWRITE GUARD DID NOT FAIL, IT WAS ASKED TOO EARLY: `p.exists()` ran before `d.mkdir()`, so for
+# `.veldo/estimates/../policy.yaml` it answered about a path that could not resolve yet and said False;
+# the write then ran after mkdir when the same path resolved. Both halves are asserted here.
+with tempfile.TemporaryDirectory() as _w1402_td:
+    _w1402_tr = Path(_w1402_td)
+    (_w1402_tr / ".veldo").mkdir(parents=True)
+    _w1402_victim = _w1402_tr / ".veldo" / "policy.yaml"
+    _w1402_victim.write_text("schema: veldo.policy/v1\nprotected_paths: []\n")
+    _w1402_before = _w1402_victim.read_bytes()
+    _w1402_trav = dict(_W1402_GOOD, spec="../policy")
+    _w1402_out = _w1402_raises(E1402.write_record, _w1402_trav,
+                               _w1402_tr / ".veldo" / "estimates")
+    expect("WARP-1402 finding 71: A SPEC ID THAT IS A PATH TRAVERSAL IS REFUSED BEFORE IT BECOMES A "
+           "PATH, and the file it would have destroyed is BYTE-IDENTICAL afterwards. The refusal is a "
+           "ValueError from the writer rather than a crash, and it comes from the claim ledger's ONE "
+           "definition of an id that cannot be stored faithfully rather than a second copy of that "
+           "rule here. Reproduced before the fix: policy.yaml went 3977 bytes to 848",
+           _w1402_out[1].startswith("ValueError:")
+           and _w1402_victim.read_bytes() == _w1402_before)
+    expect("WARP-1402 finding 71: the refusal NAMES the id and the basename it would have collapsed "
+           "onto, because an operator who is told only that a write was refused has to guess which of "
+           "their inputs was wrong",
+           "../policy" in _w1402_out[1] and ".._policy" in _w1402_out[1])
+    # THE ORDERING HALF, asserted separately because the guard was correct and consulted too early.
+    _w1402_ed = _w1402_tr / ".veldo" / "estimates2"
+    _w1402_ok1 = E1402.write_record(dict(_W1402_GOOD), _w1402_ed)
+    _w1402_second = _w1402_raises(E1402.write_record, dict(_W1402_GOOD), _w1402_ed)
+    expect("WARP-1402 finding 71: the overwrite guard is consulted where it can ANSWER. A second write "
+           "of the same id into a directory that now exists is refused, which is the property the "
+           "traversal exposed as order-dependent: the directory is created BEFORE the existence "
+           "question rather than after it",
+           Path(_w1402_ok1).is_file() and _w1402_second[1].startswith("ValueError:")
+           and "refusing to" in _w1402_second[1])
+    expect("WARP-1402 finding 71 NEGATIVE CONTROL: a LEGITIMATE spec id still writes, so the rows "
+           "above measure the traversal rather than a writer that now refuses everything",
+           Path(_w1402_ok1).name.endswith(".yaml") and "policy" not in Path(_w1402_ok1).name)
+
 del _w1402_re, _w1402_shutil
