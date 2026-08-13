@@ -1325,6 +1325,28 @@ declared falsifications rather than reading them, which is why they found what r
     SUPERSEDED in place: a proof record is a record of what a pass observed, so it is never edited into
     saying something that pass did not see.**
 
+80. **THE TEMPLATE EXCEPTION'S STATED REASON IS NOT WHAT THE TEMPLATE ACTUALLY DIFFERS BY. RECORDED,
+    NOT FIXED - no wrong answer is reachable, and the measurement that rules out the dangerous version
+    of this is the point of the entry.** `scripts/check_template_sync.sh` permanently excepts
+    `specs/TEMPLATE.md` from twin sync, reasoning that "the index is generated from this repository's own
+    specs, and the template carries local conventions". That reason is exactly right for `specs/index.md`
+    and `CLAUDE.md`, the other two exceptions. It is wrong about the template: the 20 lines the root copy
+    carries and `engine/specs/TEMPLATE.md` does not are **generic method guidance, not local
+    convention** - the four things a criterion carries (what is claimed, over what set, how completeness
+    is known, what would refute it) and the clause saying a declared falsification is not enough, drive
+    it. So an adopter receives the form without the two paragraphs this project paid weeks to learn.
+
+    **WHAT WAS CHECKED BEFORE RECORDING IT, because the dangerous reading was that the SHIPPED template
+    produces an invalid spec** - findings 61, 73 and 74 in one shape. It does not. `falsified_by` is
+    present as a FIELD in the engine copy, not merely in a comment, so a criterion written from it
+    carries what the gate requires. And both templates fail `validate.py spec` in exactly the same two
+    places, on their own inline guidance comments being read as front-matter values, which is
+    template-as-form behaviour in both trees and not drift. **A permanently excepted file was measured
+    rather than assumed, and the measurement is what turns this from a blocker into a note.**
+
+    Left alone under the stop rule: no user or gate can get a false answer from it, so copying the two
+    paragraphs across is an improvement to make deliberately rather than at 13:30 unattended.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
