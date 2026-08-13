@@ -1117,6 +1117,30 @@ declared falsifications rather than reading them, which is why they found what r
     found exactly three broken and named them. **A number that fails the smell test gets checked before
     it gets repeated, and this one failed it loudly.**
 
+74. **CHAPTER 13'S CAPABILITY SHIPS, AND THE PROOF IS THAT AN ADOPTER RAN IT.** Dmitry, 2026-08-13:
+    "Chapter 13, run review and ship them" and "Estimation is one of the most important things, I don't
+    want to cut anything". Nothing was cut.
+    The sequence was: six independent reviews (all six FAIL, twelve blockers), close every blocker, lay
+    the layer down, remove the exclusion as ONE set, then PROVE it. Measured in a tree produced by the
+    real publisher and scaffolded by the pack's own installer: `toe_reconcile report`, `toe_reconcile fit`
+    and `sizing_pass vocab` all exit 0. Before today all three exited 1 on a missing file. The installer
+    lays 41 modules where it laid 28 this morning.
+    **THE PROVING STEP FOUND WHAT EVERY CHECK MISSED, TWICE.** After laying down the closure the agents'
+    handover notes named, the transitive-closure check went GREEN and `toe_reconcile report` still exited
+    1, on `.veldo/metrics.py` - a module no list mentioned, reached at command time rather than at import.
+    Laying that down, it failed again on `metrics_event_stream.py`. Both were found by installing the pack
+    and running the command in a loop, laying down whatever it asked for next, until it exited zero.
+    **A GREEN CHECK IS NOT AN INSTALLED PRODUCT.** Findings 61 and 73 are this same lesson from two other
+    angles: 61 was an organ laid down without what it loads, 73 was a publisher shipping dependents
+    without their dependency. This is the third, and the only thing that caught it was running the
+    product as the adopter, in the tree the publisher produced. Every static check available said yes.
+    THE HOLD-BACK IS VINDICATED RATHER THAN OVERTURNED, and the record says so where the exclusion used
+    to be. It existed for one reason - these modules had never had their own independent review - and
+    that review found a writer that could overwrite `.veldo/policy.yaml`, a reader that made three specs
+    claim they touch no protected path when they do, and a spread floor reporting itself applied at 33
+    percent against its own 50 percent minimum. Caution would have been shipping them; the hold-back was
+    correctness.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

@@ -61,34 +61,23 @@ EXCLUDE = (
     "docs/research/**",
     "**/__pycache__/**",
     "**/*.pyc",
-    # PLAN-0014's foundation, held back from 1.0 DELIBERATELY. These four modules are gate green
-    # with real teeth and clean on every criterion the release audit applied, and they have not had
-    # their own independent review, which this method requires before something ships. Five rounds
-    # of confirmation examined a tree without them; adding unreviewed capability at the last moment
-    # would make the release something other than what was reviewed. Half of a plan is also worse
-    # than none of it: W3, W4, W5 and W8 are still to build. They ship in the release after this.
-    "engine/.veldo/estimate.py",
-    "engine/.veldo/toe_normalize.py",
-    "engine/.veldo/judgment_load.py",
-    "engine/.veldo/cost_to_change.py",
-    "engine/.veldo/examples/estimate-example.yaml",
-    # A HOLD-BACK THAT SHIPS HALF THE LAYER IS NOT A HOLD-BACK. Ledger finding 73, found by the
-    # independent review of WARP-1405 and MEASURED in the real published pack rather than reasoned
-    # about: these four load .veldo/estimate.py, which the five lines above withhold, so every
-    # composed pack carried them today and three of their commands died on a raw
-    # FileNotFoundError - `toe_reconcile report`, `toe_reconcile fit` and `sizing_pass vocab`, each
-    # exit 1 naming the missing file. The other two are held with them because they load the same
-    # module; that they break is inferred from the code rather than measured, and saying so is the
-    # difference between the two claims.
-    # Nothing that ships references any of the four: no pack, no engine doc, no engine spec mentions
-    # them, so withholding them removes no documented capability.
-    # THE COMMENT ABOVE WAS ALSO FALSE ABOUT THE TREE and the review caught that too: it said W3, W4,
-    # W5 and W8 are "still to build" as the reason for the hold-back, while four of their modules were
-    # built and shipping. A stated reason that the tree contradicts is worse than no reason.
-    "engine/.veldo/sizing_pass.py",
-    "engine/.veldo/toe_analogy.py",
-    "engine/.veldo/toe_budget.py",
-    "engine/.veldo/toe_reconcile.py",
+    # THE ESTIMATION LAYER SHIPS AS OF 2026-08-13, and the hold-back that preceded it is worth keeping
+    # in the record because it did its job. These modules were withheld for one stated reason: they had
+    # never had their own independent review, which this method requires before anything ships. That
+    # review has now happened - six specs, six fresh reviewers, WARP-1402/1403/1405/1406/1407/1409 -
+    # and it came back FAIL on all six with twelve blockers, every one of which is now closed. So the
+    # hold-back was not caution, it was correct: among the twelve were a writer that could overwrite
+    # .veldo/policy.yaml through a spec id of `../policy`, a footprint reader that made three specs
+    # claim they touch no protected path when they do, and a spread floor that reported itself applied
+    # at 33 percent against its own declared 50 percent minimum.
+    # WHAT THE HOLD-BACK ALSO GOT WRONG, recorded because a stated reason the tree contradicts is worse
+    # than no reason (ledger 73): the comment here claimed W3, W4, W5 and W8 were "still to build"
+    # while four of their modules were built AND shipping, without the dependency they load, so three
+    # commands in every composed pack died on a FileNotFoundError. A hold-back that ships half the
+    # layer is not a hold-back.
+    # THE SET GOES AS ONE SET. Removing part of it reds by design and names what is missing - driven by
+    # WARP-1403's agent both ways - because the modules load each other. It ships together with
+    # .veldo/init_scaffold.py laying the whole closure down, or not at all.
 )
 
 PRIVATE_NAMES = ROOT / ".veldo" / "private_names.txt"

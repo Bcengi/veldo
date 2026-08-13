@@ -90,6 +90,43 @@ _FILES = [
     # scaffolded repository uninstallable.
     ".veldo/executor.py",
     ".veldo/runlog.py",
+    # THE ESTIMATION LAYER, laid down 2026-08-13 so chapter 13's capability is a CAPABILITY and not a
+    # file. Ledger findings 61 and 73 are the two halves of why this list has to be closed: an organ
+    # laid down without what IT loads gives the adopter a traceback, and a publisher that withholds a
+    # dependency while shipping its dependents does the same thing one layer out. Three reviewers found
+    # that deleting the publish exclusions alone would ship files nobody could run, because init laid
+    # down NONE of these.
+    # THE SET IS THE CLOSURE, NOT THE FOUR MODULES THE BOOK NAMES. The four are estimate, toe_normalize,
+    # judgment_load and cost_to_change; the rest are what they load, reported as handover notes by the
+    # agents that fixed them and confirmed by the transitive-closure check, which named `plan.py` the
+    # moment two organs were added on 2026-08-13 and will name anything still missing here.
+    # Every one is tracked in BOTH homes, which finding 44 requires: the publisher derives the public
+    # tree from TRACKED files, so an untracked organ the scaffolder demands makes every scaffolded
+    # repository uninstallable.
+    ".veldo/estimate.py",
+    ".veldo/toe_normalize.py",
+    ".veldo/judgment_load.py",
+    ".veldo/cost_to_change.py",
+    ".veldo/sizing_pass.py",
+    ".veldo/toe_analogy.py",
+    ".veldo/toe_budget.py",
+    ".veldo/toe_reconcile.py",
+    # Loaded BY the above rather than part of the layer's own surface. claim.py arrived in this list
+    # because finding 71's fix routes every estimate path through the ledger's one id rule.
+    ".veldo/claim.py",
+    ".veldo/toe_corpus.py",
+    ".veldo/spend.py",
+    # FOUND BY RUNNING, NOT BY READING, and that distinction is the whole lesson of 2026-08-13. The
+    # transitive-closure check passed with these absent, because it follows the load calls it can SEE,
+    # and `toe_reconcile` reaches these two at command time. So the check was green while
+    # `toe_reconcile report` still exited 1 in a freshly installed pack on
+    # `FileNotFoundError: .veldo/metrics.py`. Discovered by installing the pack and running the command
+    # in a loop, laying down whatever it asked for next, until it exited 0 - which took two rounds.
+    # A GREEN CHECK IS NOT AN INSTALLED PRODUCT. Ledger 61 and 73 are the same lesson from two other
+    # angles, and this is the third: the only thing that proves an adopter can run something is running
+    # it as the adopter, in the tree the publisher produced.
+    ".veldo/metrics.py",
+    ".veldo/metrics_event_stream.py",
     # REACHED THROUGH executor.py, and the repository's own transitive closure check caught the
     # omission the moment the two above were added: "every .veldo module reachable from ANY laid
     # script is itself laid". Laying an organ without what IT loads is the same broken install one
