@@ -311,6 +311,30 @@ def _members(fm):
 # ---------------------------------------------------------------------------------------
 # ONE RECORD: every required field refused by name, then the member type rule.
 # ---------------------------------------------------------------------------------------
+def _target_type_message(where, kindm, target):
+    """The refusal for a member whose target id shape belongs to another artifact type.
+
+    THE OTHER MEMBER SHAPES ARE TESTED FIRST, and this lives in its own function so
+    record_problems does not grow another branch (its complexity is already a recorded finding).
+    SPEC_ID_RE is a superset of both member vocabularies, so asking it first told an author who
+    swapped kind and target between the two levels - the likeliest mistake in this contract -
+    that PLAN-9101 "is a spec id", and then explained a rule about specs that does not apply to
+    their file. A refusal that misnames the id's type is worse than a generic one, because the
+    author goes looking for the wrong thing. The spec-id sentence is reached only when no member
+    shape matches, which is what it was written for."""
+    other = [k for k, rx in sorted(MEMBER_ID_RE.items())
+             if k != kindm and rx.fullmatch(target)]
+    if other:
+        return ("%s (kind %s) targets %s, which is a %s id: the kind and the target disagree, so "
+                "either the kind is wrong or the target is" % (where, kindm, target, other[0]))
+    if SPEC_ID_RE.fullmatch(target):
+        return ("%s (kind %s) targets %s, which is a spec id: a spec binds to a plan and never to "
+                "a release, and the plan contract already types that id shape"
+                % (where, kindm, target))
+    return ("%s (kind %s) targets %r, which is not a %s id"
+            % (where, kindm, target, MEMBER_ID_RE[kindm].pattern))
+
+
 def record_problems(path, fm):
     """[(subject, cause, message)] for ONE release record's own fields and members.
 
@@ -384,15 +408,10 @@ def record_problems(path, fm):
                         "%s declares kind %r: a member is one of %s, and a plan is the floor "
                         "the recursion stops on" % (where, kindm, sorted(MEMBER_KINDS))))
         if shape is not None and target is not None and not shape.fullmatch(target):
-            if SPEC_ID_RE.fullmatch(target):
-                out.append((subject, CAUSE_MEMBER_TARGET_TYPE,
-                            "%s (kind %s) targets %s, which is a spec id: a spec binds to a "
-                            "plan and never to a release, and the plan contract already types "
-                            "that id shape" % (where, kindm, target)))
-            else:
-                out.append((subject, CAUSE_MEMBER_TARGET_TYPE,
-                            "%s (kind %s) targets %r, which is not a %s id"
-                            % (where, kindm, target, MEMBER_ID_RE[kindm].pattern)))
+            # NAME THE TYPE THE TARGET ACTUALLY IS. The three-way choice lives in
+            # _target_type_message, which states why the order of its tests is the load-bearing part.
+            out.append((subject, CAUSE_MEMBER_TARGET_TYPE,
+                        _target_type_message(where, kindm, target)))
         if target is not None:
             if target in seen:
                 out.append((subject, CAUSE_MEMBER_DECLARED_TWICE,
@@ -467,12 +486,24 @@ def member_cycles(records):
 def member_claims(records):
     """{target id: [release id, ...]} - who claims each member, so single parentage is a
     refusal rather than a convention. Sorted, so a refusal names the same two releases in the
-    same order on every machine."""
+    same order on every machine.
+
+    ONE ENTRY PER RELEASE, NEVER ONE PER MEMBER ENTRY. A release that declares the same target
+    twice has ONE authoring mistake, and it already has its own named refusal
+    (member_declared_twice). Counting the repeat here too produced a SECOND refusal claiming the
+    member has two parents and naming one release twice ("claimed as a member by 2 releases:
+    REL-1, REL-1"), which is factually false and inflates one mistake into two errors. The claim
+    is therefore made by the DISTINCT targets of each release."""
     claims = {}
     for rid in sorted(records):
+        claimed = set()
         for entry in _members(records[rid]["fm"]):
             if isinstance(entry, dict) and isinstance(entry.get("target"), str):
-                claims.setdefault(entry["target"], []).append(rid)
+                target = entry["target"]
+                if target in claimed:
+                    continue
+                claimed.add(target)
+                claims.setdefault(target, []).append(rid)
     return claims
 
 
@@ -583,13 +614,22 @@ def release_notices(releases_dir, plans_dir, parse):
     return notices
 
 
-def _stood_down(reason):
-    """The stand-down report: EVERY key a live report carries, all of them empty, plus the
-    condition that stood the check down. Identical between the two conditions except for that
-    one field, so a stand-down can never be mistaken for a live read of an empty corpus."""
+def _stood_down(reason, plan_dups):
+    """The stand-down report: EVERY key a live report carries, plus the condition that stood the
+    check down. Identical between the two conditions except for that one field and for the one
+    figure below, so a stand-down can never be mistaken for a live read of an empty corpus.
+
+    EVERY ZERO HERE IS A READING, NOT A CONSTANT, AND THE PLAN HALF IS THE ONE THAT COULD BE
+    FALSE. releases, members, members_resolved and the release half of duplicate_ids are zero BY
+    CONSTRUCTION: this branch is only reached when the release candidate file set is empty, so
+    there is nothing to count. The plan half is a reading of a DIFFERENT corpus, which standing
+    the release check down says nothing about, so it is COMPUTED and handed in rather than
+    printed as a confident zero. Printing [] there stated that the plan corpus carries no
+    duplicate id no matter what it carried, which is the one figure in this report that could be
+    a lie, and check_plan_ids refuses that duplicate whether or not any release exists."""
     return {"stood_down": True, "stand_down": reason, "releases": 0, "members": 0,
             "members_by_kind": {}, "members_resolved": 0, "members_unelaborated": 0,
-            "member_records": [], "duplicate_ids": {"release": [], "plan": []},
+            "member_records": [], "duplicate_ids": {"release": [], "plan": plan_dups},
             "digest_coverage": None, "problems": [], "notices": []}
 
 
@@ -611,11 +651,14 @@ def release_report(releases_dir, plans_dir, parse):
 
     A FIGURE WITH NO BASIS IS NOT PRINTED: an unresolved member carries digest None rather
     than an empty string, and digest_coverage is None rather than a confident 0.0 when no
-    member is declared at all."""
+    member is declared at all. The stood-down branch obeys the same rule: it still READS the
+    plan corpus for duplicate ids, because that figure has a basis this branch can reach and a
+    constant [] there would be a confident zero about a corpus nobody looked at."""
     d = Path(releases_dir)
     if not artifact_files(d):
         return _stood_down(STAND_DOWN_NO_DIRECTORY if not d.is_dir()
-                           else STAND_DOWN_EMPTY_REGISTRY)
+                           else STAND_DOWN_EMPTY_REGISTRY,
+                           plan_duplicate_ids(plans_dir, parse))
 
     records = release_registry(releases_dir, parse)
     plans = _plan_records(plans_dir, parse)

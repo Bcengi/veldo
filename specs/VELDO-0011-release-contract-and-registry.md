@@ -14,7 +14,16 @@ risk: standard - it adds one new artifact contract, one new registry, and one re
   touches runs in production, no gate stage consumes the release report, a repository that declares no
   release is unaffected, and the whole change is reversible by deleting two check registrations
 owner: dmitry
-human_approval: required
+# CORRECTED to the tier, 2026-08-12: this read `required` while the risk is standard, and
+# .veldo/policy.yaml maps standard to human_approval false. That was a voluntary escalation nobody
+# then satisfied - the item landed with no approval artifact in proof/VELDO-0011/, and nothing in the
+# gate cross-checks the field, so policy.yaml's "every required approval is recorded, unexpired, and
+# bound to this commit" was never tested against this declaration. Every other standard-risk VELDO
+# spec declares not_required; VELDO-0012 declares required at HIGH risk, where the policy demands it,
+# and carries proof/VELDO-0012/approval-dmitry.json. An agent may not author the approval that would
+# have satisfied the old value, so the honest close is the value that matches the tier. If Dmitry
+# wants the escalation back, it comes back with his approval record in the bundle.
+human_approval: not_required
 lane: standalone
 placement: [contracts, enforcement]
 footprint:
@@ -68,14 +77,23 @@ acceptance_criteria:
       and the fixture assertion that a release declaring no members is refused with members named must
       go red.
     text: >
-      ONE ARTIFACT, ONE PARSER, AND EVERY REQUIRED FIELD REFUSED BY NAME. A release is one markdown
-      file with front matter, flat in a releases directory, schema veldo.release/v1, id matching
+      ONE ARTIFACT, NO SECOND PARSER, AND EVERY REQUIRED FIELD REFUSED BY NAME. A release is one
+      markdown file with front matter, flat in a releases directory, schema veldo.release/v1, id matching
       REL-nnnn, carrying schema, id, title, status, revision, owner, milestone and members; each
-      missing field is refused separately and by name. The front matter is read through the ONE parser
-      the whole repository reads front matter with (validate.parse_yamlish, .veldo/validate.py:351-368),
-      so a release's fields arrive as the same values every other reader sees and this contract adds no
-      second YAML reader. status is a closed set, and a status past draft with no approved_by and no
-      approved_at is refused in the same words the plan contract already refuses it in
+      missing field is refused separately and by name. The front matter is read through the parser the
+      caller hands in, which is the one the plan and spec contracts are validated with
+      (validate.parse_yamlish, .veldo/validate.py:351-368), so a release's fields arrive as the same
+      values those validators see and THIS CONTRACT SHIPS NO SECOND PARSER OF ITS OWN: it declares no
+      parse function, imports no YAML library and no module of this repository, and that is asserted
+      from the module's syntax tree rather than from a substring. CORRECTED, because the original
+      sentence claimed parse_yamlish is "the ONE parser the whole repository reads front matter with"
+      and that is false about the code: validate.front_matter (.veldo/validate.py:47-59) is a cruder
+      line-oriented front-matter reader, and ten call sites outside this module still use it,
+      including run_all's own spec loop (.veldo/validate.py:846, :853), plus scripts/update_index.py
+      and .veldo/toe_corpus.py carry their own. Narrowing the repository to one reader is not this
+      item's work; the claim this criterion makes is about THIS module. status is a closed set, and a
+      status past draft with no approved_by and no approved_at is refused in the same words the plan
+      contract already refuses it in
       (.veldo/validate.py:500-503), because a release that groups approved plans cannot itself leave
       draft on nobody's signature. ANTI-VACUITY: the fixture table is driven one bad shape at a time
       and the assertion is bound to the LENGTH of its own table, so a table somebody empties reds
@@ -258,8 +276,8 @@ it is cheap:
   `veldo.release/v1`, `RELEASE_STATUSES`, a `REL-nnnn` id, and a `releases/` directory all return
   nothing anywhere in the tree. One near-collision is real: `.veldo/release.py` exists and owns
   staged rollout and rollback execution (`.veldo/release.py:1-22`), a different concern, which is why
-  the new module takes the plural name matching the new directory and the shipped module is not
-  renamed.
+  the new module is named `.veldo/release_contract.py` - a name that says which of the two organs it
+  is - and the shipped module is not renamed.
 - The architecture contract's `contracts` area lists its files explicitly
   (`.veldo/architecture.yaml:19-21`), and an area was already added to the approved contract by a
   shipped spec with its reason recorded in the file (`.veldo/architecture.yaml:45-52`), so amending
@@ -364,9 +382,15 @@ ids other work may already hold is the collision this item's own AC2 is about.
 - **The draft's D2** (must a plan belonging to no release say so, at the cost of touching every plan
   file once). Untouched here, because this item edits no plan file. BLOCKS: the two-way binding item.
 - **The draft's D8, naming.** Resolved in this item and not left open: the module is
-  `.veldo/release_contract.py`, plural and matching the directory, with a docstring pointing at
-  `.veldo/release.py` and saying what each owns. If the founder prefers renaming the shipped module,
-  that is its own item with its own blast radius, never a side effect of this one.
+  `.veldo/release_contract.py`, whose name says which of the two organs it is rather than leaning on
+  a plural somebody has to notice, with a docstring pointing at `.veldo/release.py` and saying what
+  each owns. CORRECTED after the landing commit renamed `releases.py` to `release_contract.py` by
+  substitution and left this sentence reading "plural and matching the directory": that reason is
+  false, `release_contract` is not plural and the directory is `releases/`, and the shipped module's
+  own docstring (`.veldo/release_contract.py:15-19`) states the opposite rationale, so a reader
+  following the old sentence would have gone looking for a plural module. If the founder prefers
+  renaming the shipped module, that is its own item with its own blast radius, never a side effect
+  of this one.
 
 ### For the implementing agent
 

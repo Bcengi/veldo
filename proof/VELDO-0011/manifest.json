@@ -12,7 +12,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0011_release_contract.py: selftest (PARTIAL, 1 of 34 suites): 104 passed, 0 failed in 0.11s"
+     "ref": "scripts/suites/18_veldo_0011_release_contract.py driven through the FULL gate: bash scripts/verify.sh GREEN at 93c1c8d with this item's review fixes applied - selftest 4647 passed, 0 failed; catalog 8 run, 15 not-applicable, 0 waived, 0 undeclared. The item fragment alone is 107 passed, 0 failed (104 before the fixes added three rows)"
+    },
+    {
+     "type": "unit",
+     "ref": "AC1: its 1 declared falsification was re-driven in this pass (the required-field loop deleted from record_problems) and reddened the row the field names, 'a release declaring NO MEMBERS is refused, with the field named on the page a reader sees', plus all nine required-field rows: 107 -> 95 passed, 12 failed. A SECOND mutation was driven for this criterion's parser leg, which review found was a substring absence: a front-matter reader added under the name _values_from reds the syntax-tree row, 107 -> 106 passed, 1 failed. Recorded at proof/VELDO-0011/driven-falsifications.txt"
     }
    ]
   },
@@ -22,7 +26,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0011_release_contract.py: selftest (PARTIAL, 1 of 34 suites): 104 passed, 0 failed in 0.11s"
+     "ref": "scripts/suites/18_veldo_0011_release_contract.py driven through the FULL gate: bash scripts/verify.sh GREEN at 93c1c8d with this item's review fixes applied - selftest 4647 passed, 0 failed; catalog 8 run, 15 not-applicable, 0 waived, 0 undeclared. The item fragment alone is 107 passed, 0 failed (104 before the fixes added three rows)"
+    },
+    {
+     "type": "unit",
+     "ref": "AC2: its 1 declared falsification was re-driven in this pass (id_paths reduced to one path per id) and reddened the row the field names, 'two plan files declaring PLAN-9999 are refused, and the refusal names BOTH files', plus the accessor, release-registry, ambiguous-member and stood-down plan-half rows: 107 -> 100 passed, 7 failed. Recorded at proof/VELDO-0011/driven-falsifications.txt"
     }
    ]
   },
@@ -32,7 +40,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0011_release_contract.py: selftest (PARTIAL, 1 of 34 suites): 104 passed, 0 failed in 0.11s"
+     "ref": "scripts/suites/18_veldo_0011_release_contract.py driven through the FULL gate: bash scripts/verify.sh GREEN at 93c1c8d with this item's review fixes applied - selftest 4647 passed, 0 failed; catalog 8 run, 15 not-applicable, 0 waived, 0 undeclared. The item fragment alone is 107 passed, 0 failed (104 before the fixes added three rows)"
+    },
+    {
+     "type": "unit",
+     "ref": "AC3: its 1 declared falsification was re-driven in this pass (the member-kind whitelist test deleted) and reddened the row the field names, 'a member declaring kind spec with target VELDO-0011 is refused': 107 -> 105 passed, 2 failed. TWO further mutations were driven for the two defects review found under this criterion: member_claims counting per member ENTRY reds the one-mistake-one-refusal row (107 -> 106 passed, 1 failed), and asking the spec-id test first reds both type-naming rows (107 -> 105 passed, 2 failed). Recorded at proof/VELDO-0011/driven-falsifications.txt"
     }
    ]
   },
@@ -42,7 +54,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0011_release_contract.py: selftest (PARTIAL, 1 of 34 suites): 104 passed, 0 failed in 0.11s"
+     "ref": "scripts/suites/18_veldo_0011_release_contract.py driven through the FULL gate: bash scripts/verify.sh GREEN at 93c1c8d with this item's review fixes applied - selftest 4647 passed, 0 failed; catalog 8 run, 15 not-applicable, 0 waived, 0 undeclared. The item fragment alone is 107 passed, 0 failed (104 before the fixes added three rows)"
+    },
+    {
+     "type": "unit",
+     "ref": "AC4: its 1 declared falsification was re-driven in this pass (member_digest returning plan_hash of the parsed front matter) and reddened the row the field names, the ONE-BYTE-below-the-front-matter negative control, plus the file-bytes row, the width row and the AC1 syntax-tree row (importlib is outside the import set that row allows): 107 -> 103 passed, 4 failed. Recorded at proof/VELDO-0011/driven-falsifications.txt"
     }
    ]
   },
@@ -52,7 +68,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0011_release_contract.py: selftest (PARTIAL, 1 of 34 suites): 104 passed, 0 failed in 0.11s"
+     "ref": "scripts/suites/18_veldo_0011_release_contract.py driven through the FULL gate: bash scripts/verify.sh GREEN at 93c1c8d with this item's review fixes applied - selftest 4647 passed, 0 failed; catalog 8 run, 15 not-applicable, 0 waived, 0 undeclared. The item fragment alone is 107 passed, 0 failed (104 before the fixes added three rows)"
+    },
+    {
+     "type": "unit",
+     "ref": "AC5: its 1 declared falsification was re-driven in this pass (the legacy-kind notice counted as a refusal) and reddened the row the field names, 'a release whose member plan declares kind mvp validates with ZERO errors and exactly ONE notice': 107 -> 105 passed, 2 failed. This criterion's LIVE row was also refuted by review as a lower bound on a live population and is rewritten: driven in both directions (16 of 17 live plans migrated off the legacy kind, which reddened the OLD row at 103 passed 1 failed, leaves the new one at 107 passed 0 failed; 17 of 17 puts the reading in its other branch at 106 passed 0 failed) and given teeth in both (with the migration complete AND the notice no longer reading the kind, the migration-complete row reds: 93 passed, 13 failed). Recorded at proof/VELDO-0011/driven-falsifications.txt"
     }
    ]
   }
@@ -60,13 +80,18 @@
  "checks": [
   {
    "name": "unit",
-   "status": "passed",
-   "detail": "scripts/suites/18_veldo_0011_release_contract.py driven through scripts/selftest.py: selftest (PARTIAL, 1 of 34 suites): 104 passed, 0 failed in 0.11s"
+   "detail": "scripts/suites/18_veldo_0011_release_contract.py driven through scripts/selftest.py inside the full gate: selftest 4647 passed, 0 failed. The fragment alone reports 107 passed, 0 failed, and a partial run is NOT cited as evidence anywhere in this manifest: the runner prints 'PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this' on that invocation, and the previous version of this file cited it five times",
+   "status": "passed"
   },
   {
    "name": "gate",
-   "status": "passed",
-   "detail": "bash scripts/verify.sh GREEN at e4ce85da9529; see .veldo/last_verify"
+   "detail": "bash scripts/verify.sh GREEN at 93c1c8d with this item's review fixes applied: selftest 4647 passed 0 failed, catalog 8 run 15 not-applicable 0 waived 0 undeclared, generated artifacts regenerated byte-identical (specs/index.md follows the corrected human_approval field), and .veldo/last_verify carries status green beside the commit and the veldo_version",
+   "status": "passed"
+  },
+  {
+   "name": "unit",
+   "detail": "declared falsifications re-driven in this pass: 5 of 5 criteria, 11 mutations in total including the six for the review findings. EVERY mutation in that count is written down in proof/VELDO-0011/driven-falsifications.txt with the counts before and after and the rows that reddened. The previous version of this manifest recorded no driven mutation at all and gave all five criteria the identical evidence string",
+   "status": "passed"
   }
  ],
  "rollback": "See the spec's own rollback clause: VELDO-0011-release-contract-and-registry.md"

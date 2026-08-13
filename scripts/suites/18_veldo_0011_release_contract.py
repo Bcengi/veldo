@@ -31,6 +31,7 @@ with an ACCEPTING row over a fixture that differs in exactly one field or one me
 required-field table is bound to its own LENGTH so emptying it reds, and every live read BRANCHES
 on what it measured rather than asserting that this repository stays as it is today.
 """
+import ast as _rc_ast
 import contextlib as _rc_ctx
 import hashlib as _rc_hashlib
 import io as _rc_io
@@ -48,6 +49,13 @@ _RCP = importlib.util.module_from_spec(_rc_pspec)
 _rc_pspec.loader.exec_module(_RCP)
 
 _RC_SRC = (ROOT / ".veldo" / "release_contract.py").read_text()
+
+# The standard-library names this module is allowed to reach for. A SUBSET rule rather than an
+# equality, so adding a stdlib import is not a gate event, while ANY module of this repository or
+# any third-party package (a YAML library above all) is - that is what dependency free means here,
+# and it is what makes the parse callable the caller hands in the only path from text to values.
+_RC_STDLIB_ONLY = {"hashlib", "re", "pathlib", "json", "os", "sys", "io", "collections",
+                   "itertools", "functools", "datetime", "typing", "dataclasses", "textwrap"}
 
 
 def _rc_block(label, fn):
@@ -119,6 +127,15 @@ def _rc_tree(root, releases=(), plans=(("PLAN-9101", "iteration"),), template=Fa
     return rd, pd
 
 
+def _rc_reldir(root, name, text):
+    """A releases directory holding exactly one release file, returned as the directory. Used
+    where the PLANS half is the live corpus and only the release side is a fixture."""
+    d = Path(root)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / name).write_text(text)
+    return d
+
+
 def _rc_check(rd, pd):
     """(errors, printed) for the release corpus check. The printed half matters as much as the
     count: the promise is that a refusal NAMES the file and the member, which is a promise about
@@ -149,7 +166,7 @@ def _rc_causes(rd, pd):
 
 
 # =======================================================================================
-# AC1. ONE ARTIFACT, ONE PARSER, AND EVERY REQUIRED FIELD REFUSED BY NAME.
+# AC1. ONE ARTIFACT, NO SECOND PARSER, AND EVERY REQUIRED FIELD REFUSED BY NAME.
 #
 # FALSIFIED BY (from the criterion itself): delete the required-field loop so only the schema
 # string is verified, and the row that a release declaring NO MEMBERS is refused with members
@@ -222,7 +239,8 @@ def _rc_ac1():
                "on the page a reader sees",
                errs3 == 1 and "missing front-matter field: members" in out3)
 
-        # ONE PARSER. The fields arrive as the same values every other reader sees, and front
+        # THE PARSER THE CALLER HANDS IN. The fields arrive as the same values the plan and spec
+        # validators see, and front
         # matter outside the subset is refused BY NAME rather than skipped.
         rd4, pd4 = _rc_tree(Path(d) / "tabs",
                             releases=[("REL-9004-tabs.md",
@@ -233,10 +251,39 @@ def _rc_ac1():
                "rather than skipped, through validate.parse_yamlish and no second reader",
                errs4 == 1 and _RCM.CAUSE_UNREADABLE in _rc_causes(rd4, pd4)
                and "outside the contract subset" in out4)
-        expect("VELDO-0011 AC1: this module ships NO second front-matter parser - it declares no "
-               "parse function of its own and receives validate.parse_yamlish from its caller",
+        # DERIVED FROM THE MODULE'S OWN SYNTAX TREE, not from substrings. The substring form
+        # ("def parse_yamlish" absent, "import yaml" absent) is kept because it is what the
+        # criterion names, but a parser under another name or another import spelling would walk
+        # straight past it, so the import closure and the defined-function set are read structurally.
+        # This module is dependency free BY CONSTRUCTION - it imports nothing of this repository and
+        # no YAML library - which is what makes the parse callable its caller hands in the only path
+        # from front-matter text to values. NOTE: validate.parse_yamlish is NOT the repository's only
+        # front-matter reader (validate.front_matter is a cruder one with ten live call sites); the
+        # claim asserted here is about THIS module shipping no second one.
+        _rc_defs, _rc_imports, _rc_tokenising = set(), set(), set()
+        for _node in _rc_ast.walk(_rc_ast.parse(_RC_SRC)):
+            if isinstance(_node, _rc_ast.FunctionDef):
+                _rc_defs.add(_node.name)
+            elif isinstance(_node, _rc_ast.Import):
+                _rc_imports.update(a.name.split(".")[0] for a in _node.names)
+            elif isinstance(_node, _rc_ast.ImportFrom):
+                _rc_imports.add((_node.module or "").split(".")[0])
+            elif (isinstance(_node, _rc_ast.Call)
+                  and isinstance(_node.func, _rc_ast.Attribute)
+                  and _node.func.attr in ("splitlines", "partition", "rpartition", "split")):
+                _rc_tokenising.add(_node.func.attr)
+        expect("VELDO-0011 AC1: this module ships NO second front-matter parser, read from its "
+               "SYNTAX TREE rather than from a substring - it defines no parse function, imports no "
+               "YAML library and no module of this repository, and NOTHING in it tokenises text by "
+               "line or by colon, which is the shape every hand-rolled front-matter reader has, so "
+               "the parse callable its caller hands in is the only path from text to values",
                "def parse_yamlish" not in _RC_SRC and "import yaml" not in _RC_SRC
-               and "parse(m.group(1))" in _RC_SRC)
+               and "parse(m.group(1))" in _RC_SRC
+               and not [n for n in _rc_defs if "parse" in n or "yaml" in n]
+               and _rc_tokenising == set()
+               and _rc_imports <= _RC_STDLIB_ONLY
+               and not (_rc_imports & {"yaml", "ruamel", "validate", "plan"})
+               and _rc_imports and _rc_defs and "front_matter" in _rc_defs)
 
         # THE APPROVAL REFUSAL IN THE PLAN CONTRACT'S OWN WORDS, and that is measured against the
         # plan validator's real output rather than against a sentence copied by hand.
@@ -380,10 +427,13 @@ def _rc_ac2_live():
            "the duplicate rather than on a pinned count",
            len(mapping) == len(files) and _RCM.plan_duplicate_ids(ROOT / "plans",
                                                                  V.parse_yamlish) == [])
+    # NON-VACUITY IS "THE CORPUS IS NOT EMPTY", never a floor on its size: `len(files) > 10` was a
+    # lower bound on a live population, so a repository that legitimately shrinks its plan corpus
+    # would red a row that is about the ACCESSOR agreeing with the registry.
     expect("VELDO-0011 AC2 LIVE: and that is not vacuous - the corpus really has plan files, and "
            "the accessor's id set is EQUAL to the shipped registry's id set in both directions, so "
            "this is a second ACCESSOR over one corpus and not a second spelling of the corpus",
-           len(files) > 10 and set(mapping) == set(reg)
+           len(files) >= 1 and len(mapping) >= 1 and set(mapping) == set(reg)
            and {p.name for paths in mapping.values() for p in paths}
            == {p.name for p in files})
 
@@ -421,16 +471,26 @@ def _rc_ac3():
                "name, saying a spec binds to a plan and never to a release",
                errs2 == 1 and _rc_causes(rd2, pd2) == {_RCM.CAUSE_MEMBER_TARGET_TYPE: 1}
                and "is a spec id" in out2)
-        # The type rule is symmetric: each kind takes its own id shape and no other.
-        for label, kind, target in (("a plan member pointing at a release", "plan", "REL-9309"),
-                                    ("a release member pointing at a plan", "release",
-                                     "PLAN-9101")):
+        # The type rule is symmetric: each kind takes its own id shape and no other, AND THE
+        # REFUSAL NAMES THE TYPE THE TARGET ACTUALLY IS. Swapping kind and target between the two
+        # levels is the likeliest mistake in this contract, and SPEC_ID_RE is a superset of both
+        # member vocabularies, so a refusal that asks it first tells the author PLAN-9101 "is a
+        # spec id" and then explains a rule about specs that does not apply to their file.
+        for label, kind, target, names in (
+                ("a plan member pointing at a release", "plan", "REL-9309", "release"),
+                ("a release member pointing at a plan", "release", "PLAN-9101", "plan")):
             rd3, pd3 = _rc_tree(Path(d) / label.replace(" ", "_"),
                                 releases=[("REL-9303-a.md",
                                            _rc_release("REL-9303", members=((kind, target),)))])
+            errs3b, out3b = _rc_check(rd3, pd3)
             expect("VELDO-0011 AC3: %s is refused, so the id shape is typed by the member's kind "
-                   "in both directions" % label,
-                   _rc_causes(rd3, pd3) == {_RCM.CAUSE_MEMBER_TARGET_TYPE: 1})
+                   "in both directions, and the refusal names %s the target ACTUALLY is rather "
+                   "than calling it a spec id and explaining a rule about specs"
+                   % (label, "the " + names + " id"),
+                   _rc_causes(rd3, pd3) == {_RCM.CAUSE_MEMBER_TARGET_TYPE: 1}
+                   and errs3b == 1
+                   and ("which is a %s id" % names) in out3b
+                   and "is a spec id" not in out3b and target in out3b)
         expect("VELDO-0011 AC3: the kind vocabulary and the id shape it implies are ONE table, so "
                "a kind cannot exist without a typed id shape and the two cannot disagree",
                _RCM.MEMBER_KINDS == set(_RCM.MEMBER_ID_RE) == {"plan", "release"}
@@ -502,9 +562,13 @@ def _rc_ac3():
                                        _rc_release("REL-9602", members=(("plan", "PLAN-9101"),)))])
         errs6, out6 = _rc_check(rd6, pd6)
         expect("VELDO-0011 AC3: a plan claimed as a member by two releases is refused with BOTH "
-               "releases named, so the member set is a forest by refusal",
+               "releases named - two DISTINCT releases, and the count it prints is the number of "
+               "them - so the member set is a forest by refusal",
                _RCM.CAUSE_MEMBER_CLAIMED_TWICE in _rc_causes(rd6, pd6)
-               and "REL-9601" in out6 and "REL-9602" in out6 and "PLAN-9101" in out6)
+               and "REL-9601" in out6 and "REL-9602" in out6 and "PLAN-9101" in out6
+               and "by 2 releases: REL-9601, REL-9602" in out6
+               and _RCM.member_claims(_RCM.release_registry(rd6, V.parse_yamlish))
+               == {"PLAN-9101": ["REL-9601", "REL-9602"]})
         expect("VELDO-0011 AC3 POSITIVE CONTROL: the SAME two releases with the second claiming a "
                "different plan validate with zero errors",
                _rc_check(*_rc_tree(Path(d) / "oneparent",
@@ -517,16 +581,26 @@ def _rc_ac3():
                                    plans=(("PLAN-9101", "iteration"),
                                           ("PLAN-9102", "iteration")))) == (0, ""))
         # And a member declared twice inside ONE release is refused too, which is the same
-        # ambiguity one level down.
+        # ambiguity one level down. ONE AUTHORING MISTAKE IS ONE REFUSAL: the causes are asserted
+        # as an EXACT multiset, because the repeat used to draw a SECOND refusal saying the member
+        # "is claimed as a member by 2 releases: REL-9701, REL-9701" - one release named twice, a
+        # count that is wrong, and a claim about parentage that is false. A row that asserted its
+        # cause with `in` could not see that extra false problem.
         rd7, pd7 = _rc_tree(Path(d) / "twice",
                             releases=[("REL-9701-a.md",
                                        _rc_release("REL-9701",
                                                    members=(("plan", "PLAN-9101"),
                                                             ("plan", "PLAN-9101"))))])
-        expect("VELDO-0011 AC3: one release declaring the same member twice is refused, naming the "
-               "position it repeats",
-               _RCM.CAUSE_MEMBER_DECLARED_TWICE in _rc_causes(rd7, pd7)
-               and "already declared as member 1" in _rc_check(rd7, pd7)[1])
+        errs7, out7 = _rc_check(rd7, pd7)
+        expect("VELDO-0011 AC3: one release declaring the same member twice is refused EXACTLY "
+               "ONCE, naming the position it repeats, and it is NOT also told the member has two "
+               "parents: the claim is made by each release's DISTINCT targets, so one release "
+               "cannot be its own second parent",
+               _rc_causes(rd7, pd7) == {_RCM.CAUSE_MEMBER_DECLARED_TWICE: 1}
+               and errs7 == 1 and "already declared as member 1" in out7
+               and "claimed as a member" not in out7
+               and _RCM.member_claims(_RCM.release_registry(rd7, V.parse_yamlish))
+               == {"PLAN-9101": ["REL-9701"]})
 
 
 _rc_block("AC3", _rc_ac3)
@@ -701,12 +775,39 @@ def _rc_ac5():
         dup.mkdir(parents=True)
         (dup / "PLAN-9997-a.md").write_text(_rc_plan("PLAN-9997"))
         (dup / "PLAN-9997-b.md").write_text(_rc_plan("PLAN-9997"))
+        dup_rep = _RCM.release_report(Path(d) / "dupplans" / "releases", dup, V.parse_yamlish)
         expect("VELDO-0011 AC5: with NO releases directory at all the release check stands down "
                "while check_plan_ids still refuses a duplicate plan id, so the adoption-safe "
                "posture never hides the corpus defect",
-               _RCM.release_report(Path(d) / "dupplans" / "releases", dup,
-                                   V.parse_yamlish)["stood_down"] is True
-               and _rc_plan_ids(dup)[0] == 1)
+               dup_rep["stood_down"] is True and _rc_plan_ids(dup)[0] == 1)
+        # AND THE STOOD-DOWN REPORT DOES NOT PRINT A CONFIDENT ZERO ABOUT THE OTHER CORPUS. Every
+        # other figure in that report is zero BY CONSTRUCTION (the release candidate file set is
+        # empty). The plan half of duplicate_ids is a reading of a corpus this branch never looked
+        # at, so it was the one figure that could be FALSE: it said the plan corpus carries no
+        # duplicate id while two files declared PLAN-9997. It is now COMPUTED, and asserted EQUAL
+        # to the accessor in both directions rather than pinned to a value.
+        for _label, _rd in (("no releases directory at all", Path(d) / "dupplans" / "releases"),
+                            ("a releases directory holding only the template",
+                             _rc_tree(Path(d) / "duptpl", template=True, plans=())[0])):
+            _rep = _RCM.release_report(_rd, dup, V.parse_yamlish)
+            expect("VELDO-0011 AC5: standing down on %s still READS the plan corpus - the plan half "
+                   "of duplicate_ids names the duplicate the other check refuses, and it equals the "
+                   "accessor's own reading rather than a constant" % _label,
+                   _rep["stood_down"] is True
+                   and _rep["duplicate_ids"]["plan"] == _RCM.plan_duplicate_ids(dup,
+                                                                               V.parse_yamlish)
+                   and _rep["duplicate_ids"]["plan"]
+                   == [("PLAN-9997", ["PLAN-9997-a.md", "PLAN-9997-b.md"])])
+        # ADDITIVE CONTROL: the SAME stood-down branch over a plan corpus with no duplicate reports
+        # an empty plan half, so the figure follows the corpus rather than always naming something.
+        expect("VELDO-0011 AC5: and over a plan corpus that carries NO duplicate the same "
+               "stood-down branch reports an empty plan half, so that figure is a reading in both "
+               "directions and not a line that always fires",
+               _RCM.release_report(Path(d) / "base" / "absent", pd,
+                                   V.parse_yamlish)["duplicate_ids"]
+               == {"release": [], "plan": _RCM.plan_duplicate_ids(pd, V.parse_yamlish)}
+               and _RCM.plan_duplicate_ids(pd, V.parse_yamlish) == []
+               and _RCM.artifact_files(pd) != [])
 
         # THE MVP DISPOSITION: reported once per release, naming the count and the files.
         mvp_rd, mvp_pd = _rc_tree(Path(d) / "mvpmember",
@@ -786,18 +887,55 @@ def _rc_ac5_live():
                                                        / rep["members"], 3))
                and all(m["digest"] is None or len(m["digest"]) == 64
                        for m in rep["member_records"]))
-    # The MEASUREMENT that chose report-over-refuse, as a READING: this corpus really does carry
-    # plan files declaring the legacy kind, so the rationale is not vacuous. The count is NOT
-    # pinned, and the non-mvp side is asserted only when the corpus still has one.
-    kinds = [(_RCM.front_matter(p, V.parse_yamlish)[0] or {}).get("kind")
-             for p in _RCM.artifact_files(ROOT / "plans")]
-    expect("VELDO-0011 AC5 LIVE: the plan corpus really does declare the legacy kind mvp, which is "
-           "why the member disposition reports instead of refusing; the count is read, not pinned",
-           kinds.count("mvp") > 1 and len(kinds) == len(_RCM.artifact_files(ROOT / "plans")))
-    if any(k != "mvp" for k in kinds):
-        expect("VELDO-0011 AC5 LIVE: and the corpus is not uniform, so a notice driven off this "
-               "kind discriminates between plans rather than firing on all of them",
-               len({k for k in kinds}) > 1)
+    # THE MEASUREMENT THAT CHOSE REPORT-OVER-REFUSE, BRANCHED ON WHAT IS THERE RATHER THAN ON A
+    # LOWER BOUND. The previous shape asserted that more than one live plan file declares the
+    # legacy kind mvp, which is a floor on a live population THIS ITEM'S OWN NOTICE EXISTS TO DRIVE
+    # TO ZERO: the notice tells authors the plan-level kind is legacy, and the row reddened the
+    # moment fewer than two files still carried it. Migrating 16 of the 17 took the suite to
+    # 103 passed 1 failed on this row alone. So the row now asserts the PROPERTY the pin stood in
+    # for - the notice DISCRIMINATES over whatever this corpus holds - and it requires no count to
+    # be any particular value, in either direction: legacy plans present, the notice names exactly
+    # those files and no others; migration complete, the notice fires on nothing.
+    live_kind = {}
+    for _p in _RCM.artifact_files(ROOT / "plans"):
+        _fm = _RCM.front_matter(_p, V.parse_yamlish)[0] or {}
+        if isinstance(_fm.get("id"), str):
+            live_kind[_fm["id"]] = (_fm.get("kind"), _p.name)
+    legacy = sorted(pid for pid, (k, _n) in live_kind.items() if k == _RCM.MVP)
+    current = sorted(pid for pid, (k, _n) in live_kind.items() if k != _RCM.MVP)
+    with tempfile.TemporaryDirectory() as _d:
+        # ONE release grouping EVERY plan this repository declares: legal (each target is claimed
+        # once), and it drives the disposition over the real corpus instead of a fixture.
+        _rd = Path(_d) / "livemembers"
+        _rd.mkdir(parents=True)
+        (_rd / "REL-9990-live.md").write_text(
+            _rc_release("REL-9990", members=tuple(("plan", pid) for pid in sorted(live_kind))))
+        _n = _RCM.release_notices(_rd, ROOT / "plans", V.parse_yamlish)
+        _errs, _out = _rc_check(_rd, ROOT / "plans")
+        if legacy:
+            expect("VELDO-0011 AC5 LIVE: this corpus still carries the legacy kind mvp, so the "
+                   "disposition REPORTS rather than refuses - a release grouping every live plan "
+                   "validates with zero errors and draws exactly one notice, which names every "
+                   "legacy plan file and no other plan file",
+                   _errs == 0 and len(_n) == 1 and _n[0][1] == _RCM.MVP
+                   and ("%d member plan(s)" % len(legacy)) in _n[0][2]
+                   and all(live_kind[pid][1] in _n[0][2] for pid in legacy)
+                   and all(live_kind[pid][1] not in _n[0][2] for pid in current)
+                   and "not a refusal" in _out)
+        else:
+            expect("VELDO-0011 AC5 LIVE: the migration this notice exists to cause is COMPLETE - no "
+                   "live plan declares the legacy kind mvp - so a release grouping every live plan "
+                   "draws no notice at all, and the disposition still refuses nothing",
+                   _errs == 0 and _n == [] and _out == "")
+        if legacy and current:
+            expect("VELDO-0011 AC5 LIVE: and the notice is the KIND and not the membership - a "
+                   "release grouping only plans that do NOT declare the legacy kind draws no "
+                   "notice, so this discriminates between live plans rather than firing on all",
+                   _RCM.release_notices(
+                       _rc_reldir(Path(_d) / "livecurrent", "REL-9991-live.md",
+                                  _rc_release("REL-9991",
+                                              members=tuple(("plan", pid) for pid in current))),
+                       ROOT / "plans", V.parse_yamlish) == [])
 
 
 _rc_block("AC5 LIVE", _rc_ac5_live)
@@ -859,4 +997,4 @@ def _rc_template_and_wiring():
 
 _rc_block("template and wiring", _rc_template_and_wiring)
 
-del _rc_ctx, _rc_hashlib, _rc_io, _rc_re, _rc_spec, _rc_pspec
+del _rc_ast, _rc_ctx, _rc_hashlib, _rc_io, _rc_re, _rc_spec, _rc_pspec

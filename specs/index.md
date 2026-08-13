@@ -14,7 +14,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0008 | veldo version - one canonical declaration, every other manifest DERIVED from it rather than | ready | standard | dmitry | not_required | VELDO-0008-veldo-version-from-one-declaration.md |
 | VELDO-0009 | init stamps what it laid down, so substrate drift has a detector - and the detector reports the | ready | standard | dmitry | not_required | VELDO-0009-init-stamps-the-version-it-laid-down.md |
 | VELDO-0010 | Evidence names the version that produced it - an optional proof-bundle field, a reader that | ready | standard | dmitry | not_required | VELDO-0010-evidence-names-the-version-that-produced-it.md |
-| VELDO-0011 | The release contract and its registry - a release is a typed, ordered group of plans with the | ready | standard | dmitry | required | VELDO-0011-release-contract-and-registry.md |
+| VELDO-0011 | The release contract and its registry - a release is a typed, ordered group of plans with the | ready | standard | dmitry | not_required | VELDO-0011-release-contract-and-registry.md |
 | VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |

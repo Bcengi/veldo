@@ -11,8 +11,15 @@ a caller capturing its output is the reason the refusal path has to exit non-zer
 
 THE LIVE ROWS ASSERT SET MEMBERSHIP AND AGREEMENT, NOT A NUMBER. Nothing here pins 3.10.1: a row
 that did would redden on the next release, which is the live-state defect this repository has been
-bitten by five times. What is asserted is that the derived set CONTAINS the manifest nothing checked
-before, and that every member agrees with the canonical declaration whatever it says.
+bitten by five times. What is asserted is that the derived set CONTAINS all three tracked
+declarations, and that every manifest CLAIMING TO DECLARE THIS PROJECT'S VERSION agrees with the
+canonical declaration whatever it says.
+
+AND THE SETS REQUIRED EMPTY ARE DEFECT SETS BY CONSTRUCTION, which is what makes them safe to
+require. Independent review drove the version this replaces: it required agreement over every tracked
+file NAMED plugin.json, so committing one third-party sample under a runner's testdata/ reddened the
+gate with a message claiming this repository's manifests disagree. A file that does not say it
+declares veldo's version is now reported and never accused, so growth cannot join the accused set.
 
 EVERY CRITERION'S BLOCK IS WRAPPED, so a raise reds a NAMED row instead of shortening the run.
 """
@@ -31,8 +38,23 @@ def _vv_block(label, fn):
                % (label, _vv_e), False)
 
 
+def _vv_first(seq):
+    """The first finding of a list, or an empty one. LEDGER FINDING 67: a mutation that EMPTIES a
+    findings list must red the row that NAMES the property, not the block's wrapper with an IndexError.
+    Driven while remediating this item: replacing the derived sweep with a hand-listed pair emptied the
+    disagreement list in a fixture tree, `rep["disagreements"][0]` raised, and AC3's named rows vanished
+    from the run instead of one of them reddening."""
+    return seq[0] if seq else {}
+
+
 def _vv_tree(d, canonical=None, others=()):
-    """A tree with a canonical manifest and any number of other manifests, as real files."""
+    """A tree with a canonical manifest and any number of other manifests, as real files.
+
+    A DICT BODY IS GIVEN THIS PROJECT'S NAME unless it already declares one, because a manifest that
+    does not say WHOSE version it declares is not this project's (see version.attribution), so a
+    fixture built without the name would be exercising the attribution path while its row claims to be
+    about agreement. A raw string body is written verbatim, which is how the unreadable cases are
+    built."""
     base = Path(d)
     if canonical is not None:
         p = base / VV.CANONICAL
@@ -41,6 +63,9 @@ def _vv_tree(d, canonical=None, others=()):
     for rel, body in others:
         q = base / rel
         q.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(body, dict) and "plugins" not in body:
+            body = dict(body)
+            body.setdefault("name", VV.PLUGIN_NAME)
         q.write_text(body if isinstance(body, str) else json.dumps(body))
     return base
 
@@ -72,10 +97,14 @@ def _vv_marketplace(d, entries, top=None, others=()):
 
 def _vv_ac1():
     live = VV.tracked_manifests(ROOT)
-    expect("VELDO-0008 AC1: the derived set INCLUDES packs/antigravity/plugin.json - a third "
-           "declaration of this project's version that NOTHING checked before this item. The one "
-           "shipped assertion named two files, and its own comment says the manifests drifted apart "
-           "once. Same hand-listed-pair defect as seven template pairs guarding nine modules",
+    expect("VELDO-0008 AC1: the derived set INCLUDES all three tracked declarations, packs/antigravity "
+           "/plugin.json among them. THE PREMISE THIS ROW USED TO CARRY WAS FALSE and independent "
+           "review measured it: it said nothing checked that third manifest before this item, when "
+           "WARP-1311 AC5 already swept all three BY DERIVATION (the marketplace's plugin entries plus "
+           "packs/*/plugin.json and packs/*/.claude-plugin/plugin.json) and reds when any one of them "
+           "moves. What this set adds is reach - derived from git ls-files by FILENAME, so a "
+           "declaration at a shape none of those globs matches is covered by arriving - and a NAMED "
+           "canonical side, so a disagreement can say which file to edit",
            "packs/antigravity/plugin.json" in live
            and ".claude-plugin/marketplace.json" in live
            and "packs/claude/.claude-plugin/plugin.json" in live)
@@ -83,11 +112,43 @@ def _vv_ac1():
            "(%d), so a sweep that matched nothing - which would satisfy every agreement assertion "
            "below - reds here instead" % len(live),
            len(live) > 2)
-    expect("VELDO-0008 AC1: fixture manifests are EXCLUDED with their reason declared - they exist to "
-           "be read by a runner's own tests and are deliberately not this project's version, so "
-           "sweeping them in would manufacture disagreements out of test data",
-           not any("fixtures" in Path(rel).parts for rel in live)
-           and VV.EXCLUDE_PARTS == ("fixtures",))
+
+    # THE DECLARED EXCLUSION, PROVEN BY BUILDING ONE. Independent review measured the row that used to
+    # stand here holding with the exclusion DELETED from both copies of the module: its two clauses
+    # were `no live path contains 'fixtures'`, true because the tracked fixtures are named
+    # pass.plugin.json and fail.plugin.json so the NAME filter already drops them, and
+    # `EXCLUDE_PARTS == ('fixtures',)`, a literal compared with itself. Nothing ever constructed a
+    # fixture manifest to be excluded, so a claimed exclusion had no behaviour behind it.
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_tree(d, "9.9.9", [("scripts/runners/plugin/fixtures/plugin.json",
+                                      {"name": VV.PLUGIN_NAME, "version": "1.0.0"})])
+        got_fx = VV.tracked_manifests(base)
+        rep_fx = VV.version_report(base)
+        expect("VELDO-0008 AC1: a fixture manifest named exactly plugin.json under a fixtures/ path, "
+               "DECLARING THIS PROJECT'S NAME and a DIFFERENT version, is EXCLUDED from the derived "
+               "set and therefore accused of nothing. Built rather than asserted: the name filter "
+               "cannot save this one and attribution cannot either, so the exclusion is the only thing "
+               "keeping it out and deleting EXCLUDE_PARTS reds this row",
+               "scripts/runners/plugin/fixtures/plugin.json" not in got_fx
+               and rep_fx["disagreements"] == [] and rep_fx["cause"] is None
+               and rep_fx["checked"] == 1)
+
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_tree(d, "9.9.9", [("scripts/runners/plugin/testdata/plugin.json",
+                                      {"name": VV.PLUGIN_NAME, "version": "1.0.0"})])
+        got_td = VV.tracked_manifests(base)
+        rep_td = VV.version_report(base)
+        expect("VELDO-0008 AC1 NEGATIVE CONTROL for the exclusion: the SAME manifest one directory "
+               "over, not under fixtures/, IS swept and IS reported as a disagreement - so the "
+               "exclusion measures the declared path component rather than the sweep being blind to "
+               "this shape of file",
+               "scripts/runners/plugin/testdata/plugin.json" in got_td
+               and [x["manifest"] for x in rep_td["disagreements"]]
+               == ["scripts/runners/plugin/testdata/plugin.json"])
+
+    expect("VELDO-0008 AC1: and no fixture path survives into the LIVE derived set, whatever the "
+           "tracked fixtures are called",
+           not any("fixtures" in Path(rel).parts for rel in live))
 
     with tempfile.TemporaryDirectory() as d:
         base = _vv_tree(d, "9.9.9", [("packs/new/plugin.json", {"version": "9.9.9"})])
@@ -228,15 +289,15 @@ def _vv_ac3():
         base = _vv_tree(d, "3.10.1", [("packs/drifted/plugin.json", {"version": "3.9.0"})])
         rep = VV.version_report(base)
         lines = VV.report_lines(rep)
-        d0 = rep["disagreements"][0]
+        d0 = _vv_first(rep["disagreements"])
         expect("VELDO-0008 AC3: a disagreement names BOTH manifests AND BOTH versions. 'The versions "
                "differ' is not actionable; 'this file says 3.9.0 and the canonical one says 3.10.1' "
                "is - and which side is wrong is not always the copy, which is exactly why both values "
                "have to be in the record",
                len(rep["disagreements"]) == 1
-               and d0["manifest"] == "packs/drifted/plugin.json"
-               and d0["declares"] == "3.9.0" and d0["canonical_declares"] == "3.10.1"
-               and d0["canonical"] == VV.CANONICAL
+               and d0.get("manifest") == "packs/drifted/plugin.json"
+               and d0.get("declares") == "3.9.0" and d0.get("canonical_declares") == "3.10.1"
+               and d0.get("canonical") == VV.CANONICAL
                and rep["cause"] == VV.CAUSE_DISAGREEMENT
                and any("3.9.0" in ln and "3.10.1" in ln for ln in lines))
 
@@ -248,13 +309,46 @@ def _vv_ac3():
                rep2["disagreements"] == [] and rep2["cause"] is None and rep2["checked"] == 2)
 
     with tempfile.TemporaryDirectory() as d:
-        base = _vv_tree(d, "3.10.1", [("packs/broken/plugin.json", "{not json")])
+        base = _vv_tree(d, "3.10.1", [("packs/broken/plugin.json", {"name": VV.PLUGIN_NAME})])
         rep3 = VV.version_report(base)
-        expect("VELDO-0008 AC3: an UNPARSEABLE manifest is its own finding, separate from a "
-               "disagreement, because the fix differs - one file needs repairing and the other needs "
-               "a number changed",
+        expect("VELDO-0008 AC3: a manifest that SAYS IT IS THIS PROJECT'S and declares no readable "
+               "version is UNPARSEABLE - its own finding, separate from a disagreement, because the fix "
+               "differs: one file needs repairing and the other needs a number changed",
                [u["manifest"] for u in rep3["unparseable"]] == ["packs/broken/plugin.json"]
-               and rep3["disagreements"] == [])
+               and rep3["disagreements"] == [] and rep3["checked"] == 2)
+
+    # ATTRIBUTION: WHOSE VERSION IS THIS. Independent review drove the defect these rows close - a
+    # tracked third-party sample at engine/scripts/runners/plugin/testdata/plugin.json reddened the
+    # gate with a message claiming THIS repository's version manifests disagree, and the plugin-load
+    # runner's own default manifest name is literally plugin.json.
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_tree(d, "3.10.1", [("engine/scripts/runners/plugin/testdata/plugin.json",
+                                       {"name": "third-party-sample", "version": "1.0.0"})])
+        repf = VV.version_report(base)
+        lines_f = VV.report_lines(repf)
+        expect("VELDO-0008 AC3: a manifest naming SOMEBODY ELSE is NOT THIS PROJECT'S - reported by "
+               "path with the reason, accused of nothing, and counted in `swept` but not in `checked`. "
+               "The sweep finds candidates by FILENAME, which is the right way to find them and the "
+               "wrong way to decide whose they are; conflating the two made this reader tell a "
+               "maintainer that a vendored sample was this repository's version manifest drifting",
+               repf["disagreements"] == [] and repf["cause"] is None
+               and [n["manifest"] for n in repf["not_this_project"]]
+               == ["engine/scripts/runners/plugin/testdata/plugin.json"]
+               and "third-party-sample" in _vv_first(repf["not_this_project"]).get("detail", "")
+               and (repf["swept"], repf["checked"]) == (2, 1)
+               and any("NOT THIS PROJECT'S" in ln for ln in lines_f))
+
+    with tempfile.TemporaryDirectory() as d:
+        base = _vv_tree(d, "3.10.1", [("vendor/tool/plugin.json", "{not json")])
+        repu = VV.version_report(base)
+        expect("VELDO-0008 AC3: a file named plugin.json that cannot be read as JSON AT ALL cannot be "
+               "attributed either, so it is NAMED as not this project's rather than accused of "
+               "declaring the wrong version. A reader may not tell a maintainer to fix a number in a "
+               "file it could not even parse, and it may not require a set that any vendored corrupt "
+               "manifest can join to stay empty",
+               repu["disagreements"] == [] and repu["unparseable"] == []
+               and [n["manifest"] for n in repu["not_this_project"]] == ["vendor/tool/plugin.json"]
+               and "cannot be attributed" in _vv_first(repu["not_this_project"]).get("detail", ""))
 
     with tempfile.TemporaryDirectory() as d:
         base = _vv_marketplace(d, [{"name": "veldo-companion", "version": "1.0.0"},
@@ -273,13 +367,26 @@ def _vv_ac3():
                and repi["version"] == "3.10.1" and repi["checked"] == 3
                and repi["manifests"][VV.CANONICAL] == "3.10.1")
 
-    expect("VELDO-0008 AC3 OVER THE LIVE TREE: every derived manifest AGREES with the canonical "
-           "declaration, whatever it says. Nothing here pins the number - a row asserting 3.10.1 "
-           "would redden on the next release, which is the live-state defect this repository has "
-           "been bitten by five times",
-           VV.version_report(ROOT)["disagreements"] == []
-           and VV.version_report(ROOT)["unparseable"] == []
-           and VV.version_report(ROOT)["version"] is not None)
+    _vv_lrep = VV.version_report(ROOT)
+    expect("VELDO-0008 AC3 OVER THE LIVE TREE: every manifest that CLAIMS TO DECLARE THIS PROJECT'S "
+           "VERSION agrees with the canonical declaration, whatever it says. Nothing here pins the "
+           "number, and the two sets required empty are DEFECT SETS BY CONSTRUCTION - a file saying it "
+           "declares veldo's version and declaring the wrong one, or none that can be read, is wrong "
+           "however the tree grows. Independent review drove the version this replaces: it equated 'a "
+           "tracked file named plugin.json' with 'a declaration of THIS project's version', so "
+           "committing one third-party sample reddened the gate with a message claiming this "
+           "repository's manifests disagree. MEASURED at this run, pinned nowhere: %d swept by name, "
+           "%d of them this project's, %d belonging to somebody else or unreadable"
+           % (_vv_lrep["swept"], _vv_lrep["checked"], len(_vv_lrep["not_this_project"])),
+           _vv_lrep["disagreements"] == []
+           and _vv_lrep["unparseable"] == []
+           and _vv_lrep["version"] is not None)
+    expect("VELDO-0008 AC3 ANTI-VACUITY over the live tree: MORE THAN TWO manifests were attributed to "
+           "this project (%d), so the agreement above cannot hold because attribution swept the whole "
+           "set away - which is the one way narrowing a domain can turn a real check into a green one"
+           % _vv_lrep["checked"],
+           _vv_lrep["checked"] > 2
+           and _vv_lrep["checked"] + len(_vv_lrep["not_this_project"]) == _vv_lrep["swept"])
 
 
 _vv_block("AC3", _vv_ac3)
@@ -364,13 +471,34 @@ def _vv_ac5():
         base = _vv_tree(d, "7.0.0")
         rep = VV.version_report(base)
         lines = VV.report_lines(rep)
-        expect("VELDO-0008 AC5: a tree with a canonical declaration and NO other manifest - which is "
-               "what an adopting repository looks like - reports AGREEMENT over a set of ONE with the "
-               "count named. Not silence, and not a claim that many copies were checked: the count "
-               "that was checked is part of the answer",
-               rep["checked"] == 1 and rep["version"] == "7.0.0"
+        expect("VELDO-0008 AC5: a tree with a canonical declaration and NO other manifest reports "
+               "AGREEMENT over a set of ONE with the count named. Not silence, and not a claim that "
+               "many copies were checked: the count that was checked is part of the answer. THIS IS NOT "
+               "WHAT AN ADOPTING REPOSITORY LOOKS LIKE, and the row used to say it was - independent "
+               "review installed one and measured it: the scaffolder lays .veldo/version.py and NO "
+               "marketplace manifest, so a real adopter's tree is VERSION_CANONICAL_ABSENT, which AC2 "
+               "and AC4 cover, and what its veldo version IS lives in the install stamp that "
+               "VELDO-0009's drift() reads. What this row covers is a MARKETPLACE with one entry and no "
+               "packs, and the honest report over a set of one",
+               rep["checked"] == 1 and rep["swept"] == 1 and rep["version"] == "7.0.0"
                and rep["cause"] is None and rep["disagreements"] == []
                and any("1 manifest(s) checked" in ln for ln in lines))
+
+    # AND THE STATE A REAL ADOPTER IS IN, ASSERTED HERE SO THE CLAIM ABOVE CANNOT DRIFT BACK. Driven
+    # rather than described: the reader refuses in a tree laid down by the shipped scaffolder.
+    with tempfile.TemporaryDirectory() as d:
+        base = Path(d)
+        (base / ".veldo").mkdir(parents=True)
+        (base / ".veldo" / "installed.json").write_text(json.dumps(
+            {"schema": "veldo.installed/v1", "version": "7.0.0"}))
+        repa = VV.version_report(base)
+        expect("VELDO-0008 AC5: in an ADOPTER-SHAPED tree - an install stamp and no marketplace "
+               "manifest, because an adopting repository is not a marketplace - this reader REFUSES "
+               "with %s over a set of ZERO rather than reporting agreement with itself. The set of one "
+               "above is a marketplace, not an adopter, and conflating them let the criterion be "
+               "justified by a tree nothing in the field produces" % VV.CAUSE_CANONICAL_ABSENT,
+               repa["cause"] == VV.CAUSE_CANONICAL_ABSENT and repa["version"] is None
+               and repa["checked"] == 0 and repa["swept"] == 0)
     expect("VELDO-0008 AC5: the report carries ONE KEY SHAPE whether it refused or not, so a "
            "consumer never guesses whether a key is missing or genuinely empty",
            sorted(VV.version_report(ROOT)) == sorted(VV.REPORT_KEYS)

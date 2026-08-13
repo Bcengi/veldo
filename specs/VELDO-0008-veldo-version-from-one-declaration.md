@@ -51,17 +51,29 @@ acceptance_criteria:
   - id: AC1
     falsified_by: >
       Replace the derived manifest sweep in .veldo/version.py with a hand-written pair naming
-      packs/claude and the marketplace, and the assertion that the checked set INCLUDES
-      packs/antigravity/plugin.json - a third declaration nothing checked before this item - must go
+      packs/claude and the marketplace, and the assertion that the checked set INCLUDES all three
+      tracked declarations must go red. ALSO delete the two lines that apply EXCLUDE_PARTS, and the row
+      asserting that a fixture manifest named plugin.json under a fixtures/ path is excluded must go
       red.
     text: >
-      EVERY MANIFEST THAT DECLARES A VERSION IS DERIVED, NOT LISTED. MEASURED on 2026-08-12: three
-      tracked files declare this version and the only assertion covering them named TWO, so
-      packs/antigravity/plugin.json was unguarded - the same hand-listed-pair defect that let seven
-      listed template pairs guard nine modules. The sweep enumerates every tracked plugin.json and
-      marketplace.json and derives the set, so a pack added later is covered by arriving rather than by
-      being remembered. NEGATIVE CONTROL: the derived set is asserted NON-EMPTY and to contain more
-      than two members, because a sweep that matched nothing would satisfy every later assertion.
+      EVERY MANIFEST THAT DECLARES A VERSION IS DERIVED, NOT LISTED. The sweep enumerates every tracked
+      plugin.json and marketplace.json and derives the set, so a pack added later is covered by arriving
+      rather than by being remembered. THE MEASURED GAP THIS CRITERION USED TO CLAIM WAS FALSE, and
+      independent review measured it: it said the only assertion covering the three declarations named
+      TWO, leaving packs/antigravity/plugin.json unguarded. WARP-1311 AC5 already covered all three BY
+      DERIVATION - the marketplace's plugin entries plus the globs packs/*/plugin.json and
+      packs/*/.claude-plugin/plugin.json, requiring at least three sites with exactly one distinct value
+      - and driving it reds that row. What existed was a derived check PLUS a redundant weaker hardcoded
+      pair (WARP-1508 AC4). WHAT THIS ADDS, honestly: reach, because deriving from git ls-files by
+      FILENAME covers a declaration at a shape none of those three globs matches; a NAMED canonical
+      side, so a disagreement says which file to edit rather than only that the sites differ; and a
+      reader with a CLI an adopter can run rather than an assertion inside a reviewer-notes suite.
+      NEGATIVE CONTROL: the derived set is asserted NON-EMPTY and to contain more than two members,
+      because a sweep that matched nothing would satisfy every later assertion. AND THE DECLARED FIXTURE
+      EXCLUSION IS PROVEN BY BUILDING ONE - a manifest named exactly plugin.json under a fixtures/ path,
+      declaring this project's name and a different version - because the row that used to claim it held
+      with the exclusion deleted from both copies of the module: a claimed exclusion is a claim about
+      code and needs behaviour behind it.
   - id: AC2
     falsified_by: >
       Make the reader fall back to a default string when the canonical declaration is absent in
@@ -88,12 +100,25 @@ acceptance_criteria:
   - id: AC3
     falsified_by: >
       Report only that the versions differ in .veldo/version.py, dropping the two values and two
-      paths, and the assertion that a disagreement names BOTH files and BOTH versions must go red.
+      paths, and the assertion that a disagreement names BOTH files and BOTH versions must go red. ALSO
+      make attribution() return True for every manifest, and the rows asserting that a manifest naming
+      somebody else, and one that cannot be parsed at all, are NAMED rather than accused must go red.
     text: >
       A DISAGREEMENT NAMES BOTH SIDES. "The versions differ" is not actionable; "this manifest says
       3.10.1 and the canonical declaration says 3.11.0" is, and it also lets a reader see which one is
       wrong, which is not always the copy. The manifests drifted apart once already, which is why an
-      assertion exists at all, and the fix for a drift depends entirely on which side moved.
+      assertion exists at all, and the fix for a drift depends entirely on which side moved. AND WHOSE
+      VERSION IS THIS IS A SEPARATE QUESTION FROM WHAT VERSION IS IT. Independent review drove the
+      defect: this equated "a tracked file named plugin.json" with "a declaration of THIS project's
+      version", so committing one third-party sample under a runner's testdata/ reddened the gate with a
+      message claiming this repository's version manifests disagree - and the plugin-load runner's own
+      default manifest name is literally plugin.json. Attribution is now answered the way the canonical
+      read answers it, BY IDENTITY: a marketplace is ours when its list carries an entry named veldo, a
+      plugin manifest is ours when its own name is veldo, and anything else is REPORTED BY PATH WITH ITS
+      REASON and accused of nothing. That is also what makes the live rows legitimate: the sets required
+      empty hold only files CLAIMING to declare this project's version, which is a defect set by
+      construction that no unrelated growth can join. The report carries both denominators, swept and
+      checked, so a reader can see what it looked at and decided was none of its business.
   - id: AC4
     falsified_by: >
       Make the CLI print a version even when the canonical declaration is absent in .veldo/version.py,
@@ -116,12 +141,18 @@ acceptance_criteria:
       that a tree with a canonical declaration and NO other manifest reports agreement over a set of
       one, naming that it found only one, must go red.
     text: >
-      A TREE WITH ONE MANIFEST AGREES WITH ITSELF, AND SAYS SO. An adopting repository has a canonical
-      declaration and no packs, so the sweep finds one manifest and the honest report is agreement over
-      a set of ONE with the count named - not silence, and not a claim that many copies were checked.
-      This is the same honesty the other read models carry: the count that was checked is part of the
-      answer. No gate stage is added by this item; the existing suite assertion is superseded by the
-      derived one.
+      A TREE WITH ONE MANIFEST AGREES WITH ITSELF, AND SAYS SO. A MARKETPLACE with one entry and no
+      packs finds one manifest, and the honest report is agreement over a set of ONE with the count
+      named - not silence, and not a claim that many copies were checked. This is the same honesty the
+      other read models carry: the count that was checked is part of the answer. THIS CRITERION USED TO
+      CALL THAT TREE AN ADOPTING REPOSITORY AND IT IS NOT ONE. Independent review installed one and
+      measured it: the shipped scaffolder lays .veldo/version.py and no .claude-plugin at all, so a real
+      adopter's tree is VERSION_CANONICAL_ABSENT - the bare CLI refuses and exits 1, which AC2 and AC4
+      cover - and what its veldo version IS lives in the install stamp that VELDO-0009's drift() reads,
+      as drift()'s own docstring in the same module already said. So the row is asserted over the
+      marketplace it actually describes, and the adopter-shaped tree gets its own row asserting the
+      refusal, so the claim cannot drift back. No gate stage is added by this item; the existing suite
+      assertion is superseded by the derived one.
 required_evidence: [unit]
 rollback: >
   Delete .veldo/version.py and its suite fragment. No manifest changes, no released number moves, and
@@ -140,14 +171,28 @@ Three tracked files declare this project's version, and on 2026-08-12 all three 
 - `packs/antigravity/plugin.json`
 
 One shipped assertion compares the first two, and its own comment says why: **they drifted apart
-once and the marketplace copy is what an adopter installs from.** It names two files. The third has
-never been checked by anything.
+once and the marketplace copy is what an adopter installs from.** It names two files.
 
-That is the hand-listed-pair defect this repository has now shipped three times: seven listed
-template pairs guarding nine modules, two lists in the init scaffolder missing two organs each, and
-now two named manifests out of three. The fix is the same every time - derive the set - and the
-reason is the same: a list is a promise somebody will remember, and the thing it protects is exactly
-what people forget.
+**This spec used to say the third had never been checked by anything, and that was false.** Independent
+review measured it and the correction belongs here rather than in a footnote, because the false premise
+is what made a strictly weaker replacement look like a strengthening. `WARP-1311 AC5`, in
+`scripts/suites/01_warp_0101_reviewer_notes.py` and older than this item, already swept all three **by
+derivation**: every plugin entry of `.claude-plugin/marketplace.json` plus the globs
+`packs/*/plugin.json` and `packs/*/.claude-plugin/plugin.json`, asserting at least three sites carrying
+exactly one distinct value. Its own comment says it was written to replace a hardcoded pair for this
+exact reason. Setting `packs/antigravity/plugin.json` to `9.9.9` reds it, naming all three sites. What
+existed was a derived check **plus** the redundant weaker pair (`WARP-1508 AC4`).
+
+So the honest statement of what this item adds is narrower and still worth having: the set is derived
+from `git ls-files` by FILENAME rather than from three fixed globs, so a declaration at a fourth shape
+is covered by arriving; agreement is measured against a **named canonical side**, so a disagreement can
+say which file to go and edit instead of only that the sites differ; and it is a reader with a CLI an
+adopter can run, rather than an assertion inside a reviewer-notes suite.
+
+The general lesson still holds and is why the set is derived at all: a hand-listed pair has bitten this
+repository repeatedly - seven listed template pairs guarding nine modules, two lists in the init
+scaffolder missing two organs each. A list is a promise somebody will remember, and the thing it
+protects is exactly what people forget.
 
 ## Why the canonical declaration is the marketplace manifest
 
@@ -179,3 +224,31 @@ diagnosis AC3 promises, and at 3.10.1 with the veldo entry bumped to 3.11.0 the 
 was green. Now the entry is matched by name, two entries claiming that name and disagreeing is an
 ambiguity rather than a tie-break to guess at, and a marketplace with no veldo entry refuses while
 naming the entries it did find.
+
+## What round two found: attribution, a dead exclusion, and one residual named rather than guarded
+
+Three more defects came out of USING the reader rather than reading it, and all three are the same
+family as everything else in PLAN-0018: a claim about a set that the code behind it does not support.
+
+**The sweep decided whose version a file declared by its NAME.** Committing one third-party
+`plugin.json` under a runner's `testdata/` made the reader report `VERSION_DISAGREEMENT` against this
+repository's canonical declaration and reddened the gate - a false accusation naming the wrong file to
+fix, in a tree where the plugin-load runner's own default manifest name is literally `plugin.json`.
+Attribution is now a separate question answered by identity, and the sets the live rows require empty
+therefore hold only files that CLAIM to declare veldo's version: a defect set by construction, which is
+the distinction ledger finding 51 exists to make.
+
+**The declared fixture exclusion was dead code.** Both clauses of the row claiming it were satisfied
+without the exclusion existing - the tracked fixtures are named `pass.plugin.json` and
+`fail.plugin.json`, so the name filter dropped them, and the second clause compared a constant with
+itself. Deleting the two lines that apply `EXCLUDE_PARTS` from both copies of the module left the whole
+gate green. It now has a fixture built for it.
+
+**And one residual is named rather than guarded.** `README.md` carries "Current plugin version: 3.10.1"
+and nothing reads it, so the number lives in a fourth place maintained by memory. A derived prose sweep
+was measured and rejected: over the 454 tracked Markdown files the pattern that finds that sentence also
+finds four HISTORICAL records in `specs/` which correctly state what the version WAS when they were
+written, so requiring every match to equal today's number would redden the gate on four correct files.
+Prose cannot be told from a stale copy by pattern. The residual is recorded in the module beside
+`MANIFEST_NAMES`, where the next person reads it, rather than closed by a check that would accuse the
+innocent - which is the defect this same round found in the sweep.

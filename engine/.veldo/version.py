@@ -4,11 +4,26 @@
     python3 .veldo/version.py          # the version, or a refusal and a non-zero exit
     python3 .veldo/version.py --report # every manifest found and what each declares
 
-THE MEASURED GAP. On 2026-08-12 three tracked files declared this project's version, and the one
-shipped assertion covering them named TWO - so packs/antigravity/plugin.json had never been
-checked by anything. That is the hand-listed-pair defect this repository has now shipped three
-times (seven template pairs guarding nine modules; two scaffolder lists each missing two organs;
-two named manifests out of three). The fix is the same every time: DERIVE THE SET.
+THE MEASURED GAP, AND THE PART OF IT THAT WAS FALSE. On 2026-08-12 three tracked files declared
+this project's version. This module used to say the one shipped assertion covering them named TWO,
+so packs/antigravity/plugin.json had never been checked by anything. THAT WAS FALSE, in four places
+including this docstring, and independent review measured it: WARP-1311 AC5 in
+scripts/suites/01_warp_0101_reviewer_notes.py already covered all three BY DERIVATION - the plugin
+entries of .claude-plugin/marketplace.json plus the globs packs/*/plugin.json and
+packs/*/.claude-plugin/plugin.json - and required at least three sites carrying exactly one distinct
+value. Driven at this HEAD: set packs/antigravity/plugin.json to 9.9.9 and that row reds, naming all
+three sites. What existed was a DERIVED check plus a redundant weaker hardcoded pair (WARP-1508 AC4),
+not an unguarded third manifest.
+
+SO WHAT THIS MODULE ADDS, stated against what was there rather than against a gap that was not.
+The set is derived from git ls-files by FILENAME, so a declaration at a shape none of those three
+globs matches is covered by arriving. Agreement is measured against a NAMED CANONICAL SIDE, so a
+disagreement can say which file to go and edit instead of only that the sites differ. And it is a
+reader with a CLI an adopter can run, rather than an assertion inside a reviewer-notes suite. The
+false premise mattered beyond bookkeeping, because it made a replacement look like a strengthening.
+The general lesson stands and is why the set is derived: a hand-listed pair has bitten this
+repository repeatedly (seven template pairs guarding nine modules; two scaffolder lists each missing
+two organs).
 
 THE CANONICAL DECLARATION is .claude-plugin/marketplace.json, because it is the file an adopter
 installs from - which the pre-existing assertion had already identified as the one that matters.
@@ -47,11 +62,28 @@ CANONICAL = ".claude-plugin/marketplace.json"
 
 # The filenames that declare a version. A tracked file with one of these names is IN the derived set
 # by existing, which is what makes a pack added later covered by arriving rather than by being
-# remembered.
+# remembered. FINDING A CANDIDATE AND ATTRIBUTING IT ARE DIFFERENT QUESTIONS - see attribution().
 MANIFEST_NAMES = ("plugin.json", "marketplace.json")
 
+# A FOURTH DECLARATION LIVES IN PROSE AND THIS SWEEP DOES NOT REACH IT. README.md carries the
+# sentence "Current plugin version: 3.10.1" and nothing reads it, so a release that bumps three
+# manifests can leave behind the line an adopter reads first. RECORDED HERE RATHER THAN GUARDED,
+# because a derived prose sweep manufactures false accusations: over the 454 tracked Markdown files
+# the pattern that finds that sentence also finds four HISTORICAL records in specs/ (WARP-0906,
+# WARP-0907, WARP-1008, WARP-1110) which correctly state what the version WAS when they were written,
+# and requiring every match to equal today's number would redden the gate on four correct files.
+# Prose cannot be told from a stale copy by pattern. Its own parenthetical says the manifests are the
+# source of truth, which is the mitigation; the residual is named here so the next person reads it
+# here rather than rediscovering it.
+
 # Fixture manifests are declared exceptions WITH their reason: they exist to be read by a runner's
-# own tests and are deliberately not this project's version.
+# own tests and are deliberately not this project's version. THE EXCLUSION IS PROVEN BEHAVIOURALLY,
+# not by comparing this constant with itself: independent review measured that both clauses of the row
+# claiming it held with the exclusion DELETED from both copies of this module, because the tracked
+# fixture manifests happen to be named pass.plugin.json and fail.plugin.json, so the name filter alone
+# kept them out and nothing ever constructed a fixture manifest to be excluded. A claimed exclusion is
+# a claim about code, and the suite now builds one named exactly plugin.json under a fixtures/ path,
+# declaring THIS project's name and a different version, so deleting these parts reds a named row.
 EXCLUDE_PARTS = ("fixtures",)
 
 # THE PLUGIN THIS READER IS THE VERSION OF, by name, because a marketplace manifest hosts a LIST and
@@ -68,7 +100,7 @@ CAUSE_UNPARSEABLE = "VERSION_UNPARSEABLE"
 CAUSES = (CAUSE_CANONICAL_ABSENT, CAUSE_DISAGREEMENT, CAUSE_UNPARSEABLE)
 
 REPORT_KEYS = ("version", "canonical", "cause", "detail", "manifests", "disagreements",
-               "unparseable", "checked")
+               "unparseable", "not_this_project", "checked", "swept")
 
 
 def _version_shaped(v):
@@ -126,26 +158,83 @@ def _declared_version(data, plugin_name=PLUGIN_NAME):
     return None, "no version field in either shape"
 
 
-def read_manifest(path, plugin_name=PLUGIN_NAME):
-    """(version, error) for one manifest. An unreadable manifest is UNPARSEABLE, which is a
-    different fact from declaring the wrong version because the fix differs.
+def attribution(data, plugin_name=PLUGIN_NAME):
+    """(mine, reason): whether this manifest CLAIMS to declare THIS project's version.
+
+    WHOSE VERSION IS THIS is a different question from WHAT VERSION IS IT, and conflating them was a
+    defect independent review measured. The sweep finds candidates by FILENAME, which is the right way
+    to find them and the wrong way to decide whose they are: a tracked third-party sample at
+    engine/scripts/runners/plugin/testdata/plugin.json reddened the gate with a message claiming THIS
+    repository's version manifests disagree, and the plugin-load runner's own default manifest name is
+    literally plugin.json. So attribution is answered the way the canonical read answers it, BY
+    IDENTITY: a marketplace manifest is ours when its plugin list carries an entry named plugin_name,
+    and a plugin manifest is ours when its own top-level name is plugin_name.
+
+    WHY THIS MAKES THE LIVE ASSERTIONS LEGITIMATE. A manifest that names somebody else, or names
+    nobody, is reported and never accused, so the set that CAN be accused holds only files claiming to
+    declare this project's version - a DEFECT set by construction, which no amount of unrelated growth
+    can join. That distinction is ledger finding 51's whole point."""
+    if not isinstance(data, dict):
+        return False, ("it is a %s rather than a JSON object, so it names no plugin and nothing in it "
+                       "can be attributed to this project" % type(data).__name__)
+    plugins = data.get("plugins")
+    if isinstance(plugins, list):
+        names = _marketplace_entry_names(plugins)
+        if plugin_name in names:
+            return True, None
+        return False, ("it is a marketplace manifest with no entry named %r, so it declares no "
+                       "version for this project; the entries it declares are %r"
+                       % (plugin_name, names))
+    name = data.get("name")
+    if name == plugin_name:
+        return True, None
+    return False, ("its top-level name is %r rather than %r, so the version it declares is not this "
+                   "project's" % (name, plugin_name))
+
+
+def read_declaration(path, plugin_name=PLUGIN_NAME):
+    """(mine, version, reason) for one swept manifest. THREE outcomes and none collapses into another:
+
+      (False, None, why)  NOT THIS PROJECT'S - somebody else's manifest, or one that cannot be read at
+                          all, so nothing about it can be attributed here. A population, not a defect.
+      (True,  v,    None) ours, and readable.
+      (True,  None, why)  OURS AND UNREADABLE - a file claiming to declare this project's version and
+                          declaring none that can be read. That is a defect, and the fix is that file.
 
     A DECLARATION THAT IS NOT VERSION-SHAPED IS UNREADABLE TOO. Accepting any str let "" and "TBD"
-    through as this installation's identity with a zero exit, which is the confident-zero disease
-    with a pass on it, and it was invisible to a check that proved presence by substring - the empty
-    string is a substring of every string. The shape test is the one already used for evidence
-    provenance, applied where the number is first read rather than only where it is reported."""
+    through as this installation's identity with a zero exit, which is the confident-zero disease with
+    a pass on it, and it was invisible to a check that proved presence by substring - the empty string
+    is a substring of every string. The shape test is the one already used for evidence provenance,
+    applied where the number is first read rather than only where it is reported.
+
+    The reason is returned WITHOUT a cause name in front of it, so each caller names the cause it is
+    reporting rather than two callers agreeing by accident on a prefix."""
     try:
         data = json.loads(Path(path).read_text())
     except (OSError, ValueError) as e:
-        return None, "%s: %s" % (CAUSE_UNPARSEABLE, e)
+        return False, None, ("it could not be read as JSON (%s), so it cannot be attributed to this "
+                             "project at all" % e)
+    mine, why = attribution(data, plugin_name)
+    if not mine:
+        return False, None, why
     v, problem = _declared_version(data, plugin_name)
     if problem is not None:
-        return None, "%s: %s" % (CAUSE_UNPARSEABLE, problem)
+        return True, None, problem
     if not _version_shaped(v):
-        return None, ("%s: the declared version %r is not version-shaped, so there is nothing here "
-                      "that can be reported as an identity" % (CAUSE_UNPARSEABLE, v))
-    return v, None
+        return True, None, ("the declared version %r is not version-shaped, so there is nothing here "
+                            "that can be reported as an identity" % (v,))
+    return True, v, None
+
+
+def read_manifest(path, plugin_name=PLUGIN_NAME):
+    """(version, error) for one manifest read as THIS PROJECT's declaration, which is what the
+    canonical read needs: a manifest that declares somebody else's version declares none of ours, and
+    for the canonical file that is an error rather than a fact about a stranger's file. ONE reader
+    underneath, because two enumerations of one rule diverge."""
+    mine, v, reason = read_declaration(path, plugin_name)
+    if v is not None:
+        return v, None
+    return None, "%s: %s" % (CAUSE_UNPARSEABLE, reason)
 
 
 def tracked_manifests(root=None, names=MANIFEST_NAMES):
@@ -194,18 +283,31 @@ def version(root=None):
 
 def version_report(root=None, names=MANIFEST_NAMES):
     """ONE key shape whether it refused or not. The COUNT CHECKED is part of the answer: a tree with
-    one manifest agrees with itself over a set of one, and saying so is different from silence."""
+    one manifest agrees with itself over a set of one, and saying so is different from silence.
+
+    TWO DENOMINATORS ON PURPOSE. `swept` is how many files the name sweep FOUND and `checked` is how
+    many of those actually claim to declare this project's version; `not_this_project` NAMES the
+    difference with a reason for each. A single total would hide the whole point of attribution, which
+    is that this reader looked at a file and decided it was none of its business - and a reader that
+    silently drops what it looked at is a coverage figure quoted without the weakness that produced
+    it."""
     base = Path(root) if root is not None else ROOT
     v, cause, detail = version(base)
     rep = {"version": v, "canonical": CANONICAL, "cause": cause, "detail": detail,
-           "manifests": {}, "disagreements": [], "unparseable": [], "checked": 0}
+           "manifests": {}, "disagreements": [], "unparseable": [], "not_this_project": [],
+           "checked": 0, "swept": 0}
     manifests = tracked_manifests(base, names)
-    rep["checked"] = len(manifests)
+    rep["swept"] = len(manifests)
     for rel in manifests:
-        mv, err = read_manifest(base / rel)
+        mine, mv, reason = read_declaration(base / rel)
+        if not mine:
+            rep["not_this_project"].append({"manifest": rel, "detail": reason})
+            continue
+        rep["checked"] += 1
         rep["manifests"][rel] = mv
-        if err is not None:
-            rep["unparseable"].append({"manifest": rel, "detail": err})
+        if mv is None:
+            rep["unparseable"].append({"manifest": rel,
+                                       "detail": "%s: %s" % (CAUSE_UNPARSEABLE, reason)})
         elif v is not None and mv != v:
             rep["disagreements"].append({
                 "manifest": rel, "declares": mv,
@@ -221,14 +323,18 @@ def version_report(root=None, names=MANIFEST_NAMES):
 def report_lines(rep):
     if rep["cause"] == CAUSE_CANONICAL_ABSENT:
         return ["veldo version: %s - %s" % (CAUSE_CANONICAL_ABSENT, rep["detail"])]
-    lines = ["veldo version: %s (canonical: %s), %d manifest(s) checked"
-             % (rep["version"], rep["canonical"], rep["checked"])]
+    lines = ["veldo version: %s (canonical: %s), %d manifest(s) checked of %d swept by name"
+             % (rep["version"], rep["canonical"], rep["checked"], rep["swept"])]
     for rel in sorted(rep["manifests"]):
         lines.append("  %-52s %s" % (rel, rep["manifests"][rel]))
     for d in rep["disagreements"]:
         lines.append("  %s: %s" % (CAUSE_DISAGREEMENT, d["detail"]))
     for u in rep["unparseable"]:
         lines.append("  %s: %s" % (u["manifest"], u["detail"]))
+    for n in rep["not_this_project"]:
+        # NAMED, NEVER ACCUSED. This line is the difference between a reader that knows what it looked
+        # at and one that says three manifests disagree because a runner shipped a sample.
+        lines.append("  NOT THIS PROJECT'S: %s - %s" % (n["manifest"], n["detail"]))
     return lines
 
 
@@ -259,9 +365,18 @@ def installed_version(root=None):
     base = Path(root) if root is not None else ROOT
     p = base / STAMP
     if not p.is_file():
+        # THE REASON NAMES EVERY WAY A TREE GETS HERE, because it used to name two and there are
+        # three, and the missing one was the one an install made TODAY lands in. Independent review
+        # measured it: five of the seven supported packs carry no manifest at any shape the scaffolder
+        # searches, so their adopters got no stamp and then read that their repository "was installed
+        # before the stamp existed, or was set up by hand" - both halves false about an install made
+        # minutes earlier, and a reason that sends them looking for an old install. AC5's own principle
+        # is that the reason is part of the answer because the reason determines who does what next.
         return None, UNSTAMPED, (
-            "no %s: this repository was installed before the stamp existed, or was set up by hand, "
-            "so what it was laid from is unknown rather than current" % STAMP)
+            "no %s: this repository was installed before the stamp existed, was set up by hand, or "
+            "was laid from templates that declared no version for this project - which init reports "
+            "at install time as a stand-down rather than leaving it to be inferred here. What it was "
+            "laid from is unknown rather than current" % STAMP)
     try:
         data = json.loads(p.read_text())
     except (OSError, ValueError) as e:
@@ -308,10 +423,23 @@ def drift(root=None, current=None):
         return out
     if ccause is not None:
         out["cause"] = CAUSE_NO_CURRENT
-        out["detail"] = ("this tree records being laid from %r but declares no current version to "
-                         "compare against (%s): pass the version you can install from now. An "
-                         "adopting repository is always in this state, because it is not a "
-                         "marketplace" % (installed, cdetail))
+        # THE REASON HAS TO LOOK, BECAUSE THE CAUSE FOLDS TWO STATES. version() answers
+        # VERSION_CANONICAL_ABSENT both when the canonical declaration is missing and when it is there
+        # and unreadable, and the old single sentence asserted "an adopting repository is always in
+        # this state, because it is not a marketplace" over BOTH - a sentence false about exactly the
+        # tree it was describing when that tree has a marketplace manifest and has a broken one, and
+        # it pointed at the wrong repair: supply a version, rather than fix the file you have. Found by
+        # independent review. The cause stays folded because the caller's next move is the same
+        # (pass a version) but the REPAIR differs, and the repair is what a reason is for.
+        if (base / CANONICAL).is_file():
+            why = ("the canonical declaration %s is PRESENT and could not be read (%s), so the repair "
+                   "is that file rather than a version you supply from outside" % (CANONICAL, cdetail))
+        else:
+            why = ("%s is absent (%s), so pass the version you can install from now. An adopting "
+                   "repository is always in this state, because it is not a marketplace"
+                   % (CANONICAL, cdetail))
+        out["detail"] = ("this tree records being laid from %r and declares no current version to "
+                         "compare against: %s" % (installed, why))
         return out
     if installed != current:
         out["cause"] = CAUSE_DRIFT
@@ -319,6 +447,80 @@ def drift(root=None, current=None):
                          "running an old base against newer documentation, which had no detector "
                          "before this" % (installed, current))
     return out
+
+
+# THE FOUR NAMED CAUSES AS A DECLARED SET, so a caller can require that an answer is one of them
+# without hand-listing them a second time. None is the fifth answer and is not a cause: it means the
+# comparison WAS made and the two sides agree.
+DRIFT_CAUSES = (UNSTAMPED, CAUSE_STAMP_UNREADABLE, CAUSE_NO_CURRENT, CAUSE_DRIFT)
+
+
+def drift_contradictions(out, root=None):
+    """Every way this drift answer contradicts the tree it describes, or an empty list.
+
+    WHY THIS EXISTS INSTEAD OF A PIN ON THE ANSWER. VELDO-0009's live row asserted that THIS repository
+    reports UNSTAMPED, so one run of the documented create-only scaffolder - advertised as idempotent
+    and safe to re-run, and writing a valid stamp that is not gitignored - turned the gate RED for a
+    correct, non-destructive operation, and that red reads as "the drift detector is broken" when the
+    detector had answered correctly. Ledger finding 51's shape is the fix: assert the PROPERTY the pin
+    stood in for. The property is that NO ANSWER THIS ORGAN GIVES ABOUT A TREE IS FALSE ABOUT THAT
+    TREE, checked against the state on disk and against the values reported beside the cause. Every one
+    of the five answers is allowed; only an answer inconsistent with its own tree is a finding, and
+    that set is a DEFECT set by construction, so a change of state cannot join it.
+
+    STRUCTURAL, NOT A STRING MATCH, except where the criterion's own promise IS about the words: a
+    drift must NAME BOTH VERSIONS, because a drift is actionable only if you know which way it went,
+    and a folded cause must say which of its two states it found."""
+    base = Path(root) if root is not None else ROOT
+    stamped = (base / STAMP).is_file()
+    cause, installed, current = out["cause"], out["installed"], out["current"]
+    detail = out["detail"] or ""
+    bad = []
+    if cause is not None and cause not in DRIFT_CAUSES:
+        bad.append("the cause %r is not one of the declared causes %r" % (cause, DRIFT_CAUSES))
+    if cause is not None and not detail:
+        bad.append("cause %s carries no reason, and the reason is the actionable half of the answer"
+                   % cause)
+    if cause == UNSTAMPED:
+        if stamped:
+            bad.append("it reports %s while %s exists" % (UNSTAMPED, STAMP))
+        if installed is not None:
+            bad.append("it reports %s while naming an installed version %r" % (UNSTAMPED, installed))
+    elif cause == CAUSE_STAMP_UNREADABLE:
+        if not stamped:
+            bad.append("it reports %s while there is no file at %s to be unreadable"
+                       % (cause, STAMP))
+        if installed is not None:
+            bad.append("it reports %s while naming an installed version %r" % (cause, installed))
+    elif cause == CAUSE_NO_CURRENT:
+        if not _version_shaped(installed):
+            bad.append("it reports %s, which is a statement about a stamp it COULD read, while the "
+                       "installed version is %r" % (cause, installed))
+        if current is not None:
+            bad.append("it reports %s while naming a current version %r to compare against"
+                       % (cause, current))
+        if (base / CANONICAL).is_file() and "PRESENT and could not be read" not in detail:
+            bad.append("it reports %s over a tree whose canonical declaration %s is PRESENT, without "
+                       "saying that the file is there and could not be read - so the reason points at "
+                       "supplying a version when the repair is that file" % (cause, CANONICAL))
+    elif cause == CAUSE_DRIFT:
+        if installed == current:
+            bad.append("it reports %s with both sides equal (%r)" % (cause, installed))
+        for side, val in (("installed", installed), ("current", current)):
+            if not _version_shaped(val):
+                bad.append("it reports %s naming the %s side as %r, which is not version-shaped"
+                           % (cause, side, val))
+            elif val not in detail:
+                bad.append("it reports %s without naming the %s version %r in its reason, so a reader "
+                           "cannot tell which way it went" % (cause, side, val))
+    elif cause is None:
+        if installed != current:
+            bad.append("it reports NO drift while the two sides differ (%r laid from, %r now)"
+                       % (installed, current))
+        if not _version_shaped(installed):
+            bad.append("it reports NO drift over an installed version %r that is not version-shaped"
+                       % (installed,))
+    return bad
 
 
 # WHICH VERSION PRODUCED A PIECE OF EVIDENCE (VELDO-0010). A proof bundle is the record that a
@@ -444,6 +646,13 @@ def _cli(argv=None):
         return 1 if rep["malformed"] else 0
     if args.drift:
         d = drift()
+        # A SELF-CONTRADICTORY ANSWER IS A DEFECT AND SAYS SO HERE, before the answer itself, because
+        # an operator acting on a reason that is false about their tree does the wrong repair.
+        wrong = drift_contradictions(d)
+        if wrong:
+            for w in wrong:
+                print("veldo version: CONTRADICTORY DRIFT ANSWER - %s" % w)
+            return 1
         if d["cause"] in (UNSTAMPED, CAUSE_NO_CURRENT):
             print("veldo version: %s - %s" % (d["cause"], d["detail"]))
             return 0          # neither is a defect: both are comparisons nobody can make here

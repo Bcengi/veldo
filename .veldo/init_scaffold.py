@@ -20,6 +20,7 @@ scaffolder that skill, or an adopting human, can call directly.
 Usage:
   python3 .veldo/init_scaffold.py <target-dir>
 """
+import importlib.util
 import json
 import os
 import subprocess
@@ -203,9 +204,44 @@ STAMP_SCHEMA = "veldo.installed/v1"
 _VERSION_CANDIDATES = (".claude-plugin/marketplace.json", ".claude-plugin/plugin.json",
                        "plugin.json")
 
+# THE ONE DEFINITION OF WHAT A VERSION LOOKS LIKE, AND OF WHOSE VERSION THIS IS, borrowed from the
+# reader rather than copied here. Two enumerations of one rule diverge, and .veldo/version.py already
+# owns both rules - _version_shaped() and PLUGIN_NAME - and is laid down beside this file in every
+# scaffolded tree and composed into every published pack. If it is not there, this module writes NO
+# STAMP and says why, because an unchecked stamp is exactly the guess AC3 forbids.
+_VERSION_READER = None
 
-def _version_in(root):
-    """The version a manifest at this root declares, in either shape, or None."""
+
+def _version_reader():
+    """The sibling version reader, or None. Loaded once and lazily: this module is also imported for
+    its substrate lists alone, and an import that can fail must not fail then."""
+    global _VERSION_READER
+    if _VERSION_READER is None:
+        p = Path(__file__).resolve().parent / "version.py"
+        _VERSION_READER = False
+        if p.is_file():
+            try:
+                spec = importlib.util.spec_from_file_location("veldo_version_for_stamp", p)
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                _VERSION_READER = mod
+            except Exception:            # noqa: BLE001 - a broken sibling stands the stamp down
+                _VERSION_READER = False
+    return _VERSION_READER or None
+
+
+def _version_in(root, plugin_name, shaped):
+    """The version a manifest at this root declares FOR THIS PROJECT, or None.
+
+    BY IDENTITY, NEVER BY POSITION. This read took plugins[0], which is the defect .veldo/version.py
+    was fixed for and which survived here: independent review measured a parent marketplace listing
+    ANOTHER plugin first stamping that plugin's version as this install's - a fact nobody declared
+    about veldo, and precisely what AC3 means by a stamp that guesses.
+
+    AND A STRING IS NOT A VERSION. Any non-empty string used to pass, so a manifest declaring "   "
+    produced a stamp whose version was "   ", which installed_version returned as a VERSION with no
+    cause and drift() then reported as substrate drift against the real number. The shape rule is the
+    reader's own, not a second copy of it."""
     for rel in _VERSION_CANDIDATES:
         p = Path(root) / rel
         if not p.is_file():
@@ -214,13 +250,19 @@ def _version_in(root):
             data = json.loads(p.read_text())
         except (OSError, ValueError):
             continue
-        if isinstance(data.get("version"), str):
-            return data["version"]
+        if not isinstance(data, dict):
+            continue
         plugins = data.get("plugins")
-        if isinstance(plugins, list) and plugins and isinstance(plugins[0], dict):
-            v = plugins[0].get("version")
-            if isinstance(v, str):
-                return v
+        if isinstance(plugins, list):
+            # A MARKETPLACE HOSTS A LIST, so the entry is matched by NAME. No fall-through to the top
+            # level afterwards: a "version" sitting beside the list is a schema version and answering
+            # with it would be the positional read wearing a different hat.
+            for e in plugins:
+                if isinstance(e, dict) and e.get("name") == plugin_name and shaped(e.get("version")):
+                    return e["version"]
+            continue
+        if data.get("name") == plugin_name and shaped(data.get("version")):
+            return data["version"]
     return None
 
 
@@ -229,28 +271,57 @@ def _template_version(templates):
     nobody declared would be worse than no stamp, because it makes a drift detector confidently
     wrong. Looks at the templates root, then at its PARENT, which is what covers this repository -
     the templates are engine/ and the manifest sits above it."""
+    reader = _version_reader()
+    if reader is None:
+        return None
     t = Path(templates)
-    return _version_in(t) or _version_in(t.parent)
+    return (_version_in(t, reader.PLUGIN_NAME, reader._version_shaped)
+            or _version_in(t.parent, reader.PLUGIN_NAME, reader._version_shaped))
+
+
+def _stamp_stand_down(templates):
+    """Why no stamp can be written from these templates, or None.
+
+    THE STAND-DOWN IS REPORTED, NEVER SILENT. Ledger finding 64: a stand-down recorded in a report dict
+    that nothing prints is a measurement an operator cannot tell from a zero. Independent review
+    measured the consequence here - five of the seven supported packs (aider, codex, copilot, cursor,
+    opencode) carry no manifest at any shape _VERSION_CANDIDATES searches, so their adopters got no
+    record, read "substrate complete" with no word that it had not been laid, and their tree then
+    answered UNSTAMPED with a reason that was false about an install made minutes earlier. SAYING SO at
+    install time is the half that belongs here; a pack that declares nothing still cannot be stamped,
+    and the reason names the shapes that were looked for so the gap is legible rather than mysterious."""
+    if _version_reader() is None:
+        return ("no install record was laid: the version rules live in .veldo/version.py and it is not "
+                "beside this scaffolder, so a stamp here would be unchecked rather than measured")
+    if _template_version(templates) is None:
+        return ("no install record was laid: these templates (%s) declare no version for this project "
+                "at any of the shapes searched (%s, or the same in the templates' parent), so a stamp "
+                "would be a guess. Substrate drift cannot be detected in this repository until one of "
+                "them declares it" % (templates, ", ".join(_VERSION_CANDIDATES)))
+    return None
 
 
 def _write_stamp(templates, target, created, skipped, now=None):
-    """Record what this install was laid from. Returns the stamp dict, or None when the templates
-    declare no version - in which case NOTHING is written, because an unstamped install is an honest
-    state and a stamp saying 'unknown' is a fact nobody can act on."""
+    """(stamp, stand_down): record what this install was laid from.
+
+    Returns (None, None) when a stamp is already there - create-only, like everything else here - and
+    (None, reason) when the templates declare no version, in which case NOTHING is written, because an
+    unstamped install is an honest state and a stamp saying 'unknown' is a fact nobody can act on. The
+    REASON travels back to the caller so it can be printed: a stand-down nobody prints is silence."""
     dest = Path(target) / STAMP
     if dest.exists():
         skipped.append(STAMP)
-        return None
+        return None, None
     version = _template_version(templates)
     if version is None:
-        return None
+        return None, _stamp_stand_down(templates)
     stamp = {"schema": STAMP_SCHEMA, "version": version,
              "installed_at": now or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
              "laid_from": str(templates)}
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(stamp, indent=1, sort_keys=True) + "\n")
     created.append(STAMP)
-    return stamp
+    return stamp, None
 
 
 def _starter_gate(text):
@@ -360,9 +431,10 @@ def scaffold(target, templates=None):
     _regenerate_index(target)
 
     # the install stamp: what this substrate was laid from, so drift has a detector (VELDO-0009)
-    stamp = _write_stamp(templates, target, created, skipped)
+    stamp, stand_down = _write_stamp(templates, target, created, skipped)
 
-    return {"target": str(target), "created": created, "skipped": skipped, "stamp": stamp}
+    return {"target": str(target), "created": created, "skipped": skipped, "stamp": stamp,
+            "stamp_stand_down": stand_down}
 
 
 def main(argv=None):
@@ -377,6 +449,11 @@ def main(argv=None):
         return 1
     print(f"veldo init: scaffolded {report['target']}")
     print(f"  created {len(report['created'])} file(s), skipped {len(report['skipped'])} existing")
+    # THE STAND-DOWN LEADS THE REST OF THE REPORT rather than being left out of it. An install that
+    # laid no record and said nothing about it is how five of the seven packs shipped adopters a tree
+    # whose own drift detector then blamed an install nobody made.
+    if report.get("stamp_stand_down"):
+        print(f"  {report['stamp_stand_down']}")
     missing = missing_substrate(report["target"])
     if missing:
         print(f"  WARNING substrate incomplete: {', '.join(missing)}")
