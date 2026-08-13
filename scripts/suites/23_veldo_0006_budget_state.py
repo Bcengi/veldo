@@ -215,6 +215,77 @@ def _bs_ac2():
            and supplied["desired_workers"] == BSG.desired_workers(
                _bs_windows(), [_bs_non_spend_event(60)], _BS_NOW, 0.0, 8))
 
+    # THE SAME CONTRADICTION THROUGH THE TAXONOMY'S OTHER DOOR. Requiring only that a reading EXIST
+    # inside a horizon left the zero-total window corroborating a positive rate.
+    zero_reading = [_bs_event(0, 60)]
+    zr = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=zero_reading,
+                          per_worker_rate=1.0, max_workers=8)
+    zlines = BS.report_lines(zr)
+    neg = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW,
+                           events=[_bs_event(-100, 60)], per_worker_rate=1.0, max_workers=8)
+    expect("VELDO-0006 AC2: A RECORDED TOTAL OF NO MORE THAN ZERO CORROBORATES NO BURN RATE. The "
+           "evidence for a positive rate is a TOTAL, not a count of readings: with the count as the "
+           "test, ONE reading of zero tokens inside the horizon printed 'burn is measured at 1.0 "
+           "tokens per worker per second' directly above 'ZERO_RECORDED - 1 recorded event(s) "
+           "inside the horizon total ZERO tokens', and paced the worker count off it - 1 worker "
+           "where the governor's own bootstrap answer for that stream is 8. The condition is the "
+           "governor's own: measure_per_worker_rate is the windowed spend over the horizon and the "
+           "worker count, so it CANNOT have produced a positive rate from this stream, and the rate "
+           "handed to the governor is that same 0.0. A negative recorded total is the same case",
+           zr["windows"][0]["state"] == BS.ZERO_RECORDED
+           and zr["rate_corroborated"] is False and zr["rate_used"] == 0.0
+           and zr["posture"] == BS.POSTURE_BOOTSTRAP
+           and not any("burn is measured" in ln for ln in zlines)
+           and BS.RATE_UNCORROBORATED in zr["posture_note"]
+           and BSG.measure_per_worker_rate(zero_reading, _BS_NOW, 3600, 8) == 0.0
+           and zr["desired_workers"] == BSG.desired_workers(
+               _bs_windows(), zero_reading, _BS_NOW, 0.0, 8)
+           and zr["desired_workers"] != BSG.desired_workers(
+               _bs_windows(), zero_reading, _BS_NOW, 1.0, 8)
+           and neg["windows"][0]["state"] == BS.ZERO_RECORDED
+           and neg["rate_corroborated"] is False
+           and neg["posture"] == BS.POSTURE_BOOTSTRAP)
+
+    both = zero_reading + [_bs_event(250, 60)]
+    corr = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=both,
+                            per_worker_rate=1.0, max_workers=8)
+    clines = BS.report_lines(corr)
+    expect("VELDO-0006 AC2 NEGATIVE CONTROL: ADD one reading carrying real burn to that same zero "
+           "reading and the same call corroborates the supplied rate - posture PACING, the rate "
+           "used is the number handed in, and the report does say burn is measured. The two "
+           "fixtures differ by exactly one ADDED event, so the refusal above is a measurement of "
+           "the recorded total rather than this module's answer to any stream that carries a rate",
+           len(both) == len(zero_reading) + 1
+           and corr["windows"][0]["state"] == BS.MEASURED
+           and corr["windows"][0]["used"] == 250.0
+           and corr["rate_corroborated"] is True and corr["rate_used"] == 1.0
+           and corr["posture"] == BS.POSTURE_PACING
+           and any("burn is measured" in ln for ln in clines))
+
+    # WHY IT IS BOOTSTRAPPING IS DERIVED FROM THE WINDOWS. The branch that read `if not spends`
+    # told an operator with a reading INSIDE a horizon that no window held one.
+    unpaced = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW,
+                              events=[_bs_event(250, 60)], per_worker_rate=0.0, max_workers=8)
+    notes = {BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW,
+                              events=[])["posture_note"],
+             BS.budget_report(windows=_bs_windows()[:1], now_epoch=_BS_NOW,
+                              events=[_bs_event(250, 7200)])["posture_note"],
+             zr["posture_note"], unpaced["posture_note"]}
+    expect("VELDO-0006 AC2: THE BOOTSTRAP REASON IS DERIVED FROM THE WINDOWS RATHER THAN FROM ONE "
+           "COUNT STANDING IN FOR FOUR STATES. A stream carrying real burn inside the horizon with "
+           "no rate supplied to pace with bootstraps for a different reason than an uninstrumented "
+           "one, and the note told that operator the windows held 'none of them inside its horizon' "
+           "while the row underneath reported 250 of 1000 used. Each state names what it measured, "
+           "and the four bootstrap reasons are four distinct sentences",
+           unpaced["posture"] == BS.POSTURE_BOOTSTRAP
+           and unpaced["windows"][0]["state"] == BS.MEASURED
+           and unpaced["windows"][0]["used"] == 250.0
+           and "no positive per-worker rate" in unpaced["posture_note"]
+           and "none of them" not in unpaced["posture_note"]
+           and "NOT ONE event" not in unpaced["posture_note"]
+           and "ZERO_RECORDED" not in unpaced["posture_note"]
+           and len(notes) == 4)
+
     spent = BS.budget_report(windows=_bs_windows(session_tokens=100.0), now_epoch=_BS_NOW,
                              events=[_bs_event(150, 60)], per_worker_rate=0.05, max_workers=8)
     expect("VELDO-0006 AC2: a window whose budget is USED UP inside its horizon reports posture "

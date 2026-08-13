@@ -250,6 +250,27 @@ DECISION_STATUS_DECIDED = "decided"
 # no option at all, so an option sitting on a settlement was typed rather than settled.
 SETTLEMENT_OPTION_KEY = "chosen"
 
+# WHAT THE DISPOSITION READ IS OVER, NAMED ON THE PAGE RATHER THAN ONLY IN THE SPEC. A review
+# drove the boundary: every record this resolver joins is read from the WORKING TREE, and the
+# protected-path control the design leans on iterates policy_check.changed_files(), which is
+# `git diff --name-only <base>` (.veldo/policy_check.py:92-99) and therefore lists modifications to
+# TRACKED files only. So four records nobody committed resolve to "ruled incidental by dmitry" and a
+# reader of that line has been told a human ruled. This module cannot close that gap - refusing an
+# untracked floor would refuse the feature, since a floor is authored before it is committed, and
+# re-deriving the tracked set here would be a second enumeration of one that .veldo/policy_check.py
+# owns - so it NAMES the state instead of implying the stronger one. ONE string, RECORDED in the
+# report dict a programmatic consumer reads AND REPORTED on the page a person reads, because a fact
+# held in a dict that nothing prints is the defect this repository has now recorded twice.
+DISPOSITION_READ_FROM = (
+    "every disposition in this report is resolved from records READ FROM THE WORKING TREE: the "
+    "floor under .veldo/floors/, the settlement under .veldo/settlements/, the request under "
+    ".veldo/requests/ and the decision record that request binds. WHETHER ANY OF THEM IS TRACKED, "
+    "LET ALONE COVERED BY AN APPROVAL, IS NOT CHECKED HERE: the protected-path enforcement "
+    "iterates `git diff --name-only <base>`, which lists modifications to TRACKED files only, so a "
+    "record nobody committed is matched by the pattern and never reaches the check. A consumer that "
+    "makes a precondition out of a disposition must require the record to be TRACKED and covered by "
+    "an approval, never merely present on disk")
+
 # The stand-down REGISTRY: which floors the check stood down for and why, recorded rather
 # than printed, so the gate check leaves run_all's output byte-identical while a reader can
 # still tell a floor that was CHECKED from one the rule never asked anything of. Mirrors
@@ -842,10 +863,14 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
     estate nobody enumerated is the one number this repository refuses to print."""
     base = Path(root) if root is not None else Path(".")
     d = Path(fdir) if fdir is not None else default_floors_dir(base)
+    # read_from is set in the INITIAL dict, so it is present in the stood-down shape too: the ONE
+    # key shape this report promises is the reason a consumer never guesses whether a key is
+    # missing or genuinely empty, and a provenance key that appeared only sometimes would break it.
     rep = {"standdown": True, "reason": None, "floors": 0, "pins": 0,
            DISPOSITION_RULED: 0, DISPOSITION_UNKNOWN: 0, DISPOSITION_BLOCKED: 0,
            "enumerated_surfaces": 0, "unreachable_surfaces": 0,
-           "unanalyzed_languages": [], "dispositions": [], "unreadable": [], "unclaimed": []}
+           "unanalyzed_languages": [], "dispositions": [], "unreadable": [], "unclaimed": [],
+           "read_from": DISPOSITION_READ_FROM}
     if not d.is_dir():
         rep["reason"] = ("no .veldo/floors/ directory: this repository has not adopted the "
                          "behaviour floor")
@@ -899,7 +924,11 @@ def floor_report(fdir=None, root=None, parse=None, settlements=None, requests=No
 def report_lines(rep):
     """The report as lines a stranger reads. The stand-down NAMES which condition stood it
     down, and each pin line carries its disposition WITH the reason, because "unknown" and
-    "a human ruled and the channel could not carry which way" are different facts."""
+    "a human ruled and the channel could not carry which way" are different facts.
+
+    AND THE READ NAMES WHAT IT WAS OVER (DISPOSITION_READ_FROM), because "ruled incidental by
+    dmitry" printed over records nobody committed tells a reader a human ruled. It is one line,
+    unconditional whenever any disposition is reported."""
     if rep.get("standdown"):
         return ["behaviour floor: stood down - %s" % rep.get("reason")]
     lines = ["behaviour floor: %d floor(s), %d pin(s): %d ruled, %d unknown, %d blocked. "
@@ -907,6 +936,11 @@ def report_lines(rep):
              % (rep["floors"], rep["pins"], rep[DISPOSITION_RULED], rep[DISPOSITION_UNKNOWN],
                 rep[DISPOSITION_BLOCKED], rep["enumerated_surfaces"],
                 rep["unreachable_surfaces"])]
+    # UNCONDITIONAL whenever a disposition is reported at all, and not only when one resolved to
+    # ruled: an unknown and a blocked pin are read off the same working tree, and a provenance line
+    # that fired only for a ruled pin would be a conditional call site, which is the shape of the
+    # defect a review found one level down in validate_floor.
+    lines.append("  %s" % rep.get("read_from"))
     if rep.get("unreadable"):
         lines.append("  %d floor file(s) COULD NOT BE READ and are absent from every count above: "
                      "%s" % (len(rep["unreadable"]), ", ".join(rep["unreadable"])))

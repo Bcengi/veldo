@@ -36,6 +36,16 @@ second" directly above "UNMEASURED - no recorded spend inside the horizon". Now 
 inside any window's horizon corroborates is NOT repeated as a measurement: the posture stays
 BOOTSTRAP and the rate handed to the governor is 0.0, its own honest bootstrap value.
 
+AND THE CORROBORATING EVIDENCE IS RECORDED CONSUMPTION, NOT A RECORDED READING. Requiring only
+that SOME reading sits inside a horizon let the same contradiction back in through the taxonomy's
+other door: one reading of zero tokens made the report print "burn is measured at 1.0 tokens per
+worker per second" directly above "ZERO_RECORDED - 1 recorded event(s) inside the horizon total
+ZERO tokens", and it changed the worker count an operator reads from 8 to 1. The condition is the
+governor's own: measure_per_worker_rate is the windowed spend divided by the horizon and the worker
+count, so it CANNOT return a positive rate over readings totalling zero or less. A positive rate is
+therefore corroborated only by a window whose readings TOTAL more than zero, which is the same
+evidence the caller's own measurement rests on rather than a second opinion about it.
+
 WHAT COMES FROM THE GOVERNOR AND WHAT IS DERIVED HERE, NAMED SEPARATELY, because the blanket claim
 that every number came from the governor was not true of the shipped code and a review said so.
 FROM THE GOVERNOR, BY CALLING IT: the windowed spend (windowed_spend), the worker count
@@ -91,9 +101,11 @@ LEDGER_FOREIGN_TREE = ("this survival report is about another tree and no claims
 ARTIFACTS_UNKNOWN = ("the artifact corpus could not be read, so what survives stopping as "
                      "concluded work is UNKNOWN rather than nothing")
 RATE_UNCORROBORATED = ("a per-worker rate was PASSED IN and this report will not repeat it as a "
-                       "measurement: no reading inside any window's horizon carries a recorded "
-                       "spend, so nothing on the stream corroborates it and the rate handed to the "
-                       "governor is 0.0, the governor's own honest bootstrap value")
+                       "measurement: no window's readings inside its horizon TOTAL more than zero, "
+                       "so nothing on the stream corroborates a positive burn rate and the rate "
+                       "handed to the governor is 0.0, the governor's own honest bootstrap value. "
+                       "governor.measure_per_worker_rate is the windowed spend over the horizon and "
+                       "the worker count, so it cannot have produced this number from this stream")
 
 REPORT_KEYS = ("stood_down", "reason", "posture", "posture_note", "windows", "desired_workers",
                "per_worker_rate", "rate_corroborated", "rate_used", "resume_at", "spend_events",
@@ -241,7 +253,14 @@ def budget_report(windows=(), root=None, now_epoch=None, per_worker_rate=0.0, ma
     # evidence for it. With no reading inside any window's horizon there is no evidence, so the
     # rate handed to the governor is the governor's own bootstrap value rather than a number
     # nothing here measured.
-    corroborated = any(row["recorded_events_in_horizon"] > 0 for row in rep["windows"])
+    #
+    # AND THE EVIDENCE IS A TOTAL, NOT A COUNT. Requiring only that a reading EXIST inside a
+    # horizon accepted a rate the governor's own measurement of that same stream returns 0.0 for:
+    # measure_per_worker_rate is the windowed spend divided by the horizon and the worker count, so
+    # readings totalling zero or less cannot produce a positive rate. Counting readings instead of
+    # totalling them printed "burn is measured at 1.0" over a ZERO_RECORDED window and paced the
+    # worker count off it.
+    corroborated = any(row["used"] is not None and row["used"] > 0 for row in rep["windows"])
     rate_used = per_worker_rate if corroborated else 0.0
     rep["rate_corroborated"] = corroborated
     rep["rate_used"] = rate_used
@@ -259,15 +278,32 @@ def budget_report(windows=(), root=None, now_epoch=None, per_worker_rate=0.0, ma
         rep["resume_at"] = gov.resume_at(list(windows), evs, now)
     elif rate_used <= 0:
         rep["posture"] = POSTURE_BOOTSTRAP
+        # WHY IT IS BOOTSTRAPPING IS DERIVED FROM THE WINDOWS, not from one count that stood in for
+        # four different states. The branch that read `if not spends` told an operator with a
+        # reading INSIDE a horizon that the window had none of them inside it, which was false of
+        # the report printed underneath it. Each state now says what it measured.
+        readings = sum(row["recorded_events_in_horizon"] for row in rep["windows"])
+        totals = [row["used"] for row in rep["windows"] if row["used"] is not None]
+        if not spends:
+            why = ("NO BURN IS MEASURED: NOT ONE event in the stream carries a token spend, so a "
+                   "windowed total of zero means the instrument was never connected, not that the "
+                   "budget is untouched")
+        elif not readings:
+            why = ("NO BURN IS MEASURED inside a horizon: %d event(s) in the stream carry a token "
+                   "spend and no window holds any of them, which is UNMEASURED rather than "
+                   "untouched" % len(spends))
+        elif not any(t > 0 for t in totals):
+            why = ("NO BURN IS MEASURED: %d reading(s) sit inside a horizon and they TOTAL no more "
+                   "than zero, which is ZERO_RECORDED rather than measured burn - an idle window "
+                   "and a miscounting instrument look identical from here, and neither paces "
+                   "anything" % readings)
+        else:
+            why = ("%d reading(s) inside a horizon carry recorded burn, but the caller supplied no "
+                   "positive per-worker rate to pace with, so the governor permits the maximum "
+                   "instead of pacing it" % readings)
         rep["posture_note"] = (
-            "NO BURN IS MEASURED, so the governor PERMITS %s worker(s) rather than pacing them. "
-            "The worker count below is a PERMISSION, not a pace. %s"
-            % (rep["desired_workers"],
-               ("NOT ONE event in the stream carries a token spend, so a windowed total of zero "
-                "means the instrument was never connected, not that the budget is untouched")
-               if not spends else
-               ("%d event(s) in the stream carry a token spend, and a window with none of them "
-                "inside its horizon is UNMEASURED rather than untouched" % len(spends))))
+            "the governor PERMITS %s worker(s) rather than pacing them. The worker count below is "
+            "a PERMISSION, not a pace. %s" % (rep["desired_workers"], why))
         if per_worker_rate > 0:
             rep["posture_note"] += ". %s (supplied: %s)" % (RATE_UNCORROBORATED, per_worker_rate)
     else:

@@ -547,11 +547,46 @@ def _ts_ac5():
     # when a docstring mentioning a function defeated a substring scan for its absence.
     import ast as _ts_a2
 
-    def _ts_loads_tasks(path):
+    # ONE DETECTOR, OVER SOURCE TEXT, READ FROM A PATH BY A THIN WRAPPER. It was two functions
+    # with the same body, one per subject, which is two enumerations of one predicate: the pair
+    # would diverge the first time either was widened, and the control below is the half that
+    # would have stayed narrow.
+    #
+    # AND IT LOOKS INSIDE THE ARGUMENT EXPRESSION, NOT ONLY AT DIRECT CONSTANTS. DRIVEN,
+    # 2026-08-13: with the direct-Constant version, a load added to `validate.run_all` spelled the
+    # way validate.py already loads every organ it has -
+    #   spec_from_file_location("veldo_tasks_gate", ROOT / ".veldo" / "tasks.py")
+    # - left this criterion's row GREEN, while the same load with a literal ".veldo/tasks.py"
+    # reddened it. So the row was blind to the one spelling the members of its own domain use, and
+    # a defect set whose realistic member is invisible is an emptiness that cannot fail. PLAN-0018
+    # finding 63 recorded that reach ("a computed path or a prefixed module name is invisible to
+    # it") as a lesson and changed the DOMAIN; the detector stayed narrow, and the new domain is
+    # exactly the files that build their paths with `ROOT / ...`.
+    #
+    # The module is named by BASENAME STEM rather than by stripping a suffix, because
+    # `"x.rstrip('.py')"` strips a character set and not an ending: it turns ".veldo/tasks.py"
+    # into ".veldo/tasks" by luck and leaves "veldo_tasks_gate" alone.
+    def _ts_names_tasks(value):
+        """True when this string constant names THIS module: a path to it, its filename, or an
+        import alias ending in it. Basename stem, so a directory called tasks/ elsewhere in the
+        argument does not decide it."""
+        stem = value.replace("\\", "/").rsplit("/", 1)[-1]
+        if stem.endswith(".py"):
+            stem = stem[:-3]
+        return stem == "tasks" or stem.endswith("tasks")
+
+    def _ts_loads_tasks_text(src):
+        """Whether this SOURCE loads .veldo/tasks.py, by AST: a call to one of the loader
+        functions this repository uses, with a string anywhere in its arguments naming the
+        module. Anywhere in the arguments, because `ROOT / ".veldo" / "tasks.py"` is a BinOp and
+        the constant that names the module sits inside it.
+
+        A source that does not parse NAMES that state rather than answering False: a stage this
+        suite could not read is not a stage in which it measured an absence."""
         try:
-            tree = _ts_a2.parse(path.read_text())
-        except (OSError, SyntaxError):
-            return False
+            tree = _ts_a2.parse(src)
+        except SyntaxError as _e:
+            return "UNPARSEABLE: %s" % _e
         for node in _ts_a2.walk(tree):
             if not isinstance(node, _ts_a2.Call):
                 continue
@@ -561,10 +596,18 @@ def _ts_ac5():
                              "import_module"):
                 continue
             for arg in list(node.args) + [kw.value for kw in node.keywords]:
-                if isinstance(arg, _ts_a2.Constant) and isinstance(arg.value, str) \
-                        and arg.value.rstrip(".py").endswith("tasks"):
-                    return True
+                for sub in _ts_a2.walk(arg):
+                    if isinstance(sub, _ts_a2.Constant) and isinstance(sub.value, str) \
+                            and _ts_names_tasks(sub.value):
+                        return True
         return False
+
+    def _ts_loads_tasks(path):
+        """The same detector over a FILE, which is the only difference between the two subjects."""
+        try:
+            return _ts_loads_tasks_text(path.read_text())
+        except OSError as _e:
+            return "UNREADABLE: %s" % _e
 
     # THE SUBJECT IS THE GATE'S OWN STAGES, NOT EVERY FILE IN THE TREE. This row used to assert
     # `_ts_loaders == []` over a glob of .veldo/*.py and scripts/*.py, which is a POPULATION set: the
@@ -609,30 +652,23 @@ def _ts_ac5():
                         out.add(cand)
         return sorted(p for p in out if p.is_file())
 
-    def _ts_loads_tasks_text(src):
-        """The same detector over a SOURCE STRING, so the control below can prove the detector really
-        sees the advisory spelling without writing that spelling into the live tree."""
-        try:
-            tree = _ts_a2.parse(src)
-        except SyntaxError:
-            return False
-        for node in _ts_a2.walk(tree):
-            if not isinstance(node, _ts_a2.Call):
+    def _ts_gate_loaders_of(stage_files):
+        """The gate stages that LOAD this organ, each named, and any this suite could not read or
+        parse carried into the SAME list rather than dropped: a stage nobody could read is not a
+        stage in which an absence was measured."""
+        out = []
+        for p in stage_files:
+            if p.name == "tasks.py":
                 continue
-            fname = (node.func.attr if isinstance(node.func, _ts_a2.Attribute)
-                     else getattr(node.func, "id", ""))
-            if fname not in ("spec_from_file_location", "_organ", "_load", "_sibling",
-                             "import_module"):
-                continue
-            for arg in list(node.args) + [kw.value for kw in node.keywords]:
-                if isinstance(arg, _ts_a2.Constant) and isinstance(arg.value, str) \
-                        and arg.value.rstrip(".py").endswith("tasks"):
-                    return True
-        return False
+            verdict = _ts_loads_tasks(p)
+            if verdict is True:
+                out.append(p.relative_to(ROOT).as_posix())
+            elif verdict is not False:
+                out.append("%s: %s" % (p.relative_to(ROOT).as_posix(), verdict))
+        return sorted(out)
 
     _ts_stage_files = _ts_gate_stage_files()
-    _ts_gate_loaders = sorted(p.relative_to(ROOT).as_posix() for p in _ts_stage_files
-                              if p.name != "tasks.py" and _ts_loads_tasks(p))
+    _ts_gate_loaders = _ts_gate_loaders_of(_ts_stage_files)
     expect("VELDO-0003 AC5: NO GATE STAGE LOADS THIS, and the domain is the GATE'S OWN STAGES rather "
            "than every file in the tree. A queue that could block work would turn an advisory organ "
            "into a gate, which PLAN-0018 NG3 forbids in those words, so a gate stage loading this "
@@ -643,15 +679,35 @@ def _ts_ac5():
            "DERIVED from validate.run_all's own module loads and the stage scripts verify.sh names, "
            "so a stage added to either is covered without editing this row. Asserted over LOADS via "
            "the AST rather than over mentions, because /veldo:init legitimately NAMES the module in "
-           "order to ship it and naming is not consulting",
+           "order to ship it and naming is not consulting (%d stage(s) read, loaders: %s)"
+           % (len(_ts_stage_files), _ts_gate_loaders),
            bool(_ts_stage_files) and _ts_gate_loaders == [])
-    expect("VELDO-0003 AC5 NEGATIVE CONTROL, ADDITIVE AND OVER THE LIVE TREE: an ADVISORY consumer is "
-           "permitted. .veldo/work.py already loads frontier.py and claim.py through the same helper, "
-           "and a load of tasks.py written exactly that way is NOT a gate stage of this organ, so it "
-           "must leave the row above green. This is the mutation that reddened the previous version, "
-           "driven here as a control so the narrowing is asserted rather than described",
-           _ts_loads_tasks_text("def _p():\n    return _load(\"tasks\", \".veldo/tasks.py\")\n")
-           and ".veldo/work.py" not in _ts_gate_loaders)
+    _ts_gate_spelling = ("def run_all():\n"
+                         "    _s = importlib.util.spec_from_file_location(\n"
+                         "        \"veldo_tasks_gate\", ROOT / \".veldo\" / \"tasks.py\")\n")
+    _ts_literal_spelling = "def _p():\n    return _load(\"tasks\", \".veldo/tasks.py\")\n"
+    _ts_unrelated_load = ("def _p():\n"
+                          "    return _load(\"frontier\", \".veldo/frontier.py\")\n")
+    expect("VELDO-0003 AC5 NEGATIVE CONTROL, ADDITIVE, AND IT IS THE ROW ABOVE'S REACH: the detector "
+           "FIRES on both spellings a gate stage could use - a literal \".veldo/tasks.py\" and the "
+           "`ROOT / \".veldo\" / \"tasks.py\"` form validate.py already uses for every organ it loads "
+           "- and stays silent on a load of a DIFFERENT organ, so the emptiness above is a "
+           "measurement and not a scan that never matches. MEASURED 2026-08-13: the previous version "
+           "inspected only DIRECT Constant arguments, so the second spelling left the row green while "
+           "the first reddened it - the domain had been narrowed to exactly the files that build "
+           "their paths that way, and its realistic member was invisible. A stage it cannot parse "
+           "is NAMED rather than answered False, and that state is driven here too",
+           _ts_loads_tasks_text(_ts_literal_spelling) is True
+           and _ts_loads_tasks_text(_ts_gate_spelling) is True
+           and _ts_loads_tasks_text(_ts_unrelated_load) is False
+           and str(_ts_loads_tasks_text("def (\n")).startswith("UNPARSEABLE"))
+    expect("VELDO-0003 AC5 NEGATIVE CONTROL, OVER THE LIVE TREE: an ADVISORY consumer is permitted. "
+           ".veldo/work.py already loads frontier.py and claim.py through the same helper, and a load "
+           "of tasks.py written exactly that way is NOT a gate stage of this organ, so it must leave "
+           "the row above green. This is the mutation that reddened the previous version, driven here "
+           "as a control so the narrowing is asserted rather than described",
+           ".veldo/work.py" not in _ts_gate_loaders
+           and any(p.name == "validate.py" for p in _ts_stage_files))
     _ts_own_organs = _ts_re_organs((ROOT / ".veldo" / "tasks.py").read_text())
     expect("VELDO-0003 AC5 NEGATIVE CONTROL for the row above: the organ detector is not blind - "
            "it FINDS this module's own load of the claim ledger and finds nothing in a module that "

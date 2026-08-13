@@ -12,7 +12,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py, 60 rows, run inside a GREEN bash scripts/verify.sh. CORRECTED 2026-08-13, VELDO-0001 F5: this field cited 'selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed' and the same run prints, as its last line, 'PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this.' The underlying evidence was never in doubt and the citation was forbidden by the runner that produced it."
+    },
+    {
+     "type": "unit",
+     "ref": "AC1: 1 declared falsification driven in this pass (delete the per-criterion loop in falsification_problems), which reddened 23 rows in the run and 23 of this fragment's own, including the row this criterion names, while the AC1 accepting row stayed green. See proof/VELDO-0001/driven-falsifications.txt, which records the mutations for the ITEM and states the method behind every count. RE-DRIVEN 2026-08-13 after the F2 and F6 remediation added rows."
     }
    ]
   },
@@ -22,17 +26,33 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py, 60 rows, run inside a GREEN bash scripts/verify.sh. CORRECTED 2026-08-13, VELDO-0001 F5: see AC1."
+    },
+    {
+     "type": "unit",
+     "ref": "AC2: 1 declared falsification driven in this pass (accept any non-empty string, dropping both floors), which reddened 7 rows in the run and 7 of this fragment's own, including the n/a row this criterion names. CORRECTED 2026-08-13, VELDO-0001 F4: the suite docstring recorded this mutation at 8 FAILED and it is 7. Neither reading of the criterion's words reaches 8, keeping the empty guard gives 7 and dropping it as well gives 9, so the recorded number was wrong rather than stale. proof/VELDO-0001/driven-falsifications.txt."
     }
    ]
   },
   {
    "id": "AC3",
-   "status": "passed",
+   "status": "partial",
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py, 60 rows, run inside a GREEN bash scripts/verify.sh. CORRECTED 2026-08-13, VELDO-0001 F5: see AC1."
+    },
+    {
+     "type": "unit",
+     "ref": "AC3: 1 declared falsification driven in this pass (ignore behavior_bearing entirely), which reddened 10 rows in the run and 9 of this fragment's own, including the two stand-down rows and the two reporting rows this criterion now carries, while the behaviour-bearing refusal stayed red. proof/VELDO-0001/driven-falsifications.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "PARTIAL, AND STILL PARTIAL AFTER 2026-08-13's SECOND PASS, on ONE clause rather than two. AC3 has four clauses. THREE HOLD: the stand-down for behavior_bearing absent or false is asserted in both directions; the migration posture is asserted as an equivalence rather than pinned; and the clause 'the check reports its stand-down rather than passing silently' NOW HOLDS, where the independent review recorded it as VELDO-0001 F2 and the first remediation pass recorded it as a cross-item dependency. The recorder prints ONE line per CORPUS per run, in the words the sibling release check uses, with its counts measured by falsification_migration() where the line is printed rather than typed. MEASURED at the surface F2 named: `python3 .veldo/validate.py all 2>&1 | grep -ic 'falsif|stood down|stand-down'` was 0 and is 2, one line for specs/ (168 stood down) and one for .veldo/examples (2), exit 0 unchanged. It needed no line in .veldo/validate.py: the report is emitted by the organ that RECORDS the stand-down, because a per-spec check has no end-of-run hook and a second reporting function nobody calls would have been F2's own defect in a new place. Driven by deleting the report and leaving the record: exactly two rows red, both of them about reporting, none lost. THE FOURTH CLAUSE, that the flip commit's message states the DATE as well as the count, is still unmet: 01bcdf3 states the count three ways and no date (F6), amending it would rewrite history this tree shares, so the date is recorded in FALSIFICATION_FLIP beside the posture, it reaches an operator inside the line above, and one row now requires that record to carry a commit, an ISO date and a posture that AGREES with FALSIFICATION_ENFORCED. No row reads git, so the MESSAGE itself stays unasserted, which is why this criterion stays PARTIAL rather than passed."
+    },
+    {
+     "type": "unit",
+     "ref": "AC3 REPORTING, driven 2026-08-13: deleting the stand-down report reddened 2 rows in the run and 2 of this fragment's, by name, with no row vanishing (ledger finding 67); its ADDITIVE control added a spec declaring no behaviour to the LIVE specs/ corpus, which left the fragment green and moved the reported count from 168 stood down to 169, so the addition is asserted to have applied. proof/VELDO-0001/driven-falsifications.txt."
     }
    ]
   },
@@ -42,7 +62,15 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+     "ref": "scripts/suites/17_veldo_0001_falsification_declared.py, 60 rows, run inside a GREEN bash scripts/verify.sh. CORRECTED 2026-08-13, VELDO-0001 F5: see AC1."
+    },
+    {
+     "type": "unit",
+     "ref": "AC4: 1 declared falsification driven in this pass (remove the falsified_by key from engine/specs/TEMPLATE.md), which reddened 4 rows in the run and 4 of this fragment's own, including the template row this criterion names. Its negative control, a template prompting for falsifiable_by, reddened 5 including the misspelling row. proof/VELDO-0001/driven-falsifications.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "WIDENED 2026-08-13, VELDO-0001 F3: the prompt had shipped into engine/specs/TEMPLATE.md and NOT into specs/TEMPLATE.md, the file README.md tells an author here to copy, nor into engine/specs/TEMPLATE-standing.md, and no assertion read either. All three now carry falsified_by as an uncommented KEY on its own line and name behavior_bearing, and the assertion is a PROPERTY over the set of templates DERIVED by glob over specs/ and engine/specs/, not a hand-written list, with an additive control that a template carrying the field only inside a comment is refused."
     }
    ]
   }
@@ -51,12 +79,17 @@
   {
    "name": "unit",
    "status": "passed",
-   "detail": "scripts/suites/17_veldo_0001_falsification_declared.py driven through scripts/selftest.py: selftest (PARTIAL, 1 of 34 suites): 78 passed, 0 failed in 0.03s"
+   "detail": "scripts/suites/17_veldo_0001_falsification_declared.py driven through scripts/selftest.py, 60 rows, inside the full gate rather than as the PARTIAL run this field used to cite (VELDO-0001 F5)"
   },
   {
    "name": "gate",
    "status": "passed",
-   "detail": "bash scripts/verify.sh GREEN at e4ce85da9529; see .veldo/last_verify"
+   "detail": "bash scripts/verify.sh GREEN at e4ce85da9529; see .veldo/last_verify. Re-run GREEN over the F1/F4/F5/F8 remediation at 93c1c8d2bdbec and again over the F2/F6 remediation on top of it."
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "declared falsifications re-driven 2026-08-13 after the F2 and F6 remediation: 4 of 4, each reddening the row its criterion names, plus the four negative controls, the F8 pair and the four drives for the rows this pass added (proof/VELDO-0001/driven-falsifications.txt). Every count there states its method: failed rows in the whole run, and how many of them are this fragment's. Three counts MOVED because rows were added, and the file says which and why rather than leaving the old numbers standing."
   }
  ],
  "rollback": "See the spec's own rollback clause: VELDO-0001-every-criterion-declares-its-own-falsification.md"

@@ -1,9 +1,9 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0012",
- "commit": "93c1c8d2bdbec627a5ffa9497cf0e132978a44ab",
- "producer": "claude-opus-5[1m] (implementing agent; F2/F5/F6/F7 remediation pass)",
- "produced_at": "2026-08-12T22:40:00Z",
+ "commit": "7e36a2e3d550115184271b3a64bc48ed531c72eb",
+ "producer": "claude-opus-5[1m] (implementing agent; second remediation pass, F2 reader half plus F3/F5/F6/F7 re-measured)",
+ "produced_at": "2026-08-13T05:20:00Z",
  "veldo_version": "3.10.1",
  "criteria": [
   {
@@ -12,11 +12,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4670 passed, 0 failed, GATE: GREEN, measured on the tree at base 7e36a2e3d550 WITH the second remediation pass applied. The item's own fragment is 88 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times. The sha names the tree the run was OVER and is not a claim the run happened at that commit with nothing added; the commit this bundle lands in cannot be named from inside it, which is why every sibling bundle in this repository names an earlier one."
     },
     {
      "type": "unit",
-     "ref": "AC1: 2 declared falsification(s) driven in this pass (widen-STATUSES, unclaimed-entry-loop-over-an-empty-list), reddening 4 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
+     "ref": "AC1: 2 declared falsification(s) driven in this pass (widen-STATUSES, unclaimed-entry-loop-over-an-empty-list), reddening 4 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records EIGHTEEN mutation blocks in total - the twelve declared falsifications plus six for the rows two remediation passes added - and never any of those totals per criterion."
     }
    ]
   },
@@ -26,11 +26,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4670 passed, 0 failed, GATE: GREEN, measured on the tree at base 7e36a2e3d550 WITH the second remediation pass applied. The item's own fragment is 88 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times. The sha names the tree the run was OVER and is not a claim the run happened at that commit with nothing added; the commit this bundle lands in cannot be named from inside it, which is why every sibling bundle in this repository names an earlier one."
     },
     {
      "type": "unit",
-     "ref": "AC2: 1 declared falsification(s) driven in this pass (delete-the-digest-recompute), reddening 1 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
+     "ref": "AC2: 1 declared falsification(s) driven in this pass (delete-the-digest-recompute), reddening 1 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records EIGHTEEN mutation blocks in total - the twelve declared falsifications plus six for the rows two remediation passes added - and never any of those totals per criterion."
     }
    ]
   },
@@ -40,11 +40,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4670 passed, 0 failed, GATE: GREEN, measured on the tree at base 7e36a2e3d550 WITH the second remediation pass applied. The item's own fragment is 88 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times. The sha names the tree the run was OVER and is not a claim the run happened at that commit with nothing added; the commit this bundle lands in cannot be named from inside it, which is why every sibling bundle in this repository names an earlier one."
     },
     {
      "type": "unit",
-     "ref": "AC3: 2 declared falsification(s) driven in this pass (pin-unrecognized-keys-ignored, scope-unvalidated-for-a-pins-less-floor), reddening 5 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
+     "ref": "AC3: 2 declared falsification(s) driven in this pass (pin-unrecognized-keys-ignored, scope-unvalidated-for-a-pins-less-floor), reddening 5 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records EIGHTEEN mutation blocks in total - the twelve declared falsifications plus six for the rows two remediation passes added - and never any of those totals per criterion."
     }
    ]
   },
@@ -54,11 +54,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4670 passed, 0 failed, GATE: GREEN, measured on the tree at base 7e36a2e3d550 WITH the second remediation pass applied. The item's own fragment is 88 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times. The sha names the tree the run was OVER and is not a claim the run happened at that commit with nothing added; the commit this bundle lands in cannot be named from inside it, which is why every sibling bundle in this repository names an earlier one."
     },
     {
      "type": "unit",
-     "ref": "AC4: 3 declared falsification(s) driven in this pass (fall-back-to-the-settlement's-own-decided_by, drop-the-request's-own-binding-comparison, read-the-settlement's-chosen-key-at-face-value), reddening 11 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
+     "ref": "AC4: 3 declared falsification(s) driven in this pass (fall-back-to-the-settlement's-own-decided_by, drop-the-request's-own-binding-comparison, read-the-settlement's-chosen-key-at-face-value), reddening 11 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records EIGHTEEN mutation blocks in total - the twelve declared falsifications plus six for the rows two remediation passes added - and never any of those totals per criterion."
     }
    ]
   },
@@ -68,11 +68,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4670 passed, 0 failed, GATE: GREEN, measured on the tree at base 7e36a2e3d550 WITH the second remediation pass applied. The item's own fragment is 88 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times. The sha names the tree the run was OVER and is not a claim the run happened at that commit with nothing added; the commit this bundle lands in cannot be named from inside it, which is why every sibling bundle in this repository names an earlier one."
     },
     {
      "type": "unit",
-     "ref": "AC5: 1 declared falsification(s) driven in this pass (map-decided-onto-load_bearing), reddening 12 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
+     "ref": "AC5: 1 declared falsification(s) driven in this pass (map-decided-onto-load_bearing), reddening 12 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records EIGHTEEN mutation blocks in total - the twelve declared falsifications plus six for the rows two remediation passes added - and never any of those totals per criterion."
     }
    ]
   },
@@ -82,11 +82,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4670 passed, 0 failed, GATE: GREEN, measured on the tree at base 7e36a2e3d550 WITH the second remediation pass applied. The item's own fragment is 88 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times. The sha names the tree the run was OVER and is not a claim the run happened at that commit with nothing added; the commit this bundle lands in cannot be named from inside it, which is why every sibling bundle in this repository names an earlier one."
     },
     {
      "type": "unit",
-     "ref": "AC6: 2 declared falsification(s) driven in this pass (remove-the-floors-protected-path, remove-the-settlements-protected-path), reddening 4 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
+     "ref": "AC6: 2 declared falsification(s) driven in this pass (remove-the-floors-protected-path, remove-the-settlements-protected-path), reddening 4 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records EIGHTEEN mutation blocks in total - the twelve declared falsifications plus six for the rows two remediation passes added - and never any of those totals per criterion."
     }
    ]
   },
@@ -96,11 +96,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4670 passed, 0 failed, GATE: GREEN, measured on the tree at base 7e36a2e3d550 WITH the second remediation pass applied. The item's own fragment is 88 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times. The sha names the tree the run was OVER and is not a claim the run happened at that commit with nothing added; the commit this bundle lands in cannot be named from inside it, which is why every sibling bundle in this repository names an earlier one."
     },
     {
      "type": "unit",
-     "ref": "AC7: 1 declared falsification(s) driven in this pass (delete-the-stand-down-guard), reddening 1 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
+     "ref": "AC7: 1 declared falsification(s) driven in this pass (delete-the-stand-down-guard), reddening 1 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records EIGHTEEN mutation blocks in total - the twelve declared falsifications plus six for the rows two remediation passes added - and never any of those totals per criterion."
     }
    ]
   }

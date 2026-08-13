@@ -73,9 +73,11 @@ acceptance_criteria:
   - id: AC2
     falsified_by: >
       Report the posture as PACING whenever windows are configured in .veldo/budget_state.py, or
-      repeat a caller-supplied burn rate as a measurement when no reading inside any window's horizon
-      corroborates it, and the assertion that an unmeasured burn rate reports BOOTSTRAP and says the
-      governor is permitting the maximum rather than pacing must go red.
+      repeat a caller-supplied burn rate as a measurement when no window's readings inside its
+      horizon TOTAL more than zero - including by COUNTING the readings instead of totalling them,
+      which is the same defect through the taxonomy's other door - and the assertion that an
+      unmeasured burn rate reports BOOTSTRAP and says the governor is permitting the maximum rather
+      than pacing must go red.
     text: >
       BOOTSTRAP IS SAID OUT LOUD, BECAUSE IT MEANS THE PACING IS NOT HAPPENING. The governor's own
       contract is that a per-worker rate of zero or less means burn is not measured yet and it permits
@@ -88,9 +90,22 @@ acceptance_criteria:
       measurement, the posture stays BOOTSTRAP, and the rate handed to the governor is 0.0. So the
       report cannot print "burn is measured at 1.0 tokens per worker per second" directly above
       "UNMEASURED - no recorded spend inside the horizon", which is what it did.
+      AND THE EVIDENCE IS A TOTAL, NOT A COUNT OF READINGS. Requiring only that a reading EXIST
+      inside a horizon let the contradiction back in through ZERO_RECORDED: one reading of zero
+      tokens printed "burn is measured at 1.0" above "1 recorded event(s) inside the horizon total
+      ZERO tokens" and paced the worker count from 8 down to 1. The governor's own
+      measure_per_worker_rate is the windowed spend over the horizon and the worker count, so it
+      cannot return a positive rate over readings totalling zero or less; a positive rate is
+      corroborated only by a window whose readings TOTAL more than zero, which is the same evidence
+      the caller's own measurement rests on. AND THE BOOTSTRAP REASON IS DERIVED FROM THE WINDOWS:
+      never instrumented, readings outside every horizon, a total of no more than zero, and recorded
+      burn with no rate supplied are four different facts and four sentences, because one count
+      standing in for all four told an operator no window held a reading while the row underneath
+      reported 250 of 1000 used.
       NEGATIVE CONTROL: with a measured rate the posture is PACING and the derived worker count
       matches the governor's own function called directly, so the posture is derived rather than
-      asserted.
+      asserted; and one reading carrying real burn ADDED to that zero reading corroborates the same
+      supplied rate, so the refusal is a measurement of the total.
   - id: AC3
     falsified_by: >
       Compute the worker count or the resume time inside .veldo/budget_state.py instead of calling

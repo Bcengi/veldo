@@ -815,11 +815,45 @@ with tempfile.TemporaryDirectory() as _bf_rd:
            "WITH the reason, and the blocked line names RULING_NOT_CARRIED while the unknown line "
            "names RULING_NOT_SETTLED, so a reader can tell nobody-ruled from the-channel-is-"
            "incomplete on the page",
-           len(_BF_LINES) == 5
+           len(_BF_LINES) == 6
            and "3 pin(s): 1 ruled, 1 unknown, 1 blocked" in _BF_LINES[0]
            and "NOT REACHED" in _BF_LINES[0]
            and any(BF.RULING_NOT_CARRIED in ln and " blocked" in ln for ln in _BF_LINES)
            and any(BF.RULING_NOT_SETTLED in ln and " unknown" in ln for ln in _BF_LINES))
+    # THE REPORT NAMES WHAT IT READ THE DISPOSITIONS FROM, which is the reader half of the boundary
+    # AC6 records. A review authored a floor, a request, a settlement and a decision record, none of
+    # them committed, and this report printed "1 ruled ... ruled incidental by dmitry" beside its own
+    # sentence "nothing here is read at face value". The pattern DOES match those paths; the
+    # enforcement never reaches them, because changed_files() is `git diff --name-only <base>` and
+    # lists TRACKED modifications only (the boundary row further down measures both directions in a
+    # git fixture). Nothing here refuses an untracked floor - a floor is authored before it is
+    # committed - so the reader NAMES the state rather than implying the stronger one.
+    expect("VELDO-0012 AC5: THE REPORT NAMES WHAT IT READ THE DISPOSITIONS FROM. Every record the "
+           "resolver joins is read from the WORKING TREE, and whether any of them is TRACKED or "
+           "covered by an approval is not checked here, so the report says so on the page instead "
+           "of letting `ruled incidental by dmitry` over four uncommitted files read as a human "
+           "ruling. RECORDED AND REPORTED FROM ONE STRING, never one or the other: the same "
+           "DISPOSITION_READ_FROM sentence is a key in the report dict a programmatic consumer "
+           "reads and a line in the report a person reads, and it names TRACKED and names the "
+           "consumer's obligation rather than gesturing at a risk",
+           # .get, NOT [key]: a mutation that DELETES the key must red THIS row rather than
+           # raise out of the enclosing block and take every row below it with it, which is
+           # the shape a mutation-deletes-coverage pass produces.
+           _BF_REP.get("read_from") == BF.DISPOSITION_READ_FROM
+           and "WORKING TREE" in BF.DISPOSITION_READ_FROM
+           and "TRACKED" in BF.DISPOSITION_READ_FROM
+           and "git diff --name-only" in BF.DISPOSITION_READ_FROM
+           and any(BF.DISPOSITION_READ_FROM in ln for ln in _BF_LINES))
+    expect("VELDO-0012 AC5 NEGATIVE CONTROL, ADDITIVE: naming the provenance was not achieved by "
+           "reporting less - the SAME report still counts the one ruled pin and still prints its "
+           "per-pin ruled line with the attributed human - and the key is present in the STOOD-DOWN "
+           "shape too, so the ONE key shape this report promises still holds and a consumer never "
+           "guesses whether it is missing or genuinely empty",
+           _BF_REP["ruled"] == 1
+           and any(": ruled - ruled incidental by dmitry" in ln for ln in _BF_LINES)
+           and BF.floor_report(fdir=Path(_bf_rd) / "no-floors-here",
+                               parse=V.parse_yamlish).get("read_from")
+           == BF.DISPOSITION_READ_FROM)
     expect("VELDO-0012 AC5: THE LANGUAGE SCOPE IS DECLARED RATHER THAN IMPLIED. The shipped shape "
            "analyzers are PYTHON ONLY - shape_gate filters the changed set to paths ending .py "
            "before any analyzer sees them - so the report names the pin languages no shipped "

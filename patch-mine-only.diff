@@ -1,0 +1,218 @@
+--- a/scripts/check_install_and_run.py
++++ b/scripts/check_install_and_run.py
+@@ -14,11 +14,14 @@
+ 
+ SO THIS RUNS THE COMPOSED PACK'S OWN SCAFFOLDER, and asserts the tree it ran from has no engine/
+ directory, because that absence is the condition that broke. THE EXECUTABLE ACTUALLY LAUNCHED IS
+-WRITTEN DOWN, taken from the argv the child was handed, and the tree the templates came from is
+-derived from THAT path: a review pointed the launch at this repository's own scaffolder and every
+-provenance row stayed green, because the result recorded the directory this function was PASSED and
+-derived engine/ presence from that same directory. A record of an argument is not a record of a
+-launch.
++WRITTEN DOWN, READ OFF THE COMPLETED LAUNCH rather than off any variable near it, and the tree the
++templates came from is derived from THAT path. A RECORD OF AN ARGUMENT IS NOT A RECORD OF A LAUNCH,
++and this file has now failed that twice: first the result recorded the directory the function was
++PASSED and derived engine/ presence from it, so pointing the launch at this repository left every
++provenance row green; then the record was built from a list assigned one line above the call, so
++swapping only the CALL left every row green again and printed "(engine/ in that tree: False)" for a
++launch out of the tree that has engine/. The record is now subprocess's own args off the
++CompletedProcess, which is the launch or nothing.
+ 
+ FIVE STAGES, EACH FAILING BY ITS OWN NAME, because each is a different broken part of an adopter's
+ first ten minutes:
+@@ -164,19 +167,22 @@
+     absence of engine/ in the TREE THE SCAFFOLDER ACTUALLY RAN FROM is recorded because it is the
+     condition 1.0 broke on.
+ 
+-    scaffolder_ran is read out of the argv the child is handed, and scaffolder_tree is derived from
+-    that path by stripping SCAFFOLDER off its tail, so neither can disagree with the launch. The
+-    older record (installed_from plus engine/ presence computed from the same directory) described
+-    the ARGUMENT, and a review swapped the launched executable for this repository's own with every
+-    provenance row still green and the run reporting, falsely, that it had installed from a tree with
+-    no engine/ - the exact 1.0 shape, reported as its own absence.
++    scaffolder_ran is read off the COMPLETED LAUNCH - subprocess's own args on the CompletedProcess
++    _run returned - and scaffolder_tree is derived from that path by stripping SCAFFOLDER off its
++    tail, so neither can disagree with the launch. TWO WEAKER READS PRECEDED IT AND BOTH WERE DRIVEN
++    GREEN: installed_from plus engine/ presence computed from the directory this function was PASSED,
++    which survived pointing the launch at this repository; and a record built from an argv list
++    assigned one line above the call, which survived swapping the call alone. Each time the run
++    reported, falsely, that it had installed from a tree with no engine/ - the exact 1.0 shape,
++    reported as its own absence. A launch whose argv names no scaffolder, or names several, leaves
++    scaffolder_ran None: an unanswerable read is NAMED here rather than raised out of the stage.
+ 
+     The tree is COMMITTED between init and the gate, because the shipped catalog's one required check
+     reads the index and an uncommitted tree gives it nothing to scan."""
+     pack_dir, target = Path(pack_dir), Path(target)
+     out = {"pack": pack_dir.name, "installed_from": str(pack_dir),
+            "pack_has_engine_dir": (pack_dir / "engine").is_dir(),
+-           "scaffolder_ran": None, "scaffolder_tree": None,
++           "scaffolder_argv": None, "scaffolder_ran": None, "scaffolder_tree": None,
+            "scaffolder_tree_has_engine_dir": None,
+            "init_returncode": None, "init_tail": "", "files_created": None,
+            "commit_returncode": None, "commit_tail": "", "tracked_files": None,
+@@ -184,12 +190,24 @@
+     target.mkdir(parents=True, exist_ok=True)
+     _run(["git", "init", "-q", "."], cwd=target)
+ 
+-    argv = [sys.executable, pack_dir / SCAFFOLDER, "."]
+-    out["scaffolder_ran"] = str(argv[1])
+-    ran_from = Path(out["scaffolder_ran"]).parents[len(Path(SCAFFOLDER).parts) - 1]
+-    out["scaffolder_tree"] = str(ran_from)
+-    out["scaffolder_tree_has_engine_dir"] = (ran_from / "engine").is_dir()
+-    init = _run(argv, cwd=target)
++    init = _run([sys.executable, pack_dir / SCAFFOLDER, "."], cwd=target)
++    # THE RECORD IS READ OFF THE LAUNCH ITSELF, never off a list assigned beside the call.
++    # CompletedProcess.args is the argv subprocess received, so the record and the launch cannot
++    # disagree. Building it from a variable one line above the call is not enough and that was
++    # MEASURED: with the record still naming the pack's copy and only the call swapped for this
++    # repository's own scaffolder, every provenance row stayed green and the stage printed
++    # "(engine/ in that tree: False)" for a launch out of the tree that HAS engine/ - the 1.0 shape,
++    # reported as its own absence, one level below the read this replaced.
++    out["scaffolder_argv"] = [str(a) for a in init.args]
++    ran = [a for a in out["scaffolder_argv"] if a.endswith(SCAFFOLDER)]
++    # ONE entry is the answer. None, or several, is a state this reader NAMES by leaving the record
++    # None rather than raising out of the stage: a raise here would red a wrapper row and take the
++    # rows below it out of the run, which is a mutation that deletes coverage rather than failing.
++    out["scaffolder_ran"] = ran[0] if len(ran) == 1 else None
++    if out["scaffolder_ran"] is not None:
++        ran_from = Path(out["scaffolder_ran"]).parents[len(Path(SCAFFOLDER).parts) - 1]
++        out["scaffolder_tree"] = str(ran_from)
++        out["scaffolder_tree_has_engine_dir"] = (ran_from / "engine").is_dir()
+     out["init_returncode"] = init.returncode
+     out["init_tail"] = (init.stdout + init.stderr).strip()[-800:]
+     created = sum(1 for _ in target.rglob("*") if _.is_file())
+--- a/scripts/suites/24_veldo_0007_install_and_run.py
++++ b/scripts/suites/24_veldo_0007_install_and_run.py
+@@ -122,12 +122,17 @@
+ # FALSIFIED BY: point the installer at this repository's own scaffolder, and the row below
+ # (no engine/ in the tree it ran from) must go red.
+ #
+-# FOUND VACUOUS BY A REVIEW AND FIXED HERE. Both rows used to read `installed_from` and
+-# `pack_has_engine_dir`, which describe the directory install_and_run was HANDED. Swapping the
+-# launched executable for this repository's own scaffolder therefore left every row green while the
+-# stage printed `(engine/ present: False)` for all seven packs and every install had in fact been
+-# laid from engine/ - the 1.0 shape, reported as its own absence. The rows now read the argv the
+-# child was handed and the tree derived from it.
++# FOUND VACUOUS TWICE, AT TWO DEPTHS, AND BOTH ARE DRIVEN BELOW.
++#   1. The rows read `installed_from` and `pack_has_engine_dir`, which describe the directory
++#      install_and_run was HANDED. Swapping the launched executable for this repository's own
++#      scaffolder left every row green while the stage printed `(engine/ present: False)` for all
++#      seven packs, every install having in fact been laid from engine/.
++#   2. The rows then read a record built from an argv list assigned ONE LINE ABOVE the call. Changing
++#      the CALL alone - the record untouched - left every row of this criterion green again, and the
++#      stage printed `(engine/ in that tree: False)` for a launch out of the tree that has engine/.
++# A RECORD OF AN ARGUMENT IS NOT A RECORD OF A LAUNCH, at either depth. The record is now
++# subprocess's own args off the CompletedProcess, and a recorder wrapping the one funnel observes the
++# argv independently, so the row's subject is what ran rather than what was written down near it.
+ # ---------------------------------------------------------------------------------------
+ 
+ 
+@@ -140,15 +145,62 @@
+            "from the argv the child received, never on the directory the function was passed",
+            _IAR_REP["results"]
+            and all(r["scaffolder_tree_has_engine_dir"] is False for r in _IAR_REP["results"]))
+-    expect("VELDO-0007 AC1: the scaffolder that ran is the PACK'S OWN copy - the executable path "
+-           "recorded from the child's own argv is the pack directory plus %s, and it sits under "
+-           "/packs/<pack>, so the launch is under the composed pack and never under this repository"
+-           % IAR.SCAFFOLDER,
++    expect("VELDO-0007 AC1: the scaffolder that ran is the PACK'S OWN copy - the executable path read "
++           "OFF THE COMPLETED LAUNCH is the pack directory plus %s, and it sits under /packs/<pack>, "
++           "so the launch is under the composed pack and never under this repository. An unanswerable "
++           "record (an argv naming no scaffolder, or several) reds this row by its own name rather "
++           "than raising out of the reader. Recorded: %r"
++           % (IAR.SCAFFOLDER, [r["scaffolder_ran"] for r in _IAR_REP["results"]][:2]),
+            _IAR_REP["results"]
+-           and all(Path(r["scaffolder_ran"]) == Path(r["installed_from"]) / IAR.SCAFFOLDER
++           and all(r["scaffolder_ran"] and r["scaffolder_tree"]
++                   and Path(r["scaffolder_ran"]) == Path(r["installed_from"]) / IAR.SCAFFOLDER
+                    and r["scaffolder_ran"].endswith("/packs/%s/%s" % (r["pack"], IAR.SCAFFOLDER))
+                    and Path(r["scaffolder_tree"]).resolve() != ROOT.resolve()
+                    for r in _IAR_REP["results"]))
++    # THE RECORD IS THE LAUNCH, AND THAT IS OBSERVED RATHER THAN TRUSTED. Both earlier versions of
++    # this criterion asserted over a record built NEAR the call - first from the directory the
++    # function was passed, then from a list assigned one line above it - and each was driven green by
++    # a mutation that changed the call alone. So the argv every child actually received is recorded AT
++    # THE LAUNCHER, by a recorder wrapping the one funnel, and the result's own record must be the
++    # scaffolder argv that recorder saw, with that path UNDER the composed pack root.
++    class _IarArgvRecorder:
++        def __init__(self, real):
++            self._real, self.argvs = real, []
++
++        def run(self, argv, *a, **kw):
++            self.argvs.append([str(x) for x in argv])
++            return self._real.run(argv, *a, **kw)
++
++        def __getattr__(self, k):
++            return getattr(self._real, k)
++
++    with tempfile.TemporaryDirectory() as _iar_d:
++        _iar_pub = Path(_iar_d) / "public"
++        IAR.compose(_iar_pub, ROOT)
++        _iar_pk = IAR.composed_packs(_iar_pub)[0]
++        _iar_pack_root = _iar_pub / "packs" / _iar_pk
++        _iar_real_sp1 = IAR.subprocess
++        IAR.subprocess = _IarArgvRecorder(_iar_real_sp1)
++        try:
++            # gate=False: the subject is the LAUNCH of the scaffolder, so the nested gate is not
++            # bought again here. The full sweep above already ran it for every pack.
++            _iar_res_a = IAR.install_and_run(_iar_pack_root, Path(_iar_d) / "fresh-argv", gate=False)
++        finally:
++            _iar_argv_rec, IAR.subprocess = IAR.subprocess, _iar_real_sp1
++        _iar_seen = [a for a in _iar_argv_rec.argvs
++                     if any(x.endswith(IAR.SCAFFOLDER) for x in a)]
++        expect("VELDO-0007 AC1 THE RECORD IS THE LAUNCH, OBSERVED AT THE LAUNCHER: a recorder wrapping "
++               "the one funnel captured the argv every child really received, exactly ONE of them names "
++               "a scaffolder, the result's own scaffolder_argv IS that argv, and the executable in it "
++               "sits UNDER the composed pack root. Driven because a record built beside the call is "
++               "not a record of the call: with the record naming the pack's copy and only the call "
++               "swapped for this repository's scaffolder, every row of this criterion stayed green. "
++               "Observed: %r" % (_iar_seen[:1],),
++               len(_iar_seen) == 1
++               and _iar_res_a["scaffolder_argv"] == _iar_seen[0]
++               and _iar_res_a["scaffolder_ran"] in _iar_seen[0]
++               and Path(_iar_res_a["scaffolder_ran"]).is_relative_to(_iar_pack_root)
++               and _iar_res_a["init_returncode"] == 0)
+     expect("VELDO-0007 AC1 NEGATIVE CONTROL: the alternative the falsification names EXISTS and is "
+            "the opposite shape - THIS repository carries %s and DOES have engine/ - so the two rows "
+            "above are a measurement of which tree ran rather than a property that holds everywhere. "
+--- a/specs/VELDO-0007-install-and-run-from-the-artifact-an-adopter-receives.md
++++ b/specs/VELDO-0007-install-and-run-from-the-artifact-an-adopter-receives.md
+@@ -59,9 +59,14 @@
+     falsified_by: >
+       Point the installer at this repository's own .veldo/init_scaffold.py instead of the COMPOSED
+       pack's copy in scripts/check_install_and_run.py, and the assertion that the scaffolder was run
+-      from a tree containing no engine/ directory must go red. The tree asserted is the one the
+-      EXECUTED path belongs to, read out of the argv the child was handed: a record of the directory
+-      the installer was PASSED leaves this mutation green, which is how it shipped.
++      from a tree containing no engine/ directory must go red. DRIVEN AT BOTH DEPTHS, because two
++      weaker reads each survived this mutation: a record of the directory the installer was PASSED,
++      and a record built from an argv list assigned one line above the call - swap the CALL alone and
++      that one stays green too. The tree asserted is the one the EXECUTED path belongs to, read off the
++      COMPLETED LAUNCH (subprocess's own args on the CompletedProcess), and a recorder wrapping the one
++      launcher observes the argv independently, so the row's subject is the launch and not a variable
++      near it. Emptying that record must red the same NAMED rows rather than raising, which is also
++      driven.
+     text: >
+       IT INSTALLS FROM THE COMPOSED PACK, NOT FROM THIS REPOSITORY, AND THAT IS THE ENTIRE POINT. In
+       this repository the template base is a separate tree at engine/; in a composed pack the base has
+@@ -69,10 +74,16 @@
+       1.0 shipped uninstallable because init assumed the first shape, and every test ran against this
+       repository - the one tree nobody installs. So the stage runs the COMPOSED PACK'S OWN
+       init_scaffold.py, and asserts the tree it ran from has no engine/ directory, because that
+-      absence is the condition that broke. THE TREE IT RAN FROM IS DERIVED FROM THE EXECUTABLE THE
+-      CHILD WAS HANDED, never from the directory the installer was passed: those two agree in every
+-      case except the one this criterion exists to catch, which is why a review pointing the launch
+-      at this repository left the old rows green.
++      absence is the condition that broke. THE TREE IT RAN FROM IS DERIVED FROM THE COMPLETED LAUNCH,
++      never from the directory the installer was passed and never from a list assigned beside the call:
++      A RECORD OF AN ARGUMENT IS NOT A RECORD OF A LAUNCH, and this criterion has now been driven green
++      through two such records - the first survived pointing the launch at this repository, the second
++      survived swapping the call while the record stayed put, and both printed a provenance line saying
++      the tree had no engine/ for a launch out of the tree that has one. The record is subprocess's own
++      args off the CompletedProcess, a recorder wrapping the single launcher observes the same argv
++      independently and the executable is required to sit under the composed pack root, and a launch
++      whose argv names no scaffolder or several leaves the record unanswerable and NAMED rather than
++      raising out of the reader.
+   - id: AC2
+     falsified_by: >
+       Replace the derived pack set in scripts/check_install_and_run.py with a hand-written list naming

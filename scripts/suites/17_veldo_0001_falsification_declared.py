@@ -21,29 +21,61 @@ each stand-down row is paired with a row proving the same run still refuses a ga
 four criteria of VELDO-0001 each declare a FALSIFIED BY and a NEGATIVE CONTROL, and the rows
 below are named for them.
 
-TEETH, MEASURED RATHER THAN CLAIMED. Each of the four declared falsifications was applied to a
-scratch copy of the repository under /tmp, DIFFED to prove the edit landed, and this fragment run
-against it. Unmodified it is 52 passed, 0 failed:
+TEETH, RE-MEASURED AT THIS COMMIT RATHER THAN CLAIMED, AND EVERY COUNT CARRIES ITS METHOD. Each of
+the four declared falsifications and each of the four negative controls was applied to a scratch
+copy of the repository, DIFFED against a pre-mutation snapshot to prove the edit landed, run, and
+restored. A mutation to validate_checks.py is mirrored into engine/.veldo/validate_checks.py, so
+the byte-identity row is never counted as one of its casualties. THE METHOD, because a count
+without its method is not a measurement: the first number is FAILED ROWS IN THE WHOLE RUN of
+`python3 scripts/selftest.py --suite 17_veldo_0001_falsification_declared`, the second is how many
+of those are THIS FRAGMENT's rows, and the two differ only where a mutation also breaks a row in
+shared.py. RE-DRIVEN 2026-08-13 over the F2 and F6 remediation, because rows were added and a count
+nobody re-drives goes stale in silence (that is this fragment's own F4). Unmodified: 60 rows here, 86
+passed, 0 failed.
   AC1  delete the per-criterion loop in falsification_problems, so only the presence and shape of
-       acceptance_criteria is checked: 22 FAILED, including the three-criteria refusal count, the
-       per-criterion cause rows, the rendered refusal lines and the whole of AC2, which reaches
-       its causes through the same loop. The AC1 accepting row stayed GREEN, which is what makes
-       the count a measurement of the loop rather than of the module failing to load.
-  AC2  accept any non-empty string (drop both floors in _falsification_statement): 8 FAILED, the
-       `n/a` row, the padded row, both floor rows and the no-exemption-keyword row. The genuine
-       one-sentence declaration stayed accepted.
+       acceptance_criteria is checked: 23 failed, 23 here, including the fixture positive control,
+       the three-criteria refusal count, the per-criterion cause rows, the rendered refusal lines,
+       the whole of AC2, which reaches its causes through the same loop, and both
+       template-to-validator rows. The AC1 accepting row stayed GREEN, which is what makes the
+       count a measurement of the loop rather than of the module failing to load.
+  AC2  accept any non-empty string (drop both floors in _falsification_statement): 7 failed, 7
+       here: the `n/a` row, the padded row, both floor rows, the whitespace-collapsed row, the
+       both-floors-have-teeth row and the no-exemption-keyword row. The empty, whitespace and
+       bare-key rows stay GREEN, correctly, because this mutation leaves the empty guard standing,
+       and the genuine one-sentence declaration stays accepted.
+       THIS COUNT WAS RECORDED AS 8 AND IT IS 7, found by the independent review (VELDO-0001 F4)
+       and reproduced here. Neither reading of the criterion's own words reaches 8: keeping the
+       empty guard gives 7, dropping it as well gives 9. The other seven counts were each low by
+       exactly one for a knowable reason, which is the more useful half of that finding: the F3
+       remediation added five rows to this fragment and nobody re-drove the mutations, so a record
+       that had been true went stale silently. This one was wrong when it was written.
   AC3  ignore behavior_bearing (falsification_gated returns True always, and the presence gate is
-       removed): 8 FAILED, the two stand-down rows, the registry row, the one-definition row and
-       the seeded and live migration rows. The behaviour-bearing refusal stayed RED, so the
-       stand-down is not what makes cases pass.
-  AC4  remove falsified_by from engine/specs/TEMPLATE.md: 3 FAILED, the declaration row, the
-       parsed-key row and the template-drives-the-validator row.
+       removed): 10 failed, 9 here - the two stand-down rows, the REPORTED row, the additive
+       second-corpus row, the registry row, the one-definition row, the seeded migration row, its
+       negative control and the live non-vacuity row - plus "good spec accepted" in shared.py,
+       whose fixture declares no behaviour and is refused once the gate is gone. The
+       behaviour-bearing refusal stayed RED, so the stand-down is not what makes cases pass.
+  AC4  remove the falsified_by key from engine/specs/TEMPLATE.md: 4 failed, 4 here: the
+       declaration row, the parsed-key row, the template-drives-the-validator row and the
+       every-template glob row.
 AND THE FOUR NEGATIVE CONTROLS were driven the same way, by breaking what each one exists to
-catch: a BLANKET refusal (19 FAILED, the AC1 accepting row among them), a character floor raised
-to 500 so a real sentence is refused (10 FAILED, the AC2 accepting row among them), a BLANKET
-stand-down (30 FAILED, the AC3 still-refused row among them), and a template carrying
-`falsifiable_by`, a spelling nothing enforces (4 FAILED, including the misspelling row, so that
-row is not "some string is present in a long file").
+catch: a BLANKET refusal (28 failed, 28 here, the AC1 accepting row and both
+written-from-the-template rows among them), a character floor raised to 500 so a real sentence is
+refused (11 failed, 11 here, the AC2 accepting row among them), a BLANKET stand-down (34 failed, 34
+here, the AC3 still-refused row among them), and a template carrying `falsifiable_by`, a spelling
+nothing enforces (5 failed, 5 here, including the misspelling row, so that row is not "some string
+is present in a long file").
+AND THE ROWS ADDED BY THE TWO REMEDIATIONS were driven the same way. Loosening the spine-document
+predicate off FALSIFICATION_FIELD to a substring reds its constructed control ALONE (1 failed, 1
+here), and appending a sentence to docs/method.md naming both misspellings in order to warn against
+them leaves the run GREEN where the absence pin it replaced went red. Deleting the stand-down REPORT
+from _falsification_stand_down, leaving the record standing, reds exactly the two rows that are about
+reporting and nothing else (2 failed, 2 here: the REPORTED row and the additive second-corpus row).
+The flip record was driven on both of its legs, each reddening the flip row alone (1 failed, 1 here):
+a date that is not a date, and a posture clause that stops naming the flip in the line an operator
+reads. AND THE ADDITIVE CONTROL FOR THE REPORT, over the LIVE corpus rather than a fixture: adding a
+spec that declares no behaviour to specs/ leaves this fragment GREEN and moves the reported count from
+168 stood down to 169, so the addition is asserted to have applied rather than assumed.
 
 ONE ROW HERE WAS WRITTEN WRONG FIRST AND THE F4 RUN CAUGHT IT, which is worth recording because
 it is this item's own defect class. The template row read `FALSIFICATION_FIELD in TEMPLATE.md`,
@@ -51,12 +83,40 @@ and deleting the field from the template left it GREEN: the field name also appe
 comment that explains the field. A row claiming to check that the template carries the field,
 satisfied by prose about the field. It now requires a front-matter key line carrying a value.
 
-THE ONE THING THIS FRAGMENT CANNOT ASSERT YET, stated rather than hidden. check_spec does not
-CALL this check: the registration line belongs in .veldo/validate.py, which is outside the
-footprint VELDO-0001 declares, so it is reported to the owner instead of written here. Until it
-is added, the check is complete and driven but not reached by `validate.py all`. The signature
-row below pins the exact call shape that registration uses, so the line cannot be wrong when it
-lands, and NO row here pretends the wiring exists.
+THE WIRING IS REAL AND FOUR ROWS ASSERT IT, which is the opposite of what this paragraph used to
+say (VELDO-0001 F1). It read "check_spec does not CALL this check", "the registration line belongs
+in .veldo/validate.py, which is outside the footprint VELDO-0001 declares" and "NO row here
+pretends the wiring exists", and all three were false where they stood. The registration is
+`.veldo/validate.py:129`. The spec's footprint lists ".veldo/validate.py" as its FIRST entry, and
+its rollback clause reads "Delete the check's registration in check_spec", which presupposes the
+line exists. And FOUR rows below reach this check THROUGH V.check_spec - the fixture positive
+control, the scalar row and the two empty-acceptance_criteria rows - so deleting the registration
+reddens all four: reducing that call to check_observability alone was measured by the reviewer at
+four failures, exactly those. `validate.py all` genuinely refuses. Behaviour was never affected;
+the RECORD was the defect, and a reader auditing this item from its evidence would have concluded
+the enforcement was inert. Those four rows are written as an EQUIVALENCE against
+FD.FALSIFICATION_ENFORCED rather than against today's value of it, so the posture can flip without
+a suite that reds on its own rule being enforced.
+
+THE STAND-DOWN IS NOW REPORTED AND NOT ONLY RECORDED, which is the opposite of what this paragraph
+used to say (VELDO-0001 F2). It read "nothing on an operator's path calls falsification_migration_line
+and at `validate.py all` this repository's 168 stand-downs read exactly like a pass", and that was
+true where it stood: the rows below proved RECORDING and an operator met nothing. The recorder now
+prints ONE line per CORPUS per run, in the sibling release check's words, with its counts measured by
+falsification_migration() where the line is printed. MEASURED at the surface the finding named:
+`python3 .veldo/validate.py all 2>&1 | grep -ic 'falsif|stood down|stand-down'` was 0 and is 2, one
+line for specs/ (168 stood down) and one for .veldo/examples (2), and the run stays exit 0.
+
+WHAT THIS FRAGMENT STILL CANNOT ASSERT, stated rather than hidden. TWO CLAUSES, both recorded rather
+than closed. The flip commit 01bcdf3 states the count three ways and no DATE, which AC3 asks its
+message for (VELDO-0001 F6): amending it would rewrite history this tree shares, so the date is
+recorded in FALSIFICATION_FLIP beside the posture, it reaches an operator inside the line above, and
+the row named for F6 requires that record to stay complete - but no row here reads git, so the
+MESSAGE itself is still unasserted by construction. And the posture is a module constant with no
+per-repo override (VELDO-0001 F7), so an adopter who already declares behavior_bearing: true is
+refused on arrival rather than given the reporting window AC3 describes for this repository; the
+comment on FALSIFICATION_ENFORCED says so in those words, and the remedy is a contract change with
+its own item rather than a line added here.
 """
 import contextlib as _fd_ctx
 import io as _fd_io
@@ -307,6 +367,7 @@ _FD_BB_FALSE = _fd_spec([("AC1", []), ("AC2", [])], bb="false")
 
 with tempfile.TemporaryDirectory() as _fd_d2:
     del FD.FALSIFICATION_STANDDOWNS[:]      # the registry is the record; measure a clean one
+    FD.FALSIFICATION_REPORTED_CORPORA.clear()   # and a run that has reported no corpus yet
     _fd_nobb = tmpfile(_fd_d2, "nobb.md", _FD_NO_BB)
     _fd_false = tmpfile(_fd_d2, "false.md", _FD_BB_FALSE)
     _fd_gated = tmpfile(_fd_d2, "gated.md", _FD_BARE3)
@@ -314,10 +375,31 @@ with tempfile.TemporaryDirectory() as _fd_d2:
     _fd_n2, _fd_o2 = _fd_check(_fd_false, enforce=True)
     _fd_n3, _fd_o3 = _fd_check(_fd_gated, enforce=True)
     expect("VELDO-0001 AC3: a spec that declares no behavior_bearing field carries bare criteria "
-           "without being refused, and prints nothing, in the REFUSING posture",
-           _fd_n1 == 0 and _fd_o1 == "")
-    expect("VELDO-0001 AC3: and so does a spec that declares behavior_bearing: false",
+           "without being REFUSED, in the REFUSING posture, and nothing on the page names a "
+           "criterion of it or reports a problem in it",
+           _fd_n1 == 0 and "criterion AC1 " not in _fd_o1
+           and "MIGRATION REPORT" not in _fd_o1)
+    expect("VELDO-0001 AC3: and so does a spec that declares behavior_bearing: false, which prints "
+           "NOTHING AT ALL because its corpus has already been reported in this run - the report is "
+           "one line per corpus, never one per spec, or 168 lines would bury the signal",
            _fd_n2 == 0 and _fd_o2 == "")
+    # THE STAND-DOWN IS REPORTED AND NOT ONLY RECORDED (VELDO-0001 F2). The rows below prove the
+    # RECORD; this one proves an operator MEETS it, in the sibling release check's words, through
+    # the same reporter every refusal prints through. The count is asserted as the READER's over
+    # this same corpus AND as a known number for a corpus this fragment built, so a reader that
+    # returned zero for everything could not satisfy it.
+    _FD_SD_HERE = FD.falsification_migration(specs_dir=_fd_d2)["stood_down"]
+    expect("VELDO-0001 AC3: the stand-down is REPORTED where an operator stands, naming the field, "
+           "the corpus and the count MEASURED by the reader at the moment it printed, in the words "
+           "the sibling release check uses (VELDO-0001 F2)",
+           _fd_o1.count("\n") == 1
+           and "falsified_by STANDS DOWN" in _fd_o1
+           and "recorded rather than passed" in _fd_o1
+           and str(_fd_d2) in _fd_o1
+           and _FD_SD_HERE == 2
+           and ("%d stood down" % _FD_SD_HERE) in _fd_o1
+           and "Posture: %s" % ("REFUSING" if FD.FALSIFICATION_ENFORCED else "REPORTING")
+           in _fd_o1)
     # NEGATIVE CONTROL: the stand-down is not what makes every case pass. The same call, the same
     # posture, one field different.
     expect("VELDO-0001 AC3 NEGATIVE CONTROL: in the SAME run a behaviour-bearing fixture missing "
@@ -337,6 +419,25 @@ with tempfile.TemporaryDirectory() as _fd_d2:
     expect("VELDO-0001 AC3: the gated spec is NOT in the stand-down registry, so the registry "
            "records the specs the rule stood down for rather than every spec it saw",
            "gated.md" not in _fd_sd)
+    # ADDITIVE CONTROL for the report, and it is what makes the number a MEASUREMENT: a SECOND
+    # corpus appearing in the same run reports its OWN line with its OWN count, three where the
+    # first said two, while the first corpus is not reported a second time. An assertion that the
+    # line merely contains a number would survive a hardcoded one; this cannot.
+    with tempfile.TemporaryDirectory() as _fd_d2b:
+        _fd_b1 = tmpfile(_fd_d2b, "nobb1.md", _FD_NO_BB)
+        _fd_b2 = tmpfile(_fd_d2b, "nobb2.md", _FD_NO_BB)
+        tmpfile(_fd_d2b, "nobb3.md", _FD_NO_BB)
+        _fd_n4, _fd_o4 = _fd_check(_fd_b1, enforce=True)
+        _fd_n5, _fd_o5 = _fd_check(_fd_b2, enforce=True)
+        _fd_n6, _fd_o6 = _fd_check(_fd_nobb, enforce=True)
+        expect("VELDO-0001 AC3 NEGATIVE CONTROL, ADDITIVE: a second corpus in the same run reports "
+               "its own count (3, where the first corpus reported 2), the second stand-down inside "
+               "it prints nothing, and the already-reported first corpus stays silent",
+               (_fd_n4, _fd_n5, _fd_n6) == (0, 0, 0)
+               and _fd_o4.count("\n") == 1 and str(_fd_d2b) in _fd_o4
+               and "3 stood down" in _fd_o4 and "2 stood down" not in _fd_o4
+               and _fd_o5 == "" and _fd_o6 == ""
+               and FD.falsification_migration(specs_dir=_fd_d2b)["stood_down"] == 3)
     expect("VELDO-0001 AC3: behaviour-bearing has ONE definition in this repository - the check "
            "reads it through observability.behavior_bearing, the same reader the diagnosability "
            "gate uses, in all three states",
@@ -428,6 +529,23 @@ expect("VELDO-0001 AC3 LIVE: the migration line states the count and the posture
        in FD.falsification_migration_line(_FD_LIVE)
        and ("REFUSING" if FD.FALSIFICATION_ENFORCED else "REPORTING")
        in FD.falsification_migration_line(_FD_LIVE))
+# THE FLIP RECORD, ASSERTED RATHER THAN TRUSTED. AC3 requires the flip to be a separate commit whose
+# message states the DATE and the count. 01bcdf3 is that commit and it states the count three ways and
+# no date (VELDO-0001 F6); amending a commit this tree shares is not available, so the date is recorded
+# in the module beside the posture and REACHES an operator through the stand-down line. Nothing asserted
+# that record before this row, which is what made the one clause living in git history unevidenced: it
+# requires a commit id, an ISO date, and a posture that AGREES with FALSIFICATION_ENFORCED, so flipping
+# the constant without recording when cannot stay green.
+_FD_FLIP = FD.FALSIFICATION_FLIP
+_FD_FLIP_LINE = FD.falsification_migration_line(_FD_LIVE)
+expect("VELDO-0001 AC3: the FLIP RECORD names a commit, an ISO date and a posture that AGREES with "
+       "FALSIFICATION_ENFORCED, and both the date and the commit reach the line an operator reads, "
+       "which is where the clause the flip commit's message omits is met (VELDO-0001 F6)",
+       bool(_fd_re.match(r"^[0-9a-f]{7,40}$", str(_FD_FLIP.get("commit"))))
+       and bool(_fd_re.match(r"^\d{4}-\d{2}-\d{2}$", str(_FD_FLIP.get("date"))))
+       and _FD_FLIP.get("posture") in ("REFUSING", "REPORTING")
+       and (_FD_FLIP["posture"] == "REFUSING") == (FD.FALSIFICATION_ENFORCED is True)
+       and _FD_FLIP["date"] in _FD_FLIP_LINE and _FD_FLIP["commit"] in _FD_FLIP_LINE)
 
 # ---------------------------------------------------------------------------------------
 # AC4. THE TEMPLATE AND THE SPINE DOCUMENT ASK FOR IT.
@@ -475,15 +593,38 @@ with tempfile.TemporaryDirectory() as _fd_d4:
            "refused, so the row above is the field and not the template being accepted for other "
            "reasons",
            _fd_check(_fd_stripped, enforce=True)[0] == 1)
+def _fd_method_states_the_rule(text):
+    """The property the spine document must have, as ONE predicate, so the control below drives
+    the SAME predicate the row above passes rather than a paraphrase of it. Pinned to
+    FALSIFICATION_FIELD, the name the validator ENFORCES, rather than to a spelling of it."""
+    return (FD.FALSIFICATION_FIELD in text
+            and "negative control" in text.lower()
+            and "declaring its own falsification" in text)
+
+
 expect("VELDO-0001 AC4: the spine document states the rule where it defines a specification, "
        "naming both the field and the negative control - MEASURED at zero occurrences of "
        "'negative control' in this file before this item",
-       FD.FALSIFICATION_FIELD in _FD_METHOD
-       and "negative control" in _FD_METHOD.lower()
-       and "declaring its own falsification" in _FD_METHOD)
-expect("VELDO-0001 AC4 NEGATIVE CONTROL: the same document does NOT contain the misspellings, so "
-       "the row above is pinned to the enforced field name",
-       not any(s in _FD_METHOD for s in ("falsifiable_by", "falsification_by")))
+       _fd_method_states_the_rule(_FD_METHOD))
+# WHY THIS CONTROL IS CONSTRUCTED RATHER THAN AN ABSENCE PIN OVER LIVE PROSE. Found by the
+# independent review of VELDO-0001 (F8). This row used to assert that docs/method.md - 1503 lines
+# of prose, edited by every item that touches the method - contains NEITHER "falsifiable_by" NOR
+# "falsification_by". The intent was right and the mechanism was the one this ledger refuses
+# (findings 46 and 51): an assertion over live text whose required answer is an ABSENCE reddens a
+# required gate on a benign edit, and the first author who documents the misspelling in order to
+# warn against it turns it red. The property the pin stood in for is that the row above
+# DISCRIMINATES - it is satisfied by the enforced name and by nothing else - so that is what is
+# asserted, over a document CONSTRUCTED to carry the defect. Growth in the real document cannot
+# reach this row, and the mutation is asserted to have APPLIED so the control cannot pass by the
+# rename having done nothing.
+_FD_METHOD_MISSPELLED = _FD_METHOD.replace(FD.FALSIFICATION_FIELD, "falsifiable_by")
+expect("VELDO-0001 AC4 NEGATIVE CONTROL, CONSTRUCTED: the row above is pinned to the ENFORCED "
+       "field name and satisfied by no other spelling - rename the field to `falsifiable_by` "
+       "throughout a copy of the spine document and the SAME predicate goes false, while the real "
+       "document is never required to be free of a string a future author may legitimately write",
+       _FD_METHOD_MISSPELLED != _FD_METHOD
+       and "falsifiable_by" in _FD_METHOD_MISSPELLED
+       and not _fd_method_states_the_rule(_FD_METHOD_MISSPELLED))
 # WHAT AN ADOPTER INSTALLS IS WHAT THIS REPOSITORY RUNS: the check ships in engine/ and the two
 # copies are byte-identical. Nine estimation modules once shipped into engine/ with nobody
 # comparing them, and a review inverted one of them with the gate green.

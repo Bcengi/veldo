@@ -39,21 +39,36 @@ observability:
     wrong before editing the manifest. The report also names the roots AVAILABLE to the resolver and
     where they were derived from, which is a different fact from what any one home attempted. Every
     undeclared module names its path. Each leg reports its own stand-down reason separately, because
-    an absent manifest and an absent tree are different absences.
+    an absent manifest and an absent tree are different absences. WHERE A HOME RESOLVED IS REPORTED
+    TOO: a segment found under a root other than the one its declared string implies is named with
+    that root and the path it was found at, because resolution accepts the FIRST root that has the
+    path and a MIRROR COPY therefore satisfies a home whose declared file is gone. The exemption
+    ledger reports its own state - NOT_READ, ABSENT, PRESENT or SUPPLIED, beside the path it looked
+    at - and every refused or rotted entry, because "0 exempted" printed for an absent list and for
+    a list that exempts nothing told a reader the same thing about two different facts.
   error_taxonomy: >
     Two findings, never merged, because they are opposite mistakes with opposite fixes: HOME_UNRESOLVED
     (the manifest claims a home the tree does not have - either the module moved or the declaration is
     stale) and UNDECLARED_MODULE (the tree ships a module the manifest never claims - either it needs a
     capability or it needs a recorded exemption). An exemption carries a REASON and the report counts
     exempted modules separately from declared ones, so an exemption list cannot quietly become the
-    place undeclared modules go to be forgotten.
+    place undeclared modules go to be forgotten - and a refused exemption is REPORTED as refused,
+    while an exemption naming a module that is already declared or no longer shipped is reported
+    STALE, because refusing in silence is how a ledger rots. RESOLVED ELSEWHERE IS AN OBSERVATION AND
+    NOT A THIRD FINDING, and that is a measurement rather than a preference: 36 segments of this
+    repository's real manifest resolve under a root other than the one their string implies and NONE
+    of them is stale, so accusing them would be the same false accusation this item exists to
+    eliminate. It is reported, counted on the headline, and accuses nobody.
 acceptance_criteria:
   - id: AC1
     falsified_by: >
       Reduce the resolver in .veldo/declared.py to a single ROOT and a single path segment, and the
       assertion that a COMPOUND home and a home under a pack root both resolve - measured over this
       repository's real manifest, where the naive resolver reported 42 unresolved of 167 and every one
-      was false - must go red.
+      was false - must go red. SECOND, for the leg independent review added: drop the
+      resolved_elsewhere record from declared_report, and the assertion that a home resolving under a
+      MIRROR ROOT is named with that root must go red; record the root as the repository root instead
+      of the one it was found under, and the live soundness row must go red too.
     text: >
       THE RESOLVER IS THE ITEM, AND THE NAIVE ONE IS WRONG A THIRD OF THE TIME. MEASURED on
       2026-08-12 against this repository's real manifest: checking each declared home as one path
@@ -70,6 +85,19 @@ acceptance_criteria:
       OVER THE LIVE MANIFEST the assertion is SOUNDNESS, never content: every accused segment is
       stat'ed by the suite itself under every root the tree declares, and an accusation against a
       path that exists anywhere is the failure. No live row requires the unresolved set to be empty.
+      AND WHERE A HOME RESOLVED IS REPORTED, because accepting the FIRST root that has the path means
+      a MIRROR COPY satisfies a home whose declared file is GONE: independent review deleted
+      .veldo/promises.py and the report read 0 unresolved, resolving it from engine/, with the
+      substituted root recorded nowhere a reader would see - and the manifest itself says the .veldo
+      modules are distributed byte-identical across the engine and every pack, so that is this
+      repository's most common drift shape by construction. The silence is the defect and the silence
+      is what is fixed: the record names the root and the path it was found at, and the count rides on
+      the headline. IT IS AN OBSERVATION AND NOT A FINDING, MEASURED RATHER THAN PREFERRED: 36
+      segments here resolve that way and none is stale, so the other half of what review proposed -
+      calling resolution under a non-repository root a finding - would accuse 36 correct declarations,
+      which is this organ's own defect in a third dress. Telling the two apart needs the manifest to
+      declare WHICH root a home is relative to, a capabilities.yaml change that stays out of scope
+      here, named rather than stubbed.
   - id: AC2
     falsified_by: >
       Drop the attempted-paths record from an unresolved finding in .veldo/declared.py, and the
@@ -102,7 +130,12 @@ acceptance_criteria:
   - id: AC4
     falsified_by: >
       Fold exempted modules into the declared count in .veldo/declared.py, and the assertion that an
-      exemption requires a reason and is counted in its OWN bucket must go red.
+      exemption requires a reason and is counted in its OWN bucket must go red. AND FOR THE THREE
+      SILENCES INDEPENDENT REVIEW FOUND, each with its own mutation and its own row: make the ledger
+      report PRESENT when the file is absent, and the row that separates an absent input from a list
+      that exempts nothing must go red; drop the refusal record, and the row requiring a refused
+      exemption to be reported as refused must go red; drop the stale scan, and the row naming an
+      exemption for an already-declared or no-longer-shipped module must go red.
     text: >
       AN EXEMPTION CARRIES A REASON AND IS COUNTED SEPARATELY. Whether an internal helper deserves a
       capability is a judgement, so a module may be exempted - and an exemption with no reason is
@@ -110,6 +143,18 @@ acceptance_criteria:
       forgotten. Exempted modules are counted in their own bucket and never added to the declared
       count, so the report cannot be made clean by exempting everything: the number of exemptions is
       as visible as the number of findings.
+      AND THE LEDGER REPORTS ITS OWN STATE, because three silences undercut exactly the anti-forgetting
+      purpose this criterion is about and independent review found all three. An ABSENT list printed
+      the same "0 exempted" as a list that exempts nothing, while the manifest leg is careful to say an
+      absent input is NOT the same fact as agreement - so the input's state is NAMED beside the path it
+      was looked for at. A REFUSED exemption was dropped in silence, so the human who wrote it saw the
+      module still listed as undeclared with no hint the entry had been seen and refused - so every
+      refusal is reported with the line it came from and why. AND AN EXEMPTION CAN ROT: one naming a
+      module a capability already declares, or a module no longer shipped, reached no bucket at all -
+      so both are named STALE with which of the two they are, because a rotted entry reported nowhere
+      is precisely the forgetting place this criterion exists to prevent. The additive control is that
+      a list whose every entry is a reasoned exemption of a shipped, undeclared module produces no
+      refusal and no stale entry.
   - id: AC5
     falsified_by: >
       Remove the per-leg stand-downs from the report in .veldo/declared.py, and the assertion that an
@@ -196,6 +241,31 @@ What is asserted now, driven rather than promised:
   unresolved, undeclared and exempted each carry one, and every live claim is re-driven over that
   report. A row that pins emptiness again reds there, in front of its author.
 - **The loader scan proves its own domain** by finding the fragment itself, recursively over the tree.
+
+## The mirror copy, which is the second thing independent review measured
+
+Resolution accepts the FIRST root that has the path, so a home declared as `.veldo/x.py` keeps
+resolving after that file is deleted, from `engine/.veldo/x.py`. Review drove it: `rm
+.veldo/promises.py` left the report reading **0 unresolved, 110 modules**, resolving the home to
+`engine/.veldo/promises.py`, and the suite fully green. The manifest itself says the `.veldo` modules
+are distributed byte-identical across the engine and every pack, so this is the repository's most
+common drift shape by construction, and nothing in the report distinguished **resolved where
+declared** from **resolved somewhere else**.
+
+**What is fixed is the silence.** Every segment that resolved under a root other than the one its
+declared string implies is now a record naming the capability, the home as declared, the segment, the
+root and the path it was found at, printed with the sentence that a mirror copy masks a stale
+declaration this way, and counted on the headline.
+
+**What is refused is the accusation, and that is a measurement.** Review offered a second fix:
+treat resolution under a non-declared root as a finding. Measured over the real manifest, 36 declared
+segments resolve that way and **not one of them is stale**: `skills/plan` is a real Claude pack
+skill, `scripts/veldo-visual.py` legitimately lives only in `engine/`, and 24 runner homes are
+engine-only by design. That fix would make 36 false accusations against the file documentation defers
+to, which is the exact defect this item exists to eliminate, so the bucket informs and accuses
+nobody. Telling a masked stale declaration from a legitimately engine-only home needs the manifest to
+declare WHICH root a home is relative to - a `capabilities.yaml` change rather than a change to this
+module - and it is named here rather than guessed at.
 
 ## What is deliberately not here
 

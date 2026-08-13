@@ -52,7 +52,13 @@ observability:
     stood it down (no floors directory, or a floor with no pins), never a silent pass. The
     disposition read prints, per pin, one of ruled, unknown, or blocked WITH the reason, because
     "unknown" and "a human ruled and the channel could not carry which way" are different facts and
-    a reader who cannot tell them apart will assume the first.
+    a reader who cannot tell them apart will assume the first. AND THE READ NAMES WHAT IT WAS OVER,
+    because a review measured the boundary in AC6 and this is the surface a person reads it on: one
+    unconditional line (`DISPOSITION_READ_FROM`) says every disposition is resolved from records READ
+    FROM THE WORKING TREE and that neither being tracked nor being covered by an approval is checked
+    here, so `ruled incidental by dmitry` over four records nobody committed cannot read as a human
+    ruling. It is the SAME string as the report dict's `read_from` key, recorded and reported from one
+    place, because a fact held in a dict that nothing prints is a stand-down nobody sees.
   metrics: >
     The floor report carries pins, ruled, unknown and blocked counts, and it carries them BESIDE the
     scope block's enumerated-surface and unreachable-surface counts, so no coverage figure is
@@ -242,7 +248,15 @@ acceptance_criteria:
       precondition out of a disposition must require the record to be TRACKED and covered by an
       approval, never merely present on disk. Nothing here is such a consumer - no gate stage reads a
       disposition at all (AC7) - so nothing in this item depends on the gap, and the requirement is
-      written where the consumer will read it. Registering a new protected path is itself a
+      written where the consumer will read it. AND IT IS NAMED WHERE A PERSON READS IT, which is the
+      half a second review found still implicit: the one organ here that a local reader runs is the
+      floor report, and it printed `1 ruled ... ruled incidental by dmitry` over four records nobody
+      committed beside its own sentence that nothing is read at face value. report_lines now carries
+      one unconditional DISPOSITION_READ_FROM line saying the dispositions are resolved from records
+      READ FROM THE WORKING TREE and that tracked-ness and approval are not checked here, and the same
+      string is the report dict's read_from key (observability.logs). NOTHING REFUSES AN UNTRACKED
+      FLOOR, deliberately: a floor is authored before it is committed, so a check that reddened on
+      that would refuse the feature rather than gate it. Registering a new protected path is itself a
       policy.yaml edit, which is why this spec declares human_approval required and names
       .veldo/policy.yaml in its own protected_paths, exactly as
       specs/WARP-0720-approver-registry-declared.md does for the approver registry.

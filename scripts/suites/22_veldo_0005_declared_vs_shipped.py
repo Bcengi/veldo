@@ -155,10 +155,24 @@ def _dc_defects(tree, rep):
       incomplete_records   a finding missing part of the record AC2 requires.
       phantom_resolutions  a resolved segment that does not exist at the path recorded.
       two_buckets          a module reported in two buckets at once.
+      mirror_inconsistent  a resolved-elsewhere record whose own parts disagree: a root the tree
+                           does not declare, the repository root recorded as somewhere else, or a
+                           resolved path that is not that root joined to that segment.
+      mirror_false         a resolved-elsewhere record for a segment that IS at the repository
+                           root, so "not where the declared path points" is a false statement.
+      exemption_conflicts  a module the report both APPLIES an exemption for and calls stale or
+                           refused, which are opposite claims about one entry.
+
+    THE MIRROR CHECKS ARE THE TWO A SPLICED REPORT CAN CARRY, deliberately. Their subject is the
+    record's own consistency and the absence of the declared path, both of which stay true when a
+    fixture's records are spliced into a report over this tree; requiring the RESOLVED path to
+    exist here would fail on any fixture record by construction and the AC1 fixture rows assert
+    that over the tree where it is meaningful instead.
     """
     base, roots = Path(tree), _dc_roots_here(tree)
     out = {"false_accusations": [], "compound_accusations": [], "incomplete_records": [],
-           "phantom_resolutions": [], "two_buckets": []}
+           "phantom_resolutions": [], "two_buckets": [], "mirror_inconsistent": [],
+           "mirror_false": [], "exemption_conflicts": []}
     for f in rep["unresolved"]:
         tried, segs = f.get("roots_tried") or [], f.get("unresolved_segments") or []
         if (sorted(f) != sorted(DC.FINDING_KEYS_UNRESOLVED)
@@ -177,8 +191,19 @@ def _dc_defects(tree, rep):
         for seg in f.get("resolved_segments") or []:
             if not (base / seg).exists():
                 out["phantom_resolutions"].append((f.get("capability"), seg))
-    out["two_buckets"] = sorted({f["module"] for f in rep["undeclared"]}
-                                & {f["module"] for f in rep["exempted"]})
+    for rec in rep["resolved_elsewhere"]:
+        seg, root_of, at = rec.get("segment"), rec.get("root"), rec.get("resolved_at")
+        if (sorted(rec) != sorted(DC.ELSEWHERE_KEYS) or root_of not in rep["roots_available"]
+                or root_of == "." or not isinstance(seg, str)
+                or at != "%s/%s" % (root_of, seg)):
+            out["mirror_inconsistent"].append((rec.get("capability"), seg, root_of, at))
+        elif (base / seg).exists():
+            out["mirror_false"].append((rec.get("capability"), seg))
+    _applied = {f["module"] for f in rep["exempted"]}
+    out["two_buckets"] = sorted({f["module"] for f in rep["undeclared"]} & _applied)
+    out["exemption_conflicts"] = sorted(
+        _applied & ({f["module"] for f in rep["stale_exemptions"]}
+                    | {f["module"] for f in rep["refused_exemptions"]}))
     return out
 
 
@@ -242,6 +267,68 @@ def _dc_ac1():
            len(rep3["unresolved"]) == 1
            and rep3["unresolved"][0]["unresolved_segments"] == [".veldo/nowhere.py"]
            and rep3["unresolved"][0]["resolved_segments"] == [".veldo/a.py"])
+
+    # A STALE DECLARATION MASKED BY A MIRROR COPY was silence until independent review measured it:
+    # deleting .veldo/promises.py left the report reading 0 unresolved, resolving the home from
+    # engine/.veldo/promises.py, with the substituted root recorded nowhere a reader would see it -
+    # and this repository's own manifest says the .veldo modules are distributed byte-identical
+    # across the engine and seven packs, so that is its most common drift shape by construction.
+    # WHAT IS FIXED IS THE SILENCE AND NOT THE VERDICT: the record names the root and the path, and
+    # the printed line says a mirror can mask a stale declaration. It is deliberately NOT a finding
+    # kind, and that is a measurement rather than a preference - see the row below it.
+    with tempfile.TemporaryDirectory() as d:
+        base = _dc_tree(d, [("mirrored", "status: mechanical, home: .veldo/only_in_engine.py"),
+                            ("at_home", "status: mechanical, home: .veldo/a.py")],
+                        files=[".veldo/a.py", "engine/.veldo/only_in_engine.py"])
+        rep_m = DC.declared_report(root=base)
+        lines_m = DC.report_lines(rep_m)
+        _dc_recs = rep_m["resolved_elsewhere"]
+        expect("VELDO-0005 AC1: A HOME THAT RESOLVED SOMEWHERE OTHER THAN WHERE IT IS DECLARED SAYS "
+               "SO, with the ROOT it was found under and the path it was found at, because a mirror "
+               "copy under the engine satisfies a home whose declared file is GONE and the report "
+               "used to call that clean. Measured by review on the real tree: removing "
+               "'.veldo/promises.py' left 0 unresolved and no line mentioning it anywhere. The "
+               "resolved path is asserted to EXIST here, over a tree where that is meaningful",
+               [r["capability"] for r in _dc_recs] == ["mirrored"]
+               and sorted(_dc_recs[0]) == sorted(DC.ELSEWHERE_KEYS)
+               and _dc_recs[0]["segment"] == ".veldo/only_in_engine.py"
+               and _dc_recs[0]["root"] == "engine"
+               and _dc_recs[0]["resolved_at"] == "engine/.veldo/only_in_engine.py"
+               and (base / _dc_recs[0]["resolved_at"]).exists()
+               and not (base / _dc_recs[0]["segment"]).exists()
+               and rep_m["unresolved"] == []
+               and any("resolved ELSEWHERE mirrored" in ln and "engine/.veldo/only_in_engine.py"
+                       in ln for ln in lines_m)
+               and any("RESOLVED ELSEWHERE" in ln for ln in lines_m[:1]))
+        expect("VELDO-0005 AC1 NEGATIVE CONTROL for that bucket: a home that resolves AT the path it "
+               "declares is NOT reported as resolved elsewhere, so the bucket is a measurement "
+               "rather than a line printed for every home that resolves. Same fixture, so the two "
+               "homes differ in nothing but where their file lives",
+               "at_home" not in [r["capability"] for r in _dc_recs]
+               and DC.resolution_root(".veldo/a.py", ".veldo/a.py") == "."
+               and DC.resolution_root("x.py", "engine/x.py") == "engine")
+
+    # AND IT IS AN OBSERVATION RATHER THAN A FINDING, WHICH IS THE HALF THAT NEEDED MEASURING.
+    # The reviewer offered two fixes and this row is why only one of them landed: naming resolution
+    # under a non-repository root a FINDING accuses every home that legitimately lives only under
+    # the engine or a pack root, which is the same false accusation this organ exists to eliminate.
+    # Driven over the real manifest rather than argued: every such segment is stat'ed here, and the
+    # row reports how many there are while requiring the number to be nothing in particular.
+    _dc_mirrors = DC.declared_report(root=ROOT)["resolved_elsewhere"]
+    _dc_mirror_real = [r for r in _dc_mirrors
+                       if (ROOT / r["resolved_at"]).exists() and not (ROOT / r["segment"]).exists()]
+    expect("VELDO-0005 AC1: RESOLUTION SOMEWHERE ELSE IS NOT AN ACCUSATION, and this row is the "
+           "measurement that settles it rather than an opinion: %d segment(s) in this repository's "
+           "real manifest resolve under a root other than the one their declared string implies, "
+           "and every one of them is stat'ed here to be genuinely absent where it is declared and "
+           "genuinely present where the record says. Turning that into a HOME_UNRESOLVED-style "
+           "finding, which was the other half of what review proposed, would accuse all of them - "
+           "skills/plan is a real pack skill and scripts/veldo-visual.py legitimately lives only in "
+           "engine/. The row requires the count to be NOTHING IN PARTICULAR: it may grow, shrink or "
+           "be zero, and what it forbids is a record that misdescribes the tree"
+           % len(_dc_mirrors),
+           len(_dc_mirror_real) == len(_dc_mirrors)
+           and all(r["root"] in _dc_roots_here(ROOT) and r["root"] != "." for r in _dc_mirrors))
 
     _dc_live = DC.declared_report(root=ROOT)
     _dc_live_defects = _dc_defects(ROOT, _dc_live)
@@ -394,13 +481,84 @@ def _dc_ac4():
            [f["module"] for f in rep2["undeclared"]] == [".veldo/helper.py"]
            and rep2["exempted"] == [])
 
-    rep3, _ = _dc_report(
+    rep3, lines3 = _dc_report(
         [("one", "status: mechanical, home: .veldo/a.py")],
         files=[".veldo/a.py", ".veldo/helper.py"])
     expect("VELDO-0005 AC4 NEGATIVE CONTROL: with NO exemption list at all the same module is "
            "reported undeclared, so the exemption is what changes the answer rather than the "
            "module being invisible for some other reason",
            [f["module"] for f in rep3["undeclared"]] == [".veldo/helper.py"])
+
+    # THREE SILENCES IN THIS LEDGER, ALL THREE FOUND BY INDEPENDENT REVIEW, ALL THREE THE SAME
+    # SHAPE: a state the reader needed was recorded nowhere and printed nowhere. The manifest leg
+    # is careful to say an absent input is not the same fact as agreement; this leg was not.
+    rep4, lines4 = _dc_report(
+        [("one", "status: mechanical, home: .veldo/a.py")],
+        files=[".veldo/a.py", ".veldo/helper.py"], exemptions="# nothing exempted here\n")
+    expect("VELDO-0005 AC4: AN ABSENT EXEMPTION LIST AND A LIST THAT EXEMPTS NOTHING ARE DIFFERENT "
+           "FACTS, and the report says which one it read. Both print '0 exempted', so with the "
+           "state unnamed a reader could not tell a considered empty list from a file nobody has "
+           "written - the same collapse the manifest leg refuses when it says 'there is nothing to "
+           "disagree with' is NOT 'the manifest and the tree agree'. The path is named in both "
+           "states, so a reader knows where to write one",
+           rep3["exemptions_state"] == DC.EXEMPTIONS_ABSENT
+           and rep4["exemptions_state"] == DC.EXEMPTIONS_PRESENT
+           and rep3["exemptions_path"] == DC.EXEMPTIONS_FILE
+           and any("ABSENT INPUT" in ln and DC.EXEMPTIONS_FILE in ln for ln in lines3)
+           and any("PRESENT: 0 applied" in ln for ln in lines4)
+           and not any("ABSENT INPUT" in ln for ln in lines4))
+
+    rep5, lines5 = _dc_report(
+        [("one", "status: mechanical, home: .veldo/a.py")],
+        files=[".veldo/a.py", ".veldo/helper.py", ".veldo/keeper.py"],
+        exemptions=('.veldo/keeper.py: a real reason, so this one is applied\n'
+                    '.veldo/helper.py:\n'
+                    'a line with no colon at all\n'))
+    expect("VELDO-0005 AC4: A REFUSED EXEMPTION IS REPORTED AS REFUSED, with the line it came from "
+           "and why. Refusing an exemption is right - an exemption list with no reasons is where "
+           "undeclared modules go to be forgotten - but refusing it in SILENCE is its own defect: "
+           "the human who wrote the entry saw the module still listed as undeclared with no hint "
+           "the entry had been seen at all, which is a stand-down recorded and never reported. A "
+           "non-entry that names no module is refused too rather than skipped",
+           [f["module"] for f in rep5["refused_exemptions"]] == [".veldo/helper.py", None]
+           and rep5["refused_exemptions"][0]["why"] == DC.REFUSED_NO_REASON
+           and rep5["refused_exemptions"][1]["why"] == DC.REFUSED_MALFORMED
+           and rep5["refused_exemptions"][1]["line"] == "a line with no colon at all"
+           and [f["module"] for f in rep5["undeclared"]] == [".veldo/helper.py"]
+           and [f["module"] for f in rep5["exempted"]] == [".veldo/keeper.py"]
+           and any("exemption REFUSED .veldo/helper.py" in ln for ln in lines5)
+           and any("exemption REFUSED <no module named>" in ln for ln in lines5)
+           and any("PRESENT: 1 applied, 2 REFUSED, 0 STALE" in ln for ln in lines5))
+
+    rep6, lines6 = _dc_report(
+        [("one", "status: mechanical, home: .veldo/a.py")],
+        files=[".veldo/a.py", ".veldo/helper.py"],
+        exemptions=('.veldo/a.py: a capability already claims this one\n'
+                    '.veldo/gone.py: this module was deleted three releases ago\n'
+                    '.veldo/helper.py: an internal helper with no user-facing capability\n'))
+    expect("VELDO-0005 AC4: AN EXEMPTION CAN ROT, AND A ROTTED ONE IS NAMED WITH WHICH ROT IT IS. "
+           "One naming a module a capability now DECLARES decides nothing, and one naming a module "
+           "that is NO LONGER SHIPPED carries a judgement about nothing. Neither reached any bucket "
+           "before, so the list could rot into exactly the forgetting place this criterion exists "
+           "to prevent, with the report calling it clean. The two are reported separately because "
+           "they send a reader to different edits: delete the entry, or delete the entry and check "
+           "the capability",
+           [(f["module"], f["why"]) for f in rep6["stale_exemptions"]]
+           == [(".veldo/a.py", DC.STALE_ALREADY_DECLARED),
+               (".veldo/gone.py", DC.STALE_NOT_SHIPPED)]
+           and [f["module"] for f in rep6["exempted"]] == [".veldo/helper.py"]
+           and any("exemption STALE .veldo/a.py" in ln for ln in lines6)
+           and any("exemption STALE .veldo/gone.py" in ln for ln in lines6)
+           and any("PRESENT: 1 applied, 0 REFUSED, 2 STALE" in ln for ln in lines6))
+
+    expect("VELDO-0005 AC4 ADDITIVE CONTROL for both new legs: an exemption list whose every entry "
+           "is a REASONED exemption of a SHIPPED, UNDECLARED module produces NO refusal and NO "
+           "stale entry, so neither bucket is a scan that finds something whenever a list exists. "
+           "The applied exemption in the same fixtures proves the buckets are reachable",
+           rep["refused_exemptions"] == [] and rep["stale_exemptions"] == []
+           and [f["module"] for f in rep["exempted"]] == [".veldo/helper.py"]
+           and rep["exemptions_state"] == DC.EXEMPTIONS_PRESENT
+           and _dc_clean(_dc_defects(ROOT, rep6)) is True)
 
 
 _dc_block("AC4", _dc_ac4)
@@ -523,19 +681,30 @@ def _dc_ac5():
     # instead of in front of whoever next adds a capability.
     _dc_live = DC.declared_report(root=ROOT)
     _dc_synth, _ = _dc_report(
-        [("injected_stale", "status: mechanical, home: .veldo/never_was_here.py")],
-        files=[".veldo/an_undeclared_module.py", ".veldo/an_exempted_helper.py"],
-        exemptions='.veldo/an_exempted_helper.py: a fixture reason, so the bucket is not empty\n')
+        [("injected_stale", "status: mechanical, home: .veldo/never_was_here.py"),
+         ("injected_mirror", "status: mechanical, home: .veldo/a_mirrored_module.py")],
+        files=[".veldo/an_undeclared_module.py", ".veldo/an_exempted_helper.py",
+               "engine/.veldo/a_mirrored_module.py"],
+        exemptions=('.veldo/an_exempted_helper.py: a fixture reason, so the bucket is not empty\n'
+                    '.veldo/a_module_that_is_gone.py: a fixture reason for a module not shipped\n'
+                    '.veldo/a_reasonless_entry.py:\n'))
+    # EVERY BUCKET THE DEFECT FUNCTION INSPECTS IS SPLICED, which is what makes the re-drive below
+    # a claim about all of them rather than about three. The fixture's paths are names this tree
+    # does not carry, so the two mirror checks - a record's own consistency, and the declared path
+    # being genuinely absent - stay true of ROOT for a fixture's records.
+    _dc_spliced = ("unresolved", "undeclared", "exempted", "resolved_elsewhere",
+                   "refused_exemptions", "stale_exemptions")
     _dc_worse = dict(_dc_live)
-    for _dc_bucket in ("unresolved", "undeclared", "exempted"):
+    for _dc_bucket in _dc_spliced:
         _dc_worse[_dc_bucket] = list(_dc_live[_dc_bucket]) + list(_dc_synth[_dc_bucket])
     _dc_worse["capabilities"] = _dc_live["capabilities"] + _dc_synth["capabilities"]
     _dc_worse["modules"] = _dc_live["modules"] + _dc_synth["modules"]
-    _dc_grew = all(len(_dc_worse[b]) > len(_dc_live[b])
-                   for b in ("unresolved", "undeclared", "exempted"))
+    _dc_grew = all(len(_dc_worse[b]) > len(_dc_live[b]) for b in _dc_spliced)
     expect("VELDO-0005 AC5: ITS FINDINGS GATE NOTHING, and that is DRIVEN here rather than "
            "promised. The organ-produced findings of a fixture tree are spliced into the live "
-           "report so every bucket carries one - unresolved, undeclared and exempted - and every "
+           "report so every bucket carries one - unresolved, undeclared, exempted, resolved "
+           "elsewhere, refused and stale exemptions, which is every bucket the defect function "
+           "inspects rather than the three it used to be - and every "
            "claim this fragment makes about a real tree is re-driven over THAT report and must "
            "still hold. The splice is asserted to have grown all three buckets first, so a green "
            "here cannot come from a control that never applied. This is the row that would have "
