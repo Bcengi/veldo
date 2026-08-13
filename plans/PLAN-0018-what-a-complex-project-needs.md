@@ -1192,6 +1192,39 @@ declared falsifications rather than reading them, which is why they found what r
     changed. That is a MEASUREMENT with a date on it, not a guarantee: any new assertion downstream of
     those copies inherits the exposure, and the withholding idiom above is what it should use.
 
+76. **A HEARTBEAT IN THE FUTURE IS READ AS ALIVE, IN TWO MODULES, AND THE OBVIOUS FIX TRADES ONE SILENT
+    HARM FOR THE OPPOSITE ONE. HIS CALL, NOT MINE.** Both freshness tests subtract in one direction:
+    `runlog.classify` at `.veldo/runlog.py:284` (`now_epoch - hb_epoch > STALE_AFTER_SECONDS`, 30s) and
+    `claim._is_stale` at `.veldo/claim.py:141` (`(now - hb_epoch) > STALE_AFTER_SECONDS`, 90s). A stamp
+    ahead of now yields a negative difference, so it can never exceed the window and is reported
+    **active** and **not stale** forever. Only the runlog half was on the ledger; **`claim.py` shares it
+    and was unrecorded**, and that is the worse half: a claim whose heartbeat is in the future is never
+    released, so **that unit is locked permanently and no other worker can ever take it** - in the one
+    primitive the book names as the reason two workers never build the same unit.
+
+    **WHY IT IS NOT FIXED TONIGHT, AND THIS IS THE POINT OF THE ENTRY.** The one-line fix is a symmetric
+    window (`abs(now - hb_epoch)`). It is wrong in a way that is quieter than the defect: a worker whose
+    clock runs two minutes fast writes heartbeats two minutes ahead, every one of them reads stale
+    immediately, **and its live claim gets handed to a second worker.** Silent double-building is the
+    exact failure the ledger exists to prevent, and it is worse than a locked unit, which at least an
+    operator can see and clear. Trading a visible stall for an invisible collision is not an improvement,
+    so it is not a decision to take while he is asleep. **The honest third answer is that clocks which
+    disagree make liveness UNANSWERABLE, and this system already has a vocabulary for that - stand down
+    and name the reason rather than answer** - but a third state changes a shipped boolean contract and
+    every caller of it, which is a spec, and specs are stopped.
+
+    My recommendation when he picks it up: the stand-down, scoped to the runlog reader first, where the
+    consumer is a human reading a status and can be told "this run's clock disagrees with mine by 4
+    minutes, so I cannot tell you whether it is alive" instead of being told "active". The claim ledger
+    is second and needs the same answer, not a different one.
+
+    **AND ONE ITEM ON THIS LEDGER WAS WRONG, WHICH IS WHY IT GETS CHECKED BEFORE IT GETS FIXED.** The
+    same entry recorded `runlog.classify` as "accepting one timestamp spelling". That is the CONTRACT,
+    not a defect: every stamp writer in the engine is `strftime("%Y-%m-%dT%H:%M:%SZ")` in eight modules,
+    and `events.py:753` enforces it with a round-trip equality check. A foreign spelling is not something
+    this system produces, and answering "liveness unconfirmed" for one is correct and fail-safe. Nothing
+    to fix; the ledger line was overstated and is corrected here.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
