@@ -55,10 +55,6 @@
     {
      "type": "unit",
      "ref": "scripts/suites/26_veldo_0009_install_stamp.py: selftest (PARTIAL, 1 of 34 suites): 43 passed, 0 failed in 0.18s"
-    },
-    {
-     "type": "unit",
-     "ref": "AC4: NO falsification is recorded for this criterion in proof/VELDO-0009/driven-falsifications.txt. CORRECTED 2026-08-13, ledger finding 68: this field previously read '4 of 4 declared falsification(s) re-driven', identically under all five criteria, and that was false here. The independent review DID drive this criterion and its verdict records that; the producer's own pass did not, and a bundle may not borrow its reviewer's work as its own evidence. AND THE CRITERION AS ASSERTED AT THIS COMMIT WAS DEFECTIVE, recorded 2026-08-13: its live row pinned this repository's four-state answer to UNSTAMPED, so one run of the documented create-only scaffolder over the repository root reddened that named row for a correct, non-destructive operation (measured by independent review: 42 passed, 1 failed after `python3 .veldo/init_scaffold.py .`). The remediation replaces the pin with the property - the answer this organ gives about a tree is consistent with that tree, over all five answers - and is NOT in this commit, so this bundle is evidence for the pinned form and says so rather than claiming the fixed one."
     }
    ]
   },

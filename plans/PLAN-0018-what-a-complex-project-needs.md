@@ -1289,6 +1289,42 @@ declared falsifications rather than reading them, which is why they found what r
     blocking `infrastructure engineer` no longer flagged; clean tree passes; the builder's own negative
     control still forces the check to fail as it must. Build exits 0 and is byte-identical twice over.
 
+79. **EIGHT PROOF BUNDLES CLAIMED FIVE FALSIFICATIONS PER CRITERION WHEN EACH HAD ONE, AND ONE
+    CRITERION CLAIMED FOUR WHILE HAVING NONE.** The ledger recorded this as one file. It was eight:
+    `VELDO-0002` through `VELDO-0008` each repeat the SPEC-WIDE line "5 of 5 declared falsification(s)
+    re-driven in this pass and each reddened its own row" verbatim under all five criteria, so read
+    under AC1 - which is how a criterion's evidence is read - it claims five mutations for AC1 alone.
+    The count equalling the criterion count is what gives it away. **`VELDO-0009` is the worst
+    instance: its AC4 carried "4 of 4" and AC4 has no declared falsification at all**, so a criterion
+    with zero evidence displayed four. The spec-wide total already sits ONCE in `checks[]`, which is
+    its correct home; every per-criterion copy was a mis-scoped duplicate.
+
+    Rewritten from each spec's own `driven-falsifications.txt`: the criterion's own count, its mutation
+    BY NAME so a reader can re-run exactly that one, how many rows it reddened, and whether any was
+    vacuous. `VELDO-0009` AC4's false line is REMOVED rather than replaced with an invented one, and
+    its AC1, which already carried a correct per-criterion line, was left untouched. All twelve proof
+    bundles still validate.
+
+    **AND THE HALF OF THE REVIEWER'S FINDING THAT WAS NOT THE COUNTING.** F14 in
+    `proof/VELDO-0004/verdict-l2.json` reported the overstatement "in two ways", and the second way is
+    the serious one: applied literally, AC1's declared falsification raised `KeyError('looks_fine')`
+    INSIDE the block, so the block wrapper reddened while **the row the `falsified_by` field names never
+    ran**, and 11 of 27 rows stopped running. `HAS TEETH` was true of the suite and false of the check.
+    **A mutation that DELETES coverage looks exactly like a mutation that works**, and the lost rows
+    were recorded nowhere - the 35th family, a check satisfied by a crash, arriving inside a
+    falsification record. That was a defect in `.veldo/promises.py` and it is fixed there: `PRED_NEEDS`
+    is read with a default and its branch is not an `elif`, so a predicate outside the closed set is
+    NAMED instead of raising out of a validator.
+
+    **MY FIRST FIX PROPAGATED THE CLAIM THE REVIEWER HAD REFUTED.** The per-criterion sentence I
+    generated for AC1 was sourced from the stale record, so it repeated `HAS TEETH` for a mutation that
+    only reddened the wrapper. Caught by reading the reviewer's finding rather than the ledger's
+    one-line summary of it. Re-driven today at `5ecab26`: the mutation reds THE NAMED ROW, and 83
+    passed + 2 failed = 85 = the baseline, so no coverage is lost - asserted by arithmetic, which is
+    the check the earlier pass never made. **The old record line is left exactly as written and
+    SUPERSEDED in place: a proof record is a record of what a pass observed, so it is never edited into
+    saying something that pass did not see.**
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

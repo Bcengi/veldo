@@ -20,3 +20,26 @@ AC5 no-standdown                   selftest (PARTIAL, 1 of 34 suites): 52 passed
         reds: SELFTEST FAIL: VELDO-0004 AC5: a repository with no .veldo/promises/ directory STANDS DOWN by name rather than reporting
 
 RESTORED: selftest (PARTIAL, 1 of 34 suites): 53 passed, 0 failed in 0.21s
+
+--- SUPERSEDING RE-DRIVE OF AC1, 2026-08-13, at 5ecab26 (ledger 79) ---
+F14(1) in proof/VELDO-0004/verdict-l2.json found the AC1 line above MISLEADING, and it was right.
+Applied literally, the mutation raised KeyError('looks_fine') inside the block, so the block WRAPPER
+reddened while the row the falsification NAMES never ran, and 11 of 27 rows stopped running. "HAS TEETH"
+was true of the suite and not of the check. A mutation that DELETES coverage looks exactly like that,
+and the lost rows were recorded nowhere.
+
+That was a defect in .veldo/promises.py, not in the record, and it was fixed there: PRED_NEEDS is read
+with a default and its branch is not an `elif`, so a predicate outside the closed set is NAMED by the
+unknown-predicate refusal instead of raising out of a validator. Re-driven against that fix:
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 85 passed, 0 failed in 1.53s
+AC1 predicates-accept-anything     selftest (PARTIAL, 1 of 34 suites): 83 passed, 2 failed in 1.54s HAS TEETH
+        reds THE ROW THE FALSIFICATION NAMES: SELFTEST FAIL: VELDO-0004 AC1: a claim declaring predicate
+          `looks_fine` is refused with PROMISE_PREDICATE_UNKNOWN and the allowed predicates named
+        reds: SELFTEST FAIL: VELDO-0004 AC1: a claim declaring an unknown predicate AND an unbound target
+          names BOTH refusals, because this reader's contract is every structural problem with one claim
+        NO COVERAGE LOST, asserted by arithmetic rather than by eye: 83 passed + 2 failed = 85 = the
+        baseline, so every row that ran before still ran. The earlier pass lost 11 of them.
+
+The line above this section is left as it was written. A proof record is a record of what a pass
+observed, so it is superseded in place and never edited to say something the pass did not see.

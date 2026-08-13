@@ -16,7 +16,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC1: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0006/driven-falsifications.txt)"
+     "ref": "AC1: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - empty-means-zero-spent - reddening 1 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0006/driven-falsifications.txt)"
     }
    ]
   },
@@ -30,7 +30,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC2: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0006/driven-falsifications.txt)"
+     "ref": "AC2: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - always-pacing - reddening 2 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0006/driven-falsifications.txt)"
     }
    ]
   },
@@ -44,7 +44,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC3: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0006/driven-falsifications.txt)"
+     "ref": "AC3: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - recompute-locally - reddening 2 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0006/driven-falsifications.txt)"
     }
    ]
   },
@@ -58,7 +58,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC4: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0006/driven-falsifications.txt)"
+     "ref": "AC4: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - drop-the-survival-section - reddening 2 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0006/driven-falsifications.txt)"
     }
    ]
   },
@@ -72,7 +72,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC5: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0006/driven-falsifications.txt)"
+     "ref": "AC5: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - no-standdown - reddening 1 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0006/driven-falsifications.txt)"
     }
    ]
   }

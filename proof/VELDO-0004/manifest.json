@@ -16,7 +16,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC1: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0004/driven-falsifications.txt)"
+     "ref": "AC1: 1 declared falsification OF THIS CRITERION re-driven - predicates-accept-anything - and it reds THE ROW THE falsified_by FIELD NAMES, with 83 passed + 2 failed = 85 = the baseline, so no coverage was lost. This SUPERSEDES the 2026-08-12 pass, which reddened the block wrapper instead and lost 11 rows because the validator raised KeyError - review finding F14(1), fixed in .veldo/promises.py. See the SUPERSEDING RE-DRIVE section of proof/VELDO-0004/driven-falsifications.txt. The spec-wide total is in checks[], not here"
     }
    ]
   },
@@ -30,7 +30,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC2: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0004/driven-falsifications.txt)"
+     "ref": "AC2: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - settle-from-believed - reddening 2 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0004/driven-falsifications.txt)"
     }
    ]
   },
@@ -44,7 +44,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC3: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0004/driven-falsifications.txt)"
+     "ref": "AC3: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - fold-unsettleable-into-supported - reddening 2 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0004/driven-falsifications.txt)"
     }
    ]
   },
@@ -58,7 +58,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC4: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0004/driven-falsifications.txt)"
+     "ref": "AC4: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - drop-the-measured-evidence - reddening 2 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0004/driven-falsifications.txt)"
     }
    ]
   },
@@ -72,7 +72,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC5: 5 of 5 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0004/driven-falsifications.txt)"
+     "ref": "AC5: 1 declared falsification(s) OF THIS CRITERION re-driven in this pass - no-standdown - reddening 1 named row(s), each HAS TEETH. The spec-wide total is in checks[], not here (proof/VELDO-0004/driven-falsifications.txt)"
     }
    ]
   }
