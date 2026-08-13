@@ -345,7 +345,7 @@ class RunScope:
         return 1 if failed else 0
 
     def verify_stamp_payload(self, commit, status, at, checks_run, checks_na,
-                             veldo_version=None):
+                             veldo_version=None, tree=None):
         """The record .veldo/last_verify carries. See the module docstring: verify.sh writes
         that file in shell and this has no production caller yet, deliberately.
 
@@ -353,11 +353,19 @@ class RunScope:
         value rather than a missing one: the gate writes null when the version cannot be read,
         because a gate record is exactly where an invented version would be believed. The key
         set here is asserted EQUAL to verify.sh's own printf keys, which is how this stayed in
-        step - adding the field to the gate reddened that assertion until it was added here."""
+        step - adding the field to the gate reddened that assertion until it was added here.
+
+        tree is WHAT THE RUN ACTUALLY VERIFIED (VELDO-0010's sibling, ledger finding 69), and it is
+        the second field to prove that coupling by breaking it: adding `tree` to the gate's printf
+        reddened the key-set assertion here until this signature carried it too, exactly as
+        veldo_version did. "clean", a count of dirty paths, or None when git could not answer -
+        and None is a real value rather than a missing one, because an unanswered question and a
+        clean tree invite opposite conclusions. The record used to name only the commit, which
+        after a gate-then-commit is systematically a state it had not verified."""
         self._refuse("write the verify stamp (.veldo/last_verify)")
         return {"commit": commit, "status": status, "at": at,
                 "checks_run": checks_run, "checks_na": checks_na,
-                "veldo_version": veldo_version}
+                "veldo_version": veldo_version, "tree": tree}
 
     def unit_evidence_check(self, failed):
         """The `checks` entry a proof artifact carries for the unit slot, which is what

@@ -1,0 +1,19 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-0727-69",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "WARP-0727",
+    "commit": "54ffa7840c7f8183c7a118b781b2d4bbfdadd15e",
+    "paths": [
+      "scripts/verify.sh",
+      "engine/scripts/verify.sh"
+    ],
+    "proof": "plans/PLAN-0018-what-a-complex-project-needs.md"
+  },
+  "basis": "Ledger finding 69: the gate stamp carried `commit` from `git rev-parse HEAD` and NOTHING about whether the working tree was clean, so a reader of {\"commit\":\"c771092\",\"status\":\"green\"} concluded that commit passed when what passed was that commit plus whatever was uncommitted - routinely twenty-odd modified files through 2026-08-12. Gate-then-commit is the correct order and it makes the record lag by one commit every time, so the stamp systematically named a state it had not verified. Same family as findings 46, 56 and 68: a record whose SUBJECT is not what it appears to name. WHY A PROTECTED PATH HAD TO BE TOUCHED, because Dmitry challenged exactly that and was owed a real answer: scripts/verify.sh writes .veldo/last_verify itself, in shell, at one printf, and run_scope.verify_stamp_payload has NO production caller by design - its own docstring says it exists so the first Python-side stamp writer must come through the scope rather than inventing its own authority. The alternative, a second companion record written by an unprotected file, is worse: two files describing one gate run, which is the duplicated-enumeration defect this project has been bitten by four times. ASKED AND ANSWERED, TWICE AND ON THE RECORD. Reported in the what-is-needed list at 07:56 UTC with the protected-path cost stated and his explicit yes requested. At 08:06 he challenged the premise: 'Why is verify touched? We have other files we split off so that this 1k file is not touched anymore. No?' That was checked rather than defended, and answered: verify.sh is 183 lines, not 1k; the 1k files are validate.py at 1000 and validate_checks.py at 999, which the split did protect and which this does not touch. At 08:14 he granted it - 'Change verify, it's fine, I was wrong about it' - and at 08:15 confirmed it by name, 'Finding 69, yes'. The second grant is recorded because the first answered a question about the FILE and the second answers the FINDING. THE EDIT DID NOT PRECEDE THE PERMISSION. scripts/verify.sh had not changed since cd3034f on 2026-08-12, itself an approved edit, and this record was written before the first keystroke of this one - the opposite of VELDO-0012's approval, which had to admit the reverse. WHAT IT DOES NOT COVER: only the addition of a `tree` field to the stamp, in both gates. No stage may be added, removed, reordered, or have its required-ness changed under this approval, and it is not a standing grant on scripts/verify.sh.",
+  "recorded_at": "2026-08-13T08:15:14Z",
+  "recorded_by": "claude-opus-5[1m] (Ava, recording Dmitry's fresh in-session Telegram approval, messages 23680 and 23681; the approver is not the proof producer)",
+  "expires_at": "2026-09-12T08:15:14Z"
+}

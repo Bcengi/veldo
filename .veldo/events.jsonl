@@ -1186,3 +1186,5 @@
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"c7710925588b3dc68c9c15cb25e6e6c0878220d0","at":"2026-08-13T04:59:30Z","producer":"verify.sh","checks_run":8}
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"847a2de42592d12af6df40a97f4f6c08133c641c","at":"2026-08-13T05:10:02Z","producer":"verify.sh","checks_run":8}
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"b80066a13e8da2f3a36bf4e0c4e9a217d6eb1d55","at":"2026-08-13T08:14:13Z","producer":"verify.sh","checks_run":8}
+{"schema":"veldo.event/v1","type":"gate.failed","commit":"54ffa7840c7f8183c7a118b781b2d4bbfdadd15e","at":"2026-08-13T08:21:52Z","producer":"verify.sh","checks_run":8}
+{"schema":"veldo.event/v1","type":"gate.passed","commit":"54ffa7840c7f8183c7a118b781b2d4bbfdadd15e","at":"2026-08-13T08:28:04Z","producer":"verify.sh","checks_run":8}

@@ -154,8 +154,31 @@ if _veldo_v=$(python3 .veldo/version.py 2>/dev/null); then
   case "$_veldo_v" in [0-9]*.[0-9]*) VELDO_VERSION="$_veldo_v" ;; esac
 fi
 if [ -n "$VELDO_VERSION" ]; then VERSION_JSON="\"$VELDO_VERSION\""; else VERSION_JSON=null; fi
-printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s}\n' \
-  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" > .veldo/last_verify
+# WHAT WAS VERIFIED IS THE WORKING TREE, AND THE RECORD USED TO NAME ONLY THE COMMIT. Ledger finding 69:
+# this stamp carried `commit` from `git rev-parse HEAD` and nothing about whether the tree was clean, so
+# a reader of {"commit":"c771092","status":"green"} concluded that commit passed when what passed was
+# that commit plus whatever was uncommitted - which through 2026-08-12 was routinely twenty-odd modified
+# files. Gate-then-commit is the correct order and it makes the record lag by one commit every time, so
+# the stamp systematically named a state it had not verified. Same family as findings 46, 56 and 68: a
+# record whose SUBJECT is not what it appears to name.
+# `tree` is "clean" or the COUNT of dirty paths, never the paths themselves: a filename can carry
+# anything and this record is machine-read. A count is enough to tell a reader that `commit` alone does
+# not identify what ran. If git cannot answer, the value is null rather than a guess at "clean", because
+# an unanswered question and a clean tree invite opposite conclusions.
+# Dmitry approved this protected-path edit on 2026-08-13 (Telegram 23680, "Change verify, it's fine, I
+# was wrong about it") after first challenging whether verify.sh needed touching at all. It does: this
+# printf is the only thing that writes the stamp, and run_scope.verify_stamp_payload has no production
+# caller by design. Recorded at proof/WARP-0727/approval-dmitry-finding-69.json.
+if _veldo_dirty=$(git status --porcelain 2>/dev/null); then
+  if [ -z "$_veldo_dirty" ]; then TREE_JSON='"clean"'; else
+    _veldo_n=$(printf '%s\n' "$_veldo_dirty" | wc -l | tr -d ' ')
+    TREE_JSON="\"$_veldo_n dirty path(s)\""
+  fi
+else
+  TREE_JSON=null
+fi
+printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s}\n' \
+  "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" > .veldo/last_verify
 printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d}\n' \
   "$EVENT" "$COMMIT" "$TS" "$RAN" >> .veldo/events.jsonl
 
