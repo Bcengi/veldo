@@ -1201,3 +1201,5 @@
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"770bd46a1d41ef5e03a9ff677da0cbebe007c273","at":"2026-08-13T11:19:20Z","producer":"verify.sh","checks_run":8}
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"5b345710e0360c914bc6648f6233735866c7d203","at":"2026-08-13T14:10:07Z","producer":"verify.sh","checks_run":8}
 {"schema":"veldo.event/v1","type":"gate.passed","commit":"5b345710e0360c914bc6648f6233735866c7d203","at":"2026-08-13T14:14:39Z","producer":"verify.sh","checks_run":8}
+{"schema":"veldo.event/v1","type":"gate.passed","commit":"901a7ecd1e867fa3b8759ff03d51307cbd01aced","at":"2026-08-13T15:03:06Z","producer":"verify.sh","checks_run":8}
+{"schema":"veldo.event/v1","type":"gate.passed","commit":"23bd53c52a399a1952b468a49c7bdba6ada61df8","at":"2026-08-13T15:08:10Z","producer":"verify.sh","checks_run":8}
