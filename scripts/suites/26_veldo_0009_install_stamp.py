@@ -203,6 +203,33 @@ def _is_ac5():
                v is None and cause == VV9.CAUSE_STAMP_UNREADABLE
                and VV9.STAMP_SCHEMA in detail)
 
+    # AC5 CLAIMS A TOTAL PROPERTY AND THE ROWS ABOVE COVERED ONE SHAPE OF IT. Ledger finding 67, from
+    # VELDO-0009 F2: the criterion says "a file at the stamp path that PARSES but is not a
+    # veldo.installed/v1 record" is VERSION_STAMP_UNREADABLE, and for every JSON that is not an OBJECT
+    # the reader raised AttributeError instead - out of installed_version, out of drift(), and out of
+    # the --drift CLI. The row above uses a dict, which is the one non-record shape that never crashed.
+    # All FOUR non-object shapes are exercised here because "parses but is not a record" is the whole
+    # claim, and a total property tested on one member is a claim about one member.
+    for _v9_body in ("[]", "null", "5", '"veldo.installed/v1"'):
+        with tempfile.TemporaryDirectory() as _v9_d:
+            _v9_base = Path(_v9_d)
+            (_v9_base / ".veldo").mkdir(parents=True)
+            (_v9_base / VV9.STAMP).write_text(_v9_body)
+            # THE READ IS CAPTURED so a RAISE reds THIS row rather than the block's. Measured while
+            # writing it: with the guard removed the raise escaped, the block wrapper reddened its own
+            # row, and six rows below simply vanished from the run - so the evidence was "some row went
+            # red" plus a shorter run, which is the shape a mutation that DELETES coverage produces.
+            try:
+                _v9_v, _v9_cause, _v9_detail = VV9.installed_version(_v9_base)
+            except Exception as _v9_e:               # noqa: BLE001 - the raise IS the measurement
+                _v9_v, _v9_cause, _v9_detail = "raised", type(_v9_e).__name__, ""
+            expect("VELDO-0009 AC5: a stamp that PARSES as JSON without being an object (%s) is "
+                   "VERSION_STAMP_UNREADABLE with the type named, rather than an AttributeError out of "
+                   "the reader. A traceback from a read model makes a run that COULD NOT LOOK "
+                   "indistinguishable from one that found nothing" % _v9_body,
+                   _v9_v is None and _v9_cause == VV9.CAUSE_STAMP_UNREADABLE
+                   and type(json.loads(_v9_body)).__name__ in (_v9_detail or ""))
+
     with tempfile.TemporaryDirectory() as d:
         base = Path(d)
         (base / ".veldo").mkdir(parents=True)

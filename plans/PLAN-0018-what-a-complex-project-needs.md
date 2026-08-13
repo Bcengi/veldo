@@ -929,6 +929,37 @@ declared falsifications rather than reading them, which is why they found what r
     conclusion. **The error was quoting the count without stating the method that produced it**, which
     is this ledger's own disease in a smaller size.
 
+67. **THE CRASH'S TWIN SURVIVED BECAUSE ONLY ONE HALF WAS FIXED.** VELDO-0009 F2.
+    `installed_version` called `data.get` with no isinstance guard, so a stamp file containing `[]`,
+    `null`, `5` or a bare JSON string raised AttributeError out of the reader, out of `drift()` and out
+    of the `--drift` CLI. That refutes AC5, which claims a TOTAL property over "a file at the stamp path
+    that PARSES but is not a veldo.installed/v1 record". **The identical defect in the same file's
+    provenance reader was closed by VELDO-0010's remediation and this one was not**, because no agent
+    was assigned to VELDO-0009: it was the one FAIL verdict carrying no blocker, so the round that fixed
+    twelve items skipped it. A remediation queue built from BLOCKERS leaves the refuted criteria of any
+    item that had none.
+    FIXED with a named cause carrying the type. Driven over all four non-object shapes, plus the valid
+    record as a control. AND THE FIRST VERSION OF THE ASSERTION WAS WEAKER THAN IT LOOKED: with the
+    guard removed the raise escaped the loop, the block wrapper reddened its own row, and six rows below
+    vanished from the run. So the evidence was "some row went red" plus a shorter run, which is exactly
+    what a mutation that DELETES coverage produces. The read is now captured per shape, and removing the
+    guard reds the four NAMED rows with nothing lost.
+68. **A PROOF BUNDLE CLAIMED FOUR DRIVEN FALSIFICATIONS UNDER EVERY CRITERION AND THE FILE RECORDS FOUR
+    IN TOTAL.** VELDO-0009 F4. All five criteria of `proof/VELDO-0009/manifest.json` carried the
+    identical string "AC<n>: 4 of 4 declared falsification(s) re-driven in this pass and each reddened
+    its own row". The cited file records four mutations for the ITEM: one for AC1, one for AC2, two for
+    AC3, and **none at all for AC4 or AC5**. So the two criteria with no driven record were the two
+    claiming the strongest evidence, and one of them, AC5, is the criterion the review REFUTED, for the
+    defect finding 67 just fixed.
+    Corrected to what the file records, per criterion, including the two that say plainly that nothing
+    was driven. **A bundle may not borrow its reviewer's work as its own evidence:** the independent
+    review did drive all five and its verdict records that, which is a different artifact making a
+    different claim on its own authority.
+    WHY THIS IS THE CLASS THAT MATTERS FOR THE BOOK. A per-criterion evidence string is the exact
+    surface a reader trusts when they audit an item, and this one was generated identically for five
+    criteria rather than derived per criterion. Same family as the 2026-08-10 audit's 64 false claims
+    across 8 documents: prose asserting coverage that the artifact behind it does not support.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

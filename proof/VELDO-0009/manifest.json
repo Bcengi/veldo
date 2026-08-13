@@ -16,7 +16,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC1: 4 of 4 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0009/driven-falsifications.txt)"
+     "ref": "AC1: 1 declared falsification driven in this pass (stamp-as-copied-template), which reddened 4 rows including the row this criterion names. See proof/VELDO-0009/driven-falsifications.txt, which records FOUR mutations for the item as a whole and not four per criterion."
     }
    ]
   },
@@ -30,7 +30,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC2: 4 of 4 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0009/driven-falsifications.txt)"
+     "ref": "AC2: 1 declared falsification driven in this pass (overwrite-the-stamp), which reddened the row this criterion names. proof/VELDO-0009/driven-falsifications.txt."
     }
    ]
   },
@@ -44,7 +44,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC3: 4 of 4 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0009/driven-falsifications.txt)"
+     "ref": "AC3: 2 declared falsifications driven in this pass (guess-a-placeholder and one-shape-only), each of which reddened a row this criterion names. proof/VELDO-0009/driven-falsifications.txt."
     }
    ]
   },
@@ -58,7 +58,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC4: 4 of 4 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0009/driven-falsifications.txt)"
+     "ref": "AC4: NO falsification is recorded for this criterion in proof/VELDO-0009/driven-falsifications.txt. CORRECTED 2026-08-13, ledger finding 68: this field previously read '4 of 4 declared falsification(s) re-driven', identically under all five criteria, and that was false here. The independent review DID drive this criterion and its verdict records that; the producer's own pass did not, and a bundle may not borrow its reviewer's work as its own evidence."
     }
    ]
   },
@@ -72,7 +72,7 @@
     },
     {
      "type": "unit",
-     "ref": "AC5: 4 of 4 declared falsification(s) re-driven in this pass and each reddened its own row (proof/VELDO-0009/driven-falsifications.txt)"
+     "ref": "AC5: NO falsification is recorded for this criterion in proof/VELDO-0009/driven-falsifications.txt, and the criterion is REFUTED by proof/VELDO-0009/verdict-l2.json. CORRECTED 2026-08-13, ledger finding 68: this field previously claimed '4 of 4 re-driven'. The refutation is finding 67, now fixed: a stamp that parses without being an object raised AttributeError instead of naming a state, so the total property this criterion asserts was false when the claim was written."
     }
    ]
   }

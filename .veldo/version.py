@@ -266,6 +266,18 @@ def installed_version(root=None):
         data = json.loads(p.read_text())
     except (OSError, ValueError) as e:
         return None, CAUSE_STAMP_UNREADABLE, "%s could not be read: %s" % (STAMP, e)
+    # A STAMP THAT PARSES WITHOUT BEING AN OBJECT IS A NAMED STATE, NOT A TRACEBACK. Ledger finding
+    # 67, from VELDO-0009 F2: `data.get` was called with no isinstance guard, so `[]`, `null`, `5` or
+    # a bare JSON string raised AttributeError out of this function, out of drift(), and out of the
+    # `--drift` CLI. That refutes AC5 as written, which claims a total property over "a file at the
+    # stamp path that PARSES but is not a veldo.installed/v1 record". The same defect was fixed in
+    # this file's provenance reader by VELDO-0010's remediation; this is the other half of it, and the
+    # asymmetry is why one crash survived while its twin was closed.
+    if not isinstance(data, dict):
+        return None, CAUSE_STAMP_UNREADABLE, (
+            "%s parses as JSON but is a %s rather than an object, so there is no version in it to "
+            "read: somebody's mistake rather than a repository that predates the stamp"
+            % (STAMP, type(data).__name__))
     v = data.get("version")
     if not isinstance(v, str) or data.get("schema") != STAMP_SCHEMA:
         return None, CAUSE_STAMP_UNREADABLE, (
