@@ -1225,6 +1225,45 @@ declared falsifications rather than reading them, which is why they found what r
     this system produces, and answering "liveness unconfirmed" for one is correct and fail-safe. Nothing
     to fix; the ledger line was overstated and is corrected here.
 
+77. **THE VALIDATOR SAYS A SPEC IS FINE AND EVERY WRITER REFUSES IT - AND THE FIX CANNOT LAND, BECAUSE
+    THE MODULE IS PINNED AT ITS CEILING. NOT FIXED; THE BUDGET IS NOW A BLOCKER RATHER THAN AN
+    ANNOYANCE.** Both halves below were written, driven twice and then REVERTED, because the gate went
+    RED for a reason that has nothing to do with the defect: `.veldo/validate.py` is **exactly 1000
+    lines** and three separate criteria hard-assert `<= 1000` (WARP-1012 AC1, WARP-1102 AC3, WARP-1309
+    AC6). A 13-line check takes it to 1013 and reds the unit stage. Its designated sibling,
+    `.veldo/validate_checks.py` - the module whose entire purpose is checks - is at **999**.
+
+    **A GOVERNED MODULE PINNED AT ITS EXACT CEILING IS A MODULE THAT CAN NEVER BE CORRECTED AGAIN.**
+    That is the finding. The budget was described on this ledger as "declared advisory yet hard-asserted"
+    and treated as cosmetic; it is not. Today it refused a correct fix to a real wrong answer, and the
+    only homes for that fix are 1000 and 999 against a 1000 ceiling. Every future fix to spec validation
+    hits the same wall. The honest options are all his: raise the budget for these two modules, split the
+    validator (a spec, and specs are stopped), or accept that the wrong answer below stays. **I did not
+    quietly trim someone else's code to make room, and I did not leave the gate red.**
+
+    THE DEFECT ITSELF, reproduced and ready to re-apply the moment there is room: `validate.check_spec`
+    reported **ZERO problems** for a spec whose front matter is `id: ../policy`, while
+    `claim.unit_id_problem` - the ONE definition of an id that cannot be stored faithfully - refuses
+    that id with a paragraph explaining that it collapses onto the basename `.._policy` and would share
+    one claim record with every other id mapping there. Reproduced by copying a real spec and changing
+    nothing but the id: 0 problems before, and the byte-identical control still 0 after, so the id was
+    the only variable.
+
+    **This is a wrong answer, not a missing nicety.** Two enumerations of one rule diverged: an author
+    runs the validator, is told the spec is valid, and the tools then refuse to store anything keyed by
+    it. The ledger this repository already keeps says which way that gets fixed - finding 71 established
+    one definition, inherited, never re-spelled - so `check_spec` asks that function now rather than
+    growing a third copy of the rule. The whole real corpus still validates clean, 214 specs and the two
+    examples, so no existing id was relying on the gap.
+
+    **DRIVEN TWICE BEFORE IT WAS REVERTED, and the second drive is the one that matters.** Removing the check reds the new row
+    by name. Replacing it with a NEAR-MISS RE-SPELLING that still refuses the spec - "it has characters
+    that cannot be a filename" - **also** reds it, because the row requires
+    `claim.unit_id_problem`'s own text verbatim in what the validator reported. A row that only asserted
+    "the spec was refused" would have passed that second mutation and been satisfied by a rule that had
+    quietly forked again. Bound to the positive control that the same spec with its id untouched
+    validates with zero problems.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
