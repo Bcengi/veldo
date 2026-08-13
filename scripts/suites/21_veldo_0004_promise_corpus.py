@@ -41,6 +41,21 @@ def _pm_block(label, fn):
                % (label, _pm_e), False)
 
 
+def _pm_captured(fn, *a, **kw):
+    """(value, raised) for ONE read, so a RAISE reds the row that NAMED the read.
+
+    The block wrapper above is the last line of defence and it is a blunt one: when a read raises,
+    the wrapper reds ONE row about "the block" and every row below the raise never runs, which is
+    indistinguishable from a mutation that deleted coverage. Measured on this fragment: AC1's own
+    declared falsification raised KeyError out of the validator and the run went from 56 rows to 34
+    with a single red naming the wrapper. A read a row cares about is captured HERE so the row
+    itself can require that nothing was raised."""
+    try:
+        return fn(*a, **kw), None
+    except Exception as _pm_e:                   # noqa: BLE001 - the raise is the measurement
+        return None, _pm_e
+
+
 def _pm_claim(cid="CLAIM-0001", locator="line 12", text="the document claims a thing",
               predicate="text_present", target="docs/doc.md", drop=(), **extra):
     """One claim whose ONLY defect can be the thing a row is about."""
@@ -117,13 +132,35 @@ def _pm_ac1():
            "refuses every corpus it is shown",
            n_ok == 0)
 
-    n, out = _pm_check([("a.yaml", _pm_emit([_pm_claim(predicate="looks_fine")]))])
+    # CAPTURED, so a RAISE reds THIS row rather than the block wrapper. This is the row AC1's own
+    # declared falsification names, and driving that falsification showed the validator raising
+    # KeyError out of `PRED_NEEDS[pred]` before it ever reached the refusal: the wrapper reddened,
+    # 22 rows below never ran, and the recorded evidence read as teeth when it was a shorter run.
+    # The read is required to ANSWER as well as to refuse, so the unrunnable-predicate path is
+    # asserted here rather than left to a mutation to discover.
+    _pm_res_lf, _pm_raised_lf = _pm_captured(
+        _pm_check, [("a.yaml", _pm_emit([_pm_claim(predicate="looks_fine")]))])
+    n, out = _pm_res_lf if _pm_raised_lf is None else (0, "the read RAISED %r" % (_pm_raised_lf,))
     expect("VELDO-0004 AC1: a claim declaring predicate `looks_fine` is refused with "
-           "PROMISE_PREDICATE_UNKNOWN and the allowed predicates named. The vocabulary is tiny on "
-           "purpose: a predicate that needed judgement would be a machine making a review-lane "
-           "call, which is the confident wrongness this whole item exists to avoid",
-           n > 0 and PM.CAUSE_PREDICATE_UNKNOWN in out and "text_present" in out
-           and "unsettleable" in out)
+           "PROMISE_PREDICATE_UNKNOWN and the allowed predicates named, AND THE READ RETURNS "
+           "RATHER THAN RAISING: a validator that dies on an unknown predicate takes every other "
+           "claim in every other corpus with it. The vocabulary is tiny on purpose: a predicate "
+           "that needed judgement would be a machine making a review-lane call, which is the "
+           "confident wrongness this whole item exists to avoid. Measured: %s"
+           % ("no raise" if _pm_raised_lf is None else repr(_pm_raised_lf)),
+           _pm_raised_lf is None and n > 0 and PM.CAUSE_PREDICATE_UNKNOWN in out
+           and "text_present" in out and "unsettleable" in out)
+
+    _pm_res_lft, _pm_raised_lft = _pm_captured(
+        _pm_check, [("a.yaml", _pm_emit([_pm_claim(predicate="looks_fine",
+                                                   target="/etc/passwd")]))])
+    n_lft, out_lft = _pm_res_lft if _pm_raised_lft is None else (0, "RAISED %r" % (_pm_raised_lft,))
+    expect("VELDO-0004 AC1: a claim declaring an unknown predicate AND an unbound target names "
+           "BOTH refusals, because this reader's contract is every structural problem with one "
+           "claim and an author fixing them one at a time is what a named taxonomy prevents. "
+           "Measured: %s" % ("no raise" if _pm_raised_lft is None else repr(_pm_raised_lft)),
+           _pm_raised_lft is None and n_lft > 0
+           and PM.CAUSE_PREDICATE_UNKNOWN in out_lft and PM.CAUSE_TARGET_UNBOUND in out_lft)
 
     for field in PM.CLAIM_REQUIRED:
         n_f, out_f = _pm_check([("a.yaml", _pm_emit([_pm_claim(drop=(field,))]))])
@@ -326,6 +363,39 @@ def _pm_ac3():
            and [s["claim"] for s in rep2["unsettleable"]] == ["CLAIM-U"]
            and any("UNSETTLEABLE CLAIM-U" in ln for ln in lines2))
 
+    # DECLARING `unsettleable` MUST NOT BUY SILENCE ABOUT WHAT THE AUTHOR EXPECTED. Measured by
+    # independent review: a claim declaring predicate unsettleable settles without reading anything,
+    # needs no target, and `author_disagrees` excludes the outcome - so the author's own `believed`
+    # was recorded in the settlement and printed NOWHERE, which is the `waived: trust me` move the
+    # AC1 row above refuses, under a name the vocabulary allows. Excluding it from author_disagrees
+    # is right, because no predicate read anything for the author to disagree WITH; leaving the
+    # declared expectation unprinted is the recorded-but-unreported stand-down instead.
+    rep_b, lines_b = _pm_report([("a.yaml", _pm_emit([
+        _pm_claim(cid="CLAIM-V2", predicate="text_present"),
+        _pm_claim(cid="CLAIM-B", predicate="unsettleable", drop=("target",),
+                  believed="SUPPORTED", note="taste, not a fact about the tree")]))])
+    expect("VELDO-0004 AC3: a claim that declares `unsettleable` AND what its author BELIEVED has "
+           "that belief PRINTED on its own line. It is correctly absent from author_disagrees - no "
+           "predicate read anything, so there is no reading to disagree with - and that is exactly "
+           "why the page must carry it: otherwise declaring unsettleable buys total silence about "
+           "an expectation nothing checked, which is `waived: trust me` under an allowed name",
+           [s["claim"] for s in rep_b["unsettleable"]] == ["CLAIM-B"]
+           and rep_b["author_disagrees"] == []
+           and any("UNSETTLEABLE CLAIM-B" in ln and "BELIEVED this SUPPORTED" in ln
+                   and "no predicate here checked that" in ln for ln in lines_b))
+
+    rep_nb, lines_nb = _pm_report([("a.yaml", _pm_emit([
+        _pm_claim(cid="CLAIM-V3", predicate="text_present"),
+        _pm_claim(cid="CLAIM-N", predicate="unsettleable", drop=("target",),
+                  note="taste, not a fact about the tree")]))])
+    expect("VELDO-0004 AC3 CONTROL for the row above, differing in exactly one field: the same "
+           "claim WITHOUT `believed` is still named on the page and carries no belief sentence, so "
+           "the row above discriminates rather than matching a line printed on every unsettleable "
+           "settlement",
+           [s["claim"] for s in rep_nb["unsettleable"]] == ["CLAIM-N"]
+           and any("UNSETTLEABLE CLAIM-N" in ln for ln in lines_nb)
+           and not any("BELIEVED" in ln for ln in lines_nb))
+
     expect("VELDO-0004 AC3: NO SCORE IS PRINTED. No key is a ratio or a percentage and no value in "
            "the report is a float, because a proportion of a corpus nobody enumerated is exactly "
            "the number that would get quoted out of it",
@@ -383,7 +453,7 @@ def _pm_ac3():
 
     import re as _pm_re
     _pm_score = _pm_re.compile(r"\d+\.\d+|%|percent|ratio|proportion|score|per cent")
-    _pm_all_lines = lines + lines2 + lines_m + lines_o + lines_u
+    _pm_all_lines = lines + lines2 + lines_b + lines_nb + lines_m + lines_o + lines_u
     expect("VELDO-0004 AC3: NO SCORE IS PRINTED ON THE PAGE EITHER, and the page is the surface a "
            "number would be quoted FROM: no line of any report above carries a float, a percent "
            "sign, or the words percent, ratio, proportion or score. Asserted over report_lines and "

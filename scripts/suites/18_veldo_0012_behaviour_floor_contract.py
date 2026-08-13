@@ -306,7 +306,9 @@ expect("VELDO-0012 AC2: the digest is DERIVED from the declared field tuple and 
        == BF.observation_digest(_bf_pin(reproduces="other::test")))
 expect("VELDO-0012 AC2: THE SURFACE IS IN THE TUPLE ON PURPOSE - two pins recording a "
        "byte-identical observation on two DIFFERENT surfaces get DIFFERENT digests, so one "
-       "human's judgement about one of them can never silently rule the other",
+       "human's judgement about one of them does not silently rule the other. THE WORDING USED TO "
+       "SAY 'can never' AND A REVIEW PRICED IT: the join is 64 bits (the row below), so the honest "
+       "claim is that the observations differ and the digests differ with them, up to that bound",
        BF.observation_digest(_bf_pin(pid="A", surface=_BF_S1, recorded=_BF_REC1))
        != BF.observation_digest(_bf_pin(pid="B", surface=_BF_S2, recorded=_BF_REC1)))
 expect("VELDO-0012 AC2: ONE canonicalization, the same shape request_digest uses - a sorted-keys "
@@ -317,6 +319,31 @@ expect("VELDO-0012 AC2: ONE canonicalization, the same shape request_digest uses
        and BF.observation_digest(dict(_bf_pin(), observation={"recorded": _BF_REC1,
                                                              "digest": "sha256:0000000000000000"}))
        == BF.observation_digest(_bf_pin()))
+# HOW WIDE THE JOIN IS, MEASURED, BECAUSE A REVIEW PRICED IT AND NO CLAIM HERE MAY SAY "can never".
+# The digest is sha256 truncated to 16 hex characters - 64 bits - so a second preimage onto an
+# EXISTING digest is 2^64 and not a practical concern, while two observations chosen AT DRAFTING TIME
+# to collide is a birthday search near 2^32 over short inputs, and the drafting pass authors both
+# pins. It is the REPOSITORY'S convention rather than a choice made here, which is why the row
+# asserts the two widths are EQUAL rather than asserting a literal twice: widening request_digest
+# alone, or this digest alone, reds it, and widening the convention in one place is the defect.
+_bf_rqspec = importlib.util.spec_from_file_location("veldo_request_for_floor",
+                                                    ROOT / ".veldo" / "request.py")
+_BF_RQ = importlib.util.module_from_spec(_bf_rqspec)
+_bf_rqspec.loader.exec_module(_BF_RQ)
+_BF_OBS_HEX = BF.observation_digest(_bf_pin()).split(":")[1]
+_BF_RQ_HEX = _BF_RQ.request_digest({"id": "REQ-9", "touchpoint": "decision_choice", "tier": "high",
+                                    "bound_artifact": {"kind": "decision", "digest": "x"}}
+                                   ).split(":")[1]
+expect("VELDO-0012 AC2: THE JOIN IS 64 BITS AND THE SUITE SAYS SO RATHER THAN LEAVING IT TO A "
+       "READER. observation_digest is sha256 truncated to 16 hex characters, and it is the SAME "
+       "truncation .veldo/request.py uses for request_digest - asserted as an EQUALITY of the two "
+       "widths, so widening either alone reds this row and one convention cannot quietly become "
+       "two. What that buys is stated in the module: 2^64 to move a ruling onto an existing digest, "
+       "and a birthday search near 2^32 to author two colliding observations, which is why no "
+       "assertion in this fragment claims a transfer is impossible",
+       len(_BF_OBS_HEX) == len(_BF_RQ_HEX) == 16
+       and _bf_re.fullmatch(r"[0-9a-f]+", _BF_OBS_HEX)
+       and 4 * len(_BF_OBS_HEX) == 64)
 
 # ---------------------------------------------------------------------------------------
 # AC3. NO RULING AND NO EXEMPTION IS REPRESENTABLE IN THE FLOOR AT ALL.
@@ -518,6 +545,28 @@ expect("VELDO-0012 AC4: THE JOIN IS THE DIGEST AND NOTHING ELSE, so mutating the
        and BF.disposition_for(_bf_pin(surface=_BF_S2), settlements=[_bf_settlement()],
                               requests=[_bf_request()],
                               decisions=_BF_DECS)["disposition"] == BF.DISPOSITION_UNKNOWN)
+# AND WHAT THE JOIN DOES NOT COVER, DRIVEN RATHER THAN LEFT FOR A LATER READER TO DISCOVER. A review
+# measured that OBSERVATION_DIGEST_FIELDS is (surface, recorded), so fidelity and reproduces sit
+# OUTSIDE it: after a human rules, the machine may flip fidelity exact -> proxy and re-point
+# reproduces at a test that asserts nothing, and the SAME settlement still rules the pin. That is the
+# declared choice - the tuple is pinned by exact equality above - and the spec's notes now say it
+# plainly instead of claiming the digest makes the reproduces reference load bearing. It is asserted
+# HERE, as a consequence with teeth, so the item that decides whether either field enters the digest
+# AMENDS this row deliberately rather than discovering the property afterwards. Putting fidelity in
+# the tuple reds this row, which is the point.
+_BF_LOOSE = _bf_pin(fidelity="proxy", reproduces="tests/test_nothing.py::test_always_passes")
+_BF_LOOSE_D = BF.disposition_for(_BF_LOOSE, settlements=[_bf_settlement()],
+                                 requests=[_bf_request()], decisions=_BF_DECS)
+expect("VELDO-0012 AC4: THE DIGEST COVERS THE OBSERVATION, NOT THE PIN'S CLAIMS ABOUT ITSELF. A pin "
+       "whose fidelity is flipped from exact to proxy and whose reproduces is re-pointed at a test "
+       "that asserts nothing has a BYTE-IDENTICAL digest and is STILL ruled load_bearing by the same "
+       "settlement - so a granted ruling survives a rewrite of both fields, and the contract does "
+       "NOT pretend the human's judgement covered them. What the digest makes immovable is the "
+       "OBSERVATION, asserted by the join row above",
+       BF.observation_digest(_BF_LOOSE) == _BF_DIGEST
+       and _BF_LOOSE_D["disposition"] == BF.DISPOSITION_RULED
+       and _BF_LOOSE_D["ruling"] == "load_bearing" == _BF_RULED["ruling"]
+       and BF.OBSERVATION_DIGEST_FIELDS == ("surface", "recorded"))
 
 # THE TRANSFER LEG, WHICH IS THE HARM THIS ITEM EXISTS TO PREVENT AND WHICH A REVIEW FOUND OPEN.
 # The resolver used to check the named request for schema, id, touchpoint and status ONLY, and never
@@ -882,15 +931,61 @@ def _bf_protected(rel):
 
 
 expect("VELDO-0012 AC6: policy_check.protected_patterns() returns a pattern matching "
-       ".veldo/floors/example.yaml, so adding a floor or RE-POINTING AN OBSERVATION is a change "
-       "that needs a commit-bound, path-scoped approval and the agent being gated cannot author "
-       "the record that exempts it",
+       ".veldo/floors/example.yaml, so COMMITTING a floor or a RE-POINTED OBSERVATION is a change "
+       "that needs a commit-bound, path-scoped approval and the agent being gated cannot LAND the "
+       "record that exempts it. The verb is committing because the boundary row below measures why",
        _bf_protected(".veldo/floors/example.yaml"))
 expect("VELDO-0012 AC6: and the sibling - protected_patterns() returns a pattern matching a "
-       "settlement path, so WRITING A SETTLEMENT is a reviewed change too. The integrity of a "
+       "settlement path, so COMMITTING A SETTLEMENT is a reviewed change too. The integrity of a "
        "disposition record is the integrity of a reviewed change plus the protected-path rules it "
        "sits under, and never its own validation",
        _bf_protected(".veldo/settlements/REQ-9-c2.json"))
+# THE BOUNDARY OF THE CONTROL, MEASURED, BECAUSE THE CRITERION'S CLAIM USED TO OUTRUN IT. The
+# enforcement at policy_check.py:439-447 iterates changed_files(), which is
+# `git diff --name-only <base>` (:92-99), so it lists modifications to TRACKED files and never
+# untracked ones: an agent that WRITES a floor and a settlement and does not commit them is matched
+# by the pattern and never reaches the check. Driven in a throwaway repository against the LIVE
+# patterns, with a committed-and-modified floor as the ADDITIVE control in the same fixture, so the
+# row measures the boundary in BOTH directions rather than asserting one of them. NOTHING HERE
+# REFUSES AN UNTRACKED FLOOR: a floor is authored before it is committed, and a check that reddened
+# on that would be refusing the feature rather than gating it. What the boundary buys is written into
+# AC6 as a requirement on the CONSUMER - a precondition built on a disposition must require the
+# record to be TRACKED - and the enumeration itself belongs to .veldo/policy_check.py, where it is
+# one reader to build once rather than four patches, and where it has the same boundary for
+# .veldo/secret_inventory.json.
+with tempfile.TemporaryDirectory() as _bf_gd:
+    _bf_gr = Path(_bf_gd)
+    for _bf_argv in (["init", "-q", "-b", "main", "."],
+                     ["-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty",
+                      "-m", "base"]):
+        subprocess.run(["git"] + _bf_argv, cwd=_bf_gd, capture_output=True, text=True, check=True)
+    (_bf_gr / ".veldo" / "floors").mkdir(parents=True)
+    (_bf_gr / ".veldo" / "settlements").mkdir(parents=True)
+    (_bf_gr / ".veldo/floors/committed.yaml").write_text(_bf_floor([_bf_pin()]))
+    subprocess.run(["git", "add", "-A"], cwd=_bf_gd, capture_output=True, text=True, check=True)
+    subprocess.run(["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m",
+                    "the floor a human reviewed"], cwd=_bf_gd, capture_output=True, text=True,
+                   check=True)
+    # the three acts AC6 is about: one on a TRACKED record, two on records nobody staged
+    (_bf_gr / ".veldo/floors/committed.yaml").write_text(
+        _bf_floor([_bf_pin(recorded=_BF_REC1 + ", and it also trims tabs")]))
+    (_bf_gr / ".veldo/floors/smuggled.yaml").write_text(_bf_floor([_bf_pin(pid="PIN-S")]))
+    (_bf_gr / ".veldo/settlements/forged.json").write_text(json.dumps(_bf_settlement(), indent=2))
+    _BF_ENUM = [f for f in subprocess.run(["git", "diff", "--name-only", "HEAD"], cwd=_bf_gd,
+                                          capture_output=True, text=True).stdout.splitlines() if f]
+    expect("VELDO-0012 AC6: THE CONTROL IS OVER A COMMITTED CHANGE, AND THE BOUNDARY IS MEASURED "
+           "RATHER THAN ASSUMED. All three of a modified TRACKED floor, an untracked floor and an "
+           "untracked settlement match a live protected pattern, and the enumeration the enforcement "
+           "iterates - `git diff --name-only HEAD`, which is what changed_files() runs - contains "
+           "ONLY the tracked one. So the pattern is not what fails: an untracked record never reaches "
+           "the check, which is why AC6 says committing and why a consumer of a disposition must "
+           "require a TRACKED record. ADDITIVE CONTROL in the same fixture: the tracked floor's edit "
+           "IS enumerated and IS matched, so protection over a committed change is proven working by "
+           "the same measurement",
+           _bf_protected(".veldo/floors/committed.yaml")
+           and _bf_protected(".veldo/floors/smuggled.yaml")
+           and _bf_protected(".veldo/settlements/forged.json")
+           and _BF_ENUM == [".veldo/floors/committed.yaml"])
 expect("VELDO-0012 AC6 NEGATIVE CONTROL: the two rows above are the registration and not "
        "everything being protected - an ordinary module and an ordinary spec match NO protected "
        "pattern, while the policy file itself does, which is why this spec declares "

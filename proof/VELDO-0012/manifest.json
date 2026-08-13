@@ -1,9 +1,9 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0012",
- "commit": "e4ce85da95291b0ec50eb22384132306bbddfddd",
- "producer": "claude-opus-5[1m] (implementing agent)",
- "produced_at": "2026-08-12T11:00:30Z",
+ "commit": "93c1c8d2bdbec627a5ffa9497cf0e132978a44ab",
+ "producer": "claude-opus-5[1m] (implementing agent; F2/F5/F6/F7 remediation pass)",
+ "produced_at": "2026-08-12T22:40:00Z",
  "veldo_version": "3.10.1",
  "criteria": [
   {
@@ -12,7 +12,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py: selftest (PARTIAL, 1 of 34 suites): 91 passed, 0 failed in 0.56s"
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+    },
+    {
+     "type": "unit",
+     "ref": "AC1: 2 declared falsification(s) driven in this pass (widen-STATUSES, unclaimed-entry-loop-over-an-empty-list), reddening 4 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
     }
    ]
   },
@@ -22,7 +26,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py: selftest (PARTIAL, 1 of 34 suites): 91 passed, 0 failed in 0.56s"
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+    },
+    {
+     "type": "unit",
+     "ref": "AC2: 1 declared falsification(s) driven in this pass (delete-the-digest-recompute), reddening 1 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
     }
    ]
   },
@@ -32,7 +40,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py: selftest (PARTIAL, 1 of 34 suites): 91 passed, 0 failed in 0.56s"
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+    },
+    {
+     "type": "unit",
+     "ref": "AC3: 2 declared falsification(s) driven in this pass (pin-unrecognized-keys-ignored, scope-unvalidated-for-a-pins-less-floor), reddening 5 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
     }
    ]
   },
@@ -42,7 +54,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py: selftest (PARTIAL, 1 of 34 suites): 91 passed, 0 failed in 0.56s"
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+    },
+    {
+     "type": "unit",
+     "ref": "AC4: 3 declared falsification(s) driven in this pass (fall-back-to-the-settlement's-own-decided_by, drop-the-request's-own-binding-comparison, read-the-settlement's-chosen-key-at-face-value), reddening 11 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
     }
    ]
   },
@@ -52,7 +68,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py: selftest (PARTIAL, 1 of 34 suites): 91 passed, 0 failed in 0.56s"
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+    },
+    {
+     "type": "unit",
+     "ref": "AC5: 1 declared falsification(s) driven in this pass (map-decided-onto-load_bearing), reddening 12 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
     }
    ]
   },
@@ -62,7 +82,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py: selftest (PARTIAL, 1 of 34 suites): 91 passed, 0 failed in 0.56s"
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+    },
+    {
+     "type": "unit",
+     "ref": "AC6: 2 declared falsification(s) driven in this pass (remove-the-floors-protected-path, remove-the-settlements-protected-path), reddening 4 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
     }
    ]
   },
@@ -72,7 +96,11 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py: selftest (PARTIAL, 1 of 34 suites): 91 passed, 0 failed in 0.56s"
+     "ref": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py through the FULL gate: selftest: 4647 passed, 0 failed, GATE: GREEN (93c1c8d2bdbe). The item's own fragment is 86 rows of that run. A PARTIAL selftest is NOT cited: the runner prints that no proof manifest may cite one, and this manifest used to quote a PARTIAL line seven times."
+    },
+    {
+     "type": "unit",
+     "ref": "AC7: 1 declared falsification(s) driven in this pass (delete-the-stand-down-guard), reddening 1 row(s) in total, each drive reddening the row its own field names. The count is per CRITERION and is read off proof/VELDO-0012/driven-falsifications.txt, which records TWELVE mutations for the item as a whole and never twelve per criterion."
     }
    ]
   }
@@ -81,12 +109,17 @@
   {
    "name": "unit",
    "status": "passed",
-   "detail": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py driven through scripts/selftest.py: selftest (PARTIAL, 1 of 34 suites): 91 passed, 0 failed in 0.56s"
+   "detail": "scripts/suites/18_veldo_0012_behaviour_floor_contract.py driven through the full gate: selftest: 4647 passed, 0 failed (the item's fragment contributes 86 rows)"
   },
   {
    "name": "gate",
    "status": "passed",
-   "detail": "bash scripts/verify.sh GREEN at e4ce85da9529; see .veldo/last_verify"
+   "detail": "bash scripts/verify.sh GREEN at 93c1c8d2bdbe, measured on the remediation working tree over that base rather than on a committed tree, which is stated because the earlier version of this manifest named a commit one behind the tree it described"
+  },
+  {
+   "name": "unit",
+   "status": "passed",
+   "detail": "declared falsifications driven in this pass: 12 of 12 across the seven criteria, plus 3 for the rows the F2/F5/F6 remediation added, each proven to have landed and each reddening a named row (proof/VELDO-0012/driven-falsifications.txt)"
   }
  ],
  "rollback": "See the spec's own rollback clause: VELDO-0012-behaviour-floor-contract.md"

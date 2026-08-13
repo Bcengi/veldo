@@ -164,8 +164,20 @@ def claim_problems(claim, where):
                     "%s: claim %s declares predicate '%s' (allowed: %s). The vocabulary is small "
                     "on purpose: a predicate needing judgement would be a machine making a "
                     "review-lane call" % (where, label, pred, ", ".join(PREDICATES))))
-    elif pred is not None:
-        for need in PRED_NEEDS[pred]:
+    if pred is not None:
+        # PRED_NEEDS IS READ WITH A DEFAULT AND THE BRANCH IS NOT AN `elif`, FOR ONE REASON THAT IS
+        # ABOUT THIS FUNCTION'S CONTRACT AND ONE THAT IS ABOUT THE CRITERION'S FALSIFICATION.
+        # The contract first: this function returns EVERY structural problem with one claim, so a
+        # claim declaring an unknown predicate AND an unbound target must name both, exactly as the
+        # docstring says - an author fixing one problem at a time is what a named taxonomy prevents.
+        # The falsification second, and it is the load bearing half: AC1's declared falsification
+        # widens PREDICATES, and with `PRED_NEEDS[pred]` under an `elif` that mutation made this
+        # function RAISE KeyError('looks_fine') instead of reding the row the falsification NAMES.
+        # The block wrapper reddened, twenty-two rows below it never ran, and a mutation that
+        # DELETES coverage looks exactly like that. A predicate outside the closed set has no
+        # declared needs, which is a state to NAME (the unknown-predicate refusal above) and never
+        # a KeyError out of a validator that is reading every other corpus in the tree.
+        for need in PRED_NEEDS.get(pred, ()):
             val = claim.get(need)
             if not val:
                 out.append((CAUSE_MISSING_FIELD,
@@ -498,8 +510,19 @@ def report_lines(rep):
                      % (s["claim"], s["document"], s["locator"], s["text"], s["predicate"],
                         s["target"], s["measured"]))
     for s in rep["unsettleable"]:
-        lines.append("  UNSETTLEABLE %s (%s %s): %s | %s"
-                     % (s["claim"], s["document"], s["locator"], s["text"], s["measured"]))
+        # THE AUTHOR'S EXPECTATION IS NOT SILENT ON THIS PATH EITHER. `author_disagrees` names only
+        # the claims a PREDICATE disagreed with, and excluding UNSETTLEABLE from it is right: no
+        # predicate read anything, so there is no reading for the author to disagree with. But a
+        # claim declaring `unsettleable` AND `believed` states an expectation that NOTHING here
+        # checked, and the field was recorded in the settlement and printed nowhere - so declaring
+        # unsettleable bought total silence about what its author expected, which is the
+        # `waived: trust me` move under a name the vocabulary allows. A recorded fact that is never
+        # reported is a stand-down nobody is told about, so the line carries it.
+        lines.append("  UNSETTLEABLE %s (%s %s): %s | %s%s"
+                     % (s["claim"], s["document"], s["locator"], s["text"], s["measured"],
+                        ("" if not s["believed"] else
+                         " | its author BELIEVED this %s and no predicate here checked that"
+                         % s["believed"])))
     for s in rep["author_disagrees"]:
         lines.append("  AUTHOR DISAGREES %s: believed %s, the tree says %s (%s)"
                      % (s["claim"], s["believed"], s["outcome"], s["measured"]))

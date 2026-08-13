@@ -22,8 +22,27 @@ is the failure mode, so its own word about itself is exactly what must not be tr
 FOUR STATES, NEVER COLLAPSED, because the operator's next action differs in each:
   DONE        its manifest is on disk AND a verdict artifact RECORDS a passing review
   UNCONCLUDED a run claimed it and no artifact concludes it - go look at the named folder
-  QUEUED      ready, and no run has claimed it
-  UNRECORDED  artifacts exist that no run ever claimed - work a dead session left behind
+  QUEUED      no complete bundle and no run claiming it, WHATEVER STATUS ITS SPEC DECLARES
+  UNRECORDED  finished artifacts no run claimed, WHERE THIS REGISTRY WAS RECORDING WHEN THEY LANDED
+
+THE TWO WORDS ABOVE IN CAPITALS ARE CORRECTIONS, EACH FROM A MEASUREMENT.
+QUEUED used to be documented as "ready, unclaimed" and never filtered on the declared status:
+measured here, 73 queued was 30 ready, 34 shipped, 6 draft, 1 blocked and 2 declaring nothing, and
+an operator reading the count read a work queue. Deciding what QUEUED should MEAN is a change to
+the taxonomy this module's spec declares, so what changed is the report: the declared status
+travels with every item and report_lines prints the composition beside the count.
+UNRECORDED used to be every done item no run claimed, which is a POPULATION and not a defect set.
+A registry starts empty, and this one was flattened at migration, so it has claimed nothing about
+work that landed before it existed: creating ONE run folder here took the report from 2 lines to
+144, of which 142 were UNRECORDED lines naming specs that landed weeks earlier. The domain is now
+the bundles this registry was in a position to judge, from its own earliest recorded run start and
+each manifest's own produced_at, and everything else keeps its paths under a count with the reason.
+
+AND ONE LINE THAT IS NOT A STATE. A bundle is written in two stages, the producer's manifest and
+then a reviewer's verdict, so an item that is BUILT AND AWAITING REVIEW has a manifest and no
+verdict - which is QUEUED, the bucket for work nobody has started, printed with no line and no
+path. That is this reader answering its own scenario wrongly, so report_lines names it BUILT AND
+UNREVIEWED with the path. Still no fifth state: a state is the spec's taxonomy, a line is not.
 
 DONE READS THE VERDICT'S BYTES, NEVER THE FILENAME. A file called verdict.json is not a
 conclusion; what it RECORDS is. This reader used to call an item done because the file existed,
@@ -64,10 +83,34 @@ STATES = (DONE, UNCONCLUDED, QUEUED, UNRECORDED)
 
 # The liveness answers. ACTIVE and BLOCKED are what the run itself recorded; UNCONFIRMED is
 # this module declining to convert a silence into a verdict about a process it cannot see.
+# DONE AND ABORTED ARE TWO ANSWERS, NOT ONE. They were collapsed into LIVENESS_DONE and
+# report_lines prints only that word, so a run that ABORTED 25 hours ago was handed to an operator
+# under the reassuring word for the opposite fact while `run_said` carried "aborted" into the JSON
+# nobody reads first. A module whose stated discipline is that states are never collapsed may not
+# collapse this one.
 LIVENESS_ACTIVE = "active"
 LIVENESS_BLOCKED = "blocked"
 LIVENESS_DONE = "run_recorded_done"
+LIVENESS_ABORTED = "run_recorded_aborted"
 LIVENESS_UNCONFIRMED = "LIVENESS_UNCONFIRMED"
+
+# The one spelling runlog writes and the only one runlog.classify reads.
+RUNLOG_STAMP = "%Y-%m-%dT%H:%M:%SZ"
+
+# WHAT THE HEARTBEAT READ ANSWERED, EACH CAUSE NAMED. An age of None used to mean three different
+# things and report_lines printed the strongest available negative for all of them: "no heartbeat
+# ever recorded", which this module's own docstring defines as liveness never having been confirmed
+# once. MEASURED: a heartbeat stamped two seconds ago in an offset-bearing ISO spelling read as
+# never-recorded, because the parser accepted exactly one spelling. So the spelling is widened AND
+# the causes are separated, for the reason finding 67 records - a reader that cannot answer must
+# NAME the state it is in rather than borrow the answer for a different one.
+HEARTBEAT_NEVER = "no heartbeat ever recorded for this run"
+HEARTBEAT_UNREADABLE = ("the heartbeat stamp %r is UNREADABLE by this reader, which is NOT the same "
+                        "fact as a run that never wrote one: liveness is unconfirmed here because "
+                        "the stamp could not be parsed, not because none exists")
+HEARTBEAT_FUTURE = ("the heartbeat is stamped %d second(s) in the FUTURE, which is what clock skew "
+                    "across the machines this registry is shared between produces, so it confirms "
+                    "nothing and the age beside it is not a confirmation either")
 
 # The stand-down reasons, each naming which half could not answer and why. A zero would not
 # distinguish "no run has ever been recorded here" from "no run is in flight".
@@ -87,10 +130,42 @@ STANDDOWN_NO_ORGAN = ("the organ that declares which verdict values conclude a r
 STANDDOWN_NO_RUNLOG = ("the run registry organ (.veldo/runlog.py) is not in this tree, so the run "
                        "half answers nothing: this is a different fact from no run being in flight")
 
+# WHY UNRECORDED IS NOT EVERY UNCLAIMED BUNDLE, AND WHAT THE THREE REASONS ARE.
+# UNRECORDED says "artifacts exist that no run ever claimed" and the printed line called it work a
+# dead session left behind. A registry is created empty and this one was FLATTENED at migration, so
+# it has claimed nothing about anything that landed before it existed. MEASURED on this repository:
+# creating ONE run folder took the report from 2 lines to 144, of which 142 were UNRECORDED lines
+# naming specs that landed weeks earlier, and the one genuinely interesting line - a run with a
+# stale heartbeat - was buried under them. The organ whose stated product is a path to look at
+# handed the operator 142 paths, all wrong.
+# THE FIX IS THE DOMAIN, NOT THE COMPARISON, which is ledger findings 51 and 63. An unclaimed
+# bundle is a DEFECT only if this registry WAS recording when the bundle landed, and both halves of
+# that are read from bytes already on disk: the registry's earliest recorded run start, and the
+# manifest's own produced_at. Everything the registry cannot speak to is reported as a COUNT WITH
+# THE REASON and kept, with its paths, under unrecorded_out_of_reach - not dropped, which would be
+# a confident zero, and not shouted, which is the defect above. The narrow set that remains is a
+# defect set BY CONSTRUCTION, so growth cannot add to it.
+OUT_OF_REACH_NO_WINDOW = ("this registry records no run with a readable start time, so it cannot "
+                          "say when it began recording: an unclaimed bundle cannot be told apart "
+                          "from one that predates the registry, and neither is called unrecorded")
+OUT_OF_REACH_PREDATES = ("the manifest records this bundle as produced BEFORE the earliest run this "
+                         "registry records (%s), so the registry was not recording when the work "
+                         "landed and cannot say it went unclaimed. Each item's own produced_at is "
+                         "kept beside its paths")
+OUT_OF_REACH_UNDATED = ("the manifest records no readable produced_at (%r), which is not a required "
+                        "proof key, so this bundle cannot be placed against the registry's window")
+
 REPORT_KEYS = ("runs_stood_down", "runs_standdown_reason", "corpus_patterns", "items", "runs",
                "counts", "unrecorded", "unconcluded",
                # The artifact half can stand down too, for the same reason the run half can.
-               "artifacts_stood_down", "artifacts_standdown_reason", "unanswerable")
+               "artifacts_stood_down", "artifacts_standdown_reason", "unanswerable",
+               # The unclaimed bundles this registry is in no position to judge, each with the
+               # reason, plus the window that decided it.
+               "unrecorded_out_of_reach", "registry_recording_since",
+               # WHICH COUNTS ARE NOT MEASUREMENTS, for a consumer reading the dict rather than the
+               # lines. counts keeps its integer shape so no consumer breaks, and this names the
+               # keys whose value is a CONSEQUENCE of a stand-down instead of a count of anything.
+               "counts_unmeasurable")
 
 # HOW THIS READER FINDS THE CORPUS PATTERNS IT WALKS: a module-level name in verdict_corpus
 # ending in this suffix, whose value is a string, IS one of that module's declared corpus
@@ -233,6 +308,44 @@ def concluded(entry, root=None, records=None, vc=None, passing=None):
     return any(r["concludes"] for r in recs)
 
 
+def manifest_produced_at(entry, root=None, vc=None):
+    """WHAT THE BUNDLE ITSELF SAYS ABOUT WHEN IT WAS PRODUCED, read from the manifest's bytes the
+    way the verdict is read from its own, and returned as the recorded STRING so the report can
+    quote it.
+
+    None when there is no manifest, when it cannot be read, or when it records no produced_at -
+    that key is not in the required proof key set, so its absence is an ordinary state and not an
+    error. None is never converted into a date: it makes the bundle unplaceable against the
+    registry's window, which the report says in words."""
+    vc = _sibling("verdict_corpus") if vc is None else vc
+    base = Path(root) if root is not None else ROOT
+    for rel in sorted(entry.get(vc.MANIFEST_PATTERN) or []):
+        try:
+            doc = json.loads((base / rel).read_text(errors="replace"))
+        except (OSError, ValueError):
+            continue
+        if isinstance(doc, dict) and isinstance(doc.get("produced_at"), str):
+            return doc["produced_at"]
+    return None
+
+
+def out_of_reach_reason(produced, floor_epoch, floor_stamp):
+    """Why this registry is in no position to call one unclaimed bundle UNRECORDED, or None when it
+    IS in a position to. THE ONE SPELLING of that rule, so the report and its suite cannot disagree.
+
+    The rule is about the registry's window and nothing else: it must know when it began recording,
+    and the bundle must say it landed after that. Anything else is reported with the reason instead
+    of as an alarm."""
+    if floor_epoch is None:
+        return OUT_OF_REACH_NO_WINDOW
+    stamp = _parse_stamp(produced or "")
+    if stamp is None:
+        return OUT_OF_REACH_UNDATED % (produced,)
+    if stamp < floor_epoch:
+        return OUT_OF_REACH_PREDATES % (floor_stamp,)
+    return None
+
+
 def ready_specs(root=None):
     """EVERY spec in specs/ with the status it declares: {spec id: {status, path}}. Read with one
     cheap scan of the front matter rather than the full validator, because this reader must answer
@@ -270,36 +383,89 @@ def ready_specs(root=None):
     return out
 
 
-def _heartbeat_age(state, now_epoch=None):
-    """Seconds since the run's last heartbeat, or None when there is no readable heartbeat.
-    None is NOT zero: it means liveness was never confirmed even once."""
-    hb = state.get("heartbeat_at")
-    if not hb:
+def _parse_stamp(value):
+    """Epoch seconds for a UTC timestamp, or None when the value is not a timestamp at all.
+
+    MORE THAN ONE SPELLING, because refusing the second printed the strongest available negative
+    about a live run. runlog writes RUNLOG_STAMP and this reader used to accept only that, so a
+    heartbeat written two seconds ago in an offset-bearing ISO spelling was reported as "no
+    heartbeat ever recorded". The registry lives under the git common dir, is shared across
+    worktrees, and is written by whatever tooling a repository grows around it; a reader of other
+    people's files that answers "never" for "I do not recognise this" is stating the reassuring
+    negative about the fact it most needs to get right. A stamp with no zone is read as UTC because
+    that is what runlog writes, and anything still unreadable is NAMED as unreadable by the caller
+    rather than folded into the absent case."""
+    if not isinstance(value, str) or not value.strip():
         return None
+    text = value.strip()
     try:
-        stamp = datetime.strptime(hb, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        return datetime.strptime(text, RUNLOG_STAMP).replace(tzinfo=timezone.utc).timestamp()
+    except (ValueError, TypeError):
+        pass
+    iso = (text[:-1] + "+00:00") if text.endswith("Z") else text
+    try:
+        parsed = datetime.fromisoformat(iso)
     except (ValueError, TypeError):
         return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.timestamp()
+
+
+def _heartbeat_age(state, now_epoch=None):
+    """(seconds since the run's last heartbeat, NOTE) - three answers, never one bare None.
+
+    None is NOT zero and, just as importantly, the three ways of having no age are not each other:
+    a run that never wrote a heartbeat, a stamp this reader cannot parse, and a stamp from the
+    FUTURE are different facts with different next actions, and all three used to arrive at
+    report_lines as None or as a clamped zero. The future case is the expensive one: max(0, ...)
+    turned clock skew across the machines this registry is shared between into "active, last
+    heartbeat 0s ago", the most reassuring line this report can emit, from a clock it cannot
+    verify. The age is still clamped so no caller sees a negative age, and the NOTE is what says
+    the clamp happened."""
+    hb = state.get("heartbeat_at")
+    if not hb:
+        return None, HEARTBEAT_NEVER
+    stamp = _parse_stamp(hb)
+    if stamp is None:
+        return None, HEARTBEAT_UNREADABLE % (hb,)
     now = now_epoch if now_epoch is not None else time.time()
-    return max(0, int(now - stamp.timestamp()))
+    delta = int(now - stamp)
+    if delta < 0:
+        return 0, HEARTBEAT_FUTURE % (-delta,)
+    return delta, None
 
 
 def liveness(run, now_epoch=None):
-    """(answer, age) for one run. The RUN'S OWN terminal and blocked states are reported as it
-    recorded them. Everything else goes through the heartbeat, and a heartbeat this module
-    cannot confirm produces LIVENESS_UNCONFIRMED WITH THE AGE - never a verdict about whether
-    a process it cannot see is alive."""
+    """(answer, age, note) for one run. The RUN'S OWN terminal and blocked states are reported as it
+    recorded them, and DONE and ABORTED are two of them rather than one. Everything else goes
+    through the heartbeat, and a heartbeat this module cannot confirm produces LIVENESS_UNCONFIRMED
+    WITH THE AGE - never a verdict about whether a process it cannot see is alive."""
     state = run.get("state") or {}
-    age = _heartbeat_age(state, now_epoch)
+    now = time.time() if now_epoch is None else now_epoch
+    age, note = _heartbeat_age(state, now_epoch=now)
     status = state.get("status")
-    if status in ("done", "aborted"):
-        return LIVENESS_DONE, age
+    if status == "done":
+        return LIVENESS_DONE, age, note
+    if status == "aborted":
+        return LIVENESS_ABORTED, age, note
     if status == "blocked":
-        return LIVENESS_BLOCKED, age
+        return LIVENESS_BLOCKED, age, note
+    if age is None or note is not None:
+        # A stamp that is absent, unreadable, or from the future is not a confirmation of anything,
+        # so the classifier is not asked to turn it into one.
+        return LIVENESS_UNCONFIRMED, age, note
     rl = _sibling("runlog")
-    if rl.classify(state, now_epoch=now_epoch) == "active":
-        return LIVENESS_ACTIVE, age
-    return LIVENESS_UNCONFIRMED, age
+    # ONE OWNER OF THE STALENESS RULE, ASKED IN ITS OWN SPELLING. runlog.classify owns the window
+    # and reads exactly RUNLOG_STAMP; this reader now accepts more spellings than that, so the state
+    # handed over is re-stamped from the age already parsed here. Re-spelling the stamp keeps the
+    # window in one place, where a second staleness comparison written here would be exactly the
+    # duplicate enumeration this module refuses everywhere else.
+    canon = dict(state)
+    canon["heartbeat_at"] = datetime.fromtimestamp(now - age, timezone.utc).strftime(RUNLOG_STAMP)
+    if rl.classify(canon, now_epoch=now) == "active":
+        return LIVENESS_ACTIVE, age, note
+    return LIVENESS_UNCONFIRMED, age, note
 
 
 def work_report(root=None, runs_root=None, now_epoch=None):
@@ -310,7 +476,8 @@ def work_report(root=None, runs_root=None, now_epoch=None):
            "artifacts_stood_down": False, "artifacts_standdown_reason": None,
            "corpus_patterns": list(corpus_patterns()), "items": {}, "runs": [],
            "counts": {s: 0 for s in STATES}, "unrecorded": [], "unconcluded": [],
-           "unanswerable": []}
+           "unanswerable": [], "unrecorded_out_of_reach": [], "registry_recording_since": None,
+           "counts_unmeasurable": []}
 
     arts = artifact_items(base)
     specs = ready_specs(base)
@@ -342,16 +509,25 @@ def work_report(root=None, runs_root=None, now_epoch=None):
         rep["runs_stood_down"] = False
         for run in rl.list_runs(runs_root):
             meta = run.get("meta") or {}
-            answer, age = liveness(run, now_epoch=now_epoch)
+            answer, age, note = liveness(run, now_epoch=now_epoch)
             row = {"run_id": meta.get("run_id"), "spec": meta.get("spec_id"),
                    "head": meta.get("head"), "pid": meta.get("pid"),
                    "started_at": meta.get("started_at"),
                    "folder": os.path.join(rroot, str(meta.get("run_id"))),
-                   "liveness": answer, "heartbeat_age_seconds": age,
+                   "liveness": answer, "heartbeat_age_seconds": age, "heartbeat_note": note,
                    "run_said": (run.get("state") or {}).get("status")}
             rep["runs"].append(row)
             if row["spec"]:
                 claimed.setdefault(row["spec"], []).append(row)
+
+    # THE REGISTRY'S OWN WINDOW: the earliest run start it records. This is what makes UNRECORDED
+    # answerable at all, and it comes from the registry's own bytes rather than from a file date.
+    floor_epoch, floor_stamp = None, None
+    for row in rep["runs"]:
+        stamp = _parse_stamp(row.get("started_at") or "")
+        if stamp is not None and (floor_epoch is None or stamp < floor_epoch):
+            floor_epoch, floor_stamp = stamp, row.get("started_at")
+    rep["registry_recording_since"] = floor_stamp
 
     # THE PARTITION. Every spec id either half knows about, in one pass.
     for sid in sorted(set(arts) | set(specs) | set(claimed)):
@@ -372,6 +548,12 @@ def work_report(root=None, runs_root=None, now_epoch=None):
             "verdicts": records,
             "spec_status": (specs.get(sid) or {}).get("status"),
             "claims": claimed.get(sid, []),
+            # A MANIFEST WITH NO VERDICT AT ALL IS A DISTINCT FACT and the report says so, so these
+            # two travel with the item: a bundle awaiting review is BUILT, and reporting it in the
+            # same silent bucket as work nobody has started is how this reader answered its own
+            # scenario wrongly. produced_at is what places the bundle against the registry's window.
+            "has_manifest": bool(entry.get(vc.MANIFEST_PATTERN)),
+            "produced_at": manifest_produced_at(entry, base, vc=vc),
         }
         # AN UNANSWERABLE ITEM IS COUNTED IN NO BUCKET, and counted as unanswerable instead. Driven
         # 2026-08-13: incrementing counts[None] raised KeyError out of the CLI, so the repair for a
@@ -389,8 +571,26 @@ def work_report(root=None, runs_root=None, now_epoch=None):
         if item["state"] == UNCONCLUDED:
             rep["unconcluded"].append({"spec": sid, "claims": item["claims"]})
         elif item["state"] == DONE and not item["claims"] and not rep["runs_stood_down"]:
-            rep["unrecorded"].append({"spec": sid, "artifacts": item["artifacts"]})
-            rep["counts"][UNRECORDED] += 1
+            # UNRECORDED ONLY WHERE THIS REGISTRY WAS RECORDING. Everything else keeps its paths and
+            # carries the reason the registry cannot judge it, so nothing is dropped and nothing is
+            # shouted. See the OUT_OF_REACH_ constants for the measurement that forced this.
+            why = out_of_reach_reason(item["produced_at"], floor_epoch, floor_stamp)
+            if why is None:
+                rep["unrecorded"].append({"spec": sid, "artifacts": item["artifacts"],
+                                          "produced_at": item["produced_at"]})
+                rep["counts"][UNRECORDED] += 1
+            else:
+                rep["unrecorded_out_of_reach"].append(
+                    {"spec": sid, "artifacts": item["artifacts"],
+                     "produced_at": item["produced_at"], "reason": why})
+
+    # WHICH COUNTS ARE NOT MEASUREMENTS. UNCONCLUDED is defined entirely by a registry claim, and
+    # QUEUED is "not done and not claimed", so BOTH rest on the half that just announced it answers
+    # nothing. With the run half stood down their integers are a consequence of the stand-down, and
+    # a consumer reading counts alone would take a zero for a measurement - the confident zero this
+    # organ exists to refuse, surviving inside it. report_lines refuses to print them separately.
+    if rep["runs_stood_down"]:
+        rep["counts_unmeasurable"] = [UNCONCLUDED, QUEUED, UNRECORDED]
     return rep
 
 
@@ -398,8 +598,35 @@ def report_lines(rep):
     """The report as lines a stranger reads after losing a session. Every line that names a
     problem also names a path, because the product of this organ is somewhere to look."""
     c = rep["counts"]
-    lines = ["work state: %d done, %d unconcluded, %d queued (artifacts decide done, never a "
-             "run's own word)" % (c[DONE], c[UNCONCLUDED], c[QUEUED])]
+    if rep["runs_stood_down"]:
+        # NO CONFIDENT ZERO IN THE HEADLINE EITHER, which is where an operator reads first. UNCONCLUDED
+        # is defined entirely by a registry claim and QUEUED is "not done and not claimed", so with the
+        # run half stood down neither is measured: printing "0 unconcluded" beside a stand-down states
+        # a zero derived from the half that just announced it answers nothing. The two are reported as
+        # ONE number with the reason, which is the honest shape of what was measured.
+        lines = ["work state: %d done, %d NOT CONCLUDED - unconcluded and queued are NOT reported "
+                 "separately here because both rest on a registry claim and the run half stood down, "
+                 "so either zero would be a confident zero (artifacts decide done, never a run's own "
+                 "word)" % (c[DONE], c[UNCONCLUDED] + c[QUEUED])]
+    else:
+        lines = ["work state: %d done, %d unconcluded, %d queued (artifacts decide done, never a "
+                 "run's own word)" % (c[DONE], c[UNCONCLUDED], c[QUEUED])]
+    # WHAT THE NOT-CONCLUDED NUMBER IS MADE OF, because the bucket's name promises something the
+    # predicate does not deliver. QUEUED is every item with no complete bundle and no claim, WHATEVER
+    # its spec declares, so shipped, draft and blocked specs sit in it beside genuinely ready ones and
+    # the number an operator acts on reads like a work queue. MEASURED on this repository: 73 queued
+    # was 30 ready, 34 shipped, 6 draft, 1 blocked and 2 declaring nothing. The status already travels
+    # with each item; this prints it, rather than the report carrying a discriminator nobody sees.
+    pending = {}
+    for item in rep["items"].values():
+        if item["state"] in (QUEUED, UNCONCLUDED):
+            key = item.get("spec_status") or "(no status declared)"
+            pending[key] = pending.get(key, 0) + 1
+    if pending:
+        lines.append("  NOT CONCLUDED by the status each spec DECLARES: %s. The bucket is 'no "
+                     "complete bundle and no claim', which is NOT the same thing as ready to be "
+                     "worked on"
+                     % ", ".join("%s=%d" % kv for kv in sorted(pending.items())))
     # THE ARTIFACT HALF STANDS DOWN FIRST WHEN IT STANDS DOWN AT ALL, because the headline counts
     # above are its product and a reader who does not know they are unanswerable will act on them.
     # Recorded and NOT reported is the defect VELDO-0001 F2 names: with only the flag set in the
@@ -413,16 +640,40 @@ def report_lines(rep):
                      % rep["runs_standdown_reason"])
     for row in rep["runs"]:
         age = row["heartbeat_age_seconds"]
-        when = "no heartbeat ever recorded" if age is None else "last heartbeat %ds ago" % age
-        lines.append("  run %s spec %s: %s, %s. Started %s at head %s, pid %s. Look in %s"
-                     % (row["run_id"], row["spec"], row["liveness"], when, row["started_at"],
-                        row["head"], row["pid"], row["folder"]))
+        note = row.get("heartbeat_note")
+        if age is None:
+            when = note or "no heartbeat age to report and no reason recorded"
+        elif note:
+            when = "last heartbeat %ds ago, BUT %s" % (age, note)
+        else:
+            when = "last heartbeat %ds ago" % age
+        # THE RUN'S OWN WORD IS PRINTED BESIDE THE ANSWER. It was carried in run_said and never
+        # reached the human-readable line, which is how "aborted" arrived at an operator as a
+        # liveness answer built from the word done.
+        lines.append("  run %s spec %s: %s, %s. The run RECORDED status %r. Started %s at head %s, "
+                     "pid %s. Look in %s"
+                     % (row["run_id"], row["spec"], row["liveness"], when, row["run_said"],
+                        row["started_at"], row["head"], row["pid"], row["folder"]))
     for u in rep["unconcluded"]:
         lines.append("  UNCONCLUDED %s: claimed by %d run(s) and no artifact concludes it"
                      % (u["spec"], len(u["claims"])))
     for u in rep["unrecorded"]:
-        lines.append("  UNRECORDED %s: finished artifacts that NO run ever claimed - %s"
-                     % (u["spec"], ", ".join(u["artifacts"])))
+        lines.append("  UNRECORDED %s: finished artifacts that NO run claimed, and this registry WAS "
+                     "recording when they landed (manifest says produced_at %s, registry recording "
+                     "since %s) - %s"
+                     % (u["spec"], u["produced_at"], rep["registry_recording_since"],
+                        ", ".join(u["artifacts"])))
+    # THE UNCLAIMED BUNDLES THIS REGISTRY CANNOT JUDGE, as a COUNT PER REASON rather than as one
+    # alarm each. They are not dropped: every path is under unrecorded_out_of_reach, and the reason
+    # says which of them the registry could not place and why. A line each is what buried the one
+    # interesting line of a 144-line report under 142 wrong ones.
+    _reasons = {}
+    for u in rep["unrecorded_out_of_reach"]:
+        _reasons.setdefault(u["reason"], []).append(u["spec"])
+    for reason, specs_out in sorted(_reasons.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        lines.append("  OUT OF THE REGISTRY'S REACH, %d finished item(s) reported as a count and not "
+                     "as alarms, paths under unrecorded_out_of_reach: %s"
+                     % (len(specs_out), reason))
     # REVIEWED AND NOT CONCLUDED. This report has four states and none of them says REJECTED, so
     # an item whose verdicts all record a rejection would otherwise sit silently in QUEUED beside
     # work nobody has started. It gets a line and A PATH, and the line says what the state cannot.
@@ -437,6 +688,23 @@ def report_lines(rep):
                      "REJECTED, so read the path rather than the bucket"
                      % (sid, item["state"],
                         "; ".join("%s records %r" % (r["path"], r["verdict"]) for r in rejecting)))
+    # BUILT AND AWAITING REVIEW. THE STATE THIS READER ANSWERED ITS OWN SCENARIO WRONGLY ABOUT.
+    # A proof bundle is written in two stages, the producer's manifest and then a reviewer's verdict,
+    # so every item that is BUILT and waiting for review has a manifest and NO verdict - and that is
+    # reported QUEUED, the same bucket as work nobody has started, with no line and no path. PLAN-0018
+    # measures this item by "kill a session mid-flight, start a fresh one, ask what is done, and get
+    # the right answer": a fresh session asking was told the built items were queued. There is still no
+    # fifth STATE, because that is a change to the taxonomy this item's spec declares; there is a LINE
+    # AND A PATH, which is what the same taxonomy already does for reviewed-and-rejected.
+    for sid, item in rep["items"].items():
+        if item["state"] == DONE or item.get("verdicts") or not item.get("has_manifest"):
+            continue
+        lines.append("  BUILT AND UNREVIEWED %s: a manifest is on disk and NO verdict artifact of any "
+                     "kind is, which is a bundle awaiting review rather than work nobody has started "
+                     "- reported %s because a bundle with no verdict cannot be called done, so read "
+                     "the path rather than the bucket: %s"
+                     % (sid, item["state"] if item["state"] else "UNANSWERABLE",
+                        ", ".join(item["artifacts"])))
     return lines
 
 

@@ -19,6 +19,7 @@ one side is indistinguishable from a reader that puts everything in one bucket. 
 asserts an item lands in one state also asserts a sibling fixture, differing in exactly one file,
 lands in a DIFFERENT one.
 """
+import datetime as _ws_datetime
 import os as _ws_os
 import re as _ws_re
 import time as _ws_time
@@ -40,7 +41,13 @@ def _ws_block(label, fn):
                % (label, _ws_e), False)
 
 
-def _ws_tree(d, specs=(), bundles=(), runs=(), raw=()):
+def _ws_stamp(age_seconds):
+    """One stamp in runlog's own spelling, `age_seconds` before now."""
+    return _ws_time.strftime("%Y-%m-%dT%H:%M:%SZ",
+                             _ws_time.gmtime(_ws_time.time() - age_seconds))
+
+
+def _ws_tree(d, specs=(), bundles=(), runs=(), raw=(), produced=None):
     """Build a tree: specs as front-matter files, bundles as proof artifacts, runs as run folders.
 
     bundles entries are (spec_id, files). files is a tuple of names, in which case every artifact
@@ -49,7 +56,15 @@ def _ws_tree(d, specs=(), bundles=(), runs=(), raw=()):
     BYTES: a row needs to build a bundle that is half written (a manifest with no verdict), one
     whose verdict records a REJECTION, and one where a later round records a pass.
     raw entries are (spec_id, name, text) written verbatim, for bytes that are not JSON at all.
-    runs entries are (run_id, spec_id, status, heartbeat_age_seconds_or_None).
+    runs entries are (run_id, spec_id, status, heartbeat_or_None) with an OPTIONAL fifth member,
+    the run's started_at, defaulting to a fixed past stamp. heartbeat_or_None is an age in seconds,
+    or a stamp STRING written verbatim, which is how a row builds the spellings _parse_stamp has to
+    survive.
+
+    EVERY MANIFEST RECORDS produced_at, because UNRECORDED is answered against the registry's own
+    window and a manifest that records no produce time cannot be placed in it. `produced` overrides
+    it per spec: an age in seconds, a verbatim stamp, or None to write no produced_at at all, which
+    is a legal manifest (produced_at is not a required proof key) and its own row below.
     """
     base = Path(d)
     sdir = base / "specs"
@@ -57,6 +72,7 @@ def _ws_tree(d, specs=(), bundles=(), runs=(), raw=()):
     for sid, status in specs:
         (sdir / ("%s-fixture.md" % sid)).write_text(
             "---\nschema: veldo.spec/v1\nid: %s\ntitle: fixture\nstatus: %s\n---\n" % (sid, status))
+    produced = {} if produced is None else produced
     for sid, files in bundles:
         bdir = base / "proof" / sid
         bdir.mkdir(parents=True, exist_ok=True)
@@ -65,6 +81,10 @@ def _ws_tree(d, specs=(), bundles=(), runs=(), raw=()):
             body = {"schema": "fixture", "spec_id": sid}
             if verdict is not None:
                 body["verdict"] = verdict
+            if "manifest" in name:
+                when = produced.get(sid, 0)
+                if when is not None:
+                    body["produced_at"] = when if isinstance(when, str) else _ws_stamp(when)
             (bdir / name).write_text(json.dumps(body))
     for sid, name, text in raw:
         bdir = base / "proof" / sid
@@ -73,25 +93,28 @@ def _ws_tree(d, specs=(), bundles=(), runs=(), raw=()):
     rroot = base / "runsroot"
     if runs:
         rroot.mkdir(parents=True, exist_ok=True)
-    for run_id, sid, status, age in runs:
+    for row in runs:
+        run_id, sid, status, age = row[:4]
+        started = row[4] if len(row) > 4 else "2026-08-12T02:00:00Z"
         rd = rroot / run_id
         rd.mkdir(parents=True, exist_ok=True)
         (rd / "meta.json").write_text(json.dumps(
-            {"run_id": run_id, "spec_id": sid, "started_at": "2026-08-12T02:00:00Z",
+            {"run_id": run_id, "spec_id": sid, "started_at": started,
              "pid": 4242, "head": "cafef00d"}))
         state = {"run_id": run_id, "spec_id": sid, "status": status, "phase": "build",
                  "question": None, "updated_at": "2026-08-12T02:00:00Z"}
-        if age is not None:
-            stamp = _ws_time.gmtime(_ws_time.time() - age)
-            state["heartbeat_at"] = _ws_time.strftime("%Y-%m-%dT%H:%M:%SZ", stamp)
+        if isinstance(age, str):
+            state["heartbeat_at"] = age
+        elif age is not None:
+            state["heartbeat_at"] = _ws_stamp(age)
         (rd / "state.json").write_text(json.dumps(state))
     return str(rroot)
 
 
-def _ws_report(specs=(), bundles=(), runs=(), raw=(), with_registry=True):
+def _ws_report(specs=(), bundles=(), runs=(), raw=(), with_registry=True, produced=None):
     """One report over a fresh tree. Returns (report, lines)."""
     with tempfile.TemporaryDirectory() as d:
-        rroot = _ws_tree(d, specs, bundles, runs, raw)
+        rroot = _ws_tree(d, specs, bundles, runs, raw, produced)
         if not with_registry:
             rroot = _ws_os.path.join(d, "no-registry-here")
         rep = WS.work_report(root=Path(d), runs_root=rroot)
@@ -222,9 +245,85 @@ def _ws_ac2():
            "opposite facts and a zero would state the reassuring one",
            _WS_NOHB["runs"][0]["heartbeat_age_seconds"] is None
            and _WS_NOHB["runs"][0]["liveness"] == WS.LIVENESS_UNCONFIRMED
+           and _WS_NOHB["runs"][0]["heartbeat_note"] == WS.HEARTBEAT_NEVER
            and any("no heartbeat ever recorded" in ln for ln in _WS_NOHB_LINES))
 
+    # AN ABORTED RUN IS NOT A RUN THAT FINISHED. Both used to answer LIVENESS_DONE, and report_lines
+    # prints the answer rather than run_said, so the word an operator read for a run that ABORTED 25
+    # hours ago was built from "done" - the reassuring word for the opposite fact, in the module whose
+    # stated discipline is that states are never collapsed.
+    _WS_ABORT, _WS_ABORT_LINES = _ws_report(
+        specs=[("WARP-9013", "ready")],
+        runs=[("run-abort", "WARP-9013", "aborted", 90000)])
+    _WS_FINI, _ = _ws_report(
+        specs=[("WARP-9014", "ready")],
+        runs=[("run-fini", "WARP-9014", "done", 90000)])
+    expect("VELDO-0002 AC2: a run that recorded status ABORTED is reported as ABORTED and never with "
+           "the word done. Both terminal statuses used to map to the same answer while run_said kept "
+           "'aborted' in the JSON, so the human-readable line - the surface an operator actually reads "
+           "after losing a session - handed them the reassuring word for the opposite fact. The line "
+           "also prints the run's OWN recorded status beside the answer, so no future collapse can "
+           "hide there again",
+           _WS_ABORT["runs"][0]["liveness"] == WS.LIVENESS_ABORTED
+           and WS.LIVENESS_ABORTED != WS.LIVENESS_DONE
+           and _WS_ABORT["runs"][0]["run_said"] == "aborted"
+           and any("run-abort" in ln and WS.LIVENESS_ABORTED in ln and "'aborted'" in ln
+                   and WS.LIVENESS_DONE not in ln for ln in _WS_ABORT_LINES))
+    expect("VELDO-0002 AC2 NEGATIVE CONTROL: a run that recorded status DONE still answers "
+           "run_recorded_done, so the row above distinguishes the two terminal statuses rather than "
+           "renaming one answer. The two fixtures differ in exactly one field, the recorded status",
+           _WS_FINI["runs"][0]["liveness"] == WS.LIVENESS_DONE
+           and _WS_FINI["runs"][0]["run_said"] == "done")
 
+    # THE HEARTBEAT'S SPELLING IS NOT A FACT ABOUT THE PROCESS. _heartbeat_age accepted exactly the
+    # one spelling runlog writes and answered None for everything else, and None printed as "no
+    # heartbeat ever recorded" - this module's own words for liveness never having been confirmed
+    # once. MEASURED: an offset-bearing ISO stamp written two seconds before the read produced the
+    # strongest available negative statement about a live run.
+    _ws_iso = _ws_datetime.datetime.now(_ws_datetime.timezone.utc).isoformat()
+    _WS_ISO, _WS_ISO_LINES = _ws_report(
+        specs=[("WARP-9015", "ready")],
+        runs=[("run-iso", "WARP-9015", "running", _ws_iso)])
+    expect("VELDO-0002 AC2: a heartbeat written NOW in an offset-bearing ISO spelling (%s) is read as "
+           "the age it is and the run is reported ACTIVE, not as 'no heartbeat ever recorded'. The "
+           "registry lives under the git common dir, is shared across worktrees and is written by "
+           "whatever tooling grows around it, so a reader that answers 'never confirmed' for 'I do "
+           "not recognise this spelling' states the strongest negative it has about the fact it most "
+           "needs to get right. The staleness window still has ONE owner: the state handed to "
+           "runlog.classify is re-stamped from the age parsed here" % _ws_iso,
+           _WS_ISO["runs"][0]["heartbeat_age_seconds"] is not None
+           and _WS_ISO["runs"][0]["heartbeat_age_seconds"] < 30
+           and _WS_ISO["runs"][0]["heartbeat_note"] is None
+           and _WS_ISO["runs"][0]["liveness"] == WS.LIVENESS_ACTIVE
+           and not any("no heartbeat ever recorded" in ln for ln in _WS_ISO_LINES))
+
+    _WS_BAD, _WS_BAD_LINES = _ws_report(
+        specs=[("WARP-9016", "ready")],
+        runs=[("run-bad", "WARP-9016", "running", "not-a-stamp-at-all")])
+    expect("VELDO-0002 AC2: a heartbeat stamp this reader CANNOT PARSE is reported as UNREADABLE with "
+           "the bytes quoted, and NOT as a run that never wrote one. Both used to answer None and "
+           "print the never-recorded line, which is one reader borrowing the answer for a different "
+           "state - the defect ledger finding 67 names. The item is still LIVENESS_UNCONFIRMED, "
+           "because an unparseable stamp confirms nothing",
+           _WS_BAD["runs"][0]["heartbeat_age_seconds"] is None
+           and _WS_BAD["runs"][0]["liveness"] == WS.LIVENESS_UNCONFIRMED
+           and _WS_BAD["runs"][0]["heartbeat_note"] == WS.HEARTBEAT_UNREADABLE % ("not-a-stamp-at-all",)
+           and any("run-bad" in ln and "UNREADABLE" in ln and "not-a-stamp-at-all" in ln
+                   and "no heartbeat ever recorded" not in ln for ln in _WS_BAD_LINES))
+
+    _WS_FUT, _WS_FUT_LINES = _ws_report(
+        specs=[("WARP-9017", "ready")],
+        runs=[("run-future", "WARP-9017", "running", _ws_stamp(-3 * 3600))])
+    expect("VELDO-0002 AC2: a heartbeat stamped THREE HOURS IN THE FUTURE is not a confirmation. The "
+           "age was clamped with max(0, ...) and nothing said the clamp had happened, so clock skew "
+           "across the machines this registry is shared between printed 'active, last heartbeat 0s "
+           "ago' - the most reassuring line this report can emit, from a clock it cannot verify. It "
+           "is LIVENESS_UNCONFIRMED with the skew NAMED and the number of seconds given",
+           _WS_FUT["runs"][0]["liveness"] == WS.LIVENESS_UNCONFIRMED
+           and _WS_FUT["runs"][0]["heartbeat_note"] is not None
+           and "FUTURE" in _WS_FUT["runs"][0]["heartbeat_note"]
+           and any("run-future" in ln and "FUTURE" in ln and WS.LIVENESS_ACTIVE not in ln
+                   for ln in _WS_FUT_LINES))
 
 
 _ws_block("AC2", _ws_ac2)
@@ -270,6 +369,80 @@ def _ws_ac3():
            == len(_WS_BOTH["items"])
            and sorted(_WS_BOTH["items"]) == ["WARP-9020", "WARP-9021", "WARP-9022"])
 
+    # WHAT UNRECORDED IS ALLOWED TO ACCUSE, AND WHY THE DOMAIN IS THE FIX RATHER THAN THE COMPARISON.
+    # UNRECORDED said "artifacts exist that no run ever claimed" over EVERY done item with no claim,
+    # which is a POPULATION and not a defect set: a registry starts empty and this one was flattened
+    # at migration, so it has claimed nothing about work that landed before it existed. MEASURED on
+    # this repository: ONE run folder took the report from 2 lines to 144, of which 142 were
+    # UNRECORDED lines naming specs that had landed weeks earlier, and the one interesting line - a
+    # run with a stale heartbeat - was buried under them. Ledger findings 51 and 63: change the
+    # DOMAIN. An unclaimed bundle is a defect only where the registry WAS recording when it landed,
+    # and both halves of that are bytes already on disk - the registry's earliest recorded run start
+    # and the manifest's own produced_at. Everything else keeps its paths under a count with a reason.
+    _WS_WINDOW, _WS_WINDOW_LINES = _ws_report(
+        specs=[("WARP-9023", "ready"), ("WARP-9024", "ready"), ("WARP-9025", "ready")],
+        bundles=[("WARP-9023", _WS_FULL), ("WARP-9025", _WS_FULL)],
+        runs=[("run-recent", "WARP-9024", "running", 5, _ws_stamp(3600))],
+        produced={"WARP-9023": 86400, "WARP-9025": 60})
+    _ws_win_reach = {u["spec"]: u for u in _WS_WINDOW["unrecorded_out_of_reach"]}
+    expect("VELDO-0002 AC3: a finished bundle THIS REGISTRY WAS NOT RECORDING FOR is not accused. The "
+           "registry's earliest run started an hour ago and WARP-9023's manifest records it produced a "
+           "day ago, so the registry cannot say it went unclaimed: it is reported OUT OF REACH with "
+           "that reason and its paths kept, never as a count of zero and never as an alarm. The window "
+           "is the registry's own earliest recorded start, quoted in the report",
+           [u["spec"] for u in _WS_WINDOW["unrecorded"]] == ["WARP-9025"]
+           and _WS_WINDOW["counts"][WS.UNRECORDED] == 1
+           and sorted(_ws_win_reach) == ["WARP-9023"]
+           and _ws_win_reach["WARP-9023"]["reason"]
+           == WS.OUT_OF_REACH_PREDATES % (_WS_WINDOW["registry_recording_since"],)
+           and _ws_win_reach["WARP-9023"]["artifacts"]
+           == _WS_WINDOW["items"]["WARP-9023"]["artifacts"]
+           and _WS_WINDOW["registry_recording_since"] == _WS_WINDOW["runs"][0]["started_at"]
+           # THE FIXTURE IS ASSERTED TO HAVE APPLIED before its consequence is read: the manifest's
+           # own recorded produced_at really is earlier than the registry's earliest start, as bytes,
+           # both written in the one spelling runlog uses, so the row above cannot pass because a
+           # fixture silently failed to write what it meant to.
+           and _WS_WINDOW["items"]["WARP-9023"]["produced_at"]
+           < _WS_WINDOW["registry_recording_since"]
+           < _WS_WINDOW["items"]["WARP-9025"]["produced_at"]
+           and any("OUT OF THE REGISTRY'S REACH, 1 finished item(s)" in ln
+                   for ln in _WS_WINDOW_LINES))
+    expect("VELDO-0002 AC3 NEGATIVE CONTROL for the narrowing, ADDITIVE: the SAME fixture's second "
+           "bundle, WARP-9025, was produced a minute ago - INSIDE the registry's window - and IS "
+           "reported UNRECORDED with its paths and its produced_at, so the narrowing measures the "
+           "window rather than switching the direction off. Without this row a reader that never "
+           "accuses anything satisfies the row above",
+           [u["spec"] for u in _WS_WINDOW["unrecorded"]] == ["WARP-9025"]
+           and _WS_WINDOW["unrecorded"][0]["artifacts"]
+           == _WS_WINDOW["items"]["WARP-9025"]["artifacts"]
+           and _WS_WINDOW["unrecorded"][0]["produced_at"]
+           == _WS_WINDOW["items"]["WARP-9025"]["produced_at"]
+           and any("UNRECORDED WARP-9025" in ln and "WAS recording" in ln
+                   for ln in _WS_WINDOW_LINES))
+
+    _WS_NOWINDOW, _ = _ws_report(
+        specs=[("WARP-9026", "ready"), ("WARP-9027", "ready")],
+        bundles=[("WARP-9026", _WS_FULL)],
+        runs=[("run-nostart", "WARP-9027", "running", 5, "not-a-timestamp")],
+        produced={"WARP-9026": 60})
+    _WS_UNDATED, _ = _ws_report(
+        specs=[("WARP-9028", "ready"), ("WARP-9029", "ready")],
+        bundles=[("WARP-9028", _WS_FULL)],
+        runs=[("run-ok", "WARP-9029", "running", 5, _ws_stamp(3600))],
+        produced={"WARP-9028": None})
+    expect("VELDO-0002 AC3: the two ways the window itself is unanswerable are NAMED rather than "
+           "guessed. A registry whose runs carry no readable start cannot say when it began recording, "
+           "and a manifest that records no produced_at - not a required proof key - cannot be placed "
+           "in the window. Neither is called unrecorded and neither is dropped: each carries its own "
+           "reason, which is the difference between standing down and reporting a zero",
+           [u["spec"] for u in _WS_NOWINDOW["unrecorded"]] == []
+           and [(u["spec"], u["reason"]) for u in _WS_NOWINDOW["unrecorded_out_of_reach"]]
+           == [("WARP-9026", WS.OUT_OF_REACH_NO_WINDOW)]
+           and _WS_NOWINDOW["registry_recording_since"] is None
+           and [u["spec"] for u in _WS_UNDATED["unrecorded"]] == []
+           and [(u["spec"], u["reason"]) for u in _WS_UNDATED["unrecorded_out_of_reach"]]
+           == [("WARP-9028", WS.OUT_OF_REACH_UNDATED % (None,))])
+
 
 _ws_block("AC3", _ws_ac3)
 
@@ -314,8 +487,115 @@ def _ws_ac4():
            sorted(_WS_NOREG) == sorted(WS.REPORT_KEYS)
            and sorted(_WS_BOTH) == sorted(WS.REPORT_KEYS))
 
+    # THE CONFIDENT ZERO THAT SURVIVED INSIDE THE CRITERION THAT FORBIDS CONFIDENT ZEROS.
+    # UNCONCLUDED is defined ENTIRELY by a registry claim and QUEUED is "not done and not claimed", so
+    # both rest on the half that just announced it answers nothing - and the headline printed "0
+    # unconcluded" beside the stand-down, on the first line an operator reads. The suite reasoned the
+    # opposite way about UNRECORDED in the row above, refusing to fill it "because being unclaimed
+    # cannot be measured against a registry that does not exist", and then never looked at the
+    # unconcluded count or at QUEUED, which rest on the same predicate.
+    expect("VELDO-0002 AC4: with the run half stood down the headline does NOT print a zero for "
+           "UNCONCLUDED. It reports one NOT CONCLUDED number and says why the two cannot be told "
+           "apart, and the report dict NAMES which counts are consequences of the stand-down rather "
+           "than measurements, so a consumer reading the keys instead of the lines is told the same "
+           "thing. A zero derived from the half that answers nothing is this organ's own disease",
+           _WS_NOREG_LINES[0].startswith("work state: 1 done, 0 NOT CONCLUDED")
+           and "0 unconcluded" not in _WS_NOREG_LINES[0]
+           and "confident zero" in _WS_NOREG_LINES[0]
+           and sorted(_WS_NOREG["counts_unmeasurable"])
+           == sorted([WS.UNCONCLUDED, WS.QUEUED, WS.UNRECORDED]))
+    expect("VELDO-0002 AC4 NEGATIVE CONTROL: with a registry PRESENT the headline does print the split "
+           "and nothing is named unmeasurable, so the refusal above is a measurement of the registry "
+           "and not the module's only headline. The two fixtures differ in one thing, whether the runs "
+           "root exists",
+           _WS_BOTH_LINES[0].startswith("work state: 2 done, 1 unconcluded, 0 queued")
+           and _WS_BOTH["counts_unmeasurable"] == [])
+
 
 _ws_block("AC4", _ws_ac4)
+
+
+# ---------------------------------------------------------------------------------------
+# THE REPORT'S OWN PRODUCT: A PATH TO LOOK AT, NEVER A COUNT TO TRUST.
+#
+# This item's observability clause says a reader who lost a session gets a path to look at and never a
+# count to trust, and its error taxonomy says the operator reads the path rather than the bucket. Two
+# states of the live tree were reaching that reader as a silent number instead.
+# ---------------------------------------------------------------------------------------
+
+
+def _ws_report_product():
+    # BUILT AND AWAITING REVIEW. A bundle is written in two stages, the producer's manifest and then
+    # the reviewer's verdict, so EVERY item that is built and waiting is a manifest with no verdict -
+    # reported QUEUED, the bucket for work nobody has started, with no line and no path. PLAN-0018
+    # measures this item by "kill a session mid-flight, start a fresh one, ask what is done, and get
+    # the right answer": a fresh session asking was told the built items were queued.
+    _WS_BUILT, _WS_BUILT_LINES = _ws_report(
+        specs=[("WARP-9060", "ready")],
+        bundles=[("WARP-9060", ("manifest.json",))],
+        with_registry=False)
+    expect("VELDO-0002: an item whose manifest IS on disk with NO verdict artifact of any kind gets a "
+           "LINE AND A PATH saying it is BUILT AND UNREVIEWED. It is still reported queued, because a "
+           "fifth state is a change to this item's declared taxonomy and is not invented here, but it "
+           "no longer reaches the operator as a silent member of the bucket for work nobody has "
+           "started - which is this reader answering its own scenario wrongly",
+           _WS_BUILT["items"]["WARP-9060"]["state"] == WS.QUEUED
+           and _WS_BUILT["items"]["WARP-9060"]["has_manifest"] is True
+           and _WS_BUILT["items"]["WARP-9060"]["verdicts"] == []
+           and any("BUILT AND UNREVIEWED WARP-9060" in ln
+                   and "proof/WARP-9060/manifest.json" in ln for ln in _WS_BUILT_LINES))
+
+    _WS_BUILT2, _WS_BUILT2_LINES = _ws_report(
+        specs=[("WARP-9061", "ready")],
+        bundles=[("WARP-9061", {"manifest.json": None, "verdict.json": _WS_FAIL})],
+        with_registry=False)
+    _WS_NOBUNDLE, _WS_NOBUNDLE_LINES = _ws_report(
+        specs=[("WARP-9062", "ready")], with_registry=False)
+    expect("VELDO-0002 NEGATIVE CONTROL, ADDITIVE: the same bundle with ONE MORE artifact ADDED, a "
+           "verdict recording %r, prints the REVIEWED AND NOT CONCLUDED line and NOT the built one, "
+           "and a ready spec with NO bundle at all prints neither. So the line is a measurement of a "
+           "manifest without a verdict and not a second name for every queued item"
+           % _WS_FAIL,
+           not any("BUILT AND UNREVIEWED" in ln for ln in _WS_BUILT2_LINES)
+           and any("REVIEWED AND NOT CONCLUDED WARP-9061" in ln for ln in _WS_BUILT2_LINES)
+           and not any("BUILT AND UNREVIEWED" in ln for ln in _WS_NOBUNDLE_LINES)
+           and _WS_NOBUNDLE["items"]["WARP-9062"]["has_manifest"] is False)
+
+    # WHAT THE QUEUED NUMBER IS MADE OF. ready_specs() FILTERS NOTHING - the name is historical and its
+    # docstring says so - so QUEUED holds every item with no complete bundle and no claim, whatever
+    # status its spec declares, while the spec's taxonomy called it "ready, unclaimed". MEASURED on
+    # this repository: 73 queued was 30 ready, 34 shipped, 6 draft, 1 blocked and 2 declaring nothing.
+    # Deciding what QUEUED should MEAN is a change to the declared taxonomy and is not made here; what
+    # changed is that the composition an operator acts on is PRINTED rather than only carried.
+    _WS_MIX, _WS_MIX_LINES = _ws_report(
+        specs=[("WARP-9070", "draft"), ("WARP-9071", "shipped"), ("WARP-9072", "blocked"),
+               ("WARP-9073", "ready"), ("WARP-9074", "ready")],
+        with_registry=False)
+    _ws_mix_line = [ln for ln in _WS_MIX_LINES if "by the status each spec DECLARES" in ln]
+    expect("VELDO-0002: the report PRINTS what the not-concluded number is made of, by the status each "
+           "spec DECLARES, and says in its own text that the bucket is not a list of work that is "
+           "ready to start. ready_specs filters nothing, so this number mixes shipped, draft and "
+           "blocked specs with genuinely ready ones and an operator reading the count alone reads a "
+           "work queue that is not one",
+           len(_ws_mix_line) == 1
+           and "blocked=1, draft=1, ready=2, shipped=1" in _ws_mix_line[0]
+           and "NOT the same thing as ready" in _ws_mix_line[0]
+           and {_ws_s: _ws_i["spec_status"] for _ws_s, _ws_i in _WS_MIX["items"].items()}
+           == {"WARP-9070": "draft", "WARP-9071": "shipped", "WARP-9072": "blocked",
+               "WARP-9073": "ready", "WARP-9074": "ready"})
+    expect("VELDO-0002 NEGATIVE CONTROL: a spec declaring NO status is counted under a name that says "
+           "so rather than being dropped or silently counted as ready, and a tree with nothing pending "
+           "prints no composition line at all - so the line is derived from the items and is not a "
+           "constant",
+           "(no status declared)=1" in _ws_report(specs=[("WARP-9075", "")],
+                                                  with_registry=False)[1][1]
+           and not any("by the status each spec DECLARES" in ln
+                       for ln in _ws_report(specs=[("WARP-9076", "ready")],
+                                            bundles=[("WARP-9076", _WS_FULL)],
+                                            with_registry=False)[1]))
+
+
+_ws_block("report product", _ws_report_product)
 
 
 # ---------------------------------------------------------------------------------------

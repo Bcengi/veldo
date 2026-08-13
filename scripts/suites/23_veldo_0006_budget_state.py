@@ -364,6 +364,41 @@ _bs_block("AC3", _bs_ac3)
 # ---------------------------------------------------------------------------------------
 
 
+def _bs_organ_raiser(organ_name, read_name, exc):
+    """(install, restore): budget_state's organ loader, wrapped so ONE named read on ONE organ
+    raises and everything else passes through.
+
+    WHY THIS SEAM EXISTS. The declared taxonomy names an UNREADABLE half as UNKNOWN, and the two
+    unreadable shapes are not reachable by choosing a path: `claim.claimed_units` answers an EMPTY
+    SET for an absent claims directory by its own contract, which is a real zero and not a failure,
+    and a corpus root that is absent takes the module's other branch. So both except paths stayed
+    unasserted, and turning them into `= 0` with the reason dropped left this suite at 58 passed, 0
+    failed. The read is captured PER SHAPE, per ledger finding 67: the failure is injected at the
+    ONE call that fails, so a report that answers a confident zero reds the row that names that
+    shape rather than shortening the run."""
+    real = BS._organ
+
+    class _BSBoom:
+        def __init__(self, mod):
+            self._mod = mod
+
+        def __getattr__(self, name):
+            attr = getattr(self._mod, name)
+            if name != read_name:
+                return attr
+
+            def _raise(*a, **k):
+                raise exc
+            return _raise
+
+    def _install():
+        BS._organ = lambda name: (_BSBoom(real(name)) if name == organ_name else real(name))
+
+    def _restore():
+        BS._organ = real
+    return _install, _restore
+
+
 def _bs_ac4():
     rep = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=[], max_workers=4,
                            root=ROOT)
@@ -441,6 +476,68 @@ def _bs_ac4():
                "to the queue when the claim ages out",
                claimed["claimed_units"] == 1
                and claimed["stale_after_seconds"] == built["stale_after_seconds"])
+
+        # AN UNREADABLE HALF, WHICH IS THE TAXONOMY'S OTHER UNKNOWN AND WAS THE UNASSERTED ONE.
+        # "An absent corpus root" and "a ledger belonging to another tree" are driven above by
+        # choosing a path; "an unreadable ledger" and an unreadable corpus cannot be, so the read is
+        # made to fail at the one call that fails and each shape gets its own row.
+        install, restore = _bs_organ_raiser("work_state", "work_report",
+                                           OSError("corpus read refused"))
+        install()
+        try:
+            unread_a = BS.survival(root=ROOT)
+            rep_a = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=[],
+                                     max_workers=4, root=ROOT)
+        finally:
+            restore()
+        lines_a = BS.report_lines(rep_a)
+        expect("VELDO-0006 AC4: AN UNREADABLE CORPUS IS UNKNOWN WITH THE REASON CARRIED, not zero "
+               "concluded artifacts. The read is made to fail at the one call that reads the corpus, "
+               "so this row is about the module's own refusal path rather than about a chosen path: "
+               "the count is None, the reason names the cause, the report LINE says UNKNOWN, the risk "
+               "is listed, and the ledger half - which read fine - still answers a number. Setting "
+               "this branch to `= 0` with the reason dropped left the whole suite green",
+               unread_a["concluded_artifacts"] is None
+               and BS.ARTIFACTS_UNKNOWN in (unread_a["artifacts"] or "")
+               and "corpus read refused" in (unread_a["artifacts"] or "")
+               and any("UNKNOWN concluded artifact set(s)" in ln for ln in lines_a)
+               and any(BS.ARTIFACTS_UNKNOWN in r for r in rep_a["at_risk"])
+               and isinstance(unread_a["claimed_units"], int))
+
+        install, restore = _bs_organ_raiser("claim", "claimed_units",
+                                           OSError("ledger read refused"))
+        install()
+        try:
+            unread_l = BS.survival(root=ROOT)
+            rep_l = BS.budget_report(windows=_bs_windows(), now_epoch=_BS_NOW, events=[],
+                                     max_workers=4, root=ROOT)
+        finally:
+            restore()
+        lines_l = BS.report_lines(rep_l)
+        expect("VELDO-0006 AC4: AN UNREADABLE LEDGER IS UNKNOWN WITH THE REASON CARRIED, not nothing "
+               "at risk - the second half of the declared taxonomy and the one no row reached, "
+               "because the ledger answers an EMPTY SET for an absent claims directory by its own "
+               "contract and that is a real zero. What it did read before the failure is kept, so "
+               "the stale-after window is still reported while the count is UNKNOWN, and the "
+               "artifact half still answers a number",
+               unread_l["claimed_units"] is None
+               and BS.LEDGER_UNKNOWN in (unread_l["ledger"] or "")
+               and "ledger read refused" in (unread_l["ledger"] or "")
+               and unread_l["stale_after_seconds"] is not None
+               and any("UNKNOWN claimed unit(s)" in ln for ln in lines_l)
+               and any(BS.LEDGER_UNKNOWN in r for r in rep_l["at_risk"])
+               and isinstance(unread_l["concluded_artifacts"], int))
+
+        after = BS.survival(root=ROOT)
+        expect("VELDO-0006 AC4 NEGATIVE CONTROL: the injected failure is what those two rows "
+               "measured, and it was really applied. The SAME call with no injection answers an "
+               "integer for both halves and names no risk, so UNKNOWN above is a measurement of a "
+               "read that failed rather than an artefact of the seam, and the loader the suite "
+               "restored is the module's own",
+               isinstance(after["concluded_artifacts"], int)
+               and isinstance(after["claimed_units"], int)
+               and after["artifacts"] is None and after["ledger"] is None
+               and BS._organ("claim").STALE_AFTER_SECONDS == after["stale_after_seconds"])
 
         foreign = BS.survival(root=tree)
         expect("VELDO-0006 AC4: A SURVIVAL REPORT ABOUT ANOTHER TREE DOES NOT QUOTE THIS PROCESS'S "
@@ -571,6 +668,22 @@ def _bs_ac5():
                     return True
         return False
 
+    def _bs_stage_path(tok):
+        """ONE resolver for a path token a stage names, used by BOTH the gate-stage derivation and
+        the transitive walk, because two spellings of one rule diverge.
+
+        A single leading './' is stripped as a relative-path PREFIX and nothing else is, which is
+        the whole point of the function existing. The version this replaces wrote
+        `tok.lstrip('./')`, which strips CHARACTERS rather than a prefix, so every `.veldo/...`
+        token lost its leading dot, resolved to a `veldo/...` path that is not a file, and was
+        dropped: all four .veldo stages the gate runs were silently absent from the set the row
+        below claims to walk, and a load added to `.veldo/validate.py` reddened nothing. Returns
+        None for a token that is not a file in this repository, so a token naming something outside
+        the tree is not adopted as a stage."""
+        rel = tok[2:] if tok.startswith("./") else tok
+        p = (ROOT / rel).resolve()
+        return p if p.is_file() and str(p).startswith(str(ROOT.resolve())) else None
+
     def _bs_names(path):
         """The sibling scripts and organs one script NAMES: a literal path token that resolves to a
         file in this repository, or an organ loaded by bare name. Both spellings, because .veldo
@@ -582,8 +695,8 @@ def _bs_ac5():
             return set()
         out = set()
         for tok in _bs_re.findall(r"[A-Za-z0-9_./-]+\.(?:py|sh)", text):
-            p = (ROOT / tok.lstrip("./")).resolve()
-            if p.is_file() and str(p).startswith(str(ROOT.resolve())):
+            p = _bs_stage_path(tok)
+            if p is not None:
                 out.add(p)
         for name in _bs_re.findall(r"(?:_organ|_sibling|_load)\(\s*[\"']([A-Za-z0-9_]+)[\"']", text):
             p = (ROOT / ".veldo" / (name + ".py")).resolve()
@@ -601,8 +714,8 @@ def _bs_ac5():
     gate = (ROOT / "scripts" / "verify.sh").read_text()
     stages = set()
     for tok in _bs_re.findall(r"[A-Za-z0-9_./-]+\.(?:py|sh)", gate):
-        p = (ROOT / tok.lstrip("./")).resolve()
-        if p.is_file():
+        p = _bs_stage_path(tok)
+        if p is not None:
             stages.add(p)
     closure, frontier = set(stages), set(stages)
     while frontier:
@@ -624,8 +737,34 @@ def _bs_ac5():
            "Derived from scripts/verify.sh itself and walked transitively through the stages it "
            "runs, rather than by sweeping the repository and requiring today's emptiness: putting "
            "the read model on an operator's path is the point of the item and must not redden the "
-           "gate. Loaders found among the gate's own stages: %r" % (loaders,),
-           loaders == [] and len(stages) >= 5 and len(closure) >= 10)
+           "gate. AND THE SET REACHES THE GATE'S .veldo STAGES, because a derivation that resolves "
+           "only the scripts/ half is not walking the gate however precisely the row is worded: "
+           "four .veldo stages were silently missing while this row was green. Loaders found among "
+           "the gate's own stages: %r" % (loaders,),
+           loaders == [] and len(stages) >= 5 and len(closure) >= 10
+           and any(p.parent.name == ".veldo" for p in stages)
+           and any(p.parent.name == "scripts" for p in stages))
+
+    with tempfile.TemporaryDirectory() as d:
+        outside = Path(d) / "outside_stage.py"
+        outside.write_text("import importlib.util\n"
+                           "m = importlib.util.spec_from_file_location('x', "
+                           "'.veldo/budget_state.py')\n")
+        expect("VELDO-0006 AC5 NEGATIVE CONTROL: the resolver behind that set does not drop a "
+               "spelling the gate actually uses. Driven on the three token shapes scripts/verify.sh "
+               "contains - a '.veldo/...' path whose leading dot a character-stripping lstrip ate, a "
+               "'./scripts/...' path, and the same path bare - and on a real file OUTSIDE the tree, "
+               "which is refused rather than adopted as a stage even though it exists and does load "
+               "the module. This is the row that would have caught the derivation walking eight "
+               "stages while claiming to walk the gate",
+               _bs_stage_path(".veldo/validate.py")
+               == (ROOT / ".veldo" / "validate.py").resolve()
+               and _bs_stage_path("./scripts/selftest.py")
+               == (ROOT / "scripts" / "selftest.py").resolve()
+               and _bs_stage_path("scripts/selftest.py")
+               == (ROOT / "scripts" / "selftest.py").resolve()
+               and outside.is_file() and _bs_loads_budget_state(outside)
+               and _bs_stage_path(str(outside)) is None)
 
     with tempfile.TemporaryDirectory() as d:
         probe = Path(d) / "probe_stage.py"

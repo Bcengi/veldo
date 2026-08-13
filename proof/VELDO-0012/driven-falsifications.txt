@@ -1,0 +1,117 @@
+Driven falsifications for VELDO-0012, re-run 2026-08-12T22:40:00Z on the remediation working tree at 93c1c8d2bdbec627a5ffa9497cf0e132978a44ab
+Each mutation is applied to the working copy, proven to have landed by a diff against
+the pre-mutation bytes, the suite re-run, and the tree restored (restoration proven by
+re-diffing the mutated files). A mutation that leaves the suite green is a check that
+cannot fail and is reported as VACUOUS. Mutations to .veldo/behavior_floor.py are applied
+to its engine twin as well, because the suite asserts the two are byte-identical and a
+one-sided edit would red that row instead of the row under test.
+
+WHAT THIS FILE RECORDS AND WHAT IT DOES NOT. TWELVE mutations, one per declared
+falsification across the seven criteria (AC1 declares 2, AC2 1, AC3 2, AC4 3, AC5 1,
+AC6 2, AC7 1), plus THREE for the rows this remediation added. No criterion's evidence
+claims more than the count against its own id below.
+
+BASELINE: selftest (PARTIAL, 1 of 34 suites): 112 passed, 0 failed
+
+--- the twelve declared falsifications
+AC1 widen-STATUSES                               selftest (PARTIAL, 1 of 34 suites): 109 passed, 3 failed in 0.57s HAS TEETH
+        mutation: widen STATUSES from its single member unknown to also admit load_bearing
+        reds: VELDO-0012 AC1: a pin declaring status load_bearing is REFUSED by PIN_VOCAB_UNKNOWN, exactly once, and the refusal names the floor file, the pin id an
+        reds: VELDO-0012 AC1: the status vocabulary has EXACTLY ONE member, and the three RULINGS a human may choose among are a DIFFERENT vocabulary that is disjoi
+        reds: VELDO-0012 AC7 NEGATIVE CONTROL: the moment a floor EXISTS it fails closed on anything malformed, which is the other half of the same posture - so the
+AC1 unclaimed-entry-loop-over-an-empty-list      selftest (PARTIAL, 1 of 34 suites): 111 passed, 1 failed in 0.58s HAS TEETH
+        mutation: replace the unclaimed-entry loop in check_floors_dir with a loop over an empty list
+        reds: VELDO-0012 AC1: AN ENTRY THE *.yaml RULE DOES NOT CLAIM IS REFUSED BY NAME, never skipped - a floor written as contracts.yml and a subdirectory parked
+AC2 delete-the-digest-recompute                  selftest (PARTIAL, 1 of 34 suites): 111 passed, 1 failed in 0.58s HAS TEETH
+        mutation: delete the recompute in the pin validator so observation.digest is accepted as declared
+        reds: VELDO-0012 AC2: a pin whose observation.recorded was EDITED while its digest was left alone is refused by DIGEST_MISMATCH, and the refusal prints BOTH
+AC3 pin-unrecognized-keys-ignored                selftest (PARTIAL, 1 of 34 suites): 108 passed, 4 failed in 0.59s HAS TEETH
+        mutation: delete the unrecognized-key refusal from the pin validator
+        reds: VELDO-0012 AC3: a pin planting decided_by is REFUSED by PIN_KEY_UNRECOGNIZED naming the key, so a ruling is structurally unwriteable inside a floor ra
+        reds: VELDO-0012 AC3: a pin planting reason is REFUSED by PIN_KEY_UNRECOGNIZED naming the key, so the human-readable half of a ruling has nowhere to go eith
+        reds: VELDO-0012 AC3: a pin planting exempt_paths is REFUSED by PIN_KEY_UNRECOGNIZED naming the key - a path exemption exempts a LOCATION forever and the lo
+        reds: VELDO-0012 AC3: the three planted keys are refused ONCE EACH and nothing else fires, so the refusal is per-key and discriminating rather than one undi
+AC3 scope-unvalidated-for-a-pins-less-floor      selftest (PARTIAL, 1 of 34 suites): 111 passed, 1 failed in 0.59s HAS TEETH
+        mutation: delete the scope validation that runs before validate_floor's pins-less early return
+        reds: VELDO-0012 AC3: A FLOOR THAT DECLARES NO PINS IS NOT A HOLE IN THE CLOSED KEY SET. A pins-less floor whose scope block carries waived_paths, modules_n
+AC4 fall-back-to-the-settlement's-own-decided_by selftest (PARTIAL, 1 of 34 suites): 103 passed, 9 failed in 0.59s HAS TEETH
+        mutation: have disposition_for fall back to the settlement's own decided_by when the request lookup returns nothing
+        reds: VELDO-0012 AC4 NEGATIVE CONTROL, AND IT IS THE LEG THAT MATTERS: a hand-written settlement carrying the pin's RIGHT digest with NO accepted veldo.requ
+        reds: VELDO-0012 AC4: no request at all leaves the pin unknown with RULING_NOT_SETTLED - the request must be an ACCEPTED decision_choice or nothing went thr
+        reds: VELDO-0012 AC4: a request that is still open leaves the pin unknown with RULING_NOT_SETTLED - the request must be an ACCEPTED decision_choice or nothi
+        reds: VELDO-0012 AC4: a request that was rejected leaves the pin unknown with RULING_NOT_SETTLED - the request must be an ACCEPTED decision_choice or nothin
+        reds: VELDO-0012 AC4: a request for a DIFFERENT touchpoint leaves the pin unknown with RULING_NOT_SETTLED - the request must be an ACCEPTED decision_choice
+        reds: VELDO-0012 AC4: a request whose id does not match the settlement leaves the pin unknown with RULING_NOT_SETTLED - the request must be an ACCEPTED deci
+        reds: VELDO-0012 AC4: A RULING NEVER TRANSFERS FROM ANOTHER ARTIFACT. A settlement carrying THIS observation's digest that names a REAL accepted decision_ch
+        reds: VELDO-0012 AC4 NEGATIVE CONTROL for the transfer row, and it is ADDITIVE: the SAME settlement and the SAME decision record with the request's binding
+        reds: VELDO-0012 AC4: delete the request record and the SAME settlement file on disk stops ruling, which is the forged-file leg proven over the filesystem t
+AC4 drop-the-request's-own-binding-comparison    selftest (PARTIAL, 1 of 34 suites): 111 passed, 1 failed in 0.59s HAS TEETH
+        mutation: delete the comparison of the accepted request's own bound_artifact.digest against the recomputed observation digest
+        reds: VELDO-0012 AC4: A RULING NEVER TRANSFERS FROM ANOTHER ARTIFACT. A settlement carrying THIS observation's digest that names a REAL accepted decision_ch
+AC4 read-the-settlement's-chosen-key-at-face-value selftest (PARTIAL, 1 of 34 suites): 111 passed, 1 failed in 0.58s HAS TEETH
+        mutation: make the resolver read the settlement's own chosen key at face value again
+        reds: VELDO-0012 AC4: AN OPTION TYPED ONTO A SETTLEMENT IS NOT A RULING. A settlement carrying chosen: incidental whose request binds NO decided decision re
+AC5 map-decided-onto-load_bearing                selftest (PARTIAL, 1 of 34 suites): 100 passed, 12 failed in 0.59s HAS TEETH
+        mutation: map the settlement word decided onto load_bearing when no chosen option is present
+        reds: VELDO-0012 AC4: a decision record that is still a DRAFT carries no ruling - the pin BLOCKS with RULING_NOT_CARRIED and is NEVER ruled, because the opt
+        reds: VELDO-0012 AC4: a decision record whose chosen option is not one it DECLARES carries no ruling - the pin BLOCKS with RULING_NOT_CARRIED and is NEVER r
+        reds: VELDO-0012 AC4: a decision record whose chosen option is outside the RULING vocabulary carries no ruling - the pin BLOCKS with RULING_NOT_CARRIED and
+        reds: VELDO-0012 AC4: a decision record with no decided_by carries no ruling - the pin BLOCKS with RULING_NOT_CARRIED and is NEVER ruled, because the option
+        reds: VELDO-0012 AC4: a decision record with no decided_at carries no ruling - the pin BLOCKS with RULING_NOT_CARRIED and is NEVER ruled, because the option
+        reds: VELDO-0012 AC4: a request pointed at a SETTLEMENT rather than a decision record carries no ruling - the pin BLOCKS with RULING_NOT_CARRIED and is NEVE
+        reds: VELDO-0012 AC4: delete the DECISION RECORD and the same settlement and request on disk stop ruling - they BLOCK, because a human settled something her
+        reds: VELDO-0012 AC5: a settlement that matches the pin by digest, is decided, and has an ACCEPTED decision_choice request bound to that same digest behind
+        reds: VELDO-0012 AC5 COMPANION: a blocked pin is NEVER reported as ruled and NEVER silently reported as unknown - the two reasons are DIFFERENT NAMES that n
+        reds: VELDO-0012 AC5: THE SHIPPED INBOUND EDGE REALLY DOES NOT CARRY THE OPTION. Driving request_reconcile._settlement_record for a decision_choice acceptan
+        reds: VELDO-0012 AC5: the report carries the pin, ruled, unknown and blocked counts BESIDE the scope block's enumerated-surface and unreachable-surface coun
+        reds: VELDO-0012 AC5: the disposition read prints, PER PIN, one of ruled, unknown or blocked WITH the reason, and the blocked line names RULING_NOT_CARRIED
+AC6 remove-the-floors-protected-path             selftest (PARTIAL, 1 of 34 suites): 110 passed, 2 failed in 0.58s HAS TEETH
+        mutation: remove the .veldo/floors/* entry from .veldo/policy.yaml protected_paths
+        reds: VELDO-0012 AC6: policy_check.protected_patterns() returns a pattern matching .veldo/floors/example.yaml, so COMMITTING a floor or a RE-POINTED OBSERVA
+        reds: VELDO-0012 AC6: THE CONTROL IS OVER A COMMITTED CHANGE, AND THE BOUNDARY IS MEASURED RATHER THAN ASSUMED. All three of a modified TRACKED floor, an un
+AC6 remove-the-settlements-protected-path        selftest (PARTIAL, 1 of 34 suites): 110 passed, 2 failed in 0.58s HAS TEETH
+        mutation: remove the .veldo/settlements/* entry from .veldo/policy.yaml protected_paths
+        reds: VELDO-0012 AC6: and the sibling - protected_patterns() returns a pattern matching a settlement path, so COMMITTING A SETTLEMENT is a reviewed change t
+        reds: VELDO-0012 AC6: THE CONTROL IS OVER A COMMITTED CHANGE, AND THE BOUNDARY IS MEASURED RATHER THAN ASSUMED. All three of a modified TRACKED floor, an un
+AC7 delete-the-stand-down-guard                  selftest (PARTIAL, 1 of 34 suites): 111 passed, 1 failed in 0.59s HAS TEETH
+        mutation: delete the `if not d.is_dir()` stand-down at the top of check_floors_dir (the CORRECTED field; the original named an assertion that cannot fail)
+        reds: VELDO-0012 AC7: an absent floors directory stands the whole check down, returns clean, AND the stand-down is RECORDED with the reason that fired - so
+
+--- the three rows added by the F2, F5 and F6 remediation, driven the same way
+F2 stage-the-untracked-records                  selftest (PARTIAL, 1 of 34 suites): 111 passed, 1 failed in 0.56s HAS TEETH
+        mutation: stage the untracked floor and settlement in the boundary fixture, so `git diff --name-only HEAD` does enumerate them
+        reds: VELDO-0012 AC6: THE CONTROL IS OVER A COMMITTED CHANGE, AND THE BOUNDARY IS MEASURED RATHER THAN ASSUMED. All three of a modified TRACKED floor, an un
+F5 put-fidelity-inside-the-digest               selftest (PARTIAL, 1 of 34 suites): 110 passed, 2 failed in 0.58s HAS TEETH
+        mutation: add fidelity to OBSERVATION_DIGEST_FIELDS
+        reds: VELDO-0012 AC2: the digest is DERIVED from the declared field tuple and nothing else - changing surface or recorded changes it, changing language, fid
+        reds: VELDO-0012 AC4: THE DIGEST COVERS THE OBSERVATION, NOT THE PIN'S CLAIMS ABOUT ITSELF. A pin whose fidelity is flipped from exact to proxy and whose re
+F6 widen-the-truncation                         selftest (PARTIAL, 1 of 34 suites): 110 passed, 2 failed in 0.57s HAS TEETH
+        mutation: widen the sha256 truncation in observation_digest from 16 to 32 hex characters
+        reds: VELDO-0012 AC2: ONE canonicalization, the same shape request_digest uses - a sorted-keys JSON blob and one hash - deterministic across repeated calls
+        reds: VELDO-0012 AC2: THE JOIN IS 64 BITS AND THE SUITE SAYS SO RATHER THAN LEAVING IT TO A READER. observation_digest is sha256 truncated to 16 hex charact
+
+RESTORED: selftest (PARTIAL, 1 of 34 suites): 112 passed, 0 failed
+FULL GATE after the remediation: selftest: 4647 passed, 0 failed; GATE: GREEN (93c1c8d2bdbec627a5ffa9497cf0e132978a44ab)
+
+PAIRED CONTROLS, WHICH IS THE HALF THAT MAKES A RED ROW EVIDENCE. In every drive above the
+criterion's own paired control stayed GREEN, verified by its ABSENCE from that drive's red
+list: AC1's status-unknown fixture and its well-formed good.yaml, AC2's untouched fixture,
+AC3's unplanted pin and its legitimate pins-less scope block, AC4's restored-binding and
+corroborated-option rows, AC6's ordinary-module row. So no refusal recorded here is a
+validator that refuses everything.
+CROSS-CRITERION REDS ARE LISTED RATHER THAN FILTERED. Some mutations red rows belonging to
+another criterion because they change a mechanism several criteria read - widening STATUSES
+also reds AC7's fails-closed control, and mapping decided onto load_bearing reds seven AC4
+rows. Those are reported, not counted as extra falsifications, and no criterion's evidence
+borrows them.
+
+TWO THINGS WORTH THE READER'S TIME, neither of them tidy.
+AC7's mutation reds exactly ONE row, and it is NOT the row the original field named. On
+CPython `Path('missing').glob('*.yaml')` yields nothing and raises nothing, so with the
+guard deleted the function still returns 0 and still prints nothing: the byte-identity
+assertion over run_all cannot see it. The corrected field names the RECORDED STAND-DOWN
+row, which is the only observable the guard produces, and that is the row that reds.
+The AC6 mutations each red TWO rows: the criterion's own registration row and the
+boundary row this remediation added, because that row also asks the live policy whether
+the pattern matches. A second independent witness of the same registration, named here
+so nobody counts it as a second criterion.

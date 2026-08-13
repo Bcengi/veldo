@@ -33,20 +33,45 @@ observability:
     One report, whose every section names its own source: the corpus half says which artifact made
     each item done, the run half says which run folder and which commit a claim came from, and the
     uncovered half names each direction of disagreement separately. A reader who lost a session gets
-    a path to look at, never a count to trust.
+    a path to look at, never a count to trust. ONE EXCEPTION, STATED BECAUSE IT IS A COUNT: the
+    unclaimed bundles the registry was NOT recording for are reported as a count per reason rather
+    than a line each, and their paths are kept in the report under unrecorded_out_of_reach. The
+    exception exists because a line each was measured to hand an operator 142 paths that named
+    nothing wrong and to bury the one run that had gone stale, and a count of items this reader
+    declines to accuse is not a count anybody has to trust.
   error_taxonomy: >
     Four distinguishable states for one item, never collapsed, because the operator's next action
     differs in each: DONE (its manifest is on disk and a verdict artifact RECORDS a passing review),
     UNCONCLUDED (a run claimed it and no artifact concludes it - go look at the named folder), QUEUED
-    (ready, unclaimed) and UNRECORDED (artifacts exist that no run ever claimed, which is the shape
-    of work a dead session left behind). A run whose liveness cannot be confirmed is reported as
-    LIVENESS_UNCONFIRMED with the age of its last heartbeat, never as running and never as dead,
-    because this module cannot tell those apart and saying either would be a guess an operator would
-    act on. WHAT THIS TAXONOMY CANNOT EXPRESS, recorded here rather than papered over: there is no
-    state for REVIEWED AND REJECTED. An item whose verdict artifacts all record a rejection is
-    reported UNCONCLUDED when a run claimed it and QUEUED otherwise, and the report gives it a line
-    naming the path and the recorded verdict, because a fifth state is a change to this taxonomy and
-    this item does not make one. The operator reads the path, not the bucket.
+    (no complete bundle and no run claiming it, WHATEVER STATUS ITS SPEC DECLARES) and UNRECORDED
+    (finished artifacts no run claimed, WHERE THE REGISTRY WAS RECORDING WHEN THEY LANDED, which is
+    the shape of work a dead session left behind). The two qualifications in capitals are corrections
+    an independent review measured, and both are about a number an operator acts on rather than about
+    wording. QUEUED said "ready, unclaimed" and the reader filters nothing: on this repository 73
+    queued was 30 ready, 34 shipped, 6 draft, 1 blocked and 2 declaring nothing, so the count read as
+    a work queue that it is not. Deciding what QUEUED should MEAN is a change to this taxonomy and is
+    NOT made here; the declared status travels with every item and the report prints the composition
+    beside the count. UNRECORDED accused every unclaimed done item, which is a POPULATION rather than
+    a defect set: a registry starts empty and this one was flattened at migration, so creating ONE
+    run folder took the report to 144 lines, 142 of them UNRECORDED alarms naming work that landed
+    weeks earlier and burying the one run that had actually gone stale. Its domain is now the bundles
+    the registry was in a position to judge, decided from the registry's own earliest recorded run
+    start and each manifest's own produced_at, and every unclaimed bundle outside that window keeps
+    its paths under a count that names the reason the registry cannot speak to it. A run whose
+    liveness cannot be confirmed is reported as LIVENESS_UNCONFIRMED with the age of its last
+    heartbeat, never as running and never as dead, because this module cannot tell those apart and
+    saying either would be a guess an operator would act on; a run that recorded a terminal status is
+    reported as the status it recorded, and DONE and ABORTED are two answers rather than one word
+    built from the reassuring half. The three ways there is no age - never written, unreadable, or
+    stamped in the future - are named separately, because they used to share one message and that
+    message was the strongest available negative. WHAT THIS TAXONOMY CANNOT EXPRESS, recorded here
+    rather than papered over: there is no state for REVIEWED AND REJECTED, and none for BUILT AND
+    AWAITING REVIEW. An item whose verdict artifacts all record a rejection is reported UNCONCLUDED
+    when a run claimed it and QUEUED otherwise; an item whose manifest is on disk with no verdict of
+    any kind - which is EVERY item between the producer's write and the reviewer's - is reported
+    QUEUED, the same bucket as work nobody has started. Each gets a LINE AND A PATH saying which it
+    is, because a fifth state is a change to this taxonomy and this item does not make one. The
+    operator reads the path, not the bucket.
 acceptance_criteria:
   - id: AC1
     falsified_by: >
@@ -200,3 +225,45 @@ this item's own failing review. AC1's second half is that fix, and the honest li
 above: the four states cannot say REVIEWED AND REJECTED, a fifth state is a change to this item's
 declared taxonomy, and it is NOT invented here. A rejected item falls back to UNCONCLUDED or QUEUED
 and the report names it with the path of the verdict that rejected it.
+
+## What the SECOND independent review found, and what changed
+
+A second L2 review at 93c1c8d drove the same criteria and reported six defects in the ANSWER rather
+than in any criterion, every one of them measured over the live tree. They are closed in
+`.veldo/work_state.py` and in the taxonomy above, and they share one shape: a number that reads like
+a measurement and is not.
+
+- **The reader answered its own scenario wrongly.** A bundle is written in two stages, so every item
+  that is BUILT and awaiting review is a manifest with no verdict, and that was reported QUEUED with
+  no line and no path - the bucket for work nobody has started. PLAN-0018's measure for this item is
+  "kill a session mid-flight, start a fresh one, ask what is done, and get the right answer"; a fresh
+  session asking was told the built items were queued. It now gets a line and a path, and no fifth
+  state, for the reason the taxonomy already gives about reviewed-and-rejected.
+- **Using the run registry once turned the report into 142 false alarms.** UNRECORDED accused every
+  unclaimed done item, so the first run folder to appear made every historically landed spec qualify
+  and buried the one run that had gone stale. Fixed by changing the DOMAIN rather than the
+  comparison, per ledger findings 51 and 63: the accusation now needs the registry to have been
+  recording when the bundle landed, decided from the registry's own earliest run start and the
+  manifest's own produced_at, and everything outside that window keeps its paths under a count that
+  names why the registry cannot speak to it.
+- **A confident zero survived inside the criterion that forbids confident zeros.** The headline
+  printed "0 unconcluded" beside the stand-down, although UNCONCLUDED is defined entirely by a
+  registry claim and QUEUED rests on the same predicate. The two are now reported as one NOT
+  CONCLUDED number with the reason, and the report dict names which counts are consequences of the
+  stand-down rather than measurements.
+- **QUEUED was not what this taxonomy said it was.** The reader's own docstring had already been
+  corrected to say it filters nothing while the count an operator acts on had not; the report now
+  prints the composition by declared status.
+- **An ABORTED run was reported with the word done**, and the run's own recorded status never reached
+  the printed line. Two answers now, and the line carries what the run recorded.
+- **The heartbeat, which this item calls its product, had two spellings that printed the wrong
+  fact.** A stamp two seconds old in an offset-bearing ISO spelling printed "no heartbeat ever
+  recorded", the strongest negative available, and a future-dated stamp printed "active, last
+  heartbeat 0s ago", the most reassuring, from a clock this reader cannot verify. The parser accepts
+  the ISO spellings, the staleness window still has one owner, and never-written, unreadable and
+  future are three named answers.
+
+The same review reported two defects that are NOT this item's, both live at that commit, recorded
+rather than fixed here: the gate reddened for any reviewer who wrote a verdict artifact without
+committing it, which ledger finding 46 has since closed, and the L2 verdict shape the reviewers were
+handed declares a findings vocabulary `.veldo/validate.py` refuses.

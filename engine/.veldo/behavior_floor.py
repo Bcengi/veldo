@@ -73,7 +73,15 @@ So the design, and each half is enforced here rather than asked for in prose:
   consistently can still author a record set that reads as ruled. That is closed by the
   protected-path rules those records sit under plus the requirement that a consumer read a
   TRACKED record, not by this reader: the integrity of a disposition is the integrity of a
-  reviewed change (AC6), never its own validation.
+  reviewed change (AC6), never its own validation. TRACKED IS THE OPERATIVE WORD AND IT IS
+  MEASURED RATHER THAN ASSUMED: the protected-path enforcement iterates
+  policy_check.changed_files(), which is `git diff --name-only <base>`, so an UNTRACKED floor or
+  settlement is matched by the protected pattern and never reaches the check. Nothing here refuses
+  an untracked record - a floor is authored before it is committed and a check that reddened on
+  that would be refusing the feature rather than gating it - so the requirement lands on the
+  CONSUMER: a reader that makes a precondition out of a disposition must require the record to be
+  tracked, never merely present on disk. This module ships no such consumer and no gate stage reads
+  a disposition at all.
 
   THE JOIN IS A DIGEST THE VALIDATOR RECOMPUTES, NEVER ONE IT TRUSTS. This is the
   load-bearing property of the whole item. observation_digest is derived from the pin's
@@ -184,6 +192,13 @@ PIN_REQUIRED = ("id", "surface", "language", "fidelity", "reproduces", "status")
 # purpose: without it two pins recording a byte-identical observation on two different
 # surfaces would share a digest, and one human's judgement about one of them would
 # silently rule the other - which is the exact transfer this join exists to prevent.
+#
+# WHAT THE TUPLE LEAVES OUT, AND IT IS A REVIEWED CHOICE RATHER THAN AN OVERSIGHT: fidelity
+# and reproduces are OUTSIDE it, so a granted ruling survives the machine flipping fidelity
+# from exact to proxy and re-pointing reproduces at a test that asserts nothing. The digest
+# makes the OBSERVATION a human ruled on immovable; it does not make a pin's claims about
+# itself load bearing. Whether either field belongs inside is the decision of the item that
+# CONSUMES them, and putting one in re-points every ruling already granted.
 OBSERVATION_DIGEST_FIELDS = ("surface", "recorded")
 
 # The languages the SHIPPED analyzers cover, declared rather than implied
@@ -307,7 +322,16 @@ def observation_digest(pin):
     This is the only join between a human's ruling and a behaviour. Mutating the recorded
     observation changes the digest, so the settlement that ruled the old one stops matching
     and the pin falls back to unknown - which is what makes a granted ruling immovable onto
-    a behaviour nobody looked at."""
+    a behaviour nobody looked at.
+
+    HOW WIDE THAT IS, PRICED RATHER THAN LEFT TO THE READER, because a review priced it and no
+    claim here may say "can never": the hash is TRUNCATED TO 16 HEX CHARACTERS, 64 bits, which is
+    this repository's convention for a digest of this kind and not a choice made here
+    (request.request_digest truncates identically). Moving a ruling onto an EXISTING digest is a
+    second preimage at 2^64 and not a practical concern; two observations chosen AT DRAFTING TIME
+    to collide is a birthday search near 2^32 over short inputs, which is ordinary CPU time, and
+    the drafting pass authors both pins. Widening it is a repository-wide convention change,
+    because two widths for one convention is worse than one narrow one."""
     blob = json.dumps(_digest_payload(pin), sort_keys=True, default=str)
     return "sha256:" + hashlib.sha256(blob.encode()).hexdigest()[:16]
 

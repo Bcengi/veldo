@@ -224,9 +224,25 @@ acceptance_criteria:
       records for .veldo/secret_inventory.json and which .veldo/secret_inventory.py:149-152 states
       plainly: the integrity of a disposition record is the integrity of a reviewed change plus the
       protected-path rules it sits under, and never its own validation. With the registration in
-      place, adding a floor, re-pointing an observation, or writing a settlement is a change that
-      needs a commit-bound, path-scoped approval (.veldo/policy_check.py:439-447), so the agent being
-      gated cannot author the record that exempts it. Registering a new protected path is itself a
+      place, COMMITTING a floor, a re-pointed observation or a settlement is a change that needs a
+      commit-bound, path-scoped approval (.veldo/policy_check.py:439-447), so the agent being gated
+      cannot LAND the record that exempts it. THE WORD IS committing BECAUSE A REVIEW MEASURED THE
+      BOUNDARY AND THE EARLIER CLAIM OUTRAN IT: that enforcement iterates
+      policy_check.changed_files(), which is `git diff --name-only <base>`
+      (.veldo/policy_check.py:92-99) and therefore lists modifications to TRACKED files only, so an
+      untracked record is matched by the pattern and never reaches the check. Driven in a throwaway
+      repository, and the row is in the suite rather than in this sentence: a modified tracked floor,
+      an untracked floor and an untracked settlement ALL match .veldo/floors/* or
+      .veldo/settlements/*, and the enumeration contains only the first. That boundary is a property
+      of the shipped enforcement rather than of this item - it applies identically to
+      .veldo/secret_inventory.json, which this criterion cites as its precedent - and it is recorded
+      here rather than patched because the enumeration belongs to .veldo/policy_check.py and every
+      reader of the tracked set is one enumeration to build once. WHAT THIS ITEM THEREFORE OWES ITS
+      CONSUMER, which is the half that matters for item 4 of the notes: a consumer that makes a
+      precondition out of a disposition must require the record to be TRACKED and covered by an
+      approval, never merely present on disk. Nothing here is such a consumer - no gate stage reads a
+      disposition at all (AC7) - so nothing in this item depends on the gap, and the requirement is
+      written where the consumer will read it. Registering a new protected path is itself a
       policy.yaml edit, which is why this spec declares human_approval required and names
       .veldo/policy.yaml in its own protected_paths, exactly as
       specs/WARP-0720-approver-registry-declared.md does for the approver registry.
@@ -438,6 +454,17 @@ estimate machinery, with no second cost model.
   `fidelity` belong inside the digest is a real question for the item that consumes them, and this
   contract does not pretend they are covered. Reversible: choosing the other option changes the shape of
   the `reproduces` field and nothing else in this contract.
+- HOW WIDE THE JOIN IS, NAMED RATHER THAN LEFT TO THE READER, because a review priced it. The digest is
+  sha256 TRUNCATED TO 16 HEX CHARACTERS, which is 64 bits, and that is this repository's convention for
+  every digest of this kind rather than a choice made here: `.veldo/request.py`'s `request_digest`
+  truncates identically, which the suite asserts as an EQUALITY of the two widths so widening one alone
+  reds the row. What 64 bits buys and does not buy: moving a ruling onto an EXISTING digest is a second
+  preimage at 2^64 and is not a practical concern, while two observations chosen AT DRAFTING TIME to
+  collide is a birthday search near 2^32 over short inputs, which is ordinary CPU time - and a drafting
+  pass authors both pins. So no assertion in this item says a ruling "can never" transfer between two
+  pins; it says the observations differ and the digests differ with them, up to that bound. Widening
+  the truncation is a repository-wide convention change and is NOT made here, because two widths for
+  one convention is worse than one narrow one.
 
 ### The decisions left OPEN, and what each blocks
 
@@ -449,7 +476,14 @@ estimate machinery, with no second cost model.
   contract is stable either way; what stays open is whether the drafting pass may emit a proxy pin at
   all, and whether a proxy pin may ever be the load-bearing guard that blocks a change. The recommended
   answer is that it may be a tripwire and never a guard, because a flaky guard is a gate somebody
-  switches off. Blocks the drafting pass and the mechanics, not this item.
+  switches off. AND THE ITEM THAT DECIDES IT INHERITS A MEASURED FACT ABOUT THE JOIN, stated here
+  because a review measured it and it changes the shape of that decision: `fidelity` is OUTSIDE
+  `OBSERVATION_DIGEST_FIELDS`, so a pin ruled `load_bearing` while its fidelity read `exact` is STILL
+  ruled after the machine flips that field to `proxy` - the digest does not move and the same
+  settlement still matches. Driven in the suite rather than argued here. So whoever consumes
+  `fidelity` is consuming a field the human's ruling never covered, and the two available answers are
+  to put it inside the digest (which re-points every existing ruling, since the digest changes) or to
+  require the consumer to re-ask. Blocks the drafting pass and the mechanics, not this item.
 - WHETHER THE PRECONDITION IS MANDATORY once a repository declares the on-ramp active, or advisory
   forever. Blocks item 4 and the documents that describe it.
 - WHETHER `.veldo/settlements/*` PROTECTION BELONGS HERE OR TO PLAN-0016. It is claimed here because the
