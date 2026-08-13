@@ -975,8 +975,34 @@ declared falsifications rather than reading them, which is why they found what r
     WHY IT IS THE FAMILY THIS LEDGER KEEPS RECORDING: a record whose SUBJECT is not what it appears to
     name. Findings 46, 56 and 68 are the same shape in three other artifacts. The cheap repair is one
     more field, the dirty-path list or a digest of the verified tree, so the record says what it checked
-    rather than where it was standing. **That is a change to a PROTECTED path and to the shipped stamp
-    contract, so it needs Dmitry rather than a decision taken at one in the morning.**
+    rather than where it was standing. That is a change to a PROTECTED path and to the shipped stamp
+    contract, so it needed Dmitry rather than a decision taken at one in the morning.
+    **FIXED 2026-08-13 under his recorded approval**, `proof/WARP-0727/approval-dmitry-finding-69.json`,
+    granted twice: "Change verify, it's fine, I was wrong about it" and then "Finding 69, yes".
+    HE CHALLENGED THE PREMISE FIRST AND WAS RIGHT IN PRINCIPLE: he asked why verify.sh needed touching
+    when organs had been split out precisely so the big file would not be. Checked rather than defended.
+    verify.sh is 183 lines; the 1000-line files are validate.py and validate_checks.py; the split did
+    protect them and this touches neither. But verify.sh writes the stamp itself in shell at one printf
+    and `run_scope.verify_stamp_payload` has no production caller by design, so the field could not go
+    anywhere else without a SECOND file describing one gate run. **One command settled which of us was
+    right about this file, and asking it was cheaper than either of us arguing.**
+    The stamp now carries `tree`: "clean", a count of dirty paths, or null when git cannot answer, since
+    an unanswered question and a clean tree invite opposite conclusions. A COUNT rather than the paths,
+    because a filename can carry anything and this record is machine-read. The first thing it reported
+    was the truth about its own run: `"tree":"6 dirty path(s)"`.
+    THE COUPLING WORKED AGAIN, EXACTLY AS VELDO-0010 SAID IT WOULD. Adding the field to the gate reddened
+    the shipped assertion that `run_scope`'s declared key set EQUALS verify.sh's own printf keys, and it
+    stayed red until the payload carried it too. Second field to prove that coupling by breaking it.
+    AND THE REPOSITORY CAUGHT ME AGAIN: my first approval record invented its own shape and
+    `validate.py` refused it by name for five missing fields against the real `veldo.approval/v1`
+    contract. Rewritten to the contract. **Third time in two days that this project's own machinery was
+    right and I was wrong**, after the capability-honesty check refusing a spec of mine and the
+    decided-requires-review gate refusing a decision I had already recorded.
+    AND ONE MORE, ABOUT HOW THIS ENTRY ALMOST DID NOT EXIST. The commit that landed the fix was written
+    with a script that ALSO meant to update this entry; the text match failed, the script raised, and the
+    commit went through anyway. **So for one commit the code said fixed and the ledger said not fixed.**
+    A compound step whose parts can fail independently needs its failure to stop the part that follows,
+    and `&&` between them would have been enough.
 
 70. **FINDING 65 FIXED UNDER DMITRY'S DECISION: THE GATE NOW READS THE REVIEW'S VERDICT, AND THE OWNER
     CAN OVERRIDE ON THE RECORD.** He decided this on 2026-08-13: "agree with review or explicit
