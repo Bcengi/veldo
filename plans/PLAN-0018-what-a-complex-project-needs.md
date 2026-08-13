@@ -960,6 +960,24 @@ declared falsifications rather than reading them, which is why they found what r
     criteria rather than derived per criterion. Same family as the 2026-08-10 audit's 64 false claims
     across 8 documents: prose asserting coverage that the artifact behind it does not support.
 
+69. **THE GATE RECORD NAMES A COMMIT AND VERIFIES A WORKING TREE, AND NOTHING SAYS WHICH.** Noticed in
+    passing on 2026-08-13 and RECORDED RATHER THAN FIXED, per the standing rule, because no user gets a
+    wrong answer from it: the gate really did pass over real content.
+    `scripts/verify.sh` stamps `.veldo/last_verify` with `commit` from `git rev-parse HEAD` at run time,
+    and the stamp's key set is exactly `at, checks_na, checks_run, commit, status, veldo_version`. It
+    carries NO field for whether the working tree was clean, and the gate never asks: measured, there is
+    not one `git status --porcelain` or equivalent in the script.
+    So a reader of `{"commit": "c771092", "status": "green"}` concludes that c771092 passed. What passed
+    was c771092 PLUS whatever was uncommitted, which through the whole of 2026-08-12 and 2026-08-13 was
+    substantial - the record at the moment this was found described a run over c771092 plus 21 modified
+    files. **Gate-then-commit is the correct order and it makes this record lag by one commit every
+    time**, so the stamp systematically names a state it did not verify.
+    WHY IT IS THE FAMILY THIS LEDGER KEEPS RECORDING: a record whose SUBJECT is not what it appears to
+    name. Findings 46, 56 and 68 are the same shape in three other artifacts. The cheap repair is one
+    more field, the dirty-path list or a digest of the verified tree, so the record says what it checked
+    rather than where it was standing. **That is a change to a PROTECTED path and to the shipped stamp
+    contract, so it needs Dmitry rather than a decision taken at one in the morning.**
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.
