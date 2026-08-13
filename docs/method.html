@@ -192,7 +192,7 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <li>The problem or desired outcome</li>
 <li>The intended behavior</li>
 <li>The relevant constraints</li>
-<li>Acceptance criteria</li>
+<li>Acceptance criteria, each declaring its own falsification</li>
 <li>Required tests or evidence</li>
 <li>Areas that must not change</li>
 <li>Any required human approval</li>
@@ -200,6 +200,7 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <p>The specification describes intent, not implementation details, unless a technical constraint is itself part of the requirement.</p>
 <p>A specification should be small enough that one agent can implement it coherently and one reviewer can evaluate it without reconstructing an entire project history.</p>
 <p>A specification is complete only when success can be evaluated.</p>
+<p>Every acceptance criterion of a behavior-bearing change also declares its own falsification, in a field named <code>falsified_by</code>: one statement of the single change to the implementation that must make that criterion&#x27;s check fail. This is the <strong>negative control</strong>, and it belongs in the contract rather than in review. Length is not what separates a criterion that produces working code from one that produces a check that cannot fail: a fifteen line criterion can still leave the implementer to invent the falsification, and the cheapest invention is one that passes. A criterion that names the mutation makes the implementer build it, and makes the reviewer&#x27;s first question mechanical, which is to apply that change and watch the check go red. Whether a declared falsification is a good one is a reviewer&#x27;s judgement; that one was declared at all is checked at the gate, per criterion, by name.</p>
 <p>Bad specification:</p>
 <blockquote><p>Improve account creation.</p></blockquote>
 <p>Better specification:</p>
@@ -212,6 +213,7 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <li>The API returns the current duplicate-account error format.</li>
 <li>Unit tests cover normalization, duplicate detection, and unaffected domains.</li>
 </ul>
+<p>Each of those carries its own falsification. The first: remove the normalization call from the duplicate-account check, and the criterion&#x27;s test must fail. The third: have the change write to one existing row, and the unchanged-accounts assertion must fail. A criterion whose falsification cannot be stated is usually a criterion that is not yet a claim about anything.</p>
 <p>The specification is the contract between human intent and machine execution.</p>
 <p>Recurring, mechanical change classes do not need a fresh specification per instance. Dependency updates, copy corrections, and configuration rotations are high-volume, mostly mechanical, and occasionally catastrophic. Define a <strong>standing specification</strong> once per change class: its acceptance criteria, risk classification, and required evidence. Each instance then runs the normal loop against the standing specification: an ordinary change whose proof manifest references the standing specification&#x27;s id, gated and reviewed as usual, with the index tracking the class rather than each instance. This keeps proof without per-change ceremony.</p>
 <p>Specifications are also how outside signals become work. Bug reports, support tickets, crash alerts, and feature requests arrive in whatever tool their reporters live in; they are input, not work. An intake agent converts them: it deduplicates, attempts to reproduce, and drafts the specification with the reproduction attached as a failing test, because a bug&#x27;s first acceptance criterion is its reproduction. When reproduction is genuinely impossible, intermittent, production-only, or environment-bound, the specification says so and names the closest observable proxy (a log signature, a metric) as the criterion instead. No one needs to write specification files by hand, engineers included: humans state intent in their own words and their own tools, and agents formalize it into the contract.</p>
