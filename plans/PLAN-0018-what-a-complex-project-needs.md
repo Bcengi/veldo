@@ -1090,6 +1090,33 @@ declared falsifications rather than reading them, which is why they found what r
     STILL UNRECONCILED, and still not mine to settle: the template and the validator disagree about the
     vocabulary. One of them should change. Recorded rather than chosen.
 
+73. **A HOLD-BACK THAT SHIPPED HALF THE LAYER, SO ADOPTERS GOT THREE COMMANDS THAT DIE ON A MISSING
+    FILE.** Found by the independent review of WARP-1405, confirmed by WARP-1402's and WARP-1403's
+    reviewers independently, and MEASURED HERE IN THE REAL PUBLISHED PACK rather than reasoned about.
+    `publish.py` withheld `estimate.py` and did NOT withhold four modules that load it, so every composed
+    pack carried them. Measured by running the publisher and then the commands inside its own output:
+    `toe_reconcile report`, `toe_reconcile fit` and `sizing_pass vocab` each exit 1 on
+    `FileNotFoundError: .../.veldo/estimate.py`. `toe_analogy` and `toe_budget` load the same module and
+    are held with them; that they break is INFERRED from the code rather than measured, and the
+    difference between those two claims is stated rather than blurred.
+    FIXED by completing the hold-back rather than by shipping the dependency, because shipping it is the
+    decision Dmitry has not yet made and this breakage is wrong either way. Nothing that ships references
+    the four: no pack, no engine doc, no engine spec mentions them, so no documented capability is
+    removed.
+    THE STATED REASON WAS ALSO FALSE ABOUT THE TREE, which the review also caught: the EXCLUDE comment
+    gave "W3, W4, W5 and W8 are still to build" as the justification, while four of those items' modules
+    were built and shipping. **A stated reason the tree contradicts is worse than no reason**, because it
+    is the thing a reader checks instead of the code.
+    AND I NEARLY REPORTED SOMETHING FALSE ON THE WAY TO FIXING IT. My first attempt to size the problem
+    computed the dependency closure with a regex for `.veldo/<name>.py` over each file's TEXT, and it
+    reported that 56 modules ship broken, including `validate.py`, `events.py`, `governor.py` and
+    `init_scaffold.py`. **That is absurd on its face** - the install-and-run stage proves seven packs
+    install and their own gates go green - and the cause is the defect this ledger records more than any
+    other: a textual scan standing in for a real dependency, so a path MENTIONED in a comment or an error
+    message counts as a path LOADED. The behavioural test, running the commands in the published pack,
+    found exactly three broken and named them. **A number that fails the smell test gets checked before
+    it gets repeated, and this one failed it loudly.**
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

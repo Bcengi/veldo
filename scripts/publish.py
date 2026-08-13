@@ -72,6 +72,23 @@ EXCLUDE = (
     "engine/.veldo/judgment_load.py",
     "engine/.veldo/cost_to_change.py",
     "engine/.veldo/examples/estimate-example.yaml",
+    # A HOLD-BACK THAT SHIPS HALF THE LAYER IS NOT A HOLD-BACK. Ledger finding 73, found by the
+    # independent review of WARP-1405 and MEASURED in the real published pack rather than reasoned
+    # about: these four load .veldo/estimate.py, which the five lines above withhold, so every
+    # composed pack carried them today and three of their commands died on a raw
+    # FileNotFoundError - `toe_reconcile report`, `toe_reconcile fit` and `sizing_pass vocab`, each
+    # exit 1 naming the missing file. The other two are held with them because they load the same
+    # module; that they break is inferred from the code rather than measured, and saying so is the
+    # difference between the two claims.
+    # Nothing that ships references any of the four: no pack, no engine doc, no engine spec mentions
+    # them, so withholding them removes no documented capability.
+    # THE COMMENT ABOVE WAS ALSO FALSE ABOUT THE TREE and the review caught that too: it said W3, W4,
+    # W5 and W8 are "still to build" as the reason for the hold-back, while four of their modules were
+    # built and shipping. A stated reason that the tree contradicts is worse than no reason.
+    "engine/.veldo/sizing_pass.py",
+    "engine/.veldo/toe_analogy.py",
+    "engine/.veldo/toe_budget.py",
+    "engine/.veldo/toe_reconcile.py",
 )
 
 PRIVATE_NAMES = ROOT / ".veldo" / "private_names.txt"
