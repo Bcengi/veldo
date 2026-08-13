@@ -53,12 +53,12 @@ observability:
 acceptance_criteria:
   - id: AC1
     falsified_by: >
-      Delete the `if declared:` early return in `attribute` at .veldo/cost_to_change.py:267-269 so a
+      Delete the `if declared:` early return in `attribute` at .veldo/cost_to_change.py:284-286 so a
       spec that DOES declare a resolving placement falls through to the `area_for_path` stand-down at
-      :271-276, and the load-bearing declaration-wins assertion at
-      scripts/suites/15_warp_1409_cost_to_change_per_area.py:210 must go red (that record is handed
+      :288-293, and the load-bearing declaration-wins assertion beginning at
+      scripts/suites/15_warp_1409_cost_to_change_per_area.py:351 must go red (that record is handed
       front matter declaring alpha and a path pointing at beta, and it must come back areas alpha with
-      basis placement), together with the live-map leg at :990 that reads WARP-1401 back as basis
+      basis placement), together with the live-map leg at :1448 that reads WARP-1401 back as basis
       placement in the metrics area.
     text: >
       THE DECLARATION IS THE JOIN, AND IT GOES THROUGH THE ONE RESOLVER. The corpus is aggregated per
@@ -73,12 +73,14 @@ acceptance_criteria:
   - id: AC2
     falsified_by: >
       Stamp BY_PLACEMENT instead of BY_GIT_PATH in the stand-down return of `attribute` at
-      .veldo/cost_to_change.py:275-276, which leaves every per-area TOTAL byte-identical and changes
-      only what the data admits about the join, and the load-bearing in-the-data assertion at
-      scripts/suites/15_warp_1409_cost_to_change_per_area.py:251-258 must go red on the per-area
+      .veldo/cost_to_change.py:292-293, which leaves every per-area TOTAL byte-identical and changes
+      only what the data admits about the join, and the load-bearing in-the-data assertion beginning at
+      scripts/suites/15_warp_1409_cost_to_change_per_area.py:392 must go red on the per-area
       attribution count, the member basis_label carrying GIT PATH, git_path_attributed, the bases entry
-      and the notice, all of them read after json.dumps; the placement-only negative control at :270-274
-      must stay green, which is what proves the mislabel and not the warning was removed.
+      and the notice, all of them read after json.dumps, together with the fixture-repository leg at
+      :1359 where the same join is driven over REAL git output rather than over an injected reader; the
+      placement-only negative control at :409 must stay green, which is what proves the mislabel and
+      not the warning was removed.
     text: >
       THE STAND-DOWN IS BY GIT PATH AND THE REPORT SAYS SO IN THE DATA, WHICH IS THE WHOLE POINT OF
       THIS AC. A spec that declares no resolving placement is attributed through
@@ -93,12 +95,12 @@ acceptance_criteria:
       nowhere, so the warning is not always-on decoration a reader learns to ignore.
   - id: AC3
     falsified_by: >
-      Replace the unattributed branch of `report` at .veldo/cost_to_change.py:404-406 with a default into
+      Replace the unattributed branch of `report` at .veldo/cost_to_change.py:482-486 with a default into
       the first declared contract area, so a record with no resolving placement and no path inside any
       area lands somewhere instead of being counted and dropped, and the load-bearing partition assertion
-      at scripts/suites/15_warp_1409_cost_to_change_per_area.py:315-318 must go red because
+      beginning at scripts/suites/15_warp_1409_cost_to_change_per_area.py:457 must go red because
       unattributed.specs empties while WARP-9404 appears inside an area, taking the memberships identity
-      at :326-330 and the live-map leg at :992 that requires WARP-0100 to be unattributed with it.
+      at :467 and the live-map leg at :1448 that requires WARP-0100 to be unattributed with it.
     text: >
       NEVER A FABRICATED JOIN. A record with no resolving placement and no touched path inside a
       declared area is UNATTRIBUTED: counted in `unattributed.records`, named in
@@ -111,13 +113,20 @@ acceptance_criteria:
       `area_memberships` to equal the total of the per-area record counts.
   - id: AC4
     falsified_by: >
-      Delete the unrecorded guard in `_sum_cost` at .veldo/cost_to_change.py:345-347 so an area whose
+      Delete the unrecorded guard in `_sum_cost` at .veldo/cost_to_change.py:369-371 so an area whose
       records carry no spend sums to a confident 0 instead of None, which is the load-bearing leg (the
-      gate-cycle twin is the `if count else None` at :323, and deleting that reds :395-408 and the live
-      gate stand-down arm at :1205-1209 the same way), and the unknown-cost assertion at
-      scripts/suites/15_warp_1409_cost_to_change_per_area.py:433-439 must go red along with the live
-      per-area equality against the independently built corpus at :1088 and the cost stand-down arm at
-      :1167-1171, while the recorded-spend positive control at :453-460 stays green.
+      gate-cycle twin is the `if count else None` at :340, and deleting that reds :542 and the live
+      gate stand-down arm at :1748 the same way), and the unknown-cost assertion beginning at
+      scripts/suites/15_warp_1409_cost_to_change_per_area.py:584 must go red along with the live
+      per-area equality against the independently built corpus at :1591 and the cost stand-down arm at
+      :1688, while the recorded-spend positive control at :604 stays green. AND THE SECOND LEG, for the
+      half of this criterion's own sentence that nothing defended: compute
+      `usable_as_cost_ground_truth` over the WHOLE corpus in `_coverage_block` at :425 instead of over
+      the records that reached an area, and the assertion beginning at :658 must go red on that boolean
+      and on the cost notice, because one record of recorded spend on a spec no area holds then
+      announces the map usable as cost ground truth while every area still reports None and the
+      disclosure disappears; drop the `cost` and `cycles` blocks from `_unattributed_block` at :394-395
+      and the same row reds again, because the 750000 recorded tokens are then in no figure at all.
     text: >
       A COST NOTHING RECORDED IS None, NEVER A CONFIDENT ZERO, and this is WARP-1401's finding
       carried forward rather than restated. An area whose records carry no recorded spend reports
@@ -149,13 +158,13 @@ acceptance_criteria:
       `gate_basis` recorded and no notice.
   - id: AC5
     falsified_by: >
-      Delete the `refuse_malformed(corpus)` call in `report` at .veldo/cost_to_change.py:393 so a
+      Delete the `refuse_malformed(corpus)` call in `report` at .veldo/cost_to_change.py:469 so a
       malformed record is aggregated instead of refused, which is the load-bearing leg (the
-      one-enumeration leg is `check_corpus` reading corpus_problems at :212, and giving it a second
-      problem list reds :548-558), and the eight-shape refusal assertion at
-      scripts/suites/15_warp_1409_cost_to_change_per_area.py:509-518, bound to the length of its own
-      table, must go red together with the named-spec refusal at :523-525 and the duplicate-spec refusal
-      at :527-532, while the well-formed positive control at :534-539 stays green.
+      one-enumeration leg is `check_corpus` reading corpus_problems at :229, and giving it a second
+      problem list reds :777), and the eight-shape refusal assertion beginning at
+      scripts/suites/15_warp_1409_cost_to_change_per_area.py:738, bound to the length of its own
+      table, must go red together with the named-spec refusal at :749 and the duplicate-spec refusal
+      at :756, while the well-formed positive control at :763 stays green.
     text: >
       FAIL CLOSED AND BY NAME, THROUGH ONE ENUMERATION. A malformed actuals record is REFUSED with a
       message naming the record index, the spec and the offending field; a duplicate spec is refused
@@ -169,13 +178,18 @@ acceptance_criteria:
       CONTROL: the well-formed corpus raises nothing and reports zero problems.
   - id: AC6
     falsified_by: >
-      Delete the empty-corpus stand-down in `report` at .veldo/cost_to_change.py:390-392 so a repository
+      Delete the empty-corpus stand-down in `report` at .veldo/cost_to_change.py:466-468 so a repository
       that records nothing gets a live-shaped report with standdown false and no reason key rather than
       the one stand-down shape, which is the load-bearing adoption-safety leg, and the stand-down
-      assertion at scripts/suites/15_warp_1409_cost_to_change_per_area.py:565-585 must go red on
-      standdown, on the key identity with the no-contract stand-down and on the coverage-block key
-      equality at :584; the outside-the-gate leg is falsified instead by making any file in the derived
-      closure load this module, for instance adding it to scripts/secret_inventory.py, which reds :868.
+      assertion beginning at scripts/suites/15_warp_1409_cost_to_change_per_area.py:794 must go red on
+      standdown, on the key identity with the no-contract stand-down and on the coverage-block and
+      unattributed-block key equalities inside it; the outside-the-gate leg is falsified instead by
+      making any file in the derived closure load this module, for instance adding it to
+      scripts/secret_inventory.py, which reds :1267. AND THE WRITES-NOTHING CLAUSE, which was defended
+      by nothing until now: add one line to `report` writing a file under ROOT - the mutation a review
+      applied while this suite stayed at 40 passed - and the tree-inventory assertion beginning at :1095
+      must go red, with its two additive controls at :1117 and :1128 proving that inventory sees a
+      planted write and a rewrite that changes no bytes.
     text: >
       ADOPTION SAFE, DETERMINISTIC, AND OUTSIDE THE GATE. No architecture contract stands the whole
       derivation down; no actuals records stands it down too; each returns a report in the SAME key
@@ -199,11 +213,11 @@ acceptance_criteria:
   - id: AC7
     falsified_by: >
       Add a fifth loader call for .veldo/entropy.py beside the four in `repo_report` at
-      .veldo/cost_to_change.py:558-561, which is exactly the cross-plan dependency edge C6 forbids, and
-      the load-bearing dependency-surface assertion at
-      scripts/suites/15_warp_1409_cost_to_change_per_area.py:750-751 must go red because _W1409_LOADS,
-      harvested from the module's own source at :742, then carries a fifth path; the no-spawn leg is
-      falsified separately by importing subprocess into the module, which reds :777.
+      .veldo/cost_to_change.py:686-689, which is exactly the cross-plan dependency edge C6 forbids, and
+      the load-bearing dependency-surface assertion beginning at
+      scripts/suites/15_warp_1409_cost_to_change_per_area.py:1153 must go red because _W1409_LOADS,
+      harvested from the module's own source at :1152, then carries a fifth path; the no-spawn leg is
+      falsified separately by importing subprocess into the module, which reds :1181.
     text: >
       THE CROSS-PLAN SEAM IS PROSE AND A SHARED RESOLVER, NEVER A DEPENDENCY EDGE (PLAN-0014 C6).
       The module's whole dependency surface is enumerated from its own source (every sibling arrives
@@ -216,23 +230,30 @@ acceptance_criteria:
       planted text, so the derivation runs in-session and outlives nothing.
   - id: AC8
     falsified_by: >
-      Rename the count key `files_touched` returns at .veldo/toe_corpus.py:176 from files_touched to
+      Rename the count key `files_touched` returns at .veldo/toe_corpus.py:185 from files_touched to
       files, the plausible tidy-up that stops the WARP-1401 corpus record being byte-identical to before,
-      and the load-bearing keys-and-values leg at
-      scripts/suites/15_warp_1409_cost_to_change_per_area.py:887-890 must go red together with the
-      absent-spec control at :900-901; note that the count-equals-the-read leg cannot be falsified in
-      this repository today, because no commit names WARP-1401 so both sides read 0, which is the split
-      recorded under WARP-1711 at :902-908 rather than a gap this declaration hides.
+      and the load-bearing keys-and-values leg beginning at
+      scripts/suites/15_warp_1409_cost_to_change_per_area.py:1292 must go red together with the
+      absent-spec control at :1302 and the fixture-repository leg at :1328. THE COUNT-EQUALS-THE-READ
+      LEG NOW HAS TEETH IN EVERY REPOSITORY, which it did not: replace the body of `files_touched` with
+      hardcoded zeros, or gut `git_touched` to empty lists and an empty sha list, and :1328 reds,
+      because both readers are driven over a throwaway git repository whose one commit names WARP-9452
+      and touched exactly one file. Neither the WARP-1711 stand-down this declaration used to name nor
+      this repository's flattened history is involved any more, and both stand-downs are gone.
     text: >
       ONE GIT READER, NOT TWO. `toe_corpus.git_touched` returns the commits git attributes to a spec
       and the paths they touched; `toe_corpus.files_touched` COUNTS exactly that and its returned
       keys and values are unchanged, so the WARP-1401 corpus record is byte-identical to before and
-      this item spells out no second `git log --grep`. A selftest drives both over a real spec id in
-      this repository's history and requires each count to equal the length of the matching list,
-      with a NEGATIVE CONTROL requiring a spec id no commit names to yield empty lists and zero
-      counts rather than an exception, and requiring the real id to yield a NON-EMPTY read (without
-      which a reader that always returned nothing would satisfy the absent case and quietly make
-      every git-path attribution in the repository unattributed).
+      this item spells out no second `git log --grep`. BOTH READERS TAKE A `root`, which is the SEAM
+      a property only a differently shaped tree can exhibit needs: a selftest drives them over a
+      THROWAWAY GIT REPOSITORY whose one commit names a fixture spec id and touched exactly one file,
+      and requires each count to equal the length of the matching list over a NON-EMPTY read, with a
+      NEGATIVE CONTROL in the same tree requiring a spec id no commit names to yield empty lists and
+      zero counts rather than an exception. Without the non-empty half a reader that always returned
+      nothing, or a count hardcoded to zero, satisfies the absent case and quietly makes every
+      git-path attribution in the repository unattributed, which is what a review measured. This runs
+      in every repository and stands down nowhere: `_run` already took the working directory and only
+      these two callers did not pass it.
 required_evidence: [unit]
 rollback: >
   Delete .veldo/cost_to_change.py and its engine copy, remove the suite file and its manifest entry,
@@ -277,12 +298,30 @@ drifting one:
   like. This repository begins at one root commit that names no spec id, so `toe_corpus.git_touched`
   honestly reads no commits for every spec, the stand-down has nothing to stand down to, and those
   41 records are unattributed instead. The join itself is asserted BEHAVIOURALLY over an injected
-  reader in the selftest, which runs everywhere; its live half is split out and stands down by name
-  (WARP-1711). The basis being a field rather than a footnote is what makes the difference between
-  the two repositories legible at all.
+  reader in the selftest AND over a THROWAWAY GIT REPOSITORY the selftest builds, whose one commit
+  names a fixture spec and touched one file, so the join runs over real git output everywhere and
+  NEITHER HALF STANDS DOWN ANY MORE. The two WARP-1711 stand-downs that used to stand in for it were
+  removed as part of the remediation of this item's own review: they were routed through
+  `shared.no_history` with a PROSE SENTENCE where the mechanism wants a module path, and
+  `history_begins_with` answers True for a non-path in every repository, so the guard that separates
+  an absent input from a BROKEN READER could not fail - gutting the one git reader left the whole
+  suite green. What is asserted over THIS repository's live map is the property that survives however
+  the history reads: every git-path disclosure agrees with the git-path count, whatever the count is.
+  The basis being a field rather than a footnote is what makes the difference between the two
+  repositories legible at all.
 - **0 of 174 records carry any spend. cost_coverage 0.0, usable_as_cost_ground_truth false.** Every
   cost field in the live map is None. WARP-1401 measured why and it has not changed: nothing in the
   loop emits tokens, because a token count is not knowable from inside a repository.
+- **AND WHAT THE FIRST RECORDED SPEND DID TO THAT MAP, WHICH A REVIEW FOUND AND THIS ITEM NOW
+  REFUSES.** One `python3 .veldo/spend.py record --spec WARP-0100 --basis harness_reported --tokens
+  750000` - the sanctioned writer doing the one thing it is for, against a spec that is one of the
+  108 unattributed ones - used to yield `usable_as_cost_ground_truth: true` with the cost notice
+  ABSENT, every one of the ten areas still reading `tokens=None (unrecorded, spend on 0 of N)`, and
+  the 750000 tokens in no figure anywhere. The blunt booleans are now statements about the PER-AREA
+  figures and count `cost_attributed_records`; the recorded-but-unattributed remainder is its own
+  count with its own notice; and the unattributed bucket carries its own cost and cycles blocks, so
+  the same command now reads: boolean false, cost notice present, a second notice naming 1 of 1, and
+  `unattributed.cost.tokens` 750000 with cost_basis `recorded`.
 - **AND A SECOND GAP THIS ITEM MEASURED, WHICH IS NEW: THE GATE CYCLES ARE UNATTRIBUTABLE TOO.**
   1123 events in the log: 798 `gate.passed`, 149 `gate.failed`, 176 `verdict.recorded`. **Not one
   of the 947 gate events carries a spec id or a correlation id** - `scripts/verify.sh` writes a

@@ -140,6 +140,14 @@ def _w1406_pt_cells(lines):
     return [line.split(" pt")[0].split()[-1] for line in lines if " pt" in line and " tok" in line]
 
 
+def _w1406_row_cells(lines, ids):
+    """The point cell of each named ROW, in the order the ids are given, resolved the way
+    `_w1406_line` resolves a row rather than by position. Separate from `_w1406_pt_cells` because
+    that helper reads every line carrying both markers, which includes the ROLL-UP (its own text
+    carries `pt` and `raw tokens`), and a list pinned to literals has to be exactly the rows."""
+    return [_w1406_line(lines, sid).split(" pt")[0].split()[-1] for sid in ids]
+
+
 _W1406_FIGURE = _w1406_re.compile(r"\d+(?:\.\d+)?")
 
 
@@ -226,27 +234,91 @@ _w1406_view_h = NORM.normalize(_W1406_H, _w1406_peg_h, _W1406_H_EVENTS, _w1406_n
 # The DERIVED peg over the same corpus, to show ONE predicate governs the peg path and the display
 # path: neither token-less change can become the reference change either.
 _w1406_peg_h_derived = NORM.resolve_peg(_W1406_H, _W1406_H_EVENTS, _w1406_no_eras, CORP, _W1406_ISO)
-# The same corpus with a token count added to the cost-only change, deep-copied so the fixture every
-# other assertion reads is provably untouched. This is the control for the token predicate: the point
-# comes ON when a token measurement exists, so the refusal is a rule and not a blanket.
-_W1406_H_TOKENED = json.loads(json.dumps(_W1406_H))
-for _w1406_r in _W1406_H_TOKENED:
-    if _w1406_r["spec"] == "WARP-9423":
-        _w1406_r["spend"]["tokens"] = 2000
-_w1406_view_h_tokened = NORM.normalize(_W1406_H_TOKENED, _w1406_peg_h, _W1406_H_EVENTS,
+# The same corpus with a token count added to the cost-only change, and it is added AS AN EVENT and
+# rebuilt through the corpus rather than written into the spend block by hand: the era of a row is
+# read from the events that carried its TOKEN count, so a corpus record claiming tokens no event
+# carries is a state the real path cannot produce, and a control built that way would be a control
+# over an impossible tree. The original corpus and event list are asserted untouched below.
+_W1406_H_TOKENED_EVENTS = _W1406_H_EVENTS + [
+    _w1406_ev("WARP-9423", 2000, "2026-02-03T00:00:00Z")]
+with tempfile.TemporaryDirectory() as _w1406_dht:
+    _w1406_seed_specs(_w1406_dht, [(sid, "standard") for sid in _W1406_H_IDS])
+    _W1406_H_TOKENED = CORP.build(specs_dir=_w1406_dht, events=_W1406_H_TOKENED_EVENTS)
+_w1406_view_h_tokened = NORM.normalize(_W1406_H_TOKENED, _w1406_peg_h, _W1406_H_TOKENED_EVENTS,
                                        _w1406_no_eras, CORP, _W1406_ISO)
+
+# ---------------------------------------------------------------------------------------
+# FIXTURE R: A RATIO BELOW THE DISPLAY RESOLUTION, WHICH IS THE SPREAD AN AGENT-RUN REPOSITORY
+# ACTUALLY HAS.
+#
+# Three changes at 300000 tokens and two at 100, so the peg is 300000 and the two small changes are
+# at 1/3000 of it. `round(x, 3)` is 0.0 for any ratio under 0.0005, so BOTH of these were MEASURED
+# changes that rendered as `0.000 pt` - the exact string AC1 forbids - and, because points_total
+# summed the ROUNDED points, each contributed exactly zero to the bottom line a plan is sized with.
+# Fixture H could not see it: its smallest ratio is 0.041, so the guard `'0.000 pt' not in ...` was
+# scoped to a fixture whose numbers cannot produce the string it forbids.
+# ---------------------------------------------------------------------------------------
+_W1406_R_SPEND = [("WARP-9431", 300000), ("WARP-9432", 300000), ("WARP-9433", 300000),
+                  ("WARP-9434", 100), ("WARP-9435", 100)]
+_W1406_R_EVENTS = [_w1406_ev(sid, tok, "2026-03-%02dT00:00:00Z" % (i + 1))
+                   for i, (sid, tok) in enumerate(_W1406_R_SPEND)]
+with tempfile.TemporaryDirectory() as _w1406_dr:
+    _w1406_seed_specs(_w1406_dr, [(sid, "standard") for sid, _t in _W1406_R_SPEND])
+    _W1406_R = CORP.build(specs_dir=_w1406_dr, events=_W1406_R_EVENTS)
+_w1406_peg_r = NORM.resolve_peg(_W1406_R, _W1406_R_EVENTS, _w1406_no_eras, CORP, _W1406_ISO)
+_w1406_view_r = NORM.normalize(_W1406_R, _w1406_peg_r, _W1406_R_EVENTS, _w1406_no_eras,
+                               CORP, _W1406_ISO)
+_W1406_R_TRUE = 3 * 1.0 + 2 * (100 / 300000)
 
 # ---------------------------------------------------------------------------------------
 # AC1. THE NORMALIZED POINT, WITH RAW TOKENS ON THE SAME ROW.
 # ---------------------------------------------------------------------------------------
+expect("WARP-1406 AC1, THE CONFIDENT ZERO ONE ROUNDING AWAY: A MEASURED CHANGE BELOW THE DISPLAY "
+       "RESOLUTION IS RENDERED AS `<0.001 pt` AND STILL COUNTS IN THE TOTAL, driven over a fixture "
+       "whose spread can PRODUCE the forbidden string. Two changes of 100 tokens against a peg of "
+       "300000 are at 1/3000 of the reference change: %.3f of that ratio is `0.000`, so the display "
+       "printed a zero point beside a real token count - indistinguishable, on the surface a planner "
+       "reads, from a change nobody measured - and points_total, summing the ROUNDED points, valued "
+       "both of them at exactly nothing. The peg's own three changes are unaffected at 1.000, so "
+       "this is the ruler's resolution being named and not a rescale. THE ROLL-UP IS THE OTHER HALF "
+       "AND IT IS PINNED TO THE UNROUNDED SUM: 3.001, not the 3.0 that summing rounded points gives, "
+       "and the two literals are asserted DIFFERENT so the row cannot pass on a total that lost them",
+       "0.000 pt" not in "".join(NORM.render_lines(_w1406_view_r))
+       and _w1406_row_cells(NORM.render_lines(_w1406_view_r), [s for s, _t in _W1406_R_SPEND])
+       == ["1.000", "1.000", "1.000", "<0.001", "<0.001"]
+       and _w1406_points(_w1406_view_r)["WARP-9434"] == 100 / 300000
+       and _w1406_view_r["summary"]["points_total"] == round(_W1406_R_TRUE, 3) == 3.001
+       and round(_W1406_R_TRUE, 3) != 3.0
+       and _w1406_view_r["summary"]["pointed"] == 5
+       and _w1406_view_r["summary"]["unpointed"] == 0)
+
+expect("WARP-1406 AC1 NEGATIVE CONTROL FOR THE BELOW-RESOLUTION CELL: the cell is a fact about the "
+       "RULER and not about the change, so the same two changes measured against a peg they are NOT "
+       "tiny against carry ordinary points, and a change whose token count was never recorded still "
+       "gets `- pt` rather than `<0.001 pt`. Without this leg a render that printed `<0.001` for "
+       "every small-looking row, or for every row at all, would pass the assertion above",
+       _w1406_row_cells(NORM.render_lines(NORM.normalize(
+           _W1406_R, dict(_w1406_peg_r, tokens=100), _W1406_R_EVENTS, _w1406_no_eras, CORP,
+           _W1406_ISO)), [s for s, _t in _W1406_R_SPEND])
+       == ["3000.000", "3000.000", "3000.000", "1.000", "1.000"]
+       and NORM.point_cell(None) == "        - pt"
+       and NORM.point_cell(0.041) == "    0.041 pt"
+       and NORM.point_cell(0.0004) == "   <0.001 pt")
 expect("WARP-1406 AC1: every corpus record with recorded spend renders as a NORMALIZED POINT "
        "against the peg, and the peg's own change is exactly 1.000 pt. The five seeded changes at "
        "1000, 2000, 3000, 4000 and 5000 tokens against a 3000-token peg come out at 0.333, 0.667, "
-       "1.000, 1.333 and 1.667, so the point is a ratio of tokens to the reference change and not "
-       "a rescaled copy of the raw number",
+       "1.000, 1.333 and 1.667 ON THE SCREEN, and the ROW carries the ratio UNROUNDED, which is "
+       "asserted here as the exact quotients: the point is a ratio of tokens to the reference "
+       "change and not a rescaled copy of the raw number, and the rounding belongs to the DISPLAY "
+       "and to the roll-up rather than to the stored row. Both halves are asserted because they "
+       "are two different claims: rounding into the row is invisible on this fixture and is what "
+       "made a small measured change contribute exactly zero to a plan's bottom line",
        _w1406_points(_w1406_view_a).get("WARP-9413") == 1.0
        and [_w1406_points(_w1406_view_a).get(s) for s, _t in _W1406_A_SPEND]
-       == [0.333, 0.667, 1.0, 1.333, 1.667])
+       == [1000 / 3000, 2000 / 3000, 1.0, 4000 / 3000, 5000 / 3000]
+       and _w1406_row_cells(NORM.render_lines(_w1406_view_a),
+                            [s for s, _t in _W1406_A_SPEND] + ["WARP-9416", "WARP-9417"])
+       == ["0.333", "0.667", "1.000", "1.333", "1.667", "-", "3.000"])
 
 expect("WARP-1406 AC1: THE RAW TOKENS AND THE RECORDED COST RIDE ON THE SAME ROW AS THE POINT, byte "
        "for byte the numbers the corpus recorded (D2: both units, the point primary on a planning "
@@ -303,6 +375,8 @@ expect("WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows D
        and [r["cost_usd"] for r in _w1406_view_h["rows"] if r["spec"] == "WARP-9423"] == [7.5]
        and _w1406_points(_w1406_view_h_tokened)["WARP-9423"] == 2.0
        and _w1406_points(_w1406_view_h)["WARP-9423"] is None
+       and [(r["spec"], r["spend"]["tokens"]) for r in _W1406_H]
+       == [("WARP-9421", 3137), ("WARP-9422", 41), ("WARP-9423", 0), ("WARP-9424", 0)]
        and _w1406_peg_h_derived["pegged"] is True
        and _w1406_peg_h_derived["spec"] == "WARP-9422"
        and _w1406_peg_h_derived["tokens"] == 41
@@ -318,14 +392,20 @@ expect("WARP-1406 AC1 NEGATIVE CONTROL FOR THE TOKEN PREDICATE: those two rows D
 # THE 4.00 PRICE IS CHOSEN SO THE DERIVED FIGURE LANDS NEXT DOOR TO THE RECORDED ONE: 3137 tokens at
 # 4.00 per 1k is 12.55 against a recorded 12.37. A reader eyeballing that column cannot tell the two
 # apart, which is exactly why the column has to be the derived one by assertion.
+#
+# AND THE MONEY CELL IS ABSENT ENTIRELY ON THE TWO ROWS WHOSE TOKENS WERE NEVER RECORDED, which is
+# why their figure lists are one figure long. The column used to print a DERIVED `0.00 usd` there,
+# so a change whose recorded cost is 7.50 reported nothing in the money column of the row whose
+# whole message is that nothing was measured: the confident zero this item refuses, one column over
+# from the `- pt` that gets it right.
 _W1406_H_FIGS_050 = [("WARP-9421", ["3.137", "3137", "1.57"]),
                      ("WARP-9422", ["0.041", "41", "0.02"]),
-                     ("WARP-9423", ["0", "0.00"]),
-                     ("WARP-9424", ["0", "0.00"])]
+                     ("WARP-9423", ["0"]),
+                     ("WARP-9424", ["0"])]
 _W1406_H_FIGS_400 = [("WARP-9421", ["3.137", "3137", "12.55"]),
                      ("WARP-9422", ["0.041", "41", "0.16"]),
-                     ("WARP-9423", ["0", "0.00"]),
-                     ("WARP-9424", ["0", "0.00"])]
+                     ("WARP-9423", ["0"]),
+                     ("WARP-9424", ["0"])]
 
 
 def _w1406_h_figs(price, with_reason=False):
@@ -348,10 +428,16 @@ expect("WARP-1406 AC1: THE RENDERED LINE PRINTS THE POINT, THE RECORDED TOKENS A
        "appended anywhere on a row reds this; and because a per-row check can only see rows, the "
        "render is closed off at both ends: the PEG HEADER and the ROLL-UP are byte-identical priced "
        "and unpriced, and the line count is the rows plus exactly those two, so the price adds one "
-       "COLUMN and there is nowhere else in the render for a dollar figure to sit",
+       "COLUMN and there is nowhere else in the render for a dollar figure to sit. THE MONEY CELL IS "
+       "WITHHELD, as `- usd`, ON THE TWO ROWS WHOSE TOKENS WERE NEVER RECORDED, which is why their "
+       "figure lists carry ONE figure: the column is derived from a token count that does not exist, "
+       "and printing its derived 0.00 told a reader that a change whose recorded cost is 7.50 cost "
+       "nothing - the same confident zero the point column refuses with `- pt`, one column over",
        _w1406_h_figs(0.5) == _W1406_H_FIGS_050
        and _w1406_h_figs(4.0) == _W1406_H_FIGS_400
        and len(_W1406_H_FIGS_050) == len(_W1406_H_FIGS_400) == len(_W1406_H_IDS) == 4
+       and "- usd" in _w1406_line(NORM.render_lines(_w1406_view_h, 4.0), "WARP-9423")
+       and "- usd" in _w1406_line(NORM.render_lines(_w1406_view_h, 4.0), "WARP-9424")
        and " 1.57 usd" in _w1406_line(NORM.render_lines(_w1406_view_h, 0.5), "WARP-9421")
        and " 12.55 usd" in _w1406_line(NORM.render_lines(_w1406_view_h, 4.0), "WARP-9421")
        and [r["cost_usd"] for r in _w1406_view_h["rows"] if r["spec"] == "WARP-9421"] == [12.37]
@@ -762,14 +848,20 @@ expect("WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, o
        "total with no raw total underneath is a number nobody can audit, and the token-less rows are "
        "counted as UNPOINTED rather than diluting the pointed denominator",
        _w1406_view_a["summary"] == {"rows": 7, "pointed": 6, "unpointed": 1, "points_total": 8.0,
+                                    "tokens_by_era": {"pre-ledger": 24000}, "tokens_unplaced": 0,
                                     "tokens_total": 24000, "eras_present": ["pre-ledger"],
                                     "eras_declared": ["pre-ledger"]}
        and _w1406_view_h["summary"] == {"rows": 4, "pointed": 2, "unpointed": 2,
-                                        "points_total": 3.178, "tokens_total": 3178,
+                                        "points_total": 3.178,
+                                        "tokens_by_era": {"pre-ledger": 3178},
+                                        "tokens_unplaced": 0, "tokens_total": 3178,
                                         "eras_present": ["pre-ledger"],
                                         "eras_declared": ["pre-ledger"]}
        and _w1406_view_e["summary"] == {"rows": 7, "pointed": 3, "unpointed": 4,
-                                        "points_total": 4.5, "tokens_total": 24000,
+                                        "points_total": 4.5,
+                                        "tokens_by_era": {"era-second-model": 18000,
+                                                          "pre-ledger": 6000},
+                                        "tokens_unplaced": 0, "tokens_total": None,
                                         "eras_present": ["era-second-model", "pre-ledger"],
                                         "eras_declared": ["pre-ledger", "era-second-model"]}
        and NORM.render_lines(_w1406_view_a)[-1]
@@ -778,6 +870,40 @@ expect("WARP-1406: THE SUMMARY ROLL-UP IS ASSERTED AS ONE WHOLE-DICT EQUALITY, o
        and NORM.render_lines(_w1406_view_h)[-1]
        == ("total: 3.178 pt over 2 change(s), 3178 raw tokens, 2 row(s) with no point, "
            "eras ['pre-ledger']"))
+
+expect("WARP-1406 AC4: THE RAW-TOKEN ROLL-UP REFUSES THE BLEND THE POINTS REFUSE, AND THE PRINTED "
+       "BOTTOM LINE SAYS SO. `tokens_total` used to sum the raw tokens of every row whatever era it "
+       "was measured in, so the two-era view above reported 24000 raw tokens beside the list of eras "
+       "present with no qualification: two models' tokens added into one number, which is this "
+       "module's own definition of a number no model ever produced, sitting one column from a points "
+       "total that had refused to do exactly that. The whole-dict equality PINNED that blend, so it "
+       "was the value the suite required. Now the raw tokens are reported PER ERA, `tokens_total` is "
+       "None whenever they span more than one, and the bottom line names the refusal the way every "
+       "refused row names its own. THE PER-ERA FIGURES ARE ASSERTED AGAINST THE CORPUS ITSELF rather "
+       "than to literals alone: 6000 in pre-ledger and 18000 in era-second-model, summing to the "
+       "24000 that is no longer presented as one number",
+       _w1406_view_e["summary"]["tokens_total"] is None
+       and _w1406_view_e["summary"]["tokens_by_era"] == {"era-second-model": 18000,
+                                                         "pre-ledger": 6000}
+       and sum(_w1406_view_e["summary"]["tokens_by_era"].values())
+       + _w1406_view_e["summary"]["tokens_unplaced"]
+       == sum(r["spend"]["tokens"] for r in _W1406_A)
+       and NORM.render_lines(_w1406_view_e)[-1]
+       == ("total: 4.5 pt over 3 change(s), raw tokens NOT totalled (18000 in era-second-model, "
+           "6000 in pre-ledger, 0 in no readable era): tokens measured either side of a capability "
+           "shift are different units and this module does not blend them, 4 row(s) with no point, "
+           "eras ['era-second-model', 'pre-ledger']")
+       and "24000" not in NORM.render_lines(_w1406_view_e)[-1])
+
+expect("WARP-1406 AC4 NEGATIVE CONTROL FOR THE PER-ERA ROLL-UP: a ONE-ERA view still reports ONE raw "
+       "total, in the same words it always did, so the refusal above is the era rule firing and not a "
+       "roll-up that has stopped totalling anything. The same rows, the same actuals, an empty "
+       "ledger: 24000 raw tokens, printed as one figure, with `tokens_by_era` carrying that one era "
+       "and nothing outside it",
+       _w1406_view_a["summary"]["tokens_total"] == 24000
+       and list(_w1406_view_a["summary"]["tokens_by_era"]) == ["pre-ledger"]
+       and "24000 raw tokens" in NORM.render_lines(_w1406_view_a)[-1]
+       and "NOT totalled" not in NORM.render_lines(_w1406_view_a)[-1])
 
 # A change whose OWN spend straddles a shift, and a change whose spend carries no readable
 # timestamp: two different facts, each reported by name rather than folded into one silence.
@@ -816,6 +942,73 @@ expect("WARP-1406 AC4 NEGATIVE CONTROL: the straddling change and the timestamp-
        [(r["spec"], r["tokens"], r["spend_recorded"]) for r in _w1406_view_5["rows"]
         if r["spec"] in ("WARP-9418", "WARP-9419")]
        == [("WARP-9418", 1500, True), ("WARP-9419", 600, True)])
+
+# ---------------------------------------------------------------------------------------
+# FIXTURE N: THE ERA OF A TOKEN TOTAL IS DECIDED BY TOKEN EVENTS, AND ONLY BY THOSE.
+#
+# WARP-9441's token spend sits wholly inside era-second-model, and thirty HUMAN MINUTES for the same
+# change sit on the pre-ledger side of the shift. WARP-9442 is the same change with no minutes at
+# all. The era path used to select events with the corpus's `spend_recorded` flag - true for a dollar
+# cost or human minutes alone, which is the permissive flag `recorded_tokens` exists to refuse on the
+# point path - so WARP-9441 lost its point and its row said its TOKEN total was "itself a mixture of
+# units" because of minutes that are not denominated in tokens at all. Reachable through the
+# sanctioned writer, whose --tokens, --cost-usd and --human-minutes flags are independent.
+# ---------------------------------------------------------------------------------------
+_W1406_N_EVENTS = [
+    _w1406_ev("WARP-9441", 4000, "2026-01-05T00:00:00Z"),
+    _w1406_ev("WARP-9441", None, "2026-01-02T00:00:00Z", human_minutes=30),
+    _w1406_ev("WARP-9442", 4000, "2026-01-06T00:00:00Z"),
+]
+with tempfile.TemporaryDirectory() as _w1406_dn:
+    _w1406_seed_specs(_w1406_dn, [("WARP-9441", "standard"), ("WARP-9442", "standard")])
+    _W1406_N = CORP.build(specs_dir=_w1406_dn, events=_W1406_N_EVENTS)
+_w1406_peg_n = NORM.resolve_peg(_W1406_N, _W1406_N_EVENTS, _w1406_two_eras, CORP, _W1406_ISO)
+_w1406_view_n = NORM.normalize(_W1406_N, _w1406_peg_n, _W1406_N_EVENTS, _w1406_two_eras,
+                               CORP, _W1406_ISO)
+_w1406_note_n = ([r["note"] for r in _w1406_view_n["rows"] if r["spec"] == "WARP-9441"]
+                 or [None])[0]
+
+expect("WARP-1406 AC4: A NON-TOKEN SPEND EVENT DOES NOT DECIDE THE ERA OF A TOKEN MEASUREMENT, AND "
+       "THE FACT IS NOT DELETED EITHER - IT IS A NOTE. WARP-9441's 4000 tokens were all measured "
+       "inside era-second-model and its thirty human minutes sit on the other side of the shift: it "
+       "keeps its point at 1.000, its era is era-second-model, and its row carries a note saying "
+       "where the non-token figures sit and that they were not allowed to decide the era. Before "
+       "this, the era path selected events by the corpus's `spend_recorded` flag - the permissive "
+       "flag `recorded_tokens` exists to refuse on the point path, two spellings of one predicate on "
+       "a second path - so the row lost its point and said its token total was 'a mixture of units' "
+       "about minutes that are not tokens at all. The reason it printed was FALSE, which is worse "
+       "than the missing point: it is the only thing the surface says about the row",
+       _w1406_points(_w1406_view_n)["WARP-9441"] == 1.0
+       and [r["era"] for r in _w1406_view_n["rows"] if r["spec"] == "WARP-9441"]
+       == ["era-second-model"]
+       and "mixture of units" not in _w1406_reason(_w1406_view_n, "WARP-9441")
+       and "human_minutes" not in _w1406_reason(_w1406_view_n, "WARP-9441")
+       and _w1406_note_n is not None
+       and "pre-ledger" in _w1406_note_n and "era-second-model" in _w1406_note_n
+       and "note:" in _w1406_line(NORM.render_lines(_w1406_view_n), "WARP-9441")
+       and _w1406_view_n["summary"]["points_total"] == 2.0)
+
+expect("WARP-1406 AC4 NEGATIVE CONTROL FOR THE TOKEN-ERA RULE, AND IT IS THE ROW ABOVE'S TEETH: the "
+       "note is NOT decoration every row gets - the same change with no non-token spend (WARP-9442) "
+       "carries no note at all - and the straddle refusal is STILL LIVE when it is the TOKEN events "
+       "that straddle, which is fixture C5's WARP-9418 with 700 tokens either side of the same "
+       "shift. So the era rule was narrowed to the events that can answer the question and not "
+       "switched off: one change keeps its point with a note, another loses it by name",
+       [r["note"] for r in _w1406_view_n["rows"] if r["spec"] == "WARP-9442"] == [None]
+       and "note:" not in _w1406_line(NORM.render_lines(_w1406_view_n), "WARP-9442")
+       # AND THE NOTE IS ITS OWN READER RATHER THAN A THIRD ELEMENT OF era_of's RETURN, because
+       # .veldo/toe_analogy.py takes era_of as a callable and unpacks (era, reason): measured, a
+       # third element raised ValueError out of the gate's unit stage from WARP-1404's evidence
+       # window. The arity is pinned here, in the item that owns the function, so the coupling is
+       # asserted by the module that would break it and not only discovered by the whole gate.
+       and len(NORM.era_of("WARP-9441", _W1406_N_EVENTS, _w1406_two_eras, CORP, _W1406_ISO)) == 2
+       and NORM.era_note("WARP-9441", "era-second-model", _W1406_N_EVENTS, _w1406_two_eras,
+                         CORP, _W1406_ISO) == _w1406_note_n
+       and NORM.era_note("WARP-9441", None, _W1406_N_EVENTS, _w1406_two_eras,
+                         CORP, _W1406_ISO) is None
+       and _w1406_points(_w1406_view_5)["WARP-9418"] is None
+       and "spans 2 eras" in _w1406_reason(_w1406_view_5, "WARP-9418")
+       and [r["note"] for r in _w1406_view_5["rows"] if r["spec"] == "WARP-9418"] == [None])
 
 # ---------------------------------------------------------------------------------------
 # AC5. FAIL CLOSED BY NAME, AND ADOPTION SAFE.
@@ -863,27 +1056,114 @@ expect("WARP-1406 AC5 NEGATIVE CONTROL: the WELL-FORMED shift record validates C
                for w in NORM.WORK_PER_TOKEN))
 
 with tempfile.TemporaryDirectory() as _w1406_d6:
-    # A ledger the parser cannot read, a duplicate era id, and two shifts claiming one instant:
-    # each refused through the reporter, naming the file, and left OUT of the ledger.
+    # FOUR BAD NEIGHBOURS, ONE PER PATH INTO THE REFUSAL, and the fourth is the one that was missing.
+    # A record outside the PARSER subset, a record that PARSES AND FAILS validate_shift, a DUPLICATE
+    # era id, and two shifts claiming ONE INSTANT: each refused through the reporter, naming the file
+    # or the id, and left OUT of the ledger while the good record still loads.
+    #
+    # WHY THE THIRD FILE EXISTS AND WHAT ITS ABSENCE COST. Until it did, the only bad neighbours here
+    # were a parse error and a same-instant duplicate, so the `validate_shift` refusal INSIDE
+    # load_ledger - the branch AC5's fail-closed claim is actually about - was never reached by any
+    # fixture in this suite. MEASURED on the tree before this fixture landed: making load_ledger
+    # ACCEPT every malformed record into the ledger and report nothing left the suite at 60 passed 0
+    # failed; so did returning an EMPTY ledger on the first bad record, which is the half-applied
+    # catastrophe this module's own docstring calls worse than none; so did removing the duplicate-id
+    # refusal, because both existing bad records have distinct ids. Three mutations of one branch,
+    # none of them visible. The shipped code was correct and nothing would have noticed it stopping.
     _w1406_led6 = Path(_w1406_d6) / "toe_eras"
     _w1406_led6.mkdir()
     (_w1406_led6 / "aa-broken.yaml").write_text("\tschema: tabbed\n")
     (_w1406_led6 / "bb-good.yaml").write_text(NORM.render_shift(_W1406_SHIFT))
     (_w1406_led6 / "cc-same-instant.yaml").write_text(
         NORM.render_shift(dict(_W1406_SHIFT, id="era-third-model")))
+    # PARSES CLEANLY, FAILS validate_shift: `work_per_token: better` is outside the declared
+    # vocabulary, and everything else about the record is well formed, so only the validator can
+    # refuse it.
+    (_w1406_led6 / "dd-parses-invalid.yaml").write_text(
+        NORM.render_shift(dict(_W1406_SHIFT, id="era-bad-direction",
+                               at="2026-01-08T00:00:00Z", work_per_token="better")))
+    # A DUPLICATE ERA ID at a different instant, so it reaches the duplicate-id branch rather than
+    # the same-instant one: two entries claiming one era boundary cannot both be it.
+    (_w1406_led6 / "ee-duplicate-id.yaml").write_text(
+        NORM.render_shift(dict(_W1406_SHIFT, at="2026-01-06T00:00:00Z")))
+    # ONE INSTANT SPELLED THE OTHER WAY. `2026-01-04T00:00:00+00:00` is the same moment as the good
+    # record's `2026-01-04T00:00:00Z`, and the same-instant check used to compare the timestamp
+    # STRING, so both were accepted: `eras()` then emitted an interval half open on the right AT ITS
+    # OWN LEFT EDGE, and the earlier era was declared, listed in eras_declared, reported in the view
+    # and unreachable by any actual. The id sorts AFTER the good record's so the survivor is still the
+    # good record and this row measures the refusal rather than a reshuffle.
+    _W1406_OTHER_SPELLING_AT = "2026-01-04T00:00:00+00:00"
+    (_w1406_led6 / "ff-same-instant-other-spelling.yaml").write_text(
+        NORM.render_shift(dict(_W1406_SHIFT, id="era-zzz-restamped",
+                               at=_W1406_OTHER_SPELLING_AT)))
+    # A SECOND GOOD RECORD, so the ledger produces a CLOSED interval and the era-interval property
+    # below has something to be true of: with one shift every interval is open at one end, and a
+    # property asserted over an empty set of closed intervals is the shape this whole review is about.
+    (_w1406_led6 / "gg-later-good.yaml").write_text(
+        NORM.render_shift(dict(_W1406_SHIFT, id="era-later-model",
+                               at="2026-01-10T00:00:00Z", previous_model="model-two")))
     _w1406_m6, _w1406_r6 = _w1406_capture()
     _w1406_shifts6, _w1406_errs6 = NORM.load_ledger(_w1406_led6, V.parse_yamlish, _w1406_r6,
                                                     _W1406_ISO)
-    expect("WARP-1406 AC5: A LEDGER DIRECTORY WITH BAD RECORDS FAILS CLOSED AND BY NAME. A record "
-           "outside the parser subset is refused naming its FILE, and a second shift claiming the "
-           "SAME INSTANT as another is refused naming both ids, because no actual at that instant "
-           "would have one era. Neither bad record enters the ledger, so nothing is half applied, "
-           "and the good one still loads: a bad neighbour does not take the ledger down",
-           _w1406_errs6 == 2
-           and any("aa-broken.yaml" in m and "outside the parser subset" in m
+    # WHAT THIS DIRECTORY PARSED AT ALL, read back from the fixture rather than from the loader, so
+    # the row below cannot be satisfied by a loader that refuses everything it is shown.
+    _w1406_parsed6 = [V.parse_yamlish(p.read_text())
+                      for p in sorted(_w1406_led6.glob("*.yaml")) if p.name != "aa-broken.yaml"]
+
+    expect("WARP-1406 AC5: A LEDGER DIRECTORY WITH BAD RECORDS FAILS CLOSED AND BY NAME, OVER ALL "
+           "FOUR PATHS INTO THE REFUSAL. A record outside the parser subset is refused naming its "
+           "FILE; a record that PARSES and fails validate_shift is refused naming the FIELD, which is "
+           "the branch this criterion's whole fail-closed claim is about and the one no fixture "
+           "reached until now; a DUPLICATE era id is refused because two entries cannot both be one "
+           "boundary; and a second shift claiming the SAME INSTANT is refused naming both ids, "
+           "because no actual at that instant would have one era. FOUR refusals, one per bad file, "
+           "and the ledger comes back carrying exactly the ONE good record - so nothing is half "
+           "applied, nothing is silently swallowed, and a bad neighbour does not take the ledger "
+           "down. The count is bound to the fixture's own bad-file list, so a shape added here "
+           "without its refusal reds this row",
+           _w1406_errs6 == len(_w1406_m6) == 5
+           and [s["id"] for s in _w1406_shifts6] == ["era-second-model", "era-later-model"]
+           and any("aa-broken.yaml" in m and "outside the parser subset" in m for m in _w1406_m6)
+           and any("dd-parses-invalid.yaml" in m and "work_per_token must be one of" in m
                    for m in _w1406_m6)
+           and any("duplicate shift id" in m and "era-second-model" in m for m in _w1406_m6)
            and any("era-third-model" in m and "one era" in m for m in _w1406_m6)
-           and [s["id"] for s in _w1406_shifts6] == ["era-second-model"])
+           and any("era-zzz-restamped" in m and _W1406_OTHER_SPELLING_AT in m
+                   and "one moment" in m for m in _w1406_m6))
+
+    expect("WARP-1406 AC5 NEGATIVE CONTROL FOR THE FAIL-CLOSED BRANCH: the two records the loader "
+           "refused through validate_shift and through the duplicate-id rule DID parse cleanly, read "
+           "back through the same one parser straight from the fixture, so their refusal is the "
+           "loader's own judgement and not the parser's. And the good record beside them is not just "
+           "present in the ledger, it is BYTE-EQUAL to what record_shift wrote, so a loader that "
+           "returned a truncated or defaulted record for the survivor would red here",
+           len(_w1406_parsed6) == 6
+           and all(isinstance(r, dict) and r.get("id") for r in _w1406_parsed6)
+           and [NORM.validate_shift(r, _W1406_ISO) != [] for r in _w1406_parsed6
+                if r.get("work_per_token") == "better"] == [True]
+           and _w1406_shifts6[:1] == [V.parse_yamlish(
+               (_w1406_led6 / "bb-good.yaml").read_text())])
+
+    _w1406_eras6 = NORM.eras(_w1406_shifts6)
+    _w1406_spans6 = [(e["era"], _W1406_ISO(e["from"]), _W1406_ISO(e["to"]))
+                     for e in _w1406_eras6 if e["from"] and e["to"]]
+    expect("WARP-1406 AC5: THE SAME-INSTANT REFUSAL IS DECIDED ON THE PARSED INSTANT, NOT ON THE "
+           "TIMESTAMP STRING, SO ONE MOMENT SPELLED TWO WAYS IS STILL ONE BOUNDARY. "
+           "`2026-01-04T00:00:00Z` and `2026-01-04T00:00:00+00:00` are the same instant, asserted "
+           "here through the one timestamp reader rather than assumed, and keying the check on the "
+           "text accepted BOTH with zero problems reported: `eras()` then emitted an interval half "
+           "open on the right at its OWN LEFT EDGE, so an era was declared, listed in eras_declared "
+           "and reported in the view while no actual could ever be in it - a whole era of numbers "
+           "silently attributed to its successor. Asserted as the PROPERTY rather than as the one "
+           "spelling: every era interval this ledger produces has its start strictly before its end, "
+           "which no pair of records claiming one moment can satisfy",
+           _W1406_ISO("2026-01-04T00:00:00Z") == _W1406_ISO(_W1406_OTHER_SPELLING_AT)
+           and _w1406_spans6 != []
+           and all(lo < hi for _era, lo, hi in _w1406_spans6)
+           and NORM.era_at(_w1406_eras6, "2026-01-04T00:00:00Z", _W1406_ISO) == "era-second-model"
+           and NORM.era_at(_w1406_eras6, "2026-01-03T23:59:59Z", _W1406_ISO) == NORM.ERA_UNSTAMPED
+           and [e["era"] for e in _w1406_eras6]
+           == [NORM.ERA_UNSTAMPED, "era-second-model", "era-later-model"])
 
 with tempfile.TemporaryDirectory() as _w1406_d7:
     _w1406_m7, _w1406_r7 = _w1406_capture()
@@ -898,17 +1178,151 @@ with tempfile.TemporaryDirectory() as _w1406_d7:
            and NORM.eras([]) == [{"era": NORM.ERA_UNSTAMPED, "model": None, "from": None,
                                   "to": None, "work_per_token": None}])
 
-_w1406_verify_text = (ROOT / "scripts/verify.sh").read_text()
-expect("WARP-1406 AC5: NO GATE STAGE CONSULTS THIS MODULE. Normalization is advisory by "
-       "construction (PLAN-0014 NG1: nothing in that plan gates, blocks or refuses work on an "
-       "estimate), and a display layer that could redden a build would make a planning convenience "
-       "into a blocker on real work. NEGATIVE CONTROL IN THE SAME ASSERTION: the search is shown to "
-       "WORK by finding the modules the gate DOES invoke, so this is not an absence measured with a "
-       "broken instrument",
-       "toe_normalize" not in _w1406_verify_text
-       and "toe_corpus" not in _w1406_verify_text
-       and "scripts/selftest.py" in _w1406_verify_text
-       and ".veldo/validate.py" in _w1406_verify_text)
+# ---------------------------------------------------------------------------------------
+# AC5, ADVISORY: NO GATE STAGE CONSULTS THIS MODULE.
+#
+# THE SUBJECT IS THE GATE'S OWN STAGES, DERIVED, AND THE PREVIOUS VERSION OF THIS ROW COULD NOT FAIL
+# FOR THE DEFECT IT NAMES. It was `"toe_normalize" not in scripts/verify.sh`: a substring scan over
+# ONE file's text, while the property is about the gate's STAGES. verify.sh does not name the modules
+# `validate.py` loads, so a stage added inside `validate.run_all` is invisible to it. MEASURED on the
+# tree before this row changed: a stage that loads this module by path, builds the view over the
+# repository and calls fail() when no peg is in force took `.veldo/validate.py all` to exit 1 printing
+# ".veldo/toe_normalize.py: the normalized planning view has no peg in force" - a gate reddened on a
+# planning number, which is exactly what PLAN-0014 NG1 forbids and what this criterion exists to
+# prevent - and this suite stayed at 60 passed, 0 failed.
+#
+# The fix shape is PLAN-0018 finding 63's, already driven for VELDO-0003's organ: the DOMAIN becomes
+# the gate's own stages (validate.py, validate_checks.py, the organs validate.py loads, and the stage
+# scripts verify.sh names), and the assertion is that none of THEM loads this module. That set is a
+# DEFECT set by construction rather than a population - NG1 forbids every member of it and no
+# legitimate change adds one - so requiring it empty cannot rot the day somebody uses the feature,
+# which the ADDITIVE control at the end of this fragment measures from the other side.
+#
+# LOADS, BY AST, NOT MENTIONS: /veldo:init and scripts/publish.py legitimately NAME this module in
+# order to ship it, and naming is not consulting. A stage this suite cannot READ or PARSE is NAMED in
+# the same list rather than answered False, because a stage nobody could read is not a stage in which
+# an absence was measured.
+import ast as _w1406_ast  # noqa: E402 - the detector below; the fragment IS the module body
+
+_W1406_LOADERS = ("spec_from_file_location", "_organ", "_load", "_sibling", "import_module")
+
+
+def _w1406_names_norm(value):
+    """True when this string constant names THIS module: a path to it, its filename, or an import
+    alias ending in its stem. Basename STEM, so a directory of that name elsewhere in the argument
+    does not decide it."""
+    stem = value.replace("\\", "/").rsplit("/", 1)[-1]
+    if stem.endswith(".py"):
+        stem = stem[:-3]
+    return stem == "toe_normalize" or stem.endswith("toe_normalize")
+
+
+def _w1406_loads_norm_text(src):
+    """Whether this SOURCE loads .veldo/toe_normalize.py, by AST: a call to one of the loader
+    functions this repository uses, with a string ANYWHERE in its arguments naming the module -
+    anywhere, because `ROOT / ".veldo" / "toe_normalize.py"` is a BinOp and the constant sits inside
+    it, and a detector that only reads DIRECT arguments is blind to the spelling validate.py itself
+    uses for every organ it loads (PLAN-0018 finding 63 measured exactly that)."""
+    try:
+        tree = _w1406_ast.parse(src)
+    except SyntaxError as _e:
+        return "UNPARSEABLE: %s" % _e
+    for node in _w1406_ast.walk(tree):
+        if not isinstance(node, _w1406_ast.Call):
+            continue
+        fname = (node.func.attr if isinstance(node.func, _w1406_ast.Attribute)
+                 else getattr(node.func, "id", ""))
+        if fname not in _W1406_LOADERS:
+            continue
+        for arg in list(node.args) + [kw.value for kw in node.keywords]:
+            for sub in _w1406_ast.walk(arg):
+                if isinstance(sub, _w1406_ast.Constant) and isinstance(sub.value, str) \
+                        and _w1406_names_norm(sub.value):
+                    return True
+    return False
+
+
+def _w1406_gate_stage_files():
+    """The files a GATE RUN executes, derived from the gate's own two declarations rather than listed
+    here: validate.py is the built-in stage set, the organs it loads by path are part of a gate run
+    too, and verify.sh names the script stages. A stage added to either declaration is in this domain
+    automatically, which is what makes the emptiness below a defect set rather than a snapshot."""
+    out = {ROOT / ".veldo" / "validate.py", ROOT / ".veldo" / "validate_checks.py"}
+    vsh = ROOT / "scripts" / "verify.sh"
+    if vsh.is_file():
+        text = vsh.read_text()
+        for cand in sorted((ROOT / "scripts").glob("*.py")):
+            if cand.name in text:
+                out.add(cand)
+    try:
+        vtree = _w1406_ast.parse((ROOT / ".veldo" / "validate.py").read_text())
+    except (OSError, SyntaxError):
+        vtree = None
+    if vtree is not None:
+        for node in _w1406_ast.walk(vtree):
+            if isinstance(node, _w1406_ast.Constant) and isinstance(node.value, str) \
+                    and node.value.endswith(".py"):
+                cand = ROOT / ".veldo" / Path(node.value).name
+                if cand.is_file():
+                    out.add(cand)
+    return sorted(p for p in out if p.is_file())
+
+
+def _w1406_gate_consumers_of(stage_files):
+    """The gate stages that LOAD this module, each named, with any this suite could not read carried
+    into the SAME list rather than dropped."""
+    out = []
+    for p in stage_files:
+        if p.name == "toe_normalize.py":
+            continue
+        try:
+            verdict = _w1406_loads_norm_text(p.read_text())
+        except OSError as _e:
+            verdict = "UNREADABLE: %s" % _e
+        if verdict is True:
+            out.append(p.relative_to(ROOT).as_posix())
+        elif verdict is not False:
+            out.append("%s: %s" % (p.relative_to(ROOT).as_posix(), verdict))
+    return sorted(out)
+
+
+_w1406_stage_files = _w1406_gate_stage_files()
+_w1406_gate_consumers = _w1406_gate_consumers_of(_w1406_stage_files)
+_W1406_GATE_SPELLING = ('def run_all():\n'
+                        '    _s = importlib.util.spec_from_file_location(\n'
+                        '        "veldo_toe_norm_gate", ROOT / ".veldo" / "toe_normalize.py")\n')
+_W1406_LITERAL_SPELLING = 'def _p():\n    return _load("norm", ".veldo/toe_normalize.py")\n'
+_W1406_OTHER_SPELLING = 'def _p():\n    return _load("corp", ".veldo/toe_corpus.py")\n'
+
+expect("WARP-1406 AC5: NO GATE STAGE CONSULTS THIS MODULE, and the SUBJECT is the gate's own stages "
+       "rather than one file's text. Normalization is advisory by construction (PLAN-0014 NG1: "
+       "nothing in that plan gates, blocks or refuses work on an estimate), and a display layer that "
+       "could redden a build would make a planning convenience into a blocker on real work. This row "
+       "used to be `'toe_normalize' not in scripts/verify.sh`, which cannot fail for the defect it "
+       "names: verify.sh never names the modules validate.py loads, and a real stage added to "
+       "validate.run_all took `.veldo/validate.py all` to exit 1 on a planning number while this "
+       "suite stayed green. The domain is now DERIVED from validate.py, validate_checks.py, the "
+       "organs validate.py loads by path, and the stage scripts verify.sh names, so a stage added to "
+       "either declaration is covered without editing this row, and the set is a DEFECT set NG1 "
+       "forbids every member of rather than a population a legitimate use joins (%d stage(s) read, "
+       "consumers: %s)" % (len(_w1406_stage_files), _w1406_gate_consumers),
+       bool(_w1406_stage_files) and _w1406_gate_consumers == []
+       and (ROOT / ".veldo" / "validate.py") in set(_w1406_stage_files)
+       and (ROOT / "scripts" / "selftest.py") in set(_w1406_stage_files))
+
+expect("WARP-1406 AC5 NEGATIVE CONTROL, AND IT IS THE ROW ABOVE'S REACH: the detector FIRES on both "
+       "spellings a gate stage could use - a literal \".veldo/toe_normalize.py\" and the "
+       "`ROOT / \".veldo\" / \"toe_normalize.py\"` form validate.py already uses for every organ it "
+       "loads - and stays SILENT on a load of a different organ and on a mere MENTION of this one, "
+       "since /veldo:init and scripts/publish.py both name the module in order to ship it and naming "
+       "is not consulting. A stage it cannot parse is NAMED rather than answered False, and that "
+       "state is driven here too. Without this leg the emptiness above would be an absence measured "
+       "with an instrument nobody had shown could detect anything",
+       _w1406_loads_norm_text(_W1406_LITERAL_SPELLING) is True
+       and _w1406_loads_norm_text(_W1406_GATE_SPELLING) is True
+       and _w1406_loads_norm_text(_W1406_OTHER_SPELLING) is False
+       and _w1406_loads_norm_text('X = "engine/.veldo/toe_normalize.py"\n') is False
+       and str(_w1406_loads_norm_text("def (:\n")).startswith("UNPARSEABLE"))
 
 expect("WARP-1406: the module lands in BOTH engine homes byte-identically, so what /veldo:init "
        "lays down for an adopter is what this repository runs (PLAN-0014 C5). Asserted as a byte "
@@ -917,6 +1331,7 @@ expect("WARP-1406: the module lands in BOTH engine homes byte-identically, so wh
        (ROOT / "engine/.veldo/toe_normalize.py").is_file()
        and (ROOT / ".veldo/toe_normalize.py").read_bytes()
        == (ROOT / "engine/.veldo/toe_normalize.py").read_bytes())
+
 
 # ---------------------------------------------------------------------------------------
 # THE REAL REPOSITORY, ONCE. The invariant asserted here is one that holds whether or not
@@ -973,3 +1388,75 @@ expect("WARP-1406: OVER THIS REPOSITORY'S OWN CORPUS AND LOG, NO ROW EVER CARRIE
        and (not (ROOT / NORM.ERAS_DIR).is_dir()
             or NORM.load_ledger(ROOT / NORM.ERAS_DIR, V.parse_yamlish,
                                 _w1406_capture()[1], _W1406_ISO)[1] == 0))
+
+# ---------------------------------------------------------------------------------------
+# A TREE THAT CARRIES THIS MODULE AND NOT ITS SIBLINGS, WHICH IS WHAT AN ADOPTER GETS TODAY.
+#
+# This module reads three siblings by path (toe_corpus.py, metrics.py, validate.py). A pack that
+# ships this file into a tree laid down without them produced a raw traceback:
+# `FileNotFoundError: .../.veldo/toe_corpus.py`, exit 1, with no sentence a reader could act on -
+# PLAN-0018 finding 61's shape in a new module. Driven in a REAL TREE and through the real CLI
+# rather than reasoned about, and built by copying the ENGINE copy of this module, which is the byte
+# an adopter receives.
+#
+# THE TREE IS CONSTRUCTED HERE RATHER THAN SCAFFOLDED, AND THE EXCLUSION IS EXACTLY TWO FILES.
+# Asserting which modules the installer lays down would pin live state the installer is about to
+# change; a tree that carries every other organ and NOT the two this module reads its data through is
+# a defect BY CONSTRUCTION and stays one however the installer's set grows. Every other .veldo module
+# is copied rather than a discovered subset, because validate.py loads organs of its own at import
+# time and a hand-listed closure would rot the day it gains one.
+# ---------------------------------------------------------------------------------------
+_W1406_ORPH_WITHHELD = ("toe_corpus.py", "metrics.py")
+with tempfile.TemporaryDirectory() as _w1406_dorph:
+    _w1406_orph = Path(_w1406_dorph) / ".veldo"
+    _w1406_orph.mkdir()
+    for _w1406_src in sorted((ROOT / ".veldo").glob("*.py")):
+        if _w1406_src.name not in _W1406_ORPH_WITHHELD:
+            (_w1406_orph / _w1406_src.name).write_bytes(_w1406_src.read_bytes())
+    (_w1406_orph / "toe_normalize.py").write_bytes(
+        (ROOT / "engine/.veldo/toe_normalize.py").read_bytes())
+    (Path(_w1406_dorph) / "specs").mkdir()
+    _w1406_orph_report = subprocess.run(
+        [sys.executable, ".veldo/toe_normalize.py", "report"], cwd=_w1406_dorph,
+        capture_output=True, text=True)
+    _w1406_orph_write = subprocess.run(
+        [sys.executable, ".veldo/toe_normalize.py", "record-shift", "--id", "era-x",
+         "--at", "2026-01-04T00:00:00Z", "--model", "m", "--work-per-token", "increased"],
+        cwd=_w1406_dorph, capture_output=True, text=True)
+
+    expect("WARP-1406 AC5, ADOPTION SAFE THE OTHER WAY: IN A TREE THAT CARRIES THIS MODULE WITHOUT "
+           "ITS SIBLING ORGANS, THE READ VERB NAMES THE ABSENT ORGAN AND STANDS DOWN INSTEAD OF "
+           "RAISING. Measured through the real CLI in a real directory: `report` exits 0 and prints "
+           "one line naming `.veldo/toe_corpus.py` and saying this is an incomplete install rather "
+           "than a repository with nothing recorded, and no traceback and no FileNotFoundError reach "
+           "the reader. Before this the same command exited 1 on a raw FileNotFoundError, which is "
+           "what an adopter receives the moment the pack ships this file, and a reader cannot act on "
+           "a traceback. A READER that cannot answer names the state; a WRITER refuses, and "
+           "`record-shift` in that same tree exits 1 naming the organ it could not load, because "
+           "nothing was appended and a zero exit there would claim a record that does not exist",
+           len(_W1406_ORPH_WITHHELD) == 2
+           and not (_w1406_orph / "toe_corpus.py").exists()
+           and _w1406_orph_report.returncode == 0
+           and "toe_corpus.py" in _w1406_orph_report.stdout
+           and "standing down" in _w1406_orph_report.stdout
+           and "incomplete install" in _w1406_orph_report.stdout
+           and "Traceback" not in _w1406_orph_report.stderr
+           and "FileNotFoundError" not in _w1406_orph_report.stderr
+           and _w1406_orph_write.returncode == 1
+           and "metrics.py" in _w1406_orph_write.stderr
+           and "Traceback" not in _w1406_orph_write.stderr)
+
+    expect("WARP-1406 AC5 NEGATIVE CONTROL FOR THE ABSENT-ORGAN STAND-DOWN: the same module in THIS "
+           "repository, where every sibling is present, does NOT stand down - it builds the real view "
+           "and prints a peg line - so the stand-down is an absent organ being named and not a module "
+           "that has stopped answering. And the stand-down is reached only through absence: with the "
+           "organs present, `OrganAbsent` is never raised, and `_sibling` returns a loaded module for "
+           "each of the three",
+           "standing down: this module reads the sibling organ" not in "".join(_w1406_live["lines"])
+           and _w1406_live["lines"][0].startswith("peg:")
+           and all(hasattr(NORM._sibling(_n, _r), "__name__") for _n, _r in
+                   (("veldo_toe_corpus_probe", ".veldo/toe_corpus.py"),
+                    ("veldo_metrics_probe", ".veldo/metrics.py"),
+                    ("veldo_validate_probe", ".veldo/validate.py")))
+           and _w1406_raised(NORM._sibling, "veldo_absent_probe", ".veldo/no_such_organ.py")[1]
+           .startswith("OrganAbsent"))

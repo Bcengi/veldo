@@ -286,12 +286,22 @@ def _refuse_escape(entry, where):
 
 
 def _file_facts(base, rel):
-    """(bytes, lines) for one repo-relative file. `lines` counts newlines plus a final
-    unterminated line, which is the count a reader expects."""
+    """(bytes, lines, content) for one repo-relative file. `lines` counts newlines plus a final
+    unterminated line, which is the count a reader expects.
+
+    `content` IS THE SHA256 OF THE BYTES, and it is here because bytes and lines are an INVENTORY
+    of the code rather than the code. The most ordinary edit there is - an inverted comparison, an
+    identifier renamed to the same length, a changed constant - leaves both figures identical, so a
+    brief that carried only them had a digest that did not move and a judgement made about the old
+    code was reused against the new code. That is this item's stated catastrophic failure mode
+    arriving through the mechanism built to prevent it, since W5 would then score a real actual
+    against a prediction about different code. The bytes are already read here, so this costs one
+    hash per matched file and nothing else."""
     data = (Path(base) / rel).read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
     if not data:
-        return 0, 0
-    return len(data), data.count(b"\n") + (0 if data.endswith(b"\n") else 1)
+        return 0, 0, digest
+    return len(data), data.count(b"\n") + (0 if data.endswith(b"\n") else 1), digest
 
 
 def _walk(base, start):
@@ -334,8 +344,13 @@ def code_facts(footprint, root=None):
                  entries carry a metacharacter, so refusing to resolve them would blind the
                  brief on one entry in six.
 
-    `bytes` and `lines` are present only where something was actually measured: an entry that
-    matched nothing carries no size at all rather than a zero that reads like a measurement."""
+    `bytes`, `lines` and `content` are present only where something was actually measured: an entry
+    that matched nothing carries no size at all rather than a zero that reads like a measurement.
+
+    `content` IS WHAT MAKES THE DIGEST BIND THE CODE. It is the sha256 of each matched file's PATH
+    and its BYTES, in resolved order, so an edit that preserves size and line count still moves it
+    and a rename moves it too. Without it this block was an inventory - paths, a byte count, a line
+    count - and a judgement survived any same-size edit to the code it was made about."""
     base = Path(root) if root else ROOT
     rx = _arch()._glob_re
     entries, existing, to_create, patterns, unmatched = [], 0, 0, 0, 0
@@ -365,11 +380,13 @@ def code_facts(footprint, root=None):
         ent = {"entry": e, "kind": kind, "matched": len(paths), "paths": paths}
         if paths:
             b = l = 0
+            h = hashlib.sha256()
             for f in paths:
-                fb, fl = _file_facts(base, f)
+                fb, fl, fh = _file_facts(base, f)
                 b += fb
                 l += fl
-            ent["bytes"], ent["lines"] = b, l
+                h.update(("%s\x00%s\x00" % (f, fh)).encode("utf-8"))
+            ent["bytes"], ent["lines"], ent["content"] = b, l, h.hexdigest()
             tot_bytes += b
             tot_lines += l
             existing += len(paths)
@@ -401,7 +418,10 @@ def ledger_state(events):
     the total was summed over (a sum without its basis is not a measurement), and
     `token_anchor_available` answers for the keys it licenses while `anchor_available` answers
     the wider question of whether ANY spend was ever recorded. The estimate record's unit is
-    tokens, so the narrower flag is the one a range can be anchored on.
+    tokens, so the narrower flag is the one a range can be anchored on. `tokens_recorded` is the
+    total as RECORDED and never truncated, with `token_figures_non_integer` beside it counting the
+    figures that are not whole token counts, because a floor applied per event turns real recorded
+    spend into the zero this block refuses to print.
 
     It is a PRESENCE report and never an analogy: matching this spec to similar shipped specs
     and predicting from their actuals is W4, on a different basis. Reuses W1's declared spend
@@ -420,7 +440,19 @@ def ledger_state(events):
                                        if e.get("spec_id") or e.get("correlation_id")})
     if with_tokens:
         out["token_spend_events"] = len(with_tokens)
-        out["tokens_recorded"] = sum(int(e["tokens"]) for e in with_tokens)
+        out["tokens_recorded"] = sum(e["tokens"] for e in with_tokens)
+        # THE TOTAL IS NOT TRUNCATED, AND A FIGURE THAT IS NOT A WHOLE TOKEN COUNT IS NAMED. This
+        # summed with int() per event, which is a floor per event and not a rounding of the total:
+        # `spend.validate` accepts any non-negative number, so two events carrying 0.4 and 0.6
+        # tokens reported `tokens_recorded: 0` beside `token_anchor_available: yes` - a zero that
+        # reads like a measurement next to a flag saying there IS an anchor, which is the one
+        # sentence this block exists to prevent, in its own words. The total is now the figures as
+        # recorded, and the count of figures that are not integers is REPORTED beside it, so a
+        # reader is told the ledger holds a fractional token count instead of having it silently
+        # floored away. Gated on the same field as the keys around it: a ledger with no token
+        # history carries none of these three.
+        out["token_figures_non_integer"] = len([e for e in with_tokens
+                                                if not _is_int(e["tokens"])])
     return out
 
 
@@ -707,14 +739,40 @@ class JudgementFileAgent(SizingAgent):
         return parse_judgement(self.path.read_text())
 
 
-def layer_from(judgement, brief_rec=None):
+def _brief_input(brief_rec, *path):
+    """One value out of the brief, or a refusal that NAMES the block it is missing. A brief that
+    passed the binding is the brief this module derived, so a missing block means somebody handed a
+    hand-built mapping; naming that is a refusal, while reading it blind is an AttributeError out
+    of the layer builder and recording it as absent is a layer that states less than it claims."""
+    cur = brief_rec
+    for k in path:
+        if not isinstance(cur, dict) or k not in cur:
+            raise SizingPassError("the brief this judgement is bound to carries no %s: a layer "
+                                  "records what the agent was actually shown, so a brief missing "
+                                  "that block is refused rather than recorded as absent"
+                                  % "/".join(path))
+        cur = cur[k]
+    return cur
+
+
+def layer_from(judgement, brief_rec):
     """ONE layer contribution: the agent's judgement as the estimate record's sizing_pass
     layer. Refuses an invalid judgement rather than clamping it into shape.
+
+    THE BRIEF IS REQUIRED HERE, and that is the whole of this function's integrity. It used to
+    default to None, which validated the judgement in ISOLATION and then built a layer whose
+    `inputs.brief_digest` was whatever the judgement claimed, with no brief to compare it against;
+    the record builder accepted that layer and the record validated. A field the spec calls this
+    item's integrity must not be reachable-past by omitting an argument, so the binding rule runs
+    UNCONDITIONALLY here - delegated to `_binding_problems`, the one place that rule is spelled -
+    and a brief that is absent or is not a brief is refused by name. `validate_judgement` remains
+    the validate-only entry point for a judgement with no brief in hand (`check_dir`,
+    `record_self_cost`), and it cannot produce a layer.
 
     The layer records the judgement's OWN cost and what share of its own lower bound that is,
     which is PLAN-0014 C4 made checkable, plus the digest of the brief it was made from and
     the model that made it (D5). Crossing the ceiling is reported, never refused."""
-    problems = validate_judgement(judgement, brief_rec)
+    problems = validate_judgement(judgement) + _binding_problems(judgement, brief_rec)
     if problems:
         raise SizingPassError("refusing to build a sizing_pass layer: " + "; ".join(problems))
     lid, basis = layer_vocabulary()
@@ -731,17 +789,21 @@ def layer_from(judgement, brief_rec=None):
         "self_cost_ceiling_bps": SELF_COST_CEILING_BPS,
         "self_cost_within_ceiling": E.YES if bps <= SELF_COST_CEILING_BPS else E.NO,
     }
-    if brief_rec is not None:
-        inputs.update({
-            "brief_acceptance_criteria": brief_rec["features"]["acceptance_criteria"],
-            "brief_regression_surface": brief_rec["features"]["footprint_declared"],
-            "brief_existing_files": brief_rec["code"]["existing_files"],
-            "brief_files_to_create": brief_rec["code"]["to_create"],
-            "brief_existing_lines": brief_rec["code"]["existing_lines"],
-            "brief_prior_low": brief_rec["prior"]["low"],
-            "brief_prior_high": brief_rec["prior"]["high"],
-            "brief_ledger_spend_events": brief_rec["ledger"]["spend_events"],
-        })
+    # WHAT THE AGENT WAS SHOWN, ON THE RECORD, unconditionally. These eight used to be added only
+    # when a brief was passed, so the same call that skipped the binding also dropped every one of
+    # them and nothing noticed: the layer stated a range and a cost with no trace of the question it
+    # answered. W5 reconciles against this record, so the inputs are the only place a later reader
+    # can see what the prediction was made from.
+    inputs.update({
+        "brief_acceptance_criteria": _brief_input(brief_rec, "features", "acceptance_criteria"),
+        "brief_regression_surface": _brief_input(brief_rec, "features", "footprint_declared"),
+        "brief_existing_files": _brief_input(brief_rec, "code", "existing_files"),
+        "brief_files_to_create": _brief_input(brief_rec, "code", "to_create"),
+        "brief_existing_lines": _brief_input(brief_rec, "code", "existing_lines"),
+        "brief_prior_low": _brief_input(brief_rec, "prior", "low"),
+        "brief_prior_high": _brief_input(brief_rec, "prior", "high"),
+        "brief_ledger_spend_events": _brief_input(brief_rec, "ledger", "spend_events"),
+    })
     return {"layer": lid, "basis": basis, "low": low, "high": high,
             "note": judgement["reasoning"].strip(), "inputs": inputs}
 
@@ -775,6 +837,12 @@ def size(spec_path, at, agent=None, protected=(), events=(), root=None):
 
     The agent call is NOT wrapped in a handler. A raising agent raises out of here, because the
     alternative is a fallback, and a fallback here is a fabricated estimate.
+
+    THE BRIEF GOES TO `layer_from` AND THIS IS THE ONLY PATH THAT COMMITS A RECORD, so this line is
+    where the binding is either enforced or lost. It was lost once: `layer_from` accepted a brief of
+    None, so dropping `b` here validated the judgement in isolation and composed a judgement bound
+    to a DIFFERENT brief into a valid committed estimate. The brief is a required argument of
+    `layer_from` now, and the suite drives this call with a judgement bound to another brief.
 
     The record is assembled by W2's own build seam (estimate.propose with an extra layer), so
     the committed range is derived by the one declared combination rule and this module never

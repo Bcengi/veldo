@@ -19,6 +19,14 @@ cannot exist, and the record's `spec` field is checked against the filename rath
 trusted. Records are the front-matter subset and are read with the ONE parser
 (validate.parse_yamlish); nothing here is a second parser.
 
+  AND THE CLAIM ABOVE IS ONLY TRUE BECAUSE AN ID THAT IS NOT ITS OWN FILENAME IS REFUSED.
+  Measured 2026-08-13 by the independent review of this item: with `spec` validated as nothing
+  more than a non-empty string, `../policy` was a VALID key, two ids could name one file, and
+  the writer replaced `.veldo/policy.yaml` with an estimate record. `validate_record` now asks
+  the claim ledger's ONE definition of an id that cannot be stored faithfully
+  (`claim.unit_id_problem`), so the filename-is-the-key premise is enforced rather than assumed,
+  and every reader and writer here inherits it from the one place that defines it.
+
   schema        veldo.estimate/v1, exactly.
   spec          the spec id this estimate is for.
   unit          the unit BOTH bounds are in. Declared ONCE, at the top level, and a layer
@@ -185,6 +193,16 @@ BASE_TENTHS = 10       # every change pays a fixed cost: read the spec, run the 
 AC_TENTHS = 10         # per acceptance criterion: a thing to build AND a thing to prove
 SURFACE_TENTHS = 5     # per declared footprint glob: a path to read and re-prove, cheaper
                        # than a criterion, which is why it is half
+
+# THE NAME OF THIS COEFFICIENT SET, recorded in every layer it produces. Raised by the independent
+# review 2026-08-13: the layer recorded its WEIGHT and its SCALE but not the coefficients the weight
+# was built from, so the docstring's promise that W5 can "refit the scale without touching the
+# structure" held only while these three numbers never changed. The day one of them does, an old
+# record's weight cannot be decomposed and no reader can tell which model produced which record.
+# So the three coefficients go INTO the layer's inputs beside the weight, and this name goes with
+# them: BUMP IT whenever BASE_TENTHS, AC_TENTHS or SURFACE_TENTHS changes, so a reader comparing
+# records across a coefficient change sees two model names rather than one silent discontinuity.
+WEIGHT_MODEL = "structural/v1"
 TOKENS_PER_STRUCTURAL_UNIT = 25000   # THE SCALE, and the one number with no evidence at all
 SPREAD_PCT = 250       # the range is the point divided by and multiplied by 2.50, a ratio of
                        # 6.25. An uncalibrated prior is not entitled to a narrow range, and
@@ -308,6 +326,21 @@ def validate_record(rec, spec_id=None):
         out.append("schema must be %r, got %r" % (SCHEMA, rec.get("schema")))
     if "spec" in rec and not (isinstance(rec["spec"], str) and rec["spec"].strip()):
         out.append("spec must name the spec this estimate is for, got %r" % (rec.get("spec"),))
+    elif "spec" in rec:
+        # THE ID IS THE KEY AND THE KEY IS A FILENAME, SO AN ID THAT CANNOT BE A FILENAME IS
+        # REFUSED HERE - in the ONE gate every reader and every writer in this module already asks,
+        # so no route can reach a record whose key is a path. Until 2026-08-13 this was checked
+        # nowhere and `../policy` was a VALID key: see the schema note in the module docstring.
+        # DELEGATED, NEVER RESPELLED. `claim.unit_id_problem` is this repository's ONE definition
+        # of an id that cannot be stored faithfully, hardened on 2026-08-12 when two task ids were
+        # found to collapse into one claim record. A second character rule here would be the
+        # second-spelling defect this repository has a named rule about, and it would drift.
+        _id_problem = _ledger().unit_id_problem(rec["spec"])
+        if _id_problem is not None:
+            out.append("spec %r cannot be this record's key: %s. An estimate is keyed by a spec id "
+                       "exactly the way a claim is keyed by a unit id - the id becomes a filename "
+                       "under %s - so it obeys that rule from the ONE place that states it"
+                       % (rec["spec"], _id_problem, ESTIMATES_DIR))
     if spec_id is not None and rec.get("spec") != spec_id:
         out.append("this record is filed as %r but says spec: %r; the filename is the key, so "
                    "a record cannot be for a different spec than the one it is filed under"
@@ -596,6 +629,31 @@ def records_dir(root=None):
     return (Path(root) if root else ROOT) / ESTIMATES_DIR
 
 
+def _record_path(d, spec_id):
+    """The ONE place a spec id becomes a record path, for READING and for WRITING both, and the
+    second half of the traversal defence.
+
+    THE FIRST HALF IS THE ID RULE IN `validate_record`, which refuses an id that is not its own
+    filename. This is the half that does not depend on any character rule being right: whatever the
+    id, the file this module touches RESOLVES INSIDE the records directory, or nothing is touched
+    and the refusal names both paths. Defence in depth on purpose - the review that found the
+    traversal found it through an id nothing had thought about, and the next one will be an id
+    nobody has thought about either.
+
+    IT COVERS THE READ AS WELL AS THE WRITE. `estimate_for` used to join the id into a path and
+    open whatever was there, so a poisoned id read a file outside the directory back as an
+    estimate. A reader that answers from outside its own store is a wrong answer, not a crash, and
+    it is the quieter half of the same defect."""
+    p = Path(d) / ("%s.yaml" % spec_id)
+    base = Path(d).resolve()
+    if p.resolve().parent != base:
+        raise ValueError("refusing to treat %r as an estimate key: it resolves to %s, which is "
+                         "OUTSIDE the records directory %s. A record's id is a filename in one "
+                         "directory, and an id that escapes it could read or destroy a file this "
+                         "module was never asked to touch" % (spec_id, p.resolve(), base))
+    return p
+
+
 def load_dir(dirpath=None, root=None):
     """Every valid record present, keyed by spec id, plus the problems found.
 
@@ -623,7 +681,7 @@ def estimate_for(spec_id, dirpath=None, root=None):
     """The committed estimate for one spec, or None. None is an ordinary answer: an estimate
     is opt-in per plan (D3) and its absence never invalidates anything."""
     d = Path(dirpath) if dirpath else records_dir(root)
-    p = d / ("%s.yaml" % spec_id)
+    p = _record_path(d, spec_id)
     if not p.is_file():
         return None
     return read_record(p, spec_id=spec_id)
@@ -636,25 +694,24 @@ def write_record(rec, dirpath=None, root=None, replace=False):
     problems = validate_record(rec)
     if problems:
         raise ValueError("refusing to write an invalid estimate record: " + "; ".join(problems))
-    # THE ID BECOMES A PATH HERE, SO IT IS REFUSED HERE. Measured 2026-08-13 by the independent
-    # review of WARP-1402 and reproduced: a spec whose `id:` is `../policy` is accepted by
-    # validate.check_spec with ZERO errors, and this function then wrote an estimate record OVER
-    # .veldo/policy.yaml - 3977 bytes down to 848 - with no `replace` and no refusal. That file
-    # declares which paths are PROTECTED and what the risk tiers are, so the writer could delete the
-    # policy that governs the writer.
+    # THE ID BECOMES A PATH HERE. Measured 2026-08-13 by the independent review of WARP-1402 and
+    # reproduced: a spec whose `id:` is `../policy` is accepted by validate.check_spec with ZERO
+    # errors, and this function then wrote an estimate record OVER .veldo/policy.yaml - 3977 bytes
+    # down to 848 - with no `replace` and no refusal. That file declares which paths are PROTECTED
+    # and what the risk tiers are, so the writer could delete the policy that governs the writer.
+    # THE ID RULE IS THE `validate_record` CALL ABOVE, asked in the ONE gate every reader and every
+    # writer in this module already asks, so ONE statement covers this write, `build_record`,
+    # `read_record` and `estimate_for` instead of four copies of the same delegation. What is left
+    # here is this function's OWN half: the CONTAINMENT question in `_record_path`, which holds
+    # whatever the character rule turns out to have missed.
     # AND THE OVERWRITE GUARD BELOW DID NOT FAIL, IT WAS ASKED TOO EARLY. `p.exists()` ran before the
     # `d.mkdir()` two lines down, so for `.veldo/estimates/../policy.yaml` it answered about a path
     # that could not resolve yet and returned False; the write then ran after mkdir, when the same
     # path resolved perfectly. A guard that is correct and consulted at the wrong moment is not a
     # guard, and that ordering is fixed too.
-    problem = _ledger().unit_id_problem(rec["spec"])
-    if problem is not None:
-        raise ValueError("refusing to write an estimate record keyed by %r: %s. An estimate is keyed "
-                         "by a spec id the same way a claim is keyed by a unit id, so it obeys the "
-                         "same rule from the same place" % (rec["spec"], problem))
     d = Path(dirpath) if dirpath else records_dir(root)
     d.mkdir(parents=True, exist_ok=True)
-    p = d / ("%s.yaml" % rec["spec"])
+    p = _record_path(d, rec["spec"])
     if p.exists() and not replace:
         raise ValueError("%s already carries a committed estimate for %s: refusing to "
                          "overwrite it, because an estimate edited after the work is not an "
@@ -753,6 +810,17 @@ def structural_proxy(spec_path, protected=(), root=None):
     reader, which is also why a spec with no footprint block gives a surface of 0 instead of
     raising.
 
+    A SURFACE OF 0 MEANS ONE THING ONLY: THE SPEC DECLARED NO BLOCK. A block that is present and
+    reads as nothing is a REFUSAL here, not a zero, and that distinction is the whole finding the
+    independent review raised on 2026-08-13: the footprint reader stopped at the first line that was
+    not a list item, so a comment inside a block truncated it and a comment on its first line
+    emptied it, and this layer then stated `regression_surface: 0` and `protected_touch: no` as
+    MEASUREMENTS. Measured over this repository: 8 of 215 specs got a materially wrong record and 3
+    of them said protected_touch: no about a spec that does touch a declared protected path -
+    the one feature this model calls the strongest mechanical predictor of a wait on a person.
+    The reader is repaired; this refusal is the part that keeps the next unreadable shape from
+    arriving as a confident zero instead of a question.
+
     THE FEATURES ARE READ AND NEVER JUDGED, the same rule WARP-1401 states for the corpus: a
     feature a human has to assess is an estimate wearing a feature's clothes, and it would
     make this layer unfalsifiable. Every input the layer used is returned inside it, including
@@ -766,7 +834,16 @@ def structural_proxy(spec_path, protected=(), root=None):
                          "estimate is never produced from a feature the proxy cannot read, "
                          "and refusing to estimate blocks nothing: the spec stands without "
                          "one" % (spec_path, risk, sorted(DEFAULT_REVIEWS)))
-    touch = bool(C.protected_touch(C.footprint_of(text), tuple(protected)))
+    footprint = C.footprint_of(text)
+    if not footprint and C.footprint_block_present(text):
+        raise ValueError("refusing to estimate %s: it DECLARES a footprint block that the ONE "
+                         "footprint reader reads as EMPTY, so both features this layer takes from "
+                         "it - the regression surface and the protected touch - would be stated as "
+                         "0 and 'no' without being measured. A spec that declares no footprint at "
+                         "all is a surface of 0 and estimates fine; a block nobody can read is a "
+                         "question, and refusing to estimate blocks nothing because the spec "
+                         "stands without one" % (spec_path,))
+    touch = bool(C.protected_touch(footprint, tuple(protected)))
     reviews, gate, source = policy_tier(risk, root)
     cycles = expected_review_cycles(reviews, gate, touch)
     ac, surface = f["acceptance_criteria"], f["footprint_declared"]
@@ -799,6 +876,17 @@ def structural_proxy(spec_path, protected=(), root=None):
             "protected_rework": PROTECTED_REWORK if touch else 0,
             "expected_review_cycles": cycles,
             "structural_weight_tenths": weight_tenths,
+            # THE COEFFICIENTS THE WEIGHT WAS BUILT FROM, and the name of the set they belong to.
+            # Without these the weight is one number a later reader cannot decompose: it could
+            # recompute the weight only by importing TODAY's constants, which is to say it could
+            # never tell a record made under different coefficients from one made under these.
+            # Raised by the independent review 2026-08-13 as the cheap-now, expensive-later half of
+            # the reconciliation this schema exists for, and it is cheap now because no record
+            # written under the old shape exists.
+            "weight_model": WEIGHT_MODEL,
+            "base_tenths": BASE_TENTHS,
+            "ac_tenths": AC_TENTHS,
+            "surface_tenths": SURFACE_TENTHS,
             "tokens_per_structural_unit": TOKENS_PER_STRUCTURAL_UNIT,
             "spread_pct": SPREAD_PCT,
         },

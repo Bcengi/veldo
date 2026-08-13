@@ -55,7 +55,11 @@ acceptance_criteria:
       handed, reads no clock, and writing is IDEMPOTENT BY BYTES: the second pass creates nothing
       and reports every record unchanged, so the pass needs no bookkeeping about whether it already
       ran. A record whose bytes differ is refused by name unless replace is asked for explicitly,
-      because a recorded variance that quietly rewrites itself is a scoreboard. Every estimate that
+      because a recorded variance that quietly rewrites itself is a scoreboard, and a SPEC ID THAT
+      CANNOT BE A FILENAME is refused BEFORE it becomes a path, by delegation to the claim ledger's
+      one definition of an id that cannot be stored faithfully rather than by a second copy of that
+      rule, with the existence question asked after the directory exists because a guard consulted
+      before the path can resolve is not a guard. Every estimate that
       does NOT reconcile is a named standdown row, never a silent omission: not shipped, no spend
       recorded, an actual that is not an integer token count, or an estimate the estimate module
       itself refuses. Selftests drive all four standdown reasons in one pass, require the ledger to
@@ -76,7 +80,10 @@ acceptance_criteria:
       MEASUREMENT FINDS AND NEVER PINNED TO TODAY'S ABSENCE OF DATA: the live event log is
       non-empty, the raw spend predicate and toe_corpus's own reader AGREE over every spec id that
       log names on which of them carry tokens, cost_usd or human_minutes and on the figures
-      themselves, no recorded reconciliation in the tree is malformed, and the honesty rule above is
+      themselves, EVERY PROBLEM THE LEDGER READER REPORTS NAMES THE RECORD IT IS ABOUT - driven over
+      records planted malformed in the suite, never by requiring the tree to hold none, because a
+      present-but-malformed record is AC5's named finding and not a red gate - and the honesty rule
+      above is
       then required on the arm the live ledger puts it on - the stand-down when nothing is recorded,
       which is the branch running here today, and the measured, internally reproducible figures when
       something is - with the paired control that the same predicate DOES find spend in a seeded
@@ -95,8 +102,16 @@ acceptance_criteria:
       to blend two eras (D5). The refit is delivered as a `recalibrated` layer in estimate.py's
       existing vocabulary through its own record assembler, its range is the OBSERVED envelope of
       implied scales floored so that agreement cannot become false precision, and its inputs
-      reproduce its own bounds. It is scored LEAVE-ONE-OUT: on a ledger with a planted 3x bias the
-      held-out refit takes the hit rate from 0 to 100 percent and the mean absolute error to zero.
+      reproduce its own bounds. THE FLOOR IS A PROPERTY OF THE TOKEN BOUNDS A READER SEES AND IS
+      TESTED THERE, not only of the scale envelope they were fitted from: applying it to the scales
+      and then rounding the bounds recollapsed the range at small structural weights and low fitted
+      scales, which produced the exact sentence this floor exists to refuse (a range ONE ROUNDING
+      STEP wide) on a layer whose own inputs recorded that the floor had been applied. It is
+      asserted as a TOTAL property over a swept grid of weights and envelopes rather than at one
+      point, with the grid required to reach the region where a returned range is only a few
+      rounding steps wide, and with both floor arms present in it. It is scored LEAVE-ONE-OUT: on
+      a ledger with a planted 3x bias the held-out refit takes the hit rate from 0 to 100 percent
+      and the mean absolute error to zero.
       Three controls sit beside that claim: on an already-calibrated ledger the refit recovers the
       declared scale and reports NO improvement; on a ledger whose implied scales span 16x the
       improvement is bought with WIDTH and the width delta says so on the same line; and the
@@ -108,7 +123,14 @@ acceptance_criteria:
       CLI's check exits 0 saying so; a record that is PRESENT and malformed is named rather than
       quietly dropped, so an accuracy number is never computed over a silently smaller ledger.
       Nothing in scripts/verify.sh or the contract validator names this module, and the module names
-      no subprocess, socket or urllib import and no clock. And the load-bearing pair: a spec with NO
+      no subprocess, socket or urllib import and no clock. THAT LAST CLAUSE IS ABOUT THIS FILE'S OWN
+      BYTES AND NOT ABOUT ITS CALL GRAPH, and the difference is measured rather than reasoned from
+      the import list: the PURE surfaces (pair, accuracy, curve, fit, holdout, compare,
+      validate_record, load_dir, check_dir, recalibrated_layer, render) are counted spawning ZERO
+      processes with subprocess.run wrapped, while build_view, which is the body of the report CLI,
+      reaches git through toe_corpus at one `git log` per spec, so the fan-out of one report is
+      O(specs) git invocations and the module may not claim it cannot spawn a process. And the
+      load-bearing pair: a spec with NO
       reconciliation, a spec with a VALID one beside it, and a spec with a MALFORMED one beside it
       all return the identical result from the real validate.check_spec, with the negative control
       that the same validator DOES refuse a genuinely broken spec under the same hermetic root - so
@@ -189,13 +211,26 @@ actual above the committed high is 9 RED where the same mutation over an empty l
 
 ## Two things the build changed on purpose
 
-**A fitted range needs a floor.** The refitted range is the observed envelope of implied scales,
-which is the right instinct: records that disagree should produce a wide range. But the first
-version of that arithmetic, driven over a seeded ledger where every actual sat at exactly 3x its
-point, produced a range ONE ROUNDING STEP wide. Five records agreeing exactly is not evidence that a
-sixth change is predictable to a tenth of a percent, so a declared minimum spread now floors the
-range and every layer records whether the floor was applied. False precision arriving through
-measured data is still false precision.
+**A fitted range needs a floor, and the floor belongs on the bounds rather than on the inputs.**
+The refitted range is the observed envelope of implied scales, which is the right instinct: records
+that disagree should produce a wide range. But the first version of that arithmetic, driven over a
+seeded ledger where every actual sat at exactly 3x its point, produced a range ONE ROUNDING STEP
+wide. Five records agreeing exactly is not evidence that a sixth change is predictable to a tenth of
+a percent, so a declared minimum spread floors the range and every layer records whether the floor
+was applied. False precision arriving through measured data is still false precision.
+
+THAT FIRST FIX WAS APPLIED IN THE WRONG PLACE AND AN INDEPENDENT REVIEW REFUTED AC4 FOR IT. The
+floor widened the SCALE envelope and the bounds were then rounded to the step, so the rounding
+recollapsed exactly the ranges the floor exists to widen: driven through five real specs at the
+smallest structural weight the proxy can produce and a fitted scale well under the declared prior,
+the shipped layer was 3000..4000, one rounding step wide, a 33 percent spread, while its own
+recorded inputs said the floor had been applied and the estimate validator accepted it. A floor on
+an input is not a floor on the output whenever anything between them rounds. The floor is now tested
+and enforced again on the rounded token bounds, raised to the step ABOVE the minimum rather than
+rounded to the nearer one, and the flag is decided after the rounding, so a layer that says it was
+floored was floored. The check that names it is a property over a swept grid, because the version
+that missed this evaluated one point where the bounds were hundreds of thousands of tokens apart and
+rounding could not bite.
 
 **A hit rate is gameable, so the width is never reported without it.** An estimator answering
 "between one token and a billion" hits every time and reports zero error. The accuracy block
@@ -203,6 +238,22 @@ therefore carries the mean range WIDTH beside the hit rate, and the before/after
 the width delta, which is what turns "the refit improved the hit rate" over a wildly dispersed
 ledger into the true sentence: it bought the hit rate with width. That pair was found by a negative
 control failing, not by review.
+
+## One residual, measured and recorded rather than claimed away
+
+AC5's title says NEVER A BLOCKER, and for this item's own suite fragment that is now measured both
+ways: a malformed record present in the tree leaves this fragment green, because the assertion over
+it requires each reported problem to NAME its record rather than requiring there to be none.
+
+THERE IS A REMAINING PATH TO A RED GATE AND IT IS NOT IN THIS ITEM'S FOOTPRINT, so it is stated here
+instead of being fixed here. `scripts/suites/12_warp_1210_hardening_four.py` builds a relocated
+engine fixture by copying `.veldo` out of this repository and then calling
+`(root / ".veldo" / "reconciliations").mkdir()` with no `exist_ok`. So the FIRST reconciliation
+record this repository records - valid or malformed, written by the sanctioned writer - makes that
+copy carry the directory and that mkdir raise FileExistsError, which takes the whole unit stage down
+with a traceback. MEASURED: with one valid record present, this fragment is green and suite 12 dies.
+The one-word repair belongs to that item's owner, and until it lands, "never a blocker" is true of
+this module and its fragment and not yet true of the gate.
 
 ## Out of scope
 

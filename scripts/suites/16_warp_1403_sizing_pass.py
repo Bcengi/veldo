@@ -79,6 +79,30 @@ be absent:
      the stand-down while data exists) is 1 RED, and `out["tokens_recorded"] = 0` beside a present
      key is 1 RED - the two directions this leg has always existed to catch, now catchable over a
      log that HAS spend in it.
+
+AND SEVEN ADDED 2026-08-13, after the independent review this item had never had returned FAIL on two
+blockers and five majors. The MODULE changes in that round, unlike the two before it, and every
+mutation was applied to BOTH twins. What each new row exists for:
+
+ 11. THE BINDING WAS ASSERTED OFF THE PATH THAT COMMITS A RECORD. `layer_from(judgement, b)` ->
+     `layer_from(judgement)` inside size() left this fragment at 42 passed, 0 failed while a judgement
+     bound to a DIFFERENT brief composed into a valid committed record. Three rows now: the commit
+     path refuses it, the committed layer's eight brief_* inputs EQUAL the brief's own values, and a
+     layer cannot be built unbound. 11 RED under that mutation.
+ 12. THE DIGEST BOUND AN INVENTORY. A footprint file rewritten to different bytes of the SAME length
+     left the brief and its digest byte-identical, because the fixture only ever moved a file from
+     ABSENT to EXISTING. The new row rewrites content at constant size; dropping the module's content
+     hash is 2 RED, and hashing the SIZE instead of the bytes is 1 RED.
+ 13. THE SWEEP PINNED A POPULATION. Adding this module to init_scaffold's lay-down list - which
+     PLAN-0014 W10 requires - and a 12-line advisory reader each reddened it. The subject is the
+     GATE'S OWN STAGES now, per finding 63: both uses are GREEN, a load added to validate.py is 1 RED,
+     and the detector's reach is driven additively.
+ 14. tokens_recorded WAS TRUNCATED and the recount shared the truncation. Two events carrying 0.4 and
+     0.6 tokens reported 0 beside token_anchor_available yes. The new fractional-ledger row plus an
+     accumulator recount: re-introducing int() is 2 RED, one of them the reach equality.
+ 15. AND THE HOLD-BACK, closed at 770bd46: a new row requires that no file this module executes is
+     withheld while the module itself ships, driven BOTH ways so it cannot trap its owner's own
+     disposition change.
 """
 import ast as _w1403_ast
 import hashlib as _w1403_hashlib
@@ -181,10 +205,14 @@ def _w1403_size(*a, **kw):
                 "%s: %s" % (type(e).__name__, e))
 
 
-def _w1403_layer(judgement, brief_rec=None):
+def _w1403_layer(judgement, brief_rec):
     """layer_from with its exception turned into DATA, for the same measured reason as
     _w1403_size above: a refusal raised out of a bare call here killed the fragment mid-run and
-    silenced every assertion after it."""
+    silenced every assertion after it.
+
+    THE BRIEF HAS NO DEFAULT HERE EITHER, deliberately. It used to default to None, mirroring the
+    module's own optional argument, so a call site could omit the binding as quietly as the module
+    let it be omitted - and the row that built a layer from the shipped example did exactly that."""
     try:
         return SP1403.layer_from(judgement, brief_rec), ""
     except BaseException as e:
@@ -465,6 +493,52 @@ with tempfile.TemporaryDirectory() as _d:
            and {k: v for k, v in _w1403_seeded.items() if k != "ledger"}
            == {k: v for k, v in _W1403_BRIEF.items() if k != "ledger"})
 
+    # AND THE HALF OF THE CODE DOMAIN THE FIXTURE ABOVE CANNOT REACH: AN EDIT THAT PRESERVES SIZE.
+    # The attribution fixture above moves a footprint file from ABSENT to EXISTING, which is the one
+    # half of the domain where a code change is guaranteed to move a byte count, so the claim that
+    # the digest binds THE CODE was asserted only where it could not fail. MEASURED 2026-08-13,
+    # before the content hash existed: rewriting a footprint file from `return cents >= 0` to
+    # `return cents <= 0` - 41 bytes and 2 lines both ways - left the brief dict and its digest
+    # BYTE-IDENTICAL (cc4fc534b515...), the stale judgement validated CLEAN against the new brief,
+    # and layer_from built a layer from it. That is this item's stated catastrophic failure mode
+    # arriving through the mechanism built to prevent it, because W5 then scores a real actual
+    # against a prediction about different code. It is also the most ordinary edit there is: an
+    # inverted comparison, an identifier renamed to the same length, a changed constant.
+    _w1403_code_file = _w1403_code_root / ".veldo" / "sizing_nothing_a.py"
+    _w1403_code_was = _w1403_code_file.read_bytes()
+    _w1403_code_file.write_bytes(b"x = 2\ny = 1\n")
+    _w1403_edited = SP1403.brief(_w1403_fix, root=_w1403_code_root)
+    _w1403_after_edit = _w1403_probs(_w1403_judgement(_w1403_with_code), _w1403_edited)
+    _w1403_code_file.write_bytes(_w1403_code_was)
+    _w1403_ent_was = [_e for _e in _w1403_with_code["code"]["entries"]
+                      if _e["kind"] == "file"][0]
+    _w1403_ent_now = [_e for _e in _w1403_edited["code"]["entries"] if _e["kind"] == "file"][0]
+    expect("WARP-1403 AC3: THE DIGEST BINDS THE CODE'S CONTENT, NOT AN INVENTORY OF IT. A footprint "
+           "file is rewritten to DIFFERENT bytes of the SAME length and line count, and the entry's "
+           "bytes, lines and paths are unchanged while its content hash and the brief's digest both "
+           "move, so the judgement made before the edit is REFUSED after it; restoring the original "
+           "bytes restores the original digest, so the binding is a function of the code and not of "
+           "the order things happened in. Without the content hash this row is the one the item "
+           "needed and did not have: bytes and lines are equal under the most ordinary edit there "
+           "is, and the fixture above can only move a file from absent to existing, which is the "
+           "half of the domain where a size change is guaranteed",
+           _w1403_ent_was["bytes"] == _w1403_ent_now["bytes"]
+           and _w1403_ent_was["lines"] == _w1403_ent_now["lines"]
+           and _w1403_ent_was["paths"] == _w1403_ent_now["paths"]
+           # READ AS DATA, NEVER SUBSCRIPTED. Driven 2026-08-13: with `ent["content"]` subscripted
+           # here, the declared falsification for this criterion (dropping the key from the module)
+           # raised KeyError out of the fragment and produced ZERO verdict lines, so the row it
+           # names was never seen failing - a crash is strictly worse than a red, and it is the
+           # defect this file's own header records. Absent reads as None, and None == None fails
+           # the inequality, which reds THIS row and nothing else.
+           and _w1403_ent_was.get("content") != _w1403_ent_now.get("content")
+           and len(_w1403_ent_was.get("content") or "") == 64
+           and SP1403.brief_digest(_w1403_edited)
+           != SP1403.brief_digest(_w1403_with_code)
+           and "does not match the brief actually read" in _w1403_after_edit
+           and SP1403.brief_digest(SP1403.brief(_w1403_fix, root=_w1403_code_root))
+           == SP1403.brief_digest(_w1403_with_code))
+
     expect("WARP-1403 AC3: A STALE OR TRANSPLANTED JUDGEMENT IS REFUSED BY NAME. A judgement "
            "carrying the digest of a DIFFERENT brief is refused with both digests in the message, "
            "and a judgement naming a different spec is refused as a judgement about another "
@@ -473,6 +547,86 @@ with tempfile.TemporaryDirectory() as _d:
                _w1403_judgement(_w1403_more_acs, spec=_W1403_BRIEF["spec"]), _W1403_BRIEF)
            and "cannot be moved to another" in _w1403_probs(
                _w1403_judgement(_W1403_BRIEF, spec="WARP-9999"), _W1403_BRIEF))
+
+    # THE BINDING ON THE PATH THAT COMMITS A RECORD, and not only inside the rule that spells it.
+    # MEASURED 2026-08-13, before this row existed: the one-token change
+    # `layer_from(judgement, b)` -> `layer_from(judgement)` inside size() left this fragment at 42
+    # passed, 0 failed, and with it a judgement carrying the digest of a DIFFERENT brief composed
+    # into a VALID committed estimate record - committed range (50000, 1200000), record valid True -
+    # while the layer silently dropped all eight brief_* inputs. Every row that exercised the
+    # binding called validate_judgement or _binding_problems DIRECTLY, so the inner rule had teeth
+    # and its one call site had none. size() is the only path that produces a committed record, so
+    # the refusal is driven THERE, with the clean composition at the top of this file as the control
+    # that says the same path accepts a judgement that IS bound.
+    _w1403_stale_j = _w1403_judgement(_w1403_more_acs, spec=_W1403_BRIEF["spec"])
+    _w1403_stale_out, _w1403_stale_err = _w1403_size(
+        _w1403_fix, _W1403_AT, agent=_W1403Agent(_w1403_stale_j))
+    expect("WARP-1403 AC3: THE COMMIT PATH ITSELF REFUSES A JUDGEMENT BOUND TO ANOTHER BRIEF. "
+           "size() is driven with an agent returning a judgement whose digest is the digest of a "
+           "DIFFERENT brief for the same spec, and the pass refuses with both digests named and "
+           "commits NOTHING, while the identical path with the correctly bound judgement composes a "
+           "record. The spec says brief_digest 'carries most of this item's integrity', and an "
+           "integrity check asserted only where it is called directly is a rule whose call site is "
+           "unguarded: dropping the brief from this one call left every other row in this file "
+           "green while a stale judgement became a committed range",
+           _w1403_stale_err != ""
+           and "does not match the brief actually read" in _w1403_stale_err
+           and _w1403_stale_out["record"] == {} and _w1403_stale_out["layer"] == {}
+           and _W1403_ERR == "" and SP1403.layer_of(_W1403_REC) is not None)
+
+    # WHAT THE AGENT WAS SHOWN, ON THE COMMITTED RECORD. The eight brief_* inputs were added only
+    # when a brief was passed, so the same mutation that skipped the binding also dropped all eight
+    # and nothing in this file noticed. Enumerated HERE from the brief by hand rather than from the
+    # module's own dict, so the two are independent spellings and a key that stops being recorded,
+    # or a value taken from somewhere else, reds this row.
+    _w1403_layer_in = (SP1403.layer_of(_W1403_REC) or {}).get("inputs") or {}
+    _W1403_BRIEF_INPUTS = {
+        "brief_acceptance_criteria": _W1403_BRIEF["features"]["acceptance_criteria"],
+        "brief_regression_surface": _W1403_BRIEF["features"]["footprint_declared"],
+        "brief_existing_files": _W1403_BRIEF["code"]["existing_files"],
+        "brief_files_to_create": _W1403_BRIEF["code"]["to_create"],
+        "brief_existing_lines": _W1403_BRIEF["code"]["existing_lines"],
+        "brief_prior_low": _W1403_BRIEF["prior"]["low"],
+        "brief_prior_high": _W1403_BRIEF["prior"]["high"],
+        "brief_ledger_spend_events": _W1403_BRIEF["ledger"]["spend_events"],
+    }
+    expect("WARP-1403 AC3: THE COMMITTED LAYER CARRIES THE BRIEF IT WAS MADE FROM, all eight "
+           "inputs and the digest, asserted as an EQUALITY against the brief's own values so a "
+           "ninth key or a value read from somewhere else reds this rather than passing. W5 "
+           "reconciles a real actual against this record, so these inputs are the only place a "
+           "later reader can see what the prediction was made from; a layer that states a range "
+           "and a cost with no trace of the question they answer cannot be scored, and the "
+           "mutation that dropped the brief from the commit path dropped every one of them",
+           {_k: _v for _k, _v in _w1403_layer_in.items()
+            if _k.startswith("brief_") and _k != "brief_digest"} == _W1403_BRIEF_INPUTS
+           and _w1403_layer_in.get("brief_digest") == SP1403.brief_digest(_W1403_BRIEF))
+
+    # THE ARGUMENT THAT USED TO BE OPTIONAL, which is what made the mutation above invisible.
+    # layer_from(judgement) validated the judgement in ISOLATION and built a layer whose
+    # inputs.brief_digest was whatever the judgement claimed, with no brief to compare it to; the
+    # record builder accepted it and the record validated clean. Three refusals, each naming its
+    # own state: no brief, a mapping that is not a brief, and a brief-shaped mapping whose digest
+    # binds but whose blocks are missing (which used to be an AttributeError out of the builder).
+    _w1403_stub_brief = {"schema": SP1403.BRIEF_SCHEMA, "spec": _W1403_BRIEF["spec"]}
+    _w1403_unbound = _w1403_raises(SP1403.layer_from, _W1403_J, None)
+    _w1403_notbrief = _w1403_raises(SP1403.layer_from, _W1403_J,
+                                    {"schema": "veldo.spec/v1", "spec": _W1403_BRIEF["spec"]})
+    _w1403_hollow = _w1403_raises(
+        SP1403.layer_from,
+        _w1403_judgement(_W1403_BRIEF, brief_digest=SP1403.brief_digest(_w1403_stub_brief)),
+        _w1403_stub_brief)
+    expect("WARP-1403 AC3: A LAYER CANNOT BE BUILT WITHOUT THE BRIEF IT IS BOUND TO. layer_from "
+           "refuses with no brief, refuses a mapping that is not a veldo.sizing_brief/v1 brief, and "
+           "refuses a brief-shaped mapping that binds by digest but carries no features block - "
+           "naming the missing block rather than raising an AttributeError out of the builder or "
+           "recording the input as absent. validate_judgement stays the validate-only entry point "
+           "for a judgement with no brief in hand and cannot produce a layer. A field the spec "
+           "calls this item's integrity must not be reachable-past by omitting an argument",
+           _w1403_unbound[0] and "is not a veldo.sizing_brief/v1 brief" in _w1403_unbound[1]
+           and "NoneType" in _w1403_unbound[1]
+           and _w1403_notbrief[0] and "cannot bind this judgement" in _w1403_notbrief[1]
+           and _w1403_hollow[0] and "carries no features/acceptance_criteria" in _w1403_hollow[1]
+           and _w1403_layer(_W1403_J, _W1403_BRIEF)[1] == "")
 
     _w1403_facts = SP1403.code_facts(
         [".veldo/sizing_nothing_a.py", ".veldo/sizing_nothing_b.py"], root=_w1403_code_root)
@@ -485,6 +639,8 @@ with tempfile.TemporaryDirectory() as _d:
            _w1403_facts["existing_files"] == 1 and _w1403_facts["to_create"] == 1
            and _w1403_file_entry["bytes"] == 12 and _w1403_file_entry["lines"] == 2
            and "bytes" not in _w1403_absent_entry and "lines" not in _w1403_absent_entry
+           and "content" not in _w1403_absent_entry
+           and len(_w1403_file_entry.get("content") or "") == 64
            and _w1403_facts["existing_bytes"] == 12 and _w1403_facts["existing_lines"] == 2)
 
     (_w1403_code_root / "sub").mkdir()
@@ -510,6 +666,7 @@ with tempfile.TemporaryDirectory() as _d:
            and sorted(_w1403_pat["paths"]) == ["sub/a.py", "sub/b.py"]
            and _w1403_pat["lines"] == 3
            and _w1403_pat0["matched"] == 0 and "bytes" not in _w1403_pat0
+           and "content" not in _w1403_pat0
            and _w1403_glob["patterns"] == 2 and _w1403_glob["patterns_unmatched"] == 1
            and _w1403_glob["to_create"] == 0
            and _w1403_dir_entry["paths"] == ["sub/a.py", "sub/b.py"])
@@ -559,7 +716,13 @@ with tempfile.TemporaryDirectory() as _d:
     # Every bare-name callee this module does not define with a def or a class: builtins, plus
     # `Path` from its one `from` import and `rx`, the ONE glob compiler it fetches from arch.py at
     # sizing_pass.py:340. eval, exec, __import__, compile and open are refused by the EQUALITY.
-    _W1403_BARE_ALLOWED = {"Path", "SystemExit", "any", "callable", "enumerate", "getattr", "int",
+    #
+    # `int` IS DELIBERATELY NOT IN THIS SET, and that is a teeth-bearing absence rather than a
+    # tidy-up: the module's only `int(` call truncated the token total per event, so two events
+    # carrying 0.4 and 0.6 tokens reported tokens_recorded 0 beside token_anchor_available yes. The
+    # total is summed as recorded now, so re-introducing the truncation reds this equality as well
+    # as the fractional-ledger row below - two rows, from two directions, on one defect.
+    _W1403_BARE_ALLOWED = {"Path", "SystemExit", "any", "callable", "enumerate", "getattr",
                            "isinstance", "len", "list", "min", "print", "rx", "set", "sorted",
                            "str", "sum", "tuple", "type"}
     # Every call this module makes into a module it imports. os.popen, os.system, os.execv,
@@ -682,6 +845,18 @@ with tempfile.TemporaryDirectory() as _d:
     _w1403_real_specs = len({_e.get("spec_id") or _e.get("correlation_id")
                              for _e in _w1403_real_carry
                              if _e.get("spec_id") or _e.get("correlation_id")})
+    # THE RECOUNT'S TOTAL IS A DIFFERENT EXPRESSION FROM THE MODULE'S, not the same one twice. It
+    # was `sum(int(_e["tokens"]) for ...)` while the module summed `int(e["tokens"])`: a second
+    # spelling of "numeric" and the SAME spelling of int(), so the equality held while both sides
+    # were wrong - two events carrying 0.4 and 0.6 tokens agreed on 0 over 1.0 recorded. An
+    # accumulator over the figures AS RECORDED cannot share a truncation with a comprehension that
+    # applies one, so re-introducing int() in the module reds this equality.
+    _w1403_real_tok_total = 0
+    for _e in _w1403_real_tok:
+        _w1403_real_tok_total += _e["tokens"]
+    _w1403_real_frac = len([_e for _e in _w1403_real_tok
+                            if isinstance(_e["tokens"], bool)
+                            or not isinstance(_e["tokens"], int)])
     if not _w1403_real_carry:
         # THE HONEST STAND-DOWN, and it is required in exactly this state and nowhere else.
         _w1403_real_arm = (_w1403_real_ledger["spend_events"] == 0
@@ -689,6 +864,7 @@ with tempfile.TemporaryDirectory() as _d:
                            and _w1403_real_ledger["token_anchor_available"] == E1403.NO
                            and "tokens_recorded" not in _w1403_real_ledger
                            and "token_spend_events" not in _w1403_real_ledger
+                           and "token_figures_non_integer" not in _w1403_real_ledger
                            and "specs_with_spend" not in _w1403_real_ledger)
     elif _w1403_real_tok:
         # SPEND IS RECORDED AND SOME OF IT IS TOKENS: every numeric key must equal the recount.
@@ -696,8 +872,9 @@ with tempfile.TemporaryDirectory() as _d:
                            and _w1403_real_ledger["token_anchor_available"] == E1403.YES
                            and _w1403_real_ledger["specs_with_spend"] == _w1403_real_specs
                            and _w1403_real_ledger["token_spend_events"] == len(_w1403_real_tok)
-                           and _w1403_real_ledger["tokens_recorded"]
-                           == sum(int(_e["tokens"]) for _e in _w1403_real_tok)
+                           and _w1403_real_ledger["tokens_recorded"] == _w1403_real_tok_total
+                           and _w1403_real_ledger["token_figures_non_integer"]
+                           == _w1403_real_frac
                            and 1 <= _w1403_real_ledger["specs_with_spend"]
                            <= _w1403_real_ledger["spend_events"])
     else:
@@ -706,6 +883,7 @@ with tempfile.TemporaryDirectory() as _d:
                            and _w1403_real_ledger["token_anchor_available"] == E1403.NO
                            and _w1403_real_ledger["specs_with_spend"] == _w1403_real_specs
                            and "tokens_recorded" not in _w1403_real_ledger
+                           and "token_figures_non_integer" not in _w1403_real_ledger
                            and "token_spend_events" not in _w1403_real_ledger)
     expect("WARP-1403 AC4 MEASURED OVER THE REAL LOG, AND THE MEASUREMENT CHOOSES THE ARM: the "
            "ledger report is recomputed here from the live log by a second spelling of the same "
@@ -731,6 +909,7 @@ with tempfile.TemporaryDirectory() as _d:
            and ("specs_with_spend" in _w1403_real_ledger) == bool(_w1403_real_carry)
            and ("tokens_recorded" in _w1403_real_ledger) == bool(_w1403_real_tok)
            and ("token_spend_events" in _w1403_real_ledger) == bool(_w1403_real_tok)
+           and ("token_figures_non_integer" in _w1403_real_ledger) == bool(_w1403_real_tok)
            and _w1403_real_arm
            and SP1403.brief(_w1403_fix, events=_w1403_real_events)["ledger"]
            == _w1403_real_ledger)
@@ -813,6 +992,38 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1403_mixed_ledger["events"] == 4
            and SP1403.brief(_w1403_fix, events=_w1403_mixed)["ledger"]
            == _w1403_mixed_ledger)
+
+    # THE FIFTH CONTROL, AND THE ONLY ONE THAT MEASURES THE NUMBER RATHER THAN WHICH KEYS APPEAR.
+    # Every fixture above carries whole-token figures, so a truncation inside the total was
+    # invisible to all four, and the third round's recount was "a second spelling of numeric" and
+    # the SAME spelling of int() - the two sides of the equality moved together. MEASURED
+    # 2026-08-13: `spend.validate("WARP-9600", "harness_reported", tokens=0.4)` returns [], so a
+    # fractional figure is recordable through the SANCTIONED writer's own API, and over two events
+    # carrying 0.4 and 0.6 the report read token_anchor_available yes, token_spend_events 2 and
+    # tokens_recorded 0 over 1.0 tokens actually recorded. That is AC4's own sentence: a zero,
+    # printed as a measurement, beside a flag saying there IS an anchor. The total is the figures as
+    # recorded now, and a figure that is not a whole token count is COUNTED rather than floored
+    # away, so a reader is told the ledger holds one.
+    _w1403_frac = [{"type": "spec.shipped", "spec_id": "WARP-9301", "tokens": 0.4},
+                   {"type": "spec.shipped", "spec_id": "WARP-9302", "tokens": 0.6}]
+    _w1403_frac_ledger = SP1403.ledger_state(_w1403_frac)
+    expect("WARP-1403 AC4 THE TOKEN TOTAL IS NOT TRUNCATED, AND A FIGURE THAT IS NOT A WHOLE TOKEN "
+           "COUNT IS NAMED: over a ledger whose two spend events carry 0.4 and 0.6 tokens - a shape "
+           "the sanctioned writer's own validate() accepts, asserted here rather than assumed - "
+           "tokens_recorded is the 1.0 recorded and never the 0 a per-event floor produced, "
+           "token_figures_non_integer counts both, and the whole-token ledgers above report 0 of "
+           "them. A zero because tokens were never recorded and a zero because two real figures "
+           "were floored are different facts, and the second arrives beside a flag saying there IS "
+           "an anchor, which is the one sentence this block exists to prevent",
+           _w1403_frac_ledger["tokens_recorded"] == 1.0
+           and _w1403_frac_ledger["token_anchor_available"] == E1403.YES
+           and _w1403_frac_ledger["token_spend_events"] == 2
+           and _w1403_frac_ledger["spend_events"] == 2
+           and _w1403_frac_ledger["token_figures_non_integer"] == 2
+           and _w1403_mixed_ledger["token_figures_non_integer"] == 0
+           and _w1403_seeded_ledger["token_figures_non_integer"] == 0
+           and SPEND1403.validate("WARP-9301", "harness_reported", tokens=0.4) == []
+           and SP1403.brief(_w1403_fix, events=_w1403_frac)["ledger"] == _w1403_frac_ledger)
 
     expect("WARP-1403 AC4: AN AGENT'S JUDGEMENT NEVER MAKES AN ESTIMATE CALIBRATED. The record "
            "carrying this layer reads calibration uncalibrated and validates clean, because "
@@ -1056,71 +1267,235 @@ with tempfile.TemporaryDirectory() as _d:
 
     _w1403_gate_text = (ROOT / "scripts/verify.sh").read_text()
     _w1403_slots = _w1403_re.findall(r"CHECK_\w+=\"[^\"]*\"", _w1403_gate_text)
-    # THE SWEEP'S DOMAIN IS EVERY TREE THIS CLAIM IS ABOUT, not the one directory this repository
-    # happens to run from: the private engine, the CANONICAL engine an adopter is handed, and
-    # scripts/, which is where a gate stage would actually live. A probe naming this module from
-    # engine/.veldo or from scripts/ used to leave the sweep green.
+
+    # WHAT THIS ROW'S SUBJECT IS, AND WHY IT CHANGED. It used to sweep .veldo/*.py,
+    # engine/.veldo/*.py, scripts/*.py and scripts/*.sh and require that NO file names this module's
+    # path and NONE loads it. That is a POPULATION pinned to empty over live repository state, and
+    # this item's own plan requires joining it: PLAN-0014 W10 says to land the estimator layers in
+    # the canonical engine "so /veldo:init lays them down", and laying a module down IS naming it.
+    # DRIVEN 2026-08-13, before this rewrite: adding `.veldo/sizing_pass.py` to
+    # .veldo/init_scaffold.py's lay-down list beside .veldo/version.py took the fragment from 42
+    # passed to 41 passed, 1 failed on this row, and so did a twelve-line advisory reader that only
+    # calls layer_of and gates nothing. Both are legitimate uses of an advisory organ.
     #
-    # THE SPELLINGS ARE PATH-SHAPED AND IMPORT-SHAPED, deliberately, because the bare stem
-    # `sizing_pass` is ALSO the LAYER ID that W2's vocabulary declares (estimate.py names it, in
-    # both engine homes, and must): a bare-stem sweep would red on W2 declaring its own layer and
-    # would then be relaxed until it measured nothing.
-    _W1403_NAME_SPELLINGS = ("sizing_pass.py", "import sizing_pass", "from sizing_pass",
-                             'sizing_pass")')
-    _W1403_LOAD_SPELLINGS = ("import sizing_pass", "from sizing_pass", 'sizing_pass")')
-    # A release DISPOSITION list may NAME this file's path - shipping it or holding it back is a
-    # decision about the module, not a use of it. Nothing anywhere may IMPORT or EXECUTE it.
-    _W1403_MAY_NAME = ("scripts/publish.py",)
-    _W1403_SWEEP = {
-        ".veldo/*.py": sorted((ROOT / ".veldo").glob("*.py")),
-        "engine/.veldo/*.py": sorted((ROOT / "engine/.veldo").glob("*.py")),
-        "scripts/*.py": sorted((ROOT / "scripts").glob("*.py")),
-        "scripts/*.sh": sorted((ROOT / "scripts").glob("*.sh")),
-    }
+    # PLAN-0018 finding 63 and VELDO-DEC-0002 settle the shape: an emptiness may be required only of
+    # a set every member of which is a DEFECT by construction. "Files that load this module" is a
+    # population a legitimate use joins. "GATE STAGES that load this module" is a defect set - NG1
+    # forbids every member of it, because a spec's validity may never depend on an optional estimate
+    # - so THAT set may be required empty forever. The domain is derived from the gate's own two
+    # declarations rather than from the filesystem, so a stage added to either is covered without
+    # editing this row, and the population is REPORTED in this row's text instead of asserted.
+    def _w1403_names_module(value):
+        """True when this string constant names THIS module: a path to it, its filename, or an
+        import alias ending in its stem. Basename stem rather than a suffix strip, and never the
+        bare word `sizing_pass` on its own, because that is ALSO the LAYER ID W2's vocabulary
+        declares in both engine homes - a bare-stem detector would fire on estimate.py declaring
+        its own layer and would then be relaxed until it measured nothing."""
+        stem = value.replace("\\", "/").rsplit("/", 1)[-1]
+        if stem.endswith(".py"):
+            stem = stem[:-3]
+        else:
+            return False
+        return stem == "sizing_pass" or stem.endswith("_sizing_pass")
+
+    def _w1403_loads_module_text(src):
+        """Whether this SOURCE loads sizing_pass.py, by AST: a call to one of the loader spellings
+        this repository uses, with a string ANYWHERE in its arguments naming the module. Anywhere in
+        the arguments, because `ROOT / ".veldo" / "sizing_pass.py"` is a BinOp and the constant sits
+        inside it - the spelling validate.py uses for every organ it loads, and the spelling a
+        direct-Constant detector was measured blind to in VELDO-0003. A source that does not parse
+        NAMES that state rather than answering False: a stage this suite could not read is not a
+        stage in which it measured an absence."""
+        try:
+            _tree = _w1403_ast.parse(src)
+        except SyntaxError as _e:
+            return "UNPARSEABLE: %s" % _e
+        for _n in _w1403_ast.walk(_tree):
+            if not isinstance(_n, _w1403_ast.Call):
+                continue
+            _fname = (_n.func.attr if isinstance(_n.func, _w1403_ast.Attribute)
+                      else getattr(_n.func, "id", ""))
+            if _fname not in ("spec_from_file_location", "_organ", "_load", "_sibling",
+                              "import_module", "_mod", "run", "check_call", "check_output"):
+                continue
+            for _arg in list(_n.args) + [_k.value for _k in _n.keywords]:
+                for _sub in _w1403_ast.walk(_arg):
+                    if isinstance(_sub, _w1403_ast.Constant) \
+                            and isinstance(_sub.value, str) \
+                            and _w1403_names_module(_sub.value):
+                        return True
+        return False
+
+    def _w1403_loads_module(path):
+        """The same detector over a FILE. A SHELL stage has no AST to read, and its execution
+        surface is the PATH it invokes, so the path spelling is the detector there - answering
+        UNPARSEABLE for every .sh stage would put the gate script itself in the loader list and turn
+        this row into a permanent red about nothing."""
+        try:
+            _txt = path.read_text()
+        except OSError as _e:
+            return "UNREADABLE: %s" % _e
+        if path.suffix == ".sh":
+            return "sizing_pass.py" in _txt
+        return _w1403_loads_module_text(_txt)
+
+    def _w1403_gate_stage_files():
+        """The files a GATE RUN executes, derived from the gate's own two declarations rather than
+        listed here: the built-in stage set (validate.py and the checks it is made of), the stage
+        scripts scripts/verify.sh names by filename, and the organs validate.py itself loads. A
+        stage added to any of the three joins this domain automatically, which is what makes the
+        emptiness below a defect set rather than a snapshot of today."""
+        out = {ROOT / ".veldo" / "validate.py", ROOT / ".veldo" / "validate_checks.py"}
+        for _cand in sorted((ROOT / "scripts").glob("*.py")) + \
+                sorted((ROOT / "scripts").glob("*.sh")):
+            if _cand.name in _w1403_gate_text:
+                out.add(_cand)
+        try:
+            _vt = _w1403_ast.parse((ROOT / ".veldo" / "validate.py").read_text())
+        except (OSError, SyntaxError):
+            _vt = None
+        if _vt is not None:
+            for _n in _w1403_ast.walk(_vt):
+                if isinstance(_n, _w1403_ast.Constant) and isinstance(_n.value, str) \
+                        and _n.value.endswith(".py"):
+                    _cand = ROOT / ".veldo" / Path(_n.value).name
+                    if _cand.is_file():
+                        out.add(_cand)
+        return sorted(_p for _p in out if _p.is_file())
+
+    _w1403_stages = _w1403_gate_stage_files()
+    _w1403_gate_loaders = []
+    for _w1403_p in _w1403_stages:
+        if _w1403_p.name == "sizing_pass.py":
+            continue
+        _w1403_verdict = _w1403_loads_module(_w1403_p)
+        if _w1403_verdict is True:
+            _w1403_gate_loaders.append(_w1403_p.relative_to(ROOT).as_posix())
+        elif _w1403_verdict is not False:
+            _w1403_gate_loaders.append("%s: %s" % (_w1403_p.relative_to(ROOT).as_posix(),
+                                                   _w1403_verdict))
+    # THE POPULATION, MEASURED AND REPORTED RATHER THAN PINNED: every file in the four old domains
+    # that loads this module. A number here is not a finding - an advisory reader, or /veldo:init
+    # laying the module down for an adopter, is exactly what an optional organ is for.
     _W1403_SELVES = (".veldo/sizing_pass.py", "engine/.veldo/sizing_pass.py")
-    _w1403_domain, _w1403_namers, _w1403_loaders = set(), [], []
-    for _w1403_paths in _W1403_SWEEP.values():
-        for _w1403_p in _w1403_paths:
-            _w1403_rel = str(_w1403_p.relative_to(ROOT))
-            _w1403_domain.add(_w1403_rel)
+    _w1403_population = []
+    for _w1403_glob in (".veldo/*.py", "engine/.veldo/*.py", "scripts/*.py", "scripts/*.sh"):
+        for _w1403_p in sorted(ROOT.glob(_w1403_glob)):
+            _w1403_rel = _w1403_p.relative_to(ROOT).as_posix()
             if _w1403_rel in _W1403_SELVES:
                 continue
-            _w1403_txt = _w1403_p.read_text()
-            if any(_s in _w1403_txt for _s in _W1403_NAME_SPELLINGS):
-                _w1403_namers.append(_w1403_rel)
-            if any(_s in _w1403_txt for _s in _W1403_LOAD_SPELLINGS):
-                _w1403_loaders.append(_w1403_rel)
-    expect("WARP-1403 AC5: NOTHING IN THE GATE NAMES THIS MODULE AND NOTHING ANYWHERE LOADS IT, "
-           "swept over FOUR domains rather than one: scripts/verify.sh declares no slot mentioning "
-           "it, the contract validator it runs does not name it, and across .veldo/*.py, "
-           "engine/.veldo/*.py, scripts/*.py and scripts/*.sh no file names its path and none "
-           "imports or executes it, except that a release disposition list is allowed to name the "
-           "path it holds back or ships. So no path through the gate and no organ of the loop can "
-           "refuse, block or delay work over a sizing pass. Bound to a non-empty slot list and to "
-           "four non-empty domains that provably contain both engine homes and the gate script, so "
-           "a glob that matched nothing reds this rather than passing over nothing",
-           _w1403_slots != [] and all("sizing" not in s for s in _w1403_slots)
-           and "sizing_pass" not in _w1403_gate_text
-           and "sizing_pass" not in (ROOT / ".veldo/validate.py").read_text()
-           and all(len(_v) > 0 for _v in _W1403_SWEEP.values())
-           and {".veldo/estimate.py", "engine/.veldo/estimate.py", "engine/.veldo/sizing_pass.py",
-                "scripts/verify.sh", "scripts/publish.py"} <= _w1403_domain
-           and sorted(set(_w1403_namers) - set(_W1403_MAY_NAME)) == []
-           and _w1403_loaders == [])
+            if _w1403_loads_module(_w1403_p) is True:
+                _w1403_population.append(_w1403_rel)
+    expect("WARP-1403 AC5: NO GATE STAGE LOADS THIS MODULE, and the subject is the GATE'S OWN STAGES "
+           "rather than every file in the tree. NG1 forbids a spec's validity depending on an "
+           "optional estimate, so a gate stage loading this module is a DEFECT and the set of them "
+           "may be required empty forever; the set of FILES that load it is a POPULATION an advisory "
+           "reader and /veldo:init's lay-down legitimately join, and the previous version of this "
+           "row pinned that population to empty - measured, this item's own plan (PLAN-0014 W10) "
+           "requires joining it, and adding the module to init_scaffold's lay-down list reddened a "
+           "required unit stage. The domain is DERIVED from validate.py's own organ loads plus the "
+           "stage scripts verify.sh names, so a stage added to either is covered without editing "
+           "this row, and it is asserted over LOADS via the AST rather than over mentions, because "
+           "naming a module in order to ship it is not consulting it. verify.sh declares no stage "
+           "slot naming it and never invokes its path (%d stage(s) read; population that loads it: "
+           "%s)"
+           % (len(_w1403_stages), _w1403_population or "none today, and a member is not a finding"),
+           bool(_w1403_stages)
+           and _w1403_gate_loaders == []
+           and {ROOT / ".veldo" / "validate.py", ROOT / ".veldo" / "validate_checks.py",
+                ROOT / "scripts" / "selftest.py", ROOT / "scripts" / "verify.sh"}
+           <= set(_w1403_stages)
+           and _w1403_slots != [] and all("sizing" not in _s for _s in _w1403_slots)
+           and "sizing_pass.py" not in _w1403_gate_text
+           and _w1403_loads_module(ROOT / ".veldo" / "validate.py") is False)
+
+    _w1403_probe_literal = 'def _p():\n    return _load("sizing", ".veldo/sizing_pass.py")\n'
+    _w1403_probe_root = ('def run_all():\n'
+                         '    _s = importlib.util.spec_from_file_location(\n'
+                         '        "veldo_sizing_gate", ROOT / ".veldo" / "sizing_pass.py")\n')
+    _w1403_probe_other = 'def _p():\n    return _load("estimate", ".veldo/estimate.py")\n'
+    _w1403_probe_layerid = 'LAYERS = {"sizing_pass": ("tokens", "the sizing pass")}\n'
+    expect("WARP-1403 AC5 NEGATIVE CONTROL, ADDITIVE, AND IT IS THE ROW ABOVE'S REACH: the detector "
+           "FIRES on both spellings a gate stage could use to load this module - a literal "
+           "\".veldo/sizing_pass.py\" and the `ROOT / \".veldo\" / \"sizing_pass.py\"` form "
+           "validate.py already uses for every organ it loads - stays silent on a load of a "
+           "DIFFERENT organ, and stays silent on W2 DECLARING the layer id `sizing_pass` in its "
+           "vocabulary, which both engine homes do and must. A source it cannot parse is NAMED "
+           "rather than answered False, and that state is driven here too. Without this control the "
+           "emptiness above would be satisfiable by a detector that never matches anything",
+           _w1403_loads_module_text(_w1403_probe_literal) is True
+           and _w1403_loads_module_text(_w1403_probe_root) is True
+           and _w1403_loads_module_text(_w1403_probe_other) is False
+           and _w1403_loads_module_text(_w1403_probe_layerid) is False
+           and str(_w1403_loads_module_text("def (:\n")).startswith("UNPARSEABLE")
+           and str(_w1403_loads_module(_w1403_dir / "nope.py")).startswith("UNREADABLE"))
 
     _w1403_example = ROOT / ".veldo/examples/sizing-judgement-example.yaml"
     _w1403_example_rec = SP1403.parse_judgement(_w1403_example.read_text())
     expect("WARP-1403 AC5: THE MODULE AND ITS EXAMPLE ARE BYTE-IDENTICAL IN BOTH ENGINE HOMES, so "
-           "what an adopter is handed is the code this repository runs and proves, and the "
+           "the canonical copy cannot DRIFT from the copy this repository runs and proves, and the "
            "committed example judgement is checked as REAL BYTES on disk rather than as a fixture "
            "built in this file - a documented shape that can drift from the shape the validator "
-           "accepts teaches the wrong thing to every adopter",
+           "accepts teaches the wrong thing to every reader of it. WHAT THIS ROW DOES NOT SAY, "
+           "corrected after an independent review read it as saying it: byte-identity between two "
+           "homes is not a claim about what an ADOPTER receives. What ships is publish.py's "
+           "disposition and nothing here, which is the row below",
            (ROOT / ".veldo/sizing_pass.py").read_bytes()
            == (ROOT / "engine/.veldo/sizing_pass.py").read_bytes()
            and _w1403_example.read_bytes()
            == (ROOT / "engine/.veldo/examples/sizing-judgement-example.yaml").read_bytes()
            and SP1403.validate_judgement(_w1403_example_rec) == []
-           and (_w1403_layer(_w1403_example_rec)[0] or {}).get("basis") == SP1403.LAYER_BASIS)
+           and (SP1403.layer_of(_W1403_REC) or {}).get("basis") == SP1403.LAYER_BASIS
+           and _w1403_raises(SP1403.layer_from, _w1403_example_rec, None)[0])
+
+    # A SHIPPING ENGINE MODULE MUST NEVER LOAD A HELD-BACK ONE, which is the invariant this item's
+    # spec named as worth asserting and RED at the time it was written. It was red for real: ledger
+    # finding 73 measured it in the produced pack rather than reasoning about it - publish.py
+    # withheld engine/.veldo/estimate.py and shipped four modules that load it, so
+    # `sizing_pass vocab` inside every composed pack exited 1 on a raw FileNotFoundError while
+    # `check` exited 0. The hold-back was completed at 770bd46 and this row is what keeps it
+    # complete, so the next disposition change cannot ship half the layer again.
+    #
+    # MEASURED THROUGH publish.py'S OWN SELECTION, never by reading its EXCLUDE tuple, and the
+    # target set is this module's own six `_mod` literals - the row above proves that set is
+    # COMPLETE (three loader calls, all inside `_mod`, every caller a literal, zero computed), which
+    # is what makes a derived dependency claim honest here rather than a scan that a dynamic path
+    # would empty in silence.
+    _w1403_pub = V._VC._organ("w1403_publish", ROOT / "scripts" / "publish.py")
+    _w1403_pub_sel = set(_w1403_pub.selected(_w1403_pub.tracked_files(ROOT)))
+    _W1403_TWIN = "engine/.veldo/sizing_pass.py"
+
+    def _w1403_half_shipped(sel):
+        """The files this module EXECUTES that a selection withholds while shipping the module, each
+        named. Empty when the module is not shipped at all, because a module nobody receives cannot
+        fail to load anything - the disposition itself is reported, never asserted, since shipping
+        or holding this layer is a decision for its owner and not an invariant."""
+        if _W1403_TWIN not in sel:
+            return []
+        return sorted("engine/" + _t for _t in _w1403_mod_targets
+                      if "engine/" + _t not in sel)
+
+    _w1403_ships = _W1403_TWIN in _w1403_pub_sel
+    _w1403_all_targets = {"engine/" + _t for _t in _w1403_mod_targets}
+    expect("WARP-1403 AC5: WHAT SHIPS CAN LOAD WHAT IT IMPORTS - no file this module executes is "
+           "withheld by the publisher while the module itself is shipped, evaluated against "
+           "publish.py's OWN selection over the tracked tree and against this module's own proven "
+           "complete `_mod` target set. Every member of that set is a DEFECT by construction (a "
+           "public tree containing a module that dies on a missing sibling), so it may be required "
+           "empty forever, and the disposition is REPORTED and not pinned: holding this layer back "
+           "or shipping it is its owner's decision, while shipping HALF of it is nobody's. Driven "
+           "additively rather than left vacuous - the detector NAMES the withheld target when a "
+           "selection ships the module without it, and stays silent when the same selection carries "
+           "all six (measured: %d file(s) selected, this module ships = %s)"
+           % (len(_w1403_pub_sel), _w1403_ships),
+           len(_w1403_pub_sel) > 300
+           and _w1403_half_shipped(_w1403_pub_sel) == []
+           and _w1403_half_shipped((_w1403_pub_sel | {_W1403_TWIN})
+                                   - {"engine/.veldo/estimate.py"})
+           == ["engine/.veldo/estimate.py"]
+           and _w1403_half_shipped(_w1403_pub_sel | {_W1403_TWIN} | _w1403_all_targets) == []
+           and _w1403_half_shipped(_w1403_pub_sel - {_W1403_TWIN}) == []
+           and len(_w1403_all_targets) == 6)
 
     expect("WARP-1403 AC5 AND THE EXAMPLE'S OWN HONESTY: the example's digest is the sha256 of a "
            "stated ASCII string and of NO brief in this repository, so checked against a real "

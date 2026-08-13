@@ -59,6 +59,7 @@ are the same set.
 import argparse
 import importlib.util
 import json
+import math
 import statistics
 import sys
 from pathlib import Path
@@ -107,6 +108,34 @@ SHAPE_UNKNOWN = "unknown"
 
 NO_PLAN = "(no plan)"
 
+# THE ORGANS THIS REPORT IS ASSEMBLED FROM, named once so the stand-downs below and the loads in
+# `_repo_report` cannot disagree about which file went missing.
+ORGAN_LOG = ".veldo/events.py"
+ORGAN_CORPUS = ".veldo/toe_corpus.py"
+ORGAN_REGISTRY = ".veldo/validate.py"
+
+# THE STAND-DOWNS, each naming which organ is absent and which half of the answer went with it.
+# THIS EXISTS BECAUSE THE HEADLINE COMMAND DIED FOR EVERY ADOPTER. Measured 2026-08-13 on a tree
+# carrying exactly what `.veldo/init_scaffold.py` lays down plus this module: `judgment_load.py
+# report` exited 1 with `FileNotFoundError: .veldo/toe_corpus.py`, because init lays down neither the
+# corpus organ nor this one. Ledger finding 61, and Dmitry's direction on 2026-08-13 was that a
+# reader NAMES an absent organ instead of dying - work_state.py was repaired that way and this
+# module had not inherited it. A traceback out of a read model is this project's confident zero in
+# its most expensive form: a run that could not look is indistinguishable from one that found
+# nothing. So is a report of zero records at zero percent coverage, which is why the derivation
+# stand-down suppresses every figure rather than printing an unanswerable one.
+STANDDOWN_NO_ORGAN = ("the organ this report is derived FROM (%s) is not in this tree, so NO pair is "
+                      "derived and no figure is reported at all: a derivation that could not run is "
+                      "a different fact from a repository whose axes are empty, and a page of zeros "
+                      "at zero percent coverage would state the second while measuring neither")
+STANDDOWN_NO_REGISTRY = ("the plan registry organ (%s) is not in this tree, so no plan line below "
+                         "carries the item count its plan DECLARES: every denominator reads '(not "
+                         "declared)' because the registry could not be read, which is a different "
+                         "fact from a plan that declares no items")
+STANDDOWN_NO_CHECK = ("the log organ (%s) is not in this tree, so no event was read and NO claim is "
+                      "made about malformed figures: reporting a clean log would be a pass this "
+                      "command did not earn")
+
 
 class JudgmentLoadError(ValueError):
     """A figure this module reads is malformed. Raised BY NAME so a bad value never silently no-ops
@@ -121,6 +150,16 @@ def _load(rel, name):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+def _organ_or_none(rel, name):
+    """The same load, or None when THIS TREE does not carry the organ. Only an absent file is
+    answered with None: an organ that is present and raises is a defect in that organ and still
+    raises here, because standing down on it would hide it."""
+    try:
+        return _load(rel, name)
+    except FileNotFoundError:
+        return None
 
 
 def _mine(event, spec_id):
@@ -157,6 +196,17 @@ def _figure_problem(field, event, value):
         return ("%s on a %r event for %s must be a number, got %r: a figure this module cannot read "
                 "is refused rather than skipped, because a skipped figure leaves the axis marked "
                 "recorded and smaller than it is"
+                % (field, event.get("type"), _who(event), value))
+    # NaN AND INFINITY ARE NOT NON-NEGATIVE NUMBERS, and neither one fails `value < 0`, so the
+    # comparison below cannot be the only guard. `json.loads` accepts the bare NaN and Infinity
+    # literals, so both arrive from a log rather than only from an API call. Refused here, before
+    # the sign test, because the damage is not a bad cell: NaN poisons the median it lands in and
+    # relabels records that have nothing wrong with them, and the row carrying it comes back
+    # labelled cheap - the confident-cheap answer this module exists to refuse.
+    if not math.isfinite(value):
+        return ("%s on a %r event for %s must be a FINITE number, got %r: NaN and infinity are not "
+                "non-negative numbers, and a figure that cannot be compared would move the median "
+                "every other record is labelled against"
                 % (field, event.get("type"), _who(event), value))
     if value < 0:
         return ("%s on a %r event for %s cannot be negative, got %r"
@@ -196,9 +246,17 @@ def minutes_for(events, spec_id):
 
     `split_known` is the second honesty flag: true only when at least one minute landed on an event
     that says WHICH judgment it was. The only recorder in this method writes a bulk figure at ship,
-    so on real data the total can be known while the split is not."""
+    so on real data the total can be known while the split is not.
+
+    BOTH FLAGS COUNT EVENTS AND NEITHER READS A SUM, and that is the same distinction one layer down.
+    A verdict event carrying `human_minutes: 0` is a split that WAS recorded, as zero; the truthiness
+    of the review-plus-approval sum cannot tell it from a split nobody recorded, and answering the
+    second would invert this module's own thesis inside its own second flag."""
     _events_are_mappings(events)
     by_kind = {k: 0 for k in KINDS}
+    # The COUNT of events that carried the field, per kind. This is what the flags are read from, so
+    # a figure recorded AS ZERO is recorded here and a figure never recorded is not.
+    events_by_kind = {k: 0 for k in KINDS}
     carrying = 0
     for e in events:
         if not _mine(e, spec_id):
@@ -206,7 +264,9 @@ def minutes_for(events, spec_id):
         v = e.get(MINUTES_FIELD)
         if v is None:
             continue
-        by_kind[_kind_of(e)] += _figure(MINUTES_FIELD, e, v)
+        kind = _kind_of(e)
+        by_kind[kind] += _figure(MINUTES_FIELD, e, v)
+        events_by_kind[kind] += 1
         carrying += 1
     # ONE enumeration: the total IS the sum of the kinds, never a second pass over the events.
     total = sum(by_kind.values())
@@ -215,7 +275,7 @@ def minutes_for(events, spec_id):
         "by_kind": by_kind,
         "events_with_minutes": carrying,
         "minutes_recorded": carrying > 0,
-        "split_known": any(by_kind[k] for k in SPLIT_KINDS),
+        "split_known": any(events_by_kind[k] for k in SPLIT_KINDS),
     }
 
 
@@ -285,6 +345,33 @@ def unattributed(events):
     return {"events": n, "minutes": mins, "tokens": toks}
 
 
+def unread_figures(rows, events):
+    """FIGURES THE DERIVATION NEVER READ, as a number, because `report` and `check` do not judge the
+    same set and a reader who runs one has not learned what the other would say.
+
+    `check_log` judges every figure in the log. The derivation only reads figures for specs the corpus
+    HOLDS, so a figure on a spec that has not shipped (or on one this repository does not know) is
+    never judged by `report` at all: measured before this counter existed, an adopter tree whose only
+    event carried `human_minutes: '12'` gave a clean `report` at exit 0 and a `check` at exit 1 naming
+    the figure. The counter does not close that gap by widening the derivation - a pair is FOR a spec
+    in the corpus - it closes it by saying how much the page in front of you does not cover.
+
+    Attribution is asked of `_mine`, the one selector, rather than re-spelled here, and it is asked
+    only about events that carry a figure, which is what keeps one enumeration affordable."""
+    held = {r["spec"] for r in rows}
+    n = 0
+    for e in events:
+        figures = [f for f in (MINUTES_FIELD, TOKENS_FIELD) if e.get(f) is not None]
+        if not figures:
+            continue
+        if not (e.get("spec_id") or e.get("correlation_id")):
+            continue  # unattributable: already counted, with its figures, by unattributed()
+        if any(_mine(e, s) for s in held):
+            continue
+        n += len(figures)
+    return n
+
+
 def check_log(events, name, fail):
     """EVERY problem with the figures in a log, reported through the caller's failure reporter
     (validate.fail) rather than raised, returning the count. The gate-shaped spelling, mirroring
@@ -311,8 +398,21 @@ def check_log(events, name, fail):
 
 def pair(record, events):
     """The PAIR for one corpus record: both axes, each with its own honesty flag, plus the episode
-    count and the approval surface the spec declared. Deterministic and read-only."""
+    count and the approval surface the spec declared. Deterministic and read-only.
+
+    A RECORD WITH NO SPEC ID IS REFUSED BY NAME, like every other malformed input here. With `spec`
+    None, `_mine` compares None against the spec_id of every event and a phantom row collects the
+    figures of every event that names no spec - the same figures `unattributed` reports as belonging
+    to nobody, counted twice on one page. `toe_corpus.build` skips a spec file with no id, so this is
+    unreachable through the one builder and reachable through a public function, which is where the
+    next caller finds it."""
     spec = record.get("spec")
+    if not isinstance(spec, str) or not spec.strip():
+        raise JudgmentLoadError(
+            "corpus record %r names no spec id: a pair is derived FOR a spec, and a record with no id "
+            "would collect the figures of every event that names no spec instead - which is the "
+            "unattributable block's number, counted a second time as if it belonged to somebody"
+            % (record,))
     features = record.get("features") or {}
     tk = tokens_for(events, spec)
     mn = minutes_for(events, spec)
@@ -403,7 +503,7 @@ def classify(rows, min_population=MIN_POPULATION):
     return out, ref
 
 
-def coverage(rows, gap=None, ref=None):
+def coverage(rows, gap=None, ref=None, unread=0):
     """HOW MUCH OF THE PAIR IS ACTUALLY MEASURED, as numbers rather than as an impression.
 
     `usable_as_second_axis` is the blunt one: false means no human minutes exist anywhere, so the
@@ -435,6 +535,9 @@ def coverage(rows, gap=None, ref=None):
         "usable_as_second_axis": mk > 0,
         "classifiable": bool(ref["usable"]),
         "unattributed": dict(gap) if gap else {"events": 0, "minutes": 0, "tokens": 0},
+        # THE THIRD KIND OF MISSING, beside never recorded and recorded-but-unattributable: recorded,
+        # attributed, and outside the corpus this report was derived over. See unread_figures.
+        "unread_figures": unread,
     }
 
 
@@ -520,30 +623,56 @@ def build(corpus, events, plan_items=None):
         "schema": SCHEMA,
         "rows": rows,
         "reference": ref,
+        # ONE KEY SHAPE whether an organ stood down or not, so a consumer never has to ask whether
+        # the key is there before asking what it says. Both are None for a caller that hands in its
+        # own corpus and events, which is every caller but `_repo_report`.
+        "standdown": None,
+        "plans_standdown": None,
         # The reference computed once and handed on, so the labels and `classifiable` cannot come
         # from two different comparisons against the population floor.
-        "coverage": coverage(rows, unattributed(events), ref),
+        "coverage": coverage(rows, unattributed(events), ref, unread_figures(rows, events)),
         "plans": by_plan(rows, plan_items),
     }
 
 
 def render(report):
     """The text surface: the pair per spec, the pair per plan, and the gap as numbers. One line per
-    spec through `pair_line`, so what a reader sees here is what any other surface shows."""
-    cov, ref = report["coverage"], report["reference"]
+    spec through `pair_line`, so what a reader sees here is what any other surface shows.
+
+    A DERIVATION STAND-DOWN IS THE WHOLE PAGE. It leads because there is nothing behind it: with the
+    organ the rows come from absent, every count below would be a consequence of the stand-down
+    rather than a measurement, and a stand-down recorded in the report dict and not PRINTED is the
+    defect this repository has already paid for twice."""
     out = ["EFFORT IS A PAIR: tokens of effort, and human-judgment load.", ""]
+    if report.get("standdown"):
+        out.append("JUDGMENT LOAD UNANSWERABLE IN THIS TREE: %s" % report["standdown"])
+        return "\n".join(out)
+    cov, ref = report["coverage"], report["reference"]
     for row in report["rows"]:
         out.append("  " + pair_line(row))
     out.append("")
     out.append("per plan:")
+    if report.get("plans_standdown"):
+        # BESIDE THE COLUMN IT IS ABOUT, which is where a reader meets the denominator. The rows
+        # above are unaffected by this organ, so this stand-down is scoped to the block it explains
+        # rather than leading a page it does not invalidate.
+        out.append("  DENOMINATORS STOOD DOWN: %s" % report["plans_standdown"])
     for plan in sorted(report["plans"]):
         b = report["plans"][plan]
-        out.append("  %-14s %3d of %s work item spec(s) in the corpus  toe %s tok (%d known)  "
-                   "judgment %s min (%d known)  episodes %d"
+        # THROUGH `_axis`, LIKE EVERY OTHER AXIS THIS MODULE PRINTS. The plan roll-up was the one
+        # rendering of the pair that formatted a sum with `_num`, so a plan whose 20 specs recorded
+        # nothing printed "toe 0 tok (0 known)  judgment 0 min (0 known)" - a figure standing exactly
+        # where this item promises the words go, on the surface a reader skims to COMPARE plans. The
+        # "(0 known)" beside it is a disclaimer next to a figure, and this repository has already
+        # ruled on that shape: a stand-down the report does not SAY reads to an operator as a
+        # measurement. An axis with nothing recorded on it now says so here too.
+        out.append("  %-14s %3d of %s work item spec(s) in the corpus  toe %-16s (%d known)  "
+                   "judgment %-16s (%d known)  episodes %d"
                    % (plan, b["specs"],
                       b["work_items"] if b["work_items"] is not None else "(not declared)",
-                      _num(b["tokens"]), b["tokens_known"],
-                      _num(b["judgment_minutes"]), b["minutes_known"], b["episodes"]))
+                      _axis(b["tokens"], b["tokens_known"] > 0, "tok"), b["tokens_known"],
+                      _axis(b["judgment_minutes"], b["minutes_known"] > 0, "min"),
+                      b["minutes_known"], b["episodes"]))
     out.append("")
     out.append("coverage: %d record(s); judgment minutes known on %d (%.1f%%), tokens on %d "
                "(%.1f%%), both on %d (%.1f%%); judgment split known on %d; episodes on %d"
@@ -556,11 +685,25 @@ def render(report):
     out.append("unattributable: %d event(s) carrying %s minute(s) and %s token(s) name no spec, so "
                "no pair can hold them"
                % (gap["events"], _num(gap["minutes"]), _num(gap["tokens"])))
+    out.append("figures the derivation did not read: %d (recorded and attributed, on a spec this "
+               "corpus does not hold, so `check` judges them and this page does not)"
+               % cov["unread_figures"])
     if not cov["usable_as_second_axis"]:
-        out.append("NOT USABLE AS A SECOND AXIS YET: no human minutes are recorded anywhere in this "
-                   "log. The recorder exists (.veldo/spend.py record --human-minutes); nobody has "
-                   "called it. Every shape above is unknown for that reason, and a zero here would "
-                   "be a lie rather than a measurement.")
+        # THE CLAIM IS SCOPED TO WHAT IT WAS COUNTED OVER, which is the records above and not the
+        # log. `usable_as_second_axis` is a count over corpus rows, and the sentence here used to
+        # say "anywhere in this log ... nobody has called it": false the first time anybody records
+        # a minute against a spec that has not shipped, and self-contradicting on the same page
+        # whenever the unattributable line two lines up reports minutes of its own. Where the
+        # minutes could still be is named instead, so the reader is pointed at the two places this
+        # count cannot see rather than told they are empty.
+        out.append("NOT USABLE AS A SECOND AXIS YET: no human minutes are recorded on any of the %d "
+                   "record(s) in this report, so every shape above is unknown for that reason and a "
+                   "zero here would be a lie rather than a measurement. That is a claim about these "
+                   "records, NOT about the whole log: minutes on an event naming no spec are in the "
+                   "unattributable line above, and minutes on a spec this corpus does not hold (one "
+                   "that has not shipped) are outside it - `report --all` widens the corpus. The "
+                   "recorder is .veldo/spend.py record --human-minutes."
+                   % cov["records"])
     if not cov["classifiable"]:
         out.append("NOT CLASSIFIABLE YET: %s" % ref["reason"])
     return "\n".join(out)
@@ -569,16 +712,33 @@ def render(report):
 def _repo_report(shipped_only=True):
     """The report over THIS repository, assembled from the one reader of each input: the event log
     through events.read_log, the corpus through toe_corpus.build, the protected set through
-    policy_check.protected_patterns, and the plan registry through validate.plan_registry."""
-    events = _load(".veldo/events.py", "veldo_events_judgment").read_log()
+    policy_check.protected_patterns, and the plan registry through validate.plan_registry.
+
+    ADOPTION SAFE ON THE ORGANS TOO, not only on absent plans/ and specs/. Each sibling is loaded
+    through `_organ_or_none` and an absent one is NAMED in the report instead of ending the process,
+    because a tree carrying this module without its siblings is not a broken installation, it is
+    what `/veldo:init` lays down today."""
+    log_mod = _organ_or_none(ORGAN_LOG, "veldo_events_judgment")
+    corpus_mod = _organ_or_none(ORGAN_CORPUS, "veldo_toe_corpus_judgment")
+    absent = [rel for rel, mod in ((ORGAN_LOG, log_mod), (ORGAN_CORPUS, corpus_mod)) if mod is None]
+    if absent:
+        # The rows come from these two; with either gone there is no derivation to report, so the
+        # report carries no figures at all and says which organ took them.
+        report = build([], [], {})
+        report["standdown"] = STANDDOWN_NO_ORGAN % " and ".join(absent)
+        return report
+    events = log_mod.read_log()
     try:
         protected = _load(".veldo/policy_check.py", "veldo_policy_judgment").protected_patterns()
     except (OSError, ValueError):
         protected = ()  # adoption safe: no policy in this repository, no protected-path feature
-    corpus = _load(".veldo/toe_corpus.py", "veldo_toe_corpus_judgment").build(
-        events=events, protected=protected, shipped_only=shipped_only)
-    V = _load(".veldo/validate.py", "veldo_validate_judgment")
-    return build(corpus, events, plan_items_from_registry(V.plan_registry(ROOT / "plans")))
+    corpus = corpus_mod.build(events=events, protected=protected, shipped_only=shipped_only)
+    V = _organ_or_none(ORGAN_REGISTRY, "veldo_validate_judgment")
+    plan_items = plan_items_from_registry(V.plan_registry(ROOT / "plans")) if V else {}
+    report = build(corpus, events, plan_items)
+    if V is None:
+        report["plans_standdown"] = STANDDOWN_NO_REGISTRY % ORGAN_REGISTRY
+    return report
 
 
 def _cli(argv):
@@ -595,8 +755,17 @@ def _cli(argv):
     sub.add_parser("check", help="list every malformed figure in the log, through validate.fail")
     a = ap.parse_args(argv)
     if a.cmd == "check":
-        V = _load(".veldo/validate.py", "veldo_validate_judgment")
-        events = _load(".veldo/events.py", "veldo_events_judgment").read_log()
+        V = _organ_or_none(ORGAN_REGISTRY, "veldo_validate_judgment")
+        log_mod = _organ_or_none(ORGAN_LOG, "veldo_events_judgment")
+        absent = [rel for rel, mod in ((ORGAN_LOG, log_mod), (ORGAN_REGISTRY, V)) if mod is None]
+        if absent:
+            # A CHECK THAT COULD NOT LOOK IS NOT A PASS. It names the organ and exits non-zero,
+            # because the alternative spellings are both wrong: a traceback, or "0 malformed" over a
+            # log this command never opened.
+            print("judgment load: NOT CHECKED - %s" % (STANDDOWN_NO_CHECK % " and ".join(absent)),
+                  file=sys.stderr)
+            return 1
+        events = log_mod.read_log()
         errs = check_log(events, ".veldo/events.jsonl", V.fail)
         print("judgment load: %d malformed figure(s) in %d event(s)" % (errs, len(events)))
         return 1 if errs else 0

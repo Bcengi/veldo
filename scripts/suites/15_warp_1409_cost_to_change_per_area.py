@@ -30,10 +30,18 @@ exactly one input and requires the answer to CHANGE:
 AND THE WIRING IS DRIVEN, NOT ONLY THE PURE CORE. repo_report() produces every number the spec
 publishes and every number a reader will quote, and for a while nothing called it: a review severed
 each of its two joins in turn and this file stayed at 30 passed while the live map lost, in turn,
-every git-path attribution and then every declared-placement attribution. It is now driven twice -
-over an INJECTED LOADER with known inputs, which runs everywhere, and over the REAL repository,
-where the whole-corpus partition is a set equality against an independently built corpus. Its
-git-path half over live history is SPLIT OUT and stands down here for the WARP-1711 reason.
+every git-path attribution and then every declared-placement attribution. It is now driven three
+ways - over an INJECTED LOADER with known inputs, over a THROWAWAY GIT REPOSITORY this file builds
+(its own contract, its own specs, its own event log, its own commits), and over the REAL repository,
+where the whole-corpus partition is a set equality against an independently built corpus.
+
+NOTHING IN THIS FILE STANDS DOWN ANY MORE, and the two legs that did are the reason the fixture
+repository exists. Both were routed through shared.no_history with a PROSE SENTENCE where the
+mechanism wants a module path, and history_begins_with answers True for a non-path in EVERY
+repository, so the guard that separates an honestly absent input from a BROKEN READER could not
+fail: gutting toe_corpus.git_touched, the one reader both depended on, left this file green. The
+readers now take a `root` - a seam _run already had - and are driven over a tree with real commits,
+so both legs run everywhere and neither is traded for an unknown gap.
 
 TEETH, MEASURED RATHER THAN CLAIMED. THIRTEEN mutations were driven one at a time in a scratch copy
 of this repository, each one DIFFED to prove it applied - a replacement that matched nothing looks
@@ -64,6 +72,44 @@ byte-identical.)
  12. a second suite fragment naming the module: 1 red.
  13. repo_report loading .veldo/entropy.py instead of .veldo/metrics.py, the C6 edge: 6 red.
 
+AND SIX MORE, DRIVEN AGAINST THIS REVISION FOR THE FINDINGS AN INDEPENDENT REVIEW RAISED AFTERWARDS.
+Each was applied to BOTH twins, diffed to prove it landed, and reverted; each reddened the row named
+here and no other, and the additive controls stayed green. Every one of the six was GREEN before this
+revision, which is the whole reason they are recorded rather than described.
+
+ 14. `usable_as_cost_ground_truth` computed over the whole corpus again instead of over the records
+     that reached an area: 1 red, the recorded-spend-on-a-spec-no-area-holds row. It reds ONE row and
+     that is worth stating plainly: the live rows cannot see this mutation, because nothing in this
+     repository has recorded spend yet, which is exactly why the state is driven from a FIXTURE.
+ 15. the unattributed bucket's `cost` and `cycles` blocks dropped: 10 red, and no coverage lost (67
+     passed 10 failed against a 77-row baseline). The 750000 recorded tokens are then in no figure
+     anywhere in the report. THE FIRST VERSION OF THIS MEASUREMENT WAS WORTH LESS THAN IT LOOKED: the
+     rows indexed the blocks directly, so the mutation raised KeyError at module scope, reddened one
+     row and DELETED every row below it - ledger 67's weaker assertion exactly. The reads go through
+     _w1409_dig and _w1409_render now, and the same mutation reds ten NAMED rows with the run intact.
+ 16. `git_touched` gutted to empty lists: 3 red (the fixture count-equals-the-read row, the
+     fixture-tree wiring row and the housekeeping row that requires the fixture read to be
+     non-empty). It was green in EVERY repository before the fixture existed.
+ 17. `files_touched` replaced by hardcoded zeros: 1 red, the fixture count-equals-the-read row. A
+     wrong number in every one of the 174 corpus records this plan trains on, and green before.
+ 18. one line in `report()` writing a file under ROOT: 2 red (the tree-inventory row and its own
+     additive control, whose planted-write diff is no longer exactly the planted path). The exact
+     mutation a review applied while this file stayed at 40 passed.
+ 19. repo_report's default loader bound to ROOT instead of to the root it was given: 2 red (the
+     loader-binding row and the fixture-tree row, the second because the event stream, the git
+     history and the protected patterns then come from this repository instead of from the tree
+     under report).
+
+AND THE TWO ADDITIVE CONTROLS, which must red ONE row each and leave every other row green, because a
+control that ADDS something and reds the whole file proves nothing about what it added:
+ A1. a second problem spelling behind check_corpus: 1 red, the two-surfaces-one-enumeration row.
+ A2. an importlib load of this module inserted into scripts/secret_inventory.py, a REQUIRED gate
+     stage: 1 red, the no-gate-stage-consumes-it row.
+
+ALL EIGHT FALSIFICATIONS THE SPEC DECLARES WERE ALSO RE-DRIVEN AGAINST THIS REVISION, each reddening
+the rows its own field names: AC1 10 red, AC2 7, AC3 11, AC4 (cost) 4, AC4 (gate cycles) 4, AC5 3,
+AC6 2, AC7 4, AC8 3.
+
 AND ONE OF THOSE LIVE ASSERTIONS WAS A LANDMINE RATHER THAN A CHECK, fixed here. AC4 over the real
 repository asserted that NO record carries spend - today's emptiness written as a required invariant -
 so it stayed green exactly as long as nobody used .veldo/spend.py and reddened the moment somebody
@@ -73,10 +119,17 @@ did. Measured in a scratch copy: from 38 passed 0 failed, one sanctioned
 corpus, per area and per signal, with only the arm that speaks about an absence branched on what the
 run just measured. The teeth were re-measured with the spend recorded: `_sum_cost` returning 0
 instead of None for a set that recorded nothing reds the derived assertion, which is the confident
-zero this criterion exists to refuse. The live block is 4 assertions rather than 1, so a clean run is
-40 passed 0 failed and the mutation counts above are the ones measured at the earlier revision.
+zero this criterion exists to refuse. The live block is 4 assertions rather than 1. A clean run of
+this fragment is 51 passed 0 failed at this revision; mutations 1 to 13 were counted at the 40-row
+revision and 14 to 19 at this one, which is why the two sets of counts are labelled separately rather
+than restated as one number nobody re-measured.
 """
+import hashlib as _w1409_hashlib
+import os as _w1409_os
 import re as _w1409_re
+import shutil as _w1409_shutil
+import subprocess as _w1409_subprocess
+import sys as _w1409_sys
 
 _w1409_cspec = importlib.util.spec_from_file_location(
     "w1409_cost_to_change", ROOT / ".veldo/cost_to_change.py")
@@ -129,6 +182,88 @@ body
 """
 
 
+# -----------------------------------------------------------------------------------
+# THE FIXTURE REPOSITORY. A THROWAWAY GIT TREE WITH ONE COMMIT NAMING A SPEC, WHICH IS THE SEAM TWO
+# PROPERTIES OF THIS ITEM CANNOT BE ASKED ABOUT WITHOUT.
+#
+# This repository's history is flattened: its one root commit names no spec id, so
+# toe_corpus.git_touched honestly reads nothing for every spec and BOTH of its views read 0. A review
+# measured what that costs: `files_touched` replaced by hardcoded zeros, and `git_touched` gutted to
+# empty lists, EACH left this suite at 40 passed 0 failed - and that dict is the `git` block of every
+# one of the 174 corpus records the whole plan trains on. The two legs were routed through
+# shared.no_history with a PROSE SENTENCE where the mechanism wants a module path, and
+# history_begins_with answers True for a non-path in every repository forever, so the guard that
+# separates an absent input from a BROKEN READER could not fail either.
+#
+# A property only a differently shaped tree can exhibit needs a SEAM to be asked about that tree
+# (ledger 60), and the seam existed: `toe_corpus._run(args, cwd=None)` already took the working
+# directory and only these two callers did not pass it. So both readers now take a `root`, this tree
+# is built with real commits, and BOTH STAND-DOWNS ARE GONE: every leg below runs everywhere, with no
+# dependence on what this repository's own history happens to name.
+#
+# The tree is also a whole REPOSITORY rather than a bare git directory, because the same fixture
+# answers the other question a review left open: whether repo_report(root=X) honours X for EVERY
+# input or only for the two it reads directly.
+# -----------------------------------------------------------------------------------
+_W1409_FIXTURE_SPEC = """---
+schema: veldo.spec/v1
+id: %s
+title: %s
+status: shipped
+risk: standard
+owner: selftest
+%sacceptance_criteria:
+  - id: AC1
+    text: observable.
+rollback: git revert
+---
+body
+"""
+# The events the fixture tree's OWN log carries. Not one of these ids appears in this repository's
+# log, which is what makes reading them back proof that the event stream came from the fixture.
+_W1409_FIXTURE_EVENTS = [
+    dict({"schema": "veldo.event/v1", "id": "w1409fixture%d" % _i,
+          "at": "2026-01-01T00:00:0%dZ" % _i, "producer": "selftest",
+          "spec_id": "WARP-9451", "type": _t}, **_x)
+    for _i, (_t, _x) in enumerate([
+        ("spec.shipped", {"tokens": 4321, "cost_usd": 2.5, "human_minutes": 9}),
+        ("gate.passed", {}), ("gate.failed", {}), ("verdict.recorded", {})])]
+_W1409_FIXTURE_REPO = Path(tempfile.mkdtemp(prefix="w1409-fixture-repo-"))
+
+
+def _w1409_git(*args):
+    """One git command in the fixture repository, with an identity supplied on the command line so
+    the fixture never depends on this machine's git configuration."""
+    return _w1409_subprocess.run(
+        ["git", "-C", str(_W1409_FIXTURE_REPO), "-c", "user.name=selftest",
+         "-c", "user.email=selftest@veldo.invalid"] + list(args),
+        capture_output=True, text=True, check=True)
+
+
+(_W1409_FIXTURE_REPO / "specs").mkdir()
+# The whole estimation layer, because repo_report(root=X) derives X's map with X's OWN organs: that
+# is how the event stream, the git history and the protected patterns come from X rather than from
+# wherever this file lives.
+_w1409_shutil.copytree(ROOT / ".veldo", _W1409_FIXTURE_REPO / ".veldo",
+                       ignore=_w1409_shutil.ignore_patterns("__pycache__"))
+(_W1409_FIXTURE_REPO / "specs" / "WARP-9451-placed.md").write_text(
+    _W1409_FIXTURE_SPEC % ("WARP-9451", "fixture spec declaring where it lands",
+                           'placement: [metrics]\nfootprint:\n  - ".veldo/metrics.py"\n'))
+(_W1409_FIXTURE_REPO / "specs" / "WARP-9452-unplaced.md").write_text(
+    _W1409_FIXTURE_SPEC % ("WARP-9452", "fixture spec declaring no placement at all", ""))
+(_W1409_FIXTURE_REPO / ".veldo" / "events.jsonl").write_text(
+    "\n".join(json.dumps(_e, sort_keys=True) for _e in _W1409_FIXTURE_EVENTS) + "\n")
+_w1409_git("init", "-q")
+_w1409_git("add", "-A")
+# The seed commit names NO spec id on purpose: the reader must find the ONE commit that does.
+_w1409_git("commit", "-q", "-m", "seed the fixture tree")
+(_W1409_FIXTURE_REPO / ".veldo" / "dashboard.py").write_text(
+    (_W1409_FIXTURE_REPO / ".veldo" / "dashboard.py").read_text() + "\n# fixture edit\n")
+_w1409_git("add", "-A")
+_w1409_git("commit", "-q", "-m",
+           "WARP-9452: the change this fixture attributes by git path")
+
+
 def _w1409_rec(spec_id, **over):
     """One well-formed veldo.toe_actuals/v1 record, shaped exactly as toe_corpus.build emits
     them. The overrides are how each planted-bad shape below is built, so a bad record differs
@@ -152,6 +287,34 @@ def _w1409_rec(spec_id, **over):
         else:
             rec[k] = v
     return rec
+
+
+def _w1409_dig(obj, *keys):
+    """A nested read that returns None for an ABSENT key instead of raising, used for every read of
+    a block this remediation added.
+
+    A row that indexes a key straight out of a report turns a mutation which DELETES that key into a
+    KeyError at module scope, and that takes every assertion below it with it: the evidence then reads
+    "something went red and the run got shorter", which is exactly what a mutation deleting coverage
+    produces and exactly what ledger 67 records as the weaker assertion. Read through here, the same
+    mutation reds the row that NAMES the missing figure and nothing else."""
+    for _k in keys:
+        if not isinstance(obj, dict) or _k not in obj:
+            return None
+        obj = obj[_k]
+    return obj
+
+
+def _w1409_render(rep):
+    """The rendered text for one report, or "" when rendering RAISES. Same reason as _w1409_dig: the
+    text surface reads figures the report is required to carry, so a mutation that removes one of
+    them makes render_text raise, and an unhandled raise at module scope would delete every assertion
+    below it instead of reddening the rows that name the missing figure. An empty string reds exactly
+    those rows."""
+    try:
+        return _W1409.render_text(rep)
+    except BaseException as _e:                                                # noqa: BLE001
+        return ""
 
 
 def _w1409_raises(fn, *a, **kw):
@@ -349,7 +512,17 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1409_rep["areas"]["alpha"]["cycles"]["gate_coverage"] == 1.0
            and _w1409_rep["coverage"]["gate_event_records"] == 4
            and _w1409_rep["coverage"]["usable_as_rework_ground_truth"] is True
-           and "cycle_notice" not in _w1409_rep)
+           and "cycle_notice" not in _w1409_rep
+           # THE SAME SPLIT ON THE OTHER SIGNAL, in the one fixture that exhibits it: all four
+           # records carry gate events and WARP-9404 is attributed to nothing, so 3 of the 4
+           # reached an area, the boolean speaks about those 3, and the 4th record's cycles are
+           # reported in unattributed.cycles with its own notice rather than in no figure at all.
+           and _w1409_rep["coverage"]["gate_attributed_records"] == 3
+           and _w1409_rep["coverage"]["gate_unattributed_records"] == 1
+           and "unattributed_cycle_notice" in _w1409_rep
+           and _w1409_dig(_w1409_rep, "unattributed", "cycles", "gate_passes") == 1
+           and _w1409_dig(_w1409_rep, "unattributed", "cycles", "gate_failures") == 2
+           and _w1409_dig(_w1409_rep, "unattributed", "cycles", "gate_basis") == "recorded")
 
     expect("WARP-1409 AC3 NEGATIVE CONTROL FOR cycles_known: a record whose event stream held "
            "NOTHING (events_seen 0) is counted as having NO cycle data, so cycles_coverage drops "
@@ -413,11 +586,11 @@ with tempfile.TemporaryDirectory() as _d:
            "THE SAME ASSERTION: the mixed fixture, whose records DO carry gate events, renders the "
            "real numbers and never the None, so this is the absence of the signal rather than a "
            "renderer that always prints None",
-           "gate_passes=None" in _W1409.render_text(_w1409_rep_nogate)
-           and "gate_failures=None" in _W1409.render_text(_w1409_rep_nogate)
-           and "unrecorded, gate events on 0 of 2" in _W1409.render_text(_w1409_rep_nogate)
-           and "gate_passes=3" in _W1409.render_text(_w1409_rep)
-           and "gate_passes=None" not in _W1409.render_text(_w1409_rep))
+           "gate_passes=None" in _w1409_render(_w1409_rep_nogate)
+           and "gate_failures=None" in _w1409_render(_w1409_rep_nogate)
+           and "unrecorded, gate events on 0 of 2" in _w1409_render(_w1409_rep_nogate)
+           and "gate_passes=3" in _w1409_render(_w1409_rep)
+           and "gate_passes=None" not in _w1409_render(_w1409_rep))
 
     # -----------------------------------------------------------------------------------
     # AC4. THE UNKNOWN COST IS None AND NOT ZERO. This is the assertion the mutation teeth
@@ -457,7 +630,13 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1409_rep_spent["areas"]["alpha"]["cost"]["cost_basis"] == "recorded"
            and _w1409_rep_spent["areas"]["alpha"]["cost"]["spend_coverage"] == 1.0
            and _w1409_rep_spent["coverage"]["usable_as_cost_ground_truth"] is True
-           and "cost_notice" not in _w1409_rep_spent)
+           and "cost_notice" not in _w1409_rep_spent
+           # AND THE UNATTRIBUTED-SPEND DISCLOSURE IS NOT ALWAYS-ON DECORATION: this record IS
+           # attributed, so cost_unattributed_records is 0 and that notice is absent. A warning a
+           # reader sees on every report is a warning a reader learns to ignore.
+           and _w1409_rep_spent["coverage"]["cost_attributed_records"] == 1
+           and _w1409_rep_spent["coverage"]["cost_unattributed_records"] == 0
+           and "unattributed_spend_notice" not in _w1409_rep_spent)
 
     _w1409_rep_mixed_cost = _W1409.report(
         [_w1409_spent, _w1409_rec("WARP-9407")], _W1409_CONTRACT, _W1409ARCH,
@@ -472,6 +651,72 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1409_rep_mixed_cost["areas"]["alpha"]["cost"]["spend_known"] == 1
            and _w1409_rep_mixed_cost["areas"]["alpha"]["cost"]["spend_coverage"] == 0.5
            and _w1409_rep_mixed_cost["areas"]["alpha"]["records"] == 2)
+
+    # -----------------------------------------------------------------------------------
+    # AC4. SPEND RECORDED AGAINST A SPEC NO AREA HOLDS, which is the state ONE
+    # `.veldo/spend.py record` produces against any unattributed spec - 108 of this repository's
+    # 174 records are unattributed, and WARP-0100, the spec the remediation itself recorded
+    # against, is one of them. IT USED TO MAKE THE MAP CONTRADICT ITSELF IN THE DATA: the
+    # corpus-level `usable_as_cost_ground_truth` went true while every area still reported
+    # tokens None with cost_basis unrecorded, the cost notice that explains those Nones was
+    # SUPPRESSED BY THE SAME RECORD, and the recorded tokens appeared in no figure anywhere,
+    # because the unattributed bucket carried only records, specs and a reason.
+    # THE FIXTURE CARRIES THE STATE, so this is driven in every repository rather than only in
+    # one that happens to have recorded spend today - which is the whole reason the live arm
+    # below could not see it.
+    # -----------------------------------------------------------------------------------
+    _w1409_spent_nowhere = _w1409_rec("WARP-9431",
+                                      spend={"tokens": 750000, "cost_usd": 0,
+                                             "human_minutes": 0, "spend_recorded": True})
+    _w1409_rep_nowhere = _W1409.report([_w1409_spent_nowhere], _W1409_CONTRACT, _W1409ARCH,
+                                       fm_of=lambda _s: None, paths_of=lambda _s: [])
+    _w1409_nowhere_json = json.dumps(_w1409_rep_nowhere, sort_keys=True)
+    expect("WARP-1409 AC4: RECORDED SPEND ON A SPEC NO AREA HOLDS IS REPORTED IN A FIGURE, AND THE "
+           "HEADLINE BOOLEAN DOES NOT CLAIM COST GROUND TRUTH OVER A MAP WITH NO COST IN IT. The "
+           "one record carries 750000 tokens and resolves to no area, so: "
+           "usable_as_cost_ground_truth is FALSE because it is a statement about the PER-AREA "
+           "figures and no area has one; cost_known_records is 1 while cost_attributed_records is "
+           "0 and cost_unattributed_records is 1, so all three facts are readable rather than one "
+           "blunt one; the cost notice is STILL PRESENT, because the record that creates the "
+           "contradiction must not be the record that removes the disclosure; a second notice "
+           "names the recorded-but-unattributed count; and the 750000 tokens are IN THE REPORT, in "
+           "unattributed.cost with cost_basis 'recorded', because a figure a reader cannot audit "
+           "should not exist. Nothing is spread, split or defaulted into an area to achieve that",
+           _w1409_rep_nowhere["unattributed"]["records"] == 1
+           and _w1409_rep_nowhere["unattributed"]["specs"] == ["WARP-9431"]
+           and _w1409_rep_nowhere["areas"] == {}
+           and _w1409_rep_nowhere["coverage"]["cost_known_records"] == 1
+           and _w1409_rep_nowhere["coverage"]["cost_attributed_records"] == 0
+           and _w1409_rep_nowhere["coverage"]["cost_unattributed_records"] == 1
+           and _w1409_rep_nowhere["coverage"]["usable_as_cost_ground_truth"] is False
+           and "cost_notice" in _w1409_rep_nowhere
+           and "reaches NO per-area figure" in _w1409_rep_nowhere["unattributed_spend_notice"]
+           and _w1409_dig(_w1409_rep_nowhere, "unattributed", "cost", "tokens") == 750000
+           and _w1409_dig(_w1409_rep_nowhere, "unattributed", "cost", "cost_basis") == "recorded"
+           and _w1409_dig(_w1409_rep_nowhere, "unattributed", "cost", "spend_known") == 1
+           and "750000" in _w1409_nowhere_json
+           and "unattributed cost: recorded, tokens=750000"
+           in _w1409_render(_w1409_rep_nowhere))
+
+    _w1409_rep_spend_split = _W1409.report(
+        [_w1409_spent, _w1409_spent_nowhere], _W1409_CONTRACT, _W1409ARCH,
+        fm_of=lambda _s: None,
+        paths_of=lambda _s: [".veldo/alpha.py"] if _s == "WARP-9406" else [])
+    expect("WARP-1409 AC4: WITH ONE ATTRIBUTED AND ONE UNATTRIBUTED SPEND RECORD, BOTH FIGURES ARE "
+           "REPORTED AND THE UNATTRIBUTED DISCLOSURE SURVIVES THE ARM IT DOES NOT BELONG TO. This "
+           "is the case a single notice would have hidden: usable_as_cost_ground_truth is true and "
+           "the cost notice is correctly GONE, because alpha does report a real cost - and the "
+           "unattributed spend notice is STILL THERE, naming 1 of 2, with the 750000 tokens in "
+           "unattributed.cost beside alpha's 1200. Gating the second disclosure on the first would "
+           "lose it in exactly the state where a reader is most likely to add the two numbers up",
+           _w1409_rep_spend_split["coverage"]["usable_as_cost_ground_truth"] is True
+           and "cost_notice" not in _w1409_rep_spend_split
+           and _w1409_rep_spend_split["coverage"]["cost_attributed_records"] == 1
+           and _w1409_rep_spend_split["coverage"]["cost_unattributed_records"] == 1
+           and "1 of the 2 record(s) carrying spend are UNATTRIBUTED"
+           in _w1409_rep_spend_split["unattributed_spend_notice"]
+           and _w1409_rep_spend_split["areas"]["alpha"]["cost"]["tokens"] == 1200
+           and _w1409_dig(_w1409_rep_spend_split, "unattributed", "cost", "tokens") == 750000)
 
     # -----------------------------------------------------------------------------------
     # AC5. FAIL CLOSED AND BY NAME, eight planted-bad shapes, each refused with a message
@@ -576,12 +821,31 @@ with tempfile.TemporaryDirectory() as _d:
            and "no architecture contract" in _w1409_sd_contract["reason"]
            and _w1409_sd_records["areas"] == _w1409_sd_contract["areas"] == {}
            and sorted(_w1409_sd_records) == sorted(_w1409_sd_contract)
-           and set(_w1409_rep) - {"notice", "cost_notice"} <= set(_w1409_sd_records)
+           # THE EXCLUSION IS THE MODULE'S OWN ENUMERATION, NOT A LITERAL SET SPELLED OUT HERE.
+           # Two spellings of "which keys are conditional" is how a notice gets added to the live
+           # report and forgotten in the stand-down, which is the drift this comparison exists to
+           # catch, and a literal set here would have to be edited to keep it green - the one edit
+           # that turns the check into a record of what happened.
+           and set(_w1409_rep) - set(_W1409.CONDITIONAL_KEYS) <= set(_w1409_sd_records)
+           and set(_w1409_rep_nowhere) - set(_W1409.CONDITIONAL_KEYS) <= set(_w1409_sd_records)
+           # AND THE EXCLUSION SET IS AUDITED RATHER THAN TRUSTED: every key it declares
+           # conditional is one a report built in this file ACTUALLY CARRIES, so it cannot become a
+           # licence to drop a key from the stand-down by naming it here.
+           and set(_W1409.CONDITIONAL_KEYS) <= (
+               set(_w1409_rep) | set(_w1409_rep_git) | set(_w1409_rep_nogate)
+               | set(_w1409_rep_nowhere))
+           and not set(_W1409.CONDITIONAL_KEYS) & set(_w1409_sd_records)
            # The same shape claim ONE LEVEL DOWN, where the coverage figures live: a consumer
            # reading coverage.gate_event_records off a stand-down must not get a KeyError, and a
            # key added to the live coverage block and forgotten in the stand-down is exactly the
-           # drift the top-level comparison cannot see.
+           # drift the top-level comparison cannot see. The unattributed bucket now carries its own
+           # cost and cycle blocks, so it gets the same treatment.
            and sorted(_w1409_sd_records["coverage"]) == sorted(_w1409_rep["coverage"])
+           and sorted(_w1409_sd_records["unattributed"]) == sorted(_w1409_rep["unattributed"])
+           and sorted(_w1409_dig(_w1409_sd_records, "unattributed", "cost") or {}) == sorted(
+               _w1409_rep["areas"]["alpha"]["cost"])
+           and sorted(_w1409_dig(_w1409_sd_records, "unattributed", "cycles") or {}) == sorted(
+               _w1409_rep["areas"]["alpha"]["cycles"])
            and _w1409_sd_records["coverage"]["records"] == 0)
 
     expect("WARP-1409 AC6 NEGATIVE CONTROL: A POPULATED CORPUS WITH A CONTRACT DOES NOT STAND "
@@ -724,6 +988,168 @@ with tempfile.TemporaryDirectory() as _d:
                    _W1409Mod(build=_w1409_build,
                              git_touched=lambda _s: {"commits": [], "files": []})
                    if rel == ".veldo/toe_corpus.py" else _w1409_stub_load(n, rel)))))
+
+    # -----------------------------------------------------------------------------------
+    # THE ROOT IS HONOURED FOR EVERY INPUT, AND THAT IS THE LOADER'S DOING. repo_report(root=X)
+    # read the contract and the specs from X while the EVENT STREAM came from metrics.LOG, the GIT
+    # HISTORY from toe_corpus.ROOT and the PROTECTED PATTERNS from policy_check, all three resolved
+    # from wherever this file lives - so a per-area cost map produced for X carried Y's cycles,
+    # spend and git attribution, with nothing in the report saying which tree each figure came
+    # from. A half honoured root is the shape a caller cannot detect, which is worse than no
+    # parameter at all.
+    #
+    # THE FIX IS ONE LINE AND NO SECOND SPELLING OF "WHICH TREE": the four siblings are loaded FROM
+    # the tree under report, so each one's own module-level root IS that tree. Threading a root
+    # argument through metrics.load, policy_check.protected_patterns and toe_corpus would have put
+    # that decision in three more modules. Driven here in two halves - the loader honours the root,
+    # and repo_report binds its default loader to the root it was given - and end to end over a
+    # real fixture repository further down.
+    # -----------------------------------------------------------------------------------
+    _w1409_other = Path(_d) / "othertree"
+    (_w1409_other / ".veldo").mkdir(parents=True)
+    (_w1409_other / ".veldo" / "metrics.py").write_text("MARKER = 'the other tree'\n")
+    _w1409_probe = _W1409._load("w1409_probe_metrics", ".veldo/metrics.py", _w1409_other)
+    _w1409_real_metrics = _W1409._load("w1409_real_metrics", ".veldo/metrics.py")
+    _w1409_absent_load = _w1409_raises(_W1409._load, "w1409_absent", ".veldo/toe_corpus.py",
+                                       _w1409_other)
+    expect("WARP-1409 AC1: THE MODULE LOADER LOADS FROM THE ROOT IT IS GIVEN, and an absent sibling "
+           "is NAMED rather than thrown. Handed a tree holding one stand-in metrics.py, it returns "
+           "THAT module (its MARKER is readable and the real module's LOG is not); handed no root it "
+           "returns this repository's real one (LOG present, no MARKER). Asked for a sibling that "
+           "tree does not carry, it raises ValueError naming BOTH the missing module path and the "
+           "root, which is what turns an adopter's FileNotFoundError traceback into one line and "
+           "exit 1: a tree without the estimation layer has no map to produce, and saying so is a "
+           "state a caller can act on",
+           getattr(_w1409_probe, "MARKER", None) == "the other tree"
+           and not hasattr(_w1409_probe, "LOG")
+           and hasattr(_w1409_real_metrics, "LOG")
+           and not hasattr(_w1409_real_metrics, "MARKER")
+           and _w1409_absent_load[0]
+           and _w1409_absent_load[1].startswith("ValueError")
+           and ".veldo/toe_corpus.py" in _w1409_absent_load[1]
+           and str(_w1409_other) in _w1409_absent_load[1])
+
+    _w1409_load_asked = []
+
+    def _w1409_recording_load(name, rel, root=None):
+        """The module loader, replaced for ONE call, recording the (path, root) pair it is asked
+        for and answering with the same stubs the wiring block uses. This is how the BINDING is
+        observed: the loader repo_report builds for itself is otherwise invisible."""
+        _w1409_load_asked.append((rel, str(root) if root is not None else None))
+        return _w1409_stub_load(name, rel)
+
+    _w1409_load_saved = _W1409._load
+    try:
+        _W1409._load = _w1409_recording_load
+        _w1409_rooted, _w1409_rooted_err = _w1409_wire(None)
+    finally:
+        _W1409._load = _w1409_load_saved
+    expect("WARP-1409 AC1 AND AC4: repo_report ASKS FOR ALL FOUR SIBLINGS UNDER THE ROOT IT WAS "
+           "GIVEN, so every one of its five inputs comes from the tree under report and none of "
+           "them from wherever this module happens to live. Driven with no loader injected at all, "
+           "which is the production path: the real loader is replaced for one call and records what "
+           "it was asked for, and all four requests carry the root - not None, and not this "
+           "repository. The composition still produced the report (three records, both joins), so "
+           "this is a rewiring observed rather than a call that failed early, and the real loader "
+           "is restored afterwards",
+           _w1409_rooted_err == ""
+           and [_p for _p, _r in _w1409_load_asked] == [
+               ".veldo/validate.py", ".veldo/toe_corpus.py", ".veldo/metrics.py",
+               ".veldo/policy_check.py"]
+           and {_r for _p, _r in _w1409_load_asked} == {str(_d)}
+           and _w1409_rooted["coverage"]["records"] == 3
+           and _W1409._load is _w1409_load_saved)
+
+    # -----------------------------------------------------------------------------------
+    # AC6. THE DERIVATION WRITES NOTHING, OBSERVED RATHER THAN PROMISED.
+    #
+    # AC6's own sentence says "nothing reads a clock, mints an id or writes a file", and until now
+    # nothing defended the last clause: determinism across two in-process runs and a reversed corpus
+    # cannot see a filesystem write, and the spawn scanner looks for subprocess primitives. A review
+    # added ONE line to report() writing .veldo/ctc_side_effect.json, watched the file appear on
+    # disk, and the suite stayed at 40 passed 0 failed. This is ledger 53's repair, in the shape a
+    # sibling suite already uses (15_warp_1407): a recursive inventory of PATH, SIZE, MTIME and
+    # SHA256 around the call, over the tree the module resolves its own paths from - pointed at a
+    # hermetic fixture for the duration, the way that suite points its module's ROOT - AND over this
+    # repository's real .veldo, which is where any state file in this package would land.
+    #
+    # NO EXCLUSION LIST, because a list is something a real writer could hide behind: the ONE thing
+    # suppressed is the interpreter's own bytecode cache, and that is suppressed rather than
+    # excluded.
+    # -----------------------------------------------------------------------------------
+    def _w1409_inventory(root):
+        """path -> (size, mtime_ns, sha256) for every entry under one tree, directories included as
+        paths so a new file is visible even when nothing else moves. ONE instrument, used for the
+        claim and for the controls below, so an instrument that could see nothing could not pass for
+        a tree that did not change."""
+        out = {}
+        for _p in sorted(Path(root).rglob("*")):
+            _rel = str(_p.relative_to(root))
+            if _p.is_dir():
+                out[_rel] = ("dir", 0, "")
+                continue
+            _st = _p.stat()
+            out[_rel] = (_st.st_size, _st.st_mtime_ns,
+                         _w1409_hashlib.sha256(_p.read_bytes()).hexdigest())
+        return out
+
+    _w1409_wtree = Path(_d) / "writetree"
+    (_w1409_wtree / ".veldo").mkdir(parents=True)
+    (_w1409_wtree / ".veldo" / "seed.json").write_text("{}\n")
+    _w1409_inv_roots = [_w1409_wtree, ROOT / ".veldo"]
+    _w1409_root_saved, _w1409_pyc_saved = _W1409.ROOT, _w1409_sys.dont_write_bytecode
+    try:
+        _W1409.ROOT, _w1409_sys.dont_write_bytecode = _w1409_wtree, True
+        _w1409_inv_before = [_w1409_inventory(_r) for _r in _w1409_inv_roots]
+        _w1409_inv_rep = _W1409.report(_W1409_MIXED, _W1409_CONTRACT, _W1409ARCH,
+                                       fm_of=_W1409_FM.get,
+                                       paths_of=lambda s: _W1409_PATHS.get(s, []))
+        _w1409_inv_text = _w1409_render(_w1409_inv_rep)
+        _w1409_inv_after = [_w1409_inventory(_r) for _r in _w1409_inv_roots]
+    finally:
+        _W1409.ROOT, _w1409_sys.dont_write_bytecode = _w1409_root_saved, _w1409_pyc_saved
+    expect("WARP-1409 AC6: BUILDING AND RENDERING THE WHOLE REPORT LEAVES EVERY TREE IT COULD REACH "
+           "BYTE-IDENTICAL, asserted as a recursive inventory of path, size, mtime and sha256 "
+           "before and after rather than as a promise or a source grep. Two trees: the one the "
+           "module resolves its own paths from, pointed at a hermetic fixture for the duration, and "
+           "this repository's real .veldo, where a cache or a stamp would land. THE DOMAIN IS REAL "
+           "BEFORE THE ABSENCE IS CLAIMED OVER IT: the inventories are non-empty, the real one names "
+           "cost_to_change.py itself and covers over a hundred entries, and the derivation "
+           "demonstrably RAN over the fixture (four records, two areas, a rendered table) rather "
+           "than standing down. ROOT is restored afterwards, so every assertion below reads the real "
+           "repository",
+           _w1409_inv_before == _w1409_inv_after
+           and len(_w1409_inv_after[0]) >= 2
+           and ".veldo/seed.json" in _w1409_inv_after[0]
+           and "cost_to_change.py" in _w1409_inv_after[1]
+           and len(_w1409_inv_after[1]) > 100
+           and _w1409_inv_rep["coverage"]["records"] == 4
+           and sorted(_w1409_inv_rep["areas"]) == ["alpha", "beta"]
+           and "area alpha" in _w1409_inv_text
+           and _W1409.ROOT == ROOT
+           and _w1409_sys.dont_write_bytecode == _w1409_pyc_saved)
+
+    (_w1409_wtree / ".veldo" / "ctc_side_effect.json").write_text('{"wrote": true}')
+    expect("WARP-1409 AC6 CONTROL, ADDITIVE: THE INVENTORY SEES A PLANTED WRITE AND NAMES IT. The "
+           "file planted here is the exact one a review added to report() while the suite stayed "
+           "green, so the identity above is a measurement of that mutation's absence and not an "
+           "instrument that notices nothing. The diff is asserted to be EXACTLY the planted path, "
+           "so the instrument is shown to be specific as well as sensitive",
+           set(_w1409_inventory(_w1409_wtree)) - set(_w1409_inv_after[0])
+           == {".veldo/ctc_side_effect.json"})
+
+    _w1409_os.utime(_w1409_wtree / ".veldo" / "seed.json",
+                    ns=(_w1409_inv_after[0][".veldo/seed.json"][1] + 10 ** 9,
+                        _w1409_inv_after[0][".veldo/seed.json"][1] + 10 ** 9))
+    expect("WARP-1409 AC6 CONTROL: THE INVENTORY SEES A REWRITE THAT CHANGES NO BYTES, which is why "
+           "the mtime is in it. A writer that stamps the same content on every run is invisible to a "
+           "content-only digest, and ledger 53 records that exact mutation surviving one. Driven by "
+           "moving one file's mtime a second forward with its bytes untouched: the entry for that "
+           "path changes while its sha256 does not",
+           _w1409_inventory(_w1409_wtree)[".veldo/seed.json"]
+           != _w1409_inv_after[0][".veldo/seed.json"]
+           and _w1409_inventory(_w1409_wtree)[".veldo/seed.json"][2]
+           == _w1409_inv_after[0][".veldo/seed.json"][2])
 
 # -----------------------------------------------------------------------------------
 # AC7. THE SEAM TO THE ARCHITECTURE ORGAN IS PROSE, NOT A DEPENDENCY EDGE. Asserted over
@@ -889,39 +1315,109 @@ expect("WARP-1409 AC8: toe_corpus.files_touched COUNTS EXACTLY WHAT git_touched 
        and _w1409_counted["files_touched"] == len(_w1409_touched["files"])
        and _w1409_touched["files"] == sorted(_w1409_touched["files"]))
 
-# SPLIT (WARP-1711): the ABSENT half - a spec id no commit names answers with empty lists and zero
-# counts rather than an exception - is a fact about the reader and runs everywhere. The NON-EMPTY
-# half needs a commit that names a real spec id, which a flattened successor does not have: its one
-# commit names no spec at all, so the reader honestly reads nothing and the pair cannot be taken.
 expect("WARP-1409 AC8: a spec id NO commit names yields empty lists and zero counts rather than an "
        "exception, on both views of the one git read",
        _W1409TC.git_touched("WARP-0000-nothing-names-this")
        == {"commits": [], "files": []}
        and _W1409TC.files_touched("WARP-0000-nothing-names-this")
        == {"commits": 0, "files_touched": 0})
-if not no_history([("the commits naming %s" % _W1409_REAL_SPEC,
-                    _w1409_touched["commits"] and _W1409_REAL_SPEC)],
-                  "the NON-EMPTY half of the git-reader control",
-                  "The ABSENT half - a spec id no commit names answering with empty lists and zero "
-                  "counts rather than raising - is SPLIT OUT and still runs here, immediately above, "
-                  "and the COUNT-EQUALS-THE-READ assertion above it holds over whatever this "
-                  "repository's history does name.", "WARP-1409 AC8"):
-    expect("WARP-1409 AC8 NEGATIVE CONTROL: a spec id NO commit names yields empty lists and zero "
-       "counts rather than an exception, and the real spec id above yields a NON-EMPTY read. The "
-       "pair is what proves the reader is reading git at all: without the non-empty half, an "
-       "implementation that always returned nothing would satisfy the absent case and quietly "
-       "make every git-path attribution in the repository unattributed",
-       _W1409TC.git_touched("WARP-0000-nothing-names-this")
-       == {"commits": [], "files": []}
-       and _W1409TC.files_touched("WARP-0000-nothing-names-this")
-       == {"commits": 0, "files_touched": 0}
-       and _w1409_touched["files"] != [] and _w1409_touched["commits"] != [])
+
+# THE NON-EMPTY HALF, OVER THE FIXTURE REPOSITORY, WITH NO STAND-DOWN LEFT ANYWHERE.
+#
+# This used to route through shared.no_history with the PROSE SENTENCE "the commits naming WARP-1401"
+# where the mechanism wants a module path. history_begins_with runs `git log -- <rel>` and returns
+# True whenever the result is empty, which a non-path always is, so the guard that separates an
+# HONESTLY ABSENT input from a BROKEN READER answered True in this repository and in every other one,
+# forever - and neither leg was about a pre-change revision, which is the only kind of leg that may
+# be routed through there at all. The consequence was measured, not theorised: gutting git_touched,
+# the ONE reader both halves of the git-path stand-down depend on, left this suite at 40 passed 0
+# failed, and so did replacing files_touched with hardcoded zeros - a wrong number in every one of
+# the 174 corpus records this plan trains on.
+#
+# The fixture repository closes both, everywhere: ONE commit in it names WARP-9452 and touches
+# exactly one file, so each count can be required to EQUAL the length of the list it counts over a
+# NON-EMPTY read, and the absent control runs in the same tree rather than in a different one.
+_w1409_fx_touched = _W1409TC.git_touched("WARP-9452", root=_W1409_FIXTURE_REPO)
+_w1409_fx_counted = _W1409TC.files_touched("WARP-9452", root=_W1409_FIXTURE_REPO)
+_w1409_fx_absent = _W1409TC.git_touched("WARP-9499-nothing-names-this",
+                                        root=_W1409_FIXTURE_REPO)
+expect("WARP-1409 AC8: files_touched COUNTS EXACTLY WHAT git_touched READS, DRIVEN OVER A NON-EMPTY "
+       "READ IN EVERY REPOSITORY. In the fixture tree one commit names WARP-9452 and changed one "
+       "file: git_touched returns that one sha and that one path, files_touched returns 1 and 1, and "
+       "each count EQUALS the length of the matching list rather than agreeing with it at zero. THE "
+       "PAIR: the same reader in the same tree answers a spec id no commit names with empty lists "
+       "and zero counts. Without the non-empty half, hardcoded zeros satisfy the absent case and "
+       "quietly make every git-path attribution in the repository unattributed - which is what was "
+       "measured before this row existed. This needs no history of its own and stands down nowhere",
+       sorted(_w1409_fx_counted) == ["commits", "files_touched"]
+       and sorted(_w1409_fx_touched) == ["commits", "files"]
+       and _w1409_dig(_w1409_fx_counted, "commits")
+       == len(_w1409_dig(_w1409_fx_touched, "commits") or []) == 1
+       and _w1409_dig(_w1409_fx_counted, "files_touched")
+       == len(_w1409_dig(_w1409_fx_touched, "files") or []) == 1
+       and _w1409_dig(_w1409_fx_touched, "files") == [".veldo/dashboard.py"]
+       and _w1409_fx_absent == {"commits": [], "files": []}
+       and _W1409TC.files_touched("WARP-9499-nothing-names-this", root=_W1409_FIXTURE_REPO)
+       == {"commits": 0, "files_touched": 0})
+
+# -----------------------------------------------------------------------------------
+# THE WHOLE WIRING OVER A REAL TREE THAT IS NOT THIS ONE. Every figure in this report can only have
+# come from the fixture repository: its contract, its specs, its own event log, its own git history.
+# This is the row that makes `root` a parameter a caller can trust, and it is also where the git-path
+# join is driven over REAL git output rather than over an injected reader - which is what the LIVE
+# git-path leg used to stand down for.
+# -----------------------------------------------------------------------------------
+try:
+    _W1409_FX_REP = _W1409.repo_report(root=_W1409_FIXTURE_REPO)
+    _W1409_FX_ERR = ""
+except BaseException as _w1409_fx_exc:                                          # noqa: BLE001
+    _W1409_FX_REP = {"areas": {}, "coverage": {}, "unattributed": {"specs": []},
+                     "attribution": {_b: 0 for _b in _W1409.BASES}}
+    _W1409_FX_ERR = "%s: %s" % (type(_w1409_fx_exc).__name__, _w1409_fx_exc)
+_w1409_fx_area = _W1409_FX_REP["areas"].get("metrics", {})
+expect("WARP-1409 AC1, AC2 AND AC4 OVER A DIFFERENT TREE: repo_report(root=X) DERIVES X'S MAP FROM "
+       "X'S OWN FIVE INPUTS. The fixture repository holds two shipped specs, one declaring placement "
+       "metrics and one declaring nothing, an event log carrying 4321 tokens and one gate pass and "
+       "one gate failure for the declaring one, and a commit naming the other and touching "
+       ".veldo/dashboard.py. Read back: two records, ONE area, attribution {placement: 1, git_path: "
+       "1} with attribution_basis 'mixed', cost tokens 4321 with cost_basis 'recorded' on spend 1 of "
+       "2, gate_passes 1 and gate_failures 1 with gate_basis 'recorded', the git-path notice "
+       "present, and both blunt booleans true. EVERY ONE OF THOSE FIGURES IS UNREACHABLE FROM THIS "
+       "REPOSITORY: this log carries no WARP-9451 event and this history names no spec at all, so "
+       "before the fix the same call read the contract and the specs from the fixture while taking "
+       "the event stream, the git history and the protected patterns from here - a map for X "
+       "carrying Y's numbers, with nothing in the report saying so",
+       _W1409_FX_ERR == ""
+       and _W1409_FX_REP["coverage"]["records"] == 2
+       and sorted(_W1409_FX_REP["areas"]) == ["metrics"]
+       and _w1409_fx_area.get("attribution") == {_W1409.BY_PLACEMENT: 1, _W1409.BY_GIT_PATH: 1}
+       and _w1409_fx_area.get("attribution_basis") == "mixed"
+       and {_m["spec"]: _m["basis"] for _m in _w1409_fx_area.get("members", [])}
+       == {"WARP-9451": _W1409.BY_PLACEMENT, "WARP-9452": _W1409.BY_GIT_PATH}
+       and _w1409_dig(_w1409_fx_area, "cost", "tokens") == 4321
+       and _w1409_dig(_w1409_fx_area, "cost", "cost_usd") == 2.5
+       and _w1409_dig(_w1409_fx_area, "cost", "human_minutes") == 9
+       and _w1409_dig(_w1409_fx_area, "cost", "cost_basis") == "recorded"
+       and _w1409_dig(_w1409_fx_area, "cost", "spend_known") == 1
+       and _w1409_dig(_w1409_fx_area, "cycles", "gate_passes") == 1
+       and _w1409_dig(_w1409_fx_area, "cycles", "gate_failures") == 1
+       and _w1409_dig(_w1409_fx_area, "cycles", "gate_basis") == "recorded"
+       and _W1409_FX_REP["git_path_attributed"] is True
+       and "BY GIT PATH" in _W1409_FX_REP.get("notice", "")
+       and _W1409_FX_REP["coverage"]["usable_as_cost_ground_truth"] is True
+       and _W1409_FX_REP["coverage"]["usable_as_rework_ground_truth"] is True
+       and _W1409_FX_REP["unattributed"]["specs"] == []
+       # THE PAIR THAT PROVES THE FIGURES COULD NOT HAVE COME FROM HERE. Both are facts about DATA
+       # rather than about dependencies: a synthetic spec id absent from this repository's own log,
+       # and this repository's own git reader answering nothing for it.
+       and "WARP-9451" not in (ROOT / ".veldo/events.jsonl").read_text()
+       and _W1409TC.git_touched("WARP-9452") == {"commits": [], "files": []})
 
 # -----------------------------------------------------------------------------------
 # The rendered text is drawn from the report, so a reader and a JSON consumer cannot see two
 # different numbers. Checked on the mixed fixture and on a stand-down.
 # -----------------------------------------------------------------------------------
-_w1409_text = _W1409.render_text(_w1409_rep)
+_w1409_text = _w1409_render(_w1409_rep)
 expect("WARP-1409 AC2: THE RENDERED TEXT CARRIES THE GIT-PATH WARNING AND THE SAME FIGURES THE "
        "JSON DOES, drawn from the report rather than recomputed, so the human surface and the "
        "machine surface cannot disagree. A stand-down renders one honest line naming the reason "
@@ -929,7 +1425,7 @@ expect("WARP-1409 AC2: THE RENDERED TEXT CARRIES THE GIT-PATH WARNING AND THE SA
        "BY GIT PATH" in _w1409_text
        and ("records %d" % _w1409_rep["coverage"]["records"]) in _w1409_text
        and "area alpha" in _w1409_text and "tokens=None" in _w1409_text
-       and "standing down" in _W1409.render_text(_w1409_sd_records))
+       and "standing down" in _w1409_render(_w1409_sd_records))
 
 # -----------------------------------------------------------------------------------
 # THE REAL REPOSITORY, THROUGH repo_report(), ONCE. Everything above drives the pure core over
@@ -1022,7 +1518,7 @@ expect("WARP-1409 AC1 AND AC3 OVER THE REAL REPOSITORY: repo_report() AGGREGATES
 # with the count, the coverage arithmetic, the text carrying the JSON's own figures, the review half
 # being a real number) stay unconditional.
 # -----------------------------------------------------------------------------------
-_w1409_live_text = _W1409.render_text(_W1409_LIVE) if _W1409_LIVE_ERR == "" else ""
+_w1409_live_text = _w1409_render(_W1409_LIVE) if _W1409_LIVE_ERR == "" else ""
 
 
 def _w1409_gate_signal(cycles):
@@ -1042,6 +1538,19 @@ _w1409_live_cycles_of = {_r["spec"]: _r["cycles"] for _r in _W1409_LIVE_CORPUS
                          if isinstance(_r.get("cycles"), dict)}
 _w1409_live_gate_specs = {_s for _s, _c in _w1409_live_cycles_of.items()
                           if _w1409_gate_signal(_c)}
+# SPLIT BY WHETHER THE RECORD REACHED AN AREA AT ALL, which is the distinction the blunt booleans
+# and the notices are statements about and the one this block could not see. 108 of this repository's
+# 174 records are unattributed, so a signal recorded against one of them is in NO per-area figure,
+# and every per-area leg of the recorded arm below iterated the areas of the recording spec - empty
+# for an unattributed one, which made the whole arm vacuously true in exactly the state ONE
+# `.veldo/spend.py record` produces. Derived HERE from the independently built corpus and the live
+# map's own membership index, so both sides of every comparison cannot move together.
+_w1409_live_spend_placed = {_s for _s in _w1409_live_spend_of if _s in _w1409_live_areas_of}
+_w1409_live_spend_nowhere = {_s for _s in _w1409_live_spend_of
+                             if _s not in _w1409_live_areas_of}
+_w1409_live_gate_placed = {_s for _s in _w1409_live_gate_specs if _s in _w1409_live_areas_of}
+_w1409_live_gate_nowhere = {_s for _s in _w1409_live_gate_specs
+                            if _s not in _w1409_live_areas_of}
 
 
 def _w1409_live_expect_area(area):
@@ -1115,13 +1624,31 @@ expect("WARP-1409 AC4 OVER THE REAL REPOSITORY: THE TWO GAPS ARE NUMBERS IN THE 
        "unrecorded signal an absence of ONE signal rather than a module that reports nothing",
        _W1409_LIVE_ERR == ""
        and _W1409_LIVE["coverage"]["cost_known_records"] == len(_w1409_live_spend_of)
+       and _W1409_LIVE["coverage"]["cost_attributed_records"] == len(_w1409_live_spend_placed)
+       and _W1409_LIVE["coverage"]["cost_unattributed_records"] == len(_w1409_live_spend_nowhere)
        and (_W1409_LIVE["coverage"]["usable_as_cost_ground_truth"]
-            is bool(_w1409_live_spend_of))
-       and ("cost_notice" in _W1409_LIVE) is (not _w1409_live_spend_of)
+            is bool(_w1409_live_spend_placed))
+       and ("cost_notice" in _W1409_LIVE) is (not _w1409_live_spend_placed)
+       and ("unattributed_spend_notice" in _W1409_LIVE) is bool(_w1409_live_spend_nowhere)
        and _W1409_LIVE["coverage"]["gate_event_records"] == len(_w1409_live_gate_specs)
+       and _W1409_LIVE["coverage"]["gate_attributed_records"] == len(_w1409_live_gate_placed)
+       and _W1409_LIVE["coverage"]["gate_unattributed_records"] == len(_w1409_live_gate_nowhere)
        and (_W1409_LIVE["coverage"]["usable_as_rework_ground_truth"]
-            is bool(_w1409_live_gate_specs))
-       and ("cycle_notice" in _W1409_LIVE) is (not _w1409_live_gate_specs)
+            is bool(_w1409_live_gate_placed))
+       and ("cycle_notice" in _W1409_LIVE) is (not _w1409_live_gate_placed)
+       and ("unattributed_cycle_notice" in _W1409_LIVE) is bool(_w1409_live_gate_nowhere)
+       # NOTHING RECORDED IS ABSENT FROM EVERY FIGURE, over whatever this repository has recorded:
+       # the unattributed bucket's own cost and cycle blocks report exactly the records that landed
+       # in no area, with the same basis rule the areas follow. This is unconditional and it is the
+       # leg that reds if a recorded figure goes back to being in no figure at all.
+       and _w1409_dig(_W1409_LIVE, "unattributed", "cost", "spend_known") == len(
+           _w1409_live_spend_nowhere)
+       and (_w1409_dig(_W1409_LIVE, "unattributed", "cost", "cost_basis")
+            == ("recorded" if _w1409_live_spend_nowhere else "unrecorded"))
+       and all((_w1409_dig(_W1409_LIVE, "unattributed", "cost", _f) is None)
+               is (not _w1409_live_spend_nowhere) for _f in _W1409.COST_FIELDS)
+       and _w1409_dig(_W1409_LIVE, "unattributed", "cycles", "gate_events_known") == len(
+           _w1409_live_gate_nowhere)
        and all(_w1409_live_area_ok(_a) for _a in _W1409_LIVE["areas"])
        # The basis is read FIRST and the count second, in that order: when the basis is
        # 'unrecorded' the count is None, and a comparison against None would raise TypeError -
@@ -1134,23 +1661,46 @@ expect("WARP-1409 AC4 OVER THE REAL REPOSITORY: THE TWO GAPS ARE NUMBERS IN THE 
 # What it must never do - what it did until this remediation - is require the recorded set to be
 # EMPTY.
 if _w1409_live_spend_of:
-    expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE RECORDED COST ARM: %d record(s) in this "
-           "repository's corpus carry spend, so the live map reports them AS NUMBERS and drops the "
-           "stand-down - usable_as_cost_ground_truth true and no cost_notice - and NOTHING "
-           "RECORDED IS SILENTLY DROPPED: every spec that recorded spend is in an area or in the "
-           "unattributed list, every area holding one reports cost_basis 'recorded' with a real "
-           "tokens figure, and no area's spend_known exceeds the corpus count"
-           % len(_w1409_live_spend_of),
+    expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE RECORDED COST ARM: %d record(s) carry "
+           "spend, %d of them attributed to an area and %d attributed to nothing, and EVERY ONE OF "
+           "THEM IS IN A FIGURE. An attributed one is in an area reporting cost_basis 'recorded' "
+           "with a real tokens number; an unattributed one is COUNTED IN unattributed.cost, which "
+           "reports 'recorded' with a real tokens number of its own and a notice naming how many. "
+           "THE ARM IS WRITTEN SO IT CANNOT BE SATISFIED BY AN EMPTY ITERATION: it used to read "
+           "`for area in areas_of(spec)`, which is empty for an unattributed spec, so the whole arm "
+           "was vacuously true in exactly the state one `.veldo/spend.py record` against any of the "
+           "108 unattributed specs produces - the state in which the map announced itself usable as "
+           "cost ground truth with every area reporting None. Each spec is now required to be in "
+           "one of the two figures BY NAME, and the two sets are required to partition the "
+           "recording set with neither side allowed to be the whole of it by default"
+           % (len(_w1409_live_spend_of), len(_w1409_live_spend_placed),
+              len(_w1409_live_spend_nowhere)),
            _W1409_LIVE_ERR == ""
-           and _W1409_LIVE["coverage"]["usable_as_cost_ground_truth"] is True
-           and "cost_notice" not in _W1409_LIVE
+           # The blunt boolean is about the PER-AREA figures, so it is true exactly when some
+           # recording spec reached an area - never merely because something somewhere recorded.
+           and (_W1409_LIVE["coverage"]["usable_as_cost_ground_truth"]
+                is bool(_w1409_live_spend_placed))
+           and ("cost_notice" in _W1409_LIVE) is (not _w1409_live_spend_placed)
+           and _w1409_live_spend_placed | _w1409_live_spend_nowhere == set(_w1409_live_spend_of)
+           and not (_w1409_live_spend_placed & _w1409_live_spend_nowhere)
            and all(_s in _w1409_live_areas_of
                    or _s in set(_W1409_LIVE["unattributed"]["specs"])
                    for _s in _w1409_live_spend_of)
            and all(_W1409_LIVE["areas"][_a]["cost"]["cost_basis"] == "recorded"
                    and _W1409_LIVE["areas"][_a]["cost"]["tokens"] is not None
-                   for _s in _w1409_live_spend_of
-                   for _a in _w1409_live_areas_of.get(_s, ()))
+                   for _s in _w1409_live_spend_placed
+                   for _a in _w1409_live_areas_of[_s])
+           # The other half of the same sentence, and the half that was missing: what happens to
+           # spend recorded against a spec no area holds.
+           and (not _w1409_live_spend_nowhere
+                or (_w1409_dig(_W1409_LIVE, "unattributed", "cost", "cost_basis") == "recorded"
+                    and _w1409_dig(_W1409_LIVE, "unattributed", "cost", "tokens") is not None
+                    and _w1409_dig(_W1409_LIVE, "unattributed", "cost", "spend_known")
+                    == len(_w1409_live_spend_nowhere)
+                    and set(_w1409_live_spend_nowhere)
+                    <= set(_W1409_LIVE["unattributed"]["specs"])
+                    and "reaches NO per-area figure"
+                    in _W1409_LIVE.get("unattributed_spend_notice", "")))
            and all(_a["cost"]["spend_known"] <= len(_w1409_live_spend_of)
                    for _a in _W1409_LIVE["areas"].values()))
 else:
@@ -1168,29 +1718,51 @@ else:
                    for f in _W1409.COST_FIELDS)
            and all(a["cost"]["cost_basis"] == "unrecorded"
                    for a in _W1409_LIVE["areas"].values())
+           # INCLUDING THE BUCKET THAT HOLDS NO AREA: nothing recorded anywhere means the
+           # unattributed cost is None too, and "no record carries spend" is not a licence for one
+           # figure in this report to read zero.
+           and all(_w1409_dig(_W1409_LIVE, "unattributed", "cost", f) is None
+                   for f in _W1409.COST_FIELDS)
+           and "cost" in _W1409_LIVE["unattributed"]
+           and _w1409_dig(_W1409_LIVE, "unattributed", "cost", "cost_basis") == "unrecorded"
+           and "unattributed_spend_notice" not in _W1409_LIVE
            and "tokens=None" in _w1409_live_text)
 
 # THE GATE ARM, the same shape over the other signal. Its writer is not spend.py but verify.sh
 # learning to name the spec its run belongs to (out of scope for this item and named as such in the
 # notice), so this arm flips the day that emitter changes rather than reding.
 if _w1409_live_gate_specs:
-    expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE RECORDED GATE ARM: %d record(s) in this "
-           "repository's corpus carry a gate pass or a gate failure, so the live map reports the "
-           "rework half AS NUMBERS - usable_as_rework_ground_truth true and no cycle_notice - and "
-           "every spec whose gate events reached it is in an area reporting gate_basis 'recorded' "
-           "with real gate_passes and gate_failures figures, or in the unattributed list"
-           % len(_w1409_live_gate_specs),
+    expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE RECORDED GATE ARM: %d record(s) carry a "
+           "gate pass or a gate failure, %d of them attributed to an area and %d attributed to "
+           "nothing, and EVERY ONE OF THEM IS IN A FIGURE - the same shape as the cost arm and for "
+           "the same reason. An attributed one is in an area reporting gate_basis 'recorded' with "
+           "real gate_passes and gate_failures; an unattributed one is counted in "
+           "unattributed.cycles with its own notice, rather than turning the blunt "
+           "usable_as_rework_ground_truth boolean true while every area reports None. The per-area "
+           "leg iterates the ATTRIBUTED set, so it cannot be satisfied by an empty iteration"
+           % (len(_w1409_live_gate_specs), len(_w1409_live_gate_placed),
+              len(_w1409_live_gate_nowhere)),
            _W1409_LIVE_ERR == ""
-           and _W1409_LIVE["coverage"]["usable_as_rework_ground_truth"] is True
-           and "cycle_notice" not in _W1409_LIVE
+           and (_W1409_LIVE["coverage"]["usable_as_rework_ground_truth"]
+                is bool(_w1409_live_gate_placed))
+           and ("cycle_notice" in _W1409_LIVE) is (not _w1409_live_gate_placed)
+           and _w1409_live_gate_placed | _w1409_live_gate_nowhere == _w1409_live_gate_specs
+           and not (_w1409_live_gate_placed & _w1409_live_gate_nowhere)
            and all(_s in _w1409_live_areas_of
                    or _s in set(_W1409_LIVE["unattributed"]["specs"])
                    for _s in _w1409_live_gate_specs)
            and all(_W1409_LIVE["areas"][_a]["cycles"]["gate_basis"] == "recorded"
                    and _W1409_LIVE["areas"][_a]["cycles"]["gate_passes"] is not None
                    and _W1409_LIVE["areas"][_a]["cycles"]["gate_failures"] is not None
-                   for _s in _w1409_live_gate_specs
-                   for _a in _w1409_live_areas_of.get(_s, ())))
+                   for _s in _w1409_live_gate_placed
+                   for _a in _w1409_live_areas_of[_s])
+           and (not _w1409_live_gate_nowhere
+                or (_w1409_dig(_W1409_LIVE, "unattributed", "cycles", "gate_basis") == "recorded"
+                    and _w1409_dig(_W1409_LIVE, "unattributed", "cycles", "gate_passes") is not None
+                    and _w1409_dig(_W1409_LIVE, "unattributed", "cycles", "gate_events_known")
+                    == len(_w1409_live_gate_nowhere)
+                    and "reported ONLY in unattributed.cycles"
+                    in _W1409_LIVE.get("unattributed_cycle_notice", ""))))
 else:
     expect("WARP-1409 AC4 OVER THE REAL REPOSITORY, THE GATE STAND-DOWN ARM: not one gate.passed "
            "or gate.failed event reaches a record AS READ ON THIS RUN - the emitter writes a "
@@ -1206,30 +1778,44 @@ else:
                    for f in _W1409.GATE_CYCLE_FIELDS)
            and all(a["cycles"]["gate_basis"] == "unrecorded"
                    for a in _W1409_LIVE["areas"].values())
+           and all(_w1409_dig(_W1409_LIVE, "unattributed", "cycles", f) is None
+                   for f in _W1409.GATE_CYCLE_FIELDS)
+           and "cycles" in _W1409_LIVE["unattributed"]
+           and "unattributed_cycle_notice" not in _W1409_LIVE
            and "gate_passes=None" in _w1409_live_text)
 
-# SPLIT, for the same reason WARP-1711 split the git-reader control below: the GIT-PATH half of the
-# live wiring needs commits that name a spec id, and this history's one commit names none, so
-# git_touched honestly reads nothing for every spec and the live map's git_path count is 0. The half
-# that runs everywhere is above (the placement join non-empty, and the partition), and the wiring's
-# git-path join is driven behaviourally over the injected loader inside the fixture block, where the
-# reader's answer is an input rather than this repository's history.
-if not no_history([("the commits naming any spec of the live actuals corpus",
-                    _W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] and "live git-path join")],
-                  "the LIVE half of the git-path join in repo_report",
-                  "The git-path join is proven BEHAVIOURALLY in the wiring assertion above, where "
-                  "the touched-paths reader is injected and severing it moves a record out of its "
-                  "area, and the placement join plus the whole-corpus partition are asserted over "
-                  "this repository's own live map immediately above.", "WARP-1409 AC2"):
-    expect("WARP-1409 AC2 OVER THE REAL REPOSITORY: BOTH JOINS ARE NON-EMPTY IN THE LIVE MAP, so "
-           "neither lookup in the wiring can be severed without a red. The git-path count is "
-           "positive, the report carries the notice counting those records and the bases entry that "
-           "spells the weakness out, and at least one live spec comes back basis 'git_path'",
-           _W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] > 0
-           and _W1409_LIVE["git_path_attributed"] is True
-           and "BY GIT PATH" in _W1409_LIVE.get("notice", "")
-           and _W1409.BY_GIT_PATH in _W1409_LIVE["bases"]
-           and _W1409.BY_GIT_PATH in set(_w1409_live_members.values()))
+# THE GIT-PATH DISCLOSURE OVER THE LIVE MAP, AS A PROPERTY RATHER THAN A COUNT, WITH NO STAND-DOWN.
+#
+# This used to require the live git-path count to be POSITIVE and stood down through
+# shared.no_history when it was not - with a prose sentence where the mechanism wants a module path,
+# so the guard could not fail and a broken git reader would have stood down instead of reddening.
+# BOTH HALVES OF THAT ARE NOW WRONG TO KEEP. The join itself is driven over REAL git output in the
+# fixture repository above, where one commit names WARP-9452 and the report comes back basis
+# 'git_path' in the area that path falls into. And the live half is asserted as the property that
+# holds whichever way this repository's history reads: EVERY DISCLOSURE AGREES WITH THE COUNT. It is
+# 0 here (a flattened history whose one commit names no spec) and it would be 41 in the predecessor;
+# neither number is pinned, and a report that carried the warning without the records, or the records
+# without the warning, reds either way.
+expect("WARP-1409 AC2 OVER THE REAL REPOSITORY: EVERY GIT-PATH DISCLOSURE AGREES WITH THE GIT-PATH "
+       "COUNT, whatever that count is. git_path_attributed, the presence of the notice, the presence "
+       "of the bases entry that spells the weakness out, and the presence of a member carrying basis "
+       "'git_path' are each true EXACTLY when the count is positive, and the notice counts the same "
+       "records the attribution block does. NO COUNT IS PINNED: this history's one commit names no "
+       "spec so the count is 0 today, the predecessor's was 41, and a repository that accumulates "
+       "spec-naming commits moves the arm rather than reding it. The JOIN is proven over real git "
+       "output in the fixture repository above rather than stood down here",
+       _W1409_LIVE_ERR == ""
+       and (_W1409_LIVE["git_path_attributed"]
+            is (_W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] > 0))
+       and ("notice" in _W1409_LIVE) is (_W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] > 0)
+       and ((_W1409.BY_GIT_PATH in _W1409_LIVE["bases"])
+            is (_W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] > 0))
+       and ((_W1409.BY_GIT_PATH in set(_w1409_live_members.values()))
+            is (_W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] > 0))
+       and (_W1409_LIVE["attribution"][_W1409.BY_GIT_PATH] == 0
+            or ("%d of %d records" % (_W1409_LIVE["attribution"][_W1409.BY_GIT_PATH],
+                                      _W1409_LIVE["coverage"]["records"]))
+            in _W1409_LIVE["notice"]))
 
 # -----------------------------------------------------------------------------------
 # THE ENGINE TWINS THE FOOTPRINT DECLARES. Both were asserted by nothing and guarded by
@@ -1251,4 +1837,12 @@ expect("WARP-1409: BOTH MODULES THIS ITEM TOUCHED LAND IN THE ENGINE HOME BYTE-I
        and (ROOT / ".veldo/toe_corpus.py").read_bytes()
        == (ROOT / "engine/.veldo/toe_corpus.py").read_bytes())
 
+_w1409_shutil.rmtree(_W1409_FIXTURE_REPO, ignore_errors=True)
+expect("WARP-1409 housekeeping: the fixture repository this suite built - a real git tree with two "
+       "commits, the estimation layer and its own event log - is REMOVED afterwards, so the suite "
+       "leaves nothing behind, and it was a real tree while it existed rather than a mocked one",
+       not _W1409_FIXTURE_REPO.exists()
+       and (_w1409_dig(_w1409_fx_touched, "commits") or []) != [] and _W1409_FX_ERR == "")
+
 del _w1409_cspec, _w1409_tspec, _w1409_mspec, _w1409_pspec, _w1409_re
+del _w1409_hashlib, _w1409_os, _w1409_shutil, _w1409_subprocess, _w1409_sys

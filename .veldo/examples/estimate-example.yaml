@@ -12,9 +12,11 @@ layers:
     basis: uncalibrated_prior
     low: 190000
     high: 1188000
-    note: the deterministic first layer: mechanical spec features times expected review cycles times a DECLARED token scale. Wide on purpose, and the scale it used is in inputs so a reconciliation can separate a wrong structure from a wrong scale
+    note: the deterministic first layer: mechanical spec features times expected review cycles times a DECLARED token scale. Wide on purpose, and the scale it used AND the coefficients its weight was built from are both in inputs, so a reconciliation can separate a wrong structure from a wrong scale and can still decompose this record after the coefficient set changes (weight_model names the set)
     inputs:
+      ac_tenths: 10
       acceptance_criteria: 5
+      base_tenths: 10
       expected_review_cycles: 2
       gate_depth: full
       gate_rework: 1
@@ -26,7 +28,9 @@ layers:
       risk: standard
       spread_pct: 250
       structural_weight_tenths: 190
+      surface_tenths: 5
       tokens_per_structural_unit: 25000
+      weight_model: structural/v1
   - layer: historical_analogy
     basis: corpus_analogy
     low: 240000

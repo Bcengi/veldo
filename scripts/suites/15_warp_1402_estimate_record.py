@@ -145,6 +145,17 @@ def _w1402_spec_text(spec_id="WARP-9402", risk="standard", acs=2,
     return "\n".join(lines)
 
 
+def _w1402_with_comment(text, after):
+    """The same fixture spec with a `#` comment line inserted INSIDE its footprint block, `after`
+    items in. A comment is ordinary in this repository's front matter, and until 2026-08-13 the ONE
+    footprint reader stopped at it: `after=0` emptied the block and any other position truncated it,
+    so the estimate stated a surface and a protected touch it had not measured (finding F3)."""
+    lines = text.splitlines()
+    i = lines.index("footprint:") + 1 + after
+    return "\n".join(lines[:i] + ["  # a comment inside the block, which is not the end of it"]
+                     + lines[i:]) + "\n"
+
+
 _W1402_AT = "2026-08-10"
 _W1402_ANALOGY = {"layer": "historical_analogy", "basis": "corpus_analogy",
                   "low": 240000, "high": 1400000,
@@ -576,9 +587,9 @@ with tempfile.TemporaryDirectory() as _d:
 
     _w1402_ac5 = E1402.structural_proxy(tmpfile(_d, "acs5.md", _w1402_spec_text(acs=5)))
     _w1402_ac2 = _W1402_GOOD["layers"][0]
+    _W1402_FP6 = tuple(".veldo/nothing_%d.py" % i for i in range(6))
     _w1402_surface6 = E1402.structural_proxy(tmpfile(
-        _d, "surface6.md", _w1402_spec_text(footprint=tuple(
-            ".veldo/nothing_%d.py" % i for i in range(6)))))
+        _d, "surface6.md", _w1402_spec_text(footprint=_W1402_FP6)))
     expect("WARP-1402 AC4: MORE ACCEPTANCE CRITERIA AND A LARGER REGRESSION SURFACE EACH WIDEN "
            "THE RANGE STRICTLY, on both bounds, with one feature changed at a time. Monotonicity "
            "is the only property a structural proxy can be held to before there are actuals to "
@@ -627,26 +638,130 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1402_min["inputs"]["regression_surface"] == 0
            and _w1402_min["low"] >= E1402.ROUND_STEP)
 
+    # FINDING F3, THE CONFIDENT ZERO IN THIS RECORD'S OWN FEATURE READ. The ONE footprint reader
+    # required the line after `footprint:` to be a list item and stopped at the first line that was
+    # not one, so a COMMENT truncated the block and a comment on its first line emptied it. This
+    # layer then published `regression_surface` and `protected_touch` as MEASUREMENTS. Measured over
+    # this repository by the independent review: 8 of 215 specs got a materially wrong committed
+    # record and 3 said protected_touch: no about a spec that DOES touch a declared protected path;
+    # VELDO-0010 read 0 of 13 entries and committed 120000-750000 where the correct read gives
+    # 375000-2344000. The three rows below are over FIXTURES on purpose - every one of them is a
+    # defect by construction, so none of them pins how many specs in this tree happen to carry a
+    # comment today, and specs gaining or losing comments cannot make any of them red.
+    def _w1402_layer(path, **kw):
+        """The layer for one fixture spec, or None when the proxy REFUSED it. CAPTURED rather than
+        called inline: with the pre-fix reader these fixtures make the proxy raise, and an
+        uncaught raise at this level reds NO row - it kills the fragment and takes every later row
+        with it, which is ledger finding 67's shape and reads exactly like a mutation that deleted
+        coverage. Driven: with the comment skip removed this returns None and the two rows below
+        red, with the run's total unchanged."""
+        try:
+            return E1402.structural_proxy(path, **kw)
+        except Exception:
+            return None
+
+    _w1402_cmt_first = _w1402_layer(tmpfile(
+        _d, "cmt_first.md", _w1402_with_comment(_w1402_spec_text(footprint=_W1402_FP6), 0)))
+    _w1402_cmt_mid = _w1402_layer(tmpfile(
+        _d, "cmt_mid.md", _w1402_with_comment(_w1402_spec_text(footprint=_W1402_FP6), 3)))
+    expect("WARP-1402 AC4 (finding F3): A COMMENT INSIDE THE FOOTPRINT BLOCK CHANGES NOTHING ABOUT "
+           "THE MEASURED SURFACE. The surface equals the block's OWN item count with the comment "
+           "first (the shape that emptied the read) and with the comment part way down (the shape "
+           "that truncated it), and both records are the SAME RANGE as the comment-free spec with "
+           "the same six entries - which is the binding that makes this about the reader rather "
+           "than about one arithmetic path. Bound to the length of the fixture's own footprint "
+           "tuple, so shortening the fixture reds this instead of agreeing with a smaller answer",
+           len(_W1402_FP6) == 6
+           and _w1402_cmt_first is not None and _w1402_cmt_mid is not None
+           and _w1402_cmt_first["inputs"]["regression_surface"] == len(_W1402_FP6)
+           and _w1402_cmt_mid["inputs"]["regression_surface"] == len(_W1402_FP6)
+           and (_w1402_cmt_first["low"], _w1402_cmt_first["high"])
+           == (_w1402_surface6["low"], _w1402_surface6["high"])
+           and (_w1402_cmt_mid["low"], _w1402_cmt_mid["high"])
+           == (_w1402_surface6["low"], _w1402_surface6["high"]))
+
+    _W1402_PROT_ONE = ".veldo/protected_only_entry.py"
+    _w1402_cmt_prot = _w1402_layer(
+        tmpfile(_d, "cmt_prot.md", _w1402_with_comment(
+            _w1402_spec_text(footprint=(_W1402_PROT_ONE,)), 0)),
+        protected=(_W1402_PROT_ONE,))
+    expect("WARP-1402 AC4 (finding F3): A PROTECTED PATH HIDDEN BEHIND A COMMENT IS STILL FOUND. A "
+           "spec whose footprint block opens with a comment and declares exactly one entry, that "
+           "entry being protected, records protected_touch: yes and charges the protected rework. "
+           "This is the half that mattered most in the live corpus: three committed records said "
+           "protected_touch: no about specs that touch a protected path, and this model's own "
+           "comment calls that the one mechanical feature that reliably predicts a wait on a person",
+           _w1402_cmt_prot is not None
+           and _w1402_cmt_prot["inputs"]["protected_touch"] == "yes"
+           and _w1402_cmt_prot["inputs"]["protected_rework"] == E1402.PROTECTED_REWORK
+           and _w1402_cmt_prot["inputs"]["regression_surface"] == 1)
+
+    _w1402_unread = tmpfile(_d, "unreadable.md", _w1402_spec_text(footprint=_W1402_FP6).replace(
+        '  - "%s"' % _W1402_FP6[0], '  "%s"' % _W1402_FP6[0], 1))
+    _w1402_unread_out = _w1402_raises(E1402.structural_proxy, _w1402_unread)
+    expect("WARP-1402 AC4 (finding F3): A FOOTPRINT BLOCK THAT IS PRESENT AND READS EMPTY IS A "
+           "REFUSAL, NEVER A SURFACE OF 0. The fixture declares a block whose first line the ONE "
+           "reader cannot read as an item, so the block yields nothing while plainly existing, and "
+           "the proxy refuses BY NAME rather than recording a zero it never measured - the fix for "
+           "the comment shape repairs the shapes we know about, and this is what keeps the next "
+           "unreadable one from arriving as a confident measurement. THE CONTROL IS THE ROW ABOVE, "
+           "bound here as well: the same fixture with NO block at all estimates fine at surface 0, "
+           "so this refuses an unreadable block and not an absent one",
+           _w1402_unread_out[0] and _w1402_unread_out[1].startswith("ValueError:")
+           and "reads as EMPTY" in _w1402_unread_out[1]
+           and _w1402_min["inputs"]["regression_surface"] == 0)
+
     _w1402_in = _w1402_ac2["inputs"]
     _w1402_point_from_inputs = (_w1402_in["structural_weight_tenths"]
                                 * _w1402_in["tokens_per_structural_unit"] // 10)
+    # EVERY KEY THE TWO ROWS BELOW ADD IS READ THROUGH A CAPTURE, not indexed inline. A layer that
+    # stopped recording one of them would otherwise raise KeyError out of the assertion expression,
+    # which reds the row by KILLING THE RUN and takes every later row with it - the shape ledger
+    # finding 67 records, where the evidence for a mutation became "some row went red and the run got
+    # shorter". A missing key now makes the weight unrecomputable, which reds the NAMED row and
+    # nothing else.
+    _W1402_COEFF_KEYS = ("base_tenths", "ac_tenths", "surface_tenths")
+    _w1402_coeffs = {k: _w1402_in.get(k) for k in _W1402_COEFF_KEYS}
+    _w1402_weight_from_record = (
+        (_w1402_coeffs["base_tenths"]
+         + _w1402_coeffs["ac_tenths"] * _w1402_in["acceptance_criteria"]
+         + _w1402_coeffs["surface_tenths"] * _w1402_in["regression_surface"])
+        * _w1402_in["expected_review_cycles"]
+        if all(isinstance(v, int) and not isinstance(v, bool)
+               for v in _w1402_coeffs.values()) else None)
     expect("WARP-1402 AC4: THE LAYER'S RECORDED INPUTS ARE SUFFICIENT TO REPRODUCE ITS OWN "
-           "BOUNDS, recomputed here from the record alone: weight times scale, spread applied, "
-           "rounded. THIS is what buys the plan its reconciliation: because the structural WEIGHT "
-           "and the token SCALE are both on record, W5 can tell a good estimate (weight right, "
-           "scale right) from a lucky one (both wrong in opposite directions) and refit the scale "
-           "without touching the structure. A layer recording only its answer could never support "
-           "that, and the whole record would be a scoreboard rather than a measurement",
-           _w1402_in["tokens_per_structural_unit"] == E1402.TOKENS_PER_STRUCTURAL_UNIT
-           and _w1402_in["spread_pct"] == E1402.SPREAD_PCT
-           and _w1402_ac2["low"] == E1402._round_tokens(
+           "BOUNDS, recomputed here FROM THE RECORD ALONE and from no module constant: weight from "
+           "the coefficients the record names, then weight times scale, spread applied, rounded. "
+           "THIS is what buys the plan its reconciliation: because the structural WEIGHT, the "
+           "coefficients behind it and the token SCALE are all on record, W5 can tell a good "
+           "estimate (weight right, scale right) from a lucky one (both wrong in opposite "
+           "directions) and refit the scale without touching the structure. IT READS THE RECORD "
+           "RATHER THAN THE MODULE ON PURPOSE, and that is finding F6: while the coefficients were "
+           "absent from the record this row recomputed the weight from today's BASE_TENTHS, "
+           "AC_TENTHS and SURFACE_TENTHS, so changing a coefficient moved both sides together and "
+           "the row could not fail for it - and no reader of an OLD record could have decomposed "
+           "its weight at all",
+           _w1402_ac2["low"] == E1402._round_tokens(
                _w1402_point_from_inputs * 100 // _w1402_in["spread_pct"])
            and _w1402_ac2["high"] == E1402._round_tokens(
                _w1402_point_from_inputs * _w1402_in["spread_pct"] // 100)
-           and _w1402_in["structural_weight_tenths"]
-           == (E1402.BASE_TENTHS + E1402.AC_TENTHS * _w1402_in["acceptance_criteria"]
-               + E1402.SURFACE_TENTHS * _w1402_in["regression_surface"])
-           * _w1402_in["expected_review_cycles"])
+           and _w1402_weight_from_record == _w1402_in["structural_weight_tenths"])
+
+    expect("WARP-1402 AC4 (finding F6): THE RECORD NAMES THE MODEL THAT PRODUCED IT, and the "
+           "numbers it names are the ones the module actually used. The layer carries weight_model "
+           "plus every coefficient the weight is built from and the scale it multiplied by, and each "
+           "equals the module's own constant - so a layer that recorded a coefficient set it did not "
+           "use reds THIS row, while the reproduction row above stays honest by reading only the "
+           "record. Both halves are needed and they are separate assertions: one says the record is "
+           "self-contained, this one says it is TRUE. Bound to a non-empty model name, because a "
+           "blank one would identify nothing while looking like provenance",
+           _w1402_in.get("weight_model") == E1402.WEIGHT_MODEL
+           and isinstance(E1402.WEIGHT_MODEL, str) and E1402.WEIGHT_MODEL.strip()
+           and _w1402_coeffs == {"base_tenths": E1402.BASE_TENTHS,
+                                 "ac_tenths": E1402.AC_TENTHS,
+                                 "surface_tenths": E1402.SURFACE_TENTHS}
+           and _w1402_in["tokens_per_structural_unit"] == E1402.TOKENS_PER_STRUCTURAL_UNIT
+           and _w1402_in["spread_pct"] == E1402.SPREAD_PCT)
 
     expect("WARP-1402 AC4: AN UNDECLARED RISK TIER IS A REFUSAL AND NEVER A GUESS. The proxy "
            "refuses to estimate a spec whose tier it cannot read, naming the tiers it knows, and "
@@ -664,19 +779,49 @@ with tempfile.TemporaryDirectory() as _d:
            "someone writes the first spec at that tier",
            set(E1402.DEFAULT_REVIEWS) == V.RISKS and set(E1402.DEFAULT_GATE) == V.RISKS)
 
-    # THE MEASURED FINDING OF THIS ITEM, with the control that makes it a finding about the
-    # PARSER rather than a hardcoded refusal of one tier.
-    _w1402_std = E1402.policy_tier("standard")
-    _w1402_crit = E1402.policy_tier("critical")
-    expect("WARP-1402 AC4 MEASURED OVER THE REAL POLICY: the standard tier's review count and "
-           "gate depth are READ FROM .veldo/policy.yaml (source: policy), and the critical tier's "
-           "are NOT (source: default), because that tier is written across two lines and the ONE "
-           "front-matter parser folds a deeper-indented continuation into the preceding scalar, "
-           "so it arrives as a STRING rather than a map. Every record states which of the two it "
-           "got, because a default hidden inside a record that looks like a policy reading is the "
-           "kind of number a later analysis over-trusts",
-           _w1402_std[2] == "policy" and _w1402_std[0] >= 1 and _w1402_std[1] in E1402.GATE_REWORK
-           and _w1402_crit[2] == "default")
+    # THE MEASURED FINDING OF THIS ITEM, ASSERTED AS THE PROPERTY IT IS AND NOT AS TODAY'S ANSWER.
+    # What stood here required policy_tier('critical')[2] == 'default', which is true only because
+    # this repository's policy.yaml writes that tier across two lines and the ONE parser folds the
+    # continuation into the preceding scalar. So REPAIRING that file - the same inline map on one
+    # line, changing no meaning - turned this row RED, inside CHECK_unit, a required stage: the row
+    # required the file this item's own docstring calls out to STAY broken (finding F5, ledger
+    # finding 51's shape). The property it was standing in for is the one below, and it holds under
+    # either state of that file: every tier states which of the two sources it got, and the source it
+    # states is the source it USED. Nothing here requires any tier to have any particular source, and
+    # the repair reds nothing.
+    _W1402_POLDOC = V.parse_yamlish((ROOT / ".veldo/policy.yaml").read_text())
+    _W1402_POLTIERS = _W1402_POLDOC.get("risk_tiers") if isinstance(_W1402_POLDOC, dict) else None
+
+    def _w1402_readable_tier(name):
+        """What the declared policy offers for one tier THROUGH THE ONE PARSER: a (reviews, gate)
+        pair when the file really carries a readable map for it, else None. This is the same
+        question policy_tier asks, so 'the source it states is the source it used' is checkable
+        without a second opinion about what the file says."""
+        t = _W1402_POLTIERS.get(name) if isinstance(_W1402_POLTIERS, dict) else None
+        if not isinstance(t, dict):
+            return None
+        r, g = t.get("reviews"), t.get("gate")
+        if isinstance(r, int) and not isinstance(r, bool) and r > 0 and g in E1402.GATE_REWORK:
+            return r, g
+        return None
+
+    _w1402_sources = {t: E1402.policy_tier(t) for t in sorted(V.RISKS)}
+    expect("WARP-1402 AC4 MEASURED OVER THE REAL POLICY: for EVERY declared risk tier, the record's "
+           "stated source is the source the number came from. A tier the declared .veldo/policy.yaml "
+           "really offers through the ONE parser is read from it and says `policy` with the file's "
+           "own numbers; a tier it does not offer falls back and says `default` with the declared "
+           "default table's numbers. That is the property the record needs, because a default hidden "
+           "inside a record that looks like a policy reading is the kind of number a later analysis "
+           "over-trusts. IT REQUIRES NO TIER TO HAVE ANY PARTICULAR SOURCE: this repository's "
+           "`critical` tier is written across two lines and folds, so it reads `default` today, and "
+           "repairing that file is a change this row must not punish. The teeth are in the two "
+           "hermetic fixtures below, which drive BOTH routes whatever this file happens to say",
+           set(_w1402_sources) == set(V.RISKS)
+           and all(s in ("policy", "default") for _r, _g, s in _w1402_sources.values())
+           and all((_w1402_readable_tier(t) == (r, g)) if s == "policy"
+                   else (_w1402_readable_tier(t) is None
+                         and (r, g) == (E1402.DEFAULT_REVIEWS[t], E1402.DEFAULT_GATE[t]))
+                   for t, (r, g, s) in _w1402_sources.items()))
 
     _w1402_polroot = Path(_d) / "polroot"
     (_w1402_polroot / ".veldo").mkdir(parents=True)
@@ -685,12 +830,25 @@ with tempfile.TemporaryDirectory() as _d:
         "  critical: {gate: expanded, reviews: 3, min_independence: L2}\n")
     _w1402_polroot_none = Path(_d) / "noplace"
     _w1402_polroot_none.mkdir()
-    expect("WARP-1402 AC4 CONTROL FOR THAT FINDING: with the SAME tier written on ONE line in a "
-           "hermetic policy fixture the source is `policy` and the reviews come back as the "
-           "fixture's 3, so the fallback above is the line FOLDING and not a hardcoded refusal "
-           "of the critical tier. And a root with no policy at all falls back for every tier, "
-           "which is the adopting repository's case",
+    # THE FOLDED SHAPE AS A FIXTURE, so the finding this item measured is driven hermetically and
+    # not by requiring the live file to keep it. Same tier, same meaning, written across two lines.
+    _w1402_polroot_fold = Path(_d) / "polfold"
+    (_w1402_polroot_fold / ".veldo").mkdir(parents=True)
+    (_w1402_polroot_fold / ".veldo" / "policy.yaml").write_text(
+        "schema: veldo.policy/v1\nrisk_tiers:\n"
+        "  critical: {gate: expanded, reviews: 3, min_independence: L2,\n"
+        "             human_approval: true}\n")
+    expect("WARP-1402 AC4 CONTROL FOR THAT FINDING, AND IT NOW CARRIES THE WHOLE WEIGHT: three "
+           "hermetic policy roots, three answers. The SAME tier on ONE line reads `policy` with the "
+           "fixture's own 3 reviews; the SAME tier written across TWO lines reads `default`, which "
+           "is the folding this item measured, reproduced without requiring any live file to stay "
+           "unreadable; and a root with no policy at all falls back for every tier, which is the "
+           "adopting repository's case. So the fallback is the line FOLDING and not a hardcoded "
+           "refusal of the critical tier, and a policy_tier that always claimed `policy` reds the "
+           "second and third of these",
            E1402.policy_tier("critical", root=_w1402_polroot) == (3, "expanded", "policy")
+           and E1402.policy_tier("critical", root=_w1402_polroot_fold)
+           == (E1402.DEFAULT_REVIEWS["critical"], E1402.DEFAULT_GATE["critical"], "default")
            and E1402.policy_tier("standard", root=_w1402_polroot_none)[2] == "default")
 
     expect("WARP-1402 AC4: THE PROXY REACHES FOR NOTHING OUTSIDE THE REPOSITORY AND NAMES NO "
@@ -793,17 +951,90 @@ with tempfile.TemporaryDirectory() as _d:
            and E1402.write_record(_W1402_GOOD, dirpath=_w1402_mixdir, replace=True).is_file()
            and E1402.read_record(_w1402_mixdir / "WARP-9402.yaml") == _W1402_GOOD)
 
+    # THE DOMAIN OF "NO GATE STAGE NAMES THIS MODULE" IS DERIVED, NOT TWO FILES TYPED HERE.
+    # What stood here scanned scripts/verify.sh's slot values plus verify.sh and validate.py for the
+    # literal `estimate.py`. The independent review walked straight past it (finding F4): it added a
+    # REQUIRED stage that refuses to let work proceed on a WARP-140x spec without a committed
+    # estimate - the exact NG1 violation this criterion exists to forbid - by repointing CHECK_extra
+    # at a new script, and this fragment stayed 46 passed 0 failed. Over the whole repository the only
+    # red was a SIBLING item's derived gate domain (WARP-1409 AC6), which is where the shape below
+    # comes from: the stage set is PARSED out of the required catalog and the always-run body and then
+    # closed over what each member EXECUTES or LOADS, so a new stage, a repointed slot or a new load
+    # edge enters the domain by itself instead of waiting for somebody to add it to a list.
+    # AND THE CLAIM IS NARROWED TO WHAT THE ARTIFACT SUPPORTS, which is the other half of F4. A scan
+    # over any domain, however derived, cannot see a path a stage COMPUTES - `".veldo/" + "estim" +
+    # "ate" + ".py"` is invisible to every one of them, and saying otherwise would be the same
+    # overreach in a bigger costume. So this row asserts the two things it can: the domain is real,
+    # and no file in it names this module or its records directory. The measurement that carries NG1
+    # is the three-way check_spec pair above, which is behavioural and does not care how a path was
+    # spelled.
+    _W1402_PATH_RE = r"(?:\.veldo|scripts)/[\w./-]+\.(?:py|sh)"
+    _W1402_RUN_RE = r"(?:python3|bash|sh)\s+(%s)" % _W1402_PATH_RE
     _w1402_gate_text = (ROOT / "scripts/verify.sh").read_text()
-    _w1402_slots = _w1402_re.findall(r"CHECK_\w+=\"[^\"]*\"", _w1402_gate_text)
-    expect("WARP-1402 AC5: NOTHING IN THE GATE NAMES THIS MODULE. scripts/verify.sh declares no "
-           "slot mentioning estimate.py, and neither does the contract validator it runs, so no "
-           "path through the gate can refuse, block or delay work on an estimate. Bound to a "
-           "non-empty slot list, so a parse that found no slots reds this rather than passing "
-           "over nothing. Stated as the text property it is, and it is the WEAKER half: the "
-           "measurement that actually carries NG1 is the three-way check_spec pair above",
-           _w1402_slots != [] and all("estimate" not in s for s in _w1402_slots)
-           and "estimate.py" not in _w1402_gate_text
-           and "estimate.py" not in (ROOT / ".veldo/validate.py").read_text())
+    _w1402_required = _w1402_re.findall(r'^CHECK_(\w+)="required:(.+)"$', _w1402_gate_text,
+                                        _w1402_re.M)
+    _w1402_stages = sorted(
+        {p for _n, _cmd in _w1402_required for p in _w1402_re.findall(_W1402_PATH_RE, _cmd)}
+        | set(_w1402_re.findall(_W1402_RUN_RE, _w1402_gate_text)))
+
+    def _w1402_gate_edges(rel):
+        """What ONE gate file EXECUTES or LOADS: the commands it shells and the sibling modules it
+        hands to importlib. An EXECUTES/LOADS edge and deliberately not a MENTIONS edge - a comment
+        naming a path is not a dependency, and a closure built on mentions would drag in half the
+        repository and make the absence below unfalsifiable in the other direction."""
+        p = ROOT / rel
+        if not p.is_file():
+            return set()
+        t = p.read_text()
+        out = set(_w1402_re.findall(_W1402_RUN_RE, t))
+        for _grp in _w1402_re.findall(
+                r'(?:ROOT|root|base|BASE)\s*/\s*((?:"[^"]+"\s*/\s*)*"[^"]+")', t):
+            _cand = "/".join(_w1402_re.findall(r'"([^"]+)"', _grp))
+            if _cand.endswith((".py", ".sh")):
+                out.add(_cand)
+        return {o for o in out if o != rel}
+
+    _w1402_domain = set(_w1402_stages)
+    _w1402_frontier = list(_w1402_stages)
+    while _w1402_frontier:
+        for _w1402_edge in _w1402_gate_edges(_w1402_frontier.pop()):
+            if _w1402_edge not in _w1402_domain:
+                _w1402_domain.add(_w1402_edge)
+                _w1402_frontier.append(_w1402_edge)
+    _w1402_domain_texts = {f: (ROOT / f).read_text() for f in sorted(_w1402_domain)
+                           if (ROOT / f).is_file()}
+    expect("WARP-1402 AC5: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the precondition for "
+           "the claim below and the thing the two-file scan it replaces never had. Every slot "
+           "scripts/verify.sh declares REQUIRED contributes at least one repository path, the "
+           "required set covers lint, unit, security, generated, docs and extra, the stage set holds "
+           "the scripts those slots name plus the modules the always-run body invokes directly, the "
+           "transitive closure over EXECUTES-or-LOADS is STRICTLY LARGER than the stage set, and "
+           "every member of it is a file that exists. So a required slot repointed at a new script "
+           "reds this rather than leaving a sibling item to catch it",
+           len(_w1402_required) >= 6
+           and {n for n, _c in _w1402_required} >= {"lint", "unit", "security", "generated", "docs",
+                                                    "extra"}
+           and all(_w1402_re.findall(_W1402_PATH_RE, _cmd) for _n, _cmd in _w1402_required)
+           and set(_w1402_stages) >= {"scripts/check_lint.sh", "scripts/selftest.py",
+                                      "scripts/secret_inventory.py", "scripts/check_generated.sh",
+                                      "scripts/check_docs.sh", "scripts/check_template_sync.sh",
+                                      ".veldo/validate.py", ".veldo/events.py"}
+           and _w1402_domain > set(_w1402_stages)
+           and sorted(_w1402_domain_texts) == sorted(_w1402_domain))
+
+    expect("WARP-1402 AC5: NO FILE IN THAT DERIVED DOMAIN NAMES THIS MODULE OR ITS RECORDS "
+           "DIRECTORY, so no stage the gate runs can refuse, block or delay work because an estimate "
+           "was absent, malformed or slow (NG1, PLAN-0014 D4). Asserted over every file the gate "
+           "reaches rather than the two this row used to read, and the ONE stage that does load the "
+           "module is named rather than glossed: scripts/selftest.py is a required stage and it "
+           "executes this fragment, which is a test dependency and the opposite of a consumer. "
+           "BOUNDED HONESTLY: this is a text property over a derived domain, and a stage that "
+           "COMPUTED the path would pass it - that is stated rather than papered over, and it is why "
+           "the load-bearing evidence for NG1 is the three-way check_spec measurement above",
+           _w1402_domain_texts != {}
+           and all(tok not in t for t in _w1402_domain_texts.values()
+                   for tok in ("estimate.py", E1402.ESTIMATES_DIR))
+           and "scripts/selftest.py" in _w1402_stages)
 
 # THE SPEC ID BECOMES A PATH, AND UNTIL 2026-08-13 IT WAS REFUSED NOWHERE. Ledger finding 71, found by
 # the independent review this item had never had, and REPRODUCED before being fixed: a spec whose `id:`
@@ -847,5 +1078,48 @@ with tempfile.TemporaryDirectory() as _w1402_td:
     expect("WARP-1402 finding 71 NEGATIVE CONTROL: a LEGITIMATE spec id still writes, so the rows "
            "above measure the traversal rather than a writer that now refuses everything",
            Path(_w1402_ok1).name.endswith(".yaml") and "policy" not in Path(_w1402_ok1).name)
+
+    # THE TWO HALVES THE FIRST REPAIR LEFT OPEN, both still reproducible at the reviewed commit's
+    # successor and both measured before being fixed (finding F1's evidence line, verbatim):
+    # `validate_record(build_record('../victim/OWNED', ...)) == []`, and `estimate_for` reading a
+    # record back from OUTSIDE the records directory through the same traversal. The writer refused,
+    # so nothing was destroyed - but a record whose key is a path was still VALID, and the READ side
+    # answered from a file it was never asked to open, which is a wrong answer rather than a crash.
+    expect("WARP-1402 finding F1: THE ID RULE LIVES IN validate_record, THE ONE GATE EVERY READER "
+           "AND EVERY WRITER HERE ASKS, so build_record, write_record, read_record and estimate_for "
+           "all inherit it from one statement instead of four delegations. A record keyed by a "
+           "traversal is INVALID and the problem names the id and the basename it would collapse "
+           "onto; build_record refuses to assemble one at all. Reproduced before this existed: "
+           "validate_record returned [] for exactly this record",
+           "cannot be this record's key" in _w1402_probs(_w1402_trav)
+           and "../policy" in _w1402_probs(_w1402_trav)
+           and ".._policy" in _w1402_probs(_w1402_trav)
+           and _w1402_raises(E1402.build_record, "../victim/OWNED", _W1402_AT,
+                             [dict(_W1402_GOOD["layers"][0])])[0])
+
+    expect("WARP-1402 finding F1: THE CONTAINMENT HALF, which holds whatever the character rule "
+           "turns out to have missed. _record_path is the ONE place an id becomes a path for reading "
+           "and for writing both, and it refuses any id whose file resolves outside the records "
+           "directory, naming both paths. This is deliberately a SECOND line: the row above is the "
+           "rule, this is the property, and deleting either one reds its own row rather than both",
+           _w1402_raises(E1402._record_path, _w1402_tr / ".veldo" / "estimates",
+                         "../policy")[1].startswith("ValueError:")
+           and "OUTSIDE the records directory" in _w1402_raises(
+               E1402._record_path, _w1402_tr / ".veldo" / "estimates", "../policy")[1]
+           and E1402._record_path(_w1402_ed, "WARP-9402").parent.resolve()
+           == _w1402_ed.resolve())
+
+    (_w1402_tr / "outside.yaml").write_text(E1402.render_record(
+        dict(_W1402_GOOD, spec="WARP-9402")))
+    _w1402_read_out = _w1402_raises(E1402.estimate_for, "../outside", dirpath=_w1402_ed)
+    expect("WARP-1402 finding F1: THE READ SIDE REFUSES THE SAME ID INSTEAD OF ANSWERING FROM "
+           "OUTSIDE ITS OWN STORE. A real record file is planted one directory ABOVE the records "
+           "directory and estimate_for is asked for it by traversal: it refuses by name rather than "
+           "reading it back as a committed estimate, which is what it did when measured. THE "
+           "ADDITIVE CONTROL IS IN THE SAME ROW: the record legitimately committed in that directory "
+           "is still read back in full, so this refuses the traversal and not the reader",
+           _w1402_read_out[0] and _w1402_read_out[1].startswith("ValueError:")
+           and (_w1402_tr / "outside.yaml").is_file()
+           and E1402.estimate_for("WARP-9402", dirpath=_w1402_ed) == _W1402_GOOD)
 
 del _w1402_re, _w1402_shutil

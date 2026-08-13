@@ -33,6 +33,15 @@ ZERO. WARP-1401 measured it: 904 events, not one carrying `tokens`, `cost_usd` o
 whose records carry no recorded spend reports its cost fields as None with `cost_known` false
 and `spend_coverage` 0.0, NEVER as a confident zero.
 
+AND NOTHING RECORDED IS ABSENT FROM EVERY FIGURE, which is the other half of that sentence and was
+missing. The per-area cost is summed over an area's own members, so a record attributed to NO area
+reached no cost field anywhere: recording spend against an unattributed spec turned the corpus-level
+`usable_as_cost_ground_truth` true, suppressed the notice that explains the Nones, and reported the
+tokens nowhere at all. The blunt booleans are statements about the PER-AREA figures and therefore
+count the records that reached an area (`cost_attributed_records`, `gate_attributed_records`); the
+remainder is reported as `cost_unattributed_records` with its own notice; and the unattributed bucket
+carries its own cost and cycles blocks, so a figure a reader cannot audit does not exist here.
+
 AND THE SAME DISCIPLINE APPLIES TO THE GATE CYCLES, BECAUSE THEY ARE UNRECORDED HERE TOO. The
 two cycle signals are NOT one signal and are not equally available: review verdicts carry the
 spec they belong to, but scripts/verify.sh writes its gate.passed and gate.failed events with a
@@ -116,6 +125,14 @@ BASIS_LABELS = {
                    "area, so this record is counted and never assigned. Nothing is spread, "
                    "split or defaulted into an area"),
 }
+
+# THE TOP-LEVEL KEYS A REPORT CARRIES ONLY WHEN THE CONDITION THEY DISCLOSE IS PRESENT, enumerated
+# ONCE. The stand-down promises a consumer the same key shape a live report carries, and that promise
+# is stated as an equality against THIS set: a second spelling of "which keys are conditional" is how
+# a notice gets added to the live report and forgotten in the stand-down, which is exactly the drift
+# that comparison exists to catch.
+CONDITIONAL_KEYS = ("notice", "cost_notice", "cycle_notice",
+                    "unattributed_spend_notice", "unattributed_cycle_notice")
 
 # The recorded spend fields, which are UNKNOWN rather than zero in a repository whose loop
 # emits none of them, and the cycle fields, which are TWO SIGNALS rather than one.
@@ -332,6 +349,13 @@ def _sum_cycles(records):
     return out
 
 
+def _spend_recorded(rec):
+    """Whether ONE record carried recorded spend. ONE spelling, because the per-area sum, the
+    corpus-level coverage count and the unattributed bucket all ask this question and a second
+    spelling of it would let them disagree about which records carry cost."""
+    return bool((rec.get("spend") or {}).get("spend_recorded"))
+
+
 def _sum_cost(records):
     """Recorded spend for a set of records, or None per field when NOTHING was recorded.
 
@@ -339,7 +363,7 @@ def _sum_cost(records):
     emits no tokens, no cost and no human minutes, so a sum here would be a confident zero
     presented as a measurement. A field is a number only when at least one record in the set
     actually carried spend, and `cost_known` says which of the two happened."""
-    known = [r for r in records if (r.get("spend") or {}).get("spend_recorded")]
+    known = [r for r in records if _spend_recorded(r)]
     out = {}
     for f in COST_FIELDS:
         if not known:
@@ -354,21 +378,73 @@ def _sum_cost(records):
     return out
 
 
+def _unattributed_block(atts, records):
+    """The unattributed bucket, WITH ITS OWN COST AND CYCLE BLOCKS in the shape an area carries.
+
+    NOTHING RECORDED MAY BE ABSENT FROM EVERY FIGURE, and until this block existed something could
+    be: the per-area cost is summed over an area's own members, so a record attributed to no area
+    reached no cost field anywhere, and a corpus whose ONLY recorded spend sat on an unattributed
+    spec reported that spend NOWHERE while the coverage block counted it. A reader cannot audit a
+    number that is in no figure. The spend is still never spread, split or defaulted into an area -
+    it is reported HERE, against the bucket that honestly holds no area."""
+    return {
+        "records": len(records),
+        "specs": sorted(a["spec"] for a in atts if _is_str(a["spec"])),
+        "reason": BASIS_LABELS[UNATTRIBUTED],
+        "cycles": _sum_cycles(records),
+        "cost": _sum_cost(records),
+    }
+
+
+def _coverage_block(corpus, attributed, unattributed, area_memberships):
+    """Every coverage figure, for a live report and for a stand-down, from ONE enumeration.
+
+    THE TWO BLUNT BOOLEANS ARE STATEMENTS ABOUT THE PER-AREA FIGURES, which is what a consumer of
+    this map reads, so they count the records that REACHED an area. They were computed over the
+    whole corpus, and one `.veldo/spend.py record` against an unattributed spec made the map
+    contradict itself in the data: `usable_as_cost_ground_truth` true, the notice that explains the
+    Nones suppressed by the same event, and every area still reporting tokens None. A blunt boolean
+    claiming cost ground truth over a map with no cost in it is precisely the number this item
+    exists to stop a reader quoting. So the corpus count, the attributed count and the
+    recorded-but-unattributed remainder are all reported, and the boolean is the attributed one."""
+    n = len(corpus)
+    cost_all = sum(1 for r in corpus if _spend_recorded(r))
+    cost_att = sum(1 for r in attributed if _spend_recorded(r))
+    gate_all = sum(1 for r in corpus
+                   if _has_cycle_signal(r.get("cycles") or {}, GATE_CYCLE_FIELDS))
+    gate_att = sum(1 for r in attributed
+                   if _has_cycle_signal(r.get("cycles") or {}, GATE_CYCLE_FIELDS))
+    return {
+        "records": n,
+        "attributed": n - len(unattributed),
+        "area_memberships": area_memberships,
+        "cost_known_records": cost_all,
+        "cost_attributed_records": cost_att,
+        "cost_unattributed_records": cost_all - cost_att,
+        "cost_coverage": round(cost_all / n, 4) if n else 0.0,
+        "usable_as_cost_ground_truth": cost_att > 0,
+        # The rework half of the same honesty: how many records carried a gate event at all, how
+        # many of those reached an area, and the blunt boolean that says whether a gate figure in
+        # this map means anything.
+        "gate_event_records": gate_all,
+        "gate_attributed_records": gate_att,
+        "gate_unattributed_records": gate_all - gate_att,
+        "usable_as_rework_ground_truth": gate_att > 0,
+    }
+
+
 def standdown(reason):
     """The stand-down report, in ONE shape with the same keys a live report carries, so a
     consumer reads `standdown` and never has to guess whether a key is missing or the value is
     genuinely empty. Built once for both stand-down conditions: two spellings of an empty
-    report is how a consumer ends up handling one of them and not the other."""
+    report is how a consumer ends up handling one of them and not the other. The unattributed and
+    coverage blocks come from the SAME two builders the live report uses, over empty input, so a
+    figure added to either one cannot be forgotten here."""
     return {"schema": SCHEMA, "standdown": True, "reason": reason,
-            "areas": {}, "unattributed": {"records": 0, "specs": [],
-                                          "reason": BASIS_LABELS[UNATTRIBUTED]},
+            "areas": {}, "unattributed": _unattributed_block([], []),
             "attribution": {b: 0 for b in BASES}, "bases": {},
             "git_path_attributed": False,
-            "coverage": {"records": 0, "attributed": 0, "area_memberships": 0,
-                         "cost_known_records": 0, "cost_coverage": 0.0,
-                         "usable_as_cost_ground_truth": False,
-                         "gate_event_records": 0,
-                         "usable_as_rework_ground_truth": False}}
+            "coverage": _coverage_block([], [], [], 0)}
 
 
 def report(corpus, contract, arch, fm_of=None, paths_of=None):
@@ -397,13 +473,17 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
     attributions = []
     by_area = {}
     unattributed = []
+    unattributed_recs = []
+    attributed_recs = []
     for rec in corpus:
         spec = rec["spec"]
         att = attribute(rec, contract, arch, fm_of(spec), paths_of(spec))
         attributions.append(att)
         if not att["areas"]:
             unattributed.append(att)
+            unattributed_recs.append(rec)
             continue
+        attributed_recs.append(rec)
         # A change that touched two areas contributes its recorded cost to EACH of them: the
         # question is what a change to THIS area costs, and a cross-area change did cost that
         # for each area it crossed. Nothing is divided between them, because a split would be
@@ -428,35 +508,18 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
             "cycles": _sum_cycles(recs),
             "cost": _sum_cost(recs),
         }
-    cost_known = sum(1 for r in corpus if (r.get("spend") or {}).get("spend_recorded"))
-    gate_known = sum(1 for r in corpus
-                     if _has_cycle_signal(r.get("cycles") or {}, GATE_CYCLE_FIELDS))
     out = {
         "schema": SCHEMA,
         "standdown": False,
         "areas": areas_out,
-        "unattributed": {
-            "records": len(unattributed),
-            "specs": sorted(a["spec"] for a in unattributed if _is_str(a["spec"])),
-            "reason": BASIS_LABELS[UNATTRIBUTED],
-        },
+        "unattributed": _unattributed_block(unattributed, unattributed_recs),
         "attribution": counts,
         # Only the bases actually used, so the label a reader needs is present and the ones
         # that would not apply are absent rather than decorative.
         "bases": {b: BASIS_LABELS[b] for b in BASES if counts[b]},
         "git_path_attributed": counts[BY_GIT_PATH] > 0,
-        "coverage": {
-            "records": len(corpus),
-            "attributed": len(corpus) - len(unattributed),
-            "area_memberships": sum(len(a["areas"]) for a in attributions),
-            "cost_known_records": cost_known,
-            "cost_coverage": round(cost_known / len(corpus), 4) if corpus else 0.0,
-            "usable_as_cost_ground_truth": cost_known > 0,
-            # The rework half of the same honesty: how many records carried a gate event at all,
-            # and the blunt boolean that says whether a gate figure in this map means anything.
-            "gate_event_records": gate_known,
-            "usable_as_rework_ground_truth": gate_known > 0,
-        },
+        "coverage": _coverage_block(corpus, attributed_recs, unattributed_recs,
+                                    sum(len(a["areas"]) for a in attributions)),
     }
     if out["git_path_attributed"]:
         out["notice"] = ("%d of %d records are attributed BY GIT PATH rather than by a "
@@ -464,13 +527,33 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
                          "touched, not from what anybody declared. See bases.git_path."
                          % (counts[BY_GIT_PATH], len(corpus)))
     if not out["coverage"]["usable_as_cost_ground_truth"]:
-        out["cost_notice"] = ("NO RECORD IN THIS CORPUS CARRIES SPEND, so every cost field is "
-                              "None rather than zero: this map is a CYCLES map today and "
-                              "becomes a token map when something records spend "
+        out["cost_notice"] = ("NO RECORD ATTRIBUTED TO AN AREA CARRIES SPEND, so every per-area "
+                              "cost field is None rather than zero: this map is a CYCLES map "
+                              "today and becomes a token map when something records spend "
                               "(.veldo/spend.py). WARP-1401 measured the gap.")
+    # THE DISCLOSURE THAT MUST NOT VANISH WITH THE EVENT THAT CREATES IT. Recorded spend on a spec
+    # no area holds is in NO per-area figure, and gating this on the cost notice would remove the
+    # one sentence explaining that exactly when a reader most needs it, since the same record turns
+    # the corpus-level count positive. It is its own key, present whenever the remainder is.
+    if out["coverage"]["cost_unattributed_records"]:
+        out["unattributed_spend_notice"] = (
+            "%d of the %d record(s) carrying spend are UNATTRIBUTED (no resolving placement and no "
+            "touched path inside a declared area), so their spend reaches NO per-area figure and is "
+            "reported ONLY in unattributed.cost. usable_as_cost_ground_truth is a statement about "
+            "the PER-AREA figures and counts cost_attributed_records alone."
+            % (out["coverage"]["cost_unattributed_records"],
+               out["coverage"]["cost_known_records"]))
+    if out["coverage"]["gate_unattributed_records"]:
+        out["unattributed_cycle_notice"] = (
+            "%d of the %d record(s) carrying a gate event are UNATTRIBUTED, so their gate cycles "
+            "reach NO per-area figure and are reported ONLY in unattributed.cycles. "
+            "usable_as_rework_ground_truth counts gate_attributed_records alone."
+            % (out["coverage"]["gate_unattributed_records"],
+               out["coverage"]["gate_event_records"]))
     if not out["coverage"]["usable_as_rework_ground_truth"]:
-        out["cycle_notice"] = ("NO RECORD IN THIS CORPUS CARRIES A GATE PASS OR A GATE FAILURE, "
-                               "so gate_passes and gate_failures are None per area rather than "
+        out["cycle_notice"] = ("NO RECORD ATTRIBUTED TO AN AREA CARRIES A GATE PASS OR A GATE "
+                               "FAILURE, so gate_passes and gate_failures are None per area "
+                               "rather than "
                                "zero and the cycle half of this map is REVIEW VERDICTS ONLY. THE "
                                "EMITTER IS THE GAP: scripts/verify.sh appends gate.passed and "
                                "gate.failed carrying a COMMIT and no spec id or correlation id, "
@@ -499,6 +582,10 @@ def render_text(rep):
         lines.append("  COST: %s" % rep["cost_notice"])
     if rep.get("cycle_notice"):
         lines.append("  CYCLES: %s" % rep["cycle_notice"])
+    if rep.get("unattributed_spend_notice"):
+        lines.append("  UNATTRIBUTED SPEND: %s" % rep["unattributed_spend_notice"])
+    if rep.get("unattributed_cycle_notice"):
+        lines.append("  UNATTRIBUTED CYCLES: %s" % rep["unattributed_cycle_notice"])
     for area in sorted(rep["areas"]):
         a = rep["areas"][area]
         c, cost = a["cycles"], a["cost"]
@@ -520,17 +607,49 @@ def render_text(rep):
             lines.append("    %d of these are BY GIT PATH, not by a declared placement"
                          % a["attribution"][BY_GIT_PATH])
     if rep["unattributed"]["records"]:
+        u = rep["unattributed"]
         lines.append("  unattributed (counted, never assigned): %d change(s): %s"
-                     % (rep["unattributed"]["records"],
-                        ", ".join(rep["unattributed"]["specs"][:8])))
+                     % (u["records"], ", ".join(u["specs"][:8])))
+        # THE BUCKET'S OWN FIGURES, so nothing recorded is absent from every figure on the human
+        # surface either. The basis leads and the coverage trails, a DIFFERENT shape from an area
+        # line on purpose: these numbers belong to no area, and an area assertion looking for its
+        # own substring must not be able to match here.
+        lines.append("    unattributed cost: %s, tokens=%s cost_usd=%s human_minutes=%s "
+                     "(spend on %d of %d)"
+                     % (u["cost"]["cost_basis"], u["cost"]["tokens"], u["cost"]["cost_usd"],
+                        u["cost"]["human_minutes"], u["cost"]["spend_known"], u["records"]))
+        lines.append("    unattributed cycles: %s, gate_passes=%s gate_failures=%s "
+                     "review_verdicts=%s (gate events on %d of %d)"
+                     % (u["cycles"]["gate_basis"], u["cycles"]["gate_passes"],
+                        u["cycles"]["gate_failures"], u["cycles"]["review_verdicts"],
+                        u["cycles"]["gate_events_known"], u["records"]))
     return "\n".join(lines)
 
 
-def _load(name, rel):
+def _load(name, rel, root=None):
     """Load a sibling module by path, the way entropy.py, budget.py and dashboard.py do it:
     one canonical source, no reimplementation, no package layout assumed. Used only by the
-    CLI below, so every function above stays pure over injected data."""
-    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
+    CLI below, so every function above stays pure over injected data.
+
+    `root` IS THE TREE THE SIBLING IS LOADED FROM, and it is the whole of how repo_report honours
+    its own root parameter. Each of these siblings resolves its own paths from its own module-level
+    ROOT - metrics.LOG, toe_corpus.ROOT, policy_check's policy file - so loading them from the tree
+    under report is what makes the event stream, the git history and the protected patterns come
+    from THAT tree instead of from wherever this file happens to live. Threading a root argument
+    into each of them instead would put a second spelling of "which tree" in three modules.
+
+    AN ABSENT SIBLING IS NAMED, never a bare FileNotFoundError out of a report: a tree that does
+    not carry the estimation layer is a state a caller can act on, and the CLI turns this into one
+    line and exit 1 rather than a traceback."""
+    base = Path(root or ROOT)
+    p = base / rel
+    if not p.is_file():
+        raise ValueError(
+            "cannot derive cost-to-change for %s: it does not carry %s. This derivation reads the "
+            "estimation layer of the tree it reports on (validate, toe_corpus, metrics and "
+            "policy_check under .veldo/), so a tree without those four modules has no map to "
+            "produce rather than an empty one." % (base, rel))
+    spec = importlib.util.spec_from_file_location(name, p)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -552,9 +671,18 @@ def repo_report(root=None, load=None):
     green while the live map lost, respectively, every declared-placement attribution and every
     git-path attribution. Injecting the loader keeps this the one wiring point and makes the wiring
     itself drivable: the loader is asked for the four sibling paths BY NAME, so a stub can answer
-    with known inputs and the composition below becomes observable rather than trusted."""
+    with known inputs and the composition below becomes observable rather than trusted.
+
+    `root` IS HONOURED FOR EVERY INPUT OR IT WOULD BE WORSE THAN ABSENT. It used to reach the
+    contract and the specs while the EVENT STREAM came from metrics.LOG, the GIT HISTORY from
+    toe_corpus.ROOT and the PROTECTED PATTERNS from policy_check, all three resolved from wherever
+    this file lives, so a map produced for repository X carried repository Y's cycles, spend and git
+    attribution with nothing in the report saying so - the shape a caller cannot detect. The four
+    siblings are now loaded FROM the tree under report, so each one's own root is that tree, and the
+    map for X is derived by X's own organs over X's own data. A tree that does not carry them is
+    refused BY NAME rather than reported over silently."""
     base = Path(root or ROOT)
-    load = load if load is not None else _load
+    load = load if load is not None else (lambda name, rel: _load(name, rel, base))
     V = load("veldo_validate_ctc", ".veldo/validate.py")
     TC = load("veldo_toe_corpus_ctc", ".veldo/toe_corpus.py")
     M = load("veldo_metrics_ctc", ".veldo/metrics.py")

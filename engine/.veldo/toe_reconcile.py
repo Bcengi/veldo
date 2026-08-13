@@ -17,19 +17,28 @@ guess. Three things, in the order they depend on each other:
      accumulating history and writes a `recalibrated` layer through the estimate module's own
      seam, correcting systematic bias without touching the structure.
 
-*** THE MEASURED FACT THAT SHAPES EVERY OUTPUT HERE ***
+*** THE FACT THAT SHAPES EVERY OUTPUT HERE, AND WHOSE REPOSITORY IT IS ABOUT ***
 
-WARP-1401 measured this repository's corpus: 904 events, 148 shipped specs, 95.3 percent cycle
-coverage and 0 PERCENT SPEND COVERAGE. `spend.py` exists as the emitter and nothing has ever
-called it. So this repository has recorded zero spend, and the consequence is precise: THE
-LEDGER IS EMPTY, THE ESTIMATOR HAS NO MEASURED ACCURACY YET, AND EVERY FUNCTION HERE SAYS SO
-INSTEAD OF RETURNING A NUMBER. `accuracy([])` is `measured: False` with a reason, never a hit
-rate of zero, because zero means it missed every time and unmeasured means it was never scored.
-`curve([])` is an empty curve and not a flat line along the bottom. `fit([])` is
-`fitted: False`, so no recalibrated layer exists and the estimator honestly keeps its declared
+WARP-1401 measured the AUTHORING repository's corpus at 0 PERCENT SPEND COVERAGE: `spend.py`
+existed as the emitter and nothing had ever called it. That is a DATED FINDING ABOUT ONE TREE,
+cited here because it is why the empty case is the load-bearing one, and it is NOT a claim about
+the repository you are reading this in. THE ONLY SURFACE ENTITLED TO SAY WHAT YOUR LEDGER HOLDS
+IS ONE THAT JUST READ IT, which is what `report` does and prints.
+
+Earlier versions of this paragraph pinned that measurement's event and shipped-spec counts and then
+stated, in capitals, that the ledger was empty, as a property of the reader's tree. Both counts
+were already stale in the authoring repository within the week: an independent review re-measured
+them against the same bytes and both had moved. That is what a live measurement written into prose
+always does, so the counts are gone and the dated citation stays.
+
+THE CONSEQUENCE THAT IS A PROPERTY OF THIS CODE RATHER THAN OF ANY TREE: with no records, every
+function here SAYS SO instead of returning a number. `accuracy([])` is `measured: False` with a
+reason, never a hit rate of zero, because zero means it missed every time and unmeasured means it
+was never scored. `curve([])` is an empty curve and not a flat line along the bottom. `fit([])`
+is `fitted: False`, so no recalibrated layer exists and the estimator honestly keeps its declared
 prior. The method's companion writing promises a line like "81 percent of the last 50 units in
-range"; this renders exactly that shape, and today the honest rendering is that there is
-nothing to render.
+range"; this renders exactly that shape, and where there is nothing to render the honest
+rendering is that there is nothing to render.
 
 ERROR IS MEASURED AGAINST THE RANGE, NEVER AGAINST A MIDPOINT. An estimate here is a range and
 never a point (NG6), so scoring it against the middle of its own range would invent the
@@ -70,11 +79,23 @@ nothing here writes to the event log, the corpus, a spec or an estimate. The onl
 `write_record`, create-only unless a caller explicitly asks to replace, because a variance
 quietly rewritten afterwards is a scoreboard rather than a measurement.
 
-NO CLOCK, NO SUBPROCESS, NO NETWORK. Every date is passed in, so one ledger renders the same
-bytes on any machine on any day, and this module names no subprocess, socket or urllib import
-(NG5). The spend predicate is toe_corpus's, the record vocabulary and the bounds and rounding
-rules are estimate.py's, the parser and failure reporter are validate.py's, and the era stamp is
-handed in: nothing here is a second spelling of a decision another module already made.
+NO CLOCK, AND NO PROCESS OR SOCKET OF ITS OWN. Every date is passed in, so one ledger renders the
+same bytes on any machine on any day, and this module names no subprocess, socket or urllib import
+(NG5). MEASURED, AND STATED PRECISELY BECAUSE THE EARLIER HEADLINE HERE WAS FALSE: it listed those
+three absent imports as a property of the CAPABILITY and concluded that no process could therefore
+be spawned from here, which an independent review refuted by counting them. The pure
+surfaces of this module - `pair`, `accuracy`, `curve`, `fit`, `holdout`, `compare`,
+`validate_record`, `load_dir`, `render` - spawn NOTHING, and that is measured rather than inferred
+from the import list. The repository-reading surfaces do: `build_view`, which is the body of
+`report`, `fit` and `propose`, reaches the corpus through toe_corpus, which runs one
+`git log --all --grep <spec>` per spec plus a `git show` per matching commit. So the fan-out of one
+`report` is O(specs) git invocations, which on a corpus of a couple of hundred specs is hundreds of
+them, and no count is pinned here because it is a property of your tree and not of this file. A
+substring scan over one file's bytes can never carry a claim about a call GRAPH.
+
+The spend predicate is toe_corpus's, the record vocabulary and the bounds and rounding rules are
+estimate.py's, the parser and failure reporter are validate.py's, and the era stamp is handed in:
+nothing here is a second spelling of a decision another module already made.
 """
 import argparse
 import importlib.util
@@ -148,6 +169,11 @@ MIN_REFIT_SAMPLE = 3
 # clears the floor). Both numbers are DECLARED, exactly as estimate.py's SPREAD_PCT is
 # declared, and a layer records whether the floor was applied so a reader can see that its
 # range is wider than the sample looked.
+# THE FLOOR IS TESTED TWICE, ON THE SCALES AND THEN ON THE ROUNDED BOUNDS, and the second test is
+# the one that carries it. Applying it to the scale envelope alone left the rounding free to
+# recollapse the tokens: 3000..4000 at a fitted scale of 1684, one rounding step wide, recording
+# that the floor had been applied. A floor on an input is not a floor on the output whenever
+# anything between them rounds.
 MIN_FITTED_SPREAD_PCT = 50
 HALF_SPREAD_PCT = 125
 
@@ -212,6 +238,17 @@ def _corpus():
     return _mod(".veldo/toe_corpus.py", "veldo_toe_corpus_toe_reconcile")
 
 
+def _ledger():
+    """The claim ledger, for its ONE definition of an id that cannot be stored faithfully.
+
+    NOT a second spelling of that rule, for the reason estimate.py gives where it loads the same
+    module: `claim.unit_id_problem` already answers "why this id cannot be a key", it was hardened
+    when two task ids were found to collapse into one claim record, and a reconciliation record is
+    keyed by a spec id in exactly the same way. A near-miss copy of a rule is how a writer ends up
+    protected against a traversal in one ledger and not in the next one."""
+    return _mod(".veldo/claim.py", "veldo_claim_toe_reconcile")
+
+
 def _is_int(v):
     return isinstance(v, int) and not isinstance(v, bool)
 
@@ -232,6 +269,19 @@ def _pct(numer, denom):
                          "actual missed, and a non-positive bound is not a bound" % (denom,))
     sign = -1 if numer < 0 else 1
     return sign * (abs(numer) * 100 // denom)
+
+
+def _ceil_step(n, step):
+    """n raised to the next multiple of step, in integer arithmetic.
+
+    THIS EXISTS BECAUSE ROUNDING TO NEAREST CAN LAND BACK UNDER A FLOOR. `estimate._round_tokens`
+    rounds a bound to the NEAREST step, which is right for a bound and wrong for a minimum: a
+    high bound rounded down by half a step can re-cross the spread floor it was just widened to
+    clear. A floor is raised to the step above it, never rounded to the closer one."""
+    if not _is_int(n) or not _is_int(step) or step <= 0:
+        raise ValueError("a ceiling needs an integer and a positive step, got %r and %r"
+                         % (n, step))
+    return -(-n // step) * step
 
 
 def _mean_int(values):
@@ -499,11 +549,23 @@ def parse_record(text):
 
 
 def read_record(path, spec_id=None):
-    """One record from disk, fail closed. Raises ValueError naming every problem."""
+    """One record from disk, fail closed. Raises ValueError NAMING THE FILE and every problem.
+
+    THE FILE IS NAMED ON BOTH FAILURE MODES, and it used to be named on only one. A record that
+    failed VALIDATION got "refusing the reconciliation record at <path>" and a record that failed
+    to PARSE got `parse_record`'s message, which cannot name a file because it is handed text.
+    `load_dir` reports whatever this raises, so an unparseable record arrived in its problem list as
+    "reconciliation record must be a mapping, got list" with nothing to tell an operator WHICH file
+    to open. Found by the assertion that replaced this fragment's last empty-set pin: requiring
+    every reported problem to name its record is what surfaced the one that did not. This function
+    is the place that knows the path, so it is the place that says it."""
     path = Path(path)
     if spec_id is None:
         spec_id = path.stem
-    rec = parse_record(path.read_text())
+    try:
+        rec = parse_record(path.read_text())
+    except ValueError as e:
+        raise ValueError("refusing the reconciliation record at %s: %s" % (path, e))
     problems = validate_record(rec, spec_id=spec_id)
     if problems:
         raise ValueError("refusing the reconciliation record at %s: %s"
@@ -558,13 +620,34 @@ def write_record(rec, dirpath=None, root=None, replace=False):
     CREATE ONLY OTHERWISE: a record whose bytes DIFFER from the one on disk is refused by name
     unless replace is asked for explicitly. A variance that quietly rewrites itself when the
     actual moves is a scoreboard, not a measurement, and the whole point of this ledger is that
-    the estimator cannot improve its own grade after the fact."""
+    the estimator cannot improve its own grade after the fact.
+
+    THE SPEC ID IS REFUSED BEFORE IT BECOMES A PATH, and the rule comes from the claim ledger
+    rather than from a second copy of it. PLAN-0018 finding 71 recorded this defect in
+    estimate.py's writer and MEASURED it: a record keyed `../policy` wrote itself over
+    `.veldo/policy.yaml`, the file that declares which paths are protected, with no replace flag
+    and no refusal. `validate_record` checks `spec` only as a non-empty string, exactly as that
+    writer did, so this writer had the same hole and the same fix closes it: `claim.unit_id_problem`
+    is the ONE definition of an id that cannot be stored faithfully, and a reconciliation is keyed
+    by a spec id the same way a claim is keyed by a unit id.
+    AND THE OVERWRITE GUARD IS ASKED AFTER THE DIRECTORY EXISTS. It used to run `p.exists()` before
+    the `mkdir` below, so for `.veldo/reconciliations/../policy.yaml` it asked about a path that
+    could not resolve yet, got False, and the write then landed after the mkdir when the same path
+    resolved perfectly. A guard that is correct and consulted at the wrong moment is not a
+    guard."""
     problems = validate_record(rec)
     if problems:
         raise ValueError("refusing to write an invalid reconciliation record: "
                          + "; ".join(problems))
+    problem = _ledger().unit_id_problem(rec["spec"])
+    if problem is not None:
+        raise ValueError("refusing to write a reconciliation record keyed by %r: %s. A "
+                         "reconciliation is keyed by a spec id the same way a claim is keyed by a "
+                         "unit id, so it obeys the same rule from the same place"
+                         % (rec["spec"], problem))
     text = render_record(rec)
     d = Path(dirpath) if dirpath else records_dir(root)
+    d.mkdir(parents=True, exist_ok=True)
     p = d / ("%s.yaml" % rec["spec"])
     if p.exists():
         existing = p.read_text()
@@ -576,7 +659,6 @@ def write_record(rec, dirpath=None, root=None, replace=False):
                              "the actual was genuinely corrected, say so explicitly (replace), "
                              "so the change is a decision in a diff rather than a silent regrade"
                              % (p, rec["spec"]))
-    d.mkdir(parents=True, exist_ok=True)
     p.write_text(text)
     return p, "created"
 
@@ -701,6 +783,37 @@ def pair(estimates, corpus, at, actual_source="corpus", era_of=None):
         except ValueError as e:
             standdowns.append({"spec": spec_id, "reason": str(e)})
     return records, standdowns
+
+
+def standdown_summary(estimates, standdowns, estimates_dir=None):
+    """The one line `reconcile` prints when it derived no record at all, over the data it ACTUALLY
+    READ. Pure over the two collections, so the surface a stranger sees can be driven directly.
+
+    IT USED TO STATE A MEASUREMENT NOBODY TOOK, and an independent review was right to call that
+    the one place this module does the thing it exists to refuse. The sentence was "nothing to
+    reconcile: N committed estimate(s), and no shipped change carries a recorded actual. That is
+    this repository's measured state (WARP-1401 measured 0 percent spend coverage), not a failure",
+    printed whenever the derived record list came out empty. In a repository with NO committed
+    estimate, that branch never consults the spend predicate at all: the second clause was a
+    confident zero over an input the path never read, and the third asserted a dated finding about
+    the AUTHORING repository as a fact about the reader's, byte-identically unchanged after a
+    sanctioned `spend.py record` made it false.
+
+    So this names the state it is actually in and nothing else. Every standdown carries its own
+    reason and the caller prints them line by line above this, which is where a cause belongs: `no
+    spend recorded` for one named spec is a measurement, and a claim about a set the pass never
+    looked at is not.
+
+    `estimates_dir` is HANDED IN rather than spelled here, because the estimate ledger's location
+    is estimate.py's decision and this module does not keep a second copy of it."""
+    if not estimates:
+        return ("nothing to reconcile: no committed estimate%s, so there was no spec to look for "
+                "an actual for. Nothing on this path read the spend of anything, and an estimate "
+                "ledger with nothing in it is not a failure"
+                % (" under %s" % estimates_dir if estimates_dir else ""))
+    return ("nothing to reconcile: %d committed estimate(s) and %d standing down, each with its "
+            "own reason above. That is a measured state of this repository, not a failure"
+            % (len(estimates), len(standdowns)))
 
 
 def write_all(records, dirpath=None, root=None):
@@ -943,6 +1056,18 @@ def recalibrated_range(weight_tenths, fitted):
     agreeing. Below MIN_FITTED_SPREAD_PCT the range is widened symmetrically in ratio about the
     fitted scale, and the caller is told the floor was applied so the record can say so.
 
+    AND THE FLOOR IS A PROPERTY OF THE BOUNDS A READER SEES, NOT OF THE SCALES THEY WERE FITTED
+    FROM. The floor used to be applied to the scale envelope alone and the bounds were then
+    rounded, which recollapsed it: an independent review drove five real specs at the smallest
+    structural weight estimate.py can produce against a fitted scale of 1684 and got 3000..4000,
+    ONE rounding step wide, a 33 percent spread, on a layer whose own inputs recorded
+    `spread_floor_applied: yes` and `min_fitted_spread_pct: 50`. That is verbatim the false
+    precision this floor exists to refuse, so the floor is now TESTED AND ENFORCED AGAIN on the
+    rounded token bounds, which are the numbers a planner reads and a later reconciliation scores.
+    Two paths reach it and both are ordinary: a scale envelope narrower than the floor whose
+    widening rounding then undoes, and a scale envelope that CLEARS the floor whose bounds round
+    to a spread that does not.
+
     Rounding is allowed to coarsen a range and never to collapse it (NG6), and the rounding step
     is estimate.py's, because two rounding rules for one unit is one decision spelled twice."""
     if not fitted.get("fitted"):
@@ -959,8 +1084,15 @@ def recalibrated_range(weight_tenths, fitted):
         hi_scale = max(hi_scale, mid * HALF_SPREAD_PCT // 100)
     low = EST._round_tokens(weight_tenths * lo_scale // 10)
     high = EST._round_tokens(weight_tenths * hi_scale // 10)
-    if high <= low:
-        high = low + EST.ROUND_STEP
+    # THE FLOOR, ON THE BOUNDS THEMSELVES. MIN_FITTED_SPREAD_PCT is declared as a spread above the
+    # low, so this is that sentence in arithmetic, raised to the step ABOVE it rather than rounded
+    # to the nearer one. It subsumes the collapse guard that used to stand here (`high <= low`):
+    # a spread of at least MIN_FITTED_SPREAD_PCT of a positive low is a high strictly above it, so
+    # a separate anti-collapse branch would now be dead code reading as a live protection.
+    floor_high = _ceil_step(low + low * MIN_FITTED_SPREAD_PCT // 100, EST.ROUND_STEP)
+    if high < floor_high:
+        high = floor_high
+        floor_applied = True
     return low, high, floor_applied
 
 
@@ -984,10 +1116,17 @@ def recalibrated_layer(weight_tenths, fitted, note=None):
         "dispersion_pct": fitted["dispersion_pct"],
         "fitted_scale_spec": fitted["spec"],
         "refit_basis": "lower_median_implied_scale",
-        # WHETHER THE SAMPLE'S OWN AGREEMENT WAS TAKEN AT FACE VALUE. `yes` means the observed
-        # envelope was narrower than the declared floor and the range was widened, so a reader
-        # knows this range is not as tight as the records looked.
+        # WHETHER THE SAMPLE'S OWN AGREEMENT WAS TAKEN AT FACE VALUE. `yes` means the range a
+        # reader sees is WIDER than the arithmetic on its own would have produced, so this range
+        # is not as tight as the records looked. Either test can set it: the observed scale
+        # envelope narrower than the declared floor, or rounded token bounds whose spread came
+        # out under it. Both are the same fact about the layer, which is why one flag carries
+        # both rather than a second field naming which test fired.
         "spread_floor_applied": EST.YES if floored else EST.NO,
+        # THE FLOOR ITSELF, and it is one of the numbers a reader RECOMPUTES these bounds from
+        # rather than a note about them: the floor is applied to the rounded token bounds too, so
+        # a reader who has the envelope, the weight and the widening ratio still cannot reproduce
+        # a floored high without it.
         "min_fitted_spread_pct": MIN_FITTED_SPREAD_PCT,
         # THE RATIO THE FLOOR WIDENS BY, and it is here because without it these inputs do NOT
         # reproduce these bounds. MIN_FITTED_SPREAD_PCT is the TEST the floor applies; the
@@ -1338,9 +1477,8 @@ def _cli(argv):
         for s in standdowns:
             print("standing down on %s: %s" % (s["spec"], s["reason"]))
         if not recs:
-            print("nothing to reconcile: %d committed estimate(s), and no shipped change carries "
-                  "a recorded actual. That is this repository's measured state (WARP-1401 "
-                  "measured 0 percent spend coverage), not a failure" % len(estimates))
+            print(standdown_summary(estimates, standdowns,
+                                    estimates_dir=_estimate().ESTIMATES_DIR))
         if a.write:
             created, unchanged, refused = write_all(recs)
             print("wrote %d, unchanged %d, refused %d" % (len(created), len(unchanged),

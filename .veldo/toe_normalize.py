@@ -29,10 +29,14 @@ per token, a token stops meaning what it meant, and two numbers measured either 
 are not in the same unit. That is a fact about the world, so it is RECORDED: one entry per
 capability shift in the era ledger (`veldo.toe_capability_shift/v1` under `.veldo/toe_eras/`),
 carrying when it took effect, which model, and which direction the work per token moved. The ledger
-turns into half-open intervals, every actual is stamped with the era its spend was measured in, and
-a row from an era other than the peg's gets NO POINT AT ALL, with the reason naming both eras. A
-change whose own spend events straddle a shift gets no era either, because that total is itself a
-mixture. Per D5 normalization stays a DISPLAY concern: no cross-era conversion factor is invented
+turns into half-open intervals, every actual is stamped with the era its TOKEN spend was measured in
+(the era of a token total can only be decided by a token measurement, so a dollar cost or a
+human-minute record in another era is reported as a NOTE and never decides it), and a row from an era
+other than the peg's gets NO POINT AT ALL, with the reason naming both eras. A change whose own token
+events straddle a shift gets no era either, because that total is itself a mixture. THE RAW TOTAL
+REFUSES THE SAME BLEND THE POINTS DO: the roll-up reports raw tokens PER ERA, with the tokens of rows
+whose era cannot be read counted apart, and a single `tokens_total` only when every raw token in the
+view sits in one era. Per D5 normalization stays a DISPLAY concern: no cross-era conversion factor is invented
 here, because a single multiplier claiming to convert one model's tokens into another's would be a
 guess wearing a measurement's clothes, and it would silently rewrite history's meaning.
 
@@ -94,10 +98,34 @@ SHIFT_ORDER = ("schema", "id", "at", "model", "previous_model", "work_per_token"
 POINT_DIGITS = 3
 
 
+class OrganAbsent(Exception):
+    """A sibling organ this module reads is not present in this repository.
+
+    NAMED RATHER THAN RAISED THROUGH. This module reads three siblings by path, and a tree that
+    carries this file without them is not exotic: it is what an adopter gets from a pack that ships
+    the module while the installer lays down a different set, which is how `report` came to exit 1
+    on a raw `FileNotFoundError: .../.veldo/toe_corpus.py` with no sentence a reader could act on.
+    A reader that cannot answer NAMES the state instead of dying (PLAN-0018 findings 64 and 67), so
+    the read verbs stand down with the organ named and the WRITE verb refuses: nothing was written,
+    and a zero exit there would claim a record that does not exist."""
+
+    def __init__(self, relpath):
+        self.relpath = str(relpath)
+        super().__init__(
+            "standing down: this module reads the sibling organ %s and this repository does not "
+            "carry it, so there is no corpus to normalize and no view to print. That is an "
+            "incomplete install of the estimation layer rather than a repository with nothing "
+            "recorded, and the two say different things to a reader" % self.relpath)
+
+
 def _sibling(name, relpath):
     """One sibling organ, loaded BY PATH the way every other organ here loads one, so there is no
-    import cycle and no package layout to install."""
-    spec = importlib.util.spec_from_file_location(name, ROOT / relpath)
+    import cycle and no package layout to install. An ABSENT organ is raised as OrganAbsent, which
+    names the file, rather than as the loader's own FileNotFoundError, which names a traceback."""
+    p = ROOT / relpath
+    if not p.is_file():
+        raise OrganAbsent(relpath)
+    spec = importlib.util.spec_from_file_location(name, p)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -236,16 +264,26 @@ def load_ledger(eras_dir, parse, report, parse_iso=None):
     seen_ids, seen_at = {}, {}
     ordered = []
     for rec in sorted(keep, key=lambda r: (read_at(r["at"], parse_iso), r["id"])):
+        # THE SAME-INSTANT KEY IS THE PARSED INSTANT, NOT THE TIMESTAMP STRING. One moment has many
+        # spellings (`2026-01-04T00:00:00Z` and `2026-01-04T00:00:00+00:00` are the same instant),
+        # and keying on the text accepted both: `eras()` then emitted an interval half open on the
+        # right AT ITS OWN LEFT EDGE, so the earlier era was declared, listed in eras_declared and
+        # reported in the view while nothing could ever be in it. The instant is already computed
+        # one line above for the sort, so this reads the same value rather than a second answer to
+        # what the boundary is.
+        at = read_at(rec["at"], parse_iso)
         if rec["id"] in seen_ids:
             errs += report(str(d), "duplicate shift id %r: two entries claiming one era boundary "
                                    "cannot both be it" % rec["id"])
             continue
-        if rec["at"] in seen_at:
-            errs += report(str(d), "shifts %r and %r both take effect at %s, so no actual at that "
-                                   "instant has one era" % (seen_at[rec["at"]], rec["id"], rec["at"]))
+        if at in seen_at:
+            other_id, other_spelling = seen_at[at]
+            errs += report(str(d), "shifts %r and %r both take effect at the same instant (%s and "
+                                   "%s are one moment), so no actual at that instant has one era"
+                                   % (other_id, rec["id"], other_spelling, rec["at"]))
             continue
         seen_ids[rec["id"]] = True
-        seen_at[rec["at"]] = rec["id"]
+        seen_at[at] = (rec["id"], rec["at"])
         ordered.append(rec)
     return ordered, errs
 
@@ -277,32 +315,89 @@ def era_at(era_list, at, parse_iso):
 
 
 def spend_ats(events, spec_id, corpus_mod):
-    """The timestamps of the events that carried spend for one spec.
+    """(timestamps of the events that recorded a TOKEN count, timestamps of the events that
+    recorded spend in some OTHER field) for one spec.
 
     WHAT COUNTS AS "CARRIED SPEND" IS NOT DECIDED HERE. Each event is put through the corpus
     module's own `spend_for`, so the field set and the numeric test stay in the one module that
-    owns them; re-spelling that predicate is how two readers of one log start disagreeing."""
-    return [e.get("at") for e in events
-            if corpus_mod.spend_for([e], spec_id)["spend_recorded"]]
+    owns them; re-spelling that predicate is how two readers of one log start disagreeing.
+
+    WHICH OF THE TWO LISTS AN EVENT LANDS IN IS DECIDED BY `recorded_tokens`, THE SAME ONE PREDICATE
+    THE POINT USES, AND THE SPLIT IS THE WHOLE POINT OF THIS FUNCTION. An era answers "which unit is
+    this TOKEN total in", so only a token measurement can decide it. Selecting on the corpus's
+    `spend_recorded` flag put a dollar cost or a human-minute record on the era path, which is the
+    permissive flag `recorded_tokens` exists to refuse on the point path: a change whose tokens were
+    all measured inside one era lost its point because thirty human minutes sat on the other side of
+    a shift, and the row then said its token total was "itself a mixture of units" about minutes that
+    are not denominated in tokens at all. Two spellings of one predicate on a second path is exactly
+    the defect AC1's own text says one named predicate exists to prevent, so there is one spelling
+    here too and the other fields are reported as a NOTE rather than allowed to decide."""
+    tokens, other = [], []
+    for e in events:
+        spend = corpus_mod.spend_for([e], spec_id)
+        if not spend["spend_recorded"]:
+            continue
+        (tokens if recorded_tokens(spend) is not None else other).append(e.get("at"))
+    return tokens, other
+
+
+def _era_names(era_list, ats, parse_iso):
+    """The distinct eras a list of timestamps falls in, sorted, with an unreadable timestamp named
+    as such rather than dropped: an era nobody could read is a fact, and dropping it would make a
+    straddle look like a single era."""
+    out = []
+    for a in ats:
+        e = era_at(era_list, a, parse_iso)
+        name = "era %r" % e if e else "no readable era"
+        if name not in out:
+            out.append(name)
+    return sorted(out)
 
 
 def era_of(spec_id, events, era_list, corpus_mod, parse_iso):
-    """(era, reason) for one spec's recorded spend. The era is None whenever it cannot be READ,
-    and the reason says which of the three ways it failed, because they are different facts:
-    nothing was recorded, a timestamp is unreadable, or the spend STRADDLES a capability shift and
-    the total is therefore itself a mixture of two units."""
-    ats = spend_ats(events, spec_id, corpus_mod)
+    """(era, reason) for one spec's recorded TOKEN spend. The era is None whenever it cannot be
+    READ, and the reason says which of the three ways it failed, because they are different facts:
+    no token count was recorded, a timestamp is unreadable, or the token spend STRADDLES a
+    capability shift and the total is therefore itself a mixture of two units.
+
+    TWO VALUES, AND THAT IS A CONTRACT WITH A SIBLING RATHER THAN A STYLE. `.veldo/toe_analogy.py`
+    takes this function as `era_of` and unpacks `(era, reason)`, so the note about other spend
+    fields is a SEPARATE reader (`era_note`) instead of a third element: measured, adding one broke
+    WARP-1404's evidence window with a ValueError out of the gate's unit stage."""
+    ats, _other = spend_ats(events, spec_id, corpus_mod)
     if not ats:
-        return None, "no recorded spend, so there is no era to read it from"
+        return None, "no recorded token spend, so there is no era to read a token total from"
     found = [era_at(era_list, a, parse_iso) for a in ats]
     if any(f is None for f in found):
-        return None, ("at least one spend event carries no readable UTC timestamp, so the era it "
-                      "was measured in is unknown rather than assumed")
+        return None, ("at least one token spend event carries no readable UTC timestamp, so the era "
+                      "it was measured in is unknown rather than assumed")
     uniq = sorted(set(found))
     if len(uniq) > 1:
-        return None, ("spend spans %d eras (%s), so this total is itself a mixture of units and is "
-                      "not normalized" % (len(uniq), ", ".join(uniq)))
+        return None, ("token spend spans %d eras (%s), so this total is itself a mixture of units "
+                      "and is not normalized" % (len(uniq), ", ".join(uniq)))
     return uniq[0], None
+
+
+def era_note(spec_id, era, events, era_list, corpus_mod, parse_iso):
+    """The note about spend this change recorded in fields OTHER than tokens, when it sits in a
+    different era from the token measurement, or None when there is nothing to say.
+
+    WHY THIS IS REPORTED AND NOT ACTED ON. The era of a token total is decided by the token events
+    alone, because a dollar cost or a human-minute record says nothing about which unit a token
+    total is in. But a change whose money was spent either side of a capability shift is still a
+    fact about the record, and deleting a fact to make a row green is how the previous version of
+    this rule looked correct while printing a false reason. So the point stands, the era is the
+    token era, and the reader is TOLD."""
+    if era is None:
+        return None
+    _ats, other = spend_ats(events, spec_id, corpus_mod)
+    outside = [n for n in _era_names(era_list, other, parse_iso) if n != "era %r" % era]
+    if not outside:
+        return None
+    return ("spend recorded in fields other than tokens sits in %s, while the TOKEN spend was "
+            "measured in era %r: the point is normalized against the token measurement alone, and "
+            "those other figures are reported apart rather than allowed to decide the era of a "
+            "token total" % (", ".join(outside), era))
 
 
 def recorded_tokens(spend):
@@ -435,7 +530,12 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
 
     A row gets NO POINT, with the reason named, when its TOKEN spend was never recorded (a point
     there would be a confident zero), when there is no peg at all, when its era cannot be read, or
-    when its era is not the peg's era.
+    when its era is not the peg's era. A row that DOES get a point carries the ratio UNROUNDED, and
+    the rounding to POINT_DIGITS happens where the number is shown (`point_cell`) and where it is
+    totalled (`summary`): rounding it into the row printed `0.000 pt` for a real measurement and
+    added exactly zero to the bottom line a plan is sized with. It also carries a NOTE whenever
+    spend recorded in fields other than tokens sits in a different era from the token measurement,
+    which is a fact about the record that is reported rather than allowed to decide an era.
 
     THE POINT GATE IS `recorded_tokens`, THE SAME PREDICATE THE PEG DERIVATION USES, and it is a
     positive recorded TOKEN count rather than the corpus's `spend_recorded` flag. A change that
@@ -456,11 +556,12 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
     for r in corpus:
         spend = r.get("spend") or {}
         era, why = era_of(r["spec"], events, era_list, corpus_mod, parse_iso)
+        note = era_note(r["spec"], era, events, era_list, corpus_mod, parse_iso)
         tokens = recorded_tokens(spend)
         row = {"spec": r["spec"], "tokens": spend.get("tokens", 0),
                "cost_usd": spend.get("cost_usd", 0),
                "spend_recorded": bool(spend.get("spend_recorded")),
-               "era": era, "points": None, "reason": None}
+               "era": era, "points": None, "reason": None, "note": note}
         if tokens is None:
             recorded = spend_fields_recorded(spend)
             if recorded:
@@ -484,24 +585,70 @@ def normalize(corpus, peg, events, era_list, corpus_mod, parse_iso):
                              "different work per token makes these different units, so they are "
                              "reported apart rather than blended" % (era, peg.get("era")))
         else:
-            row["points"] = round(tokens / float(peg["tokens"]), POINT_DIGITS)
+            # THE RATIO, UNROUNDED, AND THE ROUNDING HAPPENS WHERE THE NUMBER IS DISPLAYED. Rounding
+            # it into the row made the roll-up lossy in one direction only: `round(x, 3)` is 0.0 for
+            # any ratio under 0.0005, which is an ordinary spread in an agent-run repository (a few
+            # hundred tokens against a peg of a few hundred thousand), so a MEASURED change rendered
+            # as `0.000 pt` - the exact string AC1 forbids - and contributed exactly zero to the
+            # bottom line a plan is sized with. There is one number here and one place that rounds
+            # it: `render_lines` for the cell and `summary` for the total.
+            row["points"] = tokens / float(peg["tokens"])
         rows.append(row)
     return {"peg": peg, "eras": era_list, "rows": rows, "summary": summary(rows, era_list)}
 
 
 def summary(rows, era_list):
     """The roll-up of one view. Both units are present, because a normalized total with no raw
-    total underneath is a number nobody can audit."""
+    total underneath is a number nobody can audit.
+
+    AND THE RAW TOTAL REFUSES TO BLEND ERAS, EXACTLY AS THE POINTS DO. `tokens_total` used to sum
+    the raw tokens of every row whatever era it was measured in, and the printed bottom line put
+    that figure beside the list of eras present with no qualification: two models' tokens added into
+    one number, which is this module's own definition of a number no model ever produced, sitting
+    one column away from a points total that had refused to do the same thing. So the raw tokens are
+    reported PER ERA, `tokens_unplaced` carries the rows whose era could not be read (a straddle or
+    an unreadable timestamp, whose tokens belong to no era's total), and `tokens_total` is a single
+    number ONLY when every raw token in the view sits in one era. Nothing is hidden: every figure is
+    present, and the one that would have been a blend is named as refused instead."""
     pointed = [r for r in rows if r["points"] is not None]
+    by_era, unplaced = {}, 0
+    for r in rows:
+        if r["era"]:
+            by_era[r["era"]] = by_era.get(r["era"], 0) + r["tokens"]
+        else:
+            unplaced += r["tokens"]
+    blended = len(by_era) > 1 or unplaced != 0
     return {
         "rows": len(rows),
         "pointed": len(pointed),
         "unpointed": len(rows) - len(pointed),
         "points_total": round(sum(r["points"] for r in pointed), POINT_DIGITS),
-        "tokens_total": sum(r["tokens"] for r in rows),
+        "tokens_by_era": dict(sorted(by_era.items())),
+        "tokens_unplaced": unplaced,
+        "tokens_total": None if blended else sum(r["tokens"] for r in rows),
         "eras_present": sorted({r["era"] for r in rows if r["era"]}),
         "eras_declared": [e["era"] for e in era_list],
     }
+
+
+def point_cell(points):
+    """The point column of one rendered row: `- pt` when no point was computed, the point at
+    POINT_DIGITS when it is readable there, and `<0.001 pt` for a MEASURED change whose ratio is
+    below that resolution.
+
+    THE THIRD CELL IS THE FIX FOR A CONFIDENT ZERO THAT AC1 FORBIDS IN ITS OWN WORDS AND THE DISPLAY
+    PRINTED ANYWAY. `%.3f` of any ratio under 0.0005 is `0.000`, so a change measured at a few
+    hundred tokens against a peg of a few hundred thousand rendered as a zero point beside a real
+    token count: indistinguishable, on the surface a planner reads, from a change nobody measured.
+    Below the resolution is a fact about the RULER, not about the change, so the cell says so. The
+    threshold is derived from POINT_DIGITS rather than typed, because two spellings of one
+    resolution would disagree the day it moves."""
+    if points is None:
+        return "        - pt"
+    floor = 10 ** -POINT_DIGITS
+    if points > 0 and round(points, POINT_DIGITS) == 0:
+        return "%9s pt" % ("<%.*f" % (POINT_DIGITS, floor))
+    return "%9.*f pt" % (POINT_DIGITS, points)
 
 
 def render_lines(view, price_per_1k_tokens=None):
@@ -510,7 +657,11 @@ def render_lines(view, price_per_1k_tokens=None):
 
     THE DOLLAR COLUMN IS DERIVED FROM RAW TOKENS AND THE POINT IS NOT. That is the design: a point
     is a ratio of tokens to tokens, so a price change moves the money and cannot move a single
-    point, and neither one touches a stored actual.
+    point, and neither one touches a stored actual. AND IT IS WITHHELD ON EXACTLY THE ROWS WHOSE
+    TOKEN COUNT WAS NEVER RECORDED, through the same `recorded_tokens` predicate the point uses: a
+    derived `0.00 usd` on a change whose recorded cost is 7.50 is the confident zero this item
+    refuses, moved one column over into the money column of the row whose whole message is that
+    nothing was measured in tokens.
 
     THE RECORDED COST IS NEVER PRINTED HERE, AND THAT IS A DECISION RATHER THAN AN OMISSION. Every
     figure on a rendered row is either the recorded token count or something derived from it and the
@@ -526,16 +677,32 @@ def render_lines(view, price_per_1k_tokens=None):
     else:
         out = ["peg: NONE, standing down. %s" % peg.get("reason")]
     for r in view["rows"]:
-        cell = "%9.3f pt" % r["points"] if r["points"] is not None else "        - pt"
-        line = "%-14s %s %10d tok" % (r["spec"], cell, r["tokens"])
+        measured = recorded_tokens({"spend_recorded": r["spend_recorded"], "tokens": r["tokens"]})
+        line = "%-14s %s %10d tok" % (r["spec"], point_cell(r["points"]), r["tokens"])
         if price_per_1k_tokens is not None:
-            line += " %10.2f usd" % (r["tokens"] / 1000.0 * price_per_1k_tokens)
+            # THE MONEY CELL IS WITHHELD WHEREVER THE TOKEN COUNT IT WOULD BE DERIVED FROM DOES NOT
+            # EXIST, decided by the SAME `recorded_tokens` predicate the point uses rather than by a
+            # second test of the same thing. Printing `0.00 usd` for a change whose recorded cost is
+            # 7.50 is the confident zero this item refuses, one column over: the point column got it
+            # right with `- pt` and the money column presented a derived zero as a dollar figure on
+            # the one row whose whole message is that its tokens were never measured.
+            line += (" %10.2f usd" % (measured / 1000.0 * price_per_1k_tokens)
+                     if measured is not None else " %10s usd" % "-")
         if r["points"] is None:
             line += "  (%s)" % r["reason"]
+        elif r.get("note"):
+            line += "  (note: %s)" % r["note"]
         out.append(line)
     s = view["summary"]
-    out.append("total: %s pt over %d change(s), %d raw tokens, %d row(s) with no point, eras %s"
-               % (s["points_total"], s["pointed"], s["tokens_total"], s["unpointed"],
+    if s["tokens_total"] is not None:
+        raw = "%d raw tokens" % s["tokens_total"]
+    else:
+        raw = ("raw tokens NOT totalled (%s, %d in no readable era): tokens measured either side of "
+               "a capability shift are different units and this module does not blend them"
+               % (", ".join("%d in %s" % (v, k) for k, v in sorted(s["tokens_by_era"].items()))
+                  or "none in any declared era", s["tokens_unplaced"]))
+    out.append("total: %s pt over %d change(s), %s, %d row(s) with no point, eras %s"
+               % (s["points_total"], s["pointed"], raw, s["unpointed"],
                   s["eras_present"] or "none"))
     return out
 
@@ -646,11 +813,19 @@ def _cli(argv):
                "note": a.note}
         try:
             print(record_shift(rec, ROOT / ERAS_DIR))
-        except ValueError as e:
+        except (ValueError, OrganAbsent) as e:
+            # A WRITE THAT COULD NOT HAPPEN REFUSES. An absent organ stands the READ verbs down with
+            # a zero exit, because a planning number never blocks anybody (PLAN-0014 NG1), but here
+            # nothing was appended to the ledger and a zero exit would claim a record that does not
+            # exist.
             print(str(e), file=sys.stderr)
             return 1
         return 0
-    view = build_view(price_per_1k_tokens=getattr(a, "price_per_1k_tokens", None))
+    try:
+        view = build_view(price_per_1k_tokens=getattr(a, "price_per_1k_tokens", None))
+    except OrganAbsent as e:
+        print(str(e))
+        return 0
     if a.cmd == "peg":
         print(json.dumps(view["peg"], sort_keys=True))
     elif a.cmd == "eras":

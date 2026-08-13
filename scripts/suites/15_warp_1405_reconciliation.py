@@ -160,6 +160,19 @@ def _w1405_raises(fn, *a, **kw):
     return False, ""
 
 
+def _w1405_probe(fn, *a, **kw):
+    """fn's answer, or the 2-tuple ("raised", "<type>: <message>") if the call escaped.
+
+    A ROW THAT SWEEPS A FUNCTION HAS TO OWN ITS OWN EXCEPTIONS. An escape from a bare call inside
+    a fragment reds the BLOCK and deletes every row below it from the run, which looks like a
+    mutation with teeth and is really a mutation destroying coverage (PLAN-0018 finding 67). The
+    escape is captured as a value so the row that NAMES the property is the row that goes red."""
+    try:
+        return fn(*a, **kw)
+    except BaseException as e:
+        return ("raised", "%s: %s" % (type(e).__name__, e))
+
+
 def _w1405_spec_text(spec_id, risk="standard", acs=2, status="shipped",
                      footprint=(".veldo/nothing_a.py",)):
     """A fixture spec with exactly the mechanical features under test, built rather than pinned
@@ -405,6 +418,54 @@ with tempfile.TemporaryDirectory() as _d:
            and R1405.read_record(_w1405_wdir / ("%s.yaml" % _W1405_ONE["spec"]))
            == _w1405_moved)
 
+    # THE SPEC ID AS A PATH. PLAN-0018 finding 71 recorded this against estimate.py's writer and
+    # called it the most serious defect of that remediation: a record keyed `../policy` wrote itself
+    # over `.veldo/policy.yaml`, the file that declares which paths are protected. MEASURED HERE
+    # BEFORE ANYTHING WAS CHANGED, in a throwaway copy: this writer had the same hole, from the same
+    # cause (`validate_record` checks `spec` only as a non-empty string) and with the same too-early
+    # existence guard, and it took policy.yaml from 3977 bytes to 273.
+    # The victim is a real file inside a hermetic root, and the records directory is deliberately
+    # ABSENT when the write is attempted, because that absence is what made the old guard answer
+    # about an unresolvable path and return False.
+    _w1405_travroot = Path(_d) / "travroot"
+    (_w1405_travroot / ".veldo").mkdir(parents=True)
+    _w1405_victim = _w1405_travroot / ".veldo" / "policy.yaml"
+    _w1405_shutil.copy(ROOT / ".veldo/policy.yaml", _w1405_victim)
+    _w1405_victim_bytes = _w1405_victim.read_bytes()
+    _w1405_trav_rec = dict(_W1405_ONE, spec="../policy")
+    _w1405_trav = _w1405_raises(R1405.write_record, _w1405_trav_rec,
+                                dirpath=_w1405_travroot / ".veldo" / "reconciliations")
+    expect("WARP-1405 AC2: A SPEC ID THAT IS A PATH CANNOT REACH THE FILE IT POINTS AT, and the "
+           "file it pointed at is the one declaring which paths are protected. Driven over a "
+           "hermetic root holding a real copy of .veldo/policy.yaml with the reconciliations "
+           "directory ABSENT, which is the state that made the old existence guard answer about a "
+           "path that could not resolve yet: the write is refused and policy.yaml is BYTE-IDENTICAL "
+           "afterwards. This row says the file lived; the row below says which rule saved it, "
+           "because a single row asserting only that something was refused is satisfiable by "
+           "either half and attributable to neither",
+           _w1405_trav[0] is True
+           and _w1405_victim.read_bytes() == _w1405_victim_bytes
+           and not (_w1405_travroot / ".veldo" / "policy.yaml.yaml").exists())
+
+    _w1405_claim_mod = R1405._ledger()
+    expect("WARP-1405 AC2: AND THE RULE THAT REFUSED IT IS THE CLAIM LEDGER'S, NOT A SECOND COPY OF "
+           "IT. The refusal names the id and carries claim.unit_id_problem's OWN text verbatim, "
+           "asserted by calling that function here and finding its answer inside the message, so a "
+           "near-miss re-spelling of the rule in this module would red this row while still "
+           "refusing the write. That is the shape PLAN-0018 finding 71 prescribes: one definition "
+           "of an id that cannot be stored faithfully, inherited by every ledger keyed by an id. "
+           "Bound to the positive control that an ordinary spec id still writes and still reports "
+           "`unchanged` on a second pass, so this is a refusal of the ID and not of writing",
+           _w1405_claim_mod.unit_id_problem("../policy") in _w1405_trav[1]
+           and "../policy" in _w1405_trav[1]
+           and _w1405_claim_mod.unit_id_problem(_W1405_ONE["spec"]) is None
+           and _w1405_probe(R1405.write_record, _W1405_ONE,
+                            dirpath=_w1405_travroot / ".veldo" / "reconciliations")[1]
+           == "created"
+           and _w1405_probe(R1405.write_record, _W1405_ONE,
+                            dirpath=_w1405_travroot / ".veldo" / "reconciliations")[1]
+           == "unchanged")
+
     # Four ways a reconciliation legitimately does not happen, all four in one pass.
     _w1405_hard_ests = dict(_w1405_ests)
     _w1405_hard_ests["WARP-9421"] = dict(_W1405_LEDGER and _w1405_ests[_W1405_SPECS[0]])
@@ -522,6 +583,41 @@ with tempfile.TemporaryDirectory() as _d:
                                        and not isinstance(_e.get(_f), bool))
                                for _f in C1405.SPEND_FIELDS}
     _w1405_live_ledger, _w1405_live_probs = R1405.load_dir(root=ROOT)
+
+    # THE LAST EMPTY-SET PIN OVER LIVE STATE IN THIS FRAGMENT, AND THE PROPERTY THAT REPLACED IT.
+    # This clause used to be `_w1405_live_probs == []`, required by AC3's own earlier wording ("no
+    # recorded reconciliation in the tree is malformed"). MEASURED by an independent review: ONE
+    # present-but-malformed record under .veldo/reconciliations took CHECK_unit, which verify.sh
+    # declares REQUIRED, to 52 passed and 1 failed - and it reddened under THIS row's label, which
+    # is about the EVENT LOG, so an operator whose record was malformed was told the log measurement
+    # had failed. Two criteria of one spec disagreed: AC5 is titled ADOPTION SAFE, AND NEVER A
+    # BLOCKER and says a present-but-malformed record is NAMED rather than blocking, while this row
+    # turned that same record into a red gate. It is also outside the reach of the one stage built
+    # to catch pins, by that stage's own declaration: check_first_use.py fills the corpora its
+    # mutation table fills and its table covers spend alone.
+    # THE PROPERTY THE PIN WAS STANDING IN FOR: every problem the ledger reader reports NAMES THE
+    # RECORD IT IS ABOUT. That is what stops an accuracy figure being computed over a quietly
+    # smaller ledger than the one on disk, which is the harm the pin was reaching for. A malformed
+    # record satisfies it; a reader that dropped one silently, or reported a problem naming no file,
+    # does not. No repository can break it by using the layer.
+    # AND IT IS DRIVEN OVER A DEFECT SET BUILT HERE, because `all()` over an empty live list is a
+    # pass earned by looking nowhere, and this repository's ledger is empty today. Every member of
+    # THAT set is malformed BY CONSTRUCTION, so requiring all of them to be named is legitimate
+    # where requiring none of them to exist was not: two planted bad records, one unparseable and
+    # one missing most of its keys, beside one valid record that must still land in the ledger.
+    _w1405_probdir = Path(_d) / "probdir"
+    _w1405_probdir.mkdir()
+    _w1405_probe(R1405.write_record, _W1405_ONE, dirpath=_w1405_probdir)
+    (_w1405_probdir / "WARP-9471.yaml").write_text(
+        "schema: %s\nspec: WARP-9471\nactual: 5\n" % R1405.SCHEMA)
+    (_w1405_probdir / "WARP-9472.yaml").write_text("- not a mapping at all\n")
+    _w1405_planted_led, _w1405_planted_probs = R1405.load_dir(dirpath=_w1405_probdir)
+
+    def _w1405_prob_names_its_record(problem, dirpath):
+        """Whether one reported problem names the record it is about, by the path of a file that is
+        actually in that directory. The point of the property: a problem an operator cannot trace
+        to a file is a problem they cannot fix, and `check` already gets this right per file."""
+        return any(str(_p) in problem for _p in sorted(Path(dirpath).glob("*.yaml")))
     _w1405_live_recs = R1405.ordered(list(_w1405_live_ledger.values()))
     _w1405_live_acc = R1405.accuracy(_w1405_live_recs)
     # THE ONE CONDITIONAL ARM, and the branch is chosen by the ledger that was just loaded rather
@@ -558,8 +654,15 @@ with tempfile.TemporaryDirectory() as _d:
            "OWN: this repository's log is non-empty, and over EVERY spec id it names the two "
            "readers of those same bytes agree exactly on which ones carry tokens, cost_usd or "
            "human_minutes - the raw field predicate and toe_corpus's spend_for - and on the FIGURES "
-           "themselves, re-summed here from the raw events, and no reconciliation record in this "
-           "tree is malformed. Then the honesty rule is asserted on the branch the live ledger "
+           "themselves, re-summed here from the raw events. AND EVERY PROBLEM THE LEDGER READER "
+           "REPORTS NAMES THE RECORD IT IS ABOUT, which is the property that replaced the last "
+           "empty-set pin in this fragment: it used to require the live tree to hold NO malformed "
+           "record, so one malformed record reddened a REQUIRED gate stage under this label about "
+           "the event log, contradicting AC5, which says a present-but-malformed record is named "
+           "rather than blocking. Driven over two records planted malformed HERE, because all() "
+           "over an empty live list would be a pass earned by looking nowhere, and the valid record "
+           "beside them still lands in the ledger. Then the honesty rule is asserted on the branch "
+           "the live ledger "
            "puts it on: with no records it must report NO MEASURED ACCURACY with every figure "
            "None, an EMPTY curve rather than a flat line at zero, and a stood-down refit and "
            "comparison; with records present it must report itself measured, count every record "
@@ -578,7 +681,12 @@ with tempfile.TemporaryDirectory() as _d:
                    and _w1405_live_spend_for[_s]["cost_usd"]
                    == round(float(_w1405_raw_sums[_s]["cost_usd"]), 6)
                    for _s in _w1405_live_ids)
-           and _w1405_live_probs == []
+           and all(_w1405_prob_names_its_record(_p, R1405.records_dir(ROOT))
+                   for _p in _w1405_live_probs)
+           and len(_w1405_planted_probs) == 2
+           and all(_w1405_prob_names_its_record(_p, _w1405_probdir)
+                   for _p in _w1405_planted_probs)
+           and sorted(_w1405_planted_led) == [_W1405_ONE["spec"]]
            and sorted(_w1405_live_ledger) == sorted(_r["spec"] for _r in _w1405_live_recs)
            and _w1405_live_arm)
 
@@ -768,6 +876,75 @@ with tempfile.TemporaryDirectory() as _d:
            and sum(1 for ln in _w1405_lines if "cumulative" in ln) == 5
            and any(ln.startswith("refit: scale") for ln in _w1405_lines)
            and not any("NOT MEASURED" in ln for ln in _w1405_lines))
+
+    # THE OTHER SENTENCE A STRANGER READS, AND IT USED TO STATE A MEASUREMENT NOBODY TOOK.
+    # `reconcile`'s empty-result branch printed "nothing to reconcile: N committed estimate(s), and
+    # no shipped change carries a recorded actual. That is this repository's measured state
+    # (WARP-1401 measured 0 percent spend coverage), not a failure". The branch is entered whenever
+    # the derived record list is empty, which in a tree with NO committed estimate happens without
+    # the spend predicate being consulted once: a confident zero over an input the path never read,
+    # plus a dated finding about the AUTHORING repository asserted as the reader's. MEASURED by an
+    # independent review: one sanctioned `spend.py record` left that sentence byte-identical and
+    # false. Nothing in this fragment asserted over the string, which is why it could drift.
+    # So the sentence is now `standdown_summary`, pure over the two collections the pass actually
+    # read, and it is DRIVEN over both of its shapes here plus the live CLI, so the function cannot
+    # be a second surface that nobody prints.
+    _w1405_sd_none = R1405.standdown_summary({}, [], estimates_dir=E1405.ESTIMATES_DIR)
+    _w1405_sd_some = R1405.standdown_summary(
+        _w1405_hard_ests, _w1405_hard_stand, estimates_dir=E1405.ESTIMATES_DIR)
+    _W1405_BORROWED_RE = _w1405_re.compile(
+        r"(spend coverage|no shipped change carries|measured state \(|WARP-1[34]\d\d measured)",
+        _w1405_re.I)
+    _w1405_recon_cli = subprocess.run(
+        [sys.executable, str(ROOT / ".veldo/toe_reconcile.py"), "reconcile", "--at", _W1405_AT],
+        capture_output=True, text=True, cwd=str(ROOT))
+    _w1405_live_ests, _w1405_live_corpus, _ = R1405._repo_inputs()
+    _w1405_live_pair = R1405.pair(_w1405_live_ests, _w1405_live_corpus, _W1405_AT)
+    expect("WARP-1405 AC3: THE STAND-DOWN SENTENCE STATES ONLY WHAT THE PASS READ. `reconcile` "
+           "with nothing to reconcile prints a line derived from the two collections it actually "
+           "loaded: with an empty estimate ledger it names THAT and claims nothing about spend, "
+           "because on that path nothing read the spend of anything; with estimates present it "
+           "names how many stood down, each of which carries its own measured reason on its own "
+           "line above. NEITHER sentence may carry a spend-coverage figure, another item's dated "
+           "measurement, or a claim about `this repository's measured state` in parentheses - bound "
+           "to the POSITIVE CONTROL that the same matcher DOES fire on the retired sentence, since "
+           "an absence assertion whose matcher matches nothing is a pass earned by looking nowhere. "
+           "And it is bound to the SHIPPED SURFACE: the real CLI over this repository prints "
+           "exactly this function's output for the state this repository is in, so the honest "
+           "sentence cannot be a function nobody calls",
+           _W1405_BORROWED_RE.search(_w1405_sd_none) is None
+           and _W1405_BORROWED_RE.search(_w1405_sd_some) is None
+           and _W1405_BORROWED_RE.search(
+               "nothing to reconcile: 0 committed estimate(s), and no shipped change carries a "
+               "recorded actual. That is this repository's measured state (WARP-1401 measured 0 "
+               "percent spend coverage), not a failure") is not None
+           and E1405.ESTIMATES_DIR in _w1405_sd_none
+           and "%d committed estimate(s)" % len(_w1405_hard_ests) in _w1405_sd_some
+           and "%d standing down" % len(_w1405_hard_stand) in _w1405_sd_some
+           and _w1405_recon_cli.returncode == 0
+           and ((not _w1405_live_pair[0])
+                == (R1405.standdown_summary(_w1405_live_ests, _w1405_live_pair[1],
+                                            estimates_dir=E1405.ESTIMATES_DIR)
+                    in _w1405_recon_cli.stdout)))
+
+    # Whitespace-normalised, because a docstring wraps and a sentence a reader sees as one line is
+    # two lines in the source: matching the raw bytes would make this row pass or fail on where the
+    # text happened to wrap rather than on what it says.
+    _w1405_docstring = _w1405_re.sub(r"\s+", " ", R1405.__doc__)
+    expect("WARP-1405 AC3: AND THE SHIPPED DOCSTRING PINS NO LIVE COUNT AND NO OTHER TREE'S STATE. "
+           "It used to open with `904 events, 148 shipped specs, 95.3 percent cycle coverage` and "
+           "then state THE LEDGER IS EMPTY as a property of the reader's repository; re-measured "
+           "against the same bytes within the week, the first two were 1191 and 174. A live "
+           "measurement written into prose is stale by the time anyone reads it, so the counts are "
+           "gone, WARP-1401's 0 percent is cited as a dated finding about the AUTHORING repository, "
+           "and the only surface entitled to say what YOUR ledger holds is one that just read it. "
+           "Bound to a positive control that the matcher fires on the retired sentence",
+           _w1405_re.search(r"\d[\d,]*\s+(events|shipped specs)", _w1405_docstring) is None
+           and _w1405_re.search(r"\d[\d,]*\s+(events|shipped specs)",
+                                "904 events, 148 shipped specs") is not None
+           and "THE LEDGER IS EMPTY" not in _w1405_docstring
+           and "AUTHORING repository" in _w1405_docstring
+           and "NOT a claim about the repository you are reading this in" in _w1405_docstring)
 
     expect("WARP-1405 AC3: THE CURVE MOVES, which is the property a curve has to have to be one. "
            "Over the mixed ledger the cumulative hit rate is not constant across its points, and "
@@ -962,12 +1139,100 @@ with tempfile.TemporaryDirectory() as _d:
            "because five earlier ones agreed. So the agreeing fit reports the floor APPLIED and "
            "its range still spans at least the declared minimum, while the disagreeing fit does "
            "NOT apply it and keeps its measured envelope. The pair is what makes the floor "
-           "attributable to the sample rather than a constant widening",
+           "attributable to the sample rather than a constant widening. THIS ROW IS THE PAIR "
+           "ALONE and it is deliberately not the floor's evidence: it evaluates ONE weight where "
+           "the bounds are hundreds of thousands of tokens and rounding cannot bite, which is "
+           "exactly why it stayed green while the shipped floor was broken. The property is the "
+           "row below",
            R1405.recalibrated_range(100, _W1405_FIT)[2] is True
            and R1405.recalibrated_range(100, _w1405_wfit)[2] is False
            and (_w1405_agree_range[1] - _w1405_agree_range[0]) * 100
            >= _w1405_agree_range[0] * R1405.MIN_FITTED_SPREAD_PCT
            and _w1405_agree_range[1] > _w1405_agree_range[0] + E1405.ROUND_STEP)
+
+    # THE FLOOR AS A PROPERTY OVER A POPULATION, WHICH IS WHAT THE ROW ABOVE WAS NOT.
+    #
+    # An independent review refuted AC4 here and the check that names the floor could not fail for
+    # the defect: it asked about weight 100 against a fitted scale of 75000, where the bounds are
+    # 600000..938000 and ROUND_STEP is 1000, so rounding is irrelevant by six orders of magnitude.
+    # MEASURED at the other end of the same function, through five real specs and a real corpus:
+    # the smallest structural weight estimate.py can produce (20 tenths) against a fitted scale of
+    # 1684 gave 3000..4000, ONE rounding step wide, a 33 percent spread, on a layer recording
+    # `spread_floor_applied: yes` and `min_fitted_spread_pct: 50`. The floor was applied to the
+    # SCALE envelope and `_round_tokens` then recollapsed the bounds.
+    #
+    # So the subject is now every (weight, envelope) the function is asked about, and the required
+    # property is the sentence AC4 declares: a returned range spans at least
+    # MIN_FITTED_SPREAD_PCT above its own low. That is a TOTAL property of a pure function over an
+    # injected grid, not a pin on live state: no repository can add a member to this domain.
+    # THREE THINGS STOP IT PASSING FOR HAVING LOOKED NOWHERE, because a sweep is the easiest place
+    # in this fragment to write an assertion with no teeth. The grid must be non-trivial in size;
+    # it must reach the region where rounding is coarse relative to the range, asserted over the
+    # WIDTHS the function returned rather than over the inputs; and both floor arms must appear in
+    # it, so the same grid is evidence that the floor fires and that it is not a constant widening.
+    # Every call is captured, so a RAISE reds THIS row rather than taking the fragment out.
+    _w1405_floor_grid = [(_w, _lo, _hi)
+                         for _w in range(20, 401, 4)
+                         for _s in (200, 421, 700, 1684, 2500, 7000, 25000, 75000, 190000)
+                         for _lo, _hi in ((_s, _s), (_s, _s * 11 // 10), (_s, _s * 4))]
+    _w1405_floor_probes = [
+        (_w, _lo, _hi, _w1405_probe(R1405.recalibrated_range, _w,
+                                    dict(_W1405_FIT, scale=_lo + (_hi - _lo) // 2,
+                                         scale_low=_lo, scale_high=_hi)))
+        for _w, _lo, _hi in _w1405_floor_grid]
+    _w1405_floor_raised = [_p for _p in _w1405_floor_probes if _p[3][0] == "raised"]
+    _w1405_floor_ranges = [(_w, _lo, _hi, _r) for _w, _lo, _hi, _r in _w1405_floor_probes
+                           if _r[0] != "raised"]
+    _w1405_floor_violations = [
+        (_w, _lo, _hi, _r) for _w, _lo, _hi, _r in _w1405_floor_ranges
+        if (_r[1] - _r[0]) * 100 < _r[0] * R1405.MIN_FITTED_SPREAD_PCT]
+    # THE COARSE-ROUNDING REGION, read off the ANSWERS: a range only a few rounding steps wide is
+    # one where rounding to the nearest step can move a bound by a large fraction of the spread,
+    # which is the region the broken floor lived in and the row above never entered.
+    _w1405_floor_coarse = [_r for _w, _lo, _hi, _r in _w1405_floor_ranges
+                           if _r[1] - _r[0] <= 4 * E1405.ROUND_STEP]
+    expect("WARP-1405 AC4, THE FLOOR AS A PROPERTY RATHER THAN A POINT: EVERY range this function "
+           "returns spans at least the declared minimum above its own low, over a grid of %d "
+           "(weight, envelope) pairs crossing four orders of magnitude of fitted scale and every "
+           "structural weight a small spec produces, in all three envelope shapes (exact "
+           "agreement, 10 percent apart, 4x apart). This is the row the review's refutation "
+           "asked for: the floor is declared over the BOUNDS A READER SEES, so testing it on the "
+           "scale envelope alone left `_round_tokens` free to recollapse the range and record that "
+           "the floor had been applied. Anti-vacuity, because a green sweep is the cheapest false "
+           "evidence available here: the grid must reach the COARSE region where a returned range "
+           "is only a few rounding steps wide (measured over the widths returned, not the inputs "
+           "handed in), both floor arms must appear in the same grid, and no call may raise" \
+           % len(_w1405_floor_grid),
+           _w1405_floor_raised == []
+           and len(_w1405_floor_ranges) == len(_w1405_floor_grid) >= 900
+           and _w1405_floor_violations == []
+           and len(_w1405_floor_coarse) >= 20
+           and any(_r[2] is True for _w, _lo, _hi, _r in _w1405_floor_ranges)
+           and any(_r[2] is False for _w, _lo, _hi, _r in _w1405_floor_ranges))
+
+    # AND THE TWO WITNESSES BY NAME, because a sweep says a class is closed and a witness says
+    # THIS defect is. The first is the review's own measurement end to end. The second is the
+    # second path to the same wrong answer and the one a scale-level-only floor cannot see at all:
+    # an envelope that CLEARS the floor by its own arithmetic (2600 to 3900 is exactly 50 percent)
+    # whose rounded bounds do not, so `spread_floor_applied` has to be decided after the rounding
+    # and not before it.
+    _w1405_tiny_fit = dict(_W1405_FIT, scale=1684, scale_low=1684, scale_high=1684)
+    _w1405_round_fit = dict(_W1405_FIT, scale=3250, scale_low=2600, scale_high=3900)
+    expect("WARP-1405 AC4: THE TWO WITNESSES OF THE FLOOR DEFECT, PINNED AS EXACT BOUNDS. At the "
+           "smallest structural weight estimate.py can produce (20 tenths) against a fitted scale "
+           "of 1684 - five real specs and a real corpus, which is how the review reached it - the "
+           "layer used to be 3000..4000, ONE rounding step wide, a 33 percent spread claiming "
+           "`spread_floor_applied: yes`. It is 3000..5000 now. And where the scale envelope "
+           "CLEARS the floor at exactly 50 percent while its rounded bounds come out at 33, the "
+           "floor is applied and SAYS it was applied: a range is only honest about its own width "
+           "if the flag is decided on the bounds that were returned. Both are asserted as whole "
+           "tuples, so a fix that widened the range without recording the widening reds here",
+           R1405.recalibrated_range(20, _w1405_tiny_fit) == (3000, 5000, True)
+           and R1405.recalibrated_range(10, _w1405_round_fit) == (3000, 5000, True)
+           and R1405.recalibrated_layer(20, _w1405_tiny_fit)["inputs"]["spread_floor_applied"]
+           == E1405.YES
+           and R1405.recalibrated_layer(10, _w1405_round_fit)["inputs"]["spread_floor_applied"]
+           == E1405.YES)
 
     _w1405_out_spec = _W1405_SPECS[-1]
     _w1405_outlier = [dict(r) for r in _W1405_WILD]
@@ -1055,14 +1320,21 @@ with tempfile.TemporaryDirectory() as _d:
         own envelope and nothing would notice. Every value read here comes out of the layer, so a
         recorded input that does not support the recorded bounds reds this."""
         lo_scale, hi_scale = ins["fitted_scale_low"], ins["fitted_scale_high"]
-        if ins["spread_floor_applied"] == E1405.YES:
+        if (hi_scale - lo_scale) * 100 < lo_scale * ins["min_fitted_spread_pct"]:
             mid = ins["fitted_scale"]
             lo_scale = min(lo_scale, mid * 100 // ins["half_spread_pct"])
             hi_scale = max(hi_scale, mid * ins["half_spread_pct"] // 100)
         weight = ins["structural_weight_tenths"]
         low = E1405._round_tokens(weight * lo_scale // 10)
         high = E1405._round_tokens(weight * hi_scale // 10)
-        return low, (high if high > low else low + E1405.ROUND_STEP)
+        # AND THE FLOOR AGAIN ON THE ROUNDED BOUNDS, which is where the shipped range is decided:
+        # a reader who applies it only to the scales reproduces the collapsed bounds this item was
+        # refuted for. Raised to the step ABOVE the floor, because rounding a minimum to the
+        # NEAREST step is how it re-crosses the floor it was widened to clear.
+        floor_high = ins["min_fitted_spread_pct"] * low // 100 + low
+        if high < floor_high:
+            high = -(-floor_high // E1405.ROUND_STEP) * E1405.ROUND_STEP
+        return low, high
 
     def _w1405_input_is_load_bearing(layer, key):
         """Whether one recorded input actually decides the recorded bounds: tripling it must move
@@ -1077,11 +1349,15 @@ with tempfile.TemporaryDirectory() as _d:
            "runs) and the unfloored one (implied scales spanning 16x, so the measured envelope "
            "runs). The ratio the floor widens by is one of the recorded inputs, because without it "
            "a floored layer's inputs reproduce the fitted point twice over, a POINT, which is the "
-           "one shape NG6 refuses. Bound to a sensitivity control on every input the arithmetic "
-           "reads, so this cannot be satisfied by numbers nothing depends on: tripling any of them "
-           "moves the recomputed pair. So the next reconciliation can attribute THIS layer's error "
-           "the same way this one attributed the prior's, and a record that lied about the "
-           "envelope it was fitted from would red here",
+           "one shape NG6 refuses; so is the floor itself, because the floor is applied to the "
+           "rounded bounds and a reader without it cannot get the high. AND WHICH BRANCH RAN IS "
+           "DERIVED HERE FROM THE RECORDED SCALES RATHER THAN READ OFF `spread_floor_applied`: "
+           "trusting the flag made both sides of this identity move together, which is half of why "
+           "a collapsed range could record that it had been floored. Bound to a sensitivity "
+           "control on every input the arithmetic reads, so this cannot be satisfied by numbers "
+           "nothing depends on: tripling any of them moves the recomputed pair. So the next "
+           "reconciliation can attribute THIS layer's error the same way this one attributed the "
+           "prior's, and a record that lied about the envelope it was fitted from would red here",
            (_w1405_layer["low"], _w1405_layer["high"])
            == _w1405_bounds_from_inputs(_w1405_lin)
            and (_w1405_wlayer["low"], _w1405_wlayer["high"])
@@ -1089,7 +1365,7 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1405_layer["high"] > _w1405_layer["low"] + E1405.ROUND_STEP
            and all(_w1405_input_is_load_bearing(_w1405_layer, k)
                    for k in ("fitted_scale", "fitted_scale_high", "half_spread_pct",
-                             "structural_weight_tenths"))
+                             "min_fitted_spread_pct", "structural_weight_tenths"))
            and all(_w1405_input_is_load_bearing(_w1405_wlayer, k)
                    for k in ("fitted_scale_low", "fitted_scale_high",
                              "structural_weight_tenths"))
@@ -1227,13 +1503,88 @@ with tempfile.TemporaryDirectory() as _d:
            and "toe_reconcile" not in _w1405_gate_text
            and "toe_reconcile" not in (ROOT / ".veldo/validate.py").read_text())
 
-    expect("WARP-1405 AC5: THE MODULE REACHES FOR NOTHING OUTSIDE THE REPOSITORY AND READS NO "
-           "CLOCK. Its source names no subprocess, socket or urllib import and no Popen, so it "
-           "cannot spawn a process or open a connection (NG5), and it names no clock: every date "
-           "is passed in, which is what the determinism assertion above actually measures",
+    # NG5, AND THE CONCLUSION THIS ROW USED TO DRAW FROM A SUBSTRING SCAN WAS FALSE.
+    # The evidence was `all(tok not in <module source>)` over six tokens, which is TRUE and is a
+    # claim about one file's own bytes. The sentence this row and the module docstring then drew
+    # from it - "so it cannot spawn a process or open a connection", headlined "NO CLOCK, NO
+    # SUBPROCESS, NO NETWORK" - is a claim about a CALL GRAPH, and an independent review refuted it
+    # by counting: `build_view()`, the whole body of the `report` CLI, reaches toe_corpus through
+    # `_repo_inputs` and spawns one `git log --all --grep <spec>` per spec plus a `git show` per
+    # matching commit. A scan of one file's bytes can never carry that property, in either
+    # direction (PLAN-0018 findings 56 and 57: a substring scan proving a PRESENCE is the same
+    # defect as one proving an ABSENCE).
+    # So the property is MEASURED on both arms, by wrapping subprocess.run around real calls: the
+    # PURE surfaces spawn nothing, and build_view over a hermetic root carrying ONE spec DOES spawn
+    # git. The second arm is the positive control, and it is a fixture rather than this repository
+    # so its spawn count is non-zero BY CONSTRUCTION rather than by how many specs happen to exist.
+    def _w1405_spawns(fn):
+        """The argv of every process fn spawns, MEASURED. toe_corpus resolves `subprocess.run`
+        through the module object at call time, so replacing that attribute for the duration
+        observes the real call path rather than a copy of it with test wiring."""
+        seen = []
+        _orig_run = subprocess.run
+
+        def _spy(*a, **kw):
+            seen.append(list(a[0]) if a else list(kw.get("args") or []))
+            return _orig_run(*a, **kw)
+
+        subprocess.run = _spy
+        try:
+            fn()
+        finally:
+            subprocess.run = _orig_run
+        return seen
+
+    _w1405_spawnroot = Path(_d) / "spawnroot"
+    (_w1405_spawnroot / ".veldo").mkdir(parents=True)
+    (_w1405_spawnroot / "specs").mkdir()
+    for _rel in (".veldo/architecture.yaml", ".veldo/policy.yaml"):
+        _w1405_shutil.copy(ROOT / _rel, _w1405_spawnroot / _rel)
+    (_w1405_spawnroot / "specs" / "WARP-9481-spawn-probe.md").write_text(
+        _w1405_spec_text("WARP-9481"))
+    _w1405_pure_spawns = _w1405_spawns(lambda: (
+        R1405.pair(_w1405_ests, _w1405_corpus, _W1405_AT),
+        R1405.accuracy(_W1405_MIXED), R1405.curve(_W1405_MIXED), R1405.fit(_W1405_LEDGER),
+        R1405.holdout(_W1405_LEDGER), R1405.compare(_W1405_LEDGER),
+        [R1405.validate_record(_r, spec_id=_r["spec"]) for _r in _W1405_MIXED],
+        R1405.load_dir(dirpath=_w1405_mixdir), R1405.check_dir(_w1405_mixdir),
+        R1405.recalibrated_layer(100, _W1405_FIT), R1405.render(_w1405_view)))
+    _w1405_view_spawns = _w1405_spawns(
+        lambda: R1405.build_view(root=_w1405_spawnroot))
+    expect("WARP-1405 AC5: THE MODULE READS AND NEVER WRITES OUTSIDE ITS LEDGER, READS NO CLOCK, "
+           "AND ITS PURE SURFACES SPAWN NOTHING - MEASURED, NOT INFERRED FROM AN IMPORT LIST. The "
+           "source clause stays and is exactly what it can carry: THIS FILE names no subprocess, "
+           "socket or urllib import, no Popen and no clock, so every date is passed in. What it "
+           "cannot carry is the sentence this row used to draw from it, that the module therefore "
+           "cannot spawn a process: `build_view`, the body of the `report` CLI, reaches git through "
+           "toe_corpus. So both arms are counted by wrapping subprocess.run: eleven pure calls - "
+           "pair, accuracy, curve, fit, holdout, compare, validate_record, load_dir, check_dir, "
+           "recalibrated_layer and render - spawn ZERO processes, and build_view over a hermetic "
+           "root carrying ONE spec spawns git and NOTHING BUT git. The second is the positive "
+           "control: an assertion that something spawned nothing is worthless beside a measurement "
+           "that the same wrapper does see spawns",
            all(tok not in (ROOT / ".veldo/toe_reconcile.py").read_text()
                for tok in ("import subprocess", "import socket", "import urllib", "Popen(",
                            "datetime.now", "time.time"))
-           and R1405.pair(_w1405_ests, _w1405_corpus, _W1405_AT)[0] == _W1405_LEDGER)
+           and R1405.pair(_w1405_ests, _w1405_corpus, _W1405_AT)[0] == _W1405_LEDGER
+           and _w1405_pure_spawns == []
+           and _w1405_view_spawns != []
+           and all(_argv and _argv[0] == "git" for _argv in _w1405_view_spawns)
+           and any(_argv[:2] == ["git", "log"] for _argv in _w1405_view_spawns))
+
+    expect("WARP-1405 AC5: AND THE SHIPPED DOCSTRING SAYS THAT, rather than the conclusion the "
+           "measurement refuted. The headline no longer reads NO SUBPROCESS as a property of the "
+           "capability: it names the pure surfaces as process-free and states that the "
+           "repository-reading ones reach git through toe_corpus, one `git log` per spec, so the "
+           "fan-out of one report is O(specs). No count is pinned, because a count is a property "
+           "of the reader's tree. Bound to the positive control that the matcher fires on the "
+           "retired headline, so this is not an absence assertion looking nowhere",
+           "NO CLOCK, NO SUBPROCESS, NO NETWORK" not in _w1405_docstring
+           and _w1405_re.search(r"NO CLOCK, NO SUBPROCESS, NO NETWORK",
+                                "NO CLOCK, NO SUBPROCESS, NO NETWORK. Every date is passed in")
+           is not None
+           and "cannot spawn a process" not in _w1405_docstring
+           and "toe_corpus, which runs one" in _w1405_docstring
+           and "O(specs) git invocations" in _w1405_docstring)
 
 del _w1405_re, _w1405_shutil

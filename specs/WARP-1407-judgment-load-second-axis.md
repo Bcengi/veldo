@@ -24,8 +24,17 @@ footprint:
   - "scripts/suites/requires.json"
   - "specs/WARP-1407-judgment-load-second-axis.md"
   - "specs/index.md"
+behavior_bearing: true
 acceptance_criteria:
   - id: AC1
+    falsified_by: >
+      Render the per-plan roll-up's two axis columns with `_num` instead of `_axis` at
+      .veldo/judgment_load.py:673-675, which is what this module did until an independent review
+      refuted AC2 on it, and the whole-line pin at
+      scripts/suites/15_warp_1407_judgment_load.py:307 must go red because the plan line for the
+      undeclared plan then reads "toe 0 tok (0 known)  judgment 0 min (0 known)" instead of the
+      words, taking the log-carrying-no-figure plan line at :384 and the recorded-zero plan line at
+      :468 with it. MEASURED 2026-08-13: 3 rows red, 81 passed, 0 failed.
     text: >
       THE PAIR IS ONE VALUE AND ONE RENDERER SHOWS IT. For every corpus record the derivation returns
       both axes together - tokens from the event envelope, judgment minutes from the same envelope,
@@ -38,12 +47,28 @@ acceptance_criteria:
       partial roll-up cannot read as a complete one. A selftest drives all of it over seeded specs
       and events, with a spec that has no events at all as the negative control.
   - id: AC2
+    falsified_by: >
+      Derive `split_known` from the truthiness of the minute SUM again -
+      `any(by_kind[k] for k in SPLIT_KINDS)` at .veldo/judgment_load.py:278 - so a verdict event
+      carrying `human_minutes: 0` reads as a split nobody recorded, which inverts this criterion's own
+      distinction inside its own second flag, and the recorded-zero row at
+      scripts/suites/15_warp_1407_judgment_load.py:433 must go red, taking its rendered line and the
+      row that classifies a recorded zero rather than leaving it unknown. MEASURED 2026-08-13: 3 rows
+      red, 81 passed, 0 failed. The same criterion is reachable a second way (`minutes_recorded` read
+      from the total rather than from the count of events carrying the field: 4 rows red).
     text: >
       AN UNRECORDED AXIS IS "NOT RECORDED", NEVER A ZERO, AND THIS IS THE AC THAT MATTERS MOST.
       `coverage()` reports minutes_known, tokens_known, pair_known, their percentages, and a blunt
       `usable_as_second_axis`; `classify()` REFUSES to label a record whose axis was never recorded
       and returns unknown naming which axis is missing; and the rendered report prints the words
-      where a figure would go. **Measured over this repository: 174 shipped specs, 0 percent
+      where a figure would go - on the PER-PLAN roll-up as well as the per-spec row, because the
+      roll-up is a second rendering of the same pair and an axis with nothing recorded on it is not a
+      plan that cost nothing. A zero that WAS recorded is a different fact and is reported as the
+      figure it is: both honesty flags count the events that carried the field and neither reads the
+      truthiness of a sum, so a verdict carrying `human_minutes: 0` is a split that was recorded. And
+      the sentence that names the gap says only what it counted - the records in the report, never the
+      whole log, since minutes can sit on an unattributable event or on a spec the corpus does not
+      hold. **Measured over this repository: 174 shipped specs, 0 percent
       judgment-minutes coverage, 0 percent tokens coverage, 0 of 174 pairs known,
       usable_as_second_axis False.** Four shape labels exist and one of them -
       cheap_to_build_expensive_to_approve - is the class no single-axis unit could ever show; each is
@@ -52,10 +77,19 @@ acceptance_criteria:
       requires that a log carrying no figure at all still produces every row, reports zero known
       rather than zero cost, and labels nothing.
   - id: AC3
+    falsified_by: >
+      Delete the correlation half of the one attribution selector at .veldo/judgment_load.py:170-171,
+      leaving `return event.get("spec_id") == spec_id`, so a figure attributed only by correlation_id
+      is invisible to this module while toe_corpus.spend_for still joins on it, and the
+      corpus-equality row at scripts/suites/15_warp_1407_judgment_load.py:566 must go red because the
+      two enumerations this criterion promises to keep equal then report 0 against 25 minutes.
+      MEASURED 2026-08-13: 1 row red, 83 passed, 0 failed.
     text: >
       EPISODES ARE COUNTED AND ARE NEVER CONVERTED INTO MINUTES. The occasions a human had to judge -
-      review requests, recorded verdicts, recorded approvals - ARE recorded here today (measured: 167
-      episodes across 141 of 174 shipped specs, 81 percent coverage), so they are counted from the
+      review requests, recorded verdicts, recorded approvals - ARE recorded here today (measured
+      2026-08-10: 167 episodes across 141 of 174 shipped specs, 81 percent coverage; the episode count
+      is a LIVE figure that rises as the loop runs and no check pins it, so it is dated here rather
+      than read as a claim about today - it was 170 on 2026-08-13), so they are counted from the
       same one kind map and reported beside the pair. They are never scaled into a minute figure: a
       minutes-per-review coefficient would be an invention, and this plan's NG6 forbids exactly that.
       A selftest requires that a spec with three review episodes and no recorded minutes keeps a zero
@@ -64,10 +98,20 @@ acceptance_criteria:
       asserted EQUAL to the corpus's own independent totals over the same events, with a non-zero
       figure among them so the equality cannot pass vacuously.
   - id: AC4
+    falsified_by: >
+      Disable the finite clause of the ONE judge at .veldo/judgment_load.py:206 (`if False:`), so NaN
+      and infinity pass as well-formed figures the way they did before the review, and the NaN and
+      infinity refusal rows at scripts/suites/15_warp_1407_judgment_load.py:627 must go red, taking
+      the check_log count, the end-to-end CLI row at :947 where `report` then prints "judgment nan
+      min" at 100.0 percent coverage, and the live row that requires the judge to agree with an
+      independent reading of what a well-formed figure is. MEASURED 2026-08-13: 5 rows red, 79 passed, 0 failed.
     text: >
       A MALFORMED FIGURE IS REFUSED BY NAME; AN UNATTRIBUTABLE ONE IS COUNTED, NOT DROPPED. A
-      human_minutes or tokens value that is not a non-negative number raises JudgmentLoadError naming
-      the field, the event type and the value, where the corpus's total-only reader silently skips
+      human_minutes or tokens value that is not a non-negative FINITE number raises JudgmentLoadError
+      naming the field, the event type and the value. FINITE is part of the property and not a detail:
+      NaN and infinity both fail a sign test rather than being caught by one, `json.loads` accepts the
+      bare literals so both arrive from a log file, and a NaN that reaches the derivation moves the
+      median every other record is labelled against. Where the corpus's total-only reader silently skips
       it - the difference is deliberate, because a skipped figure leaves the axis marked recorded and
       smaller than it is. `check_log` reports the same problems through validate.fail (the one
       failure reporter) instead of raising, for a caller who wants the whole list, and both spellings
@@ -75,8 +119,20 @@ acceptance_criteria:
       neither spec nor correlation cannot be refused - the log is append-only, so that refusal would
       be unsatisfiable by construction - and is counted in `unattributed` and reported as a number. A
       selftest drives each malformed shape, the well-formed log as the negative control, and the
-      unattributable event both with and without a spec id.
+      unattributable event both with and without a spec id. A corpus record naming NO spec id is
+      refused by name for the same reason: with no id the one selector matches every event that names
+      no spec, and a phantom row would collect the unattributable figures a second time as if they
+      belonged to somebody. And because the derivation only reads figures for specs the corpus HOLDS
+      while `check` judges the whole log, the report states as a number how many figures it did not
+      read, so a reader who runs one command is never left to assume it covered what the other does.
   - id: AC5
+    falsified_by: >
+      Replace the guarded organ loads in `_repo_report` at .veldo/judgment_load.py:721-722 with bare
+      `_load` calls, so a tree that carries this module without the corpus organ dies on a raw
+      FileNotFoundError instead of naming the absent organ, and the corpus-organ leg at
+      scripts/suites/15_warp_1407_judgment_load.py:902 must go red together with the log-organ leg at
+      :915, both of which build a real tree, delete one organ and run the CLI. MEASURED 2026-08-13: 2
+      rows red, 82 passed, 0 failed.
     text: >
       THE ONLY RECORDER PRODUCES A MIXED SIGNAL AND THE MODULE NAMES IT, AND THE DERIVATION WRITES
       NOTHING. `spend.py` records minutes on a `spec.shipped` event: one bulk figure for a whole
@@ -86,7 +142,12 @@ acceptance_criteria:
       `spend.SCHEMA_EVENT_TYPE` in the selftest so it cannot drift from the recorder it describes.
       The module has no writer at all: a selftest digests the tree it read before and after building
       and rendering the pair and requires it byte-identical, with a deliberate single-byte change
-      proving the digest notices.
+      proving the digest notices. AND IT NAMES AN ABSENT ORGAN INSTEAD OF DYING: `/veldo:init` lays
+      down neither this module nor the corpus organ it derives from, so in a tree carrying only some of
+      them the report says which organ is missing and which half of the answer went with it, prints no
+      figure it could not measure, and exits 0; `check` refuses rather than reporting a clean log it
+      never opened. A selftest builds a tree, DELETES one organ from it and runs the CLI, because a
+      guard read out of the source is a claim about the text rather than about the run.
 required_evidence: [unit]
 rollback: >
   Delete the module, its engine copy and its selftest fragment, and remove the fragment from
@@ -134,7 +195,8 @@ rules are the load-bearing part of this item rather than the arithmetic:
 ## What is recorded today, and what it is good for
 
 The judgment axis is not empty of everything. 167 judgment episodes across 141 of 174 shipped specs
-are in the log: review requests, recorded verdicts, recorded approvals. They are counted and shown
+were in the log at the time of writing (2026-08-10; 170 on 2026-08-13, because the count rises with
+every review the loop records): review requests, recorded verdicts, recorded approvals. They are counted and shown
 beside the pair, and they are enough to see which changes drew repeated human attention. They are not
 enough to price it, and this module says so in the place where the price would be.
 

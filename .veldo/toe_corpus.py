@@ -70,12 +70,38 @@ def footprint_of(text):
     """The declared footprint of one spec, as a list of paths. ONE reader: `spec_features` counts
     it and `build` tests it against the protected set, and an earlier draft of this module spelled
     the same regex out in both places, which is the second-spelling defect this repository has a
-    named rule about. A spec with no footprint block has an empty one, not an exception."""
+    named rule about. A spec with no footprint block has an empty one, not an exception.
+
+    A COMMENT INSIDE THE BLOCK IS NOT THE END OF THE BLOCK. The pattern below requires the line
+    after `footprint:` to be a list item and stops at the first line that is not one, so until
+    2026-08-13 a comment TRUNCATED the read and a comment on the first line EMPTIED it - silently,
+    because an empty footprint is a legal answer. MEASURED by the independent review of WARP-1402
+    over this repository's 215 specs: 8 read wrongly (VELDO-0008 6 of 13, VELDO-0010 0 of 13,
+    VELDO-0011 4 of 16, VELDO-0012 6 of 15, WARP-0717 0 of 9, WARP-0722 0 of 15, WARP-0727 10 of 20,
+    WARP-1409 2 of 9) and 3 of those answered `protected_touch: no` about a spec that DOES touch a
+    declared protected path. This reader is the ONE reader, so every consumer inherited the wrong
+    number: WARP-1402's estimate record stated it as a measured regression surface, and VELDO-0010's
+    committed range came out 3.1x low. Full-line comments are dropped before the match, which is the
+    smallest change that makes the block's own items the answer."""
     fm = _front_matter(text)
+    fm = "".join("%s\n" % l for l in fm.splitlines() if not l.strip().startswith("#"))
     m = re.search(r"^footprint:\n((?:\s+-\s+.*\n)+)", fm, re.M)
     if not m:
         return []
     return [f.strip().strip('"') for f in re.findall(r"^\s+-\s+(.+?)\s*$", m.group(1), re.M)]
+
+
+def footprint_block_present(text):
+    """Whether the spec DECLARES a footprint block at all, which is a different question from what
+    the block contains, and the one a caller needs before it may state a surface of 0.
+
+    IT EXISTS BECAUSE `footprint_of` RETURNING NOTHING HAS TWO CAUSES WITH OPPOSITE MEANINGS: a
+    spec that declares no surface, and a block this reader could not read. A consumer that cannot
+    tell them apart publishes the second as a measurement - which is exactly what happened above,
+    and what the comment repair alone would not prevent the next unreadable shape from doing. Same
+    front matter, same one reader; the caller decides whether an unreadable block is a zero or a
+    refusal (WARP-1402's structural proxy refuses)."""
+    return re.search(r"^footprint:[ \t]*$", _front_matter(text), re.M) is not None
 
 
 def spec_features(path):
@@ -149,30 +175,39 @@ def spend_for(events, spec_id):
     return out
 
 
-def git_touched(spec_id):
+def git_touched(spec_id, root=None):
     """WHAT GIT SAYS THE CHANGE FOR THIS SPEC TOUCHED: the commits naming it and the
     repo-relative paths those commits changed. ONE READER, and the reason it returns the paths
     rather than only their count is WARP-1409: the per-area cost-to-change map stands down to
     git-path attribution for a spec that declares no placement, so it needs the paths, and a
     second `git log --grep` spelled out in that module would be this repository's named
-    second-spelling defect in a new place. `files_touched` below counts exactly this."""
-    out = _run(["git", "log", "--format=%H", "--grep", spec_id, "--all"])
+    second-spelling defect in a new place. `files_touched` below counts exactly this.
+
+    `root` IS THE REPOSITORY TO ASK, and it is here because a property only a differently shaped
+    tree can exhibit needs a SEAM to be asked about that tree. This history is flattened: its one
+    root commit names no spec, so every read here is empty and BOTH readers could be replaced by
+    hardcoded zeros with every check green - which is what a review measured. Handed a throwaway
+    repository with one commit naming a spec id, the same two readers answer non-empty and the count
+    can be required to equal the length of what it counted, everywhere, with no stand-down. `_run`
+    already took the working directory; only these two calls did not pass it."""
+    out = _run(["git", "log", "--format=%H", "--grep", spec_id, "--all"], cwd=root)
     shas = [s for s in out.split() if s]
     files = set()
     for sha in shas:
-        for ln in _run(["git", "show", "--name-only", "--format=", sha]).splitlines():
+        for ln in _run(["git", "show", "--name-only", "--format=", sha], cwd=root).splitlines():
             if ln.strip():
                 files.add(ln.strip())
     return {"commits": sorted(shas), "files": sorted(files)}
 
 
-def files_touched(spec_id):
+def files_touched(spec_id, root=None):
     """How many files the change for this spec actually touched, from git rather than from the
     spec's own declaration. The DECLARED footprint is an intention and the touched set is the
     outcome; keeping both is what lets a later layer learn how far intentions drift. Counts what
     `git_touched` reads, so the corpus record and the per-area map can never disagree about
-    which commits a spec's change is."""
-    t = git_touched(spec_id)
+    which commits a spec's change is - and it forwards `root` so both views of the one read can be
+    asked about the SAME repository, which is what makes that identity drivable at all."""
+    t = git_touched(spec_id, root=root)
     return {"commits": len(t["commits"]), "files_touched": len(t["files"])}
 
 

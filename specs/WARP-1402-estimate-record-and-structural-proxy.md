@@ -20,6 +20,12 @@ placement: [metrics]
 footprint:
   - ".veldo/estimate.py"
   - "engine/.veldo/estimate.py"
+  # The ONE footprint reader this item's feature read goes through. It belongs to WARP-1401 and is
+  # declared here because this item's 2026-08-13 remediation repairs it: the reader stopped at the
+  # first non-item line, so a comment truncated a spec's declared surface and THIS item published
+  # the short count as a measurement.
+  - ".veldo/toe_corpus.py"
+  - "engine/.veldo/toe_corpus.py"
   - ".veldo/examples/estimate-example.yaml"
   - "engine/.veldo/examples/estimate-example.yaml"
   - "scripts/suites/15_warp_1402_estimate_record.py"
@@ -36,6 +42,15 @@ acceptance_criteria:
       top level and a layer that spells a unit of its own is refused, because two spellings of one
       unit is this repository's named second-spelling defect. A selftest drives each refusal and
       pairs it with the positive control that the same record validates clean once corrected.
+      AND THE KEY IS A KEY. The schema's premise is that the filename IS the key, so a `spec` that
+      is not its own filename is REFUSED - in `validate_record`, the ONE gate every reader and every
+      writer here asks, by delegation to the claim ledger's ONE definition of an id that cannot be
+      stored faithfully rather than a second character rule. Independently of that rule, both the
+      writer and the reader resolve a record's path through ONE place that requires the resolved
+      file to lie inside the records directory. Measured 2026-08-13 before either existed: a spec
+      whose `id:` was `../policy` was accepted by the contract validator with zero errors, the
+      record was VALID, and the writer replaced `.veldo/policy.yaml` - the file that declares which
+      paths are protected - with an estimate record.
   - id: AC2
     text: >
       THE COMMITTED RANGE IS DERIVED FROM THE LAYERS PRESENT AND THE RECORD CANNOT LIE ABOUT IT.
@@ -83,14 +98,38 @@ acceptance_criteria:
       which from the declared default. The same spec on the same date renders byte-identical
       bytes; more acceptance criteria, a larger regression surface, a higher risk tier and a
       protected-path touch each strictly widen the range; rounding never collapses a range into a
-      point; and the token scale it multiplied by is recorded IN the layer, so a later
-      reconciliation can separate a wrong structure from a wrong scale. A selftest drives each
-      property, including the anti-vacuity control that the proxy is not a constant.
+      point; and the token scale it multiplied by, the coefficients its structural weight was built
+      from and the NAME of that coefficient set are all recorded IN the layer, so a later
+      reconciliation can separate a wrong structure from a wrong scale and can still decompose a
+      record written before the coefficients changed. A selftest drives each property, including the
+      anti-vacuity control that the proxy is not a constant, and it reproduces the layer's bounds
+      FROM THE RECORD ALONE rather than from this module's constants.
+      A FEATURE THIS LAYER CANNOT READ IS A REFUSAL AND NEVER A ZERO. A spec that declares no
+      footprint block has a regression surface of 0 and estimates fine; a footprint block that is
+      PRESENT and reads as empty is refused by name, because a surface of 0 and a protected touch of
+      `no` would then be stated as measurements nobody made. Measured 2026-08-13: the ONE footprint
+      reader stopped at the first line that was not a list item, so a comment inside a block
+      truncated it and a comment on its first line emptied it - 8 of this repository's 215 specs got
+      a materially wrong record and 3 of them said `protected_touch: no` about a spec that does touch
+      a declared protected path. The reader is repaired here and the refusal covers the next
+      unreadable shape.
+      THE SOURCE PROPERTY IS ASSERTED AS A PROPERTY, NOT AS TODAY'S ANSWER: for every declared tier,
+      a tier the policy really offers through the ONE parser reads `policy` with the file's own
+      numbers and a tier it does not offer reads `default` with the default table's numbers. Nothing
+      requires any particular tier to be readable, so repairing `.veldo/policy.yaml` reds nothing;
+      the folding this item measured is driven against hermetic policy fixtures instead.
   - id: AC5
     text: >
       ADOPTION SAFE, AND NEVER A BLOCKER - the AC that matters most, because it is PLAN-0014's C3
       and NG1. With no records present every reader stands down silently, creating nothing and
-      reporting nothing as a finding. Nothing in scripts/verify.sh calls this module. And the
+      reporting nothing as a finding. No stage the gate runs names this module or its records
+      directory, asserted over a DERIVED domain: the required stage set is parsed out of
+      scripts/verify.sh's catalog and its always-run body and then closed over what each member
+      executes or loads, so a slot repointed at a new stage script enters the domain by itself. That
+      claim is bounded to what a text property can support and says so - a stage that COMPUTED the
+      path would pass it, which is why the load-bearing evidence below is behavioural. What stood
+      here, "nothing in scripts/verify.sh calls this module", was proven by scanning two files for a
+      literal, and a required stage reached by a computed path walked past all of it. And the
       load-bearing pair: a spec with NO estimate, a spec with a VALID estimate beside it, and a
       spec with a MALFORMED estimate beside it all return the identical result from the real
       validate.check_spec, while the malformed record is named by validate_record - so absence or
@@ -129,6 +168,13 @@ spec by a token SCALE it derives from nothing. Both are in the layer's inputs. A
 can therefore tell a good estimate (weight right, scale right) from a lucky one (weight wrong,
 scale wrong in the other direction), and it can refit the scale without touching the structure.
 
+**And the coefficients the weight was built from are in the inputs too, with a name for the set.**
+Without them the weight is one number a later reader can decompose only by importing today's
+constants, so the promise above would hold exactly until one coefficient changed: from that day an
+old record's structure could not be recovered and no reader could tell which model produced which
+record. It is cheap while no record exists and expensive the day they do, which is the same argument
+this item makes for defining the whole schema up front.
+
 ## The inherited finding, which shapes every number here
 
 WARP-1401 measured that this repository's spend inputs are empty: 904 events, 148 shipped specs,
@@ -151,9 +197,16 @@ tier arrives as a STRING rather than a map and its review count is not readable 
 
 Falling back to the declared default is the right behaviour, and hiding the fallback would put a
 default into a record that looks like a policy reading. So every record states
-`reviews_source: policy` or `reviews_source: default`, and the selftest asserts both against real
-data plus the control that a single-line policy fixture reads `policy` for the same tier, which
-is what proves the fallback is the folding rather than a hardcoded refusal of that tier.
+`reviews_source: policy` or `reviews_source: default`.
+
+**The selftest asserts the PROPERTY that makes those words worth anything - the source a record
+states is the source the number came from, for every declared tier - and not this repository's
+current answer for one tier.** The first version required `policy_tier('critical')` to come back as
+`default`, which is to say it required the file above to STAY unreadable: repairing it, by writing
+the same inline map on one line and changing no meaning, turned a required stage red. The folding is
+now driven against three hermetic policy fixtures (the same tier on one line reads `policy`, the
+same tier across two lines reads `default`, no policy at all falls back for everything), so the
+finding is reproduced without anything in the gate depending on this file staying broken.
 
 ## Out of scope
 

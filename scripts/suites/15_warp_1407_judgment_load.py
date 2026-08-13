@@ -17,7 +17,9 @@ check that passed because nothing was there would fail the first half; a check t
 something would fail the second.
 
 TEETH, MEASURED RATHER THAN CLAIMED. Sixteen deliberate breaks were driven and watched go red on
-`--suite 15_warp_1407_judgment_load`, which is 61 passing assertions unmodified:
+`--suite 15_warp_1407_judgment_load`, which was 61 passing assertions and is 84 after the repairs an
+independent L2 review asked for (recorded at the end of this list as breaks 17 to 22, each driven the
+same way, plus breaks 23 and 24 for the two minor defects the same review left open). Every count below is the count at the time that break was driven:
   1. Disabling the missing-axis branch in `classify`, so a missing axis falls through to the median
      comparison and an unrecorded zero reads as a low figure: 49 passed, 1 FAILED - the AC3 row.
      WARP-9406, three review episodes and not one recorded minute, came back labelled
@@ -61,9 +63,51 @@ NOWHERE, so the module could be inverted with this suite green. Each is one edit
      positive control), where before it was measured green.
  16. `"split_known": 0` hardcoded in the coverage block: 2 FAILED (the seeded coverage tuple and the
      rendered coverage line).
-Each was reverted; what is here is the file that goes green over the unmodified module.
+SIX MORE AFTER AN INDEPENDENT L2 REVIEW FOUND ONE BLOCKER AND FOUR MAJORS HERE, all six driven in a
+scratch copy, diffed to prove the edit landed, run, and reverted. Every count below was re-measured
+against the final file, whose baseline is 84 passed, 0 failed:
+ 17. Rendering the plan roll-up's two axis columns with `_num` again, which is what the module did and
+     what the AC1 row USED TO PIN: 3 FAILED (the AC1 rendered plan line, the AC2 row requiring the
+     words on the plan line of a log carrying no figure, and the AC2 row requiring a plan whose
+     figures were recorded AS ZERO to print the zero). This is the blocker, and its shape is that the
+     check certified the defect - the honest rendering was what turned the gate red.
+ 18. `_figure_problem` dropped back to the sign test alone (`not math.isfinite` disabled), so NaN and
+     infinity pass the ONE judge again: 5 FAILED - the NaN row, the infinity row, the check_log count,
+     the end-to-end CLI row (where `check` reported a clean log and `report` printed "judgment nan
+     min" at 100.0 percent coverage), and the LIVE row where the judge stops agreeing with an
+     independent reading of what a well-formed figure is. The negative-infinity row stays GREEN and
+     that is correct rather than a gap: -inf is still caught by the sign test below, so this mutation
+     reaches exactly the two values the sign test cannot see.
+ 19. `split_known` back to the truthiness of the SUM, so a split recorded AS ZERO reads as a split
+     nobody recorded: 3 FAILED (the recorded-zero flags row, its rendered line, and the row that
+     classifies a recorded zero instead of leaving it unknown).
+ 20. `minutes_recorded` (a) and `tokens_recorded` (b) derived from the TOTAL instead of the count of
+     events carrying the field: 4 FAILED each, where before the recorded-zero fixture existed both
+     edits left the suite fully green - which is what made the honesty flag both criteria hang on
+     silently swappable for a semantically different definition.
+ 21. The correlation half of `_mine` deleted: 1 FAILED, the correlation-attributed equality row, where
+     before the correlation fixture existed this left the suite green while the corpus reader it
+     promises to equal joins on that field. Its negative control stays green by design: an event whose
+     correlation id names a different spec belongs to neither reader under either spelling.
+ 22. The organ guard removed from `_repo_report` (a bare `_load` again): 2 FAILED, the corpus-organ
+     and log-organ legs, each naming the organ whose absence it stands down for - in a tree without
+     toe_corpus.py the report exits 1 with a raw FileNotFoundError instead of naming it. The plan
+     registry leg stays green because its own load is guarded separately.
+ 23. The spec-id refusal deleted from `pair`, so a record naming no spec becomes a phantom row that
+     collects the figures of every unattributable event: 1 FAILED, the refusal row. Its negative
+     control stays green by design - that record carries a spec id, so the deleted refusal never
+     reaches it - which is the same shape as break 21.
+ 24. `unread_figures` made to return 0 unconditionally, so the page stops saying how many figures the
+     derivation could not read: 2 FAILED (the seeded count row and the end-to-end row where `check`
+     exits 1 naming a figure `report` never read).
+Each was reverted; what is here is the file that goes green over the unmodified module. AND ONE
+ADDITIVE CONTROL: the reviewer's own added assertion over a figure recorded as zero, which FAILED
+against the module as shipped, was added on top of this file and run - 80 passed, 0 failed.
 """
 import hashlib as _jl_hashlib
+import math as _jl_math
+import shutil as _jl_shutil
+import subprocess as _jl_subprocess
 import sys as _jl_sys
 
 _jl_spec_mod = importlib.util.spec_from_file_location(
@@ -252,13 +296,21 @@ expect("WARP-1407 AC1 NEGATIVE CONTROL: a plan the item map does not declare rep
 # goes would make a partial roll-up read as complete with every dict assertion above still green.
 # Pinned as the WHOLE line, so a swapped column (minutes rendered in the tokens place, the spec
 # count rendered as the known-count) reds here too rather than only the denominator.
+#
+# AND THE PLAN LINE OBEYS `_axis`, WHICH IS THE PROPERTY THIS ROW USED TO CERTIFY THE OPPOSITE OF.
+# The line pinned here before the review read "toe 0 tok (0 known)  judgment 0 min (0 known)" - a
+# figure standing where AC2 promises the words go, on the surface built for comparing plans, pinned
+# as the expected output so the honest rendering was what turned the gate red. Both flavours are
+# pinned now: a plan with figures prints them, and a plan with nothing recorded on an axis prints
+# "not recorded" there while still carrying its declared denominator and its episode count. Rendering
+# either plan column with `_num` again reds this row.
 expect("WARP-1407 AC1: the rendered plan line carries the declared denominator and every column in "
        "its own place, and a plan the item map does not declare renders '(not declared)' rather "
        "than a number of its own",
-       "  PLAN-9400        3 of 4 work item spec(s) in the corpus  toe 1150 tok (3 known)  "
-       "judgment 75 min (3 known)  episodes 5" in _JL_TEXT
-       and "  (no plan)        1 of (not declared) work item spec(s) in the corpus  toe 0 tok "
-       "(0 known)  judgment 0 min (0 known)  episodes 3" in _JL_TEXT)
+       "  PLAN-9400        3 of 4 work item spec(s) in the corpus  toe 1150 tok         (3 known)  "
+       "judgment 75 min           (3 known)  episodes 5" in _JL_TEXT
+       and "  (no plan)        1 of (not declared) work item spec(s) in the corpus  "
+       "toe not recorded     (0 known)  judgment not recorded     (0 known)  episodes 3" in _JL_TEXT)
 
 # plan_items_from_registry reads the declared items THROUGH the one plan registry (which parses with
 # validate.parse_yamlish); it is the only front-matter reading this module does, and it stands down
@@ -321,6 +373,103 @@ expect("WARP-1407 AC2 NEGATIVE CONTROL: both banners are absent when minutes ARE
        "NOT USABLE AS A SECOND AXIS YET" not in _JL_TEXT
        and "NOT CLASSIFIABLE YET" not in _JL_TEXT
        and "reference: medians over the 4 record(s) carrying both axes" in _JL_TEXT)
+
+# THE PLAN LINE OBEYS THE SAME RULE AS THE ROW, which is the clause AC2 was refuted on. The plan
+# roll-up is a SECOND rendering of the same pair, and it used to format its two axes with `_num`, so
+# a plan whose specs recorded nothing printed "toe 0 tok (0 known)  judgment 0 min (0 known)": a
+# figure standing exactly where the words go, on the surface built for comparing plans. Asserted as
+# the whole rendered line AND as a property over the whole page - a report in which NO figure was
+# recorded may not contain a zero wearing a unit anywhere, which is a defect by construction here
+# rather than a count of anything, so no legitimate growth can red it.
+expect("WARP-1407 AC2: on a log carrying no figure the PLAN line prints the words in both axis "
+       "columns while keeping its declared denominator and its episode count, and no zero wearing a "
+       "unit appears anywhere on that page",
+       "  PLAN-9400        3 of 4 work item spec(s) in the corpus  toe not recorded     (0 known)  "
+       "judgment not recorded     (0 known)  episodes 5" in _JL_BARE_TEXT
+       and "0 tok " not in _JL_BARE_TEXT and "0 min " not in _JL_BARE_TEXT
+       and _JL_BARE_TEXT.count("not recorded") == 2 * len(_JL_BARE_ROWS) + 2 * len(
+           _JL_BARE_REPORT["plans"]))
+# THE BANNER SAYS WHAT IT COUNTED, and what it counted is the records in this report. It used to say
+# "no human minutes are recorded anywhere in this log ... nobody has called it", which is a claim
+# about the LOG derived from a count over shipped-corpus ROWS: false the first time anybody records a
+# minute against a spec that has not shipped, and self-contradicting on the same page whenever the
+# unattributable line above it reports minutes of its own. Driven both ways below.
+expect("WARP-1407 AC2: the unusable banner is scoped to the records it was counted over, and points "
+       "at the two places its count cannot see rather than claiming they are empty",
+       "no human minutes are recorded on any of the 6 record(s) in this report" in _JL_BARE_TEXT
+       and "NOT about the whole log" in _JL_BARE_TEXT
+       and "--all" in _JL_BARE_TEXT
+       and "anywhere in this log" not in _JL_BARE_TEXT
+       and "nobody has called it" not in _JL_BARE_TEXT)
+# CASE A of the two states that made the old sentence false, built rather than reasoned about: 45
+# minutes on an event naming no spec. The unattributable line reports them, so a page claiming none
+# exist in the log would contradict its own line two rows up.
+_JL_ORPHAN_MIN = {"schema": "veldo.event/v1", "type": "spec.shipped", "at": "2026-08-10T00:00:00Z",
+                  "human_minutes": 45, "tokens": 900}
+_JL_ORPHAN_TEXT = JL.render(JL.build(_JL_BARE_CORPUS, _JL_BARE_EVENTS + [_JL_ORPHAN_MIN],
+                                     _JL_PLAN_ITEMS))
+expect("WARP-1407 AC2: with minutes recorded on an event that names no spec, the report reports "
+       "them as unattributable AND its unusable banner still says only what it counted, so one page "
+       "does not contradict itself",
+       "unattributable: 1 event(s) carrying 45 minute(s) and 900 token(s)" in _JL_ORPHAN_TEXT
+       and "no human minutes are recorded on any of the 6 record(s) in this report"
+       in _JL_ORPHAN_TEXT
+       and "anywhere in this log" not in _JL_ORPHAN_TEXT
+       and "nobody has called it" not in _JL_ORPHAN_TEXT)
+
+# A FIGURE RECORDED AS ZERO, the other half of the distinction AC2 is built on and the half no
+# fixture carried. Every seeded figure above is non-zero, which made `carrying > 0` (the count of
+# events that carried the field) and `total > 0` (the truthiness of the sum) one predicate over this
+# suite's data: both honesty flags could be silently redefined as the sum with the gate fully green,
+# and the shipped `split_known` answered the recorded-zero case wrongly - the module's own thesis
+# inverted inside its own second flag. Kept as its own small population rather than added to the
+# seeded six, so every figure pinned above stays the figure this suite drives.
+_JL_ZERO_EVENTS = [_jl_ev("verdict.recorded", "WARP-9407", human_minutes=0, tokens=0)]
+_JL_SILENT_EVENTS = [_jl_ev("verdict.recorded", "WARP-9407")]
+_JL_ZERO_MIN, _JL_ZERO_TOK = (JL.minutes_for(_JL_ZERO_EVENTS, "WARP-9407"),
+                              JL.tokens_for(_JL_ZERO_EVENTS, "WARP-9407"))
+_JL_SILENT_MIN, _JL_SILENT_TOK = (JL.minutes_for(_JL_SILENT_EVENTS, "WARP-9407"),
+                                  JL.tokens_for(_JL_SILENT_EVENTS, "WARP-9407"))
+expect("WARP-1407 AC2: a figure RECORDED AS ZERO is RECORDED - both axes carry the zero with their "
+       "flags true and the split KNOWN, because the flags count the events that carried the field "
+       "and never read the truthiness of the sum",
+       (_JL_ZERO_MIN["minutes"], _JL_ZERO_MIN["minutes_recorded"], _JL_ZERO_MIN["split_known"],
+        _JL_ZERO_MIN["events_with_minutes"], _JL_ZERO_TOK["tokens"],
+        _JL_ZERO_TOK["tokens_recorded"]) == (0, True, True, 1, 0, True))
+expect("WARP-1407 AC2 NEGATIVE CONTROL: the SAME event carrying no figure at all reports the same "
+       "zero with every flag FALSE, so the row above measures the recorded zero rather than a flag "
+       "that is always true",
+       (_JL_SILENT_MIN["minutes"], _JL_SILENT_MIN["minutes_recorded"],
+        _JL_SILENT_MIN["split_known"], _JL_SILENT_MIN["events_with_minutes"],
+        _JL_SILENT_TOK["tokens"], _JL_SILENT_TOK["tokens_recorded"])
+       == (0, False, False, 0, 0, False))
+_JL_ZERO_ROW = JL.pair({"spec": "WARP-9407", "features": {}}, _JL_ZERO_EVENTS)
+expect("WARP-1407 AC2: the rendered line for a recorded zero shows the FIGURE and the split it was "
+       "recorded on, never the words, which belong to an axis nobody recorded",
+       "toe 0 tok" in JL.pair_line(_JL_ZERO_ROW)
+       and "judgment 0 min" in JL.pair_line(_JL_ZERO_ROW)
+       and "[review 0, approval 0]" in JL.pair_line(_JL_ZERO_ROW)
+       and "not recorded" not in JL.pair_line(_JL_ZERO_ROW))
+# THE TWO ZEROS ON ONE PAGE, which is the whole distinction: the recorded zero is LABELLED against
+# the reference (it is genuinely cheap on both), while the spec whose minutes nobody recorded stays
+# unknown with the missing axis named.
+_JL_ZERO_CLS = {r["spec"]: r for r in JL.classify([_JL_ZERO_ROW] + _JL_REPORT["rows"])[0]}
+expect("WARP-1407 AC2: a recorded zero IS classified against the reference while an unrecorded axis "
+       "is not, so the two zeros are told apart in one classification pass",
+       _JL_ZERO_CLS["WARP-9407"]["shape"] == JL.SHAPE_CHEAP_BOTH
+       and _JL_ZERO_CLS["WARP-9406"]["shape"] == JL.SHAPE_UNKNOWN
+       and "not recorded" in _JL_ZERO_CLS["WARP-9406"]["shape_reason"])
+# AND THE PLAN LINE TELLS THE SAME TWO ZEROS APART, which is the half the two repairs meet in: sending
+# the plan columns through `_axis` must not turn a plan whose figures were recorded AS ZERO into a plan
+# that recorded nothing. The words are for a plan with no known figure on the axis; a plan whose one
+# spec recorded a zero prints the zero.
+_JL_ZERO_TEXT = JL.render(JL.build([{"spec": "WARP-9407", "features": {"plan": "PLAN-9402"}}],
+                                   _JL_ZERO_EVENTS, {"PLAN-9402": ["WARP-9407"]}))
+expect("WARP-1407 AC2: a plan whose figures were RECORDED AS ZERO prints the zero on its plan line, "
+       "not the words - the words are reserved for an axis with no known figure on it",
+       "  PLAN-9402        1 of 1 work item spec(s) in the corpus  toe 0 tok            (1 known)  "
+       "judgment 0 min            (1 known)  episodes 1" in _JL_ZERO_TEXT
+       and "not recorded" not in _JL_ZERO_TEXT)
 
 # The four shapes, which is what a second axis buys: the first label is the class no single-axis
 # unit could ever show.
@@ -403,8 +552,33 @@ expect("WARP-1407 AC3: this module's axis totals equal the corpus's own totals f
        and JL.minutes_for(_JL_EVENTS, "WARP-9402")["minutes"] == 60)
 expect("WARP-1407 AC3 NEGATIVE CONTROL: the equality is a measurement, not a tautology - the two "
        "readers DISAGREE by construction on a figure the corpus skips and this module refuses",
-       JLTC.spend_for([_jl_ev("spec.shipped", "WARP-9407", human_minutes="12")],
-                      "WARP-9407")["human_minutes"] == 0)
+       JLTC.spend_for([_jl_ev("spec.shipped", "WARP-9408", human_minutes="12")],
+                      "WARP-9408")["human_minutes"] == 0)
+# BOTH HALVES OF THE ONE SELECTOR PARTICIPATE IN THAT EQUALITY. `_mine` attributes an event by
+# spec_id OR correlation_id and not one seeded event above carries a correlation id, so the equality
+# was proven over a population that could not exhibit a divergence in that half: deleting the
+# correlation clause left this suite fully green while toe_corpus.cycles_for and spend_for both join
+# on it. The two enumerations this module promises to keep equal would have parted company on the
+# first correlation-attributed figure, silently and in the direction that UNDERSTATES an axis.
+_JL_CORR_EVENTS = [{"schema": "veldo.event/v1", "type": "verdict.recorded",
+                    "at": "2026-08-10T00:00:00Z", "correlation_id": "WARP-9430",
+                    "human_minutes": 25, "tokens": 700}]
+expect("WARP-1407 AC3: a figure attributed by correlation_id ALONE lands on the same spec in both "
+       "enumerations - this module's per-field readers and the corpus's own total reader - so the "
+       "correlation half of the one selector is inside the equality that row exists to prove",
+       (JL.minutes_for(_JL_CORR_EVENTS, "WARP-9430")["minutes"],
+        JL.tokens_for(_JL_CORR_EVENTS, "WARP-9430")["tokens"])
+       == (JLTC.spend_for(_JL_CORR_EVENTS, "WARP-9430")["human_minutes"],
+           JLTC.spend_for(_JL_CORR_EVENTS, "WARP-9430")["tokens"])
+       == (25, 700)
+       and JL.minutes_for(_JL_CORR_EVENTS, "WARP-9430")["minutes_recorded"] is True)
+expect("WARP-1407 AC3 NEGATIVE CONTROL: a correlation id naming a DIFFERENT spec contributes to "
+       "neither reader, so the equality above is attribution rather than two readers accepting "
+       "whatever they are handed",
+       (JL.minutes_for(_JL_CORR_EVENTS, "WARP-9431")["minutes"],
+        JL.minutes_for(_JL_CORR_EVENTS, "WARP-9431")["minutes_recorded"],
+        JL.tokens_for(_JL_CORR_EVENTS, "WARP-9431")["tokens_recorded"],
+        JLTC.spend_for(_JL_CORR_EVENTS, "WARP-9431")["human_minutes"]) == (0, False, False, 0))
 # The independent count of what was seeded, so the episode figure is compared against the fixture
 # rather than against itself.
 _JL_SEEDED_EPISODES = sum(
@@ -433,12 +607,27 @@ _JL_BAD = {
     "a string": [_jl_ev("spec.shipped", "WARP-9410", human_minutes="12")],
     "a boolean": [_jl_ev("spec.shipped", "WARP-9410", human_minutes=True)],
     "a negative": [_jl_ev("spec.shipped", "WARP-9410", human_minutes=-5)],
+    # NaN AND INFINITY ARE NOT NON-NEGATIVE NUMBERS EITHER, and this is the shape AC4's total
+    # property was refuted on: `nan < 0` and `inf < 0` are both False, so the sign test alone let
+    # them through as well formed. `json.loads` accepts the bare NaN and Infinity literals and
+    # events.read_log parses with it, so the input arrives from a log file rather than only from an
+    # API call. Measured before the fix: the row rendered "judgment nan min" while coverage
+    # reported 100.0 percent pair known, `check` reported 0 malformed figures over the same log, and
+    # one NaN inside the both-axes population moved the median (15.0 with it first in the log, 25.0
+    # with it last) and relabelled records that had nothing wrong with them.
+    "a NaN": [_jl_ev("spec.shipped", "WARP-9410", human_minutes=float("nan"))],
+    "an infinity": [_jl_ev("spec.shipped", "WARP-9410", human_minutes=float("inf"))],
+    "a negative infinity": [_jl_ev("spec.shipped", "WARP-9410", human_minutes=float("-inf"))],
 }
 for _label, _evs in sorted(_JL_BAD.items()):
     _raised, _msg = _jl_refusal(JL.minutes_for, _evs, "WARP-9410")
-    expect("WARP-1407 AC4: %s human_minutes is refused BY NAME (the field and the value in the "
-           "message)" % _label,
-           _raised and "human_minutes" in _msg and "spec.shipped" in _msg)
+    # THE VALUE IS ASSERTED IN THE MESSAGE, not only the field: AC4 requires the refusal to name the
+    # field, the event type AND the value, and a message naming two of the three is what an author
+    # cannot locate.
+    expect("WARP-1407 AC4: %s human_minutes is refused BY NAME (the field, the event type and the "
+           "value in the message)" % _label,
+           _raised and "human_minutes" in _msg and "spec.shipped" in _msg
+           and repr(_evs[0]["human_minutes"]) in _msg)
 _JL_TOK_RAISED, _JL_TOK_MSG = _jl_refusal(
     JL.tokens_for, [_jl_ev("spec.shipped", "WARP-9410", tokens=[1])], "WARP-9410")
 expect("WARP-1407 AC4: a malformed tokens figure is refused BY NAME too",
@@ -459,7 +648,8 @@ _JL_MSGS = []
 _JL_ERRS = JL.check_log([e for evs in _JL_BAD.values() for e in evs] + _JL_EVENTS,
                         "seeded.jsonl", lambda where, msg: (_JL_MSGS.append(msg), 1)[1])
 expect("WARP-1407 AC4: check_log reports EVERY malformed figure through the caller's reporter",
-       _JL_ERRS == 3 and len(_JL_MSGS) == 3 and all("human_minutes" in m for m in _JL_MSGS))
+       _JL_ERRS == len(_JL_BAD) == 6 and len(_JL_MSGS) == 6
+       and all("human_minutes" in m for m in _JL_MSGS))
 expect("WARP-1407 AC4 NEGATIVE CONTROL: check_log over the well-formed log reports nothing",
        JL.check_log(_JL_EVENTS, "seeded.jsonl", V.fail) == 0)
 expect("WARP-1407 AC4: the raise and the report come from ONE judge, so they name the same value",
@@ -483,6 +673,42 @@ expect("WARP-1407 AC4: the seeded log has no unattributable figure, and the repo
        "number",
        _JL_COV["unattributed"] == {"events": 0, "minutes": 0, "tokens": 0}
        and "unattributable: 0 event(s)" in _JL_TEXT)
+
+# A RECORD WITH NO SPEC ID IS REFUSED BY NAME. With `spec` None the one selector compares None against
+# every event's spec_id, so a phantom row collects the figures of every event that names no spec - the
+# same figures the unattributable block reports as belonging to nobody, counted a second time on one
+# page as if they belonged to somebody. Unreachable through toe_corpus.build, which skips a spec file
+# with no id, and reachable through this public function, which is where the next caller finds it.
+_JL_NOSPEC_RAISED, _JL_NOSPEC_MSG = _jl_refusal(JL.pair, {"features": {}}, [_JL_ORPHAN])
+expect("WARP-1407 AC4: a corpus record naming no spec id is refused BY NAME rather than becoming a "
+       "phantom row that collects every unattributable figure",
+       _JL_NOSPEC_RAISED and "names no spec id" in _JL_NOSPEC_MSG
+       and "unattributable" in _JL_NOSPEC_MSG)
+expect("WARP-1407 AC4 NEGATIVE CONTROL: the same record WITH a spec id is accepted and does NOT "
+       "collect the unattributable figures, so the refusal above is the missing id and not a reader "
+       "that refuses whatever it is handed",
+       _jl_refusal(JL.pair, {"spec": "WARP-9414", "features": {}}, [_JL_ORPHAN]) == (False, "")
+       and (JL.pair({"spec": "WARP-9414", "features": {}}, [_JL_ORPHAN])["judgment_minutes"],
+            JL.pair({"spec": "WARP-9414", "features": {}}, [_JL_ORPHAN])["judgment_known"])
+       == (0, False))
+
+# report AND check MUST NOT DISAGREE SILENTLY ABOUT ONE LOG. The judge is one; the two COMMANDS are
+# not, because the derivation only reads figures for specs the corpus HOLDS. Measured before this
+# counter existed: an adopter tree whose only event carried human_minutes '12' gave `report` exit 0 and
+# a clean page while `check` exited 1 naming the figure, so a reader who ran report and saw green had
+# not learned what check would tell them. The gap is not closed by widening the derivation - a pair is
+# FOR a spec in the corpus - it is closed by the page saying how much it does not cover.
+_JL_UNREAD_EVENTS = _JL_EVENTS + [_jl_ev("spec.shipped", "WARP-9499", tokens=7, human_minutes=3)]
+expect("WARP-1407 AC4: figures recorded against a spec the corpus does not hold are COUNTED as "
+       "figures the derivation did not read, both axes of them, and the count is on the page",
+       JL.unread_figures(_JL_REPORT["rows"], _JL_UNREAD_EVENTS) == 2
+       and JL.unread_figures(_JL_REPORT["rows"], _JL_EVENTS) == 0
+       and "figures the derivation did not read: 0" in _JL_TEXT)
+expect("WARP-1407 AC4 NEGATIVE CONTROL: an UNATTRIBUTABLE figure is not counted as unread - it has "
+       "its own line with its own figures, and counting it in both places is the double count this "
+       "distinction exists to avoid",
+       JL.unread_figures(_JL_REPORT["rows"], [_JL_ORPHAN]) == 0
+       and JL.unattributed([_JL_ORPHAN]) == {"events": 1, "minutes": 7, "tokens": 11})
 
 # ---------------------------------------------------------------------------------------
 # AC5. THE ONLY RECORDER WRITES A BULK FIGURE AT SHIP, AND THE SPLIT IS REPORTED UNKNOWN RATHER
@@ -611,16 +837,195 @@ with tempfile.TemporaryDirectory() as _jl_dir3:
            _jl_digest(_jl_root3) != _jl_root_after)
 
 # ---------------------------------------------------------------------------------------
+# ADOPTION SAFE IN A TREE THAT DOES NOT CARRY THE SIBLINGS, which is the tree `/veldo:init` lays down
+# today: it lays down neither this module nor toe_corpus.py nor spend.py. MEASURED 2026-08-13 on
+# exactly that shape, before the repair: `python3 .veldo/judgment_load.py report` exited 1 with a raw
+# `FileNotFoundError: .veldo/toe_corpus.py`. That is ledger finding 61, and Dmitry's direction of
+# 2026-08-13 is that a reader NAMES an absent organ instead of dying - work_state.py was repaired that
+# way and this module had not inherited it. A traceback out of a read model is a run that could not
+# look, indistinguishable from a run that found nothing; so is a page of zeros at 0.0 percent, which
+# is why the derivation stand-down prints no figures at all.
+#
+# RUN IN A REAL TREE, NEVER SCANNED FOR A GUARD. Every leg below builds a tree, DELETES one organ from
+# it and runs the CLI as a subprocess, so what is asserted is the exit code and the page an adopter
+# reads. A grep for a try/except in the source would be a claim about today's text, and a text scan
+# standing in for a real dependency is the defect this ledger records more than any other. The tree is
+# built by copying every .veldo module and then removing ONE by name, so the fixture is a DEFECT BY
+# CONSTRUCTION: nothing that changes what init lays down can empty it or quietly make it vacuous.
+# ---------------------------------------------------------------------------------------
+_JL_TREES = []
+
+
+def _jl_tree(without=(), events=None):
+    """A repository-shaped tree carrying every .veldo module EXCEPT the ones named, the seeded fixture
+    specs and a log. Registered for removal at the end of the fragment."""
+    d = Path(tempfile.mkdtemp(prefix="jl-organ-"))
+    _JL_TREES.append(d)
+    (d / ".veldo").mkdir()
+    (d / "specs").mkdir()
+    (d / "plans").mkdir()
+    for _m in sorted((ROOT / ".veldo").glob("*.py")):
+        if _m.name in without:
+            continue
+        (d / ".veldo" / _m.name).write_bytes(_m.read_bytes())
+    for _sid, _o in sorted(_JL_SPECS.items()):
+        (d / "specs" / ("%s.md" % _sid)).write_text(_jl_spec_text(_sid, **_o))
+    (d / ".veldo" / "events.jsonl").write_text(
+        "\n".join(json.dumps(e, sort_keys=True)
+                  for e in (_JL_EVENTS if events is None else events)) + "\n")
+    return d
+
+
+def _jl_cli(tree, *args):
+    """(exit code, output) of this module's own CLI run inside that tree. stdout and stderr are joined
+    because a stand-down that went to the wrong stream is still a stand-down a reader must see, and
+    the exit code is asserted separately."""
+    _p = _jl_subprocess.run([_jl_sys.executable, ".veldo/judgment_load.py"] + list(args),
+                            cwd=str(tree), capture_output=True, text=True)
+    return _p.returncode, _p.stdout + _p.stderr
+
+
+_JL_FULL = _jl_tree()
+_JL_FULL_RC, _JL_FULL_OUT = _jl_cli(_JL_FULL, "report")
+_JL_FULL_CHECK = _jl_cli(_JL_FULL, "check")
+# THE CONTROL FIRST, because a stand-down is only evidence if the same tree WITH the organ reports.
+expect("WARP-1407 AC5 CONTROL: with every organ present the CLI reports the seeded corpus and checks "
+       "the seeded log, so the stand-downs below are the absent organ and not a tree that cannot "
+       "work at all",
+       (_JL_FULL_RC, _JL_FULL_CHECK[0]) == (0, 0)
+       and "coverage: 6 record(s)" in _JL_FULL_OUT
+       and "UNANSWERABLE" not in _JL_FULL_OUT
+       and "malformed figure(s) in %d event(s)" % len(_JL_EVENTS) in _JL_FULL_CHECK[1])
+
+_JL_NO_CORPUS = _jl_tree(without=("toe_corpus.py",))
+_JL_NC_RC, _JL_NC_OUT = _jl_cli(_JL_NO_CORPUS, "report")
+expect("WARP-1407 AC5: with the corpus organ absent the report NAMES it and exits 0 instead of "
+       "dying, and it prints NO figure at all - not a page of zeros at 0.0 percent, which would "
+       "state that this repository's axes are empty while measuring neither",
+       _JL_NC_RC == 0
+       and "JUDGMENT LOAD UNANSWERABLE IN THIS TREE" in _JL_NC_OUT
+       and ".veldo/toe_corpus.py" in _JL_NC_OUT
+       and "Traceback" not in _JL_NC_OUT and "FileNotFoundError" not in _JL_NC_OUT
+       and "coverage:" not in _JL_NC_OUT and "0.0%" not in _JL_NC_OUT
+       and "per plan:" not in _JL_NC_OUT)
+
+_JL_NO_LOG = _jl_tree(without=("events.py",))
+_JL_NL_RC, _JL_NL_OUT = _jl_cli(_JL_NO_LOG, "report")
+_JL_NL_CHECK_RC, _JL_NL_CHECK_OUT = _jl_cli(_JL_NO_LOG, "check")
+expect("WARP-1407 AC5: with the log organ absent the report names THAT organ, and `check` refuses "
+       "rather than reporting a clean log it never opened - a check that could not look is not a pass",
+       _JL_NL_RC == 0 and ".veldo/events.py" in _JL_NL_OUT
+       and "JUDGMENT LOAD UNANSWERABLE IN THIS TREE" in _JL_NL_OUT
+       and _JL_NL_CHECK_RC == 1
+       and "NOT CHECKED" in _JL_NL_CHECK_OUT and ".veldo/events.py" in _JL_NL_CHECK_OUT
+       and "0 malformed" not in _JL_NL_CHECK_OUT
+       and "Traceback" not in _JL_NL_OUT + _JL_NL_CHECK_OUT)
+
+# A PARTIAL STAND-DOWN IS SCOPED TO THE COLUMN IT IS ABOUT. The plan registry organ carries only the
+# DENOMINATORS, so its absence does not invalidate a single row: the rows print, and the reason the
+# denominators read "(not declared)" is the absent organ rather than a plan declaring no items.
+_JL_NO_REG = _jl_tree(without=("validate.py",))
+_JL_NR_RC, _JL_NR_OUT = _jl_cli(_JL_NO_REG, "report")
+expect("WARP-1407 AC5: with the plan registry organ absent the rows are still reported and the "
+       "DENOMINATORS stand down by name, so '(not declared)' is never left to mean two things",
+       _JL_NR_RC == 0
+       and "DENOMINATORS STOOD DOWN" in _JL_NR_OUT and ".veldo/validate.py" in _JL_NR_OUT
+       and "coverage: 6 record(s)" in _JL_NR_OUT
+       and "of (not declared) work item spec(s)" in _JL_NR_OUT
+       and "JUDGMENT LOAD UNANSWERABLE" not in _JL_NR_OUT
+       and "Traceback" not in _JL_NR_OUT)
+
+# THE NaN, END TO END THROUGH THE CLI, in the tree an adopter would run it in - because the refutation
+# was measured there and not in a unit call. Before the repair: `check` printed "0 malformed figure(s)
+# in 1 event(s)" and exited 0, and `report` exited 0 printing "judgment nan min" beside "judgment
+# minutes known on 1 (100.0%)". The log is written with the bare NaN literal json.dumps emits, which
+# is exactly how it would reach an adopter's tree.
+_JL_NAN_TREE = _jl_tree(events=[_jl_ev("spec.shipped", "WARP-9401", tokens=5,
+                                       human_minutes=float("nan"))])
+_JL_NAN_CHECK_RC, _JL_NAN_CHECK_OUT = _jl_cli(_JL_NAN_TREE, "check")
+_JL_NAN_REPORT_RC, _JL_NAN_REPORT_OUT = _jl_cli(_JL_NAN_TREE, "report")
+expect("WARP-1407 AC4: a NaN figure in a real log on disk is named by `check` and refuses the "
+       "derivation in `report`, and neither surface ever prints it as a measured figure",
+       "NaN" in (_JL_NAN_TREE / ".veldo" / "events.jsonl").read_text()
+       and _JL_NAN_CHECK_RC == 1
+       and "1 malformed figure(s) in 1 event(s)" in _JL_NAN_CHECK_OUT
+       and "human_minutes" in _JL_NAN_CHECK_OUT and "nan" in _JL_NAN_CHECK_OUT
+       and _JL_NAN_REPORT_RC == 1
+       and "refusing to report judgment load" in _JL_NAN_REPORT_OUT
+       and "judgment nan min" not in _JL_NAN_REPORT_OUT
+       and "100.0%" not in _JL_NAN_REPORT_OUT)
+
+# report AND check OVER ONE LOG, END TO END, in the tree an adopter would run them in. The single
+# figure here is BOTH malformed AND on a spec the corpus does not hold, which is exactly the state the
+# review measured the two commands disagreeing about: check names it and report cannot read it. Report
+# still exits 0, because nothing it derived is wrong, and it now says how many figures it did not read.
+_JL_UNREAD_TREE = _jl_tree(events=[_jl_ev("spec.shipped", "WARP-9499", human_minutes="12")])
+_JL_UR_CHECK_RC, _JL_UR_CHECK_OUT = _jl_cli(_JL_UNREAD_TREE, "check")
+_JL_UR_REPORT_RC, _JL_UR_REPORT_OUT = _jl_cli(_JL_UNREAD_TREE, "report")
+expect("WARP-1407 AC4: over one log the two commands do not disagree silently - `check` names the "
+       "malformed figure and exits 1, and `report` exits 0 while stating on the page that there was a "
+       "figure it did not read",
+       _JL_UR_CHECK_RC == 1 and "human_minutes" in _JL_UR_CHECK_OUT
+       and "WARP-9499" in _JL_UR_CHECK_OUT
+       and _JL_UR_REPORT_RC == 0
+       and "figures the derivation did not read: 1" in _JL_UR_REPORT_OUT
+       and "coverage: 6 record(s)" in _JL_UR_REPORT_OUT)
+
+for _t in _JL_TREES:
+    _jl_shutil.rmtree(_t, ignore_errors=True)
+
+# ---------------------------------------------------------------------------------------
 # LIVE, over this repository's real corpus and real log. Two properties that must hold whatever the
-# data says: the real log carries no malformed figure, and every row whose axis was never recorded
-# is unknown rather than labelled. The MEASURED numbers behind the spec's prose (0 percent minutes
-# coverage over 174 shipped specs, 81 percent episode coverage) are recorded in the spec, not
-# pinned here, because pinning a live count reddens the gate the first time someone records a
-# minute - which is the outcome this item wants.
+# data says: every accusation the judge makes about the real log is true, and every row whose axis was
+# never recorded is unknown rather than labelled. The MEASURED numbers behind the spec's prose (0
+# percent minutes coverage over 174 shipped specs, 81 percent episode coverage) are recorded in the
+# spec, not pinned here, because pinning a live count reddens the gate the first time someone records
+# a minute - which is the outcome this item wants.
 # ---------------------------------------------------------------------------------------
 _JL_REAL_EVENTS = JLEV.read_log()
-expect("WARP-1407 LIVE: the real event log carries no malformed figure",
-       JL.check_log(_JL_REAL_EVENTS, ".veldo/events.jsonl", V.fail) == 0)
+
+
+def _jl_unreadable(event):
+    """WHICH FIGURES OF ONE EVENT ARE NOT NON-NEGATIVE FINITE NUMBERS, written from AC4's own words
+    rather than by calling the judge. Deliberately a second reading: it exists to check the judge over
+    the real log, and a row that asked the judge whether it agrees with itself would pass by
+    construction."""
+    bad = []
+    for _f in (JL.MINUTES_FIELD, JL.TOKENS_FIELD):
+        _v = event.get(_f)
+        if _v is None:
+            continue
+        if (isinstance(_v, bool) or not isinstance(_v, (int, float))
+                or not _jl_math.isfinite(_v) or _v < 0):
+            bad.append(_f)
+    return bad
+
+
+def _jl_judged(events):
+    """(count the judge reports, count the independent reading reports) over one log."""
+    return (JL.check_log(events, "seeded.jsonl", lambda where, msg: 1),
+            sum(len(_jl_unreadable(e)) if isinstance(e, dict) else 1 for e in events))
+
+
+# NOT A PIN ON LIVE STATE, and the difference is the whole finding. The row here used to require
+# `check_log(...) == 0` over the real log inside a REQUIRED gate stage: the log is append-only, so one
+# malformed figure ever written would make it permanently red with no remediation short of rewriting
+# history - and this module's own docstring uses exactly that reasoning to explain why an
+# unattributable event is COUNTED rather than refused. What is required instead is the PROPERTY the
+# pin stood in for: the judge and an independent reading of AC4's words agree about the real log, in
+# both directions, whatever the count is. A genuinely malformed figure appended tomorrow keeps this
+# green; a judge that misses one, or names one that is fine, reds it. The seeded leg is the
+# anti-vacuity control, because agreement over a clean log is agreement about nothing.
+_JL_REAL_JUDGED, _JL_REAL_INDEP = _jl_judged(_JL_REAL_EVENTS)
+_JL_SEEDED_BAD = [e for _evs in _JL_BAD.values() for e in _evs] + _JL_EVENTS
+_JL_SEED_JUDGED, _JL_SEED_INDEP = _jl_judged(_JL_SEEDED_BAD)
+expect("WARP-1407 LIVE: the judge and an independent reading of what a well-formed figure is agree "
+       "about every event in the real log, and this row requires that count to be no particular "
+       "number - a malformed figure in an append-only log is a state to report, never a gate to "
+       "wedge",
+       _JL_REAL_JUDGED == _JL_REAL_INDEP
+       and (_JL_SEED_JUDGED, _JL_SEED_INDEP) == (len(_JL_BAD), len(_JL_BAD))
+       and len(_JL_REAL_EVENTS) > 0)
 _JL_REAL_ROWS = JL.build(
     JLTC.build(events=_JL_REAL_EVENTS, protected=()), _JL_REAL_EVENTS)["rows"]
 expect("WARP-1407 LIVE: the real corpus produces a pair row per shipped spec, and every row with "
