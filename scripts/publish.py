@@ -48,6 +48,11 @@ INCLUDE = (
     "LICENSE",
     "NOTICE",
     "CONTRIBUTING.md",
+    # The CLA travels with CONTRIBUTING, which now requires it: a pack that tells a contributor to
+    # sign an agreement it does not carry sends them to a dead link. The signatures FILE ships too,
+    # as the empty table with its instructions, because the signing mechanism is a PR against it.
+    "CLA.md",
+    "cla/signatures.md",
     "CODE_OF_CONDUCT.md",
     "SECURITY.md",
     ".claude-plugin/marketplace.json",   # so Claude Code can install the pack

@@ -46,7 +46,10 @@ If a change fails review three times, the next step is not another attempt at th
 decision about the change: split it, narrow it, or take the design question to a person. This is in
 the method because thirteen rounds happened once.
 
-## Licence
+## Licence and the Contributor License Agreement
 
-Contributions are accepted under the Apache License 2.0, the same terms as the project. By opening a
-pull request you confirm you have the right to contribute the work under those terms.
+Contributions are accepted under the Apache License 2.0, the same terms as the project. Before your
+first pull request can merge, sign the Contributor License Agreement: read [`CLA.md`](CLA.md), then
+open a pull request adding your name to [`cla/signatures.md`](cla/signatures.md) as described there.
+That pull request is your electronic signature. Unsigned contributions are not merged, however good
+they are.
