@@ -1347,6 +1347,17 @@ declared falsifications rather than reading them, which is why they found what r
     Left alone under the stop rule: no user or gate can get a false answer from it, so copying the two
     paragraphs across is an improvement to make deliberately rather than at 13:30 unattended.
 
+81. **VELDO-0015 SHIPPED WITH THREE REPORT-SURFACE FOLLOW-UPS RECORDED, NOT SILENTLY DEFERRED.**
+    The clock stand-down (kernel OD-9) landed with its independent review's three prominence notes
+    deliberately out of scope, each named in the spec itself: `tasks.task_report` buckets an
+    unanswerable claim under "claimed", so that operator surface says wait for the one state waiting
+    cannot fix (N4, the sharpest of the three); no shipped `claim()` caller retains the refusal
+    reason, so the lander spins to lock_timeout without naming a clock (N3); and `status_server`
+    renders the new state without a badge colour (N5). None loses the word itself - `claim_task`
+    returns "unanswerable" verbatim and `classify` says it on every direct read - so these are
+    prominence, not silence. One follow-up unit covers all three; it belongs to the factory's
+    Milestone 1 window since the factory's scheduler is the first real consumer of the word.
+
 ### Expected to grow
 Dmitry, 2026-08-11: "I am sure between now and then you will find more." Findings are appended here
 as they are found, and this plan is not done while one is unrecorded.

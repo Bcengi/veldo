@@ -40,6 +40,15 @@ from datetime import datetime, timezone
 
 STALE_AFTER_SECONDS = 90
 
+# VELDO-0015: a heartbeat AHEAD of the reader's clock by more than this is not "alive", it is a
+# CLOCK DISAGREEMENT, and liveness is unanswerable. Generous on purpose: NTP-grade skew plus a
+# write-read latency never approaches two minutes, so an alarm here is a real broken clock and
+# never noise. The window below (STALE_AFTER_SECONDS) still owns the past direction; this owns the
+# future one, and the two directions are different questions with different answers - stale may be
+# reclaimed, unanswerable may NOT (finding 76: the one-line symmetric window hands a LIVE claim to
+# a second worker, which is worse than the lockout it fixes).
+CLOCK_SKEW_TOLERANCE_SECONDS = 120
+
 
 def _now():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -128,17 +137,34 @@ def _read(path):
         return None
 
 
-def _is_stale(rec, now_epoch=None):
+def liveness(rec, now_epoch=None):
+    """One of "live", "stale", "unanswerable" for a claim record (VELDO-0015).
+
+    "stale" means the reclaim rule applies: no heartbeat, an unreadable one, or one older than
+    STALE_AFTER_SECONDS. "unanswerable" means the heartbeat is AHEAD of this reader's clock by
+    more than CLOCK_SKEW_TOLERANCE_SECONDS: the clocks disagree, no liveness answer is honest,
+    and the only safe verdicts are refuse-to-grant and refuse-to-reclaim, with the word surfaced
+    so a human looks at a clock. Within tolerance, a slightly-future heartbeat is ordinary skew
+    and is "live", so a healthy fleet cannot be flooded with false alarms."""
     hb = (rec or {}).get("heartbeat_at")
     if not hb:
-        return True
+        return "stale"
     try:
         hb_epoch = datetime.strptime(hb, "%Y-%m-%dT%H:%M:%SZ").replace(
             tzinfo=timezone.utc).timestamp()
     except (ValueError, TypeError):
-        return True
+        return "stale"
     now = now_epoch if now_epoch is not None else _now_epoch()
-    return (now - hb_epoch) > STALE_AFTER_SECONDS
+    if (hb_epoch - now) > CLOCK_SKEW_TOLERANCE_SECONDS:
+        return "unanswerable"
+    return "stale" if (now - hb_epoch) > STALE_AFTER_SECONDS else "live"
+
+
+def _is_stale(rec, now_epoch=None):
+    """May this claim be RECLAIMED? Boolean contract unchanged (VELDO-0015): unanswerable answers
+    False here, because "cannot judge" must never authorize a takeover - that is the silent
+    double-build. Only a genuinely stale claim may be taken over."""
+    return liveness(rec, now_epoch) == "stale"
 
 
 def _record(unit_id, worker_id, requirements):
@@ -190,7 +216,10 @@ def claim(unit_id, worker_id, worker_caps=None, requirements=None, root=None):
 
     Grants only if requirements are a subset of worker_caps AND the unit is unclaimed,
     stale, or already held by this worker. Reasons: 'granted', 'capability' (worker
-    lacks a required capability), 'claimed' (held live by another worker).
+    lacks a required capability), 'claimed' (held live by another worker), 'unanswerable'
+    (VELDO-0015: the holder's heartbeat is ahead of this clock beyond tolerance, so liveness
+    cannot be judged; the claim is neither granted nor reclaimable until a human acts or the
+    clocks agree).
 
     Atomicity: a SINGLE per-unit lock (flock) arbitrates the WHOLE claim decision, so the
     fresh-publish and the stale/corrupt/own takeover share one arbiter and can never both
@@ -208,8 +237,15 @@ def claim(unit_id, worker_id, worker_caps=None, requirements=None, root=None):
     path = _path(unit_id, root)
     with _unit_lock(path):
         cur = _read(path)
-        if cur is not None and cur.get("worker_id") != worker_id and not _is_stale(cur):
-            return False, "claimed"  # a live claim by another worker is never stolen
+        if cur is not None and cur.get("worker_id") != worker_id:
+            verdict = liveness(cur)
+            if verdict == "unanswerable":
+                # VELDO-0015: clocks disagree beyond tolerance. Not "claimed" - that word tells an
+                # operator to wait, and waiting cannot fix a broken clock. The named refusal is the
+                # summons: a human looks at a clock, or releases the claim deliberately.
+                return False, "unanswerable"
+            if verdict == "live":
+                return False, "claimed"  # a live claim by another worker is never stolen
         # Unclaimed, stale, corrupt, or our own: publish our record atomically. os.replace
         # works whether or not the target exists, and we hold the sole arbiter for this unit,
         # so no other claimer can publish underneath us between the read and the replace.

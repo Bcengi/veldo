@@ -26,6 +26,13 @@ from datetime import datetime, timezone
 # Runs older than this with no heartbeat are stale, not blocked.
 STALE_AFTER_SECONDS = 30
 
+# VELDO-0015: the future direction of the same window. A heartbeat AHEAD of this reader's clock by
+# more than this is a clock disagreement, and the run's liveness is unanswerable rather than
+# "active". Generous for NTP-grade skew plus write latency; an alarm here is a broken clock, not
+# noise. Deliberately NOT shared with claim.py's tolerance: the two modules already own their
+# windows separately, and this spec follows the shape the modules have.
+CLOCK_SKEW_TOLERANCE_SECONDS = 120
+
 # Durable milestone types R2 will emit to the tracked stream. Kept in sync with
 # events.py EVENT_TYPES; the high-volume run.step / run.heartbeat are live-only
 # and deliberately NOT in the committed vocabulary.
@@ -265,9 +272,11 @@ def ack_command(run_id, cmd_id, root=None):
 
 
 def classify(state, now_epoch=None):
-    """Classify a run from its state. Terminal wins; then an explicit blocker; then
-    a stale heartbeat; else active. A stale run is NEVER reported as blocked unless
-    it explicitly recorded a blocker (status == blocked)."""
+    """Classify a run from its state. Terminal wins; then an explicit blocker; then the
+    heartbeat: "unanswerable" when it is ahead of now beyond CLOCK_SKEW_TOLERANCE_SECONDS
+    (VELDO-0015: clocks disagree, liveness cannot be judged), "stale" when it is missing,
+    unreadable, or past the window; else "active". A stale run is NEVER reported as blocked
+    unless it explicitly recorded a blocker (status == blocked)."""
     status = state.get("status")
     if status in ("done", "aborted"):
         return "done"
@@ -281,6 +290,12 @@ def classify(state, now_epoch=None):
         hb_epoch = datetime.strptime(hb, "%Y-%m-%dT%H:%M:%SZ").replace(
             tzinfo=timezone.utc).timestamp()
         now_epoch = now_epoch if now_epoch is not None else time.time()
+        if hb_epoch - now_epoch > CLOCK_SKEW_TOLERANCE_SECONDS:
+            # VELDO-0015: the heartbeat is from the future beyond tolerance. Before this branch,
+            # the one-sided window below answered "active" for ANY future stamp, forever - a
+            # fast-clocked writer looked immortally alive (finding 76). The clocks disagree, so
+            # the honest answer is the named state, not a guess in either direction.
+            return "unanswerable"
         if now_epoch - hb_epoch > STALE_AFTER_SECONDS:
             return "stale"
     except (ValueError, TypeError):
