@@ -651,6 +651,24 @@ class LinkResolver:
 # this generator owns. Everything with prose in it comes from a document.
 NAV = [("Overview", "index.html"), ("Method", "docs/method.html"), ("Documents", "docs/index.html")]
 
+# Book rules live apart from STYLESHEET and are appended ONLY when a book actually ships, so that a
+# build with no live buy URL is byte-identical to what is already deployed. Holding a feature back
+# should change nothing at all, and that is checkable rather than asserted.
+BOOK_STYLESHEET = """
+.bookrow{display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap}
+.bookrow .cover{width:150px;height:auto;box-shadow:0 2px 14px rgba(0,0,0,.18);border-radius:2px}
+.bookrow .cover.big{width:230px}
+.bookcopy{flex:1 1 18rem;min-width:16rem}
+.bookcopy h3{font-size:1.35rem;margin:0 0 .5rem}
+.bookcopy .hook{font-weight:600;margin:0 0 .7rem}
+.buys{margin:1rem 0 0;display:flex;gap:.6rem;flex-wrap:wrap}
+a.buy{display:inline-block;padding:.5rem .95rem;border:1px solid currentColor;border-radius:3px;
+      text-decoration:none;font-size:.95rem}
+a.buy .bd{opacity:.65;font-size:.85em}
+ol.chapters{columns:2;column-gap:2.5rem;max-width:var(--measure)}
+@media (max-width:640px){ol.chapters{columns:1}.bookrow .cover.big{width:170px}}
+"""
+
 STYLESHEET = """
 :root{
   --paper:#fbfaf6; --ink:#16150f; --muted:#6a665b; --rule:#d9d6cc;
@@ -826,7 +844,7 @@ def page_shell(
         f"<title>{esc(title)}</title>\n"
         f'<meta name="description" content="{esc(description)}">\n'
         f'<meta name="author" content="{esc(author)}">\n'
-        f"<style>{STYLESHEET}</style>\n"
+        f"<style>{STYLESHEET}{BOOK_STYLESHEET if load_book() else ''}</style>\n"
         f'<header class="masthead"><div class="{frame}">'
         f'<a class="wordmark" href="{esc(up + "index.html")}">{esc(SITE_NAME)}</a>'
         f"<nav>{nav}</nav></div></header>\n"
@@ -910,7 +928,8 @@ def build_landing(docs: list[Document], resolver: LinkResolver, author: str) -> 
         f"{citation(method, '', '', 0)}</section>"
     )
 
-    bands = [
+    book = load_book()
+    bands = ([build_book_band(book, 0)] if book else []) + [
         band("The loop", [(method, r"^1\. Core Model$")]),
         band("What proven means", [(method, r"^9\. Definition of Proven$")]),
         band("The one rule", [(method, r"^22\. The \S+ Rule$")]),
@@ -1048,6 +1067,80 @@ def build_doc_page(doc: Document, resolver: LinkResolver, author: str) -> str:
 # ===========================================================================
 
 
+
+# ===========================================================================
+# The book
+# ===========================================================================
+#
+# The book is not one of the docs/ documents, so its copy lives in site/book.yaml and this reads it.
+# THE WHOLE FEATURE IS ABSENT UNTIL A BUY URL EXISTS. Publishing a book block that sends a reader
+# nowhere is worse than not mentioning the book, and a placeholder would be caught by the
+# no-unfilled-placeholders check anyway. Absent is the honest state while the editions are in review.
+
+BOOK_YAML = Path(__file__).resolve().parent / "book.yaml"
+
+
+def load_book() -> dict | None:
+    """The book, or None when it has nowhere live to send a reader."""
+    if not BOOK_YAML.exists():
+        return None
+    book = yaml.safe_load(BOOK_YAML.read_text(encoding="utf-8"))
+    live = [b for b in book.get("buy", []) if str(b.get("url", "")).strip()]
+    if not live:
+        return None
+    book["buy"] = live
+    return book
+
+
+def book_buy_links(book: dict) -> str:
+    out = []
+    for b in book["buy"]:
+        detail = f' <span class="bd">{esc(b["detail"])}</span>' if b.get("detail") else ""
+        out.append(f'<a class="buy" href="{esc(b["url"])}">{esc(b["format"])}{detail}</a>')
+    return '<p class="buys">' + "".join(out) + "</p>"
+
+
+def book_cover_img(book: dict, depth: int, cls: str = "") -> str:
+    c = book["cover"]
+    up = "../" * depth
+    return (f'<img class="cover{cls}" src="{esc(up + c["src"])}" '
+            f'srcset="{esc(up + c["src"])} {c["width"]}w, {esc(up + c["src2x"])} {c["width"] * 2}w" '
+            f'sizes="(max-width: 640px) 60vw, {c["width"] // 2}px" '
+            f'width="{c["width"]}" height="{c["height"]}" alt="{esc(c["alt"])}" loading="lazy"/>')
+
+
+def build_book_band(book: dict, depth: int) -> str:
+    """The landing-page block. Cover, what it is, where to get it."""
+    up = "../" * depth
+    return (
+        '<section class="band book"><h2>The book</h2>\n'
+        '<div class="bookrow">'
+        f'<a href="{esc(up + "book.html")}">{book_cover_img(book, depth)}</a>'
+        '<div class="bookcopy">'
+        f'<h3><a href="{esc(up + "book.html")}">{esc(book["title"])}</a></h3>'
+        f'<p class="hook">{esc(book["hook"])}</p>'
+        f'<p>{esc(book["blurb"][0])}</p>'
+        f'{book_buy_links(book)}'
+        "</div></div></section>"
+    )
+
+
+def build_book_page(book: dict, author: str) -> str:
+    chapters = "".join(f"<li>{esc(c)}</li>" for c in book["chapters"])
+    blurb = "".join(f"<p>{esc(b)}</p>" for b in book["blurb"])
+    body = (
+        f'<section class="hero"><h1>{esc(book["title"])}</h1>'
+        f'<p class="tagline">{esc(book["tagline"])}</p></section>'
+        '<section class="band first"><div class="bookrow">'
+        f'{book_cover_img(book, 0, " big")}'
+        f'<div class="bookcopy"><p class="hook">{esc(book["hook"])}</p>{blurb}'
+        f'{book_buy_links(book)}</div></div></section>'
+        f'<section class="band"><h2>What is in it</h2><ol class="chapters">{chapters}</ol></section>'
+        f'<section class="band"><h2>The method is free</h2><p>{esc(book["free_note"])}</p></section>'
+    )
+    return page_shell(book["title"], book["tagline"], body, 0, "book.html", author)
+
+
 def build(out_dir: Path) -> dict[str, str]:
     manifest, docs = load_manifest()
     author = str(manifest.get("author", "")).strip()
@@ -1060,6 +1153,9 @@ def build(out_dir: Path) -> dict[str, str]:
     files["docs/index.html"] = build_docs_index(manifest, docs, author)
     for doc in docs:
         files[doc.out_path] = build_doc_page(doc, resolver, author)
+    book = load_book()
+    if book:
+        files["book.html"] = build_book_page(book, author)
     files["CNAME"] = SITE_DOMAIN + "\n"
     # GitHub Pages runs Jekyll by default, which drops files it does not expect.
     files[".nojekyll"] = ""
@@ -1070,6 +1166,13 @@ def build(out_dir: Path) -> dict[str, str]:
         path = out_dir / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(files[rel], encoding="utf-8", newline="\n")
+    # Binary assets travel separately: they are output, but they are not text.
+    if book:
+        for key in ("src", "src2x"):
+            rel = book["cover"][key]
+            dst = out_dir / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(Path(__file__).resolve().parent / rel, dst)
     return files
 
 
@@ -1148,6 +1251,16 @@ class CheckResult:
     detail: str
 
 
+# Binary assets are OUTPUT but are not TEXT, and every check below reads text. A JPEG can contain
+# the byte sequence that encodes an em dash purely by chance, which would fail the dash check for a
+# reason that has nothing to do with the prose. So the checks that scan text ask this, once.
+BINARY_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".ico", ".woff", ".woff2"}
+
+
+def is_text_output(path) -> bool:
+    return path.is_file() and path.suffix.lower() not in BINARY_SUFFIXES
+
+
 def check_internal_links(out_dir: Path) -> CheckResult:
     """Every relative href resolves to a file that exists, and every fragment to an id."""
     ids: dict[Path, set[str]] = {}
@@ -1203,7 +1316,7 @@ def check_old_name(out_dir: Path) -> CheckResult:
     hits: list[str] = []
     scanned = 0
     for path in sorted(out_dir.rglob("*")):
-        if not path.is_file():
+        if not is_text_output(path):
             continue
         scanned += 1
         text = path.read_text(encoding="utf-8", errors="replace")
@@ -1220,7 +1333,7 @@ def check_old_name(out_dir: Path) -> CheckResult:
     bare_upper = re.compile(r"VELDO(?![_-]?[A-Z0-9#N])(?!\.[a-z])")
     upper_hits: list[str] = []
     for path in sorted(out_dir.rglob("*")):
-        if not path.is_file():
+        if not is_text_output(path):
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
         for n, line in enumerate(text.split("\n"), 1):
@@ -1238,7 +1351,7 @@ def check_dashes(out_dir: Path) -> CheckResult:
     failures: list[str] = []
     scanned = 0
     for path in sorted(out_dir.rglob("*")):
-        if not path.is_file():
+        if not is_text_output(path):
             continue
         scanned += 1
         raw = path.read_text(encoding="utf-8", errors="replace")
@@ -1274,7 +1387,7 @@ def check_no_placeholders(out_dir: Path) -> CheckResult:
     failures: list[str] = []
     scanned = 0
     for path in sorted(out_dir.rglob("*")):
-        if not path.is_file():
+        if not is_text_output(path):
             continue
         scanned += 1
         text = path.read_text(encoding="utf-8", errors="replace")
@@ -1297,7 +1410,7 @@ def check_leaks(out_dir: Path) -> CheckResult:
     present_third_party: set[str] = set()
     scanned = 0
     for path in sorted(out_dir.rglob("*")):
-        if not path.is_file():
+        if not is_text_output(path):
             continue
         scanned += 1
         text = path.read_text(encoding="utf-8", errors="replace")

@@ -1,0 +1,74 @@
+# The book, as data rather than as strings inside the generator.
+#
+# build_site.py contributes only structural chrome to the output; every sentence it publishes comes
+# from a document or from a manifest. The book is not one of the docs/ documents, so its copy lives
+# here and the generator reads it, which keeps that rule intact.
+#
+# THE BOOK APPEARS ON THE SITE ONLY WHEN `buy` HAS AT LEAST ONE LIVE URL. Both editions are in
+# review at the time of writing and their URLs do not exist yet. Rather than shipping a placeholder,
+# which the build's own no-unfilled-placeholders check would rightly refuse, the whole feature is
+# absent until there is somewhere real to send a reader. Fill in the URLs, rebuild, and the book
+# appears on the landing page, in the document index and on its own page, in one deploy.
+#
+# NOTE ON THE PUBLISHER: it is deliberately not named anywhere here. The publication leak scan
+# forbids the company name in published output, and the publisher's legal name contains it. The
+# author is named; the publisher is not.
+
+title: SDLC for the Age of AI
+author: Dmitry Grinberg
+tagline: The software lifecycle rebuilt so speed answers to evidence.
+
+# The hook from the book's own back cover, which is the sharpest statement of what it argues.
+hook: Code got cheap. Certainty didn't.
+
+blurb:
+  - >-
+    AI writes plausible code faster than any review can keep honest. You never took a developer's
+    word for it either, and "works on my machine" was never proof. Tests, reviews and pipelines
+    exist because trust in software was always supposed to be earned with evidence.
+  - >-
+    This book takes that instinct to its conclusion and rebuilds the development lifecycle around
+    it: people define what must be true and judge what ships, machines build the change and prove it
+    against those criteria, and anything unproven does not get in.
+
+# Said plainly, because a reader looking at a paid book beside a free method will wonder.
+free_note: >-
+  The method is on this site in full, and the reference implementation is open source. Nothing here
+  is a teaser for the book. What the book adds is the argument, the reasoning behind each rule, and
+  the account of building the thing these documents describe.
+
+chapters:
+  - The Inversion
+  - The Specification
+  - The Proof
+  - The Independent Review
+  - The Green Gate
+  - The Plan
+  - Small and Reversible
+  - The Fleet
+  - The Release
+  - The Shape of the System
+  - The Incident
+  - The Attack Surface
+  - Tokens of Effort
+  - Adoption
+  - What Done Means Now
+
+cover:
+  src: assets/book-cover-600w.jpg
+  src2x: assets/book-cover-1200w.jpg
+  width: 600
+  height: 900
+  alt: >-
+    Cover of SDLC for the Age of AI: an engineer and a small robot stand together looking out over a
+    city at first light.
+
+# Fill these in when the editions are live. Any entry with an empty url is skipped; when every url
+# is empty the book is absent from the site entirely.
+buy:
+  - format: Paperback
+    detail: 122 pages
+    url: ""
+  - format: Kindle
+    detail: ""
+    url: ""
