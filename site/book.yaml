@@ -4,11 +4,9 @@
 # from a document or from a manifest. The book is not one of the docs/ documents, so its copy lives
 # here and the generator reads it, which keeps that rule intact.
 #
-# THE BOOK APPEARS ON THE SITE ONLY WHEN `buy` HAS AT LEAST ONE LIVE URL. Both editions are in
-# review at the time of writing and their URLs do not exist yet. Rather than shipping a placeholder,
-# which the build's own no-unfilled-placeholders check would rightly refuse, the whole feature is
-# absent until there is somewhere real to send a reader. Fill in the URLs, rebuild, and the book
-# appears on the landing page, in the document index and on its own page, in one deploy.
+# THE BOOK APPEARS ON THE SITE ONLY WHEN `buy` HAS AT LEAST ONE LIVE URL. Both editions published
+# 2026-08-15 and their URLs were supplied by Dmitry on 2026-08-16, so the feature is live. The two
+# editions carry separate ASINs and neither link stands in for the other.
 #
 # NOTE ON THE PUBLISHER: it is deliberately not named anywhere here. The publication leak scan
 # forbids the company name in published output, and the publisher's legal name contains it. The
@@ -68,7 +66,7 @@ cover:
 buy:
   - format: Paperback
     detail: 122 pages
-    url: ""
+    url: "https://www.amazon.com/dp/B0HFH744JL"
   - format: Kindle
     detail: ""
-    url: ""
+    url: "https://www.amazon.com/dp/B0HFH12DYB"
