@@ -928,13 +928,18 @@ def build_landing(docs: list[Document], resolver: LinkResolver, author: str) -> 
         f"{citation(method, '', '', 0)}</section>"
     )
 
+    # The book sits AFTER the documents, deliberately. A reader arriving cold has
+    # to learn what this is, how it works and where to start before a paid book
+    # is worth mentioning. Selling before landing reads as an advertisement with
+    # a method attached rather than a method with a book attached.
     book = load_book()
-    bands = ([build_book_band(book, 0)] if book else []) + [
+    bands = [
         band("The loop", [(method, r"^1\. Core Model$")]),
         band("What proven means", [(method, r"^9\. Definition of Proven$")]),
         band("The one rule", [(method, r"^22\. The \S+ Rule$")]),
         band("Start here", [(plugin, r"^2\. Install$"), (plugin, r"^3\. The first change$")]),
         build_document_band(docs, 0),
+    ] + ([build_book_band(book, 0)] if book else []) + [
         band("What it values", [(method, r"^20\. \S+ Manifesto$")]),
     ]
 
