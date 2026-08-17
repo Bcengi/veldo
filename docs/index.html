@@ -142,6 +142,19 @@ footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:.78rem;color:var(--muted)}
 footer p{margin:0 0 .4rem;max-width:var(--measure)}
+
+.bookrow{display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap}
+.bookrow .cover{width:150px;height:auto;box-shadow:0 2px 14px rgba(0,0,0,.18);border-radius:2px}
+.bookrow .cover.big{width:230px}
+.bookcopy{flex:1 1 18rem;min-width:16rem}
+.bookcopy h3{font-size:1.35rem;margin:0 0 .5rem}
+.bookcopy .hook{font-weight:600;margin:0 0 .7rem}
+.buys{margin:1rem 0 0;display:flex;gap:.6rem;flex-wrap:wrap}
+a.buy{display:inline-block;padding:.5rem .95rem;border:1px solid currentColor;border-radius:3px;
+      text-decoration:none;font-size:.95rem}
+a.buy .bd{opacity:.65;font-size:.85em}
+ol.chapters{columns:2;column-gap:2.5rem;max-width:var(--measure)}
+@media (max-width:640px){ol.chapters{columns:1}.bookrow .cover.big{width:170px}}
 </style>
 <header class="masthead"><div class="wrap narrow"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
 <main class="wrap narrow">

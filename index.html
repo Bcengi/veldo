@@ -142,6 +142,19 @@ footer{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:.78rem;color:var(--muted)}
 footer p{margin:0 0 .4rem;max-width:var(--measure)}
+
+.bookrow{display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap}
+.bookrow .cover{width:150px;height:auto;box-shadow:0 2px 14px rgba(0,0,0,.18);border-radius:2px}
+.bookrow .cover.big{width:230px}
+.bookcopy{flex:1 1 18rem;min-width:16rem}
+.bookcopy h3{font-size:1.35rem;margin:0 0 .5rem}
+.bookcopy .hook{font-weight:600;margin:0 0 .7rem}
+.buys{margin:1rem 0 0;display:flex;gap:.6rem;flex-wrap:wrap}
+a.buy{display:inline-block;padding:.5rem .95rem;border:1px solid currentColor;border-radius:3px;
+      text-decoration:none;font-size:.95rem}
+a.buy .bd{opacity:.65;font-size:.85em}
+ol.chapters{columns:2;column-gap:2.5rem;max-width:var(--measure)}
+@media (max-width:640px){ol.chapters{columns:1}.bookrow .cover.big{width:170px}}
 </style>
 <header class="masthead"><div class="wrap narrow"><a class="wordmark" href="index.html">Veldo</a><nav><a href="index.html" aria-current="page">Overview</a><a href="docs/method.html">Method</a><a href="docs/index.html">Documents</a></nav></div></header>
 <main class="wrap narrow">
@@ -152,7 +165,9 @@ footer p{margin:0 0 .4rem;max-width:var(--measure)}
 <p>AI coding agents can compress planning and implementation work that once took weeks into hours. A development process designed around human implementation speed becomes unnecessary overhead. Sprints, story points, standups, handoffs, manual status reporting, and separate QA phases no longer improve delivery enough to justify their cost.</p>
 <p>Veldo reorganizes development around the new constraint. Humans define intent and exercise judgment. AI agents build, test, inspect, and review. The repository contains the complete operational truth. Changes move continuously into one trunk as soon as the system can prove that they satisfy their specification.</p>
 <p>Veldo does not optimize the traditional software development lifecycle. It replaces it.</p>
-<p class="source">Source: <a href="docs/method.html">Veldo Development Method</a></p></section><section class="band"><h2>The loop</h2>
+<p class="source">Source: <a href="docs/method.html">Veldo Development Method</a></p></section><section class="band book"><h2>The book</h2>
+<div class="bookrow"><a href="book.html"><img class="cover" src="assets/book-cover-600w.jpg" srcset="assets/book-cover-600w.jpg 600w, assets/book-cover-1200w.jpg 1200w" sizes="(max-width: 640px) 60vw, 300px" width="600" height="900" alt="Cover of SDLC for the Age of AI: an engineer and a small robot stand together looking out over a city at first light." loading="lazy"/></a><div class="bookcopy"><h3><a href="book.html">SDLC for the Age of AI</a></h3><p class="hook">Code got cheap. Certainty didn&#x27;t.</p><p>AI writes plausible code faster than any review can keep honest. You never took a developer&#x27;s word for it either, and &quot;works on my machine&quot; was never proof. Tests, reviews and pipelines exist because trust in software was always supposed to be earned with evidence.</p><p class="buys"><a class="buy" href="https://www.amazon.com/dp/B0HFH744JL">Paperback <span class="bd">122 pages</span></a><a class="buy" href="https://www.amazon.com/dp/B0HFH12DYB">Kindle</a></p></div></div></section>
+<section class="band"><h2>The loop</h2>
 <p>Every change follows the same fundamental path:</p>
 <pre><code>Intent -&gt; Specification -&gt; Implementation -&gt; Proof -&gt; Independent Review -&gt; Merge</code></pre>
 <p>A human states what should change and how success will be recognized. An AI coding agent implements the change. Automated checks prove that the implementation meets the specification and does not violate repository constraints. A fresh-context agent independently reviews the specification, implementation, and evidence. The change merges automatically when all required gates pass, except when the change affects an area where an incorrect decision would be difficult or impossible to reverse.</p>

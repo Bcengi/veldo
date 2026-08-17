@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Mobile Developer in Veldo - Veldo</title>
-<meta name="description" content="The runtime you cannot roll back - lifecycle evidence, containment, the upgrade matrix.">
+<title>SDLC for the Age of AI</title>
+<meta name="description" content="The software lifecycle rebuilt so speed answers to evidence.">
 <meta name="author" content="Dmitry Grinberg">
 <style>
 :root{
@@ -156,67 +156,8 @@ a.buy .bd{opacity:.65;font-size:.85em}
 ol.chapters{columns:2;column-gap:2.5rem;max-width:var(--measure)}
 @media (max-width:640px){ol.chapters{columns:1}.bookrow .cover.big{width:170px}}
 </style>
-<header class="masthead"><div class="wrap"><a class="wordmark" href="../index.html">Veldo</a><nav><a href="../index.html">Overview</a><a href="../docs/method.html">Method</a><a href="../docs/index.html" aria-current="page">Documents</a></nav></div></header>
-<main class="wrap">
-<div class="doc"><div class="dochead"><h1>The Mobile Developer in Veldo</h1><p class="tagline">Training series. Your destination role: Product Systems Engineer whose domain of judgment is the one runtime you cannot roll back.</p><p class="meta">Version 1.0, 2026-07-16</p></div><nav class="toc" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-your-job-redefined">1. Your job, redefined</a></li><li><a href="#2-your-unique-craft-reversibility-where-none-exists">2. Your unique craft: reversibility where none exists</a></li><li><a href="#3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)</a></li><li><a href="#4-the-curriculum">4. The curriculum</a></li><li><a href="#5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to</a></li><li><a href="#6-you-have-arrived-when">6. You have arrived when</a></li><li><a href="#document-history">Document History</a></li></ol></nav><article><h2 id="1-your-job-redefined">1. Your job, redefined<a class="anchor" href="#1-your-job-redefined" aria-label="link to this section">#</a></h2>
-<p>Read the backend developer&#x27;s document first; the transformation is the same. What is uniquely yours is the fact that defines all mobile judgment: <strong>a shipped client cannot be recalled.</strong> Web rolls back in minutes; your mistake lives on customers&#x27; devices until they choose to update. That asymmetry is why your knowledge - lifecycle, offline, fragmentation, store mechanics - becomes some of the most valuable spec-and-evidence material in the company.</p>
-<div class="scroll"><table>
-<thead><tr>
-<th>What stops</th>
-<th>What starts</th>
-</tr></thead>
-<tbody>
-<tr><td>Typing screens, sync code, device tests</td><td>Specifying lifecycle truth: process death, offline, backgrounding, permissions, upgrade paths as criteria</td></tr>
-<tr><td>Simulator green as &quot;works&quot;</td><td>Requiring device-matrix and lifecycle evidence; a clean simulator proves almost nothing</td></tr>
-<tr><td>Manual release-candidate passes</td><td>The gate carries the matrix; you judge the evidence</td></tr>
-<tr><td>Bundling work because releases are expensive</td><td>Small reversible changes behind flags, decoupled from the release train</td></tr>
-<tr><td>Assuming revert = rollback</td><td>Designing server-side containment: every risky client behavior has a kill switch that does not need a store release</td></tr>
-</tbody>
-</table></div>
-<h2 id="2-your-unique-craft-reversibility-where-none-exists">2. Your unique craft: reversibility where none exists<a class="anchor" href="#2-your-unique-craft-reversibility-where-none-exists" aria-label="link to this section">#</a></h2>
-<p>The store release train is Veldo&#x27;s one legitimate release train, and your craft is making it boring: features land dark behind flags across multiple releases, fully decoupled from exposure, which happens server-side, gradually, observed, and reversible. &quot;How do we turn this off without a release?&quot; is the question you ask of every spec, and the rollback field of every mobile spec must answer it.</p>
-<h2 id="3-your-moments-in-the-loop-exact">3. Your moments in the loop (exact)<a class="anchor" href="#3-your-moments-in-the-loop-exact" aria-label="link to this section">#</a></h2>
-<p><strong>Shaping a spec with lifecycle truth:</strong></p>
-<pre><code>Add to VELDO-0318: AC4, a sync interrupted by process death resumes without
-data loss on next launch; AC5, the feature behaves correctly when the app
-returns from background after 6+ hours; AC6, v(N-1) clients against the new
-server see the legacy behavior, unbroken.</code></pre>
-<p><strong>The containment question (every risky mobile spec):</strong></p>
-<pre><code>Rollback says &quot;revert the commit&quot; - not good enough for mobile. Add the
-server-side flag; exposure at 5% of devices first; crash rate gates the
-ramp. Then it&#x27;s ready.</code></pre>
-<p><strong>Judging device evidence:</strong></p>
-<pre><code>The matrix run skipped the OS version with 22% of our fleet. Rerun with it;
-AC2&#x27;s animation criterion is exactly where that version bites.</code></pre>
-<h2 id="4-the-curriculum">4. The curriculum<a class="anchor" href="#4-the-curriculum" aria-label="link to this section">#</a></h2>
-<p>Backend modules 1-3 and 5 apply verbatim. Your additions:</p>
-<p><strong>Module M1 - Lifecycle evidence.</strong> Exercise: an agent change passes a clean simulator but loses edits after process death during sync (planted). Catch it from the evidence, then write the standing criterion so every future sync spec inherits it.</p>
-<p><strong>Module M2 - The containment design.</strong> Exercise: take a real upcoming feature and design its dark-launch: the flag, the exposure ramp, the crash/metric gates, and the kill switch, all as spec criteria.</p>
-<p><strong>Module M3 - The upgrade matrix.</strong> Old client + new server, new client + old server, interrupted upgrade. Exercise: write the compatibility criteria for a schema-touching change and have the agent prove all three cells.</p>
-<h2 id="5-how-you-break-veldo-without-meaning-to">5. How you break Veldo without meaning to<a class="anchor" href="#5-how-you-break-veldo-without-meaning-to" aria-label="link to this section">#</a></h2>
-<ul>
-<li>Everything in the backend document, plus:</li>
-<li><strong>Simulator faith.</strong> The clean simulator is where mobile bugs go to hide.</li>
-<li><strong>Release-train batching.</strong> Bundling unrelated work &quot;because a release is expensive&quot; recreates the big-bang deploys Veldo exists to kill; the flag decouples landing from exposure.</li>
-<li><strong>Rollback theater.</strong> A rollback plan that requires a store release is a hope, not a plan.</li>
-</ul>
-<h2 id="6-you-have-arrived-when">6. You have arrived when<a class="anchor" href="#6-you-have-arrived-when" aria-label="link to this section">#</a></h2>
-<ul>
-<li>A feature shipped dark across two releases and nobody noticed until you turned it on for 5%.</li>
-<li>Your kill switch got used in anger, worked in seconds, and the postmortem praised the spec.</li>
-<li>The upgrade-matrix criteria you wrote are the repo standard.</li>
-<li>A month without typing implementation code, and the crash rate is the best it has ever been.</li>
-</ul>
-<h2 id="document-history">Document History<a class="anchor" href="#document-history" aria-label="link to this section">#</a></h2>
-<div class="scroll"><table>
-<thead><tr>
-<th>Version</th>
-<th>Date</th>
-<th>Changes</th>
-</tr></thead>
-<tbody>
-<tr><td>1.0</td><td>2026-07-16</td><td>Initial training document</td></tr>
-</tbody>
-</table></div></article></div>
+<header class="masthead"><div class="wrap narrow"><a class="wordmark" href="index.html">Veldo</a><nav><a href="index.html">Overview</a><a href="docs/method.html">Method</a><a href="docs/index.html">Documents</a></nav></div></header>
+<main class="wrap narrow">
+<section class="hero"><h1>SDLC for the Age of AI</h1><p class="tagline">The software lifecycle rebuilt so speed answers to evidence.</p></section><section class="band first"><div class="bookrow"><img class="cover big" src="assets/book-cover-600w.jpg" srcset="assets/book-cover-600w.jpg 600w, assets/book-cover-1200w.jpg 1200w" sizes="(max-width: 640px) 60vw, 300px" width="600" height="900" alt="Cover of SDLC for the Age of AI: an engineer and a small robot stand together looking out over a city at first light." loading="lazy"/><div class="bookcopy"><p class="hook">Code got cheap. Certainty didn&#x27;t.</p><p>AI writes plausible code faster than any review can keep honest. You never took a developer&#x27;s word for it either, and &quot;works on my machine&quot; was never proof. Tests, reviews and pipelines exist because trust in software was always supposed to be earned with evidence.</p><p>This book takes that instinct to its conclusion and rebuilds the development lifecycle around it: people define what must be true and judge what ships, machines build the change and prove it against those criteria, and anything unproven does not get in.</p><p class="buys"><a class="buy" href="https://www.amazon.com/dp/B0HFH744JL">Paperback <span class="bd">122 pages</span></a><a class="buy" href="https://www.amazon.com/dp/B0HFH12DYB">Kindle</a></p></div></div></section><section class="band"><h2>What is in it</h2><ol class="chapters"><li>The Inversion</li><li>The Specification</li><li>The Proof</li><li>The Independent Review</li><li>The Green Gate</li><li>The Plan</li><li>Small and Reversible</li><li>The Fleet</li><li>The Release</li><li>The Shape of the System</li><li>The Incident</li><li>The Attack Surface</li><li>Tokens of Effort</li><li>Adoption</li><li>What Done Means Now</li></ol></section><section class="band"><h2>The method is free</h2><p>The method is on this site in full, and the reference implementation is open source. Nothing here is a teaser for the book. What the book adds is the argument, the reasoning behind each rule, and the account of building the thing these documents describe.</p></section>
 </main>
-<footer class="wrap"><p><a href="https://github.com/Bcengi/veldo" rel="noreferrer">Bcengi/veldo</a></p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>
+<footer class="wrap narrow"><p><a href="https://github.com/Bcengi/veldo" rel="noreferrer">Bcengi/veldo</a></p><p>Veldo. Written by Dmitry Grinberg. Every page on this site is rendered from the documents in the repository.</p></footer>
