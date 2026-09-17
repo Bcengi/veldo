@@ -41,6 +41,7 @@ footprint:
   - "engine/.veldo/capabilities.yaml"
   - ".veldo/policy.yaml"
   - ".veldo/*contract*.py"
+  - ".veldo/decisions/*.yaml"
   - "scripts/suites/06_capabilities_manifest_honesty_veldo.py"
   - "engine/.veldo/*contract*.py"
   - "scripts/suites/*"

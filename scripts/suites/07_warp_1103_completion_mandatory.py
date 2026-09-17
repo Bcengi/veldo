@@ -1236,8 +1236,13 @@ with tempfile.TemporaryDirectory() as _sgbk:
     os.makedirs(os.path.join(_sgbk, ".veldo"))
     (Path(_sgbk) / ".veldo" / "architecture.yaml").write_text(_SG_BADKIND)
     _bk_sd, _bk_pr, _ = SG.run(_sgbk, set())
+    # Since VELDO-0016 AC3 the shape gate loads the contract through the one tri-state loader, which
+    # runs the contract validator first: an unknown budget kind is refused there BY NAME (WARP-1101's
+    # "unknown rule kind"), so the gate fails closed on the invalid contract before its own
+    # no-reference-implementation path is reached. Either refusal names the kind; neither stands down.
     expect("WARP-1102 AC7 anti-vacuity: a mechanizable budget of a kind with no reference implementation refuses by name",
-           _bk_sd is False and any("no reference implementation" in p for p in _bk_pr))
+           _bk_sd is False and any("no reference implementation" in p or "unknown rule kind 'loc_count'" in p
+                                   for p in _bk_pr))
 _SG_BADPAT = ("schema: veldo.arch/v1\nid: f\ntitle: t\nversion: 1\nstatus: draft\n"
               "areas:\n  - id: core\n    title: C\n    includes: [\"a.py\"]\n"
               "patterns:\n  - id: novel_rule\n    text: some prose\n    enforcement: mechanizable\n")

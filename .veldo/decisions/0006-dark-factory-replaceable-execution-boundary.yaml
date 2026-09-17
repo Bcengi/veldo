@@ -1,0 +1,72 @@
+schema: veldo.decision/v1
+id: VELDO-DEC-0006
+version: 1
+title: LangGraph runs the coordination graph now, as a replaceable adapter over state Veldo owns
+status: draft
+problem_class: architecture
+policy_boundary: replaceable_execution
+owner: Dmitry
+reversal_cost: costly
+risk: high
+
+context: >
+  Dmitry ruled on 2026-09-16, over Telegram, that LangGraph is adopted now rather than deferred
+  ("why not now?"), with Veldo owning the state, a local SQLite checkpointer, and a swappable
+  boundary. The controlling clauses are R21 (checkpoints live in separate adapter-owned tables in
+  the authority's SQLite file and cannot alter domain tables, accepted history or domain
+  transaction results; the model execution process receives no database access; domain code
+  imports no LangGraph package; removing LangGraph removes its adapter and checkpoint data without
+  changing the domain schema) and R35 (stdlib_only_enforcement: LangGraph and its dependencies
+  never enter gate imports, contract validators, authorization, journal replay or recovery, and
+  those paths are qualified with the execution environment unavailable). This record frames the
+  ruling and its alternatives and activates nothing; it moves to decided once its adversarial
+  review is bound and Dmitry's decision is recorded on it.
+
+options:
+  - id: langgraph-adapter-veldo-owned-state
+    summary: >
+      LangGraph executes the coordination graph behind an adapter. Veldo owns every domain fact;
+      the adapter owns only its checkpoint tables, reached through a trusted access boundary that
+      refuses cross-namespace reads and writes. Enforcement stays standard library. Replacing the
+      execution engine replaces the adapter and its tables and nothing else. This is the supplied
+      ruling to carry into effective policy under PLAN-0019 W1.
+    dead_end: >
+      Stops working if a domain decision ever depends on checkpoint content, if the checkpoint
+      boundary cannot be proven to refuse domain reads and writes, or if the pinned runtime cannot
+      be installed in an isolated environment on a qualified host. Any of those is a new reviewed
+      decision, never a widening of the boundary.
+  - id: defer-langgraph-hand-written-loop
+    summary: >
+      Ship the project layer on a hand-written event loop first and consider LangGraph later.
+    dead_end: >
+      Dead-ends by rebuilding what the adapter provides (interrupts, checkpoints, resumption) as
+      unreviewed local code, and it contradicts the ruling to adopt LangGraph now. It would need a
+      new ruling to pursue.
+  - id: langgraph-owns-the-state
+    summary: >
+      Let LangGraph's checkpointer be the system of record for coordination state, with Veldo
+      reading it.
+    dead_end: >
+      Dead-ends at the first replay, audit or engine replacement: the domain history would live in
+      an execution engine's private format, a second authority R21 excludes, and removing the engine
+      would remove the history.
+  - id: hosted-langgraph-platform
+    summary: >
+      Run the graph on a hosted LangGraph server with its own database.
+    dead_end: >
+      Dead-ends on the additional database and service that R21 and R64 exclude, on hosted state
+      becoming a second authority, and on a dependency the enforcement path cannot qualify offline.
+
+assumptions:
+  - id: checkpoint-isolation-holds
+    statement: The checkpoint access boundary refuses every domain read and write, including views, triggers, INSERT SELECT and ATTACH of the same file.
+    signal: Qualification enumerating every domain table and proving read and write refusal for each through the adapter's connection.
+    breach: Any checkpoint operation reads or changes a domain table, or an adapter query reaches accepted history.
+  - id: enforcement-stays-stdlib
+    statement: Gate imports, contract validators, authorization, journal replay and recovery run with the execution environment absent.
+    signal: An import walk and a full enforcement run with the runtime's site-packages removed, recorded per release.
+    breach: Any enforcement entry imports LangGraph or fails when the runtime is unavailable.
+  - id: removal-is-clean
+    statement: Removing the adapter and dropping its tables leaves the domain schema, journal and history valid and replayable.
+    signal: A removal drill on a populated authority followed by full journal replay and schema comparison.
+    breach: Replay fails, a domain table changes, or a domain decision references a checkpoint after removal.

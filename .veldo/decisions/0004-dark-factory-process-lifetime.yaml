@@ -4,6 +4,7 @@ version: 1
 title: Replace project-layer process bans with governed runner lifetime and containment
 status: draft
 problem_class: architecture
+policy_boundary: process_lifetime
 owner: Dmitry
 reversal_cost: costly
 risk: critical

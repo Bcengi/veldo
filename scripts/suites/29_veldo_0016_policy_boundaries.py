@@ -34,6 +34,9 @@ import shutil as _v16_shutil
 _v16_pcspec = _v16_ilu.spec_from_file_location("v16_policy_contract", ROOT / ".veldo" / "policy_contract.py")
 PC16 = _v16_ilu.module_from_spec(_v16_pcspec)
 _v16_pcspec.loader.exec_module(PC16)
+_v16_clspec = _v16_ilu.spec_from_file_location("v16_contract_loader", ROOT / ".veldo" / "contract_loader.py")
+CL16 = _v16_ilu.module_from_spec(_v16_clspec)
+_v16_clspec.loader.exec_module(CL16)
 
 _V16_CONTRACT_TEXT = (ROOT / ".veldo" / "architecture.yaml").read_text()
 
@@ -150,62 +153,67 @@ def _v16_quiet(fn):
         return fn(), out.getvalue()
 
 
-def _v16_probe(adapter_id, fx, V):
+def _v16_probe(adapter, fx, V):
     """(outcome, detail) for one registered adapter over one fixture. Each adapter is loaded
-    FROM THE FIXTURE'S ENGINE COPY, so its own ROOT is the fixture and nothing is patched."""
+    FROM THE FIXTURE'S ENGINE COPY, so its own ROOT is the fixture and nothing is patched. Probes
+    are keyed by the registry row's ENTRY and load the row's MODULE by the name the registry gives,
+    so this file names no engine module of its own."""
     R, P = PC16.REFUSED, PC16.PROCEEDED
     spec_path = str(fx / "specs" / "FX-0001-fixture.md")
-    if adapter_id == "validate_checks.load_contract_state":
+    adapter_id = adapter["entry"]
+    mod = lambda: _v16_mod(fx, adapter["module"].rsplit("/", 1)[1][:-3])
+    if adapter_id == "load_contract_state":
         load = V.load_contract_state(str(fx))
         return (R if load.refused else P), (load.state, load.kind)
-    if adapter_id == "validate_checks.load_repo_contract":
+    if adapter_id == "load_repo_contract":
         try:
             arch, contract = V.load_repo_contract(str(fx))
         except V.ContractRefused as e:
             return R, e.load.kind
         return P, ("contract" if contract is not None else "none")
-    if adapter_id == "validate_checks.check_arch":
+    if adapter_id == "check_arch":
         n, text = _v16_quiet(lambda: V.check_arch(root=str(fx)))
         return (R if n else P), text.strip()
-    if adapter_id == "validate_checks.placement_gate_problems":
+    if adapter_id == "placement_gate_problems":
         probs = V.placement_gate_problems(dict(_V16_FM_OK), repo_root=str(fx))
         return (R if any("architecture contract refused" in m for m in probs) else P), probs
-    if adapter_id == "validate_checks.placement_gate_ok":
+    if adapter_id == "placement_gate_ok":
         ok = V.placement_gate_ok(dict(_V16_FM_OK), repo_root=str(fx))
         return (P if ok else R), ok
-    if adapter_id == "validate_checks.check_ready":
+    if adapter_id == "check_ready":
         n, text = _v16_quiet(lambda: V.check_ready(spec_path, repo_root=str(fx)))
         return (R if n else P), text.strip()
-    if adapter_id == "validate_checks.check_shape_review":
+    if adapter_id == "check_shape_review":
         n, text = _v16_quiet(lambda: V.check_shape_review(spec_path, [".veldo/validate.py"], repo_root=str(fx)))
         return (R if n else P), text.strip()
-    if adapter_id == "frontier.claimable":
-        FR = _v16_mod(fx, "frontier")
+    if adapter_id == "claimable":
+        FR = mod()
         claims = fx / "claims"
         claims.mkdir(exist_ok=True)
         offers = FR.claimable(repo_root=str(fx), claims_root=str(claims))
         return (P if offers else R), (offers, FR.contract_refusal(str(fx)))
-    if adapter_id == "plan.cmd_run_check":
-        PL = _v16_mod(fx, "plan")
+    if adapter_id == "cmd_run_check":
+        PL = mod()
         rc, text = _v16_quiet(lambda: PL.cmd_run_check(str(fx / "plans" / "PLAN-FX-fixture.md"), "FX-0001"))
         return (R if rc else P), text.strip()
-    if adapter_id == "shape_gate.run":
-        SG = _v16_mod(fx, "shape_gate")
+    if adapter_id == "run":
+        SG = mod()
         standdown, problems, _notes = SG.run(fx, set())
         return (R if problems else P), (standdown, problems)
-    if adapter_id == "observability._cli":
-        OB = _v16_mod(fx, "observability")
+    if adapter_id == "_cli":
+        OB = mod()
         rc, text = _v16_quiet(lambda: OB._cli(["observability.py", spec_path]))
         return (R if rc else P), text.strip()
-    if adapter_id == "intent_corpus.open_corpus":
-        IC = _v16_mod(fx, "intent_corpus")
+    if adapter_id == "open_corpus":
+        IC = mod()
+        corpus = IC.open_corpus(fx)  # the corpus OPENS whatever the contract says: its reads are its own
         try:
-            IC.open_corpus(fx)
+            corpus.area_of(".veldo/validate.py")
         except IC.IntentCorpusError as e:
             return (R if "architecture contract refused" in str(e) else "error"), str(e)
-        return P, "opened"
-    if adapter_id == "entropy.entropy_report":
-        EN = _v16_mod(fx, "entropy")
+        return P, ("opened; contract_refused=%s" % corpus.stats()["contract_refused"])
+    if adapter_id == "entropy_report":
+        EN = mod()
         # entropy loads its own validate instance by path, so its ContractRefused is a different
         # class object from V's: the registry says it raises ContractRefused, matched here by name.
         try:
@@ -215,25 +223,21 @@ def _v16_probe(adapter_id, fx, V):
                 return R, e.load.kind
             raise
         return P, ("standdown" if rep.get("standdown") else "report")
-    if adapter_id == "cost_to_change.repo_report":
-        CTC = _v16_mod(fx, "cost_to_change")
+    if adapter_id == "repo_report":
+        CTC = mod()
         rep, _text = _v16_quiet(lambda: CTC.repo_report(root=str(fx)))
         return (R if rep.get("refused") else P), rep.get("reason")
-    if adapter_id == "metrics_shape_readers._read_contract":
-        MSR = _v16_mod(fx, "metrics_shape_readers")
+    if adapter_id == "_read_contract":
+        MSR = mod()
         _parsed, _declared, problem = MSR._read_contract(fx, V)
         return (R if problem else P), problem
-    raise AssertionError("no probe for adapter %r" % adapter_id)
+    raise AssertionError("no probe for adapter entry %r" % adapter_id)
 
 
-_V16_PROBED = {
-    "validate_checks.load_contract_state", "validate_checks.load_repo_contract",
-    "validate_checks.check_arch", "validate_checks.placement_gate_problems",
-    "validate_checks.placement_gate_ok", "validate_checks.check_ready",
-    "validate_checks.check_shape_review", "frontier.claimable", "plan.cmd_run_check",
-    "shape_gate.run", "observability._cli", "intent_corpus.open_corpus",
-    "entropy.entropy_report", "cost_to_change.repo_report", "metrics_shape_readers._read_contract",
-}
+# The ENTRIES this suite probes, compared with the registry in both directions below.
+_V16_PROBED = {"load_contract_state", "load_repo_contract", "check_arch", "placement_gate_problems",
+               "placement_gate_ok", "check_ready", "check_shape_review", "claimable", "cmd_run_check",
+               "run", "_cli", "open_corpus", "entropy_report", "repo_report", "_read_contract"}
 
 
 def _v16_run_matrix(mutate=None, states=PC16.LOADER_STATES, flags=(False, True)):
@@ -249,7 +253,7 @@ def _v16_run_matrix(mutate=None, states=PC16.LOADER_STATES, flags=(False, True))
                 for a in PC16.LOADER_ADAPTERS:
                     expected = PC16.expected_loader_outcome(state, required)
                     try:
-                        observed, detail = _v16_probe(a["id"], fx, V)
+                        observed, detail = _v16_probe(a, fx, V)
                     except Exception as e:  # a crash is neither refusal nor proceeding: it is a row that reds by name
                         observed, detail = "crashed", "%s: %s" % (type(e).__name__, e)
                     rows.append((a["id"], state, required, expected, observed, detail))
@@ -271,7 +275,8 @@ expect("VELDO-0016 AC3 policy-loading/registry: the loader adapter registry is e
 expect("VELDO-0016 AC3 policy-loading/registry: every registered adapter has a probe in this suite "
        "and every probe is a registered adapter, so the product below covers the registry and nothing "
        "is probed off the record",
-       {a["id"] for a in PC16.LOADER_ADAPTERS} == _V16_PROBED)
+       {a["entry"] for a in PC16.LOADER_ADAPTERS} == _V16_PROBED
+       and len({a["entry"] for a in PC16.LOADER_ADAPTERS}) == len(PC16.LOADER_ADAPTERS))
 
 with tempfile.TemporaryDirectory(prefix="v16reg") as _v16_rd:
     _v16_rt = Path(_v16_rd)
@@ -301,23 +306,27 @@ _V16_EVC = _v16_ilu.module_from_spec(_v16_eng)
 _v16_eng.loader.exec_module(_V16_EVC)
 _v16_root_load = V.load_contract_state(str(ROOT))
 _v16_eng_load = _V16_EVC.load_contract_state(str(ROOT))
-expect("VELDO-0016 AC3 policy-loading/sync: the canonical engine/.veldo/validate_checks.py and the root "
-       "instance are byte-identical, expose the same ContractLoad fields, and answer the same "
-       "(state, kind) for this repository's own contract",
-       (ROOT / ".veldo" / "validate_checks.py").read_bytes() == (ROOT / "engine" / ".veldo" / "validate_checks.py").read_bytes()
-       and V.ContractLoad._fields == _V16_EVC.ContractLoad._fields
-       and (_v16_root_load.state, _v16_root_load.kind) == (_v16_eng_load.state, _v16_eng_load.kind) == ("valid", "valid")
-       and (ROOT / ".veldo" / "policy_contract.py").read_bytes() == (ROOT / "engine" / ".veldo" / "policy_contract.py").read_bytes())
+_v16_ecl = _v16_ilu.spec_from_file_location("v16_engine_cl", ROOT / "engine" / ".veldo" / "contract_loader.py")
+_V16_ECL = _v16_ilu.module_from_spec(_v16_ecl)
+_v16_ecl.loader.exec_module(_V16_ECL)
+expect("VELDO-0016 AC3 policy-loading/sync: the canonical engine copies of the loader, validate_checks and the "
+       "policy contract are byte-identical to the root instances, the two loaders expose the same ContractLoad "
+       "fields, and both entry points answer the same (state, kind) for this repository's own contract",
+       all((ROOT / ".veldo" / f).read_bytes() == (ROOT / "engine" / ".veldo" / f).read_bytes()
+           for f in ("validate_checks.py", "contract_loader.py", "policy_contract.py"))
+       and CL16.ContractLoad._fields == _V16_ECL.ContractLoad._fields
+       and type(_v16_root_load).__name__ == type(_v16_eng_load).__name__ == "ContractLoad"
+       and (_v16_root_load.state, _v16_root_load.kind) == (_v16_eng_load.state, _v16_eng_load.kind) == ("valid", "valid"))
 expect("VELDO-0016 AC3 policy-loading/result-type: ContractLoad carries state, kind, arch, contract, "
        "problems, path and required, refused is derived from state and the flag alone, and the kinds "
        "vocabulary is exactly the six the taxonomy names",
-       V.ContractLoad._fields == ("state", "kind", "arch", "contract", "problems", "path", "required")
-       and V.ContractLoad("invalid", "unreadable", None, None, ("x",), "p", False).refused is True
-       and V.ContractLoad("absent", "required_absence", None, None, ("x",), "p", True).refused is True
-       and V.ContractLoad("absent", "optional_absence", None, None, (), "p", False).refused is False
-       and V.ContractLoad("valid", "valid", None, {}, (), "p", True).refused is False
-       and set(V.CONTRACT_KINDS) == {"optional_absence", "required_absence", "unreadable",
-                                    "parse_failure", "invalid_structure", "valid"})
+       CL16.ContractLoad._fields == ("state", "kind", "arch", "contract", "problems", "path", "required")
+       and CL16.ContractLoad("invalid", "unreadable", None, None, ("x",), "p", False).refused is True
+       and CL16.ContractLoad("absent", "required_absence", None, None, ("x",), "p", True).refused is True
+       and CL16.ContractLoad("absent", "optional_absence", None, None, (), "p", False).refused is False
+       and CL16.ContractLoad("valid", "valid", None, {}, (), "p", True).refused is False
+       and set(CL16.CONTRACT_KINDS) == {"optional_absence", "required_absence", "unreadable",
+                                       "parse_failure", "invalid_structure", "valid"})
 
 # ---------------------------------------------------------------------------------------------
 # AC3, the product: every adapter over every state under both flags, from fixture roots.
@@ -344,6 +353,7 @@ with tempfile.TemporaryDirectory(prefix="v16flag") as _v16_fd:
     _v16_fb = _v16_fixture("absent", True)
     try:
         _v16_Va, _v16_Vb = _v16_mod(_v16_fa, "validate"), _v16_mod(_v16_fb, "validate")
+        _v16_CLa = _v16_mod(_v16_fa, "contract_loader")
         expect("VELDO-0016 AC3 policy-loading/required-flag: the explicit flag is separate from the policy "
                "line - required=True on an optional-policy tree refuses absence, required=False on a "
                "required-policy tree stands down, and the policy line decides when the flag is None",
@@ -353,12 +363,19 @@ with tempfile.TemporaryDirectory(prefix="v16flag") as _v16_fd:
                and _v16_Vb.load_contract_state(str(_v16_fb)).kind == "required_absence"
                and _v16_Va.check_arch(root=str(_v16_fa)) == 0
                and _v16_quiet(lambda: _v16_Va.check_arch(root=str(_v16_fa), required=True))[0] == 1
-               and _v16_Va.contract_requirement(str(_v16_fa)) is False
-               and _v16_Vb.contract_requirement(str(_v16_fb)) is True)
+               and _v16_CLa.contract_requirement(str(_v16_fa)) is False
+               and _v16_CLa.contract_requirement(str(_v16_fb)) is True)
         (_v16_fa / ".veldo" / "policy.yaml").write_text(_V16_POLICY % "requried")
         expect("VELDO-0016 AC3 policy-loading/required-flag: a policy line that is present and does not say "
                "optional means required (a misspelling closes rather than opens)",
-               _v16_Va.contract_requirement(str(_v16_fa)) is True)
+               _v16_CLa.contract_requirement(str(_v16_fa)) is True)
+        (_v16_fa / ".veldo" / "policy.yaml").unlink()
+        (_v16_fa / ".veldo" / "policy.yaml").mkdir()
+        expect("VELDO-0016 AC3 policy-loading/required-flag: a policy entry that is not a regular file is never "
+               "opened and means required (the kind question is asked before the read, so a FIFO cannot block "
+               "the loader and an unreadable policy closes rather than opens)",
+               _v16_CLa.contract_requirement(str(_v16_fa)) is True
+               and _v16_Va.load_contract_state(str(_v16_fa)).kind == "required_absence")
     finally:
         _v16_shutil.rmtree(_v16_fa, ignore_errors=True)
         _v16_shutil.rmtree(_v16_fb, ignore_errors=True)
@@ -389,7 +406,7 @@ else:
 # ---------------------------------------------------------------------------------------------
 def _v16_mutant(old, new):
     def mutate(fx):
-        p = fx / ".veldo" / "validate_checks.py"
+        p = fx / ".veldo" / "contract_loader.py"
         s = p.read_text()
         assert s.count(old) == 1, (old, s.count(old))
         p.write_text(s.replace(old, new))
@@ -403,11 +420,12 @@ def _v16_failing(rows):
 # THE DECLARED FALSIFIER: the pre-fix presence test, under which a directory at the path is
 # "absent" and an optional absence proceeds everywhere.
 _v16_m1_rows, _v16_m1_kinds = _v16_run_matrix(
-    mutate=_v16_mutant("if not os.path.lexists(p):", "if not p.is_file():"),
+    mutate=_v16_mutant("    if not os.path.lexists(p):\n        if req:", "    if not p.is_file():\n        if req:"),
     states=("unreadable",))
 _v16_m1_fail = _v16_failing(_v16_m1_rows)
 _V16_GUARDED = set(PC16.guarded_adapters())
 _V16_UNGUARDED = [a["id"] for a in PC16.LOADER_ADAPTERS if a["id"] not in _V16_GUARDED]
+_V16_GUARD_ID = PC16.guarded_adapters()[0]
 expect("VELDO-0016 AC3 policy-loading/unreadable DRIVEN (the declared falsifier): mapping an unreadable "
        "present contract to optional absence turns the unreadable row RED for the loader and for every "
        "adapter without a presence guard of its own under the optional flag (%d of %d rows red; guarded: %s)"
@@ -415,14 +433,15 @@ expect("VELDO-0016 AC3 policy-loading/unreadable DRIVEN (the declared falsifier)
        ("validate_checks.load_contract_state", "unreadable", False) in _v16_m1_fail
        and _v16_m1_kinds[("unreadable", False)] == ("absent", "optional_absence")
        and all((aid, "unreadable", False) in _v16_m1_fail for aid in _V16_UNGUARDED)
-       and _V16_GUARDED == {"metrics_shape_readers._read_contract"})
+       and [PC16.boundary_row(g)["entry"] if hasattr(PC16, "boundary_row") else g.rsplit(".", 1)[1]
+            for g in sorted(_V16_GUARDED)] == ["_read_contract"])
 
 # The pre-fix ArchContractError handler: a malformed file becomes optional absence.
 _v16_m2_rows, _v16_m2_kinds = _v16_run_matrix(
     mutate=_v16_mutant(
         '        kind = "unreadable" if getattr(e, "kind", None) == "unreadable" else "parse_failure"\n'
         '        return ContractLoad(CONTRACT_INVALID, kind, arch, None, (str(e),), str(p), req)\n',
-        '        return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)\n'),
+        '        return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)  # noqa\n'),
     states=("malformed",), flags=(False,))
 _v16_m2_fail = _v16_failing(_v16_m2_rows)
 expect("VELDO-0016 AC3 policy-loading/malformed DRIVEN: the pre-fix handler that returned (None, None) for a "
@@ -445,9 +464,9 @@ expect("VELDO-0016 AC3 policy-loading/absent/required DRIVEN: a dead required fl
 expect("VELDO-0016 AC3 policy-loading/guarded: the presence-guarded adapter refuses an unreadable and a "
        "malformed contract under the loader mutants by its own boundary (its rows stay green there), which "
        "is why it is excluded from those two every-row demands and NOT from the required-absence one",
-       ("metrics_shape_readers._read_contract", "unreadable", False) not in _v16_m1_fail
-       and ("metrics_shape_readers._read_contract", "malformed", False) not in _v16_m2_fail
-       and ("metrics_shape_readers._read_contract", "absent", True) in _v16_m3_fail)
+       (_V16_GUARD_ID, "unreadable", False) not in _v16_m1_fail
+       and (_V16_GUARD_ID, "malformed", False) not in _v16_m2_fail
+       and (_V16_GUARD_ID, "absent", True) in _v16_m3_fail)
 
 # Additive negative control: the unmutated harness passes exactly the rows the mutants red, so the
 # reds above are the mutation's and not the harness's.
@@ -456,3 +475,142 @@ expect("VELDO-0016 AC3 policy-loading/control: the unmutated engine passes every
        "harness",
        not [r for r in _v16_failing(_v16_rows)
             if r[1:] in {("unreadable", False), ("malformed", False), ("absent", True)}])
+
+# ---------------------------------------------------------------------------------------------
+# AC1: decision-to-policy activation. Only an accepted, version-bound, person-decided record
+# choosing the activating option, with its adversarial reviews bound, activates a boundary.
+# ---------------------------------------------------------------------------------------------
+_v16_dspec = _v16_ilu.spec_from_file_location("v16_decision", ROOT / ".veldo" / "decision.py")
+D16 = _v16_ilu.module_from_spec(_v16_dspec)
+_v16_dspec.loader.exec_module(D16)
+_v16_records = [D16.load_record(p, V.parse_yamlish) for p in sorted((ROOT / ".veldo" / "decisions").glob("*.yaml"))]
+_v16_by_id = {r["id"]: r for r in _v16_records}
+
+_v16_matrix = PC16.boundary_matrix_problems(_v16_records)
+expect("VELDO-0016 AC1 policy-activation/matrix: the decision-to-policy matrix derived from the records' "
+       "policy_boundary declarations equals the activation registry in both directions, every registered "
+       "decision resolves, and every activating option is one its record declares (problems: %s)" % _v16_matrix,
+       _v16_matrix == [] and len(PC16.POLICY_BOUNDARIES) == 6)
+expect("VELDO-0016 AC1 policy-activation/matrix: the registry covers the R03 boundaries and every one of the "
+       "four open PLAN-0019 choices (D1/D2 under operational_persistence, D3 inside process_lifetime, D4 under "
+       "worker_repository_access)",
+       {b["id"] for b in PC16.POLICY_BOUNDARIES} == {"repository_placement", "process_lifetime",
+                                                     "operational_persistence", "replaceable_execution",
+                                                     "review_and_completion", "worker_repository_access"}
+       and {b["decision"] for b in PC16.POLICY_BOUNDARIES} == {"VELDO-DEC-000%d" % i for i in range(3, 9)})
+
+_v16_rep = PC16.activation_report(ROOT)
+expect("VELDO-0016 AC1 policy-activation/today: over this repository's records nothing is activated - every "
+       "registered boundary refuses as draft, because every record is a draft awaiting Dmitry's decision and "
+       "its bound reviews (%s)" % [(r["boundary"], r["refusal"]) for r in _v16_rep["boundaries"]],
+       _v16_rep["activated"] == [] and _v16_rep["matrix_problems"] == []
+       and all(r["refusal"] == "draft" and not r["accepted"] for r in _v16_rep["boundaries"]))
+
+
+def _v16_decided(bid, **over):
+    """A synthetic DECIDED version of the registered record for boundary bid, with `over` applied
+    on top, so each refusal class is exercised one change away from the accepted record."""
+    b = PC16.boundary(bid)
+    rec = dict(_v16_by_id[b["decision"]])
+    rec["status"] = "decided"
+    rec["decision"] = {"chosen": b["activating_option"], "decided_by": "dmitry", "decided_at": "2026-09-17"}
+    for k, v in over.items():
+        if v is None:
+            rec.pop(k, None)
+        else:
+            rec[k] = v
+    return rec
+
+
+for _v16_b in PC16.POLICY_BOUNDARIES:
+    _v16_bid = _v16_b["id"]
+    _v16_need = 2 if _v16_by_id[_v16_b["decision"]].get("risk") == "critical" else 1
+    _v16_cases = [
+        ("missing", None, 9),
+        ("malformed", {"schema": "veldo.plan/v1", "id": _v16_b["decision"]}, 9),
+        ("wrong_record", _v16_decided(_v16_bid, id="VELDO-DEC-0001"), 9),
+        ("draft", dict(_v16_by_id[_v16_b["decision"]]), 9),
+        ("superseded", _v16_decided(_v16_bid, status="superseded", superseded_by="VELDO-DEC-0099"), 9),
+        ("stale", _v16_decided(_v16_bid, version=_v16_b["version"] + 1), 9),
+        ("wrong_option", _v16_decided(_v16_bid, decision={"chosen": "not-the-activating-option",
+                                                           "decided_by": "dmitry", "decided_at": "2026-09-17"}), 9),
+        ("undecided_by_a_person", _v16_decided(_v16_bid, decision={"chosen": _v16_b["activating_option"],
+                                                                    "decided_at": "2026-09-17"}), 9),
+        ("under_reviewed", _v16_decided(_v16_bid), _v16_need - 1),
+    ]
+    for _v16_cls, _v16_rec, _v16_have in _v16_cases:
+        _v16_ok, _v16_ref, _v16_why = PC16.activation_authority(_v16_bid, _v16_rec, _v16_have, _v16_need)
+        expect("VELDO-0016 AC1 policy-activation/%s %s: refused by class %r (%s)"
+               % (_v16_cls, _v16_bid, _v16_cls, _v16_why[:110]),
+               _v16_ok is False and _v16_ref == _v16_cls)
+    _v16_ok, _v16_ref, _v16_why = PC16.activation_authority(_v16_bid, _v16_decided(_v16_bid), _v16_need, _v16_need)
+    expect("VELDO-0016 AC1 policy-activation/accepted %s: the registered record, decided by a person, at the "
+           "registered version, choosing the activating option, with its %d bound supporting review(s), "
+           "activates the boundary and nothing less does" % (_v16_bid, _v16_need),
+           _v16_ok is True and _v16_ref is None)
+expect("VELDO-0016 AC1 policy-activation/unknown_boundary: a boundary the registry does not know is refused by "
+       "class, never treated as unguarded",
+       PC16.activation_authority("telepathy", _v16_decided("process_lifetime"), 2, 2)[1] == "unknown_boundary")
+expect("VELDO-0016 AC1 policy-activation/review-floor: a required count below one is raised to one, so a decided "
+       "record with zero bound reviews never activates even when a policy tier says zero",
+       PC16.activation_authority("replaceable_execution", _v16_decided("replaceable_execution"), 0, 0)[1] == "under_reviewed"
+       and PC16.activation_authority("replaceable_execution", _v16_decided("replaceable_execution"), 1, 0)[0] is True)
+
+# Matrix teeth: each direction of the comparison, driven with one seeded defect.
+_v16_seed = [dict(r) for r in _v16_records]
+_v16_seed.append({"schema": PC16.DECISION_SCHEMA, "id": "VELDO-DEC-0090", "policy_boundary": "telepathy", "options": []})
+expect("VELDO-0016 AC1 policy-activation/matrix TEETH: a record claiming a boundary the registry does not know is "
+       "named", any("telepathy" in m and "does not know" in m for m in PC16.boundary_matrix_problems(_v16_seed)))
+_v16_seed = [dict(r) for r in _v16_records if r["id"] != "VELDO-DEC-0006"]
+expect("VELDO-0016 AC1 policy-activation/matrix TEETH: a registered decision that resolves to no record is named, "
+       "and so is the boundary nobody claims",
+       any("VELDO-DEC-0006" in m and "resolves to no decision record" in m for m in PC16.boundary_matrix_problems(_v16_seed)))
+_v16_seed = [dict(r) for r in _v16_records]
+_v16_seed[[i for i, r in enumerate(_v16_seed) if r["id"] == "VELDO-DEC-0005"][0]]["policy_boundary"] = "process_lifetime"
+_v16_twice = PC16.boundary_matrix_problems(_v16_seed)
+expect("VELDO-0016 AC1 policy-activation/matrix TEETH: two records claiming one boundary, and the boundary the "
+       "moved record abandoned, are each named",
+       any("process_lifetime is claimed by 2 records" in m for m in _v16_twice)
+       and any("operational_persistence" in m for m in _v16_twice))
+_v16_seed = [dict(r) for r in _v16_records]
+_v16_i = [i for i, r in enumerate(_v16_seed) if r["id"] == "VELDO-DEC-0007"][0]
+_v16_seed[_v16_i]["options"] = [o for o in _v16_seed[_v16_i]["options"] if o["id"] != "gate-and-owner-authorize-review-informs"]
+expect("VELDO-0016 AC1 policy-activation/matrix TEETH: a registered activating option the record no longer "
+       "declares is named",
+       any("gate-and-owner-authorize-review-informs" in m and "does not declare" in m
+           for m in PC16.boundary_matrix_problems(_v16_seed)))
+
+# THE DECLARED FALSIFIER: accept a draft process decision as activation authority. The mutant
+# removes the draft refusal from a copy of the contract module; the policy-activation/draft row
+# for process_lifetime must red under it and pass unmutated (it did, above).
+def _v16_mutated_pc(old, new):
+    d = Path(tempfile.mkdtemp(prefix="v16pc"))
+    src = (ROOT / ".veldo" / "policy_contract.py").read_text()
+    assert src.count(old) == 1, (old, src.count(old))
+    (d / "policy_contract.py").write_text(src.replace(old, new))
+    spec = _v16_ilu.spec_from_file_location("v16_pc_mut_%s" % d.name, d / "policy_contract.py")
+    m = _v16_ilu.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    _v16_shutil.rmtree(d, ignore_errors=True)
+    return m
+
+
+_V16_PCM1 = _v16_mutated_pc('    if status != "decided":\n', '    if False:\n')
+_v16_draft_rec = dict(_v16_by_id["VELDO-DEC-0004"])
+_v16_m_ok, _v16_m_ref, _v16_m_why = _V16_PCM1.activation_authority("process_lifetime", _v16_draft_rec, 2, 2)
+expect("VELDO-0016 AC1 policy-activation/draft DRIVEN (the declared falsifier): with the draft refusal removed, "
+       "the draft process decision VELDO-DEC-0004 is no longer refused as draft (it now falls to %r: %s), so the "
+       "policy-activation/draft row reds; unmutated it refuses as draft" % (_v16_m_ref, _v16_m_why[:80]),
+       _v16_m_ref != "draft"
+       and PC16.activation_authority("process_lifetime", _v16_draft_rec, 2, 2)[1] == "draft")
+_V16_PCM2 = _v16_mutated_pc('    if version != b["version"]:\n', '    if False:\n')
+expect("VELDO-0016 AC1 policy-activation/stale DRIVEN: with the version check removed a re-decided record at "
+       "version 2 activates, so the stale row reds; unmutated it refuses as stale",
+       _V16_PCM2.activation_authority("operational_persistence", _v16_decided("operational_persistence", version=2), 2, 2)[0] is True
+       and PC16.activation_authority("operational_persistence", _v16_decided("operational_persistence", version=2), 2, 2)[1] == "stale")
+_V16_PCM3 = _v16_mutated_pc('    if have < need:\n', '    if False:\n')
+expect("VELDO-0016 AC1 policy-activation/under_reviewed DRIVEN: with the review count check removed a decided "
+       "critical record with one bound review of the two required activates, so the row reds; unmutated it "
+       "refuses as under_reviewed",
+       _V16_PCM3.activation_authority("review_and_completion", _v16_decided("review_and_completion"), 1, 2)[0] is True
+       and PC16.activation_authority("review_and_completion", _v16_decided("review_and_completion"), 1, 2)[1] == "under_reviewed")

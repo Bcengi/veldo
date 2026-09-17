@@ -5699,11 +5699,14 @@ expect("WARP-1210 R11-B1 THE DOMAIN IS THE DECLARED TRANSITIVE CLOSURE, AND THE 
        # THE PUBLISHED SIZE OF THE TABLE IS PINNED HERE rather than estimated in prose: this item has failed
        # eight rounds partly on a figure that did not reproduce, and a count in a manifest that no assertion
        # holds is exactly that shape.
-       and sum(len(_r["opens"]) for _r in _M10_R12_ROWS.values()) == 25
-       and len({_p for _r in _M10_R12_ROWS.values() for _p, _c, _w in _r["opens"]}) == 11
+       # VELDO-0016 AC3 added ONE root to every hand-off that reaches the contract loader: the policy
+       # line that makes a contract required, class OPENER because the loader asks is_file() before it
+       # reads. 25 entries over 11 patterns became 29 over 12; the four roots this boundary OWNS are unchanged.
+       and sum(len(_r["opens"]) for _r in _M10_R12_ROWS.values()) == 29
+       and len({_p for _r in _M10_R12_ROWS.values() for _p, _c, _w in _r["opens"]}) == 12
        and sorted(_c for _r in _M10_R12_ROWS.values() for _p, _c, _w in _r["opens"]) == (
-           ["HERE"] * 4 + ["OPENER"] * 5 + ["ORGAN"] * 8 + ["STORE"] * 3 + ["UNIT"] * 5)
-       and [len(_r["opens"]) for _g, _r in sorted(_M10_R12_ROWS.items())] == [4, 6, 5, 10]
+           ["HERE"] * 4 + ["OPENER"] * 9 + ["ORGAN"] * 8 + ["STORE"] * 3 + ["UNIT"] * 5)
+       and [len(_r["opens"]) for _g, _r in sorted(_M10_R12_ROWS.items())] == [5, 7, 6, 11]
        and "unopenable_under(root, row)" in _m10_cl_src)
 # THE CLOSURE IS PROVEN COMPLETE BY MEASUREMENT, which is the part a human enumeration cannot give: each
 # hand-off is run in a CHILD under sys.addaudithook, every "open" event is recorded, and every opened path
@@ -6096,7 +6099,7 @@ expect("WARP-1210 AC6: the capability entry names what ships (the four measures,
            ("support_numbers:", "UNBACKED_EVENT", "UNRESOLVED_RECEIPT", "EMPTY_DENOMINATOR",
             "NO_AREA_COST_DATA", "NO_ARCHITECTURE_CONTRACT",
             "The /veldo:init lay-down and the made-true documents are WARP-1211 (W11)")))
-expect("WARP-1210 AC6: ALL THIRTEEN modules stay under the 1000-line module budget, EVERY per-module bound UNCHANGED (metrics.py 400, the derivation 800, the readers 300, the report layer 400, the contract 450, the accounted read 300, the shape readers 300, the engine owners 200, the declared skip rule 200, the loop derivation's own read 200, the declared read unit and its kind 200) and ONE ADDED AND DECLARED (the TRANSITIVE CLOSURE OF A DELEGATED READ, 250) for the module ROUND 12 split out - the CLOSURE is a DECLARATION an adopter reads (four hand-offs, TWENTY-FIVE root entries over ELEVEN distinct patterns, each saying WHERE its kind question is asked, and the counts are ASSERTED below rather than estimated here) plus the boundary that asks it, and the two modules it could have gone into stood at 184 of 200 and 299 of 300 with 16 and 1 free line between them, which is less than it measures. THE MEASUREMENT, not an assurance: the new module plus the kind module together measure MORE than the 200 the kind module alone is bounded at, and the new module plus the shape readers together measure MORE than the shape readers' 300, so the code could not have gone in either. NO EXISTING BOUND MOVED AND EVERY LINE COUNT IS MEASURED HERE. Every function is under the 120-line function budget (compute, at 127 lines, is pre-existing and untouched)",
+expect("WARP-1210 AC6: ALL THIRTEEN modules stay under the 1000-line module budget, EVERY per-module bound UNCHANGED (metrics.py 400, the derivation 800, the readers 300, the report layer 400, the contract 450, the accounted read 300, the shape readers 300, the engine owners 200, the declared skip rule 200, the loop derivation's own read 200, the declared read unit and its kind 200) and ONE ADDED AND DECLARED (the TRANSITIVE CLOSURE OF A DELEGATED READ, 250) for the module ROUND 12 split out - the CLOSURE is a DECLARATION an adopter reads (four hand-offs, TWENTY-NINE root entries over TWELVE distinct patterns since VELDO-0016 declared the policy line the contract loader reads, each saying WHERE its kind question is asked, and the counts are ASSERTED below rather than estimated here) plus the boundary that asks it, and the two modules it could have gone into stood at 184 of 200 and 299 of 300 with 16 and 1 free line between them, which is less than it measures. THE MEASUREMENT, not an assurance: the new module plus the kind module together measure MORE than the 200 the kind module alone is bounded at, and the new module plus the shape readers together measure MORE than the shape readers' 300, so the code could not have gone in either. NO EXISTING BOUND MOVED AND EVERY LINE COUNT IS MEASURED HERE. Every function is under the 120-line function budget (compute, at 127 lines, is pre-existing and untouched)",
        all(len(_s.splitlines()) < 1000 for _s in _M10_SRCS) and len(_M10_SRCS) == 13
        and len(_m10_es_src.splitlines()) < 200
        and len(_m10_src.splitlines()) + len(_m10_es_src.splitlines()) > 400

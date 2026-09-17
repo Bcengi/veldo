@@ -1,0 +1,74 @@
+schema: veldo.decision/v1
+id: VELDO-DEC-0008
+version: 1
+title: Workers build in isolated per-run clones and read other repositories only through contract-named, commit-pinned, read-only attachments
+status: draft
+problem_class: architecture
+policy_boundary: worker_repository_access
+owner: Dmitry
+reversal_cost: costly
+risk: critical
+
+context: >
+  PLAN-0019 D4. Dmitry ruled on 2026-09-17, over Telegram, recorded on VEL-18 and in the plan's
+  constraint C13: D4 approved. He asked how a worker gets more than its own repository when the
+  interactive Claude Code session he uses today reads any local project it needs; the answer he
+  approved is that a worker reads another repository only through attachments its contract names,
+  each pinned to an exact accepted commit and provisioned read-only from that repository's own
+  object cache, that a write to another repository is its own unit admitted in that repository's
+  domain and linked by a dependency, and that a person's interactive session is not a worker and
+  is not confined by this plan. The controlling clauses are R44 and R45 (isolated per-run clones,
+  one read-only object cache per repository, never a pooled cache, with a negative read test) and
+  C13. This record frames the ruling and its alternatives and activates nothing; it moves to
+  decided once the adversarial reviews its critical tier requires are bound and Dmitry's decision
+  is recorded on it.
+
+options:
+  - id: isolated-clones-contract-named-attachments
+    summary: >
+      Every dispatch runs in a fresh clone provisioned from the repository's read-only object
+      cache and discarded after the run. Other repositories appear only as attachments the unit's
+      contract names, pinned to an accepted commit, mounted read-only, and drawn from their own
+      caches. Cross-repository writes are separate units in the other repository's domain. An
+      interactive session run by a person is outside this rule. This is the supplied ruling to
+      carry into effective policy under PLAN-0019 W1.
+    dead_end: >
+      Stops working if the attachment set cannot be known before dispatch for a class of work, if
+      the object cache cannot be scoped per repository on some host profile, or if the negative
+      read test cannot be made to pass. Each needs a new reviewed decision, never an unnamed read.
+  - id: shared-working-tree-on-the-host
+    summary: >
+      Workers build directly in the primary checkout or in shared worktrees, the way the factory
+      floor's lander operates today.
+    dead_end: >
+      Dead-ends at the first concurrent dispatch and at the first uncommitted change a worker's
+      revert destroys; VELDO-0099's review recorded two such data-loss paths. It also gives a
+      worker every credential and file the host session holds.
+  - id: unrestricted-local-project-access
+    summary: >
+      Workers may read any repository present on the host, as an interactive session can.
+    dead_end: >
+      Dead-ends on provenance and confinement: nothing pins what was read to a commit, a worker
+      can read a repository whose owner never agreed, and the attachment list stops describing the
+      build. It also conflates a person's session with an autonomous worker, which C13 separates.
+  - id: pooled-object-cache-across-repositories
+    summary: >
+      One shared object cache holds every repository's objects and clones draw from it.
+    dead_end: >
+      Dead-ends because a Git alternate exposes every object it holds to enumeration regardless of
+      the checkout or the attachment list, so a worker could read a repository its contract did
+      not name; R45 was revised on 2026-09-17 to exclude this.
+
+assumptions:
+  - id: attachments-are-enumerable-before-dispatch
+    statement: The repositories a unit needs are known and named in its contract before it is dispatched.
+    signal: Dispatch refusals counted for units whose build asked for an unnamed repository, and the rate of contract amendments adding attachments.
+    breach: A class of work cannot state its attachments in advance and workers routinely fail on unnamed reads.
+  - id: cache-is-scoped
+    statement: A worker cannot enumerate or read an object of a repository its contract did not name, on every host profile.
+    signal: The R45 negative read test (cat-file --batch-all-objects, cat-file -p, the alternates file) run per host profile before activation.
+    breach: Any object of an unnamed repository is readable from a worker clone.
+  - id: attachments-are-read-only
+    statement: A worker cannot write to an attached repository or to the object cache.
+    signal: Write, rename, unlink and ref-update attempts against attachments and the cache from inside a confined run, each refused by the kernel or the filesystem.
+    breach: Any write from a worker lands in an attachment, a cache, or another repository's domain.

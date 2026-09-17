@@ -1,0 +1,76 @@
+schema: veldo.decision/v1
+id: VELDO-DEC-0005
+version: 1
+title: One SQLite authority per repository with a signed Git replica, acknowledged only after off-host publication
+status: draft
+problem_class: architecture
+policy_boundary: operational_persistence
+owner: Dmitry
+reversal_cost: costly
+risk: critical
+
+context: >
+  PLAN-0019 D1 and D2. Dmitry ruled on 2026-09-17, over Telegram, recorded on VEL-18 and in the
+  plan's constraint C3: D1 approved ("if multiple boxes are working on the same repository, they
+  have to communicate with one instance that has SQLite; they cannot all be using their copy"),
+  D2 accepted. The controlling clauses are R21 (one local SQLite database at
+  <git-common-dir>/veldo/control/control.sqlite3 per domain, on a filesystem qualified for locking
+  and durability; network-mounted SQLite unsupported) and the acknowledgement rule that a mutation
+  is not acknowledged to its caller until the signed journal export for it has reached the
+  off-host remote. This record frames the ruling and its alternatives so a later reader sees
+  what was rejected and why; it activates nothing. It moves to decided only once the adversarial
+  reviews its critical tier requires are bound to it and Dmitry's decision is recorded on it.
+
+options:
+  - id: sqlite-authority-signed-git-replica
+    summary: >
+      One authority process per repository owns one local SQLite file. Every box that works on
+      that repository talks to that authority through the authenticated command API; no box holds
+      a writable copy. The authority appends every accepted transition to a signed journal and
+      replicates the journal to a protected Git ref on the off-host remote; a mutation is
+      acknowledged only after that export is durable off host. Recovery replays the journal.
+      This is the supplied ruling to carry into effective policy under PLAN-0019 W1.
+    dead_end: >
+      Stops working if the qualified-filesystem requirement cannot be met where the authority must
+      run, if journal export latency makes the acknowledgement rule unacceptable for interactive
+      use, or if two authorities for one repository can ever both accept a command. Each of those
+      needs a new reviewed decision, never a silent second writer.
+  - id: git-refs-as-the-authority
+    summary: >
+      Keep the control state in Git objects and refs alone, as the factory floor's claim ledger and
+      proof corpus do today, with no database.
+    dead_end: >
+      Dead-ends at fenced ownership, leases, nonces and cross-entity transactions: Git offers
+      compare-and-swap on one ref at a time and no locking across several, so a claim, its
+      reservation and its receipt cannot commit together, and a reader cannot tell a stale ref from
+      a lost one. It is the state the layer above the floor is being built to leave.
+  - id: per-box-sqlite-copies-merged-later
+    summary: >
+      Every box runs its own SQLite file and the copies are reconciled through Git or a merge job.
+    dead_end: >
+      Dead-ends the moment two boxes accept conflicting commands for one unit: a merge of two
+      authorities is a second authority, and Dmitry's D1 question named this exact failure. It
+      cannot deliver one settlement per decision.
+  - id: hosted-database-service
+    summary: >
+      A hosted relational database or coordination service holds the control state for every
+      repository.
+    dead_end: >
+      Dead-ends on the dependency footprint R35 forbids in enforcement paths, on a second authority
+      outside the repository's own domain, and on availability the authority cannot qualify. It
+      also breaks the property that removing the layer leaves the repository's history intact in
+      Git.
+
+assumptions:
+  - id: one-writer-per-repository
+    statement: Exactly one authority accepts commands for a repository at any moment, and every box reaches it rather than a copy.
+    signal: Leader-lock and authority-generation qualification across two processes and two hosts, with a partitioned-authority test that attempts a write on both sides.
+    breach: A command is accepted by two authorities for one repository, or a box completes a mutation against a local copy.
+  - id: off-host-export-before-ack
+    statement: The signed journal export reaches the off-host remote before the caller is told the mutation succeeded.
+    signal: Acknowledgement-ordering tests that fail the remote push and observe the caller's result, plus loss-of-host recovery replaying only what the remote holds.
+    breach: A caller observes success for a transition the off-host remote never received.
+  - id: qualified-local-filesystem
+    statement: The authority's filesystem supports the locking and durability SQLite needs, on every host profile that runs one.
+    signal: Filesystem qualification per host profile (fsync behavior, advisory locks, no network mount) recorded before activation.
+    breach: The authority is placed on a network mount or an unqualified filesystem, or a durability test loses an acknowledged transition.

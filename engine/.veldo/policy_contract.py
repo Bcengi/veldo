@@ -129,7 +129,8 @@ LOADER_ADAPTERS = (
      "refusal": "exit 1 naming the refusal"},
     {"id": "intent_corpus.open_corpus", "module": ".veldo/intent_corpus.py",
      "entry": "open_corpus", "takes_required": False, "via": "load_repo_contract",
-     "refusal": "raises IntentCorpusError naming the refusal"},
+     "refusal": "the corpus opens (its own reads are its own) and every area join, area_of first, "
+                "raises IntentCorpusError naming the refusal; stats() says contract_refused"},
     {"id": "entropy.entropy_report", "module": ".veldo/entropy.py",
      "entry": "entropy_report", "takes_required": False, "via": "load_repo_contract",
      "refusal": "raises ContractRefused; the dashboard's delegation boundary names it as the cause"},
@@ -150,9 +151,9 @@ _LOADER_CALL = re.compile(r"\b(?:load_repo_contract|load_contract_state|"
                           r"placement_gate_problems|placement_gate_ok)\(")
 
 # Modules the scan finds that are NOT adapters: validate.py re-exports the names by assignment
-# and never calls them, so it is listed here only to make the exclusion an explicit decision the
-# suite can see rather than a silent regex accident.
-LOADER_SCAN_EXCLUDED = (".veldo/validate.py",)
+# and never calls them, and contract_loader.py DEFINES the loader; each is listed here to make the
+# exclusion an explicit decision the suite can see rather than a silent regex accident.
+LOADER_SCAN_EXCLUDED = (".veldo/validate.py", ".veldo/contract_loader.py")
 
 
 def guarded_adapters():
@@ -223,3 +224,219 @@ def loader_matrix():
             for required in (False, True):
                 rows.append((a["id"], state, required, expected_loader_outcome(state, required)))
     return rows
+
+
+# ---------------------------------------------------------------------------------------------
+# AC1: decision-to-policy activation.
+# ---------------------------------------------------------------------------------------------
+
+# THE GOVERNED POLICY BOUNDARIES, each with the ONE decision record that may activate it, the
+# record VERSION this registry was written against, and the option whose choice activates the
+# boundary. The boundaries are the ones R03 names (repository placement, orchestrator process
+# ownership, operational authority and persistence, LangGraph's replaceable execution boundary,
+# review and completion semantics) plus the worker repository access rule of D4, so every one of
+# the four open PLAN-0019 choices is on this table: D1 and D2 under operational_persistence, D3
+# inside process_lifetime (host profiles plural, C12), D4 under worker_repository_access.
+#
+# A ROW HERE IS NOT ACTIVATION. It says which record would have to be DECIDED, at which version,
+# choosing which option, before a consumer may treat the boundary as effective. Every record named
+# below is a draft on the day this table was written, and activation_authority refuses each of
+# them by name until Dmitry decides it on the record with its adversarial reviews bound.
+POLICY_BOUNDARIES = (
+    {"id": "repository_placement", "clause": "R03",
+     "decision": "VELDO-DEC-0003", "version": 1,
+     "activating_option": "same-repository-canonical-engine",
+     "effect": "the project layer lives in canonical engine/ of this repository"},
+    {"id": "process_lifetime", "clause": "R03, R43, R44",
+     "decision": "VELDO-DEC-0004", "version": 1,
+     "activating_option": "governed-service-and-runner",
+     "effect": "no_detached_processes and agent-mediated launch are replaced for the governed "
+               "project runner by the R43/R44 obligations (D3: host profiles plural, C12)"},
+    {"id": "operational_persistence", "clause": "R03, R21",
+     "decision": "VELDO-DEC-0005", "version": 1,
+     "activating_option": "sqlite-authority-signed-git-replica",
+     "effect": "one SQLite authority per repository with a signed Git replica; acknowledgement "
+               "only after off-host publication (D1, D2)"},
+    {"id": "replaceable_execution", "clause": "R03, R21, R35",
+     "decision": "VELDO-DEC-0006", "version": 1,
+     "activating_option": "langgraph-adapter-veldo-owned-state",
+     "effect": "LangGraph runs the graph behind a replaceable adapter over state Veldo owns"},
+    {"id": "review_and_completion", "clause": "R03, R46, R50",
+     "decision": "VELDO-DEC-0007", "version": 1,
+     "activating_option": "gate-and-owner-authorize-review-informs",
+     "effect": "a passing review informs; the gate, the receipt and the owner decide completion"},
+    {"id": "worker_repository_access", "clause": "R44, R45, C13",
+     "decision": "VELDO-DEC-0008", "version": 1,
+     "activating_option": "isolated-clones-contract-named-attachments",
+     "effect": "isolated per-run clones; other repositories only through contract-named, "
+               "commit-pinned, read-only attachments (D4)"},
+)
+
+DECISION_SCHEMA = "veldo.decision/v1"
+
+# The refusal classes activation_authority can answer with, one word each, so a consumer's
+# diagnostic and a suite row name the class rather than parse prose.
+ACTIVATION_REFUSALS = ("unknown_boundary", "missing", "malformed", "wrong_record", "draft",
+                       "superseded", "stale", "wrong_option", "undecided_by_a_person",
+                       "under_reviewed")
+
+
+def boundary(boundary_id):
+    """The registry row for boundary_id, or None."""
+    for b in POLICY_BOUNDARIES:
+        if b["id"] == boundary_id:
+            return b
+    return None
+
+
+def activation_authority(boundary_id, record, bound_supporting_reviews, required_reviews):
+    """(accepted, refusal_class, reason): may `record` activate `boundary_id`? PURE over its
+    arguments; the caller supplies the parsed veldo.decision/v1 record (None when none resolves),
+    the number of structurally valid, bound, SUPPORTING adversarial reviews the record carries
+    (decision_review._valid_bound_reviews_by_decision) and the number its risk tier requires
+    (decision_review.required_reviews_for). Accepts ONLY a record that is the registered one,
+    at the registered version, decided by a named person, choosing the activating option, with
+    enough bound reviews. Everything else is refused by class and by name: a missing record, a
+    malformed one, a record for another decision, a draft, a superseded record, a record whose
+    version moved past the registry (stale: the registry must be re-read against the new
+    version, never assumed), a decided record that chose a different option, a decided record
+    without a decider, and a decided record with fewer bound supporting reviews than its tier
+    requires. Draft, superseded and stale are refused BEFORE the option is looked at, so a draft
+    that already names the activating option in prose is still a draft."""
+    b = boundary(boundary_id)
+    if b is None:
+        return False, "unknown_boundary", "no policy boundary %r is registered" % (boundary_id,)
+    if record is None:
+        return False, "missing", "decision record %s for boundary %s does not resolve" % (b["decision"], boundary_id)
+    if not isinstance(record, dict) or record.get("schema") != DECISION_SCHEMA:
+        return False, "malformed", "the record offered for boundary %s is not a %s record" % (boundary_id, DECISION_SCHEMA)
+    if record.get("id") != b["decision"]:
+        return False, "wrong_record", ("boundary %s is activated by %s, not by %r"
+                                       % (boundary_id, b["decision"], record.get("id")))
+    status = record.get("status")
+    if status == "superseded":
+        return False, "superseded", ("%s is superseded%s: a superseded record activates nothing; "
+                                     "re-read the registry against its successor"
+                                     % (b["decision"], (" by %s" % record.get("superseded_by")) if record.get("superseded_by") else ""))
+    if status != "decided":
+        return False, "draft", ("%s is %r, not decided: a draft records a supplied direction and "
+                                "activates nothing" % (b["decision"], status))
+    version = record.get("version")
+    if version != b["version"]:
+        return False, "stale", ("%s is at version %r and the registry was written against version %d: "
+                                "a re-decided record activates nothing until the registry is re-read "
+                                "against it" % (b["decision"], version, b["version"]))
+    decision = record.get("decision") if isinstance(record.get("decision"), dict) else {}
+    decided_by = decision.get("decided_by")
+    if not (isinstance(decided_by, str) and decided_by.strip()):
+        return False, "undecided_by_a_person", ("%s is decided but names no decider: only a person "
+                                                "decides, on the record" % b["decision"])
+    chosen = decision.get("chosen")
+    if chosen != b["activating_option"]:
+        return False, "wrong_option", ("%s chose %r; boundary %s is activated only by %r"
+                                       % (b["decision"], chosen, boundary_id, b["activating_option"]))
+    try:
+        have, need = int(bound_supporting_reviews), int(required_reviews)
+    except (TypeError, ValueError):
+        return False, "under_reviewed", "the bound review count for %s is not a number" % b["decision"]
+    if need < 1:
+        need = 1  # the floor decision_review.required_reviews_for keeps: a decided record needs one review
+    if have < need:
+        return False, "under_reviewed", ("%s carries %d bound supporting adversarial review(s); its risk "
+                                         "tier requires %d" % (b["decision"], have, need))
+    return True, None, ("%s v%d decided by %s choosing %s activates boundary %s"
+                        % (b["decision"], b["version"], decided_by, chosen, boundary_id))
+
+
+def boundary_matrix_problems(records):
+    """The registry compared with the decision records in BOTH directions. `records` is the
+    list of parsed veldo.decision/v1 records under .veldo/decisions/ (the caller reads them
+    through decision.load_record, the one reader). Each record that may activate a boundary
+    declares it as `policy_boundary`; the matrix derived from those declarations must equal
+    the registry: a registered boundary no record claims, a record claiming an unregistered
+    boundary, a registered decision id that resolves to no record, a record claiming a boundary
+    the registry assigns to another record, a registered activating option the record does not
+    declare, and two records claiming one boundary are each a problem by name."""
+    problems = []
+    by_id = {}
+    claims = {}
+    for r in records:
+        if not isinstance(r, dict) or r.get("schema") != DECISION_SCHEMA:
+            continue
+        rid = r.get("id")
+        by_id[rid] = r
+        pb = r.get("policy_boundary")
+        if pb is not None:
+            claims.setdefault(pb, []).append(rid)
+    registered = {b["id"]: b for b in POLICY_BOUNDARIES}
+    ids = [b["id"] for b in POLICY_BOUNDARIES]
+    for i in sorted(set(ids)):
+        if ids.count(i) > 1:
+            problems.append("duplicate boundary id %r in the registry" % i)
+    for bid, b in registered.items():
+        rec = by_id.get(b["decision"])
+        if rec is None:
+            problems.append("boundary %s names %s, which resolves to no decision record" % (bid, b["decision"]))
+            continue
+        if rec.get("policy_boundary") != bid:
+            problems.append("boundary %s names %s, but that record claims %r" % (bid, b["decision"], rec.get("policy_boundary")))
+        options = {o.get("id") for o in (rec.get("options") or []) if isinstance(o, dict)}
+        if b["activating_option"] not in options:
+            problems.append("boundary %s is activated by option %r, which %s does not declare (declared: %s)"
+                            % (bid, b["activating_option"], b["decision"], sorted(o for o in options if o)))
+        if bid not in claims:
+            problems.append("boundary %s is registered and no record claims it" % bid)
+    for pb, rids in sorted(claims.items()):
+        if pb not in registered:
+            problems.append("record(s) %s claim boundary %r, which the registry does not know" % (", ".join(sorted(map(str, rids))), pb))
+        elif len(rids) > 1:
+            problems.append("boundary %s is claimed by %d records: %s" % (pb, len(rids), ", ".join(sorted(map(str, rids)))))
+        elif registered[pb]["decision"] != rids[0]:
+            problems.append("record %s claims boundary %s, which the registry assigns to %s" % (rids[0], pb, registered[pb]["decision"]))
+    return problems
+
+
+def activation_report(root=None, load_modules=None):
+    """The activation state of every registered boundary over THIS repository's records and
+    reviews: [{boundary, decision, accepted, refusal, reason}], plus the matrix problems. Wires
+    decision.load_record for the records and decision_review's bound-review count and tier
+    requirement, each loaded by path from the engine beside this file (the way the sibling
+    organs load one another), with a silent failure reporter: this is a READ, never a gate pass,
+    and the gate's own decision checks report the malformed records. Nothing here activates
+    anything; it says what would be refused and why."""
+    import importlib.util
+    base = Path(root) if root else ROOT
+    here = Path(__file__).resolve().parent
+
+    def _load(name, rel):
+        spec = importlib.util.spec_from_file_location("veldo_policy_contract_" + name, here / rel)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    load_modules = load_modules or _load
+    V = load_modules("validate", "validate.py")
+    D = load_modules("decision", "decision.py")
+    DR = load_modules("decision_review", "decision_review.py")
+    quiet = lambda _name, _msg: 1
+    ddir = D.default_decisions_dir(base)
+    records = []
+    if Path(ddir).is_dir():
+        for p in sorted(Path(ddir).glob("*.yaml")):
+            try:
+                records.append(D.load_record(p, V.parse_yamlish))
+            except Exception:
+                continue
+    counts, _seen, _errs = DR._valid_bound_reviews_by_decision(
+        DR.default_reviews_dir(base), ddir, base, V.parse_yamlish, quiet, D.load_record)
+    policy_path = base / ".veldo" / "policy.yaml"
+    by_id = {r.get("id"): r for r in records if isinstance(r, dict)}
+    rows = []
+    for b in POLICY_BOUNDARIES:
+        rec = by_id.get(b["decision"])
+        need = DR.required_reviews_for(rec.get("risk") if isinstance(rec, dict) else None, policy_path)
+        accepted, refusal, reason = activation_authority(b["id"], rec, counts.get(b["decision"], 0), need)
+        rows.append({"boundary": b["id"], "decision": b["decision"], "accepted": accepted,
+                     "refusal": refusal, "reason": reason})
+    return {"schema": SCHEMA, "boundaries": rows, "matrix_problems": boundary_matrix_problems(records),
+            "activated": sorted(r["boundary"] for r in rows if r["accepted"])}

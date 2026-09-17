@@ -97,11 +97,11 @@ printable = _kind.printable
 # ONE root is not expressible as a glob and is written in ANGLE BRACKETS: what the CONTRACT'S OWN area
 # includes expand to, which only the contract can say. The completeness proof expands it through the owner's
 # own function rather than through a second list, so a contract change cannot make this table stale.
+_CONTRACT_OPENS = ((".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"), (".veldo/policy.yaml", "OPENER", "contract_loader.contract_requirement asks is_file() before it reads (VELDO-0016 AC3), so a FIFO, a directory or a dangling link is never opened"))
 SUPPORT_DELEGATED_CLOSURE = (
     {"gate": "architecture_contract", "unit": ".veldo/architecture.yaml", "kind": "file",
-     "owner": ".veldo/validate.py", "call": "load_repo_contract", "opens": (
-         (".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"),
-         (".veldo/policy.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
+     "owner": ".veldo/validate.py", "call": "load_contract_state", "opens": (
+         *_CONTRACT_OPENS,
          (".veldo/*.py", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc.*", "OPENER", "importlib's O_EXCL cache write"))},
@@ -112,8 +112,7 @@ SUPPORT_DELEGATED_CLOSURE = (
          ("proof/*/verdict*.json", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
          ("plans/*.md", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
          (".veldo/decisions/*.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
-         (".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"),
-         (".veldo/policy.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
+         *_CONTRACT_OPENS,
          (".veldo/events.jsonl", "UNIT", ".veldo/metrics_event_stream.py:read_stream"),
          (".veldo/*.py", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
@@ -121,16 +120,14 @@ SUPPORT_DELEGATED_CLOSURE = (
     {"gate": "spec_area_index", "unit": "specs", "kind": "store",
      "owner": ".veldo/entropy.py", "call": "spec_area_index", "opens": (
          ("specs/*.md", "STORE", ".veldo/metrics_shape_readers.py:_read_area_index"),
-         (".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"),
-         (".veldo/policy.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
+         *_CONTRACT_OPENS,
          (".veldo/*.py", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc.*", "OPENER", "importlib's O_EXCL cache write"))},
     {"gate": "entropy_series_owner", "unit": "specs", "kind": "store",
      "owner": ".veldo/entropy.py", "call": "entropy_report", "opens": (
          ("specs/*.md", "STORE", ".veldo/dashboard.py:entropy_figures"),
-         (".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"),
-         (".veldo/policy.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
+         *_CONTRACT_OPENS,
          (".veldo/*.py", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc.*", "OPENER", "importlib's O_EXCL cache write"),

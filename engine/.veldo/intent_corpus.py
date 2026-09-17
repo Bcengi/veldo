@@ -339,7 +339,7 @@ class IntentCorpus:
     repo's own readers, so it reuses recorded data only and adds no instrumentation."""
 
     def __init__(self, root, specs, proofs, verdicts, plans, decisions, events,
-                 arch=None, contract=None, git_reader=None):
+                 arch=None, contract=None, git_reader=None, contract_refusal=None):
         self._root = Path(root)
         self._specs = specs
         self._proofs = proofs
@@ -349,7 +349,15 @@ class IntentCorpus:
         self._events = events or []
         self._arch = arch                      # the arch module, or None (no contract)
         self._contract = contract              # the parsed architecture contract, or None
+        self._contract_refusal = contract_refusal  # the loader's refusal by name, or None (VELDO-0016 AC3)
         self._git = git_reader or default_git_reader
+
+    def _refuse_area_join(self):
+        """An area question over a REFUSED contract is refused by name, never answered as "no
+        contract": the contract exists and cannot be read (VELDO-0016 AC3)."""
+        if self._contract_refusal:
+            raise IntentCorpusError("architecture contract refused, so no area can be answered: %s"
+                                    % self._contract_refusal)
 
     @property
     def empty(self):
@@ -365,7 +373,8 @@ class IntentCorpus:
         return {"specs": len(self._specs), "proofs": len(self._proofs),
                 "verdicts": sum(len(v) for v in self._verdicts.values()),
                 "plans": len(self._plans), "decisions": len(self._decisions),
-                "events": len(self._events), "contract_present": self.contract_present}
+                "events": len(self._events), "contract_present": self.contract_present,
+                "contract_refused": bool(self._contract_refusal)}
 
     def spec_ids(self):
         return sorted(self._specs)
@@ -380,6 +389,7 @@ class IntentCorpus:
         contract exists - the corpus degrades to spec and git level and never fakes an area
         (C7). Fail closed on a malformed path."""
         module_path = _require_query(module_path, "module path")
+        self._refuse_area_join()
         if self._contract is None:
             return {"contract_present": False, "areas": None}
         return {"contract_present": True,
@@ -537,7 +547,8 @@ class IntentCorpus:
 # --- the factory (dependency injected) and the batteries-included opener -----------------
 
 def build_corpus(root, parse, proof_digest, plan_registry=None, repo_contract=(None, None),
-                 decision_loader=None, decisions_dir=None, events_path=None, git_reader=None):
+                 decision_loader=None, decisions_dir=None, events_path=None, git_reader=None,
+                 contract_refusal=None):
     """Build the corpus from the repo's OWN readers, injected: `parse` is the one
     front-matter parser (validate.parse_yamlish), `proof_digest` the canonical proof
     identity (validate.proof_digest), `plan_registry` the plan reader (validate.plan_registry),
@@ -555,7 +566,8 @@ def build_corpus(root, parse, proof_digest, plan_registry=None, repo_contract=(N
     events = _read_events(events_path if events_path is not None else root / ".veldo" / "events.jsonl")
     arch, contract = repo_contract if isinstance(repo_contract, (tuple, list)) else (None, None)
     return IntentCorpus(root, specs, proofs, verdicts, plans, decisions, events,
-                        arch=arch, contract=contract, git_reader=git_reader)
+                        arch=arch, contract=contract, git_reader=git_reader,
+                        contract_refusal=contract_refusal)
 
 
 def open_corpus(root=None):
@@ -572,17 +584,18 @@ def open_corpus(root=None):
     dspec = importlib.util.spec_from_file_location("veldo_decision", here / "decision.py")
     D = importlib.util.module_from_spec(dspec)
     dspec.loader.exec_module(D)
-    # A REFUSED contract refuses the corpus by name (IntentCorpusError, the error this module
-    # already raises for a corpus it cannot trust) rather than opening one whose area joins
-    # silently answer "no area" for every spec (VELDO-0016 AC3).
+    # VELDO-0016 AC3: a REFUSED contract (present but unreadable, malformed or invalid, or absent
+    # while the policy requires it) does not stop the corpus OPENING - its spec, proof, plan and
+    # decision reads are its own, and a loss there is charged to the corpus, never to the contract
+    # (one fact, one sentence) - but every AREA JOIN refuses by name instead of answering "no
+    # contract" for a contract that exists.
     try:
-        repo_contract = V.load_repo_contract(repo_root=str(root))
+        repo_contract, refusal = V.load_repo_contract(repo_root=str(root)), None
     except V.ContractRefused as e:
-        raise IntentCorpusError("architecture contract refused, so the corpus cannot join specs "
-                                "to areas and refuses to open: %s" % e)
+        repo_contract, refusal = (None, None), str(e)
     return build_corpus(
         root, V.parse_yamlish, V.proof_digest, plan_registry=V.plan_registry,
-        repo_contract=repo_contract,
+        repo_contract=repo_contract, contract_refusal=refusal,
         decision_loader=D.load_record, decisions_dir=D.default_decisions_dir(root))
 
 

@@ -90,27 +90,20 @@ def _read_contract(root, V, reads=None):
     one that yields no declared area is INCOMPLETE under its own name."""
     contract_path = root / ".veldo" / "architecture.yaml"
     present = _present(contract_path)
-    arch = contract = None
+    arch = contract = load = None
     contract_cause = None
     if V is not None:
-        parsed, cause = delegated("architecture_contract", root, lambda: V.load_repo_contract(str(root)))
-        arch, contract = parsed if isinstance(parsed, tuple) and len(parsed) == 2 else (None, None)
-        contract_cause = cause or None
+        load, cause = delegated("architecture_contract", root, lambda: V.load_contract_state(str(root)))
+        arch, contract = (load.arch, load.contract) if getattr(load, "state", None) == "valid" else (None, None)
+        contract_cause = cause or (load.reason if getattr(load, "refused", False) else None)
     declared = sorted(arch.area_ids(contract)) if (arch is not None and contract is not None) else None
     contract_problem = None
-    if not present and contract_cause is not None:
-        # VELDO-0016 AC3: the loader refused an ABSENT contract, which it does for exactly one
-        # reason - this repository's policy declares the contract required - so the join is not
-        # standing down by name, it is refused by name.
-        contract_problem = ("the architecture contract at .veldo/architecture.yaml is ABSENT and this "
-                            "repository's policy REQUIRES one, so the shape this join needs is refused "
-                            "rather than absent; the read raised %s" % contract_cause)
-    elif present and not declared:
+    if (present or getattr(load, "refused", False)) and not declared:
         contract_problem = ("the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area "
-                            "could be read from it (it is truncated, malformed, a directory, a symlink that "
-                            "does not resolve, or it declares none%s), so the shape this join needs is "
-                            "unreadable rather than absent"
-                            % ("" if contract_cause is None else "; the read raised %s" % contract_cause))
+                            "could be read from it (it is truncated, malformed, a directory, a symlink that does "
+                            "not resolve, or it declares none), or is ABSENT while this repository's policy REQUIRES "
+                            "one (VELDO-0016), so the shape this join needs is unreadable or refused rather than "
+                            "absent%s" % ("" if contract_cause is None else "; the read raised %s" % contract_cause))
     if V is None:
         _dependency_declined("architecture_contract", str(contract_path), "its owner .veldo/validate.py", reads)
     elif contract_problem is not None:

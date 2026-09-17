@@ -4,6 +4,7 @@ version: 1
 title: Dark Factory project coordination belongs in the Veldo repository
 status: draft
 problem_class: architecture
+policy_boundary: repository_placement
 owner: Dmitry
 reversal_cost: costly
 risk: high

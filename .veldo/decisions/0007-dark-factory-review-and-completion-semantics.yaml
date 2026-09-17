@@ -1,0 +1,75 @@
+schema: veldo.decision/v1
+id: VELDO-DEC-0007
+version: 1
+title: A passing review is a finding, never landing authority; the gate, the receipt and the owner decide completion
+status: draft
+problem_class: governance
+policy_boundary: review_and_completion
+owner: Dmitry
+reversal_cost: costly
+risk: critical
+
+context: >
+  R03 names review and completion semantics as a boundary a decision record must precede. The
+  controlling clauses are R46 (verification and review have separate meanings: a passing model
+  verdict is an assertion that the reviewer found no blocker, not a credential or landing
+  permission; landing requires a trusted receipt that independent review occurred against the
+  relevant inputs, disposition of blocking findings, applicable authority approvals, valid proof
+  and a green candidate gate; builder and reviewer cannot be the same responsible actor; another
+  pass cannot erase an unresolved objection) and R50 (enforcement runs outside worker control, on
+  installed versioned verifier and policy code a candidate cannot replace). This carries forward
+  the push policy's WARP-0730 posture, under which the merge rule dropped its verdict clause
+  because a verdict is an artifact the agent can write. Dmitry's standing instruction that Codex
+  reviews every landing and that a green gate is not a review (2026-09-13, 2026-09-17) is the
+  operating practice this record generalizes. It activates nothing and moves to decided once the
+  adversarial reviews its critical tier requires are bound and Dmitry's decision is recorded.
+
+options:
+  - id: gate-and-owner-authorize-review-informs
+    summary: >
+      Completion is decided by the canonical gate over the candidate, the trusted landing receipt
+      that binds the review's inputs and the disposition of every blocking finding, the recorded
+      authority approvals a protected path requires, and valid proof. Review is mandatory and
+      independent, and its verdict informs the disposition; it never authorizes. An unresolved
+      objection survives every later pass until a person disposes of it on the record. This is
+      the supplied semantics to carry into effective policy under PLAN-0019 W1.
+    dead_end: >
+      Stops working if a receipt can be produced without the review having run against the landed
+      inputs, if builder and reviewer identities cannot be told apart, or if an objection can be
+      lost between passes. Each is a defect to fix in the receipt, never a reason to let a verdict
+      authorize.
+  - id: passing-verdict-authorizes-landing
+    summary: >
+      A passing independent review verdict is itself the permission to land, as the pre-WARP-0730
+      merge rule and the dispatcher's completion interpretation once held.
+    dead_end: >
+      Dead-ends at self-certification: a verdict is a file the producing agent can write, so the
+      rule asks an agent to certify itself and every guard against forgery becomes the product.
+      Nine build rounds of forgery guards were the measured cost before the clause was removed.
+  - id: gate-alone-no-independent-review
+    summary: >
+      A green gate is completion; review is optional advice.
+    dead_end: >
+      Dead-ends on the class of defect nobody wrote a check for: a gate finds what a check was
+      written to find. Dmitry's rule that a green gate is not a review names this dead end.
+  - id: owner-approves-every-landing-by-hand
+    summary: >
+      Every landing, whatever its tier, waits for the owner's explicit approval.
+    dead_end: >
+      Dead-ends on throughput and on attention: the approval becomes a reflex, which is the
+      rubber stamp the authorization module refuses, and ordinary work stalls behind one reader.
+      Protected paths and high tiers already route to the owner; the rest must not.
+
+assumptions:
+  - id: receipt-binds-inputs
+    statement: The landing receipt binds the exact candidate commit, review inputs, verdict and finding dispositions it vouches for.
+    signal: Receipt verification that recomputes the bound digests over the landed tree and refuses a receipt whose inputs differ.
+    breach: A receipt verifies for a tree other than the one the review ran against.
+  - id: reviewer-is-independent
+    statement: The reviewer's responsible actor is never the builder's, and the review runs in a fresh context.
+    signal: Actor identity comparison on every receipt and a dispatch log showing the reviewer's context carried none of the builder's.
+    breach: A receipt names one actor as both builder and reviewer, or a review consumed the builder's context.
+  - id: objections-persist
+    statement: A blocking finding stays open until a person disposes of it on the record, across any number of later passes.
+    signal: A re-run drill that lands a later pass over an open objection and checks the objection is still reported.
+    breach: A later pass, verdict or gate run closes or hides an undisposed blocking finding.
