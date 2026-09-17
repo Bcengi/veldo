@@ -32,10 +32,10 @@ footprint:
   - "proof/VELDO-0019/*"
 behavior_bearing: true
 observability:
-  logs: Contract refusals name the predicate, subject revision, and offending reference without including private keys or credentials.
-  metrics: Proof reports required and exercised schema, transition, or boundary sets and coverage gaps; an unknown result never counts as zero failures.
-  traces: Evidence joins the criterion, fixture or observation, input digests, and exact contract revision; runtime receipt production belongs to later packages.
-  error_taxonomy: Distinguish missing input, malformed input, stale revision, unauthorized actor, forbidden transition, and unavailable evidence with named refusals.
+  logs: No runtime graph log is added; diagnostic results expose the cycle path and edge families, unresolved target, affected dependent, or stale governing observation.
+  metrics: Proof reports edge-family/target-state coverage and expected versus returned invalidation closure; this pure graph contract defines no production metrics.
+  traces: Graph evidence binds the input snapshot digest, typed edge endpoints, exact prerequisite receipt revisions, reverse closure, and governing decision/observation digests.
+  error_taxonomy: Distinguish union cycle, missing/ambiguous/inaccessible target, wrong revision, unsupported receipt, withdrawn prerequisite, and missing/stale/contradictory governing observation.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -109,6 +109,4 @@ rollback: >
 
 ## Notes
 
-**Proof discipline.** This is one contract concern, with four criteria. The named check rows above are implementation obligations, not claims that those checks exist today. Proof must show its tested set equals the declared schema or policy universe and must drive each stated mutation, demonstrate the changed bytes, require the named row to fail, and restore the implementation. Removing a failure fixture cannot reduce the declared universe.
-
-**Implementation boundary.** Define pure versioned data and named transition refusals in canonical engine/, synchronize shipped counterparts, and record every new asset in the distribution inventory. The draft footprint lists existing integration points and contract/test additions; refine it to exact new modules and synchronized counterparts before ready. Do not build the B-H runtime under this spec. Future runtime observations and receipts are required by their own specifications.
+A valid release membership forest is not evidence that the union of execution prerequisites is acyclic. The small-graph oracle must compute invalidation closure independently of the implementation, including running and completed dependents. Observation fixtures test freshness and authority predicates; live tripwire production belongs to E.

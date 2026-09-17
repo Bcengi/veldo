@@ -28,10 +28,10 @@ footprint:
   - "proof/VELDO-0022/*"
 behavior_bearing: true
 observability:
-  logs: Contract refusals name the predicate, subject revision, and offending reference without including private keys or credentials.
-  metrics: Proof reports required and exercised schema, transition, or boundary sets and coverage gaps; an unknown result never counts as zero failures.
-  traces: Evidence joins the criterion, fixture or observation, input digests, and exact contract revision; runtime receipt production belongs to later packages.
-  error_taxonomy: Distinguish missing input, malformed input, stale revision, unauthorized actor, forbidden transition, and unavailable evidence with named refusals.
+  logs: Admission diagnostics identify work class, request revision, missing authority, reproduction or quarantine refusal, standing occurrence, emergency deadline, or scope dimension requiring readmission.
+  metrics: Proof reports class/predicate and quarantine-limit coverage, emergency deadline boundaries, and seven/fourteen-day debt counts with unknown estimates retained; live intake metrics belong to F.
+  traces: Admission evidence joins accepted behavior revision, reproduction/environment digests, scan and taint results, request/standing-ticket identity, emergency authority, and before/after scope envelopes.
+  error_taxonomy: Distinguish unknown or multiple work classes, unauthorized admission, untrusted reproduction, scope-changing defect, unavailable scan, quarantine overrun, repeated occurrence, expired emergency authority, and exceeded signed ceiling.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -111,6 +111,4 @@ rollback: >
 
 ## Notes
 
-**Proof discipline.** This is one contract concern, with four criteria. The named check rows above are implementation obligations, not claims that those checks exist today. Proof must show its tested set equals the declared schema or policy universe and must drive each stated mutation, demonstrate the changed bytes, require the named row to fail, and restore the implementation. Removing a failure fixture cannot reduce the declared universe.
-
-**Implementation boundary.** Define pure versioned data and named transition refusals in canonical engine/, synchronize shipped counterparts, and record every new asset in the distribution inventory. The draft footprint lists existing integration points and contract/test additions; refine it to exact new modules and synchronized counterparts before ready. Do not build the B-H runtime under this spec. Future runtime observations and receipts are required by their own specifications.
+Class and exception fixtures must preserve severity when reproduction fails and return the required grooming or bounded emergency disposition. Scan-unavailable and unknown-effort cases stay explicit; neither supplies permission. Admission contracts specify the quarantine limits and independent deadline-enforcement requirement, while F installs and qualifies those mechanisms.

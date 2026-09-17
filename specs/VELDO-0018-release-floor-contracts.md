@@ -28,10 +28,10 @@ footprint:
   - "proof/VELDO-0018/*"
 behavior_bearing: true
 observability:
-  logs: Contract refusals name the predicate, subject revision, and offending reference without including private keys or credentials.
-  metrics: Proof reports required and exercised schema, transition, or boundary sets and coverage gaps; an unknown result never counts as zero failures.
-  traces: Evidence joins the criterion, fixture or observation, input digests, and exact contract revision; runtime receipt production belongs to later packages.
-  error_taxonomy: Distinguish missing input, malformed input, stale revision, unauthorized actor, forbidden transition, and unavailable evidence with named refusals.
+  logs: These pure release and floor predicates emit no runtime logs; refusal results name the member revision, journey, floor pin, or cancellation relation that blocks acceptance.
+  metrics: Proof reports required versus evidenced release members and journeys, plus affected floor pins with missing or unresolved settlements; runtime counters are outside this contract.
+  traces: Acceptance evidence joins the release snapshot and recursive member digests to regression receipts, floor revisions, affected pins, settlement subjects, and acceptance authority.
+  error_taxonomy: Distinguish invalid membership, duplicate project owner, missing or stale regression receipt, wrong candidate/environment, unresolved floor pin, stale settlement, and unauthorized rollout.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -105,6 +105,4 @@ rollback: >
 
 ## Notes
 
-**Proof discipline.** This is one contract concern, with four criteria. The named check rows above are implementation obligations, not claims that those checks exist today. Proof must show its tested set equals the declared schema or policy universe and must drive each stated mutation, demonstrate the changed bytes, require the named row to fail, and restore the implementation. Removing a failure fixture cannot reduce the declared universe.
-
-**Implementation boundary.** Define pure versioned data and named transition refusals in canonical engine/, synchronize shipped counterparts, and record every new asset in the distribution inventory. The draft footprint lists existing integration points and contract/test additions; refine it to exact new modules and synchronized counterparts before ready. Do not build the B-H runtime under this spec. Future runtime observations and receipts are required by their own specifications.
+Use the accepted release snapshot to derive member and journey coverage, and the applicable floor registry to derive affected pins. Fixture receipts exercise acceptance predicates; they do not certify a real regression run or settle a floor. Keep release.py rollout authorization outside every release-artifact acceptance path.

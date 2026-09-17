@@ -30,10 +30,10 @@ footprint:
   - "proof/VELDO-0016/*"
 behavior_bearing: true
 observability:
-  logs: Contract refusals name the predicate, subject revision, and offending reference without including private keys or credentials.
-  metrics: Proof reports required and exercised schema, transition, or boundary sets and coverage gaps; an unknown result never counts as zero failures.
-  traces: Evidence joins the criterion, fixture or observation, input digests, and exact contract revision; runtime receipt production belongs to later packages.
-  error_taxonomy: Distinguish missing input, malformed input, stale revision, unauthorized actor, forbidden transition, and unavailable evidence with named refusals.
+  logs: Policy-loading and activation diagnostics identify the boundary, decision ID/version, architecture revision, and missing qualification obligation.
+  metrics: Qualification reports count covered decision-to-policy boundaries and registered versus missing R43/R44 obligations for each host profile.
+  traces: Activation evidence joins accepted decision digests, installed policy revision, loader result, capability profile, and lifecycle qualification references.
+  error_taxonomy: Distinguish draft or stale decision, absent required policy, unreadable or invalid policy, unqualified containment or resource limits, and review mistaken for authority.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -113,6 +113,4 @@ rollback: >
 
 ## Notes
 
-**Proof discipline.** This is one contract concern, with four criteria. The named check rows above are implementation obligations, not claims that those checks exist today. Proof must show its tested set equals the declared schema or policy universe and must drive each stated mutation, demonstrate the changed bytes, require the named row to fail, and restore the implementation. Removing a failure fixture cannot reduce the declared universe.
-
-**Implementation boundary.** Define pure versioned data and named transition refusals in canonical engine/, synchronize shipped counterparts, and record every new asset in the distribution inventory. The draft footprint lists existing integration points and contract/test additions; refine it to exact new modules and synchronized counterparts before ready. Do not build the B-H runtime under this spec. Future runtime observations and receipts are required by their own specifications.
+The decision-to-policy matrix must include every open architectural choice; recording these drafts supplies no activation authority. Contract fixtures establish loader and replacement-obligation refusals, while B and D supply the real lifecycle and resource-exhaustion observations. Before ready, resolve the proposed architecture revision and exact loader, capability, and synchronized file changes.

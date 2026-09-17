@@ -40,10 +40,10 @@ footprint:
   - "proof/VELDO-0021/*"
 behavior_bearing: true
 observability:
-  logs: Contract refusals name the predicate, subject revision, and offending reference without including private keys or credentials.
-  metrics: Proof reports required and exercised schema, transition, or boundary sets and coverage gaps; an unknown result never counts as zero failures.
-  traces: Evidence joins the criterion, fixture or observation, input digests, and exact contract revision; runtime receipt production belongs to later packages.
-  error_taxonomy: Distinguish missing input, malformed input, stale revision, unauthorized actor, forbidden transition, and unavailable evidence with named refusals.
+  logs: Eligibility diagnostics name the entry point, snapshot revision, failed prerequisite, receipt subject, or provider charge bound and remaining reservation.
+  metrics: Proof reports coverage of entry/read-set pairs, completion non-implications, missing receipt obligations, and request-charge boundaries; unbounded exposure remains unknown rather than zero.
+  traces: Completion evidence joins implementation, proof, reviewer, candidate, gate, remote confirmation, and replica receipt; provider eligibility binds request maximum charge to the reservation revision and outstanding exposure.
+  error_taxonomy: Distinguish stale read set, missing prerequisite, unbounded or excessive provider charge, incomplete proof, non-independent review, candidate mutation, stale authority/claim, and unknown publication outcome.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -124,6 +124,4 @@ rollback: >
 
 ## Notes
 
-**Proof discipline.** This is one contract concern, with four criteria. The named check rows above are implementation obligations, not claims that those checks exist today. Proof must show its tested set equals the declared schema or policy universe and must drive each stated mutation, demonstrate the changed bytes, require the named row to fail, and restore the implementation. Removing a failure fixture cannot reduce the declared universe.
-
-**Implementation boundary.** Define pure versioned data and named transition refusals in canonical engine/, synchronize shipped counterparts, and record every new asset in the distribution inventory. The draft footprint lists existing integration points and contract/test additions; refine it to exact new modules and synchronized counterparts before ready. Do not build the B-H runtime under this spec. Future runtime observations and receipts are required by their own specifications.
+Receipt fixtures must keep attempt completion, artifact acceptance, landing, and objective satisfaction distinct. Reservation fixtures exercise pre-call charge refusal and competing allocations without issuing billable requests; B implements reservation transactions and D qualifies provider enforcement. C supplies installed-verifier and remote-publication observations, including gate outputs outside the candidate they certify.
