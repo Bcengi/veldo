@@ -52,15 +52,17 @@ acceptance_criteria:
     text: >
       Claim: Command signatures bind the complete request and active delegation, and verification does
       not trust ambient transport or branch keys. Set: Domain, repository, store, command ID, request
-      revision, challenge nonce, expiry, membership and delegation versions, and accepted key
-      transitions in OpenSSH-envelope Ed25519 commands. Completeness: Enumerate signed fields from the
-      versioned envelope schema; mutate each one independently and test replay, retired verification
+      revision, challenge nonce, expiry, membership and delegation versions, canonical command digest
+      covering operation, target, and complete parameters, and accepted key transitions in
+      OpenSSH-envelope Ed25519 commands. Completeness: Enumerate signed fields and canonical encoding
+      from the versioned envelope schema; mutate each field and command component independently,
+      recompute the digest from the command to be executed, and test replay, retired verification
       keys, revoked active authority, rotation, and wrong repository with complete field coverage.
-      Falsifier: Omit repository identity from signature verification; the signing/wrong-repository
-      row must fail.
+      Falsifier: Substitute the public key in an enrollment command while retaining its signed
+      envelope and accept it; the signing/enrollment-key-substitution row must fail.
     falsified_by: >
-      Omit repository identity from signature verification; the signing/wrong-repository row must
-      fail.
+      Substitute the public key in an enrollment command while retaining its signed envelope and
+      accept it; the signing/enrollment-key-substitution row must fail.
   - id: AC3
     text: >
       Claim: Every enrolled channel uses its own restricted edge key and presentation-bound canonical
