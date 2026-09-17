@@ -1,0 +1,112 @@
+schema: veldo.decision/v1
+id: VELDO-DEC-0004
+version: 1
+title: Replace project-layer process bans with governed runner lifetime and containment
+status: draft
+problem_class: architecture
+owner: Dmitry
+reversal_cost: costly
+risk: critical
+
+context: >
+  PLAN-0019 R03 records Dmitry's retirement of no_detached_processes and agent-mediated launch
+  requirements for the project layer. R43 and R44 replace them with deterministic ownership of
+  lifetime, descendant containment, liveness, and stopping. This draft records the supplied
+  direction without a decider or effective policy activation. The Linux systemd cgroup v2
+  implementation choice remains open to Dmitry as PLAN-0019 D3. The source is
+  docs/design/PLAN-0019-dark-factory-design.md, baseline
+  f3d2e451bd1ead6d6a472496d2405dfe0a105abd, recorded 2026-09-16.
+
+options:
+  - id: governed-service-and-runner
+    summary: >
+      A supervised authority and provider-neutral runner own every dispatch lifetime, with
+      dedicated containment, durable launch identity, independent liveness, and effect fencing.
+      The proposed qualified platform is Linux with systemd and cgroup v2; other hosts refuse
+      activation until an equivalent adapter proves the same obligations.
+    dead_end: >
+      Dead-ends if a worker can escape containment, alter supervision, retain effect permission
+      after fencing, or leave an unreconciled launch eligible for redispatch. Activation remains
+      blocked until real-process negative qualification establishes the entire lifecycle.
+  - id: retain-session-only-agent-launch
+    summary: >
+      Retain no_detached_processes and the injected in-session agent-mediated worker launch seam.
+    dead_end: >
+      Dead-ends at autonomous durable dispatch and recovery across the loss of an interactive
+      session. It contradicts the supplied retirement ruling and would need a new ruling to retain.
+  - id: unrestricted-background-launch
+    summary: >
+      Remove the lexical and policy bans and allow ordinary background worker subprocesses.
+    dead_end: >
+      Dead-ends on orphaned descendants, PID reuse, unknown outcomes, and stale publication rights;
+      removing a ban without replacement obligations cannot establish ownership or safe recovery.
+  - id: external-unqualified-supervisor
+    summary: >
+      Rely on an external process manager without Veldo dispatch, claim, accounting, and receipt bindings.
+    dead_end: >
+      Dead-ends when a process manager restart launches a second attempt or releases capacity
+      without durable outcome reconciliation. Process supervision alone does not prove an effect.
+
+replacement_obligations:
+  containment: >
+    R43 requires one dedicated containment group and trusted wrapper per dispatch. Forks, new
+    sessions, and grandchildren cannot escape. Workers cannot modify containment, reach the
+    authority service manager, or signal authority processes. Only an operations-installed,
+    narrowly scoped helper may hold OS privileges for identities and namespaces.
+  lifecycle: >
+    Systemd supervises authority and runner lifetime. Authority death, control-channel failure,
+    and explicit stop retire affected groups before a replacement schedules. Exit detection uses
+    OS notifications and boot plus start identity; PID reuse cannot revive an invocation. Durable
+    intent and launch records reconcile uncertainty before any retry.
+  liveness_and_stop: >
+    The trusted wrapper emits a heartbeat every 10 seconds independent of model output. A missed
+    30-second deadline closes effect permissions. Cooperative stop allows 10 seconds to flush,
+    then terminates the group, then kills remaining descendants after 5 more seconds. Leadership
+    loss closes new-dispatch acceptance within 2 seconds. These are versioned defaults, not
+    timers whose operation depends on the blocked model call.
+  retirement: >
+    Capacity is released only when containment is proven empty and outcome and accounting are
+    durably recorded. Unproven emptiness quarantines the slot; silence never proves death.
+
+activation_requirements:
+  architecture: >
+    PLAN-0019 W1 must propose the next explicitly approved .veldo/architecture.yaml revision
+    after baseline version 1, scoped to the governed project runner. Replace no_detached_processes
+    and the agent-mediated launch requirement with the named lifecycle obligations. Preserve
+    stdlib_only_enforcement and applicable legacy behavior outside the enrolled project layer.
+    A draft record, source landing, or a capability label alone activates nothing.
+  loading: >
+    Amend canonical engine/.veldo/arch.py and its synced readers so policy loading distinguishes
+    absent, valid, and invalid contracts throughout eligibility. Optional absence may stand down
+    only under adoption rules; unreadable, malformed, invalid present, or missing required project
+    contracts refuse. Bind execution to the accepted installed contract revision, never a worker's
+    editable branch. Audit validate_checks.py and other loaders so none collapse invalid into absent.
+  capability_and_scan: >
+    Amend the affected capability declarations and scripts/suites/06_capabilities_manifest_honesty_veldo.py
+    together. Its _DETACH_TOKENS and _no_detached_worker_spawn currently police fleet.py, alongside
+    the no-module-level-subprocess and git-worktree-only assertions. Replace that lexical
+    prohibition for the governed runner with R43/R44 lifecycle and containment tests. Do not extend
+    the token scan to reject the adopted runner. Preserve applicable legacy guarantees by scope,
+    without pretending a substring scan establishes lifecycle correctness.
+  evidence_and_installation: >
+    W1 establishes the effective contract and its refusing activation predicates. B implements
+    provider-neutral launch, supervision, heartbeat, stopping, and recovery before crash proof;
+    D qualifies actual engines. Real tests kill and suspend processes, lose leadership and control
+    channels, attempt fork/session/grandchild escapes, reuse PID observations, miss heartbeats,
+    and interrupt accounting. Required approval, proof, independent review, green gate, qualified
+    host and helper, versioned service installation, and a separate receipted activation with
+    rollback material precede autonomous operation. This record performs none of those acts.
+
+assumptions:
+  - id: host-can-contain
+    statement: The selected host can enforce descendant containment and privilege separation.
+    signal: Real fork, session, grandchild, helper-access, and authority-signal refusal tests on the qualified host profile.
+    breach: Any worker escapes its group or changes authority supervision.
+  - id: supervisor-is-independent
+    statement: Supervision and effect fencing continue when the orchestrator or model process stalls.
+    signal: Process suspension and control-channel failure tests measure the 2-second fence and the 30-second liveness deadline.
+    breach: Acceptance remains open beyond a deadline or requires the stalled process to run its own timer.
+  - id: retirement-is-provable
+    statement: Capacity retirement can bind empty containment to durable outcome and accounting records.
+    signal: Kill-boundary tests compare occupied slots, descendant observations, launch records, and accounting receipts.
+    breach: An unproven slot is reused, an unknown effect is repeated, or missing usage becomes zero exposure.

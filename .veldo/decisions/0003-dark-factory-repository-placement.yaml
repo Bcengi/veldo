@@ -1,0 +1,63 @@
+schema: veldo.decision/v1
+id: VELDO-DEC-0003
+version: 1
+title: Dark Factory project coordination belongs in the Veldo repository
+status: draft
+problem_class: architecture
+owner: Dmitry
+reversal_cost: costly
+risk: high
+
+context: >
+  PLAN-0019 design v2 R03 records Dmitry's ruling that the separate-repository requirement
+  does not apply. The project layer is to live in this Veldo repository, extending the existing
+  specification, proof, gate, claim, and landing floor. This draft frames that supplied ruling
+  and its alternatives; it is not a decided record, an approval of PLAN-0019, or permission to
+  implement a draft. The controlling source is docs/design/PLAN-0019-dark-factory-design.md at
+  baseline f3d2e451bd1ead6d6a472496d2405dfe0a105abd, recorded 2026-09-16.
+
+options:
+  - id: same-repository-canonical-engine
+    summary: >
+      Place the project layer in canonical engine/ here, with separate domain, storage,
+      authorization, scheduling, adapter, supervision, and floor integration modules. Ship each
+      asset through an explicit distribution inventory and byte-identical packs. This is the
+      supplied placement ruling to carry into effective policy under PLAN-0019 W1.
+    dead_end: >
+      Stops working if the project layer cannot preserve stdlib enforcement, one authority per
+      domain, or independently replaceable execution adapters; placement then needs a new
+      reviewed decision rather than a hidden runtime fork.
+  - id: separate-project-repository
+    summary: >
+      Build project coordination in a separate repository that consumes a released Veldo floor
+      through a versioned public interface.
+    dead_end: >
+      Dead-ends when required floor repairs and coordination contracts must be released together
+      without a qualified compatibility boundary. It also contradicts the supplied placement
+      ruling and cannot be adopted without a new ruling from Dmitry.
+  - id: repository-local-undistributed-extension
+    summary: >
+      Keep coordination here as a repository-only extension outside canonical engine/ and packs.
+    dead_end: >
+      Dead-ends when an adopter installs a composed pack and cannot run the floor slice; it cannot
+      deliver R53's inventory closure or R63's installed-artifact qualification.
+  - id: external-hosted-coordinator
+    summary: >
+      Delegate project coordination and operational history to a hosted orchestration service.
+    dead_end: >
+      Dead-ends when hosted state becomes a second authority or requires the LangGraph server,
+      additional database, or microservice decomposition that R21 and R64 exclude.
+
+assumptions:
+  - id: enforcement-remains-independent
+    statement: Domain enforcement can remain standard-library-only while execution adapters are replaceable.
+    signal: Installed gate, validators, authorization, replay, and recovery qualification with the execution environment unavailable.
+    breach: Any enforcement entry imports or needs an execution dependency to decide eligibility.
+  - id: packs-carry-the-layer
+    statement: Explicit inventory and byte-identical assembly can distribute every required code and runtime asset.
+    signal: Inventory closure and installed floor-slice results for every composed pack.
+    breach: Any required asset is repository-only, omitted from a pack, or byte-divergent from its canon.
+  - id: one-domain-authority
+    statement: Placement here does not conflate repositories or create a second authority within a domain.
+    signal: Enrollment and routing tests across distinct repository UUIDs, stores, and clone coordinates.
+    breach: A command mutates an unintended domain or succeeds through a clone-local substitute authority.
