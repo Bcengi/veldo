@@ -10,6 +10,8 @@ import json
 import os
 from pathlib import Path
 import shutil
+import socket
+import stat
 import subprocess
 import sys
 import tempfile
@@ -28,10 +30,10 @@ names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_d
          '_iar_review_controls', '_iar_git_environment', '_iar_unquote_alternate',
          '_iar_read_alternates', '_iar_write_alternates', '_iar_alternate_paths',
          '_iar_nested_repository', '_iar_ac4', '_iar_ac4_inventory', '_iar_ac4_process', '_iar_nested_controls',
-         '_iar_alternates_name_controls'}
+         '_iar_alternates_name_controls', '_iar_special_kind', '_iar_special_and_reflog_controls'}
 if baseline:
     names -= {'_iar_ac4_inventory', '_iar_ac4_process', '_iar_alternate_paths', '_iar_nested_repository', '_iar_nested_controls',
-              '_iar_alternates_name_controls'}
+              '_iar_alternates_name_controls', '_iar_special_kind', '_iar_special_and_reflog_controls'}
 nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in names]
 assert {n.name for n in nodes} == names
 module = ast.Module(body=nodes, type_ignores=[])
@@ -83,7 +85,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
         for case, mutation in mutations.items():
             rows = []
             ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os, _iar_sp=subprocess,
-                      _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
+                      _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading, _iar_socket=socket, _iar_stat=stat,
                       expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
             exec(compile(module, str(SUITE), 'exec'), ns)
             ns['original_substrate'] = ns['_iar_substrate']
@@ -115,7 +117,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
             rows = []
             ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os,
                       _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib,
-                      _iar_threading=threading,
+                      _iar_threading=threading, _iar_socket=socket, _iar_stat=stat,
                       expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
             exec(compile(module, str(SUITE), 'exec'), ns)
             ns['original_private_paths'] = ns['_iar_private_paths']
@@ -159,7 +161,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                 ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[],
                           ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os,
                           _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib,
-                          _iar_threading=threading,
+                          _iar_threading=threading, _iar_socket=socket, _iar_stat=stat,
                           expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
                 exec(compile(module, str(SUITE), 'exec'), ns)
                 if mutation:
@@ -172,6 +174,26 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                     assert sum('stand-down is recorded' in label for label in failures) == 10
                 results.append({'case': case, 'mutation': mutation,
                                 'passed': count - len(failures), 'failed': len(failures), 'rows': rows})
+
+        for case, mutation in (
+            ('special_and_reflog_control', None),
+            ('restore_special_copy', "def _iar_copy_entry(source, target, *, skip=()):\n    if source.is_socket(): _iar_sh.copy2(source, target)\n    else: original_copy_entry(source, target, skip=skip)"),
+            ('omit_private_reflogs', "def _iar_private_paths(private): return [p for p in original_private_paths(private) if not p.relative_to(private).as_posix().startswith('logs/refs/')]")
+        ):
+            rows = []
+            ns['expect'] = lambda label, ok: rows.append({'label': label, 'passed': bool(ok)})
+            exec(compile(module, str(SUITE), 'exec'), ns)
+            ns['original_private_paths'] = ns['_iar_private_paths']
+            ns['original_copy_entry'] = ns['_iar_copy_entry']
+            if mutation:
+                exec(compile(mutation, '<' + case + '>', 'exec'), ns)
+            ns['_iar_special_and_reflog_controls']()
+            failures = [r['label'] for r in rows if not r['passed']]
+            assert len(rows) == 4 and len(failures) == {
+                'special_and_reflog_control': 0, 'restore_special_copy': 2,
+                'omit_private_reflogs': 1}[case], (case, rows)
+            results.append({'case': case, 'mutation': mutation, 'passed': 4 - len(failures),
+                            'failed': len(failures), 'rows': rows})
 
         # Reintroduce exactly the caller-config reads that prevented fixture setup.
         identity_rows = []
@@ -227,10 +249,12 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                          'split_index', 'sandbox_reflog_delete',
                          *(() if baseline else ('sandbox_random_delete', 'split_index_reflog_delete', 'branch_alternates',
                                                'nested_only', 'nested_detached', 'nested_network',
-                                               'sparse_rules', 'sparse_rules_omitted'))):
+                                               'sparse_rules', 'sparse_rules_omitted',
+                                               'bound_socket', 'bound_socket_old_copy',
+                                               'private_log_delete', 'private_log_delete_omitted'))):
                 rows = []
                 ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
-                          _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
+                          _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading, _iar_socket=socket, _iar_stat=stat,
                           _iar_ast=ast, _iar_sys=sys, _iar_re=re, IAR=iar, _IAR_REP=report,
                           expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
                 exec(compile(ast.Module(body=ac4_nodes, type_ignores=[]), str(SUITE), 'exec'), ns)
@@ -270,6 +294,39 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                         private_paths = ns['_iar_private_paths']
                         ns['_iar_private_paths'] = lambda private: [
                             p for p in private_paths(private) if p.name != 'sparse-checkout']
+                socket_case = case.startswith('bound_socket')
+                private_log_case = case.startswith('private_log_delete')
+                if socket_case:
+                    socket_private, socket_common = ns['_iar_git_dirs'](tree)
+                    endpoint = socket_private / 'fsmonitor--daemon.ipc'
+                    bound = socket.socket(socket.AF_UNIX)
+                    bound.bind(str(endpoint))
+                    assert ns['_iar_inventory'](socket_private)[endpoint.name] == (
+                        'socket', 0, 'skipped by metadata copy')
+                    if case == 'bound_socket_old_copy':
+                        original_copy = ns['_iar_copy_entry']
+                        def old_copy(source, target, *, skip=()):
+                            if source.is_socket():
+                                shutil.copy2(source, target)
+                            else:
+                                original_copy(source, target, skip=skip)
+                        ns['_iar_copy_entry'] = old_copy
+                if private_log_case:
+                    private_log_dir, _ = ns['_iar_git_dirs'](tree)
+                    git('-c', 'user.name=Veldo fixture', '-c', 'user.email=fixture@example.invalid',
+                        'update-ref', '--create-reflog', 'refs/worktree/round-eight-probe', 'HEAD', cwd=tree)
+                    private_log = private_log_dir / 'logs/refs/worktree/round-eight-probe'
+                    assert private_log.is_file()
+                    def private_log_check(*args, **kwargs):
+                        outcome = original_check(*args, **kwargs)
+                        private_log.unlink()
+                        return outcome
+                    iar.check = private_log_check
+                    if case == 'private_log_delete_omitted':
+                        private_paths = ns['_iar_private_paths']
+                        ns['_iar_private_paths'] = lambda private: [
+                            p for p in private_paths(private)
+                            if not p.relative_to(private).as_posix().startswith('logs/refs/')]
                 random_path = None
                 split = case in ('split_index', 'split_index_reflog_delete')
                 if case == 'branch_alternates':
@@ -366,11 +423,14 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                 try:
                     output = io.StringIO()
                     with contextlib.redirect_stdout(output):
-                        ns['_iar_ac4']()
+                        ns['_iar_block']('AC4', ns['_iar_ac4'])
                     if case == 'redirected_config':
                         assert stage.read_bytes() == dirty_stage
                 finally:
                     iar.check = original_check
+                    if socket_case:
+                        bound.close()
+                        endpoint.unlink()
                     if nested_case:
                         (tree / '.gitmodules').unlink()
                         stage.write_bytes(stage_bytes)
@@ -415,15 +475,24 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                     if expected:
                         assert len(failures) == 1 and 'THIS repository is untouched' in failures[0], failures
                         assert 'git-dir/info/sparse-checkout' in failures[0], failures
+                if socket_case:
+                    expected = int(case == 'bound_socket_old_copy')
+                    if expected:
+                        assert len(rows) == 1 and 'No such device or address' in failures[0], rows
+                if private_log_case:
+                    expected = int(case == 'private_log_delete' or shape == 'linked')
+                    if expected:
+                        assert len(failures) == 1 and 'THIS repository is untouched' in failures[0], failures
+                        assert 'git-dir/logs/refs/worktree/round-eight-probe' in failures[0], failures
                 assert len(failures) == expected, (shape, case, failures)
-                if expected and not nested_case and not sparse_case and not (baseline and case == 'split_index'):
+                if expected and not nested_case and not sparse_case and not socket_case and not private_log_case and not (baseline and case == 'split_index'):
                     label = ("THE OBSERVATION'S OWN SUBSTRATE" if restored else
                              'THIS repository is untouched' if case in ('sibling_staging_shared_live', 'sibling_heartbeat_shared_live')
                              else 'NOT ONE BYTE of the repository under check')
                     assert label in failures[0], failures
                     if random_path is not None or 'reflog_delete' in case:
                         assert victim in failures[0], failures
-                assert len(rows) == (8 if nested_case else 14), rows
+                assert len(rows) == (1 if case == 'bound_socket_old_copy' else 8 if nested_case else 14), rows
                 ac4_results.append({'shape': shape, 'case': case,
                                     'commit': git('rev-parse', 'HEAD', cwd=tree),
                                     'random_deleted_path': random_path,
