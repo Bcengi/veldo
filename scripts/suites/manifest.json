@@ -278,6 +278,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/policy_contract.py and the engine copy of validate_checks.py by path, builds every fixture as a copy of this engine's .veldo/*.py under a temporary directory, loads each adapter FROM that copy, writes only inside temporary directories, and spawns no subprocess."
   },
   {
+   "name": "30_veldo_0017_entity_lifecycle",
+   "file": "30_veldo_0017_entity_lifecycle.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "30_veldo_0017_entity_lifecycle"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/entity_contract.py and .veldo/claim.py by path, reads the historical alias corpus from specs/ and plans/, mutates copies of the contract module under a temporary directory, writes only there and spawns no subprocess."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

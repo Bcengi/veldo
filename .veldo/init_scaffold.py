@@ -58,6 +58,9 @@ _FILES = [
     # adapters of, contract_loader.py, IS loaded eagerly by validate_checks and is substrate.
     ".veldo/policy_contract.py",
     ".veldo/contract_loader.py",
+    # VELDO-0017 (PLAN-0019 W2): entity identity and lifecycle schemas, loaded by the suite and by
+    # the store above it; not substrate (no gate stage of validate_checks loads it).
+    ".veldo/entity_contract.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",
