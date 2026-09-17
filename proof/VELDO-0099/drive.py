@@ -257,7 +257,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                                                'private_log_delete', 'private_log_delete_omitted',
                                                'identical_rewrite', 'identical_rewrite_content_only',
                                                'home_identical_rewrite', 'home_identical_rewrite_content_only',
-                                               'working_socket', 'working_socket_old_copy'))):
+                                               'working_socket', 'working_socket_old_copy', 'split_index_corrupt'))):
                 rows = []
                 ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
                           _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading, _iar_socket=socket, _iar_stat=stat,
@@ -305,8 +305,8 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                     anchor = '    base = Path(root) if root is not None else ROOT'
                     # The same write runs before the snapshots and again in both observations.
                     # HOME uses the sandbox's already existing sentinel; the host HOME is untouched.
-                    injected = ("    probe = Path(os.environ['HOME']) / '.veldo-write-scope-sentinel'\n"
-                                "    if probe.exists(): probe.write_bytes(probe.read_bytes())\n"
+                    injected = ("    probe = Path.home() / '.veldo-write-scope-sentinel'\n"
+                                "    if probe.parent.parent.name.startswith('veldo-0007-write-scope-') and probe.exists(): probe.write_bytes(probe.read_bytes())\n"
                                 if case.startswith('home_') else
                                 "    probe = base / 'CLAUDE.md'\n"
                                 "    probe.write_bytes(probe.read_bytes())\n")
@@ -360,7 +360,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                             p for p in private_paths(private)
                             if not p.relative_to(private).as_posix().startswith('logs/refs/')]
                 random_path = None
-                split = case in ('split_index', 'split_index_reflog_delete')
+                split = case in ('split_index', 'split_index_reflog_delete', 'split_index_corrupt')
                 if case == 'branch_alternates':
                     git('branch', '--force', '--create-reflog', 'alternates', 'HEAD', cwd=tree)
                     _, branch_common = ns['_iar_git_dirs'](tree)
@@ -369,6 +369,14 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                 if split:
                     git('update-index', '--split-index', cwd=tree)
                 private, common = ns['_iar_git_dirs'](tree)
+                if case == 'split_index_corrupt':
+                    shared = next(private.glob('sharedindex.*'))
+                    shared_bytes = shared.read_bytes()
+                    def corrupt_check(*args, **kwargs):
+                        outcome = original_check(*args, **kwargs)
+                        shared.write_bytes(b'corrupt split index\n')
+                        return outcome
+                    iar.check = corrupt_check
                 reflog = 'logs/refs/heads/round-five-probe'
                 if 'reflog_delete' in case:
                     git('branch', '--force', 'round-five-probe', 'HEAD', cwd=tree)
@@ -460,6 +468,8 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                         assert stage.read_bytes() == dirty_stage
                 finally:
                     iar.check = original_check
+                    if case == 'split_index_corrupt':
+                        shared.write_bytes(shared_bytes)
                     if socket_case:
                         bound.close()
                         endpoint.unlink()
@@ -518,6 +528,10 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                     if expected:
                         assert len(failures) == 1 and 'THIS repository is untouched' in failures[0], failures
                         assert 'git-dir/logs/refs/worktree/round-eight-probe' in failures[0], failures
+                if case == 'split_index_corrupt':
+                    expected = 1
+                    assert len(failures) == 1 and 'THIS repository is untouched' in failures[0], failures
+                    assert 'git-dir/' + shared.name in failures[0], failures
                 if rewrite_case:
                     expected = 0 if case.endswith('content_only') else 1 if case.startswith('home_') else 2
                     if expected:
@@ -527,7 +541,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                         assert all(('.veldo-write-scope-sentinel' if case.startswith('home_') else 'tree/CLAUDE.md') in row
                                    for row in failures), failures
                 assert len(failures) == expected, (shape, case, failures)
-                if expected and not nested_case and not sparse_case and not socket_case and not private_log_case and not rewrite_case and not (baseline and case == 'split_index'):
+                if expected and not nested_case and not sparse_case and not socket_case and not private_log_case and not rewrite_case and case != 'split_index_corrupt' and not (baseline and case == 'split_index'):
                     label = ("THE OBSERVATION'S OWN SUBSTRATE" if restored else
                              'THIS repository is untouched' if case in ('sibling_staging_shared_live', 'sibling_heartbeat_shared_live')
                              else 'NOT ONE BYTE of the repository under check')
@@ -559,8 +573,8 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                                           capture_output=True, text=True, timeout=1800)
                     assert proc.returncode == 0, (shape, proc.stdout, proc.stderr)
                     assert 'FIRST USE: pass.' in proc.stdout
-                    assert all('skipped socket ' + str(p) in proc.stdout for p in endpoints)
-                    assert all('skipped fifo ' + str(p) in proc.stdout for p in fifos)
+                    assert all('skipped socket ' + str(p) in proc.stdout for p in endpoints if p.is_relative_to(tree))
+                    assert all('skipped fifo ' + str(p) in proc.stdout for p in fifos if p.is_relative_to(tree))
                     first_use_results.append({'shape': shape, 'commit': git('rev-parse', 'HEAD', cwd=tree),
                                               'command': 'python3 scripts/check_first_use.py',
                                               'exit_code': proc.returncode, 'output': proc.stdout + proc.stderr})

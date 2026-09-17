@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0099",
-  "commit": "754757683fca4a4598caeefea6c5f405c6b0b1a1",
+  "commit": "2e9f4e14beaf583eccff365834a9c7450c334dfb",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-17T06:58:44.889555Z",
+  "produced_at": "2026-09-17T07:24:01.689582Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Bound fsmonitor--daemon.ipc passes all 14 AC4 rows in each shape. Restoring copy2 on the socket reds the AC4 completion row with OSError(6). Socket and FIFO controls require skipped-kind inventory entries and omitted copies. All prior layout, nested, alternate, and identity mutations re-driven."
+          "detail": "Bound sockets in metadata and working trees leave all 14 AC4 rows green in both shapes. Full first-use with sockets and FIFOs passes 4870/0 in each shape; restoring ordinary copytree exits 2. Working-file ordinary copy reds the AC4 completion row. All prior shape and special-file controls re-driven."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-round-eight-linked.log; proof/VELDO-0099/gate-round-eight-primary.log",
-          "detail": "Complete canonical gates at 754757683fca4a4598caeefea6c5f405c6b0b1a1: GREEN, exit 0, 4870 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-nine-linked.log; proof/VELDO-0099/gate-round-nine-primary.log",
+          "detail": "Complete canonical gates at 2e9f4e14beaf583eccff365834a9c7450c334dfb: GREEN, exit 0, 4870 passed, 0 failed in each shape; first-use 4870/0 and all 8 required checks passed."
         }
       ]
     },
@@ -29,12 +29,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Both shapes retain dirty stage, staged index, and untracked bytes; clone substitution reds both fidelity rows. Every earlier copy-fidelity and quoted-alternate control re-driven."
+          "detail": "Both shapes preserve dirty working bytes, staged index and untracked content; clone substitution still reds fidelity. Special entries are recorded by kind and deliberately omitted, while ordinary content fidelity is preserved."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-round-eight-linked.log; proof/VELDO-0099/gate-round-eight-primary.log",
-          "detail": "Complete canonical gates at 754757683fca4a4598caeefea6c5f405c6b0b1a1: GREEN, exit 0, 4870 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-nine-linked.log; proof/VELDO-0099/gate-round-nine-primary.log",
+          "detail": "Complete canonical gates at 2e9f4e14beaf583eccff365834a9c7450c334dfb: GREEN, exit 0, 4870 passed, 0 failed in each shape; first-use 4870/0 and all 8 required checks passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Deleting a Git-created private worktree reflog during the live stage reds THIS repository is untouched in both shapes, naming git-dir/logs/refs/worktree/round-eight-probe. Omitting primary private reflogs reproduces primary 14/0 versus linked 13/1 and reds the primary regression control. All three private reflog namespaces and all prior inventory controls are driven."
+          "detail": "Repeated identical working-tree writes red sandbox and live rows, 12/2 in both shapes; HOME rewrites red the HOME row, 13/1. Content-only paired mutations reproduce 14/0 misses. Clean split indexes pass 14/0; live sharedindex corruption reds the live row, 13/1. Prior metadata, attribution, timestamp-refresh, and corruption controls all re-driven."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-round-eight-linked.log; proof/VELDO-0099/gate-round-eight-primary.log",
-          "detail": "Complete canonical gates at 754757683fca4a4598caeefea6c5f405c6b0b1a1: GREEN, exit 0, 4870 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-nine-linked.log; proof/VELDO-0099/gate-round-nine-primary.log",
+          "detail": "Complete canonical gates at 2e9f4e14beaf583eccff365834a9c7450c334dfb: GREEN, exit 0, 4870 passed, 0 failed in each shape; first-use 4870/0 and all 8 required checks passed."
         }
       ]
     },
@@ -61,12 +61,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Both full gates are green at the same implementation/driver commit. Every original and review mutation, including both round-eight defects, is re-driven. Full labels and suite digest are in driven.json; previous logs and baseline-driven.json are historical."
+          "detail": "Both full canonical gates pass at the same implementation commit. Complete original and review mutations are re-driven by the corrected driver archived byte for byte in drive.py. Earlier logs are historical; no result is claimed for the later proof-only packaging commit."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-round-eight-linked.log; proof/VELDO-0099/gate-round-eight-primary.log",
-          "detail": "Complete canonical gates at 754757683fca4a4598caeefea6c5f405c6b0b1a1: GREEN, exit 0, 4870 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-nine-linked.log; proof/VELDO-0099/gate-round-nine-primary.log",
+          "detail": "Complete canonical gates at 2e9f4e14beaf583eccff365834a9c7450c334dfb: GREEN, exit 0, 4870 passed, 0 failed in each shape; first-use 4870/0 and all 8 required checks passed."
         }
       ]
     }
@@ -102,17 +102,18 @@
     {
       "name": "all-mutation-diagnostics",
       "status": "passed",
-      "command": "python3 proof/VELDO-0099/drive.py",
+      "command": "python3 /tmp/veldo-nine-drive-fixed.py \"$PWD\"",
       "exit_code": 0,
-      "commit": "754757683fca4a4598caeefea6c5f405c6b0b1a1",
-      "ref": "proof/VELDO-0099/driven.json"
+      "commit": "2e9f4e14beaf583eccff365834a9c7450c334dfb",
+      "ref": "proof/VELDO-0099/driven.json",
+      "detail": "Exact executed driver archived byte for byte as proof/VELDO-0099/drive.py. Earlier setup error and interrupted attempt are documented in README.md."
     },
     {
       "name": "ready",
       "status": "passed",
       "command": "python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md",
       "exit_code": 0,
-      "commit": "754757683fca4a4598caeefea6c5f405c6b0b1a1",
+      "commit": "2e9f4e14beaf583eccff365834a9c7450c334dfb",
       "ref": "proof/VELDO-0099/ready-check.txt"
     },
     {
@@ -132,12 +133,30 @@
       "commit": "754757683fca4a4598caeefea6c5f405c6b0b1a1",
       "ref": "proof/VELDO-0099/gate-round-eight-primary.log",
       "detail": "4870 passed, 0 failed; first-use integration and all 8 required catalog checks passed."
+    },
+    {
+      "name": "round-nine-linked",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "2e9f4e14beaf583eccff365834a9c7450c334dfb",
+      "ref": "proof/VELDO-0099/gate-round-nine-linked.log",
+      "detail": "4870 passed, 0 failed; first-use 4870/0 and all 8 required checks passed."
+    },
+    {
+      "name": "round-nine-primary",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "2e9f4e14beaf583eccff365834a9c7450c334dfb",
+      "ref": "proof/VELDO-0099/gate-round-nine-primary.log",
+      "detail": "4870 passed, 0 failed; first-use 4870/0 and all 8 required checks passed."
     }
   ],
   "artifacts": [
     {
       "ref": "proof/VELDO-0099/README.md",
-      "sha256": "3d44d34865e5b0f15bbab531859b08086b84adbd2be22dfe6cac64509f7a2f5d"
+      "sha256": "81044f6e61d88e64e014ca80cb3bb3ce5e27939913cdde3c29d5eb30e01ce870"
     },
     {
       "ref": "proof/VELDO-0099/baseline-driven.json",
@@ -149,11 +168,11 @@
     },
     {
       "ref": "proof/VELDO-0099/drive.py",
-      "sha256": "4e3da23f93e84f5d641088480a706b73245ec3bbda0d4df3d84ed2b0405eaa38"
+      "sha256": "10b03fb0d04a6df4f86e9f8bff07165f7638a48a9576d268f09034cf2ecf610b"
     },
     {
       "ref": "proof/VELDO-0099/driven.json",
-      "sha256": "1443be7724a8461988683bb29d76bddd3851023f7d1f00dc7edaf108379c70f7"
+      "sha256": "75cf1b3653b5b10c0cefa1009769d4cffef1dc4666e3e8b994c21f5d2cd2dad6"
     },
     {
       "ref": "proof/VELDO-0099/gate-final.log",
@@ -180,6 +199,14 @@
       "sha256": "f9d8957056953914a4c6f60f3b67c42ac94f3a153ea9a7f0a67d69814c05e036"
     },
     {
+      "ref": "proof/VELDO-0099/gate-round-eight-linked.log",
+      "sha256": "bcbd681b0a93576046267d9ec4de975874aa10539e09ca6d3f714185c79b9ccc"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-eight-primary.log",
+      "sha256": "baa1939369fddabf8d679e6e65b738e1b85cd3c39aa15c70eba55b653b4adbd4"
+    },
+    {
       "ref": "proof/VELDO-0099/gate-round-five-after-linked.log",
       "sha256": "934427a58c71c37ec6ce435296332795cea9c3855eb26ed903858c2cb27b9243"
     },
@@ -198,6 +225,26 @@
     {
       "ref": "proof/VELDO-0099/gate-round-five-final.log",
       "sha256": "14f2628fdd82893153bac27e33b19a837c47e16673ccda559d61e16a2d678396"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-nine-linked.log",
+      "sha256": "4d7e19a374780d86f7451d399b0b7be18a76962dc77487da456eb2db9c327656"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-nine-primary.log",
+      "sha256": "3fab94681a97db9a4b8ec9cb1debc67df704a3e7e4151c74709fb901629be158"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-seven-linked-first-red.log",
+      "sha256": "7426e5380d06470f2acf1d9fa41d95707e6760b11194a756813799fe0d96fb6e"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-seven-linked.log",
+      "sha256": "c79c6cb77d910ad0008cec47e95ba3313a4d0c2c547e40c59a74de879eb27083"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-seven-primary.log",
+      "sha256": "1bb79e28f7da93580aade0c87f2104a8ce0dd3c83eda229377edacce88004c7f"
     },
     {
       "ref": "proof/VELDO-0099/gate-round-six-linked.log",
@@ -241,35 +288,15 @@
     },
     {
       "ref": "proof/VELDO-0099/log-redactions.json",
-      "sha256": "69af8dd16be9f4904b9f46a40ddf6737ce58f3d484706fffb277179405b2c49a"
+      "sha256": "f1af5b4d5960f10621f13e0828426b143482fa0b9fcfc6c67942de78697dc096"
     },
     {
       "ref": "proof/VELDO-0099/ready-check.txt",
-      "sha256": "1db0f9cde6bb6a08971464d82f1c6d29bf13ce6b96935f4b8122bf547880e63f"
+      "sha256": "c9f223a5d0d7f968875fca488cb9a111da391ad40e6722a5eb4d459ebaf49834"
     },
     {
       "ref": "proof/VELDO-0099/sibling-search.txt",
       "sha256": "f951d36cbb25f4d50b1e6629d60438b58e9fbee66097bb7220028bfc0d1e9f21"
-    },
-    {
-      "ref": "proof/VELDO-0099/gate-round-seven-linked.log",
-      "sha256": "c79c6cb77d910ad0008cec47e95ba3313a4d0c2c547e40c59a74de879eb27083"
-    },
-    {
-      "ref": "proof/VELDO-0099/gate-round-seven-primary.log",
-      "sha256": "1bb79e28f7da93580aade0c87f2104a8ce0dd3c83eda229377edacce88004c7f"
-    },
-    {
-      "ref": "proof/VELDO-0099/gate-round-seven-linked-first-red.log",
-      "sha256": "7426e5380d06470f2acf1d9fa41d95707e6760b11194a756813799fe0d96fb6e"
-    },
-    {
-      "ref": "proof/VELDO-0099/gate-round-eight-linked.log",
-      "sha256": "bcbd681b0a93576046267d9ec4de975874aa10539e09ca6d3f714185c79b9ccc"
-    },
-    {
-      "ref": "proof/VELDO-0099/gate-round-eight-primary.log",
-      "sha256": "baa1939369fddabf8d679e6e65b738e1b85cd3c39aa15c70eba55b653b4adbd4"
     }
   ],
   "rollback": "Revert the suite changes and regenerate the index; retain historical proof records.",
