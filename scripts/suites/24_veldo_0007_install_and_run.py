@@ -108,14 +108,20 @@ def _iar_repository_inventory(root):
 
 
 def _iar_private_paths(private):
-    # Per-worktree pseudorefs, split index bases, operation state, HEAD log and refs.
+    # Checkout-owned state, even when the primary stores it in the common directory.
+    # Git documents the boundary and private refs/config in git-worktree (REFS,
+    # CONFIGURATION FILE, DETAILS): https://git-scm.com/docs/git-worktree
+    # Index/sharedindex, logs/HEAD and info/sparse-checkout are described in
+    # https://git-scm.com/docs/gitrepository-layout . Include operation state and
+    # uppercase pseudorefs, plus lock files, without walking shared info or refs.
     names = {"index", "config.worktree", "sequencer", "rebase-apply", "rebase-merge"}
     paths = [p for p in private.iterdir()
              if p.name.removesuffix(".lock") in names
              or p.name.startswith("sharedindex.")
              or (not p.is_dir() and p.name.removesuffix(".lock").isupper())]
     paths += [private / rel for rel in
-              ("logs/HEAD", "logs/HEAD.lock", "refs/bisect", "refs/worktree", "refs/rewritten")
+              ("logs/HEAD", "logs/HEAD.lock", "refs/bisect", "refs/worktree", "refs/rewritten",
+               "info/sparse-checkout", "info/sparse-checkout.lock")
               if (private / rel).exists()]
     return paths
 
@@ -514,6 +520,16 @@ def _iar_review_controls():
             expect("VELDO-0099 AC3: %s split index corruption is observed" % shape,
                    failed and "git-dir/" + shared.name in changed)
             shared.write_bytes(saved)
+
+            sparse = private / "info/sparse-checkout"
+            sparse.parent.mkdir(exist_ok=True)
+            sparse.write_text("/*\n")
+            before = _iar_live_inventory(tree)
+            sparse.write_text("/scripts/\n")
+            expect("VELDO-0099 AC3: %s sparse-checkout rule changes are observed" % shape,
+                   "git-dir/info/sparse-checkout" in
+                   _iar_changed(before, _iar_live_inventory(tree)))
+            sparse.unlink()
 
         # A fresh, unpredictable store name prevents a fixed allowlist from satisfying fidelity.
         unknown = "future-store-" + _iar_os.urandom(12).hex()

@@ -180,3 +180,12 @@ kernel-enforced write confinement of the stage process using Linux Landlock,
 unprivileged, on kernel 5.13 and later, with recorded stand-down on other hosts.
 That turns "no writes outside the sandbox" from an inventory into an enforced
 property. That follow-up is not implemented here.
+
+Round seven correction: nested-repository stand-down applies only to the six inventory
+rows. The eight independent process and network rows still inspect the current stage;
+the driven child runs from an empty temporary directory and needs no faithful copy.
+A nested marker plus start_new_session=True must red both detached-process rows, and
+a nested marker alone must record inventory stand-down while all eight rows pass.
+Primary checkout private state includes info/sparse-checkout, following the documented
+Git per-worktree boundary. Changing sparse rules during the live run must red that row
+in either checkout shape. The proof re-drives the prior mutations and both full gates.

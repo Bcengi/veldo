@@ -107,6 +107,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
             'skip_config_normalization': 'def _iar_normalize_config(common, private): pass',
             'copy_sibling_state': "def _iar_common_entries(common, primary): return list(common.iterdir())",
             'raise_on_vanished_entry': "def _iar_copy_entry(source, target, *, skip=()):\n    if source.is_dir():\n        target.mkdir(parents=True, exist_ok=True)\n        for child in source.iterdir(): _iar_copy_entry(child, target / child.name)\n        _iar_sh.copystat(source, target)\n    else: _iar_sh.copy2(source, target)",
+            'omit_sparse_checkout': "def _iar_private_paths(private): return [p for p in original_private_paths(private) if p.name != 'sparse-checkout']",
             'omit_sharedindex': "def _iar_live_inventory(root):\n    result = original_live_inventory(root)\n    if _iar_git_dirs(root)[0] == _iar_git_dirs(root)[1]:\n        result = {k: v for k, v in result.items() if not k.startswith('git-dir/sharedindex.')}\n    return result",
             'skip_alternate_rewrite': 'def _iar_copy_alternates(objects, sandbox, copied=None): pass',
         }
@@ -117,6 +118,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                       _iar_threading=threading,
                       expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
             exec(compile(module, str(SUITE), 'exec'), ns)
+            ns['original_private_paths'] = ns['_iar_private_paths']
             ns['original_inventory'] = ns['_iar_inventory']
             ns['original_live_inventory'] = ns['_iar_live_inventory']
             ns['original_common_entries'] = ns['_iar_common_entries']
@@ -133,10 +135,11 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                 'skip_config_normalization': [r['label'] for r in rows if 'redirected config' in r['label']],
                 'copy_sibling_state': [r['label'] for r in rows if '50 copies' in r['label'] or 'whole common directory' in r['label']],
                 'raise_on_vanished_entry': [r['label'] for r in rows if 'vanishing after' in r['label']],
+                'omit_sparse_checkout': ['VELDO-0099 AC3: primary sparse-checkout rule changes are observed'],
                 'omit_sharedindex': ['VELDO-0099 AC3: primary split index corruption is observed'],
                 'skip_alternate_rewrite': [r['label'] for r in rows if 'redirected config' in r['label'] or 'C-quoted alternate' in r['label']],
             }[case]
-            assert len(rows) == (13 if baseline else 17), (case, rows)
+            assert len(rows) == (13 if baseline else 19), (case, rows)
             assert failures == expected, (case, failures, expected)
             results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
                             'failed': len(failures), 'rows': rows})
@@ -144,6 +147,8 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
         if not baseline:
             for case, control, mutation, count in (
                 ('nested_control', '_iar_nested_controls', None, 20),
+                ('restore_nested_early_return', '_iar_nested_controls',
+                 'def _iar_ac4(): _iar_ac4_inventory()', 20),
                 ('skip_nested_detection', '_iar_nested_controls',
                  'def _iar_nested_repository(root): return False', 20),
                 ('alternates_name_control', '_iar_alternates_name_controls', None, 2),
@@ -162,7 +167,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                 ns[control]()
                 failures = [r['label'] for r in rows if not r['passed']]
                 assert len(rows) == count, (case, rows)
-                assert len(failures) == (count if mutation else 0), (case, failures)
+                assert len(failures) == (10 if case == 'restore_nested_early_return' else count if mutation else 0), (case, failures)
                 if case == 'skip_nested_detection':
                     assert sum('stand-down is recorded' in label for label in failures) == 10
                 results.append({'case': case, 'mutation': mutation,
@@ -220,7 +225,9 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                          'sibling_staging_shared_live', 'sandbox_common_write', 'redirected_config',
                          'sandbox_claim_delete', 'sibling_heartbeat', 'sibling_heartbeat_shared_live',
                          'split_index', 'sandbox_reflog_delete',
-                         *(() if baseline else ('sandbox_random_delete', 'split_index_reflog_delete', 'branch_alternates'))):
+                         *(() if baseline else ('sandbox_random_delete', 'split_index_reflog_delete', 'branch_alternates',
+                                               'nested_only', 'nested_detached', 'nested_network',
+                                               'sparse_rules', 'sparse_rules_omitted'))):
                 rows = []
                 ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
                           _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
@@ -235,6 +242,34 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                 stage = tree / 'scripts/check_install_and_run.py'
                 stage_bytes = stage.read_bytes()
                 saved_configs = {}
+                nested_case = case.startswith('nested_')
+                sparse_case = case.startswith('sparse_rules')
+                if nested_case:
+                    (tree / '.gitmodules').write_text('')
+                    if case == 'nested_detached':
+                        anchor = 'capture_output=True, text=True, timeout=timeout)'
+                        assert stage_bytes.decode().count(anchor) == 1
+                        stage.write_text(stage_bytes.decode().replace(
+                            anchor, 'capture_output=True, text=True, timeout=timeout, start_new_session=True)'))
+                    if case == 'nested_network':
+                        stage.write_bytes(stage_bytes + b'\ndef network_probe():\n    return urlopen("unused")\n')
+                    mutated = importlib.util.module_from_spec(spec)
+                    exec(compile(stage.read_bytes(), str(stage), 'exec'), mutated.__dict__)
+                    ns['IAR'] = mutated
+                if sparse_case:
+                    sparse_private, _ = ns['_iar_git_dirs'](tree)
+                    sparse = sparse_private / 'info/sparse-checkout'
+                    sparse.parent.mkdir(exist_ok=True)
+                    sparse.write_text('/*\n')
+                    def sparse_check(*args, **kwargs):
+                        outcome = original_check(*args, **kwargs)
+                        sparse.write_text('/scripts/\n')
+                        return outcome
+                    iar.check = sparse_check
+                    if case == 'sparse_rules_omitted':
+                        private_paths = ns['_iar_private_paths']
+                        ns['_iar_private_paths'] = lambda private: [
+                            p for p in private_paths(private) if p.name != 'sparse-checkout']
                 random_path = None
                 split = case in ('split_index', 'split_index_reflog_delete')
                 if case == 'branch_alternates':
@@ -329,11 +364,18 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
 """
                     stage.write_text(stage_bytes.decode().replace(anchor, injected + anchor))
                 try:
-                    ns['_iar_ac4']()
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        ns['_iar_ac4']()
                     if case == 'redirected_config':
                         assert stage.read_bytes() == dirty_stage
                 finally:
                     iar.check = original_check
+                    if nested_case:
+                        (tree / '.gitmodules').unlink()
+                        stage.write_bytes(stage_bytes)
+                    if sparse_case:
+                        sparse.unlink()
                     if case in ('sandbox_common_write', 'sandbox_claim_delete', 'redirected_config', 'sandbox_random_delete') or 'reflog_delete' in case:
                         stage.write_bytes(stage_bytes)
                     for config, saved in saved_configs.items():
@@ -357,18 +399,36 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                                 *(() if baseline else ('sandbox_reflog_delete', 'sandbox_random_delete', 'split_index_reflog_delete'))))
                 if baseline and case == 'split_index':
                     expected = 2
+                if nested_case:
+                    expected = {'nested_only': 0, 'nested_detached': 2, 'nested_network': 1}[case]
+                    assert len(rows) == 8, rows
+                    assert len(ns['_IAR_STOOD_DOWN']) == 1
+                    assert 'STANDS DOWN, recorded rather than passed' in output.getvalue()
+                    assert not any('NOT ONE BYTE' in r['label'] or 'THIS repository' in r['label'] for r in rows)
+                    if case == 'nested_detached':
+                        assert all(any(label in r for r in failures) for label in
+                                   ('STARTS NO DETACHED PROCESS', 'THE LAUNCH IS DRIVEN')), failures
+                    if case == 'nested_network':
+                        assert len(failures) == 1 and 'it makes no network call' in failures[0], failures
+                if sparse_case:
+                    expected = int(case == 'sparse_rules' or shape == 'linked')
+                    if expected:
+                        assert len(failures) == 1 and 'THIS repository is untouched' in failures[0], failures
+                        assert 'git-dir/info/sparse-checkout' in failures[0], failures
                 assert len(failures) == expected, (shape, case, failures)
-                if expected and not (baseline and case == 'split_index'):
+                if expected and not nested_case and not sparse_case and not (baseline and case == 'split_index'):
                     label = ("THE OBSERVATION'S OWN SUBSTRATE" if restored else
                              'THIS repository is untouched' if case in ('sibling_staging_shared_live', 'sibling_heartbeat_shared_live')
                              else 'NOT ONE BYTE of the repository under check')
                     assert label in failures[0], failures
                     if random_path is not None or 'reflog_delete' in case:
                         assert victim in failures[0], failures
-                assert len(rows) == 14, rows
+                assert len(rows) == (8 if nested_case else 14), rows
                 ac4_results.append({'shape': shape, 'case': case,
                                     'commit': git('rev-parse', 'HEAD', cwd=tree),
                                     'random_deleted_path': random_path,
+                                    'stand_down': ns['_IAR_STOOD_DOWN'],
+                                    'output': output.getvalue(),
                                     'passed': len(rows) - len(failures), 'failed': len(failures),
                                     'rows': rows})
     finally:
