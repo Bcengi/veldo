@@ -1,0 +1,150 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0099",
+  "commit": "64413f029ff5479ab583a8a8d01bd24279bacc9b",
+  "producer": "Codex implementing agent",
+  "produced_at": "2026-09-17T03:44:43.290796Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0099/gate-linked.log; proof/VELDO-0099/gate-primary.log",
+          "detail": "Both full gates include the primary/linked layout controls. driven.json shows 13/0 for controls and 12/1 after restoring the directory requirement; the original AC4 is 14/0 in both shapes, and becomes 13/1 only in linked shape under the restored requirement."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0099/driven.json",
+          "detail": "Reproduce with python3 proof/VELDO-0099/drive.py. These paired controls supplement full gate evidence; no selected-suite run is cited as a gate pass."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0099/gate-linked.log; proof/VELDO-0099/gate-primary.log",
+          "detail": "Both full gates include dirty-stage, staged-index, untracked-file, and real-clone controls in both shapes. driven.json records 11/2 under clone substitution, with exactly the two copy-fidelity rows failing."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0099/driven.json",
+          "detail": "Reproduce with python3 proof/VELDO-0099/drive.py. These paired controls supplement full gate evidence; no selected-suite run is cited as a gate pass."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0099/gate-linked.log; proof/VELDO-0099/gate-primary.log",
+          "detail": "Both full gates include clean-inventory and private/common-store write controls. driven.json records 11/2 when inventory covers only the working tree, with exactly the two linked metadata-write rows failing."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0099/driven.json",
+          "detail": "Reproduce with python3 proof/VELDO-0099/drive.py. These paired controls supplement full gate evidence; no selected-suite run is cited as a gate pass."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0099/gate-linked.log; proof/VELDO-0099/gate-primary.log",
+          "detail": "gate-linked.log and gate-primary.log are complete GREEN gates at the same commit, exit 0, selftest 4821 passed and 0 failed, catalog 8 run and 15 not-applicable. README.md records the sibling search, initial failures, ID collision, and limitations. All three mutations and the original AC4 shape differential are recorded in driven.json."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0099/driven.json",
+          "detail": "Reproduce with python3 proof/VELDO-0099/drive.py. These paired controls supplement full gate evidence; no selected-suite run is cited as a gate pass."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-linked",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "64413f029ff5479ab583a8a8d01bd24279bacc9b",
+      "ref": "proof/VELDO-0099/gate-linked.log",
+      "detail": "4821 passed, 0 failed; 8 required catalog checks passed; first use passed."
+    },
+    {
+      "name": "gate-primary",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "64413f029ff5479ab583a8a8d01bd24279bacc9b",
+      "ref": "proof/VELDO-0099/gate-primary.log",
+      "detail": "Disposable primary clone at the same commit: 4821 passed, 0 failed; 8 required catalog checks passed; first use passed."
+    },
+    {
+      "name": "paired-mutations",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0099/drive.py",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0099/driven.json",
+      "detail": "Control 13/0; mutations 12/1, 11/2, 11/2 with exact failure labels asserted. Original AC4 14/0 in both shapes; old shape check gives primary 14/0 and linked 13/1. Suite SHA-256 unchanged."
+    },
+    {
+      "name": "ready",
+      "status": "passed",
+      "command": "python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0099/ready-check.txt"
+    }
+  ],
+  "artifacts": [
+    {
+      "ref": "proof/VELDO-0099/drive.py",
+      "sha256": "75412aab6c188c3f3be06a33a78f65d6062895e959ccc01a88faeb58caa22895"
+    },
+    {
+      "ref": "proof/VELDO-0099/driven.json",
+      "sha256": "a7ed2e70627fbb69c36f1f0c58be1f9c1e3675cf330fc4d9a34694f10375018f"
+    },
+    {
+      "ref": "proof/VELDO-0099/README.md",
+      "sha256": "3ff0ac914caf3e29461848b219de0c546decb916368a61650e2af63d571b08bf"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-linked.log",
+      "sha256": "295bfbb9a8e595171ec1d5200bea526b4286ab282b5269d4a63efcc1fa95205c"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-primary.log",
+      "sha256": "39eeb0e9e237dac11163c5a93c6b06a59404888c6c3a15f5d572eb7b328e2d33"
+    },
+    {
+      "ref": "proof/VELDO-0099/baseline-gate.log",
+      "sha256": "daec07ab1195304ac620ed84535f5af6ef9ada1a40de06b276504a5417871fc3"
+    },
+    {
+      "ref": "proof/VELDO-0099/ready-check.txt",
+      "sha256": "748b280bb42dc92684cc3677e912dcdc41dd6fee1c3563c2c1b0de3f60e4ef82"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-proof-packaging-red.log",
+      "sha256": "91774f602adc9fc87eea05f0b62b7a65bb1ad87461fc375a722bbeeaeff731e7"
+    },
+    {
+      "ref": "proof/VELDO-0099/log-redactions.json",
+      "sha256": "d8573cc0067bbb3a7f98974b00045d36241ff9e2e9e6614b3eb503b3dc5db85d"
+    }
+  ],
+  "rollback": "Revert the suite change and regenerate the index; preserve historical proof and append-only events.",
+  "review": "Independent review is pending outside this run; no self-approval or landing is claimed.",
+  "log_redactions": "proof/VELDO-0099/log-redactions.json records the synthetic selftest diagnostic redaction; result and failure rows are retained."
+}

@@ -1,0 +1,6 @@
+$ python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md
+
+exit: 0
+$ python3 .veldo/validate.py spec specs/VELDO-0099-worktree-git-shape.md
+
+exit: 0
