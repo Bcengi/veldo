@@ -127,3 +127,14 @@ failure, or stand-down row is removed. log-redactions.json records each stored
 log's affected line numbers and raw/stored SHA-256 digests. Unredacted output was
 kept outside the repository and was never committed. The manifest hashes the
 stored artifacts, including the redaction record.
+
+## Final gate with refreshed proof present
+
+After the refreshed bundle was committed, ./scripts/verify.sh ran in the assigned
+linked worktree at 71979dd1a0daee9f6dd76081a83cdfb5eb7abe07. It exited 0: GREEN,
+4825 passed, 0 failed; first-use integration passed; 8 catalog checks ran,
+15 were not applicable, 0 were waived, and 0 were undeclared.
+gate-review-final.log records the full output with the documented diagnostic
+redaction. This final receipt commit changes only proof records. The gate's
+checkout-local stamp and event byproducts were restored with git checkout before
+that commit. No implementation bytes changed after the paired full gates.

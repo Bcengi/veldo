@@ -3,7 +3,7 @@
   "spec_id": "VELDO-0099",
   "commit": "74ae1daa2136f0025e933a9761ccdea103db09fd",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-17T04:15:10.880170Z",
+  "produced_at": "2026-09-17T04:19:41.179529Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -67,6 +67,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0099/driven.json",
           "detail": "Reproduce with python3 proof/VELDO-0099/drive.py. Driven controls supplement complete gate logs; partial selftest results are diagnostics only."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0099/gate-review-final.log",
+          "detail": "Full GREEN gate with refreshed proof present at 71979dd1a0daee9f6dd76081a83cdfb5eb7abe07, exit 0."
         }
       ]
     }
@@ -114,12 +119,21 @@
       "command": "python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md",
       "exit_code": 0,
       "ref": "proof/VELDO-0099/ready-check.txt"
+    },
+    {
+      "name": "gate-with-refreshed-proof",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "71979dd1a0daee9f6dd76081a83cdfb5eb7abe07",
+      "ref": "proof/VELDO-0099/gate-review-final.log",
+      "detail": "Full linked gate after refreshed proof was committed: 4825 passed, 0 failed; first use passed; 8 required catalog checks passed."
     }
   ],
   "artifacts": [
     {
       "ref": "proof/VELDO-0099/README.md",
-      "sha256": "f2a5b8c38772371e68e485db0f34230cf8cb0c5eaa6ab82de8d7a1465ccd86f5"
+      "sha256": "fdeaac1c75e7abc85cc44ac10f257d9d3d9ae9f64e7bf4a11c5ffbb9b00be274"
     },
     {
       "ref": "proof/VELDO-0099/baseline-gate.log",
@@ -154,8 +168,12 @@
       "sha256": "a4d64d6a908381e9f29ba8479242bc5369afc4c817fc5244c6cd8a376dcfae67"
     },
     {
+      "ref": "proof/VELDO-0099/gate-review-final.log",
+      "sha256": "f9d8957056953914a4c6f60f3b67c42ac94f3a153ea9a7f0a67d69814c05e036"
+    },
+    {
       "ref": "proof/VELDO-0099/log-redactions.json",
-      "sha256": "a8c0803f3b0b5f547868afadfbda89732e28f97c435a2cce0c42dbbad61b5972"
+      "sha256": "b98a96ddb1c6ccd939db2ca1dc243e45df684943e560686e55949ed779570d8e"
     },
     {
       "ref": "proof/VELDO-0099/ready-check.txt",
