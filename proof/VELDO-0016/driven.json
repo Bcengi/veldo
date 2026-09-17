@@ -1,0 +1,1152 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0016",
+  "commit": "8ae864ff48a179855d11c6faaac269d8e1e75622",
+  "taken_at": "2026-09-17T11:38:30Z",
+  "fragment": "scripts/suites/29_veldo_0016_policy_boundaries.py",
+  "fragment_sha256": "1c3b91f4117b3176f32b8509d32fdaa53c2c695b7367da5d646ec0afec8135f7",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of the engine's .veldo/*.py or of .veldo/policy_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the fixture trees carry a copy of the engine so each adapter runs from its own root.",
+  "rows_total": 271,
+  "rows_passed": 271,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0016 AC3 policy-loading/unreadable DRIVEN (the declared falsifier): mapping an unreadable present contract to optional absence turns the unreadable row RED for the loader and for every adapter without a presence guard of its own under the optional flag (14 of 30 rows red; guarded: ['metrics_shape_readers._read_contract'])",
+    "VELDO-0016 AC3 policy-loading/malformed DRIVEN: the pre-fix handler that returned (None, None) for a malformed present file turns the malformed row RED for every adapter (14 of 15 rows red)",
+    "VELDO-0016 AC3 policy-loading/absent/required DRIVEN: a dead required flag turns the required-absence row RED for every adapter, the presence-guarded one included, because absence is the one state a boundary's kind question cannot see (15 of 15 rows red)",
+    "VELDO-0016 AC1 policy-activation/draft DRIVEN (the declared falsifier): with the draft refusal removed, the draft process decision VELDO-DEC-0004 is no longer refused as draft (it now falls to 'undecided_by_a_person': VELDO-DEC-0004 is decided but names no decider: only a person decides, on the re), so the policy-activation/draft row reds; unmutated it refuses as draft",
+    "VELDO-0016 AC1 policy-activation/stale DRIVEN: with the version check removed a re-decided record at version 2 activates, so the stale row reds; unmutated it refuses as stale",
+    "VELDO-0016 AC1 policy-activation/under_reviewed DRIVEN: with the review count check removed a decided critical record with one bound review of the two required activates, so the row reds; unmutated it refuses as under_reviewed",
+    "VELDO-0016 AC2 policy-activation/retirement-obligation DRIVEN (the declared falsifier): with the empty-containment proof removed from the retirement predicate, a slot with unproven emptiness is released, so the row reds; unmutated it is refused by name",
+    "VELDO-0016 AC4 policy-boundaries/review-is-not-authority DRIVEN (the declared falsifier): with a passing verdict treated as authorization, the seeded receipt lands, so the row reds; unmutated it is refused"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "policy-activation/draft DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "policy-activation/retirement-obligation DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "policy-loading/unreadable DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC4": {
+      "row_contains": "policy-boundaries/review-is-not-authority DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC3": {
+      "rows": 176,
+      "passed": 176,
+      "driven": 3
+    },
+    "AC1": {
+      "rows": 72,
+      "passed": 72,
+      "driven": 3
+    },
+    "AC2": {
+      "rows": 13,
+      "passed": 13,
+      "driven": 1
+    },
+    "AC4": {
+      "rows": 10,
+      "passed": 10,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0016 AC3 policy-loading/registry: the loader adapter registry is exactly the set of engine modules whose source calls the loader or a placement predicate, in both directions (problems: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/registry: every registered adapter has a probe in this suite and every probe is a registered adapter, so the product below covers the registry and nothing is probed off the record",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/registry TEETH: an unregistered module that calls the loader is named as a consumer the product cannot reach",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/registry TEETH: a registered adapter whose module no longer calls the loader is named as a registry row about nothing",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/sync: the canonical engine copies of the loader, validate_checks and the policy contract are byte-identical to the root instances, the two loaders expose the same ContractLoad fields, and both entry points answer the same (state, kind) for this repository's own contract",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/result-type: ContractLoad carries state, kind, arch, contract, problems, path and required, refused is derived from state and the flag alone, and the kinds vocabulary is exactly the six the taxonomy names",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent: the loader reports (state, kind) ('absent', 'optional_absence') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required: the loader reports (state, kind) ('absent', 'required_absence') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid: the loader reports (state, kind) ('invalid', 'invalid_structure') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required: the loader reports (state, kind) ('invalid', 'invalid_structure') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed: the loader reports (state, kind) ('invalid', 'parse_failure') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required: the loader reports (state, kind) ('invalid', 'parse_failure') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable: the loader reports (state, kind) ('invalid', 'unreadable') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required: the loader reports (state, kind) ('invalid', 'unreadable') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid: the loader reports (state, kind) ('valid', 'valid') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required: the loader reports (state, kind) ('valid', 'valid') exactly",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent validate_checks.load_contract_state: proceeded (observed proceeded: ('absent', 'optional_absence'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent validate_checks.load_repo_contract: proceeded (observed proceeded: none)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent validate_checks.check_arch: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent validate_checks.placement_gate_problems: proceeded (observed proceeded: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent validate_checks.placement_gate_ok: proceeded (observed proceeded: True)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent validate_checks.check_ready: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent validate_checks.check_shape_review: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent frontier.claimable: proceeded (observed proceeded: ([{'spec': 'FX-0001', 'plan': 'PLAN-FX', 'kind': 'build', 'requires': []}], None))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent plan.cmd_run_check: proceeded (observed proceeded: run-check FX-0001: clear to build (deps shipped, plan context current))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent shape_gate.run: proceeded (observed proceeded: (True, []))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent observability._cli: proceeded (observed proceeded: veldo observability: clean (not behavior-bearing (exempt); declared criteria: none))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent intent_corpus.open_corpus: proceeded (observed proceeded: opened; contract_refused=False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent entropy.entropy_report: proceeded (observed proceeded: standdown)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent cost_to_change.repo_report: proceeded (observed proceeded: no architecture contract (adoption safe: a repository without one is byte-identically unaffected))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent metrics_shape_readers._read_contract: proceeded (observed proceeded: None)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.load_contract_state: refused (observed refused: ('absent', 'required_absence'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.load_repo_contract: refused (observed refused: required_absence)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_arch: refused (observed refused: /tmp/v16fx00_9ps7b/.veldo/architecture.yaml: architecture contract is required by this repository's policy but absent (fail closed): nothing is placeable, claim)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.placement_gate_problems: refused (observed refused: [\"architecture contract refused, so no placement can resolve until it is repaired: architecture contract is required by this repository's policy but absent (fai)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.placement_gate_ok: refused (observed refused: False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_ready: refused (observed refused: /tmp/v16fx00_9ps7b/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract is required )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx00_9ps7b/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract is required by this)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required frontier.claimable: refused (observed refused: ([], \"architecture contract is required by this repository's policy but absent (fail closed): nothing is placeable, claimable or buildable until it exists\"))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract is required by this reposi)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required shape_gate.run: refused (observed refused: (False, [\"architecture contract refused (required_absence), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract is requ)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required observability._cli: refused (observed refused: /tmp/v16fx00_9ps7b/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract is required by this repository's policy but absent (fail closed): nothing is pl)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required entropy.entropy_report: refused (observed refused: required_absence)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract is required by this repository's policy but absent (fail closed): nothing is )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required metrics_shape_readers._read_contract: refused (observed refused: the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area could be read from it (it is truncated, malformed, a directory, a symlink that)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.load_contract_state: refused (observed refused: ('invalid', 'unreadable'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.load_repo_contract: refused (observed refused: unreadable)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_arch: refused (observed refused: /tmp/v16fxq78puxf_/.veldo/architecture.yaml: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78puxf_/.veldo/architecture.yaml')",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.placement_gate_problems: refused (observed refused: [\"architecture contract refused, so no placement can resolve until it is repaired: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78pu)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.placement_gate_ok: refused (observed refused: False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_ready: refused (observed refused: /tmp/v16fxq78puxf_/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract unreadable: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxq78puxf_/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract unreadable: [Errno )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable frontier.claimable: refused (observed refused: ([], \"architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78puxf_/.veldo/architecture.yaml'\"))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract unreadable: [Errno 21] Is )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable shape_gate.run: refused (observed refused: (False, [\"architecture contract refused (unreadable), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract unreadable: [)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable observability._cli: refused (observed refused: /tmp/v16fxq78puxf_/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78puxf_/.veldo/architecture.)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable entropy.entropy_report: refused (observed refused: unreadable)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78puxf_/.veldo/architectur)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable metrics_shape_readers._read_contract: refused (observed refused: the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area could be read from it (it is truncated, malformed, a directory, a symlink that)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.load_contract_state: refused (observed refused: ('invalid', 'unreadable'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.load_repo_contract: refused (observed refused: unreadable)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_arch: refused (observed refused: /tmp/v16fx8k9u0s4k/.veldo/architecture.yaml: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0s4k/.veldo/architecture.yaml')",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.placement_gate_problems: refused (observed refused: [\"architecture contract refused, so no placement can resolve until it is repaired: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.placement_gate_ok: refused (observed refused: False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_ready: refused (observed refused: /tmp/v16fx8k9u0s4k/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract unreadable: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx8k9u0s4k/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract unreadable: [Errno )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required frontier.claimable: refused (observed refused: ([], \"architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0s4k/.veldo/architecture.yaml'\"))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract unreadable: [Errno 21] Is )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required shape_gate.run: refused (observed refused: (False, [\"architecture contract refused (unreadable), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract unreadable: [)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required observability._cli: refused (observed refused: /tmp/v16fx8k9u0s4k/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0s4k/.veldo/architecture.)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required entropy.entropy_report: refused (observed refused: unreadable)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0s4k/.veldo/architectur)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required metrics_shape_readers._read_contract: refused (observed refused: the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area could be read from it (it is truncated, malformed, a directory, a symlink that)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.load_contract_state: refused (observed refused: ('invalid', 'parse_failure'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.load_repo_contract: refused (observed refused: parse_failure)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_arch: refused (observed refused: /tmp/v16fxwcp2ekk6/.veldo/architecture.yaml: architecture contract must be a mapping at the top level)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.placement_gate_problems: refused (observed refused: ['architecture contract refused, so no placement can resolve until it is repaired: architecture contract must be a mapping at the top level'])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.placement_gate_ok: refused (observed refused: False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_ready: refused (observed refused: /tmp/v16fxwcp2ekk6/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract must be a ma)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxwcp2ekk6/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract must be a mapping a)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed frontier.claimable: refused (observed refused: ([], 'architecture contract must be a mapping at the top level'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract must be a mapping at the t)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed shape_gate.run: refused (observed refused: (False, ['architecture contract refused (parse_failure), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract must be a )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed observability._cli: refused (observed refused: /tmp/v16fxwcp2ekk6/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract must be a mapping at the top level)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed entropy.entropy_report: refused (observed refused: parse_failure)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract must be a mapping at the top level)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed metrics_shape_readers._read_contract: refused (observed refused: the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area could be read from it (it is truncated, malformed, a directory, a symlink that)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.load_contract_state: refused (observed refused: ('invalid', 'parse_failure'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.load_repo_contract: refused (observed refused: parse_failure)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_arch: refused (observed refused: /tmp/v16fx5bk_awjy/.veldo/architecture.yaml: architecture contract must be a mapping at the top level)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.placement_gate_problems: refused (observed refused: ['architecture contract refused, so no placement can resolve until it is repaired: architecture contract must be a mapping at the top level'])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.placement_gate_ok: refused (observed refused: False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_ready: refused (observed refused: /tmp/v16fx5bk_awjy/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract must be a ma)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx5bk_awjy/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract must be a mapping a)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required frontier.claimable: refused (observed refused: ([], 'architecture contract must be a mapping at the top level'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract must be a mapping at the t)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required shape_gate.run: refused (observed refused: (False, ['architecture contract refused (parse_failure), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract must be a )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required observability._cli: refused (observed refused: /tmp/v16fx5bk_awjy/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract must be a mapping at the top level)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required entropy.entropy_report: refused (observed refused: parse_failure)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract must be a mapping at the top level)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required metrics_shape_readers._read_contract: refused (observed refused: the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area could be read from it (it is truncated, malformed, a directory, a symlink that)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.load_contract_state: refused (observed refused: ('invalid', 'invalid_structure'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.load_repo_contract: refused (observed refused: invalid_structure)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_arch: refused (observed refused: /tmp/v16fx2hc2dmhc/.veldo/architecture.yaml: no areas: a contract without areas declares no shape)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.placement_gate_problems: refused (observed refused: ['architecture contract refused, so no placement can resolve until it is repaired: no areas: a contract without areas declares no shape'])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.placement_gate_ok: refused (observed refused: False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_ready: refused (observed refused: /tmp/v16fx2hc2dmhc/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): no areas: a contract without areas)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx2hc2dmhc/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: no areas: a contract without areas declar)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid frontier.claimable: refused (observed refused: ([], 'no areas: a contract without areas declares no shape'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: no areas: a contract without areas declares no s)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid shape_gate.run: refused (observed refused: (False, ['architecture contract refused (invalid_structure), so the shape gate cannot stand down as adoption safe and fails closed: no areas: a contract without)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid observability._cli: refused (observed refused: /tmp/v16fx2hc2dmhc/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: no areas: a contract without areas declares no shape)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid entropy.entropy_report: refused (observed refused: invalid_structure)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: no areas: a contract without areas declares no shape)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid metrics_shape_readers._read_contract: refused (observed refused: the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area could be read from it (it is truncated, malformed, a directory, a symlink that)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.load_contract_state: refused (observed refused: ('invalid', 'invalid_structure'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.load_repo_contract: refused (observed refused: invalid_structure)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_arch: refused (observed refused: /tmp/v16fxtxsfqgw3/.veldo/architecture.yaml: no areas: a contract without areas declares no shape)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.placement_gate_problems: refused (observed refused: ['architecture contract refused, so no placement can resolve until it is repaired: no areas: a contract without areas declares no shape'])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.placement_gate_ok: refused (observed refused: False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_ready: refused (observed refused: /tmp/v16fxtxsfqgw3/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): no areas: a contract without areas)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxtxsfqgw3/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: no areas: a contract without areas declar)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required frontier.claimable: refused (observed refused: ([], 'no areas: a contract without areas declares no shape'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: no areas: a contract without areas declares no s)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required shape_gate.run: refused (observed refused: (False, ['architecture contract refused (invalid_structure), so the shape gate cannot stand down as adoption safe and fails closed: no areas: a contract without)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required observability._cli: refused (observed refused: /tmp/v16fxtxsfqgw3/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: no areas: a contract without areas declares no shape)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required entropy.entropy_report: refused (observed refused: invalid_structure)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: no areas: a contract without areas declares no shape)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required metrics_shape_readers._read_contract: refused (observed refused: the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area could be read from it (it is truncated, malformed, a directory, a symlink that)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid validate_checks.load_contract_state: proceeded (observed proceeded: ('valid', 'valid'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid validate_checks.load_repo_contract: proceeded (observed proceeded: contract)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid validate_checks.check_arch: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid validate_checks.placement_gate_problems: proceeded (observed proceeded: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid validate_checks.placement_gate_ok: proceeded (observed proceeded: True)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid validate_checks.check_ready: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid validate_checks.check_shape_review: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid frontier.claimable: proceeded (observed proceeded: ([{'spec': 'FX-0001', 'plan': 'PLAN-FX', 'kind': 'build', 'requires': []}], None))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid plan.cmd_run_check: proceeded (observed proceeded: run-check FX-0001: clear to build (deps shipped, plan context current))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid shape_gate.run: proceeded (observed proceeded: (False, []))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid observability._cli: proceeded (observed proceeded: veldo observability: clean (not behavior-bearing (exempt); declared criteria: none))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid intent_corpus.open_corpus: proceeded (observed proceeded: opened; contract_refused=False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid entropy.entropy_report: proceeded (observed proceeded: report)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid cost_to_change.repo_report: proceeded (observed proceeded: no toe actuals records (adoption safe: nothing to aggregate, and a repository that records none is byte-identically unaffected))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid metrics_shape_readers._read_contract: proceeded (observed proceeded: None)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required validate_checks.load_contract_state: proceeded (observed proceeded: ('valid', 'valid'))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required validate_checks.load_repo_contract: proceeded (observed proceeded: contract)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required validate_checks.check_arch: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required validate_checks.placement_gate_problems: proceeded (observed proceeded: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required validate_checks.placement_gate_ok: proceeded (observed proceeded: True)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required validate_checks.check_ready: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required validate_checks.check_shape_review: proceeded (observed proceeded: )",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required frontier.claimable: proceeded (observed proceeded: ([{'spec': 'FX-0001', 'plan': 'PLAN-FX', 'kind': 'build', 'requires': []}], None))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required plan.cmd_run_check: proceeded (observed proceeded: run-check FX-0001: clear to build (deps shipped, plan context current))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required shape_gate.run: proceeded (observed proceeded: (False, []))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required observability._cli: proceeded (observed proceeded: veldo observability: clean (not behavior-bearing (exempt); declared criteria: none))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required intent_corpus.open_corpus: proceeded (observed proceeded: opened; contract_refused=False)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required entropy.entropy_report: proceeded (observed proceeded: report)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required cost_to_change.repo_report: proceeded (observed proceeded: no toe actuals records (adoption safe: nothing to aggregate, and a repository that records none is byte-identically unaffected))",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/valid/required metrics_shape_readers._read_contract: proceeded (observed proceeded: None)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/product: the product is the full registry times five states times two flags, 150 rows, none crashed",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/required-flag: the explicit flag is separate from the policy line - required=True on an optional-policy tree refuses absence, required=False on a required-policy tree stands down, and the policy line decides when the flag is None",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/required-flag: a policy line that is present and does not say optional means required (a misspelling closes rather than opens)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/required-flag: a policy entry that is not a regular file is never opened and means required (the kind question is asked before the read, so a FIFO cannot block the loader and an unreadable policy closes rather than opens)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable: a present contract file the reader may not open is invalid/unreadable and refused, never optional absence",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable DRIVEN (the declared falsifier): mapping an unreadable present contract to optional absence turns the unreadable row RED for the loader and for every adapter without a presence guard of its own under the optional flag (14 of 30 rows red; guarded: ['metrics_shape_readers._read_contract'])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/malformed DRIVEN: the pre-fix handler that returned (None, None) for a malformed present file turns the malformed row RED for every adapter (14 of 15 rows red)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/absent/required DRIVEN: a dead required flag turns the required-absence row RED for every adapter, the presence-guarded one included, because absence is the one state a boundary's kind question cannot see (15 of 15 rows red)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/guarded: the presence-guarded adapter refuses an unreadable and a malformed contract under the loader mutants by its own boundary (its rows stay green there), which is why it is excluded from those two every-row demands and NOT from the required-absence one",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/control: the unmutated engine passes every row the three mutants turn red (unreadable, malformed, absent/required), so the drive measures the loader and not the harness",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/matrix: the decision-to-policy matrix derived from the records' policy_boundary declarations equals the activation registry in both directions, every registered decision resolves, and every activating option is one its record declares (problems: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/matrix: the registry covers the R03 boundaries and every one of the four open PLAN-0019 choices (D1/D2 under operational_persistence, D3 inside process_lifetime, D4 under worker_repository_access)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/today: over this repository's records nothing is activated - every registered boundary refuses as draft, because every record is a draft awaiting Dmitry's decision and its bound reviews ([('repository_placement', 'draft'), ('process_lifetime', 'draft'), ('operational_persistence', 'draft'), ('replaceable_execution', 'draft'), ('review_and_completion', 'draft'), ('worker_repository_access', 'draft')])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/missing repository_placement: refused by class 'missing' (decision record VELDO-DEC-0003 for boundary repository_placement does not resolve)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/malformed repository_placement: refused by class 'malformed' (the record offered for boundary repository_placement is not a veldo.decision/v1 record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_record repository_placement: refused by class 'wrong_record' (boundary repository_placement is activated by VELDO-DEC-0003, not by 'VELDO-DEC-0001')",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/draft repository_placement: refused by class 'draft' (VELDO-DEC-0003 is 'draft', not decided: a draft records a supplied direction and activates nothing)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/superseded repository_placement: refused by class 'superseded' (VELDO-DEC-0003 is superseded by VELDO-DEC-0099: a superseded record activates nothing; re-read the registry ag)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/stale repository_placement: refused by class 'stale' (VELDO-DEC-0003 is at version 2 and the registry was written against version 1: a re-decided record activates n)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_option repository_placement: refused by class 'wrong_option' (VELDO-DEC-0003 chose 'not-the-activating-option'; boundary repository_placement is activated only by 'same-rep)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/undecided_by_a_person repository_placement: refused by class 'undecided_by_a_person' (VELDO-DEC-0003 is decided but names no decider: only a person decides, on the record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/under_reviewed repository_placement: refused by class 'under_reviewed' (VELDO-DEC-0003 carries 0 bound supporting adversarial review(s); its risk tier requires 1)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/accepted repository_placement: the registered record, decided by a person, at the registered version, choosing the activating option, with its 1 bound supporting review(s), activates the boundary and nothing less does",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/missing process_lifetime: refused by class 'missing' (decision record VELDO-DEC-0004 for boundary process_lifetime does not resolve)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/malformed process_lifetime: refused by class 'malformed' (the record offered for boundary process_lifetime is not a veldo.decision/v1 record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_record process_lifetime: refused by class 'wrong_record' (boundary process_lifetime is activated by VELDO-DEC-0004, not by 'VELDO-DEC-0001')",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/draft process_lifetime: refused by class 'draft' (VELDO-DEC-0004 is 'draft', not decided: a draft records a supplied direction and activates nothing)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/superseded process_lifetime: refused by class 'superseded' (VELDO-DEC-0004 is superseded by VELDO-DEC-0099: a superseded record activates nothing; re-read the registry ag)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/stale process_lifetime: refused by class 'stale' (VELDO-DEC-0004 is at version 2 and the registry was written against version 1: a re-decided record activates n)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_option process_lifetime: refused by class 'wrong_option' (VELDO-DEC-0004 chose 'not-the-activating-option'; boundary process_lifetime is activated only by 'governed-ser)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/undecided_by_a_person process_lifetime: refused by class 'undecided_by_a_person' (VELDO-DEC-0004 is decided but names no decider: only a person decides, on the record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/under_reviewed process_lifetime: refused by class 'under_reviewed' (VELDO-DEC-0004 carries 1 bound supporting adversarial review(s); its risk tier requires 2)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/accepted process_lifetime: the registered record, decided by a person, at the registered version, choosing the activating option, with its 2 bound supporting review(s), activates the boundary and nothing less does",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/missing operational_persistence: refused by class 'missing' (decision record VELDO-DEC-0005 for boundary operational_persistence does not resolve)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/malformed operational_persistence: refused by class 'malformed' (the record offered for boundary operational_persistence is not a veldo.decision/v1 record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_record operational_persistence: refused by class 'wrong_record' (boundary operational_persistence is activated by VELDO-DEC-0005, not by 'VELDO-DEC-0001')",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/draft operational_persistence: refused by class 'draft' (VELDO-DEC-0005 is 'draft', not decided: a draft records a supplied direction and activates nothing)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/superseded operational_persistence: refused by class 'superseded' (VELDO-DEC-0005 is superseded by VELDO-DEC-0099: a superseded record activates nothing; re-read the registry ag)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/stale operational_persistence: refused by class 'stale' (VELDO-DEC-0005 is at version 2 and the registry was written against version 1: a re-decided record activates n)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_option operational_persistence: refused by class 'wrong_option' (VELDO-DEC-0005 chose 'not-the-activating-option'; boundary operational_persistence is activated only by 'sqlit)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/undecided_by_a_person operational_persistence: refused by class 'undecided_by_a_person' (VELDO-DEC-0005 is decided but names no decider: only a person decides, on the record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/under_reviewed operational_persistence: refused by class 'under_reviewed' (VELDO-DEC-0005 carries 1 bound supporting adversarial review(s); its risk tier requires 2)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/accepted operational_persistence: the registered record, decided by a person, at the registered version, choosing the activating option, with its 2 bound supporting review(s), activates the boundary and nothing less does",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/missing replaceable_execution: refused by class 'missing' (decision record VELDO-DEC-0006 for boundary replaceable_execution does not resolve)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/malformed replaceable_execution: refused by class 'malformed' (the record offered for boundary replaceable_execution is not a veldo.decision/v1 record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_record replaceable_execution: refused by class 'wrong_record' (boundary replaceable_execution is activated by VELDO-DEC-0006, not by 'VELDO-DEC-0001')",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/draft replaceable_execution: refused by class 'draft' (VELDO-DEC-0006 is 'draft', not decided: a draft records a supplied direction and activates nothing)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/superseded replaceable_execution: refused by class 'superseded' (VELDO-DEC-0006 is superseded by VELDO-DEC-0099: a superseded record activates nothing; re-read the registry ag)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/stale replaceable_execution: refused by class 'stale' (VELDO-DEC-0006 is at version 2 and the registry was written against version 1: a re-decided record activates n)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_option replaceable_execution: refused by class 'wrong_option' (VELDO-DEC-0006 chose 'not-the-activating-option'; boundary replaceable_execution is activated only by 'langgra)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/undecided_by_a_person replaceable_execution: refused by class 'undecided_by_a_person' (VELDO-DEC-0006 is decided but names no decider: only a person decides, on the record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/under_reviewed replaceable_execution: refused by class 'under_reviewed' (VELDO-DEC-0006 carries 0 bound supporting adversarial review(s); its risk tier requires 1)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/accepted replaceable_execution: the registered record, decided by a person, at the registered version, choosing the activating option, with its 1 bound supporting review(s), activates the boundary and nothing less does",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/missing review_and_completion: refused by class 'missing' (decision record VELDO-DEC-0007 for boundary review_and_completion does not resolve)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/malformed review_and_completion: refused by class 'malformed' (the record offered for boundary review_and_completion is not a veldo.decision/v1 record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_record review_and_completion: refused by class 'wrong_record' (boundary review_and_completion is activated by VELDO-DEC-0007, not by 'VELDO-DEC-0001')",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/draft review_and_completion: refused by class 'draft' (VELDO-DEC-0007 is 'draft', not decided: a draft records a supplied direction and activates nothing)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/superseded review_and_completion: refused by class 'superseded' (VELDO-DEC-0007 is superseded by VELDO-DEC-0099: a superseded record activates nothing; re-read the registry ag)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/stale review_and_completion: refused by class 'stale' (VELDO-DEC-0007 is at version 2 and the registry was written against version 1: a re-decided record activates n)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_option review_and_completion: refused by class 'wrong_option' (VELDO-DEC-0007 chose 'not-the-activating-option'; boundary review_and_completion is activated only by 'gate-an)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/undecided_by_a_person review_and_completion: refused by class 'undecided_by_a_person' (VELDO-DEC-0007 is decided but names no decider: only a person decides, on the record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/under_reviewed review_and_completion: refused by class 'under_reviewed' (VELDO-DEC-0007 carries 1 bound supporting adversarial review(s); its risk tier requires 2)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/accepted review_and_completion: the registered record, decided by a person, at the registered version, choosing the activating option, with its 2 bound supporting review(s), activates the boundary and nothing less does",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/missing worker_repository_access: refused by class 'missing' (decision record VELDO-DEC-0008 for boundary worker_repository_access does not resolve)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/malformed worker_repository_access: refused by class 'malformed' (the record offered for boundary worker_repository_access is not a veldo.decision/v1 record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_record worker_repository_access: refused by class 'wrong_record' (boundary worker_repository_access is activated by VELDO-DEC-0008, not by 'VELDO-DEC-0001')",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/draft worker_repository_access: refused by class 'draft' (VELDO-DEC-0008 is 'draft', not decided: a draft records a supplied direction and activates nothing)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/superseded worker_repository_access: refused by class 'superseded' (VELDO-DEC-0008 is superseded by VELDO-DEC-0099: a superseded record activates nothing; re-read the registry ag)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/stale worker_repository_access: refused by class 'stale' (VELDO-DEC-0008 is at version 2 and the registry was written against version 1: a re-decided record activates n)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/wrong_option worker_repository_access: refused by class 'wrong_option' (VELDO-DEC-0008 chose 'not-the-activating-option'; boundary worker_repository_access is activated only by 'isol)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/undecided_by_a_person worker_repository_access: refused by class 'undecided_by_a_person' (VELDO-DEC-0008 is decided but names no decider: only a person decides, on the record)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/under_reviewed worker_repository_access: refused by class 'under_reviewed' (VELDO-DEC-0008 carries 1 bound supporting adversarial review(s); its risk tier requires 2)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/accepted worker_repository_access: the registered record, decided by a person, at the registered version, choosing the activating option, with its 2 bound supporting review(s), activates the boundary and nothing less does",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/unknown_boundary: a boundary the registry does not know is refused by class, never treated as unguarded",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/review-floor: a required count below one is raised to one, so a decided record with zero bound reviews never activates even when a policy tier says zero",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/matrix TEETH: a record claiming a boundary the registry does not know is named",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/matrix TEETH: a registered decision that resolves to no record is named, and so is the boundary nobody claims",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/matrix TEETH: two records claiming one boundary, and the boundary the moved record abandoned, are each named",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/matrix TEETH: a registered activating option the record no longer declares is named",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/draft DRIVEN (the declared falsifier): with the draft refusal removed, the draft process decision VELDO-DEC-0004 is no longer refused as draft (it now falls to 'undecided_by_a_person': VELDO-DEC-0004 is decided but names no decider: only a person decides, on the re), so the policy-activation/draft row reds; unmutated it refuses as draft",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/stale DRIVEN: with the version check removed a re-decided record at version 2 activates, so the stale row reds; unmutated it refuses as stale",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC1 policy-activation/under_reviewed DRIVEN: with the review count check removed a decided critical record with one bound review of the two required activates, so the row reds; unmutated it refuses as under_reviewed",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/obligations: the obligation registry covers every group VELDO-DEC-0004's replacement_obligations names and nothing else, every obligation cites R43 or R44 and carries a test registration slot, and the R44 timers are the versioned defaults (10s heartbeat, 30s deadline, 10s then 5s stop, 2s fence) (problems: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/obligations TEETH: a record that drops a group and a record that names a group the registry lacks are each named",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/eligibility: with no test registered the governed runner profile is NOT eligible and every one of the 15 obligations is named as untested",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/eligibility: every obligation registered makes the profile eligible; one missing registration refuses it naming that obligation (no partial eligibility)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/retirement-obligation: retirement is allowed only with every proof present and true, and each missing proof refuses it by name; empty containment is one of the four",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/retirement-obligation: silence is not proof - an evidence value that is not literally True (a truthy string, None, 1) does not count",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/retirement-obligation DRIVEN (the declared falsifier): with the empty-containment proof removed from the retirement predicate, a slot with unproven emptiness is released, so the row reds; unmutated it is refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/exception: this repository's contract (revision 2) declares the project_runner area and exactly one exception clause, on no_detached_processes, for that area, activated by the process_lifetime boundary; the contract validator accepts it and the policy contract finds no problem ([])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/exception TEETH: an exception for another area (the floor's fleet), one activated by an unregistered boundary, one on a second rule, and one activated by a registered but wrong boundary are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/exception TEETH: the contract validator itself refuses an exception clause naming an undeclared area or missing a field (referenced but absent), so a malformed clause never loads",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/exception: over this repository the exception is NOT in force - the process_lifetime boundary is a draft (the process_lifetime boundary is not activated (VELDO-DEC-0004 is 'draft', not decided: a draft reco)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/exception: with the boundary activated but no obligation tested, the exception is still not in force (qualification is separate from the decision); with every obligation registered it is; on a contract at another revision it is not; without the clause it is not",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC2 policy-activation/lexical-scan: the floor's detach-token scan in suite 06 still reads .veldo/fleet.py, still defines _DETACH_TOKENS and _no_detached_worker_spawn, and names no project_runner module: the prohibition is replaced for the governed runner by the obligations above, never extended",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/table: the clause-to-predicate table covers exactly R21, R35, R46, R50 and R53, and every predicate it names is a callable of the contract module",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/checkpoint-isolation: a checkpoint-namespace statement is allowed; the seeded INSERT ... SELECT from a domain table, a bare domain read, an ATTACH, a view over a domain table and a statement naming no checkpoint table are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/stdlib-enforcement: every enforcement module of this engine imports the standard library only, decided by an AST walk that executes nothing (problems: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/stdlib-enforcement: the seeded violation (authorization importing langgraph) is refused by module and name, and the walk needs no langgraph installed to say so",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/stdlib-enforcement: a missing enforcement module is a problem, never clean",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/stdlib-enforcement: loading the engine's validate.py brought no execution runtime into the process (no langgraph module is loaded)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/review-is-not-authority: a receipt with every requirement true authorizes; the seeded receipt carrying verdict pass and nothing else is refused with all seven requirements missing; one open blocking finding or a builder who is the reviewer refuses by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/review-is-not-authority DRIVEN (the declared falsifier): with a passing verdict treated as authorization, the seeded receipt lands, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/installed-verifier: a verifier outside the candidate tree is independent; the seeded verifier inside the candidate tree, and the candidate root itself, are refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC4 policy-boundaries/exclusive-responsibilities: each of the four actions is allowed to its owner alone; the seeded violation (the runner publishing source), a store launching an engine, and an unassigned action are each refused by name",
+      "passed": true
+    }
+  ]
+}

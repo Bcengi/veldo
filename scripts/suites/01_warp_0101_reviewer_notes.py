@@ -1559,7 +1559,8 @@ expect("WARP-0735 AC1: a `docs` area exists in the architecture contract",
 expect("WARP-0735 AC3: every area that existed still exists, so a future edit cannot quietly drop one while adding another",
        set(["contracts", "engine", "enforcement", "loop", "fleet", "metrics", "tracker",
             "distribution", "runners"]) <= set(_a735_ids)
-       and len(_a735_ids) == 10)
+       # ten with WARP-0735's docs area; eleven since VELDO-0016 added project_runner on the record
+       and len(_a735_ids) == 11)
 # AC2: the case that motivated it now declares a real footprint under the new area.
 _w1508_spec = (ROOT / "specs/WARP-1508-substrate-release.md").read_text()
 expect("WARP-0735 AC2: the release item that motivated this now declares placement docs AND a real footprint, so the fix is demonstrated rather than asserted",

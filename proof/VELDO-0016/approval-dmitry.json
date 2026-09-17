@@ -1,0 +1,18 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0016-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0016",
+    "commit": "2106b03",
+    "paths": [
+      ".veldo/policy.yaml",
+      ".veldo/architecture.yaml"
+    ]
+  },
+  "basis": "Dmitry approved VELDO-0016's two owner decisions over Telegram on 2026-09-17 at 11:38 UTC (message 27900, 'approve 0016'), answering an ask that named both: the one policy.yaml line 'architecture_contract: required' (a protected path; with it a missing or broken architecture contract refuses the gate, the frontier and run-check instead of standing down), and architecture contract revision 2 (the project_runner area and the scoped exception clause on no_detached_processes, effective only through the process_lifetime activation). The ask stated that the clause activates nothing by itself. The commit bound is the one that carries the policy line; the contract's own approved_by and approved_at carry the second approval.",
+  "recorded_at": "2026-09-17T11:45:00Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval of 2026-09-17; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}

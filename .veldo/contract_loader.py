@@ -87,7 +87,8 @@ def load_contract_state(repo_root, arch, parse, required=None, contract_path=Non
     loaded arch organ and `parse` the one front-matter parser. `required` None reads the policy
     flag (contract_requirement); True or False overrides it (the CLI's and a fixture's explicit
     flag). Presence is decided by os.path.lexists, so a directory, a dangling symlink or an
-    unreadable file at the path is PRESENT and refused as unreadable, never mistaken for absence.
+    unreadable file at the path is PRESENT and refused as unreadable, never mistaken for absence;
+    only a regular file is ever opened, so a FIFO or a socket at the path cannot block the loader.
     A present file is read by arch.load_contract (the one reader) and then structurally validated
     by arch.validate_contract with a collecting reporter, so "valid" here means exactly what
     check_arch means by it and a consumer never gates against a contract the gate would refuse."""
@@ -101,6 +102,14 @@ def load_contract_state(repo_root, arch, parse, required=None, contract_path=Non
                                  "absent (fail closed): nothing is placeable, claimable or buildable "
                                  "until it exists",), str(p), True)
         return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)
+    if not p.is_file():
+        # PRESENT AND NEVER OPENED: a directory, a dangling link, a FIFO, a socket or a device at the
+        # path. The kind question comes before the read because a FIFO's read never returns, and a
+        # loader that blocks is worse than one that misreports (WARP-1210's lesson, found again here:
+        # a FIFO at the contract hung every metrics surface through the corpus and entropy hand-offs).
+        return ContractLoad(CONTRACT_INVALID, "unreadable", arch, None,
+                            ("architecture contract at %s is present but not a regular file, so it is "
+                             "unreadable and was not opened" % p,), str(p), req)
     try:
         data = arch.load_contract(p, parse)
     except arch.ArchContractError as e:

@@ -827,3 +827,24 @@ expect("VELDO-0016 AC4 policy-boundaries/exclusive-responsibilities: each of the
        and PC16.responsibility_allowed("store", "launch_engine")[0] is False
        and PC16.responsibility_allowed("store", "delete_history")[0] is False
        and set(PC16.RESPONSIBILITIES.values()) == {"store", "runner", "lander", "evidence_service"})
+
+# The kind question before the read: a contract path that is not a regular file is refused as
+# unreadable WITHOUT being opened. A unix socket stands for the FIFO here (a FIFO would wedge the
+# suite if the loader were wrong; a socket answers ENXIO on open, and the loader must not open it
+# at all). Found by the WARP-1210 read-unit matrix: a FIFO at the contract hung every metrics
+# surface through the corpus and entropy hand-offs before this gate existed.
+import socket as _v16_socket
+_v16_fs = _v16_fixture("absent", False)
+try:
+    _v16_sock = _v16_socket.socket(_v16_socket.AF_UNIX)
+    _v16_sock.bind(str(_v16_fs / ".veldo" / "architecture.yaml"))
+    _v16_Vs = _v16_mod(_v16_fs, "validate")
+    _v16_sl = _v16_Vs.load_contract_state(str(_v16_fs))
+    expect("VELDO-0016 AC3 policy-loading/unreadable: a socket at the contract path is present, refused as "
+           "unreadable and never opened (the loader asks the kind question before any read), so a FIFO there "
+           "cannot block the gate, the frontier or the metrics surfaces",
+           (_v16_sl.state, _v16_sl.kind, _v16_sl.refused) == ("invalid", "unreadable", True)
+           and "not a regular file" in _v16_sl.reason)
+    _v16_sock.close()
+finally:
+    _v16_shutil.rmtree(_v16_fs, ignore_errors=True)

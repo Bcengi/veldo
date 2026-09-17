@@ -10,15 +10,17 @@
 schema: veldo.arch/v1
 id: veldo
 title: The VELDO engine intended shape
-# REVISION 2, PROPOSED BY VELDO-0016 (PLAN-0019 W1) on 2026-09-17: one new area, the governed
-# project runner, and one scoped exception clause on no_detached_processes naming it. Revision 1
-# was approved by dmitry on 2026-07-22. This revision leaves draft only by Dmitry's recorded
-# approval, at which point approved_by and approved_at return here; until then the contract is
-# a valid draft, every check still enforces it, and the exception is not effective (the policy
-# contract makes it effective only through the activation of the process_lifetime boundary,
-# never by this file being edited).
+# REVISION 2 (VELDO-0016, PLAN-0019 W1): one new area, the governed project runner, and one scoped
+# exception clause on no_detached_processes naming it. Revision 1 was approved by dmitry on
+# 2026-07-22. Revision 2 was approved by Dmitry on 2026-09-17 over Telegram ("approve 0016",
+# message 27900, 11:38 UTC), the channel the ask went out on, and is recorded here as the one
+# settlement. The exception is not effective by this approval: the policy contract makes it
+# effective only through the activation of the process_lifetime boundary and a fully tested
+# runner profile, never by this file being edited.
 version: 2
-status: draft
+status: approved
+approved_by: dmitry
+approved_at: 2026-09-17
 
 areas:
   - id: contracts
