@@ -1024,8 +1024,8 @@ def _iar_ac4():
     if _iar_nested_repository(ROOT):
         reason = "nested repository present; the copied observation is not self-contained"
         _IAR_STOOD_DOWN.append(("VELDO-0007", "AC4", reason))
-        # Match shared.py's recorded-stand-down printer, without its history-only claim.
-        print("   %s: %s STANDS DOWN, and this is recorded rather than passed: %s."
+        # Match the recorded-stand-down wording used by the release check.
+        print("   %s: %s STANDS DOWN, recorded rather than passed: %s."
               % ("VELDO-0007", "AC4", reason))
         return
     sand = Path(tempfile.mkdtemp(prefix="veldo-0007-write-scope-"))
@@ -1326,7 +1326,7 @@ def _iar_nested_controls():
                 expect("VELDO-0099 AC1: %s %s AC4 stand-down is recorded, printed, and never passed"
                        % (shape, marker),
                        records == [("VELDO-0007", "AC4", reason)] and not counted
-                       and output.getvalue() == "   VELDO-0007: AC4 STANDS DOWN, and this is recorded rather than passed: " + reason + ".\n")
+                       and output.getvalue() == "   VELDO-0007: AC4 STANDS DOWN, recorded rather than passed: " + reason + ".\n")
                 expect("VELDO-0099 AC1: %s %s original edit survives with no copy or nested git operations"
                        % (shape, marker),
                        not copies and not git_operations and (nested / "tracked").read_bytes() == dirty)
