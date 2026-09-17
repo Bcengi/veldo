@@ -16,6 +16,7 @@ import threading
 ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parents[2]
 SUITE = ROOT / 'scripts/suites/24_veldo_0007_install_and_run.py'
 source = SUITE.read_text()
+baseline = '--baseline' in sys.argv
 before = hashlib.sha256(SUITE.read_bytes()).hexdigest()
 names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_dirs',
          '_iar_repository_inventory', '_iar_live_inventory', '_iar_copy_tree', '_iar_substrate',
@@ -90,6 +91,10 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
 
         review_mutations = {
             'review_control': None,
+            **({} if baseline else {
+                'restore_common_allowlist': "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name in {'objects', 'refs', 'packed-refs', 'shallow', 'HEAD', 'veldo', 'index', 'config', 'config.worktree'} or p.name.startswith('sharedindex.')]",
+                'restore_timestamps': "def _iar_inventory(root, *, entries=None):\n    result = original_inventory(root, entries=entries)\n    return {k: (v, (Path(root) / k).lstat().st_mtime_ns) for k, v in result.items()}",
+            }),
             'quotes_as_filename_characters': "def _iar_resolve_alternates(original, copied):\n    path = copied / 'info/alternates'\n    if path.exists():\n        _iar_write_alternates(path, [(original / line).resolve() for line in path.read_text().splitlines()])",
             'omit_copied_ledger': "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name != 'veldo']",
             'skip_config_normalization': 'def _iar_normalize_config(common, private): pass',
@@ -105,6 +110,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                       _iar_threading=threading,
                       expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
             exec(compile(module, str(SUITE), 'exec'), ns)
+            ns['original_inventory'] = ns['_iar_inventory']
             ns['original_live_inventory'] = ns['_iar_live_inventory']
             ns['original_common_entries'] = ns['_iar_common_entries']
             if mutation:
@@ -113,15 +119,17 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
             failures = [r['label'] for r in rows if not r['passed']]
             expected = {
                 'review_control': [],
+                'restore_common_allowlist': [r['label'] for r in rows if 'whole common directory' in r['label']],
+                'restore_timestamps': [r['label'] for r in rows if 'timestamp refresh' in r['label']],
                 'quotes_as_filename_characters': [r['label'] for r in rows if 'C-quoted alternate' in r['label']],
                 'omit_copied_ledger': [r['label'] for r in rows if 'copied claims and runs' in r['label']],
                 'skip_config_normalization': [r['label'] for r in rows if 'redirected config' in r['label']],
-                'copy_sibling_state': [r['label'] for r in rows if '50 copies' in r['label']],
+                'copy_sibling_state': [r['label'] for r in rows if '50 copies' in r['label'] or 'whole common directory' in r['label']],
                 'raise_on_vanished_entry': [r['label'] for r in rows if 'vanishing after' in r['label']],
                 'omit_sharedindex': ['VELDO-0099 AC3: primary split index corruption is observed'],
                 'skip_alternate_rewrite': [r['label'] for r in rows if 'redirected config' in r['label'] or 'C-quoted alternate' in r['label']],
             }[case]
-            assert len(rows) == 13, (case, rows)
+            assert len(rows) == (13 if baseline else 17), (case, rows)
             assert failures == expected, (case, failures, expected)
             results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
                             'failed': len(failures), 'rows': rows})
@@ -176,7 +184,9 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
             assert ok, report
             for case in ('control', 'restore_directory_shape', 'sibling_staging',
                          'sibling_staging_shared_live', 'sandbox_common_write', 'redirected_config',
-                         'sandbox_claim_delete', 'sibling_heartbeat', 'sibling_heartbeat_shared_live'):
+                         'sandbox_claim_delete', 'sibling_heartbeat', 'sibling_heartbeat_shared_live',
+                         'split_index', 'sandbox_reflog_delete',
+                         *(() if baseline else ('sandbox_random_delete', 'split_index_reflog_delete'))):
                 rows = []
                 ns = dict(ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
                           _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
@@ -191,6 +201,40 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                 stage = tree / 'scripts/check_install_and_run.py'
                 stage_bytes = stage.read_bytes()
                 saved_configs = {}
+                random_path = None
+                split = case in ('split_index', 'split_index_reflog_delete')
+                if split:
+                    git('update-index', '--split-index', cwd=tree)
+                private, common = ns['_iar_git_dirs'](tree)
+                reflog = 'logs/refs/heads/round-five-probe'
+                if 'reflog_delete' in case:
+                    git('branch', '--force', 'round-five-probe', 'HEAD', cwd=tree)
+                    assert (common / reflog).is_file()
+                    reflog_bytes = (common / reflog).read_bytes()
+                if case == 'sandbox_random_delete':
+                    # Choose from an actual copied store; no list of allowed store names.
+                    import random
+                    with tempfile.TemporaryDirectory() as sample:
+                        sample_tree = Path(sample) / 'repo'
+                        ns['_iar_copy_tree'](tree, sample_tree)
+                        _, sample_common = ns['_iar_git_dirs'](sample_tree)
+                        candidates = [p.relative_to(sample_common).as_posix()
+                                      for p in sample_common.rglob('*') if p.is_file()
+                                      and p.relative_to(sample_common).parts[0] != 'worktrees'
+                                      and not p.relative_to(sample_common).as_posix().startswith(
+                                          ('logs/refs/', 'veldo/', 'sharedindex.'))
+                                      and p.name not in ('HEAD', 'index', 'config', 'config.worktree')]
+                        random_path = random.SystemRandom().choice(sorted(candidates))
+                    random_bytes = (common / random_path).read_bytes()
+                if 'reflog_delete' in case or case == 'sandbox_random_delete':
+                    anchor = '    sys.exit(main())'
+                    victim = random_path if random_path is not None else reflog
+                    injected = ("    result = main()\n"
+                                "    common = _run(['git', 'rev-parse', '--git-common-dir']).stdout.strip()\n"
+                                "    (Path(common) / " + repr(victim) + ").unlink(missing_ok=" + str(baseline) + ")\n"
+                                "    sys.exit(result)")
+                    assert stage_bytes.decode().count(anchor) == 1
+                    stage.write_text(stage_bytes.decode().replace(anchor, injected))
                 if case == 'redirected_config':
                     private, common = ns['_iar_git_dirs'](tree)
                     for config in {common / 'config', private / 'config.worktree'}:
@@ -251,29 +295,41 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                         assert stage.read_bytes() == dirty_stage
                 finally:
                     iar.check = original_check
-                    if case in ('sandbox_common_write', 'sandbox_claim_delete', 'redirected_config'):
+                    if case in ('sandbox_common_write', 'sandbox_claim_delete', 'redirected_config', 'sandbox_random_delete') or 'reflog_delete' in case:
                         stage.write_bytes(stage_bytes)
                     for config, saved in saved_configs.items():
                         if saved is None:
                             config.unlink()
                         else:
                             config.write_bytes(saved)
+                if split:
+                    git('update-index', '--no-split-index', cwd=tree)
+                if 'reflog_delete' in case:
+                    assert (common / reflog).read_bytes() == reflog_bytes
+                if random_path is not None:
+                    assert (common / random_path).read_bytes() == random_bytes
                 if case in ('sandbox_claim_delete', 'sibling_heartbeat', 'sibling_heartbeat_shared_live'):
                     assert claims.claim('probe', 'second', root=ledger_root) == (False, 'claimed')
                     assert claims.release('probe', 'first', root=ledger_root)
                 failures = [r['label'] for r in rows if not r['passed']]
                 expected = int((shape == 'linked' and restored) or case in
                                ('sibling_staging_shared_live', 'sandbox_common_write',
-                                'sandbox_claim_delete', 'sibling_heartbeat_shared_live'))
+                                'sandbox_claim_delete', 'sibling_heartbeat_shared_live',
+                                *(() if baseline else ('sandbox_reflog_delete', 'sandbox_random_delete', 'split_index_reflog_delete'))))
+                if baseline and case == 'split_index':
+                    expected = 2
                 assert len(failures) == expected, (shape, case, failures)
-                if expected:
+                if expected and not (baseline and case == 'split_index'):
                     label = ("THE OBSERVATION'S OWN SUBSTRATE" if restored else
                              'THIS repository is untouched' if case in ('sibling_staging_shared_live', 'sibling_heartbeat_shared_live')
                              else 'NOT ONE BYTE of the repository under check')
                     assert label in failures[0], failures
+                    if random_path is not None or 'reflog_delete' in case:
+                        assert victim in failures[0], failures
                 assert len(rows) == 14, rows
                 ac4_results.append({'shape': shape, 'case': case,
                                     'commit': git('rev-parse', 'HEAD', cwd=tree),
+                                    'random_deleted_path': random_path,
                                     'passed': len(rows) - len(failures), 'failed': len(failures),
                                     'rows': rows})
     finally:

@@ -39,7 +39,7 @@ def _iar_block(label, fn):
 
 
 def _iar_inventory(root, *, entries=None):
-    """relative path -> (size, mtime_ns, sha256), recursively unless entries are supplied.
+    """relative path -> (kind, size, sha256 or symlink target), recursively unless entries are supplied.
 
     THE SANDBOX OBSERVATION AC4 RESTS ON, AND IT EXCLUDES NOTHING. The live caller supplies
     only checkout-owned entries because sibling writes to shared metadata are not attributable.
@@ -53,24 +53,21 @@ def _iar_inventory(root, *, entries=None):
     all, inside __pycache__ included, still moves an entry here. Directories and symlinks are
     entries too, so an empty directory or a relinked path is a change.
 
-    THE MODIFICATION TIME IS PART OF THE RECORD, AND THAT WAS FOUND BY DRIVING. Content and path
-    alone leave an IDEMPOTENT write invisible: the review's mutation writes the same bytes on every
-    call, so by the second call the digest and the size are unchanged and a content-only inventory
-    reported a clean tree while the file had just been clobbered again. st_mtime_ns moves on any
-    rewrite, identical bytes included."""
+    Compare content and existence, never timestamps: git reads may refresh split-index
+    timestamps without changing bytes. Identical rewrites and writes restored before
+    the second snapshot are outside this before-and-after observation."""
     root = Path(root)
     inv = {}
     for p in sorted(root.rglob("*") if entries is None else entries):
         rel = p.relative_to(root).as_posix()
         try:
-            st = p.lstat()
             if p.is_symlink():
-                inv[rel] = ("symlink", st.st_mtime_ns, _iar_os.readlink(p))
+                inv[rel] = ("symlink", 0, _iar_os.readlink(p))
             elif p.is_dir():
-                inv[rel] = ("dir", st.st_mtime_ns, "")
+                inv[rel] = ("dir", 0, "")
             else:
                 data = p.read_bytes()
-                inv[rel] = (len(data), st.st_mtime_ns, _iar_hl.sha256(data).hexdigest())
+                inv[rel] = ("file", len(data), _iar_hl.sha256(data).hexdigest())
         except OSError as _iar_e:                # a path that cannot be read is still an OBSERVATION
             inv[rel] = ("unreadable", 0, str(_iar_e))
     return inv
@@ -167,10 +164,9 @@ def _iar_copy_entry(source, target, *, skip=()):
 
 
 def _iar_common_entries(common, primary):
-    # Never traverse worktrees/: each sibling owns its transient index and locks.
-    shared = {"objects", "refs", "packed-refs", "shallow", "HEAD", "veldo"}
-    paths = [p for p in common.iterdir() if p.name in shared]
-    return paths + (_iar_private_paths(common) if primary else [])
+    # The whole common store, including unknown future stores. Only sibling-owned
+    # transient worktree state is excluded; this checkout's private state is copied separately.
+    return [p for p in common.iterdir() if p.name != "worktrees"]
 
 
 def _iar_normalize_config(common, private):
@@ -306,7 +302,7 @@ def _iar_assert_isolated(target, private, common):
 
 
 def _iar_copy_tree(source, target):
-    """Copy working bytes and only this checkout's metadata into a closed sandbox."""
+    """Copy working bytes, the whole common store except worktrees/, and private state."""
     source, target = Path(source), Path(target)
     private, common = _iar_git_dirs(source)
     _iar_sh.copytree(source, target, symlinks=True,
@@ -317,8 +313,6 @@ def _iar_copy_tree(source, target):
         destination = copied_common / entry.relative_to(common)
         destination.parent.mkdir(parents=True, exist_ok=True)
         _iar_copy_entry(entry, destination)
-    # Linked copies still need the shared config for object/ref storage semantics.
-    _iar_copy_entry(common / "config", copied_common / "config")
     copied_private = copied_common
     if private != common:
         copied_private = target.parent / "git-private"
@@ -492,6 +486,15 @@ def _iar_review_controls():
             _iar_git(tree, "update-index", "--split-index")
             private, common = _iar_git_dirs(tree)
             shared = next(private.glob("sharedindex.*"))
+            live_before = _iar_live_inventory(tree)
+            sandbox_before = _iar_repository_inventory(tree)
+            # Force an old timestamp so a real git read has an observable refresh.
+            _iar_os.utime(shared, (1, 1))
+            _iar_git(tree, "ls-files")
+            expect("VELDO-0099 AC3: %s split index timestamp refresh leaves both inventories unchanged" % shape,
+                   shared.stat().st_mtime_ns != 1000000000
+                   and _iar_changed(live_before, _iar_live_inventory(tree)) == []
+                   and _iar_changed(sandbox_before, _iar_repository_inventory(tree)) == [])
             before = _iar_live_inventory(tree)
             saved = shared.read_bytes()
             shared.write_bytes(b"corrupt split index\n")
@@ -500,6 +503,24 @@ def _iar_review_controls():
             expect("VELDO-0099 AC3: %s split index corruption is observed" % shape,
                    failed and "git-dir/" + shared.name in changed)
             shared.write_bytes(saved)
+
+        # A fresh, unpredictable store name prevents a fixed allowlist from satisfying fidelity.
+        unknown = "future-store-" + _iar_os.urandom(12).hex()
+        (common / unknown).mkdir()
+        (common / unknown / "record").write_bytes(b"unknown store bytes\n")
+        for shape, tree in (("primary", primary), ("linked", linked)):
+            sandbox = base / (shape + "-whole-common")
+            sandbox.mkdir()
+            target = sandbox / "repo"
+            _iar_copy_tree(tree, target)
+            _, copied_common = _iar_git_dirs(target)
+            # Configs and pointers are normalized separately; every other common entry retains bytes.
+            def stored(root):
+                return {k: v for k, v in _iar_inventory(root).items()
+                        if k.split("/")[0] not in {"worktrees", "config", "config.worktree"}}
+            expect("VELDO-0099 AC3: %s whole common directory except worktrees retains content" % shape,
+                   stored(common) == stored(copied_common)
+                   and not (copied_common / "worktrees").exists())
 
         # Shared coordination records are observed only in the isolated copy.
         common = primary / ".git"
@@ -1004,7 +1025,7 @@ def _iar_ac4():
                and laid is not None and int(laid.group(1)) > 10
                and laid.group(2).startswith(str(run_tmp) + "/"))
         expect("VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - "
-               "every path, size, modification time and sha256 identical, ignored paths and resolved "
+               "every path, size and sha256 identical, ignored paths and resolved "
                "private and common git stores included, "
                "which is the half a `git status` comparison could not see: a review wrote "
                ".veldo/trackers.json (the one file the ignore rule exists to protect) and a file "
@@ -1053,7 +1074,7 @@ def _iar_ac4():
         else:
             _iar_os.environ["PYTHONDONTWRITEBYTECODE"] = _iar_pyc
     expect("VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole "
-           "tree inventoried by path, size, modification time and sha256 before and after, "
+           "tree inventoried by path, size and sha256 before and after, "
            "ignored paths and this checkout's private git state included, shared stores excluded, "
            "with the run PASSING "
            "so the identity is across work "
