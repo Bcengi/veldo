@@ -25,6 +25,7 @@ import re as _iar_re
 import shutil as _iar_sh
 import subprocess as _iar_sp
 import sys as _iar_sys
+import threading as _iar_threading
 
 IAR = V._VC._organ("check_install_and_run", ROOT / "scripts" / "check_install_and_run.py")
 
@@ -80,9 +81,18 @@ def _iar_changed(before, after):
     return sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
 
 
+def _iar_git_environment(env=None):
+    # Explicit -C and local config define the repository, never inherited redirects.
+    supplied = _iar_os.environ if env is None else env
+    clean = {key: value for key, value in supplied.items()
+             if not key.startswith("GIT_") or key.startswith(("GIT_AUTHOR_", "GIT_COMMITTER_"))}
+    clean.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=_iar_os.devnull)
+    return clean
+
+
 def _iar_git(root, *args, env=None):
     return _iar_sp.run(["git", "-C", str(root), *args], capture_output=True,
-                       text=True, check=True, timeout=60, env=env).stdout.strip()
+                       text=True, check=True, timeout=60, env=_iar_git_environment(env)).stdout.strip()
 
 
 def _iar_git_dirs(root):
@@ -96,6 +106,19 @@ def _iar_repository_inventory(root):
     return {label + "/" + rel: value
             for label, base in (("tree", root), ("git-dir", private), ("git-common", common))
             for rel, value in _iar_inventory(base).items()}
+
+
+def _iar_private_paths(private):
+    # Per-worktree pseudorefs, split index bases, operation state, HEAD log and refs.
+    names = {"index", "config.worktree", "sequencer", "rebase-apply", "rebase-merge"}
+    paths = [p for p in private.iterdir()
+             if p.name.removesuffix(".lock") in names
+             or p.name.startswith("sharedindex.")
+             or (not p.is_dir() and p.name.removesuffix(".lock").isupper())]
+    paths += [private / rel for rel in
+              ("logs/HEAD", "logs/HEAD.lock", "refs/bisect", "refs/worktree", "refs/rewritten")
+              if (private / rel).exists()]
+    return paths
 
 
 def _iar_live_inventory(root):
@@ -115,14 +138,7 @@ def _iar_live_inventory(root):
               _iar_inventory(root, entries=entries).items()}
     private, common = _iar_git_dirs(root)
     if private == common:
-        # Per-worktree pseudorefs, index, operation state, HEAD reflog and refs.
-        names = {"index", "config.worktree", "sequencer", "rebase-apply", "rebase-merge"}
-        paths = [p for p in private.iterdir()
-                 if p.name.removesuffix(".lock") in names
-                 or (not p.is_dir() and p.name.removesuffix(".lock").isupper())]
-        paths += [private / rel for rel in
-                  ("logs/HEAD", "logs/HEAD.lock", "refs/bisect", "refs/worktree", "refs/rewritten")
-                  if (private / rel).exists()]
+        paths = _iar_private_paths(private)
         entries = [entry for p in paths for entry in ([p, *p.rglob("*")] if p.is_dir() else [p])]
         metadata = _iar_inventory(private, entries=entries)
     else:
@@ -131,25 +147,142 @@ def _iar_live_inventory(root):
     return result
 
 
-def _iar_copy_tree(source, target):
-    """Copy working bytes and isolate the metadata a linked .git file points to.
+def _iar_copy_entry(source, target, *, skip=()):
+    """Copy without hardlinks; a concurrent deletion is harmless, other errors are not.
 
-    A clone loses uncommitted mutations. A raw copy of a linked pointer leaves the
-    index and shared store outside the sandbox. Neither is the observation we need.
+    Materialize symlinks so copied metadata cannot redirect writes to the source.
+    The working-tree copy keeps symlinks, matching its original working bytes.
     """
-    _iar_sp.run(["cp", "-a", str(source), str(target)], capture_output=True,
-                text=True, check=True, timeout=60)
+    try:
+        if source.is_dir():
+            target.mkdir(parents=True, exist_ok=True)
+            for child in source.iterdir():
+                if child.name not in skip:
+                    _iar_copy_entry(child, target / child.name)
+            _iar_sh.copystat(source, target)
+        else:
+            _iar_sh.copy2(source, target)
+    except FileNotFoundError:
+        pass
+
+
+def _iar_common_entries(common, primary):
+    # Never traverse worktrees/: each sibling owns its transient index and locks.
+    shared = {"objects", "refs", "packed-refs", "shallow", "HEAD"}
+    paths = [p for p in common.iterdir() if p.name in shared]
+    return paths + (_iar_private_paths(common) if primary else [])
+
+
+def _iar_normalize_config(common, private):
+    """Keep storage semantics only, dropping includes, worktree and execution paths."""
+    config = common / "config"
+    retained = []
+    for key in ("core.repositoryformatversion", "core.filemode", "core.ignorecase",
+                "core.symlinks", "core.logallrefupdates", "extensions.objectformat", "extensions.refstorage",
+                "extensions.worktreeconfig"):
+        proc = _iar_sp.run(["git", "config", "--file", str(config), "--no-includes",
+                            "--get", key], capture_output=True, text=True, check=False)
+        if proc.returncode == 0:
+            retained.append((key, proc.stdout.strip()))
+        elif proc.returncode != 1:
+            raise ValueError("Cannot read copied git config")
+    config.write_text("")
+    for key, value in retained + [("core.bare", "false")]:
+        _iar_sp.run(["git", "config", "--file", str(config), key, value],
+                    capture_output=True, text=True, check=True)
+    if private != common and (private / "config").exists():
+        (private / "config").write_text("")
+    for directory in {common, private}:
+        (directory / "config.worktree").write_text("")
+
+
+def _iar_copy_alternates(objects, sandbox, copied=None):
+    """Materialize recursive object alternates and rewrite every edge locally."""
+    copied = {} if copied is None else copied
+    alternate_file = objects / "info" / "alternates"
+    (objects / "info" / "http-alternates").unlink(missing_ok=True)
+    if not alternate_file.exists():
+        return
+    destinations = []
+    for line in alternate_file.read_text().splitlines():
+        original = Path(line)
+        # Relative alternates were resolved at the source before the initial copy.
+        if not original.is_absolute():
+            raise ValueError("Unresolved relative object alternate")
+        original = original.resolve()
+        if original not in copied:
+            target = sandbox / ("git-alternate-%d" % len(copied))
+            copied[original] = target
+            _iar_copy_entry(original, target)
+            _iar_resolve_alternates(original, target)
+            _iar_copy_alternates(target, sandbox, copied)
+        destinations.append(str(copied[original]))
+    alternate_file.write_text("".join(p + "\n" for p in destinations))
+
+
+def _iar_resolve_alternates(original, copied):
+    path = copied / "info" / "alternates"
+    if path.exists():
+        path.write_text("".join(str((original / line).resolve()) + "\n"
+                                for line in path.read_text().splitlines()))
+
+
+def _iar_assert_isolated(target, private, common):
+    """Check static redirects before asking git to resolve any copied repository path."""
+    sandbox = target.parent.resolve()
+    for root in {private, common, *sandbox.glob("git-alternate-*")}:
+        assert root.resolve().is_relative_to(sandbox), root
+        for path in root.rglob("*"):
+            assert path.resolve().is_relative_to(sandbox), path
+        for name in ("config", "config.worktree"):
+            config = root / name
+            if config.exists():
+                proc = _iar_sp.run(["git", "config", "--file", str(config), "--no-includes",
+                                    "--name-only", "--list"], capture_output=True,
+                                   text=True, check=True)
+                allowed = {"core.repositoryformatversion", "core.filemode", "core.ignorecase",
+                           "core.symlinks", "core.bare", "core.logallrefupdates", "extensions.objectformat",
+                           "extensions.refstorage", "extensions.worktreeconfig"}
+                assert set(proc.stdout.lower().splitlines()) <= allowed, config
+        for path in root.rglob("alternates"):
+            for line in path.read_text().splitlines():
+                assert Path(line).is_absolute() and Path(line).resolve().is_relative_to(sandbox), path
+    assert (target / ".git").is_dir() or (target / ".git").read_text().strip() == "gitdir: " + str(private)
+    if private != common:
+        assert (private / "commondir").read_text().strip() == str(common)
+        assert (private / "gitdir").read_text().strip() == str(target / ".git")
+    assert Path(_iar_git(target, "rev-parse", "--show-toplevel")).resolve() == target.resolve()
+    assert _iar_git_dirs(target) == (private.resolve(), common.resolve())
+    for name in ("index", "objects", "HEAD", "config", "hooks"):
+        path = _iar_git(target, "rev-parse", "--git-path", name)
+        assert (target / path).resolve().is_relative_to(sandbox), path
+
+
+def _iar_copy_tree(source, target):
+    """Copy working bytes and only this checkout's metadata into a closed sandbox."""
+    source, target = Path(source), Path(target)
     private, common = _iar_git_dirs(source)
-    if private != (Path(source) / ".git").resolve():
-        copied_common = target.parent / "git-common"
-        _iar_sh.copytree(common, copied_common, symlinks=True)
-        copied_private = copied_common
-        if private != common:
-            copied_private = target.parent / "git-private"
-            _iar_sh.copytree(private, copied_private, symlinks=True)
-            (copied_private / "commondir").write_text(str(copied_common) + "\n")
-            (copied_private / "gitdir").write_text(str(target / ".git") + "\n")
+    _iar_sh.copytree(source, target, symlinks=True,
+                     ignore=lambda directory, names: [".git"] if Path(directory) == source else [])
+    copied_common = target / ".git" if private == common else target.parent / "git-common"
+    copied_common.mkdir()
+    for entry in _iar_common_entries(common, private == common):
+        destination = copied_common / entry.relative_to(common)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        _iar_copy_entry(entry, destination)
+    # Linked copies still need the shared config for object/ref storage semantics.
+    _iar_copy_entry(common / "config", copied_common / "config")
+    copied_private = copied_common
+    if private != common:
+        copied_private = target.parent / "git-private"
+        _iar_copy_entry(private, copied_private)
+        (copied_private / "commondir").write_text(str(copied_common) + "\n")
+        (copied_private / "gitdir").write_text(str(target / ".git") + "\n")
         (target / ".git").write_text("gitdir: " + str(copied_private) + "\n")
+    _iar_normalize_config(copied_common, copied_private)
+    _iar_resolve_alternates(common / "objects", copied_common / "objects")
+    _iar_copy_alternates(copied_common / "objects", target.parent)
+    _iar_assert_isolated(target, copied_private, copied_common)
 
 
 def _iar_substrate(repo):
@@ -232,6 +365,129 @@ def _iar_layout_controls():
                 changed = _iar_changed(before, _iar_repository_inventory(target))
                 expect("VELDO-0099 AC3: %s %s metadata write is observed" % (shape, store),
                        any(p.endswith("/" + store + "-write-probe") for p in changed))
+
+
+def _iar_review_controls():
+    """Drive path redirection, concurrent copying, and real split index damage."""
+    with tempfile.TemporaryDirectory(prefix="veldo-0099-review-") as d:
+        base = Path(d)
+        primary = base / "primary"
+        primary.mkdir()
+        _iar_git(primary, "init", "-q")
+        (primary / "tracked").write_bytes(b"committed bytes\n")
+        _iar_git(primary, "add", ".")
+        identity = dict(_iar_os.environ, GIT_AUTHOR_NAME="Veldo fixture",
+                        GIT_AUTHOR_EMAIL="fixture@example.invalid",
+                        GIT_COMMITTER_NAME="Veldo fixture",
+                        GIT_COMMITTER_EMAIL="fixture@example.invalid")
+        _iar_git(primary, "commit", "-qm", "Seed review fixtures", env=identity)
+        linked, sibling = base / "linked", base / "sibling"
+        for tree in (linked, sibling):
+            _iar_git(primary, "worktree", "add", "--detach", str(tree), "HEAD")
+        sibling_private, _ = _iar_git_dirs(sibling)
+        (sibling_private / "sibling-state-sentinel").write_text("must never be copied\n")
+        (sibling / "tracked").write_text("sibling working bytes\n")
+        stop, started = _iar_threading.Event(), _iar_threading.Event()
+        activity, errors = [], []
+        def staging():
+            try:
+                while not stop.is_set():
+                    _iar_git(sibling, "add", "tracked")
+                    _iar_git(sibling, "reset", "-q", "HEAD", "--", "tracked")
+                    activity.append(1)
+                    started.set()
+            except Exception as error:
+                errors.append(repr(error))
+                started.set()
+        worker = _iar_threading.Thread(target=staging)
+        worker.start()
+        try:
+            assert started.wait(30), "Sibling staging never started"
+            for shape, tree in (("primary", primary), ("linked", linked)):
+                failures, sibling_copies = [], []
+                activity_before = len(activity)
+                for number in range(50):
+                    sandbox = base / (shape + "-race-%d" % number)
+                    sandbox.mkdir()
+                    try:
+                        _iar_copy_tree(tree, sandbox / "repo")
+                        sibling_copies.extend(sandbox.rglob("sibling-state-sentinel"))
+                    except Exception as error:
+                        failures.append(repr(error))
+                    finally:
+                        _iar_sh.rmtree(sandbox)
+                expect("VELDO-0099 AC3: %s 50 copies during sibling staging have zero raises and no sibling state" % shape,
+                       not failures and not sibling_copies and not errors and len(activity) > activity_before)
+        finally:
+            stop.set()
+            worker.join(timeout=60)
+        assert not worker.is_alive(), "Sibling staging did not stop"
+
+        # Deterministically vanish after enumeration, immediately before the file copy.
+        vanishing, destination = base / "vanishing", base / "vanished-copy"
+        vanishing.mkdir()
+        (vanishing / "index.lock").write_text("transient\n")
+        original_copy2 = _iar_sh.copy2
+        def disappear(source, target, *args, **kwargs):
+            Path(source).unlink()
+            return original_copy2(source, target, *args, **kwargs)
+        _iar_sh.copy2 = disappear
+        raised = False
+        try:
+            _iar_copy_entry(vanishing, destination)
+        except FileNotFoundError:
+            raised = True
+        finally:
+            _iar_sh.copy2 = original_copy2
+        expect("VELDO-0099 AC3: an entry vanishing after enumeration does not raise", not raised)
+
+        for shape, tree in (("primary", primary), ("linked", linked)):
+            _iar_git(tree, "update-index", "--split-index")
+            private, common = _iar_git_dirs(tree)
+            shared = next(private.glob("sharedindex.*"))
+            before = _iar_live_inventory(tree)
+            saved = shared.read_bytes()
+            shared.write_bytes(b"corrupt split index\n")
+            failed = _iar_sp.run(["git", "-C", str(tree), "ls-files"], capture_output=True).returncode != 0
+            changed = _iar_changed(before, _iar_live_inventory(tree))
+            expect("VELDO-0099 AC3: %s split index corruption is observed" % shape,
+                   failed and "git-dir/" + shared.name in changed)
+            shared.write_bytes(saved)
+
+        # A relative alternate supplies all objects; the isolated copy must retain them.
+        common = primary / ".git"
+        external = base / "external-objects"
+        (common / "objects").rename(external)
+        (common / "objects" / "info").mkdir(parents=True)
+        (common / "objects" / "info" / "alternates").write_text(
+            _iar_os.path.relpath(external, common / "objects") + "\n")
+        _iar_git(primary, "config", "extensions.worktreeConfig", "true")
+        config_bytes = (common / "config").read_bytes()
+        for shape, tree in (("primary", primary), ("linked", linked)):
+            private, _ = _iar_git_dirs(tree)
+            original = b"uncommitted edit must survive byte for byte\n"
+            (tree / "tracked").write_bytes(original)
+            _iar_git(tree, "config", "--file", str(common / "config"), "core.worktree", str(tree))
+            _iar_git(tree, "config", "--file", str(private / "config.worktree"), "core.worktree", str(tree))
+            _iar_git(tree, "config", "--file", str(common / "config"), "core.hooksPath", str(base / "external-hooks"))
+            included = base / "external-config"
+            included.write_text("[core]\n    worktree = " + str(tree) + "\n")
+            _iar_git(tree, "config", "--file", str(common / "config"), "include.path", str(included))
+            sandbox = base / (shape + "-redirect")
+            sandbox.mkdir()
+            completed = False
+            try:
+                _iar_copy_tree(tree, sandbox / "repo")
+                _iar_git(sandbox / "repo", "checkout-index", "-f", "-a")
+                completed = (sandbox / "repo" / "tracked").read_bytes() == b"committed bytes\n"
+                _iar_git(sandbox / "repo", "cat-file", "-e", "HEAD^{tree}")
+            except (AssertionError, ValueError):
+                # An unsafe-copy mutation must red this row before executing git writes.
+                pass
+            expect("VELDO-0099 AC1: %s redirected config and alternates are isolated and original edit survives checkout-index" % shape,
+                   completed and (tree / "tracked").read_bytes() == original)
+            (common / "config").write_bytes(config_bytes)
+            (private / "config.worktree").unlink()
 
 
 def _iar_dotted(node):
@@ -627,7 +883,7 @@ def _iar_ac4():
                "compose-install-gate path rather than a fixture",
                _iar_substrate(repo) and _iar_copy_matches(ROOT, repo)
                and all(p.is_relative_to(sand) for p in _iar_git_dirs(repo)))
-        env = dict(_iar_os.environ, HOME=str(home), TMPDIR=str(run_tmp),
+        env = dict(_iar_git_environment(), HOME=str(home), TMPDIR=str(run_tmp),
                    PYTHONDONTWRITEBYTECODE="1")
         b_repo, b_home = _iar_repository_inventory(repo), _iar_inventory(home)
         proc = _iar_sp.run([_iar_sys.executable, "scripts/check_install_and_run.py",
@@ -851,6 +1107,7 @@ def _iar_ac4():
 
 _iar_block("AC4", _iar_ac4)
 _iar_block("VELDO-0099 checkout shape controls", _iar_layout_controls)
+_iar_block("VELDO-0099 review controls", _iar_review_controls)
 
 
 # ---------------------------------------------------------------------------------------
