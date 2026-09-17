@@ -39,9 +39,9 @@ observability:
     PAUSED_PUBLICATION.
   traces: >
     Bind SQLite command result to export tree, Git commit, remote ref observation, and
-    acknowledgement receipt.
+    acknowledgment receipt.
   error_taxonomy: >
-    Distinguish pending publication, remote refusal, export divergence, lost acknowledgement,
+    Distinguish pending publication, remote refusal, export divergence, lost acknowledgment,
     invalid signature, and unqualified durability contract.
 acceptance_criteria:
   - id: AC1
@@ -52,7 +52,7 @@ acceptance_criteria:
       SQLite, signing processes, and Git against a disposable bare remote. Completeness: Enumerate
       release paths from the command/effect registry; fail the receive hook or disconnect Git for
       each sequence and assert pending results and zero receiver calls until exact export
-      acknowledgement. Observe ref ordering and artifact completeness across restart. Falsifier:
+      acknowledgment. Observe ref ordering and artifact completeness across restart. Falsifier:
       Return success after SQLite commit while the remote receive hook rejects publication;
       replica/pending-success must fail.
     falsified_by: >
@@ -60,9 +60,9 @@ acceptance_criteria:
       replica/pending-success must fail.
   - id: AC2
     text: >
-      Claim: A lost acknowledgement retries or reconciles the same export identity without
+      Claim: A lost acknowledgment retries or reconciles the same export identity without
       generating another command or divergent replica history. Set: Export preparation, remote ref
-      update, acknowledgement storage, and client reply crash windows. Completeness: SIGKILL the
+      update, acknowledgment storage, and client reply crash windows. Completeness: SIGKILL the
       publisher at each barrier, including after the bare remote ref changes, then restart and
       query exact remote ref and export digest; compare command and export counts and the durable
       watermark. A mismatching remote export must stop. Falsifier: Allocate a fresh export
@@ -77,7 +77,7 @@ acceptance_criteria:
       misreported as rejection or off-host durability. Set: Real status CLI reads of empty,
       caught-up, pending, oldest-pending, and divergent store states plus installation
       remote-contract checks. Completeness: Build states through actual commands and Git failures;
-      compare displayed watermarks and ages to stored records. Kill before acknowledgement
+      compare displayed watermarks and ages to stored records. Kill before acknowledgment
       persistence and read status after restart. Require operations evidence of remote durability
       and protected-ref access before activation; a local bare remote qualifies protocol only.
       Falsifier: Render a committed pending command as rejected after publisher death;
@@ -87,19 +87,19 @@ acceptance_criteria:
       must preserve its original command identity and pending status.
 required_evidence: [unit, integration]
 rollback: >
-  Pause mutation acknowledgements and dependent effects; retain pending exports and resume with a
+  Pause mutation acknowledgments and dependent effects; retain pending exports and resume with a
   compatible publisher using their original identities.
 ---
 
 ## Intent
 
-Withhold success and dependent effects until each committed command has a verifiable durable replica acknowledgement.
+Withhold success and dependent effects until each committed command has a verifiable durable replica acknowledgment.
 
 ## Context
 
-Package B, W9 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23, R26-R27, R57. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W9 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23, R26-R27, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The critical risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Premature success could acknowledge history that cannot survive authority-host loss. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

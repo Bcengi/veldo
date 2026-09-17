@@ -77,7 +77,7 @@ acceptance_criteria:
       current-pointer switch; interrupted publication is recoverable. Set: Document and legacy
       status/event projections at one watermark, using real filesystem readers racing a
       materializer process. Completeness: SIGKILL before directory completion, before pointer
-      switch, and after switch before acknowledgement; continuously read all projected members and
+      switch, and after switch before acknowledgment; continuously read all projected members and
       compare their watermarks and digests. Restart must expose either the old complete corpus or
       the new complete corpus and reconcile pending work. Falsifier: Switch the current pointer
       before the last projection file is durable, then kill the materializer;
@@ -97,9 +97,9 @@ Validate every decision input and publish coherent immutable snapshots so stale 
 
 ## Context
 
-Package B, W20 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R14, R22, R30, R54, R57, R70-R71. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W20 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R14, R22, R30, R54, R57, R70-R71. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The critical risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Incomplete read sets or mixed snapshots could commit proposals after their authority or prerequisites changed. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

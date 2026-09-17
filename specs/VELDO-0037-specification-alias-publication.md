@@ -78,7 +78,7 @@ acceptance_criteria:
       together; subsequent materialization exposes only complete published versions. Set: Real
       SQLite allocation and exclusive file creation or atomic version replacement in specs
       projections, with concurrent snapshot readers. Completeness: SIGKILL after allocation,
-      during temporary-file write, and after rename before publication acknowledgement. Restart
+      during temporary-file write, and after rename before publication acknowledgment. Restart
       the materializer and verify same alias, exact accepted bytes, no overwrite of another
       author, and published-only reader visibility at each boundary. Falsifier: Mark publication
       complete before atomic replacement and kill the writer with a partial temporary file;
@@ -98,9 +98,9 @@ Allocate one durable specification alias per source revision and publish its acc
 
 ## Context
 
-Package B, W22 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R10, R19, R22, R57, R73. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W22 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R10, R19, R22, R57, R73. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The high risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Alias collisions or stale document overwrites could bind implementation and proof to the wrong accepted specification. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

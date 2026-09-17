@@ -81,11 +81,12 @@ acceptance_criteria:
       empty derived-state target with the execution environment removed; compare digests with live
       SQLite state. Corrupt each signed field and reorder, duplicate, or remove records in
       disposable copies; no invalid history may rebuild writable authority. Falsifier: Skip
-      previous-record digest verification and remove a middle journal record; journal/replay-gap
-      must refuse reconstruction.
+      previous-record digest verification and re-sign one record with an incorrect predecessor
+      digest while retaining sequence continuity; journal/replay-chain must refuse reconstruction.
     falsified_by: >
-      Skip previous-record digest verification and remove a middle journal record;
-      journal/replay-gap must refuse reconstruction.
+      Skip previous-record digest verification and re-sign one record with an incorrect
+      predecessor digest while retaining sequence continuity; journal/replay-chain must refuse
+      reconstruction.
 required_evidence: [unit, integration]
 rollback: >
   Stop command acceptance, preserve the database and journal, and retain a compatible reader;
@@ -98,9 +99,9 @@ Make a domain command one durable, replayable transition even when the authority
 
 ## Context
 
-Package B, W8 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R21-R22, R53, R57, R70. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W8 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R21-R22, R53, R57, R70. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The critical risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Partial command commits or incorrect replay could lose accepted authority history or repeat privileged effects. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

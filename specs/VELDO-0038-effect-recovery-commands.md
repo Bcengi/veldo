@@ -38,7 +38,7 @@ observability:
     Join receiver outcome query to signed ruling, original nonce and attempt, fencing receipt, and
     any separately authorized retry or compensation.
   error_taxonomy: >
-    Distinguish conclusive nonexecution, running, effect committed, acknowledgement lost, outcome
+    Distinguish conclusive nonexecution, running, effect committed, acknowledgment lost, outcome
     unknown, evidence conflict, and unauthorized resolution.
 acceptance_criteria:
   - id: AC1
@@ -60,10 +60,10 @@ acceptance_criteria:
     text: >
       Claim: Recovery commands distinguish all five R32 findings from trusted evidence and never
       equate absent processes, lost checkpoints, expired leases, or consumed nonces with
-      nonexecution. Set: Attach-evidence, import-acknowledgement, certify-nonexecution, fence, and
+      nonexecution. Set: Attach-evidence, import-acknowledgment, certify-nonexecution, fence, and
       retain-stop commands against real control.sqlite3 and effect receivers. Completeness: Create
       each finding with actual barriers and SIGKILL after receiver acceptance or commit but before
-      authority acknowledgement; invoke signed recovery commands and compare persisted evidence
+      authority acknowledgment; invoke signed recovery commands and compare persisted evidence
       and target operation counts. Feed contradictory local observations and require outcome
       unknown with AWAITING_AUTHORITY. Falsifier: Certify nonexecution from a consumed nonce and
       absent PID after a real target commit; recovery/false-nonexecution must reject the ruling.
@@ -96,9 +96,9 @@ Give operations explicit evidence-driven recovery commands before crash handling
 
 ## Context
 
-Package B, W23 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R26-R27, R32-R33, R41, R57, R74. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W23 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R26-R27, R32-R33, R41, R57, R74. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The critical risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Incorrect outcome resolution could repeat an irreversible effect or authorize compensation without permission. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

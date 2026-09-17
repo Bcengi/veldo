@@ -81,7 +81,7 @@ acceptance_criteria:
       delayed reporting never releases outstanding charge exposure. Set: Real usage ingestion,
       request cancellation, and restart processes over committed request allocations, with known
       and unknown charge outcomes. Completeness: Duplicate and reorder usage messages, kill the
-      adapter after receiver acceptance before usage acknowledgement, and restart ingestion.
+      adapter after receiver acceptance before usage acknowledgment, and restart ingestion.
       Compare settled charges and retained exposure; only reconciled usage or authoritative
       no-charge evidence frees an allocation, and unbounded exposure blocks affected admission.
       Falsifier: Release charge exposure on timeout after the receiver accepted the request;
@@ -115,9 +115,9 @@ Reserve capacity and maximum request charges durably so concurrent work cannot s
 
 ## Context
 
-Package B, W21 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R22, R31, R43-R45, R57, R70. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W21 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R22, R31, R43-R45, R57, R70. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The critical risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Reservation races could exceed signed cost ceilings or release capacity while effects and descendants remain unresolved. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

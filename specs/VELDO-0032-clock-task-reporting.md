@@ -88,9 +88,9 @@ Make task reporting distinguish clock uncertainty from ordinary claim contention
 
 ## Context
 
-Package B, W17 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R25, R51-R52, R57. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W17 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R25, R51-R52, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The high risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Hiding clock uncertainty in task eligibility could conceal an unsafe takeover or permanent scheduling stall. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

@@ -39,7 +39,7 @@ observability:
     and bounded reconnect attempts.
   traces: >
     Join command commit and published watermark to signal emission, authenticated IPC delivery,
-    consumer handling, and cursor acknowledgement.
+    consumer handling, and cursor acknowledgment.
   error_taxonomy: >
     Distinguish notification gap, notifier death, unauthenticated peer, stale cursor, unpublished
     event, and delivery still pending.
@@ -48,16 +48,16 @@ acceptance_criteria:
     text: >
       Claim: Committed history and delivery obligations wake consumers through in-process signals
       and authenticated IPC, with publication-dependent actions held until durable
-      acknowledgement. Set: Intake, settlement, assignment, dependency, completion, revocation,
+      acknowledgment. Set: Intake, settlement, assignment, dependency, completion, revocation,
       and budget-availability events in real control.sqlite3. Completeness: Compare R28 causes
       with the producer registry and drive each through real command and consumer processes.
-      Disconnect IPC and withhold Git export acknowledgement; obligations persist, notification
+      Disconnect IPC and withhold Git export acknowledgment; obligations persist, notification
       cannot grant unpublished authority, and consumers do not periodically query storage to
       discover changes. Falsifier: Authorize a dependent consumer action on a local notification
-      before its export acknowledgement; notifications/unpublished-event must detect that action.
+      before its export acknowledgment; notifications/unpublished-event must detect that action.
     falsified_by: >
       Authorize a dependent consumer action on a local notification before its export
-      acknowledgement; notifications/unpublished-event must detect that action.
+      acknowledgment; notifications/unpublished-event must detect that action.
   - id: AC2
     text: >
       Claim: Commit notification and entering idle serialize so a committed event cannot leave a
@@ -77,7 +77,7 @@ acceptance_criteria:
       duplicating committed consumer effects or losing delivery obligations. Set: Real consumer
       cursor transactions and idempotent handlers, including terminal projection obligations and
       out-of-order notifications. Completeness: Kill consumers before handler commit, after effect
-      commit before cursor acknowledgement, and after cursor commit. Restart from each stored
+      commit before cursor acknowledgment, and after cursor commit. Restart from each stored
       cursor, duplicate notifications, and compare logical effects and complete journal-sequence
       coverage to the retained event range. Falsifier: Advance the cursor before the handler
       transaction and kill the consumer in that window; notifications/cursor-before-effect must
@@ -97,9 +97,9 @@ Wake consumers reliably from durable events and replay cursor gaps without polli
 
 ## Context
 
-Package B, W31 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23, R28, R41, R57. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W31 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23, R28, R41, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The high risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Lost notifications or premature cursors could strand committed work or skip revocation and stop obligations. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

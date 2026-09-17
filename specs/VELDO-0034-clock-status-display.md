@@ -49,11 +49,12 @@ acceptance_criteria:
       with visible text, a dedicated badge treatment, and clock details. Set: runstatus and
       status_server reading real run registry and claim data, including work_state future-stamp
       LIVENESS_UNCONFIRMED. Completeness: Launch the real loopback HTTP server over fixture Git
-      common-directory records, fetch JSON and HTML, and compare each surface against installed
-      runlog.classify and work_state.liveness. Inject a future timestamp and require both clocks,
-      tolerance, and operations reconciliation guidance, not color alone. Falsifier: Render
-      unanswerable using the active badge and label after corrupting a stored heartbeat into the
-      future; clock-status/visible-uncertainty must fail.
+      common-directory records, fetch JSON and load the page in a real browser, inspect the
+      rendered badge and text, and compare each surface against installed runlog.classify and
+      work_state.liveness. Inject a future timestamp and require both clocks, tolerance, and
+      operations reconciliation guidance, not color alone. Falsifier: Render unanswerable using
+      the active badge and label after corrupting a stored heartbeat into the future;
+      clock-status/visible-uncertainty must fail.
     falsified_by: >
       Render unanswerable using the active badge and label after corrupting a stored heartbeat
       into the future; clock-status/visible-uncertainty must fail.
@@ -95,9 +96,9 @@ Display clock uncertainty prominently and consistently in the existing status su
 
 ## Context
 
-Package B, W19 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R25, R52, R57. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W19 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R25, R52, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The high risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Misstating uncertain liveness across run and claim surfaces could direct operators to release ownership or capacity without evidence. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

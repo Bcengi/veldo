@@ -63,7 +63,7 @@ acceptance_criteria:
       Claim: Restoration imports the verified signed Git replica and artifacts, retains
       acknowledged history, and records any missing unpublished tail as uncertainty. Set:
       Authority process or clone loss after local commit, export publication, and remote
-      acknowledgement boundaries using real Git remotes and disposable stores. Completeness:
+      acknowledgment boundaries using real Git remotes and disposable stores. Completeness:
       SIGKILL the authority at each barrier, remove access to its clone, and restore on a
       replacement fixture from actual replica commits. Compare every acknowledged command and
       artifact with restored history, reconcile target effects through W23, and require pending
@@ -115,9 +115,9 @@ Recover authority only from verified history with explicit old-host fencing and 
 
 ## Context
 
-Package B, W33 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23-R27, R32, R57, R63, R74-R75. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W33 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23-R27, R32, R57, R63, R74-R75. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The critical risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Unverified restoration or an unfenced old host could lose acknowledged history and permit competing publication. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

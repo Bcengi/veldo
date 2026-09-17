@@ -66,11 +66,12 @@ acceptance_criteria:
       the lock and license inventory in both directions; execute the actual adapter/checkpointer
       smoke workload. Corrupt a downloaded artifact hash, omit a transitive dependency, and
       SIGKILL installation before activation; incompatible or partial environments must never
-      become active. Falsifier: Skip hash verification and install a corrupted dependency
-      artifact; runtime/hash-refusal must reject the installation before activation.
+      become active. Falsifier: Bypass locked-hash enforcement and install an otherwise valid
+      altered wheel while retaining the original lock; runtime/hash-refusal must reject
+      installation before activation.
     falsified_by: >
-      Skip hash verification and install a corrupted dependency artifact; runtime/hash-refusal
-      must reject the installation before activation.
+      Bypass locked-hash enforcement and install an otherwise valid altered wheel while retaining
+      the original lock; runtime/hash-refusal must reject installation before activation.
   - id: AC2
     text: >
       Claim: The engine manifest, assembly, scaffolder, and explicit distribution inventory
@@ -112,9 +113,9 @@ Install a pinned isolated execution runtime and account for every shipped asset 
 
 ## Context
 
-Package B, W30 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R35, R50, R53, R57-R58, R63. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W30 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R35, R50, R53, R57-R58, R63. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The high risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Unverified dependencies or omitted assets could compromise installed execution, and this footprint includes protected gate scripts. The declared risk floor is high. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

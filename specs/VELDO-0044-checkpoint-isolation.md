@@ -77,12 +77,13 @@ acceptance_criteria:
       tables, and physical file-page corruption in disposable copies. Completeness: Corrupt each
       damage class, restart the boundary, and compare signed replay with materialized domain
       state. Domain-intact checkpoint loss restarts the graph using committed results; unproven
-      physical integrity stops dispatch and preserves damaged bytes. Falsifier: Classify a
-      physically damaged shared database as checkpoint-only and resume dispatch without verified
-      replay; checkpoints/physical-corruption must refuse startup.
+      physical integrity stops dispatch and preserves damaged bytes. Falsifier: Quarantine
+      malformed checkpoint payloads without domain replay after also corrupting a domain entity
+      version in a readable SQLite file; checkpoints/mixed-corruption must refuse startup.
     falsified_by: >
-      Classify a physically damaged shared database as checkpoint-only and resume dispatch without
-      verified replay; checkpoints/physical-corruption must refuse startup.
+      Quarantine malformed checkpoint payloads without domain replay after also corrupting a
+      domain entity version in a readable SQLite file; checkpoints/mixed-corruption must refuse
+      startup.
 required_evidence: [unit, integration]
 rollback: >
   Disable checkpoint writes, preserve suspect database material, prove domain integrity, and
@@ -95,9 +96,9 @@ Confine checkpoint writes inside the one authority database without exposing dom
 
 ## Context
 
-Package B, W29 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R21, R27, R34-R35, R57. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W29 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R21, R27, R34-R35, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The critical risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+Checkpoint SQL or shared-file corruption could alter authoritative history or prevent enforcement from progressing. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 

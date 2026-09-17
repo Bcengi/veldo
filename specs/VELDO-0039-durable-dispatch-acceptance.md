@@ -39,10 +39,10 @@ observability:
     uncertain launch windows.
   traces: >
     Join precondition snapshot to prepared export, receiver acceptance, pre-spawn intent,
-    invocation identity, and RUNNING acknowledgement.
+    invocation identity, and RUNNING acknowledgment.
   error_taxonomy: >
     Distinguish active-dispatch conflict, unpublished preparation, stale acceptance, launch
-    uncertain, and acknowledgement pending.
+    uncertain, and acknowledgment pending.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -51,7 +51,7 @@ acceptance_criteria:
       dispatch preparation over unit, station, attempt, read set, contract digest, idempotency
       key, generations, and reservation. Completeness: Compare persisted fields to the R31 schema,
       race two proposals, and reject the bare remote export in turn. A separate receiver process
-      must see no delivery before acknowledgement, and the unit stays DISPATCHING without a second
+      must see no delivery before acknowledgment, and the unit stays DISPATCHING without a second
       active logical dispatch. Falsifier: Invoke the receiver before the preparation export is
       acknowledged while the remote rejects it; dispatch/unpublished-launch must detect the
       forbidden call.
@@ -78,7 +78,7 @@ acceptance_criteria:
       current admission, claim, authority, read set, and reservation. Set: Acknowledgement
       ingestion and repeated delivery against real SQLite, a real Git replica, and a durable
       receiver with revoked or stale inputs. Completeness: Race each precondition change against
-      acceptance, kill after receipt commit before export, and retry acknowledgement by original
+      acceptance, kill after receipt commit before export, and retry acknowledgment by original
       identity. Compare lifecycle and receiver counts; a new attempt requires a reconciled
       terminal predecessor and fresh applicable retry authorization. Falsifier: Advance to RUNNING
       on a local acceptance commit while its replica export fails; dispatch/running-before-replica
@@ -98,9 +98,9 @@ Record and replicate dispatch preparation and acceptance so delivery retries can
 
 ## Context
 
-Package B, W24 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23, R31-R33, R39, R57. Package A supplies the accepted contracts; this draft grants no implementation or activation authority.
+Package B, W24 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R23, R31-R33, R39, R57. Package A contracts must be accepted before implementation; this draft grants no implementation or activation authority.
 
-The critical risk floor reflects the consequences of failure in this boundary. Required approval must bind the eventual change and proof; this field does not record approval.
+A lost launch acknowledgment could create duplicate workers or report unreplicated execution as accepted. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
 Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 
@@ -110,5 +110,5 @@ Containment and heartbeat implementation are W25 and W26; production engine outp
 
 ## Notes
 
-D2 directly blocks external dispatch and acceptance-success semantics until Dmitry ratifies off-host acknowledgement. D1 is inherited through storage and replication; D3 blocks production runner activation in W25. Launch records must be durable trusted receiver metadata, not a second coordination database or a model checkpoint. Temporary file write, fsync, and rename barriers need explicit crash coverage if used for receiver metadata.
+D2 directly blocks external dispatch and acceptance-success semantics until Dmitry ratifies off-host acknowledgment. D1 is inherited through storage and replication; D3 blocks production runner activation in W25. Launch records must be durable trusted receiver metadata, not a second coordination database or a model checkpoint. Temporary file write, fsync, and rename barriers need explicit crash coverage if used for receiver metadata.
 
