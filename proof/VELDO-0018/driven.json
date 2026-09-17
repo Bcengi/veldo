@@ -1,13 +1,13 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0018",
-  "commit": "4efcf5fa74378b3897ea1f2885daf01df62e5376",
-  "taken_at": "2026-09-17T13:08:09Z",
+  "commit": "2575b87ce06e74d35679ccdf7cbf59b8ea76ea9e",
+  "taken_at": "2026-09-17T21:10:11Z",
   "fragment": "scripts/suites/31_veldo_0018_release_floor.py",
-  "fragment_sha256": "f127d4d87d6f851c59f3fc0df86bd4d4799665a3fdbc863bc52555fc9ea2cb81",
+  "fragment_sha256": "38c2f97e1ec8bf47e2cfef51d9b9f7481b3342f5aa0e826f39f827d6a6a60d0e",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/release_floor_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the relation and cancellation tables are enumerated from the module itself.",
-  "rows_total": 18,
-  "rows_passed": 18,
+  "rows_total": 23,
+  "rows_passed": 23,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0018 AC1 release-ownership/contribution DRIVEN (the declared falsifier): with a contribution counted as a second project owner in a copy, REL-0001 (owned by P1, contributed to by P2's objective) reads as owned by two projects and the forest is refused, so the row reds; unmutated the contribution adds no owner",
@@ -44,13 +44,13 @@
       "driven": 1
     },
     "AC2": {
-      "rows": 4,
-      "passed": 4,
+      "rows": 6,
+      "passed": 6,
       "driven": 1
     },
     "AC3": {
-      "rows": 4,
-      "passed": 4,
+      "rows": 6,
+      "passed": 6,
       "driven": 1
     },
     "AC4": {
@@ -130,6 +130,26 @@
     },
     {
       "label": "VELDO-0018 AC4 release-boundary/no-deployment DRIVEN (the declared falsifier): with rollout invoked on acceptance in a copy the deployer spy records a roll_out call, so the row reds; unmutated it records nothing",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC2/AC4 release-acceptance/authority (review 1): only the snapshot's named acceptance authority accepts and only its named deployment authority deploys; an untrusted signer, a machine actor and a person other than the named one are each refused by name; the machine set is bound to authorization.MACHINE_ACTORS",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC2 release-acceptance/binding (review 1): execution, snapshot and approval are bound by release id and snapshot digest, not by the revision number alone; an execution of release A refuses release B's snapshot at the same revision, and an approval bound to another snapshot digest or release refuses",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC2 release-acceptance/snapshot (review 1): an incomplete snapshot ({release_revision: 2} and nothing else) is refused field by field and never accepted; a malformed member entry is refused rather than dropped; duplicate member and journey ids are refused; an empty member list is refused; a machine actor as acceptance authority is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC3 floor-eligibility/bindings (review 1): a floor registered without a digest or authority, a snapshot floor reference without a digest, and a settlement without a floor digest or signer are each refused; absent values never compare equal",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC3 floor-eligibility/scope (review 1): a settlement covering a pin the floor declares but the execution did not affect (p3 beside p1 and p2) is expanded scope and blocks; the scope is bounded by the affected set, not by the floor's declared pins",
       "passed": true
     }
   ]

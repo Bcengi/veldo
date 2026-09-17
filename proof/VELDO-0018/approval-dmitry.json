@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0018-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0018",
+    "commit": "2575b87ce06e74d35679ccdf7cbf59b8ea76ea9e",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0018 (risk high, human_approval required, no protected paths) over Telegram on 2026-09-17 at 21:09 UTC (message 27916, 'Approve 0018'), answering an ask that described the item: release trees keep one owner and a contribution never becomes ownership; a release execution is accepted only when every member outcome and every declared regression journey has an observed receipt against the exact candidate; floors block until the named authority settles the exact version; cancellation disposes of every unfinished piece; acceptance authorizes no deployment. The ask noted the Codex review's five findings were fixed. paths is empty because the approval is of the landing, not of a protected path.",
+  "recorded_at": "2026-09-17T21:11:00Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval of 2026-09-17; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
