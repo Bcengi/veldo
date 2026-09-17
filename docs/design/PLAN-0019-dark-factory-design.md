@@ -386,6 +386,8 @@ Production autonomous workers require Linux, systemd, and cgroup v2. Other hosts
 
 Each dispatch has a dedicated containment group and trusted wrapper. Forking, new sessions, and grandchildren cannot escape it. Worker credentials and namespaces cannot modify containment controls, reach the authority's service manager, or signal authority processes.
 
+Before launch, each containment group receives hard, non-worker-writable limits on aggregate memory, cumulative CPU time across descendants, and all writable storage, including temporary files, clone output, and captured logs. Storage limits cover bytes and inode consumption. Host admission keeps aggregate limits within qualified capacity with resources reserved for the authority and unrelated projects. Missing or unenforceable limits refuse activation. Exhaustion closes effect permissions, stops the group, and quarantines its slot until containment, outcome, accounting, and resource cleanup are reconciled; it must never crash the authority or exhaust another project's resources. Qualification exhausts each limit with real descendant processes and proves that the authority and unrelated projects remain operational.
+
 Systemd supervises the authority and its runner lifecycle. On authority death, control-channel failure, or service stop, the trusted supervisor retires all affected containment groups before a replacement schedules. A narrowly scoped, operations-installed local runner helper supplies any OS privileges needed for distinct worker identities and namespace setup; those privileges never enter the model process.
 
 Exit detection uses OS notifications. Process identity includes boot identity and start identity. A reused PID cannot revive a prior invocation. The provider-neutral implementation exists before crash qualification.
@@ -409,6 +411,8 @@ The Credential Service is the real issuer of short-lived internal capability han
 Provider authentication stays outside untrusted tool and build contexts. An adapter that cannot enforce this separation remains disabled. No reusable account profile is mounted into a worker.
 
 Admission reserves cost and capacity per account, project, and unit before concurrent launch. Usage is deduplicated by invocation and sequence. Unknown spend retains conservative exposure and blocks further affected admission when that exposure cannot be bounded. Estimates remain labeled estimates.
+
+Before every billable provider request, including retries and follow-on calls within an admitted invocation, a trusted adapter must establish an enforceable maximum possible charge from the applicable pricing and hard request limits. It atomically allocates that maximum from the remaining reservation at every applicable account, project, and unit ceiling, after settled charges and outstanding exposure. A request exceeding any remaining reservation, or whose maximum cannot be bounded and enforced, is refused before the provider call. Concurrent requests cannot spend the same remainder. A timeout, cancellation, or delayed usage report does not release outstanding exposure; only reconciled usage or authoritative proof of no charge does. Package B implements this reservation predicate and its concurrency proof; Package D qualifies each live provider's charge bounds and enforcement.
 
 **R46. Verification and review have separate meanings. [REVISED]**
 

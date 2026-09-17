@@ -59,12 +59,18 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: Every execution entry uses a complete authoritative snapshot and refuses stale or missing
-      prerequisites, including negative predicates. Set: Selection, direct execution, build, review,
-      claim, redispatch, result acceptance, and publication over specifications, plans, releases,
+      prerequisites, including negative predicates; every provider call's enforceable maximum charge
+      must fit its remaining reservations before the call. Set: Selection, direct execution, build,
+      review, claim, redispatch, provider requests including retries and follow-on calls, result
+      acceptance, and publication over specifications, plans, releases,
       decisions, floors, policy, membership, admission, graph, roster, reservations, and receipts.
-      Completeness: Require exact registry coverage of R70 entries and read-set kinds; mutate each
+      Completeness: Require exact registry coverage of R70 entries, R45 request boundaries, and
+      read-set kinds; mutate each
       referenced version and insert a conflicting blocker after the read, while holding project
-      version fixed, and require a named refusal. Falsifier: Allow review against a draft governing
+      version fixed, and require a named refusal. Exercise charges below, at, and above each account,
+      project, and unit remainder, unknown maxima, delayed usage, and concurrent allocations;
+      outstanding exposure cannot be reused and an over-bound request must never reach the provider.
+      Falsifier: Allow review against a draft governing
       plan; the eligibility/review-draft-plan row must fail.
     falsified_by: >
       Allow review against a draft governing plan; the eligibility/review-draft-plan row must fail.
@@ -108,7 +114,7 @@ rollback: >
 
 ## Context
 
-**Authority.** Package A of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R10, R13-R16, R25, R32, R46-R52, R56, R70, and R76. The later decision-surface ruling in its provenance header takes precedence over retained tracker-only wording.
+**Authority.** Package A of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) clauses are R10, R13-R16, R25, R32, R45-R52, R56, R70, and R76. The later decision-surface ruling in its provenance header takes precedence over retained tracker-only wording.
 
 **Risk.** Incorrect completion or eligibility can authorize unsafe execution and publication, so this concern is critical. No approval is asserted by human_approval: required; this draft must obtain its applicable approval and independent review before implementation or activation.
 

@@ -53,6 +53,14 @@ replacement_obligations:
     sessions, and grandchildren cannot escape. Workers cannot modify containment, reach the
     authority service manager, or signal authority processes. Only an operations-installed,
     narrowly scoped helper may hold OS privileges for identities and namespaces.
+  resource_limits: >
+    Before launch, R43 requires hard per-group aggregate memory, cumulative CPU-time across
+    descendants, and writable-storage limits, including bytes and inodes for temporary files,
+    clone output, and captured logs. Workers cannot modify limits. Aggregate admission preserves
+    qualified capacity for the authority and unrelated projects; missing or unenforceable bounds
+    refuse activation. Exhaustion closes effects, stops the group, and quarantines its slot until
+    empty containment, outcome, accounting, and cleanup are reconciled. It must never crash the
+    authority or exhaust another project's resources.
   lifecycle: >
     Systemd supervises authority and runner lifetime. Authority death, control-channel failure,
     and explicit stop retire affected groups before a replacement schedules. Exit detection uses
@@ -93,15 +101,17 @@ activation_requirements:
     provider-neutral launch, supervision, heartbeat, stopping, and recovery before crash proof;
     D qualifies actual engines. Real tests kill and suspend processes, lose leadership and control
     channels, attempt fork/session/grandchild escapes, reuse PID observations, miss heartbeats,
-    and interrupt accounting. Required approval, proof, independent review, green gate, qualified
+    interrupt accounting, and exhaust memory, CPU-time, and storage with real descendants while
+    proving the authority and unrelated projects remain operational. Required approval, proof,
+    independent review, green gate, qualified
     host and helper, versioned service installation, and a separate receipted activation with
     rollback material precede autonomous operation. This record performs none of those acts.
 
 assumptions:
   - id: host-can-contain
-    statement: The selected host can enforce descendant containment and privilege separation.
-    signal: Real fork, session, grandchild, helper-access, and authority-signal refusal tests on the qualified host profile.
-    breach: Any worker escapes its group or changes authority supervision.
+    statement: The selected host can enforce descendant containment, hard resource limits, and privilege separation.
+    signal: Real fork, session, grandchild, helper-access, authority-signal, and memory/CPU-time/storage exhaustion tests on the qualified host profile.
+    breach: Any worker escapes its group, changes authority supervision, or exhausts resources needed by the authority or unrelated projects.
   - id: supervisor-is-independent
     statement: Supervision and effect fencing continue when the orchestrator or model process stalls.
     signal: Process suspension and control-channel failure tests measure the 2-second fence and the 30-second liveness deadline.

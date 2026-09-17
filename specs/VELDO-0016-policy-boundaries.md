@@ -53,10 +53,13 @@ acceptance_criteria:
       explicit R43/R44 obligations, while activation requires the accepted architecture revision and
       qualification. Set: Architecture contract, capability declarations, arch.py loading, and the
       lexical fleet assertions in scripts/suites/06_capabilities_manifest_honesty_veldo.py;
-      containment, exit identity, control-channel fencing, heartbeat, stop escalation, and retirement
-      obligations. Completeness: Compare the replacement obligation registry against every R43/R44
+      containment, hard per-group memory, cumulative descendant CPU-time and writable-storage limits,
+      exhaustion stop and slot quarantine, authority and unrelated-project survival, exit identity,
+      control-channel fencing, heartbeat, stop escalation, and retirement obligations.
+      Completeness: Compare the replacement obligation registry against every R43/R44
       clause and every affected lexical assertion; require a test registration for each obligation
-      before the new profile can be eligible. Real lifecycle qualification is supplied by B and D, not
+      before the new profile can be eligible; missing or unenforceable resource limits and absent
+      exhaustion qualification must refuse activation. Real lifecycle qualification is supplied by B and D, not
       claimed by these contract tests. Falsifier: Remove empty-containment proof from the replacement
       retirement predicate; the policy-activation/retirement-obligation row must fail.
     falsified_by: >
