@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0099",
-  "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+  "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-17T06:03:37.547493Z",
+  "produced_at": "2026-09-17T06:34:46.901138Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Both checkout shapes preserve isolated paths and dirty bytes. Nested submodule, absolute pointer, directory, and .gitmodules cases record and print AC4 stand-down without copying or nested git operations; binary unstaged contents survive. Skipping detection reds all ten recorded-stand-down rows and ten no-copy rows. Branch refs and reflogs named alternates copy cleanly and pass all 14 AC4 rows per shape; basename matching reds both copy rows. All prior path, identity, and shape mutations re-driven."
+          "detail": "Both shapes preserve isolated paths and dirty bytes. Nested fixtures record inventory stand-down while reaching process checks; a real nested marker plus detachment reds both process rows, and network injection reds the network row. Restoring the short circuit reds ten regression rows. All prior nested refusal, alternates, path, identity, and shape mutations re-driven."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-round-six-linked.log; proof/VELDO-0099/gate-round-six-primary.log",
-          "detail": "Complete canonical gates at f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf: GREEN, exit 0, 4864 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-seven-linked.log; proof/VELDO-0099/gate-round-seven-primary.log",
+          "detail": "Complete canonical gates at 8be2b35301a64ef5602a5f9f4e3a207dbde5f717: GREEN, exit 0, 4866 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
         }
       ]
     },
@@ -33,8 +33,8 @@
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-round-six-linked.log; proof/VELDO-0099/gate-round-six-primary.log",
-          "detail": "Complete canonical gates at f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf: GREEN, exit 0, 4864 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-seven-linked.log; proof/VELDO-0099/gate-round-seven-primary.log",
+          "detail": "Complete canonical gates at 8be2b35301a64ef5602a5f9f4e3a207dbde5f717: GREEN, exit 0, 4866 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "All prior inventory and copy controls re-driven: whole common store, claims/runs, split-index corruption and clean reads, concurrent copies, disappearing entries, shared-live attribution, and stage deletion of reflogs and randomly selected copied files. Exact expected red-row sets remain in driven.json."
+          "detail": "Sparse-rule writes during the live observation red THIS repository is untouched in both shapes, naming git-dir/info/sparse-checkout; omission reproduces the primary 14/0 miss and reds the primary regression control. All prior common-store, split-index, concurrent-copy, sibling attribution, and deletion controls re-driven."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-round-six-linked.log; proof/VELDO-0099/gate-round-six-primary.log",
-          "detail": "Complete canonical gates at f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf: GREEN, exit 0, 4864 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-seven-linked.log; proof/VELDO-0099/gate-round-seven-primary.log",
+          "detail": "Complete canonical gates at 8be2b35301a64ef5602a5f9f4e3a207dbde5f717: GREEN, exit 0, 4866 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
         }
       ]
     },
@@ -61,41 +61,50 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Both full gates are green at the same implementation/driver commit; every original and review mutation, including both round-six defects, is re-driven. Full labels and source digest are recorded; selected-suite diagnostics are not gate evidence. Earlier gate logs and baseline-driven.json remain historical."
+          "detail": "Both full gates are green at the same implementation/driver commit. Every original and review mutation, including both round-seven defects, is re-driven. Full labels and suite digest are in driven.json; previous logs and baseline-driven.json are historical."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-round-six-linked.log; proof/VELDO-0099/gate-round-six-primary.log",
-          "detail": "Complete canonical gates at f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf: GREEN, exit 0, 4864 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-seven-linked.log; proof/VELDO-0099/gate-round-seven-primary.log",
+          "detail": "Complete canonical gates at 8be2b35301a64ef5602a5f9f4e3a207dbde5f717: GREEN, exit 0, 4866 passed, 0 failed in each shape; first-use and all 8 required catalog checks passed."
         }
       ]
     }
   ],
   "checks": [
     {
-      "name": "round-six-linked",
-      "status": "passed",
+      "name": "round-seven-linked-first-red",
+      "status": "failed",
       "command": "./scripts/verify.sh",
-      "exit_code": 0,
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
-      "ref": "proof/VELDO-0099/gate-round-six-linked.log",
-      "detail": "4864 passed, 0 failed; first-use integration and all 8 required catalog checks passed."
+      "exit_code": 1,
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "ref": "proof/VELDO-0099/gate-round-seven-linked-first-red.log",
+      "detail": "Unit 4866/0; first-use mutated fixture 4865/1, baseline 4866/0; live-inventory row failed. Subsequent unchanged rerun passed; initial cause is not established."
     },
     {
-      "name": "round-six-primary",
+      "name": "round-seven-linked",
+      "status": "passed",
+      "command": "VELDO_FIRST_USE_KEEP=1 ./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "ref": "proof/VELDO-0099/gate-round-seven-linked.log",
+      "detail": "4866 passed, 0 failed; first-use integration and all 8 required catalog checks passed."
+    },
+    {
+      "name": "round-seven-primary",
       "status": "passed",
       "command": "./scripts/verify.sh",
       "exit_code": 0,
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
-      "ref": "proof/VELDO-0099/gate-round-six-primary.log",
-      "detail": "4864 passed, 0 failed; first-use integration and all 8 required catalog checks passed."
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "ref": "proof/VELDO-0099/gate-round-seven-primary.log",
+      "detail": "4866 passed, 0 failed; first-use integration and all 8 required catalog checks passed."
     },
     {
       "name": "all-mutation-diagnostics",
       "status": "passed",
       "command": "python3 proof/VELDO-0099/drive.py",
       "exit_code": 0,
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "ref": "proof/VELDO-0099/driven.json"
     },
     {
@@ -103,14 +112,14 @@
       "status": "passed",
       "command": "python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md",
       "exit_code": 0,
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "ref": "proof/VELDO-0099/ready-check.txt"
     }
   ],
   "artifacts": [
     {
       "ref": "proof/VELDO-0099/README.md",
-      "sha256": "1ab764b643c3733078877698919f6959ed1ddd4eec870ca538d7989a7c6e3add"
+      "sha256": "7d3e5b728b8aa42d6968fdbc9d058448f3675e7b827a5368163de63bb73f25c0"
     },
     {
       "ref": "proof/VELDO-0099/baseline-driven.json",
@@ -122,11 +131,11 @@
     },
     {
       "ref": "proof/VELDO-0099/drive.py",
-      "sha256": "8e1ba8854ce14ca33f37098e9fe2da041514b75ad7f3f7b1d2e6a7d38c8917e9"
+      "sha256": "1be4e0ee4ced6410e609ec500c450b4d1003d8a9aa5c0cfbd5d4a5c828ee5558"
     },
     {
       "ref": "proof/VELDO-0099/driven.json",
-      "sha256": "47efca796b76c72a6f78f97db2cea7d72ce554ae2a5ce4cd9a46f01b9fd5bf3e"
+      "sha256": "3dc7d5e0aeb844c16565d92e99c954f22d3f97199346f8aaf07e1ab7f34085c5"
     },
     {
       "ref": "proof/VELDO-0099/gate-final.log",
@@ -214,7 +223,7 @@
     },
     {
       "ref": "proof/VELDO-0099/log-redactions.json",
-      "sha256": "03acc44ae6196ad4e57d99a9a434fda00d2b7f4555f71bb75c17a08e899acc4e"
+      "sha256": "36152be3ba1f2e9f09ff4ff9f2b2a1fa520cbdb543d18b16e9710e729d0039d5"
     },
     {
       "ref": "proof/VELDO-0099/ready-check.txt",
@@ -223,6 +232,18 @@
     {
       "ref": "proof/VELDO-0099/sibling-search.txt",
       "sha256": "f951d36cbb25f4d50b1e6629d60438b58e9fbee66097bb7220028bfc0d1e9f21"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-seven-linked.log",
+      "sha256": "c79c6cb77d910ad0008cec47e95ba3313a4d0c2c547e40c59a74de879eb27083"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-seven-primary.log",
+      "sha256": "1bb79e28f7da93580aade0c87f2104a8ce0dd3c83eda229377edacce88004c7f"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-seven-linked-first-red.log",
+      "sha256": "7426e5380d06470f2acf1d9fa41d95707e6760b11194a756813799fe0d96fb6e"
     }
   ],
   "rollback": "Revert the suite changes and regenerate the index; retain historical proof records.",

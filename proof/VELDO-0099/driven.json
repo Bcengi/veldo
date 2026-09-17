@@ -1,6 +1,6 @@
 {
-  "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
-  "suite_sha256": "13acb0fcf6834d1686481ce3f72a4f9d66eb1a74aaa5149d3b86b29008a24416",
+  "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+  "suite_sha256": "d2918beddbb801e166e65185e3a17403fde7d9280fae0e82f59fcbff4889a7e8",
   "suite_unchanged": true,
   "layout_environment": "Empty HOME and XDG_CONFIG_HOME; system/global git config disabled; no identity in fixture repo or environment",
   "description": "Paired mutation controls, not a selected-suite gate claim",
@@ -388,7 +388,7 @@
     {
       "case": "review_control",
       "mutation": null,
-      "passed": 17,
+      "passed": 19,
       "failed": 0,
       "rows": [
         {
@@ -412,11 +412,19 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -464,7 +472,7 @@
     {
       "case": "restore_common_allowlist",
       "mutation": "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name in {'objects', 'refs', 'packed-refs', 'shallow', 'HEAD', 'veldo', 'index', 'config', 'config.worktree'} or p.name.startswith('sharedindex.')]",
-      "passed": 15,
+      "passed": 17,
       "failed": 2,
       "rows": [
         {
@@ -488,11 +496,19 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -540,7 +556,7 @@
     {
       "case": "restore_timestamps",
       "mutation": "def _iar_inventory(root, *, entries=None):\n    result = original_inventory(root, entries=entries)\n    return {k: (v, (Path(root) / k).lstat().st_mtime_ns) for k, v in result.items()}",
-      "passed": 15,
+      "passed": 17,
       "failed": 2,
       "rows": [
         {
@@ -564,11 +580,19 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": false
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -616,7 +640,7 @@
     {
       "case": "quotes_as_filename_characters",
       "mutation": "def _iar_resolve_alternates(original, copied):\n    path = copied / 'info/alternates'\n    if path.exists():\n        _iar_write_alternates(path, [(original / line).resolve() for line in path.read_text().splitlines()])",
-      "passed": 13,
+      "passed": 15,
       "failed": 4,
       "rows": [
         {
@@ -640,11 +664,19 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -692,7 +724,7 @@
     {
       "case": "omit_copied_ledger",
       "mutation": "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name != 'veldo']",
-      "passed": 15,
+      "passed": 17,
       "failed": 2,
       "rows": [
         {
@@ -716,11 +748,19 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -768,7 +808,7 @@
     {
       "case": "skip_config_normalization",
       "mutation": "def _iar_normalize_config(common, private): pass",
-      "passed": 15,
+      "passed": 17,
       "failed": 2,
       "rows": [
         {
@@ -792,11 +832,19 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -844,7 +892,7 @@
     {
       "case": "copy_sibling_state",
       "mutation": "def _iar_common_entries(common, primary): return list(common.iterdir())",
-      "passed": 13,
+      "passed": 15,
       "failed": 4,
       "rows": [
         {
@@ -868,11 +916,19 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -920,7 +976,7 @@
     {
       "case": "raise_on_vanished_entry",
       "mutation": "def _iar_copy_entry(source, target, *, skip=()):\n    if source.is_dir():\n        target.mkdir(parents=True, exist_ok=True)\n        for child in source.iterdir(): _iar_copy_entry(child, target / child.name)\n        _iar_sh.copystat(source, target)\n    else: _iar_sh.copy2(source, target)",
-      "passed": 16,
+      "passed": 18,
       "failed": 1,
       "rows": [
         {
@@ -944,11 +1000,103 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: primary copied claims and runs retain bytes and claim deletion is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked copied claims and runs retain bytes and claim deletion is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: primary redirected config and alternates are isolated and original edit survives checkout-index",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked redirected config and alternates are isolated and original edit survives checkout-index",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: primary relative C-quoted alternate has objects and copy fidelity",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: primary absolute C-quoted alternate has objects and copy fidelity",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked relative C-quoted alternate has objects and copy fidelity",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked absolute C-quoted alternate has objects and copy fidelity",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "omit_sparse_checkout",
+      "mutation": "def _iar_private_paths(private): return [p for p in original_private_paths(private) if p.name != 'sparse-checkout']",
+      "passed": 18,
+      "failed": 1,
+      "rows": [
+        {
+          "label": "VELDO-0099 AC3: primary 50 copies during sibling staging have zero raises and no sibling state",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked 50 copies during sibling staging have zero raises and no sibling state",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: an entry vanishing after enumeration does not raise",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: primary split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -996,7 +1144,7 @@
     {
       "case": "omit_sharedindex",
       "mutation": "def _iar_live_inventory(root):\n    result = original_live_inventory(root)\n    if _iar_git_dirs(root)[0] == _iar_git_dirs(root)[1]:\n        result = {k: v for k, v in result.items() if not k.startswith('git-dir/sharedindex.')}\n    return result",
-      "passed": 16,
+      "passed": 18,
       "failed": 1,
       "rows": [
         {
@@ -1020,11 +1168,19 @@
           "passed": false
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -1072,7 +1228,7 @@
     {
       "case": "skip_alternate_rewrite",
       "mutation": "def _iar_copy_alternates(objects, sandbox, copied=None): pass",
-      "passed": 11,
+      "passed": 13,
       "failed": 6,
       "rows": [
         {
@@ -1096,11 +1252,19 @@
           "passed": true
         },
         {
+          "label": "VELDO-0099 AC3: primary sparse-checkout rule changes are observed",
+          "passed": true
+        },
+        {
           "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC3: linked sparse-checkout rule changes are observed",
           "passed": true
         },
         {
@@ -1226,6 +1390,94 @@
         {
           "label": "VELDO-0099 AC1: linked nested-gitmodules AC4 stand-down is recorded, printed, and never passed",
           "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked nested-gitmodules original edit survives with no copy or nested git operations",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "restore_nested_early_return",
+      "mutation": "def _iar_ac4(): _iar_ac4_inventory()",
+      "passed": 10,
+      "failed": 10,
+      "rows": [
+        {
+          "label": "VELDO-0099 AC1: primary submodule AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: primary submodule original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: primary pointer-only AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: primary pointer-only original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: primary directory AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: primary directory original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: primary gitmodules-only AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: primary gitmodules-only original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: primary nested-gitmodules AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: primary nested-gitmodules original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked submodule AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: linked submodule original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked pointer-only AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: linked pointer-only original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked directory AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: linked directory original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked gitmodules-only AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0099 AC1: linked gitmodules-only original edit survives with no copy or nested git operations",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0099 AC1: linked nested-gitmodules AC4 stand-down is recorded, printed, and never passed",
+          "passed": false
         },
         {
           "label": "VELDO-0099 AC1: linked nested-gitmodules original edit survives with no copy or nested git operations",
@@ -1360,7 +1612,7 @@
       "mutation": "Read ROOT config user.name and user.email before fixture commit",
       "rows": [
         {
-          "label": "VELDO-0007 VELDO-0099 checkout shape controls: the block ran to completion rather than raising (CalledProcessError(1, ['git', '-C', '/tmp/veldo-0099-no-identity-yopn2om4/repo', 'config', 'user.name']))",
+          "label": "VELDO-0007 VELDO-0099 checkout shape controls: the block ran to completion rather than raising (CalledProcessError(1, ['git', '-C', '/tmp/veldo-0099-no-identity-qjynkqs_/repo', 'config', 'user.name']))",
           "passed": false
         }
       ]
@@ -1370,8 +1622,10 @@
     {
       "shape": "primary",
       "case": "control",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -1436,8 +1690,10 @@
     {
       "shape": "primary",
       "case": "restore_directory_shape",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -1502,8 +1758,10 @@
     {
       "shape": "primary",
       "case": "sibling_staging",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -1568,8 +1826,10 @@
     {
       "shape": "primary",
       "case": "sibling_staging_shared_live",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -1634,8 +1894,10 @@
     {
       "shape": "primary",
       "case": "sandbox_common_write",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -1700,8 +1962,10 @@
     {
       "shape": "primary",
       "case": "redirected_config",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -1766,8 +2030,10 @@
     {
       "shape": "primary",
       "case": "sandbox_claim_delete",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -1832,8 +2098,10 @@
     {
       "shape": "primary",
       "case": "sibling_heartbeat",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -1898,8 +2166,10 @@
     {
       "shape": "primary",
       "case": "sibling_heartbeat_shared_live",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -1964,8 +2234,10 @@
     {
       "shape": "primary",
       "case": "split_index",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -2030,8 +2302,10 @@
     {
       "shape": "primary",
       "case": "sandbox_reflog_delete",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -2096,8 +2370,10 @@
     {
       "shape": "primary",
       "case": "sandbox_random_delete",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
-      "random_deleted_path": "objects/43/1cf6e12cf4198fb66cd933c756f54fa8b6bf40",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": "objects/88/1093cec24b58cbfa7752b9afa76330fac75e15",
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -2110,7 +2386,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/objects/43/1cf6e12cf4198fb66cd933c756f54fa8b6bf40', 'git-dir/objects/43/1cf6e12cf4198fb66cd933c756f54fa8b6bf40', 'tree/.git/objects/43/1cf6e12cf4198fb66cd933c756f54fa8b6bf40']",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/objects/88/1093cec24b58cbfa7752b9afa76330fac75e15', 'git-dir/objects/88/1093cec24b58cbfa7752b9afa76330fac75e15', 'tree/.git/objects/88/1093cec24b58cbfa7752b9afa76330fac75e15']",
           "passed": false
         },
         {
@@ -2162,8 +2438,10 @@
     {
       "shape": "primary",
       "case": "split_index_reflog_delete",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -2228,8 +2506,296 @@
     {
       "shape": "primary",
       "case": "branch_alternates",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
+      "passed": 14,
+      "failed": 0,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: ' stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\\n      stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)\\ninstall-and-run: pass'",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "shape": "primary",
+      "case": "nested_only",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [
+        [
+          "VELDO-0007",
+          "AC4",
+          "nested repository present; the copied observation is not self-contained"
+        ]
+      ],
+      "output": "   VELDO-0007: AC4 STANDS DOWN, recorded rather than passed: nested repository present; the copied observation is not self-contained.\n",
+      "passed": 8,
+      "failed": 0,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "shape": "primary",
+      "case": "nested_detached",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [
+        [
+          "VELDO-0007",
+          "AC4",
+          "nested repository present; the copied observation is not self-contained"
+        ]
+      ],
+      "output": "   VELDO-0007: AC4 STANDS DOWN, recorded rather than passed: nested repository present; the copied observation is not self-contained.\n",
+      "passed": 6,
+      "failed": 2,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'start_new_session', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'start_new_session', 'text', 'timeout']]",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'start_new_session', 'text', 'timeout']]",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "shape": "primary",
+      "case": "nested_network",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [
+        [
+          "VELDO-0007",
+          "AC4",
+          "nested repository present; the copied observation is not self-contained"
+        ]
+      ],
+      "output": "   VELDO-0007: AC4 STANDS DOWN, recorded rather than passed: nested repository present; the copied observation is not self-contained.\n",
+      "passed": 7,
+      "failed": 1,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "shape": "primary",
+      "case": "sparse_rules",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
+      "passed": 13,
+      "failed": 1,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: ' stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\\n      stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)\\ninstall-and-run: pass'",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-dir/info/sparse-checkout']",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "shape": "primary",
+      "case": "sparse_rules_omitted",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -2294,8 +2860,10 @@
     {
       "shape": "linked",
       "case": "control",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -2360,8 +2928,10 @@
     {
       "shape": "linked",
       "case": "restore_directory_shape",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -2426,8 +2996,10 @@
     {
       "shape": "linked",
       "case": "sibling_staging",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -2492,8 +3064,10 @@
     {
       "shape": "linked",
       "case": "sibling_staging_shared_live",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -2558,8 +3132,10 @@
     {
       "shape": "linked",
       "case": "sandbox_common_write",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -2624,8 +3200,10 @@
     {
       "shape": "linked",
       "case": "redirected_config",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -2690,8 +3268,10 @@
     {
       "shape": "linked",
       "case": "sandbox_claim_delete",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -2756,8 +3336,10 @@
     {
       "shape": "linked",
       "case": "sibling_heartbeat",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -2822,8 +3404,10 @@
     {
       "shape": "linked",
       "case": "sibling_heartbeat_shared_live",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -2888,8 +3472,10 @@
     {
       "shape": "linked",
       "case": "split_index",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -2954,8 +3540,10 @@
     {
       "shape": "linked",
       "case": "sandbox_reflog_delete",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -3020,8 +3608,10 @@
     {
       "shape": "linked",
       "case": "sandbox_random_delete",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
-      "random_deleted_path": "objects/42/b5ce3eba60ef8924d9d409d6e01b0c2bf05cf7",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": "objects/a5/b6d17af81e527af91245817159f70181f440e0",
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -3034,7 +3624,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/objects/42/b5ce3eba60ef8924d9d409d6e01b0c2bf05cf7']",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/objects/a5/b6d17af81e527af91245817159f70181f440e0']",
           "passed": false
         },
         {
@@ -3086,8 +3676,10 @@
     {
       "shape": "linked",
       "case": "split_index_reflog_delete",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 13,
       "failed": 1,
       "rows": [
@@ -3152,8 +3744,10 @@
     {
       "shape": "linked",
       "case": "branch_alternates",
-      "commit": "f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
       "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
       "passed": 14,
       "failed": 0,
       "rows": [
@@ -3180,6 +3774,292 @@
         {
           "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "shape": "linked",
+      "case": "nested_only",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [
+        [
+          "VELDO-0007",
+          "AC4",
+          "nested repository present; the copied observation is not self-contained"
+        ]
+      ],
+      "output": "   VELDO-0007: AC4 STANDS DOWN, recorded rather than passed: nested repository present; the copied observation is not self-contained.\n",
+      "passed": 8,
+      "failed": 0,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "shape": "linked",
+      "case": "nested_detached",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [
+        [
+          "VELDO-0007",
+          "AC4",
+          "nested repository present; the copied observation is not self-contained"
+        ]
+      ],
+      "output": "   VELDO-0007: AC4 STANDS DOWN, recorded rather than passed: nested repository present; the copied observation is not self-contained.\n",
+      "passed": 6,
+      "failed": 2,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'start_new_session', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'start_new_session', 'text', 'timeout']]",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'start_new_session', 'text', 'timeout']]",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "shape": "linked",
+      "case": "nested_network",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [
+        [
+          "VELDO-0007",
+          "AC4",
+          "nested repository present; the copied observation is not self-contained"
+        ]
+      ],
+      "output": "   VELDO-0007: AC4 STANDS DOWN, recorded rather than passed: nested repository present; the copied observation is not self-contained.\n",
+      "passed": 7,
+      "failed": 1,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "shape": "linked",
+      "case": "sparse_rules",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
+      "passed": 13,
+      "failed": 1,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: ' stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\\n      stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)\\ninstall-and-run: pass'",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-dir/info/sparse-checkout']",
+          "passed": false
+        },
+        {
+          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "shape": "linked",
+      "case": "sparse_rules_omitted",
+      "commit": "8be2b35301a64ef5602a5f9f4e3a207dbde5f717",
+      "random_deleted_path": null,
+      "stand_down": [],
+      "output": "",
+      "passed": 13,
+      "failed": 1,
+      "rows": [
+        {
+          "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: ' stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\\n      stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)\\ninstall-and-run: pass'",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
+          "passed": true
+        },
+        {
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-dir/info/sparse-checkout']",
+          "passed": false
         },
         {
           "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
