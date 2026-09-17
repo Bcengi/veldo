@@ -1,0 +1,11 @@
+[
+  {
+    "file": "proof/VELDO-0017/gate-implementation.log",
+    "lines": [
+      46
+    ],
+    "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture (the guardrail's own forbidden-token fixture). No gate result or failure row is removed. The checkout's absolute path is replaced by <repo> throughout.",
+    "raw_sha256": "95f2046ec3510962f03d9d3942b184d6d051dc6f190222e1a5bc715fb200c379",
+    "stored_sha256": "738fc981cca52c6f75abe6bd5df14f5cf1c4eb190dcb4f0bcb787d1c2b130796"
+  }
+]

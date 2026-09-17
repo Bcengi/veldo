@@ -1,0 +1,94 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0017",
+  "commit": "364be283c3c35de84d9d48acac240bfac18ad382",
+  "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
+  "produced_at": "2026-09-17T12:32:12Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0017/driven.json",
+          "detail": "6 rows (1 driven): ENTITY_TYPES equals the sixteen-type universe in both directions and every fixture passes the envelope; removing each identity field from each fixture is refused naming the field (96 removals); repository scoping, malformed uuid, non-positive concurrency version, malformed provenance and path- or principal-like aliases refuse by name; a concurrency update bumps by one and leaves scope revision and alias alone, a scope change moves the revision with a concurrency bump and keeps the alias, and a store taking the plan revision as concurrency version cannot bump on a scope-free transaction. DRIVEN: the conflation refusal removed from a module copy lets a record whose concurrency version is taken from its scope revision pass (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0017/gate-implementation.log",
+          "detail": "Complete canonical gate at 364be283c3c35de84d9d48acac240bfac18ad382 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5192 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0017/driven.json",
+          "detail": "5 rows (1 driven): six vocabularies equal R05, R06, R11, R13, R18, R65 with their exact state sets; the registry closes (edges between declared states, none out of a terminal state, every non-terminal state with an exit, every edge with a predicate); over all 414 Cartesian pairs every declared edge is allowed with its predicates, refused naming each predicate absent in turn (a truthy string is not a receipt), every undeclared edge refuses and every terminal source refuses as terminal; RAW cannot reach ACTIVE, ADMITTED or PRIORITIZED directly; a terminal record accepts only appended links. DRIVEN: RAW -> ACTIVE declared in a module copy is allowed (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0017/gate-implementation.log",
+          "detail": "Complete canonical gate at 364be283c3c35de84d9d48acac240bfac18ad382 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5192 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0017/driven.json",
+          "detail": "6 rows (1 driven): the six relations each declare exactly one owner and a well-formed graph has no problem; zero owners, two backlog items, a dangling owner, a malformed actor, a path-like primary specification and two active units for one admitted revision refuse by name while a terminal second unit does not; a unit reached by two projects through two items is refused as owned by two projects; unchanged-scope retry after a reconciled attempt is allowed and changed scope, unreconciled attempt, reused attempt uuid and a different unit refuse; a transfer with a person's receipt and a concurrency bump is allowed and no receipt, a machine authorizer, moved admission authority and no bump refuse. DRIVEN: two owners per unit plus the two-projects rule removed lets a second project own the unit (the declared falsifier), with the intermediate mutant showing which rule still refused."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0017/gate-implementation.log",
+          "detail": "Complete canonical gate at 364be283c3c35de84d9d48acac240bfac18ad382 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5192 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0017/driven.json",
+          "detail": "6 rows (1 driven): every historical WARP, VELDO and PLAN identifier in specs/ and plans/ (a population over 300, never a pinned count) passes the alias rules and is carried byte for byte as the alias of its envelope with the uuid as identity and a repository-qualified form; path-like and principal-like aliases refuse and the envelope refuses to wrap one; admission calls the canonical validator before the artifact write (order recorded by a spy), refuses a bad id with the write never called, and the default validator gives claim.unit_id_problem's answer over good and bad ids; the module names unit_id_problem and spells no second copy of the rules. DRIVEN: the check skipped in a module copy writes a bad id (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0017/gate-implementation.log",
+          "detail": "Complete canonical gate at 364be283c3c35de84d9d48acac240bfac18ad382 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5192 passed, 0 failed, every required check passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "364be283c3c35de84d9d48acac240bfac18ad382",
+      "ref": "proof/VELDO-0017/gate-implementation.log",
+      "detail": "GATE GREEN; selftest 5192 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0017/driven.json",
+    "proof/VELDO-0017/drive.py",
+    "proof/VELDO-0017/gate-implementation.log",
+    "proof/VELDO-0017/log-redactions.json",
+    "proof/VELDO-0017/README.md"
+  ],
+  "rollback": "Revert the entity contract organ, its capability and scaffold registrations and suite 30 through the ordinary reviewed path (a revert commit, never a force). The module is pure and persists nothing, so there is no data to migrate; the store, scheduler and alias counter that will consume it are later packages.",
+  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here."
+}

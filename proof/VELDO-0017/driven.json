@@ -1,0 +1,156 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0017",
+  "commit": "364be283c3c35de84d9d48acac240bfac18ad382",
+  "taken_at": "2026-09-17T12:32:12Z",
+  "fragment": "scripts/suites/30_veldo_0017_entity_lifecycle.py",
+  "fragment_sha256": "ce880e561f7ba7dcf586bfdb99eb7be615f56b15a4d0c0d8fd59097ff7ee5f01",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/entity_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the historical alias corpus is read from specs/ and plans/ as a population.",
+  "rows_total": 23,
+  "rows_passed": 23,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0017 AC1 entity-schema/version-separation DRIVEN (the declared falsifier): with the conflation refusal removed, a record whose concurrency version is taken from its scope revision passes the envelope, so the row reds; unmutated it is refused",
+    "VELDO-0017 AC2 lifecycle/backlog-direct-execution DRIVEN (the declared falsifier): with RAW -> ACTIVE declared in a copy, the transition is allowed, so the row reds; unmutated it is refused as undeclared",
+    "VELDO-0017 AC3 ownership/duplicate-project DRIVEN (the declared falsifier): with two owners per unit declared the cardinality refusal disappears and only the two-projects rule still refuses; with that rule removed too the second project owns the unit, so the row reds; unmutated both refuse",
+    "VELDO-0017 AC4 identity/canonical-unit-validation DRIVEN (the declared falsifier): with the check skipped a bad id is written, so the row reds; unmutated the write never happens"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "entity-schema/version-separation DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "lifecycle/backlog-direct-execution DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "ownership/duplicate-project DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC4": {
+      "row_contains": "identity/canonical-unit-validation DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 6,
+      "passed": 6,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 5,
+      "passed": 5,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 6,
+      "passed": 6,
+      "driven": 1
+    },
+    "AC4": {
+      "rows": 6,
+      "passed": 6,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0017 AC1 entity-schema/registry: the entity type registry equals the schema universe the cited clauses name (sixteen types) in both directions, and a valid fixture of every type passes the envelope",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC1 entity-schema/required-fields: removing each identity field from each of the sixteen fixtures in turn is refused naming the field (96 of 96 removals)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC1 entity-schema/envelope: a repository-scoped type without repository_uuid, a malformed uuid, a non-positive concurrency version, a provenance missing created_by, and a path-like or principal-like alias are each refused by name; an unscoped type needs no repository uuid",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC1 entity-schema/version-separation: a concurrency update bumps concurrency_version by exactly one and leaves the scope revision and alias alone; a scope change moves the scope revision by one WITH a concurrency bump and keeps the alias; a concurrency update that also moved the scope revision, an update that did not bump, a scope change that reused a different alias, and a record whose concurrency version is taken from its scope revision are each refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC1 entity-schema/version-separation: a store that uses the plan revision as the concurrency version cannot bump on a transaction that revises no scope, and that update is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC1 entity-schema/version-separation DRIVEN (the declared falsifier): with the conflation refusal removed, a record whose concurrency version is taken from its scope revision passes the envelope, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC2 lifecycle/registry: the six vocabularies are exactly R05, R06, R11, R13, R18 and R65 with the state sets those clauses spell (assignment carrying its declined, expired and canceled outcomes), and the registry closes: every edge between declared states, no edge out of a terminal state, every non-terminal state with an exit, every edge with a predicate (problems: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC2 lifecycle/universe: over all 414 Cartesian pairs of the six vocabularies every declared edge is allowed with its predicates, refused naming each predicate absent in turn (a truthy string is not a receipt), every undeclared edge refuses, and every edge out of a terminal state refuses as terminal (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC2 lifecycle/backlog-direct-execution: RAW -> ACTIVE is not a declared transition (no dispatch from intake, R11), nor RAW -> ADMITTED, PREPARED -> PRIORITIZED or ADMITTED -> ACTIVE; the declared path is RAW -> PREPARED -> AWAITING_GROOMING -> ADMITTED -> PRIORITIZED -> ACTIVE",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC2 lifecycle/backlog-direct-execution DRIVEN (the declared falsifier): with RAW -> ACTIVE declared in a copy, the transition is allowed, so the row reds; unmutated it is refused as undeclared",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC2 lifecycle/terminal-history: a record in a terminal state may gain an appended link, and any other change (a rewritten field, a state change, a change that appends nothing) is refused by field name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/registry: the cardinality registry covers project-objective, objective-item, item-unit, unit-primary-specification, actor-assignment and unit-attempt, each with exactly one owner, and a well-formed graph has no problem ([])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/cardinality: a unit with zero owners, a unit with two backlog items, a unit whose item does not exist, an assignment with a malformed actor, a unit with a path-like primary specification alias, and two active units for one admitted specification revision are each refused by name; a second unit that is terminal is not a duplicate",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/duplicate-project: a unit reached by two projects through two backlog items is refused as owned by two projects (R04), on top of its duplicate-owner refusal",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/duplicate-project DRIVEN (the declared falsifier): with two owners per unit declared the cardinality refusal disappears and only the two-projects rule still refuses; with that rule removed too the second project owns the unit, so the row reds; unmutated both refuse",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/retry: an unchanged-scope retry after a reconciled attempt is a new attempt under the same unit; a changed scope, an unreconciled previous attempt, a reused attempt uuid and a different unit are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/transfer: an ownership transfer with an authorizing person's receipt and a concurrency bump is allowed; no receipt, a machine authorizer, a transfer that also moved admission_authority, and a transfer without a concurrency bump are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC4 identity/historical-aliases: every WARP, VELDO and PLAN identifier this repository carries (318, a population, never a pinned count) passes the alias rules and is carried BYTE FOR BYTE as the alias of its envelope, qualified by the repository outside it, with the uuid as the identity",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC4 identity/alias-rules: an alias is never a filesystem path (a separator, a dot-relative form, whitespace, a colon) nor an authentication subject (an at-sign, a principal prefix), and the envelope refuses to wrap one",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC4 identity/alias-rules: wrapping a path-like alias in an envelope raises",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC4 identity/canonical-unit-validation: admission calls the canonical validator BEFORE the artifact write for a good id (order recorded), and for a bad id refuses naming the problem with the write never called; the default validator IS claim.unit_id_problem (same answer over good and bad ids)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC4 identity/canonical-unit-validation: the contract module spells no second copy of the identifier rules - it names claim.unit_id_problem and never ledger_basename or the allowed-character set",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC4 identity/canonical-unit-validation DRIVEN (the declared falsifier): with the check skipped a bad id is written, so the row reds; unmutated the write never happens",
+      "passed": true
+    }
+  ]
+}
