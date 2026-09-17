@@ -27,17 +27,24 @@ acceptance_criteria:
     text: >
       Claim: The install-and-run write-scope observation launches the stage under an
       unprivileged Linux Landlock ruleset before any stage code executes. Write access
-      is granted only beneath the sandbox's working-tree copy, HOME, and TMPDIR;
-      read and execute access elsewhere remain subject to existing host permissions.
+      is granted only beneath the sandbox's working-tree copy, HOME, and TMPDIR,
+      plus the device nodes enumerated in Notes through file-specific rules;
+      never grant the /dev directory. Writes to every other path under /dev are denied.
+      Read and execute access elsewhere remain subject to existing host permissions.
       A prohibited write-open fails at the syscall with EACCES, and its propagated
       stage failure makes the confinement row fail. Set: The observed stage and all
       descendants it launches, for the filesystem data operations and ABI coverage
       declared in Notes, in primary and linked checkout shapes. Completeness: Construct
-      the ruleset with all required handled write rights denied by default and exactly
-      three root grants; record successful no_new_privs and restrict_self before exec.
+      the ruleset with all required handled write rights denied by default, the three
+      fixture root grants, and only the enumerated device file grants. Assert the
+      handled-rights mask against the full data-write set for the detected ABI in
+      Notes rather than inferring coverage from passing probes. Record successful
+      no_new_privs and restrict_self before exec.
       Drive writes beneath each allowed root, an outside read, and outside writes by
-      both the stage and a spawned child. Record the actual ABI and rights mask; do
-      not infer support from a kernel version string. Setup failure after a supported
+      both the stage and a spawned child, plus an EACCES write-open control for
+      /dev/zero and the destructive-operation controls in AC2. Record the actual ABI
+      and rights mask; do not infer support from a kernel version string.
+      Setup failure after a supported
       probe fails the row and never launches an unrestricted substitute. Falsifier:
       Bypass restrict_self and the named confinement-enforcement row must fail because
       the outside-write control succeeds instead of returning EACCES.
@@ -57,16 +64,27 @@ acceptance_criteria:
       caller HOME, and primary and linked repositories at the same commit. Resolve
       original private and common git paths before copying. Exercise direct absolute
       paths, a symlink from an allowed root to an external sentinel, and an attempted
-      write followed by restoration. Record EACCES, nonzero stage exit, and the named
-      outside-write row failing for every mutant; unchanged sentinels are corroboration,
-      not the detector. An unrestricted disposable control must demonstrate that each
-      target is otherwise writable. The clean confined control must exit zero, report
+      write followed by restoration. In both shapes also drive separate denial runs
+      for unlink, rmdir, same-directory rename, cross-directory rename, hard link,
+      and mkdir outside the allowed roots, using the disposable fixtures in Notes.
+      Record EACCES for write-open and the actual denial errno for each operation
+      (including EXDEV for rename/link where returned), nonzero stage exit, and the
+      named outside-write row failing for every mutant; unchanged sentinels are
+      corroboration, not the detector. An unrestricted disposable control must
+      demonstrate that each operation can otherwise succeed. For each destructive
+      operation, pair its denial with a launcher mutant omitting the corresponding
+      handled right as specified in Notes: the operation must succeed and the named
+      denial-control row must fail. The clean confined control must exit zero, report
       install-and-run pass, install more than ten files, and run the nested gate.
       Falsifier: Add the disposable external target parent to the write grants and
-      the denied-mutation matrix row must fail when its outside write succeeds.
+      the denied-mutation matrix row must fail when its outside write succeeds;
+      omit each destructive control's handled right and its denial-control row must
+      fail when that operation succeeds.
     falsified_by: >
       Add the disposable external target parent to the write grants and the
-      denied-mutation matrix row must fail when its outside write succeeds.
+      denied-mutation matrix row must fail when its outside write succeeds; omit
+      each destructive control's handled right and its denial-control row must
+      fail when that operation succeeds.
   - id: AC3
     text: >
       Claim: A host without usable Landlock records the confinement row as STANDS DOWN,
@@ -166,14 +184,35 @@ safety checks. Confinement begins after trusted copy preparation, which remains
 outside the stage's claim. A bad copy can still corrupt state during preparation;
 this specification does not certify the copier as kernel-confined.
 
+The complete device write exception set is:
+
+| Device | File-specific grant | Reason |
+|---|---|---|
+| /dev/null | WRITE_FILE | The publisher's git ls-files opens it for reading and writing, and the nested gate opens it for shell output redirections. |
+
+The independent review's disposable clean run passed with this single device
+exception. No other device write grant is justified. Reads remain governed by host
+permissions. Grant the device itself, never /dev or an ancestor, and require the
+clean compose-install-gate run to pass with exactly this exception set. A write-open
+to /dev/zero must fail with EACCES under confinement and succeed in an unrestricted
+control; this harmless sink needs no persistent data mutation. Any other path under
+/dev remains outside the write grants. A mutant granting WRITE_FILE on /dev must
+make this denial-control row fail because the /dev/zero write-open succeeds.
+
 For supported runs, the copy remains only isolation, never the observation surface
 for confinement. Inventories may corroborate fixture integrity or enforce separate
 in-sandbox immutability claims. They cannot decide that no outside write occurred.
 The AC3 fallback deliberately retains the old inventory observation and its limits.
 
-The required filesystem data rights cover write-open, creation, removal, and
-rename/link operations, plus truncation where supported. Apply no_new_privs and
-Landlock in a fresh single-threaded launcher before exec; descendants inherit it.
+The full filesystem data-write set is LANDLOCK_ACCESS_FS_WRITE_FILE, REMOVE_DIR,
+REMOVE_FILE, MAKE_CHAR, MAKE_DIR, MAKE_REG, MAKE_SOCK, MAKE_FIFO, MAKE_BLOCK, and
+MAKE_SYM (all names use the LANDLOCK_ACCESS_FS_ prefix), plus REFER on ABI 2 or
+later and TRUNCATE on ABI 3 or later. Assert the launcher's handled-rights mask
+against this enumerated set for the detected ABI, independently of its grant mask
+and of observed denials. These rights cover write-open, creation, removal, and
+rename/link operations, plus truncation where supported. Device ioctl operations
+are outside this data-write claim. Apply no_new_privs and Landlock in a fresh
+single-threaded launcher before exec; descendants inherit it.
 Reads and execution elsewhere are not newly restricted. These choices follow the
 [Linux 6.2 Landlock interface](https://docs.kernel.org/6.2/userspace-api/landlock.html).
 
@@ -188,6 +227,40 @@ is necessary for a truthful draft of the proposed 5.13 baseline.
 The [ABI documentation](https://docs.kernel.org/6.2/userspace-api/landlock.html#landlock-abi-versions)
 and [kernel support requirements](https://docs.kernel.org/userspace-api/landlock.html#kernel-support)
 define the capability boundary.
+
+Destructive controls use fresh external files and directories owned by the fixture,
+including source-file and claim-record sentinels for unlink. Prepare empty
+directories for rmdir and absent destination names for rename, link, and mkdir.
+Keep rename and hard-link operands on the same filesystem so an unrestricted
+success excludes an unrelated EXDEV. Run every operation independently in both
+checkout shapes; a denial of one operation must not skip any other operation.
+
+| Denial control outside the allowed roots | Handled right omitted by its launcher mutant |
+|---|---|
+| Unlink a regular file | REMOVE_FILE |
+| Remove an empty directory with rmdir | REMOVE_DIR |
+| Rename a regular file within one directory | REMOVE_FILE |
+| Rename a regular file across directories | REMOVE_FILE |
+| Hard-link a regular file to an absent name | MAKE_REG |
+| Create a directory with mkdir | MAKE_DIR |
+
+First run each control under the exact AC1 grants. Then isolate the table's right
+in a separate sensitivity pair: narrowly grant other prerequisites on disposable
+external fixture directories only, keeping the tested right denied. For rename,
+grant MAKE_REG at the destination; for cross-directory rename also grant REFER at
+both parents and keep their other rights equal to avoid a gain of access. Use a
+same-directory hard link to isolate MAKE_REG. The handled-right variant must deny;
+its otherwise identical mutant removes only the tested right from the handled mask
+and from any rule masks and must succeed, making the denial-control row fail.
+These auxiliary grants belong only to the sensitivity controls, never the clean
+stage or the AC1 confinement launcher. Record both masks, grants, errno, and result.
+
+Accept EACCES for the destructive denials and EXDEV for rename/link when returned
+by Landlock, recording the actual errno; any other error is a failed control.
+REFER is exceptional: omitting it still denies reparenting, so omission alone is
+not a success mutant for cross-directory rename. The mask assertion covers REFER
+explicitly, while the isolated REMOVE_FILE mutant proves rename-control sensitivity.
+See the kernel's [filesystem rights](https://docs.kernel.org/userspace-api/landlock.html#filesystem-flags).
 
 Use the existing suite's exact recorded-stand-down wording, with a distinct row:
 
@@ -218,8 +291,9 @@ zero: the write remains prevented, but that suppressed attempt is not reported b
 exit status alone. The required mutants propagate their denial and must fail the
 stage; no claim is made to detect every caught attempt. Rename/link refusals may
 use EXDEV rather than EACCES, so exact EACCES assertions target write-open probes.
-Writes inside the three allowed roots are permitted by confinement; unchanged
-repository or HOME contents remain separate assertions. Other suite invocations,
+Writes inside the three allowed roots and the enumerated device write exception
+are permitted by confinement; unchanged repository or HOME contents remain separate
+assertions. Other suite invocations,
 unconfined fallback runs, external processes, and interrupted-run cleanup are
 outside this confined observation's guarantee. Existing network and process rows
 remain active and retain their own, narrower meanings.
