@@ -1,6 +1,6 @@
 # VELDO-0016 proof
 
-Implementation commit: a970266. Gate GREEN there (selftest 5142 passed, 0 failed) in the plan-0019
+Implementation commit: 2dfb8b6. Gate GREEN there (selftest 5169 passed, 0 failed) in the plan-0019
 branch worktree. Author: Ava (Claude); Codex reviews only until 2026-09-22 by Dmitry's quota ruling, so
 this is the first Package A item written by the reviewer's counterpart and reviewed by Codex once.
 
@@ -29,7 +29,7 @@ seeded violation the suite drives.
 
 ## Driven
 
-`drive.py` records one run of the fragment as `driven.json`: 272 rows, 272 passed, 8 DRIVEN rows, the
+`drive.py` records one run of the fragment as `driven.json`: 299 rows, 299 passed, 8 DRIVEN rows, the
 four declared falsifiers among them, each applied to a copy and required to turn its named row red
 while the unmutated copy passes it.
 
@@ -44,3 +44,12 @@ second. Recorded once, attributed to the channel the answer arrived on.
 Suite 12's read-closure counts (25 roots over 11 patterns to 29 over 12, the policy line the loader
 reads, class OPENER); suite 01's area count (10 to 11); suite 07 accepts the contract validator's
 by-name refusal of an unknown budget kind, which the loader now reaches first.
+
+## Review
+
+Codex reviewed the branch at 97bb069 and found six reproducible problems (a checkpoint SQL guard
+satisfied by a token in a comment, a machine actor accepted as decider, a copied review counted
+twice, an unapproved contract making the exception effective, two validation paths still reading a
+broken contract as absent, traces hiding a refused contract). Each is fixed and pinned with the
+reviewer's reproduction in suite 29. The fixes carry no second Codex pass (one review per landing
+until 2026-09-22); the pinned reproductions are the check on them.
