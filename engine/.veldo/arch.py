@@ -110,6 +110,32 @@ def _is_pos_int(v):
     return isinstance(v, int) and not isinstance(v, bool) and v >= 1
 
 
+def _check_exceptions(rule, known_areas, where, name, fail):
+    """A pattern or invariant may carry `exceptions`: a list of scoped clauses, each naming the
+    declared AREA the rule does not bind, the policy BOUNDARY whose activation makes the clause
+    effective (activated_by, a decision-to-policy boundary id the policy contract registers), and
+    the text that says what applies there instead (VELDO-0016 AC2). Structural only: the clause
+    is refused when it names an area the contract does not declare or lacks a field; whether the
+    boundary is registered and ACTIVATED is the policy contract's question, never this file's, and
+    a clause here is never effective by being written."""
+    errs = 0
+    exceptions = rule.get("exceptions")
+    if exceptions is None:
+        return 0
+    if not isinstance(exceptions, list) or not exceptions:
+        return fail(name, "%s: exceptions must be a non-empty list of scoped clauses" % where)
+    for ex in exceptions:
+        if not isinstance(ex, dict):
+            errs += fail(name, "%s: each exception is a mapping with area, activated_by and text" % where)
+            continue
+        for field in ("area", "activated_by", "text"):
+            if not _is_str(ex.get(field)):
+                errs += fail(name, "%s: exception needs %s" % (where, field))
+        if _is_str(ex.get("area")) and ex["area"] not in known_areas:
+            errs += fail(name, "%s: exception area %r is not a declared area (referenced but absent)" % (where, ex["area"]))
+    return errs
+
+
 def _check_enforcement(value, where, name, fail):
     """Every mechanizable-or-review label is drawn from the closed vocabulary; a
     near-miss value would make a rule silently ungraded."""
@@ -190,6 +216,7 @@ def validate_contract(data, root, contract_path, fail):
                 errs += fail(name, "each %s entry needs an id and text" % singular)
                 continue
             errs += _check_enforcement(r.get("enforcement"), "%s %s" % (singular, r["id"]), name, fail)
+            errs += _check_exceptions(r, known_areas, "%s %s" % (singular, r["id"]), name, fail)
             seen.append(r["id"])
         for rid in sorted(set(seen)):
             if seen.count(rid) > 1:

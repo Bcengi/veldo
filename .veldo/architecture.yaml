@@ -10,10 +10,15 @@
 schema: veldo.arch/v1
 id: veldo
 title: The VELDO engine intended shape
-version: 1
-status: approved
-approved_by: dmitry
-approved_at: 2026-07-22
+# REVISION 2, PROPOSED BY VELDO-0016 (PLAN-0019 W1) on 2026-09-17: one new area, the governed
+# project runner, and one scoped exception clause on no_detached_processes naming it. Revision 1
+# was approved by dmitry on 2026-07-22. This revision leaves draft only by Dmitry's recorded
+# approval, at which point approved_by and approved_at return here; until then the contract is
+# a valid draft, every check still enforces it, and the exception is not effective (the policy
+# contract makes it effective only through the activation of the process_lifetime boundary,
+# never by this file being edited).
+version: 2
+status: draft
 
 areas:
   - id: contracts
@@ -58,6 +63,15 @@ areas:
     title: The documents and release manifests, what a reader learns the method from and what an adopter installs
     includes: ["docs/**", "plans/**", "packs/claude/.claude-plugin/**", ".claude-plugin/**"]
 
+  # ADDED 2026-09-17 (VELDO-0016, PLAN-0019 W1). The governed project runner: the modules that
+  # launch, contain, supervise, heartbeat, stop and retire autonomous workers under the R43/R44
+  # obligations (Package B implements them; Package D qualifies real engines). It is its own area
+  # because the exception clause below is scoped to it and to nothing else: the factory floor
+  # keeps the process invariant as written.
+  - id: project_runner
+    title: The governed project runner, worker lifetime and containment under explicit obligations
+    includes: [".veldo/project_runner*.py"]
+
 dependencies:
   enforcement: review
   # The intended layering: contracts is the foundation every area may build on.
@@ -75,6 +89,8 @@ dependencies:
     - {from: tracker, to: metrics}
     - {from: distribution, to: contracts}
     - {from: engine, to: contracts}
+    - {from: project_runner, to: contracts}
+    - {from: project_runner, to: fleet}
 
 patterns:
   - id: stdlib_only_enforcement
@@ -94,6 +110,14 @@ invariants:
   - id: no_detached_processes
     text: No module spawns a detached, headless, or background process for autonomous work; monitoring passes run in-session only.
     enforcement: review
+    # The scoped exception (VELDO-0016 AC2, Dmitry's ruling of 2026-09-16 that the floor's process
+    # rules do not bind the layer above it). It names the ONE area it applies to and the policy
+    # boundary whose activation makes it effective; writing it here activates nothing. Everywhere
+    # else the invariant keeps its text, and the lexical scan that polices fleet.py stays as it is.
+    exceptions:
+      - area: project_runner
+        activated_by: process_lifetime
+        text: The governed project runner launches, contains, supervises, heartbeats, stops and retires autonomous workers under the R43 and R44 obligations the policy contract registers (containment group per dispatch, hard memory, CPU-time and storage limits, exit identity, control-channel fencing, heartbeat and liveness deadline, stop escalation, proven-empty retirement); each obligation carries a registered real failure test before the profile is eligible.
   - id: adoption_safe_fail_closed
     text: A repository without an architecture contract is byte-identically unaffected by the shape checks; the moment a contract exists the checks fail closed.
     enforcement: mechanizable

@@ -23,7 +23,9 @@ across every contract state (absent, unreadable, malformed, invalid, valid) unde
 settings of the required flag, so an adapter that maps a broken contract to "no contract"
 is found by the product, not remembered by a person.
 """
+import ast
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -250,6 +252,7 @@ POLICY_BOUNDARIES = (
     {"id": "process_lifetime", "clause": "R03, R43, R44",
      "decision": "VELDO-DEC-0004", "version": 1,
      "activating_option": "governed-service-and-runner",
+     "architecture_version": 2,
      "effect": "no_detached_processes and agent-mediated launch are replaced for the governed "
                "project runner by the R43/R44 obligations (D3: host profiles plural, C12)"},
     {"id": "operational_persistence", "clause": "R03, R21",
@@ -440,3 +443,363 @@ def activation_report(root=None, load_modules=None):
                      "refusal": refusal, "reason": reason})
     return {"schema": SCHEMA, "boundaries": rows, "matrix_problems": boundary_matrix_problems(records),
             "activated": sorted(r["boundary"] for r in rows if r["accepted"])}
+
+
+# ---------------------------------------------------------------------------------------------
+# AC2: the governed runner's obligations, in place of the lexical ban.
+# ---------------------------------------------------------------------------------------------
+
+# THE FIVE OBLIGATION GROUPS are the keys of VELDO-DEC-0004's replacement_obligations block, so
+# the registry and the record are compared in both directions: every group has an obligation here,
+# every obligation belongs to a group the record names.
+OBLIGATION_GROUPS = ("containment", "resource_limits", "lifecycle", "liveness_and_stop", "retirement")
+
+# THE VERSIONED POLICY DEFAULTS R44 names, in one place, so a test and a runner read one number.
+HEARTBEAT_SECONDS = 10
+LIVENESS_DEADLINE_SECONDS = 30
+STOP_TERMINATE_AFTER_SECONDS = 10
+STOP_KILL_AFTER_SECONDS = 5
+LEADERSHIP_FENCE_SECONDS = 2
+
+# THE PROOFS RETIREMENT NEEDS, every one of them: capacity is released only when containment is
+# proven EMPTY and the outcome, the accounting and the resource cleanup are durably recorded (R43,
+# R44, VELDO-DEC-0004 retirement). Silence is not proof of death; an unproven slot is quarantined.
+RETIREMENT_PROOFS = ("containment_empty", "outcome_recorded", "accounting_recorded", "cleanup_done")
+
+# EVERY R43/R44 OBLIGATION the governed runner owes, each with its group, its clause and a
+# `test_registration` slot a later package fills with the real failure test that qualifies it
+# (Package B implements, Package D qualifies engines). A slot that is None is an obligation NOBODY
+# HAS TESTED, and runner_profile_eligible refuses the profile while any slot is None. The lexical
+# scan in scripts/suites/06_capabilities_manifest_honesty_veldo.py is NOT one of these: it stays
+# exactly as it is for fleet.py, protecting the floor, and is never extended to the runner.
+RUNNER_OBLIGATIONS = (
+    {"id": "containment_group_per_dispatch", "group": "containment", "clause": "R43",
+     "text": "one dedicated containment group and trusted wrapper per dispatch; forks, new sessions "
+             "and grandchildren cannot escape it", "test_registration": None},
+    {"id": "containment_controls_unreachable", "group": "containment", "clause": "R43",
+     "text": "worker credentials and namespaces cannot modify containment controls, reach the "
+             "authority's service manager or signal authority processes; OS privileges for identities "
+             "and namespaces live only in an operations-installed, narrowly scoped helper",
+     "test_registration": None},
+    {"id": "hard_memory_limit", "group": "resource_limits", "clause": "R43",
+     "text": "a hard, non-worker-writable aggregate memory limit per containment group before launch",
+     "test_registration": None},
+    {"id": "cumulative_cpu_time_limit", "group": "resource_limits", "clause": "R43",
+     "text": "a hard cumulative CPU-time limit across all descendants before launch",
+     "test_registration": None},
+    {"id": "writable_storage_limits", "group": "resource_limits", "clause": "R43",
+     "text": "hard limits on all writable storage in bytes AND inodes, covering temporary files, clone "
+             "output and captured logs", "test_registration": None},
+    {"id": "admission_reserves_capacity", "group": "resource_limits", "clause": "R43",
+     "text": "host admission keeps aggregate limits within qualified capacity with resources reserved "
+             "for the authority and unrelated projects; missing or unenforceable limits refuse activation",
+     "test_registration": None},
+    {"id": "exhaustion_stops_and_quarantines", "group": "resource_limits", "clause": "R43",
+     "text": "exhaustion closes effect permissions, stops the group and quarantines its slot until "
+             "containment, outcome, accounting and cleanup are reconciled; it never crashes the authority "
+             "or exhausts another project's resources", "test_registration": None},
+    {"id": "supervisor_retires_on_authority_loss", "group": "lifecycle", "clause": "R43",
+     "text": "on authority death, control-channel failure or service stop the trusted supervisor retires "
+             "every affected containment group before a replacement schedules", "test_registration": None},
+    {"id": "exit_identity_boot_and_start", "group": "lifecycle", "clause": "R43",
+     "text": "exit detection uses OS notifications; process identity includes boot identity and start "
+             "identity, so a reused PID cannot revive a prior invocation", "test_registration": None},
+    {"id": "wrapper_heartbeat", "group": "liveness_and_stop", "clause": "R44",
+     "text": "the trusted wrapper emits a heartbeat every %d seconds independent of model output; claim "
+             "renewal never depends on a blocking engine call returning" % HEARTBEAT_SECONDS,
+     "test_registration": None},
+    {"id": "liveness_deadline_closes_effects", "group": "liveness_and_stop", "clause": "R44",
+     "text": "a %d-second missed-heartbeat deadline marks liveness uncertain and closes effect "
+             "permissions" % LIVENESS_DEADLINE_SECONDS, "test_registration": None},
+    {"id": "stop_escalation", "group": "liveness_and_stop", "clause": "R44",
+     "text": "cooperative stop, then termination of the containment group after %d seconds, then a kill "
+             "of remaining descendants after %d more" % (STOP_TERMINATE_AFTER_SECONDS, STOP_KILL_AFTER_SECONDS),
+     "test_registration": None},
+    {"id": "leadership_loss_fences_dispatch", "group": "liveness_and_stop", "clause": "R44",
+     "text": "loss of leadership closes new-dispatch acceptance within %d seconds" % LEADERSHIP_FENCE_SECONDS,
+     "test_registration": None},
+    {"id": "checkpoint_holder_cancellation", "group": "liveness_and_stop", "clause": "R44",
+     "text": "the trusted checkpoint boundary cancels a checkpoint lock holder within the declared "
+             "contention budget (sqlite3 interrupt, rollback or termination of the owning process); a "
+             "busy timeout alone does not satisfy it", "test_registration": None},
+    {"id": "retirement_requires_proof", "group": "retirement", "clause": "R43, R44",
+     "text": "capacity is released only when containment is proven empty and outcome, accounting and "
+             "cleanup are durably recorded; unproven emptiness quarantines the slot", "test_registration": None},
+)
+
+# WHAT THE LEXICAL SCAN IS AND IS NOT: the floor's detach-token scan stays on fleet.py; the runner
+# area is governed by the obligations above and is never added to the scan's targets. The suite
+# checks both halves against the suite file's source.
+LEXICAL_SCAN_SCOPE = {"suite": "scripts/suites/06_capabilities_manifest_honesty_veldo.py",
+                      "target": ".veldo/fleet.py", "never_targets": "project_runner"}
+
+EXCEPTION_RULE = "no_detached_processes"
+EXCEPTION_AREA = "project_runner"
+EXCEPTION_BOUNDARY = "process_lifetime"
+
+
+def obligation_registry_problems(process_record):
+    """The obligation registry compared with VELDO-DEC-0004's replacement_obligations block in
+    both directions, plus its own well-formedness: duplicate ids, an obligation in no declared
+    group, a group with no obligation, a clause outside R43/R44, a registration slot missing, and a
+    group the record names that the registry does not (or the reverse)."""
+    problems = []
+    ids = [o["id"] for o in RUNNER_OBLIGATIONS]
+    for i in sorted(set(ids)):
+        if ids.count(i) > 1:
+            problems.append("duplicate obligation id %r" % i)
+    for o in RUNNER_OBLIGATIONS:
+        if o.get("group") not in OBLIGATION_GROUPS:
+            problems.append("obligation %s is in group %r, which is not one of %s" % (o["id"], o.get("group"), OBLIGATION_GROUPS))
+        if not set(o.get("clause", "").replace(",", " ").split()) <= {"R43", "R44"}:
+            problems.append("obligation %s cites %r; the replacement obligations are R43 and R44" % (o["id"], o.get("clause")))
+        if "test_registration" not in o:
+            problems.append("obligation %s has no test_registration slot" % o["id"])
+    for g in OBLIGATION_GROUPS:
+        if not any(o.get("group") == g for o in RUNNER_OBLIGATIONS):
+            problems.append("group %s has no obligation" % g)
+    block = process_record.get("replacement_obligations") if isinstance(process_record, dict) else None
+    named = set(block) if isinstance(block, dict) else set()
+    for g in sorted(named - set(OBLIGATION_GROUPS)):
+        problems.append("the process decision names obligation group %r that the registry does not" % g)
+    for g in sorted(set(OBLIGATION_GROUPS) - named):
+        problems.append("the registry has group %s that the process decision's replacement_obligations does not name" % g)
+    return problems
+
+
+def runner_profile_eligible(registrations=None, obligations=RUNNER_OBLIGATIONS):
+    """(eligible, missing): the governed runner profile is eligible ONLY when every obligation has a
+    registered real failure test, either in its slot or in `registrations` (a mapping obligation id
+    to test reference, the form a later package supplies). A profile with one untested obligation is
+    refused with that obligation named; there is no partial eligibility."""
+    registrations = registrations or {}
+    missing = [o["id"] for o in obligations
+               if not (o.get("test_registration") or registrations.get(o["id"]))]
+    return (not missing), missing
+
+
+def retirement_allowed(evidence, proofs=RETIREMENT_PROOFS):
+    """(allowed, missing): capacity may be released only when EVERY retirement proof is present and
+    true in `evidence` (a mapping proof name to bool). Empty containment is one of them and never
+    optional: a slot whose emptiness is unproven is quarantined, whatever the outcome says."""
+    missing = [p for p in proofs if evidence.get(p) is not True]
+    return (not missing), missing
+
+
+def exception_clauses(contract):
+    """Every (rule_id, clause) an architecture contract carries, over patterns and invariants."""
+    out = []
+    for block in ("patterns", "invariants"):
+        for r in contract.get(block) or []:
+            if isinstance(r, dict):
+                for ex in r.get("exceptions") or []:
+                    if isinstance(ex, dict):
+                        out.append((r.get("id"), ex))
+    return out
+
+
+def exception_clause_problems(contract):
+    """The scoped exception this spec permits, and no other: exactly one clause, on
+    no_detached_processes, for the project_runner area, activated by the process_lifetime
+    boundary, which must be a registered boundary. A clause on any other rule, for any other
+    area, or naming a boundary the registry does not know is a problem by name; so is a contract
+    that declares the runner area without the clause or the clause without the area."""
+    problems = []
+    clauses = exception_clauses(contract)
+    areas = {a.get("id") for a in (contract.get("areas") or []) if isinstance(a, dict)}
+    if EXCEPTION_AREA in areas and not clauses:
+        problems.append("the %s area is declared and no rule carries its exception clause" % EXCEPTION_AREA)
+    for rule_id, ex in clauses:
+        if rule_id != EXCEPTION_RULE:
+            problems.append("rule %r carries an exception; only %s may (VELDO-0016 AC2)" % (rule_id, EXCEPTION_RULE))
+        if ex.get("area") != EXCEPTION_AREA:
+            problems.append("exception on %r names area %r; only %s is excepted" % (rule_id, ex.get("area"), EXCEPTION_AREA))
+        elif EXCEPTION_AREA not in areas:
+            problems.append("the exception names area %s, which the contract does not declare" % EXCEPTION_AREA)
+        if boundary(ex.get("activated_by")) is None:
+            problems.append("exception on %r is activated_by %r, which is not a registered policy boundary" % (rule_id, ex.get("activated_by")))
+        elif ex.get("activated_by") != EXCEPTION_BOUNDARY:
+            problems.append("exception on %r is activated_by %r; the process exception is activated by %s" % (rule_id, ex.get("activated_by"), EXCEPTION_BOUNDARY))
+    if len(clauses) > 1:
+        problems.append("%d exception clauses; this spec permits exactly one" % len(clauses))
+    return problems
+
+
+def exception_effective(contract, activation_rows, registrations=None):
+    """(effective, reason): whether the process exception is IN FORCE. It is, only when the contract
+    carries the clause without problems, the contract's version is the accepted architecture
+    revision the process_lifetime boundary is registered against, that boundary is ACTIVATED
+    (activation_authority accepted its decided record), and the runner profile is eligible (every
+    obligation has a registered test). Editing the yaml changes nothing here: the clause is a
+    declaration, the activation is the authority."""
+    problems = exception_clause_problems(contract)
+    if problems:
+        return False, "exception clause refused: " + "; ".join(problems)
+    if not exception_clauses(contract):
+        return False, "the contract carries no exception clause: the invariant binds everywhere"
+    b = boundary(EXCEPTION_BOUNDARY)
+    if contract.get("version") != b.get("architecture_version"):
+        return False, ("the contract is version %r; the %s boundary is registered against architecture "
+                       "revision %r, and a clause on another revision is not the accepted one"
+                       % (contract.get("version"), EXCEPTION_BOUNDARY, b.get("architecture_version")))
+    row = next((r for r in activation_rows if r.get("boundary") == EXCEPTION_BOUNDARY), None)
+    if row is None or not row.get("accepted"):
+        return False, ("the %s boundary is not activated (%s)"
+                       % (EXCEPTION_BOUNDARY, (row or {}).get("reason", "no activation row")))
+    eligible, missing = runner_profile_eligible(registrations)
+    if not eligible:
+        return False, ("the runner profile is not eligible: %d obligation(s) have no registered test (%s)"
+                       % (len(missing), ", ".join(missing)))
+    return True, "the process exception is in force for the %s area" % EXCEPTION_AREA
+
+
+# ---------------------------------------------------------------------------------------------
+# AC4: the boundary table. One clause, one refusing predicate, one seeded violation each.
+# ---------------------------------------------------------------------------------------------
+
+# THE DOMAIN TABLES R21 names as Veldo's own, which no checkpoint operation may read or write. The
+# authority's schema (Package A's entity specs, Package B's store) grows this tuple; the predicate
+# refuses by table NAME, so a table added here is guarded the moment it is named.
+DOMAIN_TABLES = ("journal", "entities", "accepted_documents", "dispatches", "assignments", "decisions",
+                 "nonces", "reservations", "receipts", "publication_cursors", "claims", "leases")
+CHECKPOINT_PREFIX = "langgraph_"
+_CHECKPOINT_FORBIDDEN = ("ATTACH", "CREATE VIEW", "CREATE TRIGGER", "CREATE TEMP VIEW", "CREATE TEMPORARY VIEW",
+                         "CREATE TEMP TRIGGER", "CREATE TEMPORARY TRIGGER", "PRAGMA", "VACUUM INTO")
+
+
+def checkpoint_statement_allowed(statement, domain_tables=DOMAIN_TABLES, prefix=CHECKPOINT_PREFIX):
+    """(allowed, reason) for one SQL statement the checkpoint adapter wants to run (R21). A statement
+    is allowed only when every table it names is under the checkpoint namespace and it is none of the
+    forms that reach another namespace indirectly: ATTACH of any file, a view or trigger (which read
+    domain tables under a checkpoint name), PRAGMA, VACUUM INTO. A domain table named anywhere in the
+    statement, including inside INSERT ... SELECT, refuses. Token-level and deliberately strict: an
+    unqualified statement (no checkpoint table named) refuses too, because the boundary admits only
+    what it can see is checkpoint work."""
+    text = " ".join(str(statement).split())
+    upper = text.upper()
+    for form in _CHECKPOINT_FORBIDDEN:
+        if form in upper:
+            return False, "statement uses %s, which reaches past the checkpoint namespace (R21)" % form
+    words = set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", text))
+    bare = {w.split(".")[-1].lower() for w in words}
+    hit = sorted(t for t in domain_tables if t.lower() in bare)
+    if hit:
+        return False, "statement names domain table(s) %s: checkpoint writes cannot touch domain tables (R21)" % ", ".join(hit)
+    if not any(w.split(".")[-1].lower().startswith(prefix) for w in words):
+        return False, "statement names no %s* table: the boundary admits only visible checkpoint work (R21)" % prefix
+    return True, "checkpoint-namespace statement"
+
+
+# THE ENFORCEMENT MODULES R35 keeps standard-library only: gate imports, contract validators,
+# authorization, journal replay and recovery. The contracts and enforcement areas of the
+# architecture contract plus this module and the loader; Package B adds the store and replay.
+ENFORCEMENT_MODULES = (".veldo/validate.py", ".veldo/validate_checks.py", ".veldo/arch.py", ".veldo/plan.py",
+                       ".veldo/request.py", ".veldo/release_contract.py", ".veldo/authorization.py",
+                       ".veldo/policy_check.py", ".veldo/decision.py", ".veldo/decision_review.py",
+                       ".veldo/contract_loader.py", ".veldo/policy_contract.py")
+
+
+def _imported_names(source):
+    names = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Import):
+            names.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+            names.add(node.module.split(".")[0])
+    return names
+
+
+def enforcement_imports_stdlib_only(root=None, modules=ENFORCEMENT_MODULES):
+    """(clean, problems): every enforcement module imports the standard library and nothing else
+    (R35, stdlib_only_enforcement), decided by an AST walk that EXECUTES NOTHING, so it gives the
+    same answer with the execution environment installed or absent. Sibling organs are loaded by
+    path (importlib.util.spec_from_file_location), never imported by name, so a bare import of any
+    non-stdlib name is a violation by name. A module that does not exist is a problem too: an
+    enforcement entry that vanished is not clean, it is missing."""
+    base = Path(root) if root else ROOT
+    problems = []
+    for rel in modules:
+        p = base / rel
+        if not p.is_file():
+            problems.append("%s is missing" % rel)
+            continue
+        try:
+            names = _imported_names(p.read_text())
+        except (SyntaxError, ValueError, OSError) as e:
+            problems.append("%s cannot be walked: %s" % (rel, e))
+            continue
+        for n in sorted(names):
+            if n not in sys.stdlib_module_names:
+                problems.append("%s imports %s, which is not the standard library (R35)" % (rel, n))
+    return (not problems), problems
+
+
+# R46: the receipt a landing needs. A passing verdict is a FINDING; these are the AUTHORITY.
+LANDING_REQUIREMENTS = ("review_ran", "review_inputs_match_candidate", "blocking_findings_disposed",
+                        "approvals_valid", "proof_valid", "gate_green", "builder_differs_from_reviewer")
+
+
+def landing_authorized(receipt):
+    """(authorized, missing): a landing is authorized only when EVERY requirement in the receipt is
+    literally True (R46, R50): independent review ran against the candidate's exact inputs, every
+    blocking finding is disposed by a person, the protected-path approvals are valid, the proof is
+    valid, the candidate gate is green, and the builder is not the reviewer. The receipt's `verdict`
+    is read for nothing: a passing model verdict is an assertion that the reviewer found no blocker,
+    never a credential or landing permission, so a receipt that carries verdict pass and nothing
+    else is refused with all seven requirements missing."""
+    missing = [k for k in LANDING_REQUIREMENTS if receipt.get(k) is not True]
+    return (not missing), missing
+
+
+def verifier_independent(verifier_path, candidate_root):
+    """(independent, reason): the enforcement authorizing a candidate's publication runs from an
+    INSTALLED verifier the candidate cannot replace (R50). A verifier whose path lies inside the
+    candidate's tree is the candidate's own code judging itself, refused; a verifier outside it is
+    independent by location, which is the half a path can decide (digest binding is the Evidence
+    Service's, Package E)."""
+    v = Path(verifier_path).resolve()
+    c = Path(candidate_root).resolve()
+    if v == c or c in v.parents:
+        return False, ("the verifier at %s lies inside the candidate tree %s: a candidate cannot supply the "
+                       "enforcement that authorizes its own publication (R50)" % (v, c))
+    return True, "the verifier runs from outside the candidate tree"
+
+
+# R53: exclusive responsibilities. Only the store commits, only the runner launches, only the
+# lander publishes source, only the Evidence Service signs trusted observations.
+RESPONSIBILITIES = {"commit_transition": "store", "launch_engine": "runner",
+                    "publish_source": "lander", "sign_observation": "evidence_service"}
+
+
+def responsibility_allowed(role, action):
+    """(allowed, reason): `role` may perform `action` only when the table assigns that action to that
+    role and no other (R53). An action the table does not know is refused: an exclusive
+    responsibility nobody has been given is not one anybody may take."""
+    owner = RESPONSIBILITIES.get(action)
+    if owner is None:
+        return False, "action %r is assigned to no role: nobody may take an unassigned exclusive responsibility (R53)" % (action,)
+    if role != owner:
+        return False, "only the %s may %s; %r may not (R53)" % (owner, action, role)
+    return True, "%s is the %s's own responsibility" % (action, owner)
+
+
+# THE TABLE: one clause, one predicate, one seeded violation the suite drives. Read by the suite so
+# the coverage question ("does every clause AC4 names have a predicate and a violation?") is asked
+# of the contract, not remembered by the test.
+BOUNDARY_TABLE = (
+    {"clause": "R21", "boundary": "checkpoint tables cannot touch domain tables",
+     "predicate": "checkpoint_statement_allowed",
+     "seeded_violation": "INSERT INTO langgraph_checkpoints SELECT * FROM claims"},
+    {"clause": "R35", "boundary": "enforcement imports are standard library only, decided without executing",
+     "predicate": "enforcement_imports_stdlib_only",
+     "seeded_violation": "an enforcement module that imports langgraph"},
+    {"clause": "R46", "boundary": "a passing review assertion is not landing authorization",
+     "predicate": "landing_authorized",
+     "seeded_violation": "a receipt carrying verdict pass and nothing else"},
+    {"clause": "R50", "boundary": "the installed verifier is independent of the candidate",
+     "predicate": "verifier_independent",
+     "seeded_violation": "a verifier path inside the candidate tree"},
+    {"clause": "R53", "boundary": "store, runner, lander and evidence responsibilities are exclusive",
+     "predicate": "responsibility_allowed",
+     "seeded_violation": "the runner publishing source"},
+)

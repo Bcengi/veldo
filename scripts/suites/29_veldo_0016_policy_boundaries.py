@@ -433,8 +433,7 @@ expect("VELDO-0016 AC3 policy-loading/unreadable DRIVEN (the declared falsifier)
        ("validate_checks.load_contract_state", "unreadable", False) in _v16_m1_fail
        and _v16_m1_kinds[("unreadable", False)] == ("absent", "optional_absence")
        and all((aid, "unreadable", False) in _v16_m1_fail for aid in _V16_UNGUARDED)
-       and [PC16.boundary_row(g)["entry"] if hasattr(PC16, "boundary_row") else g.rsplit(".", 1)[1]
-            for g in sorted(_V16_GUARDED)] == ["_read_contract"])
+       and [g.rsplit(".", 1)[1] for g in sorted(_V16_GUARDED)] == ["_read_contract"])
 
 # The pre-fix ArchContractError handler: a malformed file becomes optional absence.
 _v16_m2_rows, _v16_m2_kinds = _v16_run_matrix(
@@ -614,3 +613,217 @@ expect("VELDO-0016 AC1 policy-activation/under_reviewed DRIVEN: with the review 
        "refuses as under_reviewed",
        _V16_PCM3.activation_authority("review_and_completion", _v16_decided("review_and_completion"), 1, 2)[0] is True
        and PC16.activation_authority("review_and_completion", _v16_decided("review_and_completion"), 1, 2)[1] == "under_reviewed")
+
+
+# ---------------------------------------------------------------------------------------------
+# AC2: the governed runner's R43/R44 obligations replace the lexical ban, behind activation.
+# ---------------------------------------------------------------------------------------------
+_v16_process = _v16_by_id["VELDO-DEC-0004"]
+_v16_obl = PC16.obligation_registry_problems(_v16_process)
+expect("VELDO-0016 AC2 policy-activation/obligations: the obligation registry covers every group VELDO-DEC-0004's "
+       "replacement_obligations names and nothing else, every obligation cites R43 or R44 and carries a test "
+       "registration slot, and the R44 timers are the versioned defaults (10s heartbeat, 30s deadline, 10s then "
+       "5s stop, 2s fence) (problems: %s)" % _v16_obl,
+       _v16_obl == [] and len(PC16.RUNNER_OBLIGATIONS) == 15
+       and (PC16.HEARTBEAT_SECONDS, PC16.LIVENESS_DEADLINE_SECONDS, PC16.STOP_TERMINATE_AFTER_SECONDS,
+            PC16.STOP_KILL_AFTER_SECONDS, PC16.LEADERSHIP_FENCE_SECONDS) == (10, 30, 10, 5, 2))
+_v16_rec_less = dict(_v16_process)
+_v16_rec_less["replacement_obligations"] = {k: v for k, v in _v16_process["replacement_obligations"].items() if k != "retirement"}
+_v16_rec_more = dict(_v16_process)
+_v16_rec_more["replacement_obligations"] = dict(_v16_process["replacement_obligations"], telemetry="x")
+expect("VELDO-0016 AC2 policy-activation/obligations TEETH: a record that drops a group and a record that names a "
+       "group the registry lacks are each named",
+       any("retirement" in m and "does not name" in m for m in PC16.obligation_registry_problems(_v16_rec_less))
+       and any("telemetry" in m for m in PC16.obligation_registry_problems(_v16_rec_more)))
+
+_v16_elig, _v16_missing = PC16.runner_profile_eligible()
+expect("VELDO-0016 AC2 policy-activation/eligibility: with no test registered the governed runner profile is NOT "
+       "eligible and every one of the %d obligations is named as untested" % len(PC16.RUNNER_OBLIGATIONS),
+       _v16_elig is False and _v16_missing == [o["id"] for o in PC16.RUNNER_OBLIGATIONS])
+_v16_all = {o["id"]: "scripts/suites/40_fake_%s.py" % o["id"] for o in PC16.RUNNER_OBLIGATIONS}
+_v16_one_short = dict(_v16_all)
+del _v16_one_short["hard_memory_limit"]
+expect("VELDO-0016 AC2 policy-activation/eligibility: every obligation registered makes the profile eligible; one "
+       "missing registration refuses it naming that obligation (no partial eligibility)",
+       PC16.runner_profile_eligible(_v16_all) == (True, [])
+       and PC16.runner_profile_eligible(_v16_one_short) == (False, ["hard_memory_limit"]))
+
+_v16_full = {p: True for p in PC16.RETIREMENT_PROOFS}
+expect("VELDO-0016 AC2 policy-activation/retirement-obligation: retirement is allowed only with every proof present "
+       "and true, and each missing proof refuses it by name; empty containment is one of the four",
+       PC16.retirement_allowed(_v16_full) == (True, [])
+       and all(PC16.retirement_allowed(dict(_v16_full, **{p: False})) == (False, [p]) for p in PC16.RETIREMENT_PROOFS)
+       and PC16.retirement_allowed({}) == (False, list(PC16.RETIREMENT_PROOFS))
+       and "containment_empty" in PC16.RETIREMENT_PROOFS)
+expect("VELDO-0016 AC2 policy-activation/retirement-obligation: silence is not proof - an evidence value that is "
+       "not literally True (a truthy string, None, 1) does not count",
+       PC16.retirement_allowed(dict(_v16_full, containment_empty="yes"))[0] is False
+       and PC16.retirement_allowed(dict(_v16_full, containment_empty=1))[0] is False)
+
+# THE DECLARED FALSIFIER: remove the empty-containment proof from the retirement predicate; the row
+# above must red under the mutant and pass unmutated (it did).
+_V16_PCM4 = _v16_mutated_pc('RETIREMENT_PROOFS = ("containment_empty", "outcome_recorded", "accounting_recorded", "cleanup_done")',
+                            'RETIREMENT_PROOFS = ("outcome_recorded", "accounting_recorded", "cleanup_done")')
+expect("VELDO-0016 AC2 policy-activation/retirement-obligation DRIVEN (the declared falsifier): with the "
+       "empty-containment proof removed from the retirement predicate, a slot with unproven emptiness is "
+       "released, so the row reds; unmutated it is refused by name",
+       _V16_PCM4.retirement_allowed(dict(_v16_full, containment_empty=False))[0] is True
+       and PC16.retirement_allowed(dict(_v16_full, containment_empty=False)) == (False, ["containment_empty"]))
+
+# The scoped exception clause in this repository's contract, and its teeth.
+_v16_contract = V.load_contract_state(str(ROOT)).contract
+expect("VELDO-0016 AC2 policy-activation/exception: this repository's contract (revision 2) declares the "
+       "project_runner area and exactly one exception clause, on no_detached_processes, for that area, "
+       "activated by the process_lifetime boundary; the contract validator accepts it and the policy contract "
+       "finds no problem (%s)" % PC16.exception_clause_problems(_v16_contract),
+       _v16_contract is not None and _v16_contract.get("version") == 2
+       and PC16.exception_clause_problems(_v16_contract) == []
+       and [(r, ex["area"], ex["activated_by"]) for r, ex in PC16.exception_clauses(_v16_contract)]
+       == [("no_detached_processes", "project_runner", "process_lifetime")]
+       and "project_runner" in _v16_contract["areas"][-1]["id"])
+import copy as _v16_copy
+_v16_c1 = _v16_copy.deepcopy(_v16_contract)
+_v16_c1["invariants"][0]["exceptions"][0]["area"] = "fleet"
+_v16_c2 = _v16_copy.deepcopy(_v16_contract)
+_v16_c2["invariants"][0]["exceptions"][0]["activated_by"] = "telepathy"
+_v16_c3 = _v16_copy.deepcopy(_v16_contract)
+_v16_c3["patterns"][0]["exceptions"] = [dict(_v16_contract["invariants"][0]["exceptions"][0])]
+_v16_c4 = _v16_copy.deepcopy(_v16_contract)
+_v16_c4["invariants"][0]["exceptions"][0]["activated_by"] = "repository_placement"
+expect("VELDO-0016 AC2 policy-activation/exception TEETH: an exception for another area (the floor's fleet), one "
+       "activated by an unregistered boundary, one on a second rule, and one activated by a registered but "
+       "wrong boundary are each refused by name",
+       any("only project_runner is excepted" in m for m in PC16.exception_clause_problems(_v16_c1))
+       and any("telepathy" in m and "not a registered policy boundary" in m for m in PC16.exception_clause_problems(_v16_c2))
+       and any("only no_detached_processes may" in m for m in PC16.exception_clause_problems(_v16_c3))
+       and any("permits exactly one" in m for m in PC16.exception_clause_problems(_v16_c3))
+       and any("repository_placement" in m and "activated by process_lifetime" in m for m in PC16.exception_clause_problems(_v16_c4)))
+_v16_c5 = _v16_copy.deepcopy(_v16_contract)
+_v16_c5["invariants"][0]["exceptions"][0]["area"] = "nowhere"
+_v16_arch_errs = []
+V._arch_module().validate_contract(_v16_c5, str(ROOT), "fixture", lambda _n, m: (_v16_arch_errs.append(m), 1)[1])
+expect("VELDO-0016 AC2 policy-activation/exception TEETH: the contract validator itself refuses an exception clause "
+       "naming an undeclared area or missing a field (referenced but absent), so a malformed clause never loads",
+       any("exception area 'nowhere' is not a declared area" in m for m in _v16_arch_errs)
+       and V._arch_module().validate_contract(
+           {**_v16_copy.deepcopy(_v16_contract), "invariants": [{"id": "x", "text": "t", "enforcement": "review",
+                                                                 "exceptions": [{"area": "fleet"}]}]},
+           str(ROOT), "fixture", lambda _n, m: 1) >= 2)
+
+# Effective only through activation: today it is not, and each precondition is named in turn.
+_v16_eff, _v16_why = PC16.exception_effective(_v16_contract, _v16_rep["boundaries"])
+expect("VELDO-0016 AC2 policy-activation/exception: over this repository the exception is NOT in force - the "
+       "process_lifetime boundary is a draft (%s)" % _v16_why[:100],
+       _v16_eff is False and "not activated" in _v16_why)
+_v16_rows_on = [dict(r, accepted=(r["boundary"] == "process_lifetime"), refusal=None) for r in _v16_rep["boundaries"]]
+expect("VELDO-0016 AC2 policy-activation/exception: with the boundary activated but no obligation tested, the "
+       "exception is still not in force (qualification is separate from the decision); with every obligation "
+       "registered it is; on a contract at another revision it is not; without the clause it is not",
+       PC16.exception_effective(_v16_contract, _v16_rows_on)[0] is False
+       and "not eligible" in PC16.exception_effective(_v16_contract, _v16_rows_on)[1]
+       and PC16.exception_effective(_v16_contract, _v16_rows_on, _v16_all) == (True, "the process exception is in force for the project_runner area")
+       and PC16.exception_effective(dict(_v16_contract, version=1), _v16_rows_on, _v16_all)[0] is False
+       and "revision" in PC16.exception_effective(dict(_v16_contract, version=1), _v16_rows_on, _v16_all)[1]
+       and PC16.exception_effective(dict(_v16_contract, invariants=[dict(i, exceptions=None) for i in _v16_contract["invariants"]]),
+                                    _v16_rows_on, _v16_all)[0] is False)
+
+# The lexical scan stays where it is and is not extended to the runner.
+_v16_scan_src = (ROOT / PC16.LEXICAL_SCAN_SCOPE["suite"]).read_text()
+expect("VELDO-0016 AC2 policy-activation/lexical-scan: the floor's detach-token scan in suite 06 still reads "
+       ".veldo/fleet.py, still defines _DETACH_TOKENS and _no_detached_worker_spawn, and names no project_runner "
+       "module: the prohibition is replaced for the governed runner by the obligations above, never extended",
+       '(ROOT / ".veldo/fleet.py").read_text()' in _v16_scan_src
+       and "_DETACH_TOKENS = (" in _v16_scan_src and "def _no_detached_worker_spawn(" in _v16_scan_src
+       and PC16.LEXICAL_SCAN_SCOPE["never_targets"] not in _v16_scan_src)
+
+
+# ---------------------------------------------------------------------------------------------
+# AC4: the boundary table. Every clause has a predicate here, every predicate rejects its seeded
+# violation and accepts a clean case, and the review-is-not-authority row is driven by a mutant.
+# ---------------------------------------------------------------------------------------------
+expect("VELDO-0016 AC4 policy-boundaries/table: the clause-to-predicate table covers exactly R21, R35, R46, R50 "
+       "and R53, and every predicate it names is a callable of the contract module",
+       [r["clause"] for r in PC16.BOUNDARY_TABLE] == ["R21", "R35", "R46", "R50", "R53"]
+       and all(callable(getattr(PC16, r["predicate"], None)) for r in PC16.BOUNDARY_TABLE)
+       and all(r["seeded_violation"] for r in PC16.BOUNDARY_TABLE))
+
+# R21
+expect("VELDO-0016 AC4 policy-boundaries/checkpoint-isolation: a checkpoint-namespace statement is allowed; the "
+       "seeded INSERT ... SELECT from a domain table, a bare domain read, an ATTACH, a view over a domain table "
+       "and a statement naming no checkpoint table are each refused by name",
+       PC16.checkpoint_statement_allowed("INSERT INTO langgraph_checkpoints (id, blob) VALUES (?, ?)")[0] is True
+       and PC16.checkpoint_statement_allowed(PC16.BOUNDARY_TABLE[0]["seeded_violation"]) == (
+           False, "statement names domain table(s) claims: checkpoint writes cannot touch domain tables (R21)")
+       and PC16.checkpoint_statement_allowed("SELECT * FROM journal")[0] is False
+       and PC16.checkpoint_statement_allowed("ATTACH DATABASE 'control.sqlite3' AS other")[1].startswith("statement uses ATTACH")
+       and PC16.checkpoint_statement_allowed("CREATE VIEW langgraph_v AS SELECT * FROM receipts")[1].startswith("statement uses CREATE VIEW")
+       and PC16.checkpoint_statement_allowed("SELECT 1")[0] is False
+       and PC16.checkpoint_statement_allowed("select id from main.langgraph_writes where thread_id = ?")[0] is True)
+
+# R35: over the real engine, then the seeded violation in a temporary tree, executing nothing.
+_v16_clean, _v16_imp = PC16.enforcement_imports_stdlib_only(ROOT)
+expect("VELDO-0016 AC4 policy-boundaries/stdlib-enforcement: every enforcement module of this engine imports the "
+       "standard library only, decided by an AST walk that executes nothing (problems: %s)" % _v16_imp,
+       _v16_clean is True and _v16_imp == [] and len(PC16.ENFORCEMENT_MODULES) >= 12)
+with tempfile.TemporaryDirectory(prefix="v16r35") as _v16_r35:
+    (Path(_v16_r35) / ".veldo").mkdir()
+    for _v16_rel in PC16.ENFORCEMENT_MODULES:
+        _v16_shutil.copyfile(ROOT / _v16_rel, Path(_v16_r35) / _v16_rel)
+    (Path(_v16_r35) / ".veldo" / "authorization.py").write_text("import langgraph\n" + (ROOT / ".veldo/authorization.py").read_text())
+    _v16_bad, _v16_bad_p = PC16.enforcement_imports_stdlib_only(_v16_r35)
+    expect("VELDO-0016 AC4 policy-boundaries/stdlib-enforcement: the seeded violation (authorization importing "
+           "langgraph) is refused by module and name, and the walk needs no langgraph installed to say so",
+           _v16_bad is False and _v16_bad_p == [".veldo/authorization.py imports langgraph, which is not the standard library (R35)"]
+           and "langgraph" not in sys.modules)
+    (Path(_v16_r35) / ".veldo" / "arch.py").unlink()
+    expect("VELDO-0016 AC4 policy-boundaries/stdlib-enforcement: a missing enforcement module is a problem, never clean",
+           ".veldo/arch.py is missing" in PC16.enforcement_imports_stdlib_only(_v16_r35)[1])
+expect("VELDO-0016 AC4 policy-boundaries/stdlib-enforcement: loading the engine's validate.py brought no execution "
+       "runtime into the process (no langgraph module is loaded)",
+       not any(m == "langgraph" or m.startswith("langgraph.") for m in sys.modules))
+
+# R46
+_v16_receipt_ok = {k: True for k in PC16.LANDING_REQUIREMENTS}
+expect("VELDO-0016 AC4 policy-boundaries/review-is-not-authority: a receipt with every requirement true authorizes; "
+       "the seeded receipt carrying verdict pass and nothing else is refused with all seven requirements missing; "
+       "one open blocking finding or a builder who is the reviewer refuses by name",
+       PC16.landing_authorized(_v16_receipt_ok) == (True, [])
+       and PC16.landing_authorized({"verdict": "pass"}) == (False, list(PC16.LANDING_REQUIREMENTS))
+       and PC16.landing_authorized(dict(_v16_receipt_ok, blocking_findings_disposed=False)) == (False, ["blocking_findings_disposed"])
+       and PC16.landing_authorized(dict(_v16_receipt_ok, builder_differs_from_reviewer=False)) == (False, ["builder_differs_from_reviewer"])
+       and PC16.landing_authorized(dict(_v16_receipt_ok, verdict="fail")) == (True, []))
+# THE DECLARED FALSIFIER: treat a passing reviewer assertion as landing authorization.
+_V16_PCM5 = _v16_mutated_pc("""    missing = [k for k in LANDING_REQUIREMENTS if receipt.get(k) is not True]
+    return (not missing), missing
+""", """    if receipt.get("verdict") == "pass":
+        return True, []  # mutant: the verdict authorizes
+    missing = [k for k in LANDING_REQUIREMENTS if receipt.get(k) is not True]
+    return (not missing), missing
+""")
+expect("VELDO-0016 AC4 policy-boundaries/review-is-not-authority DRIVEN (the declared falsifier): with a passing "
+       "verdict treated as authorization, the seeded receipt lands, so the row reds; unmutated it is refused",
+       _V16_PCM5.landing_authorized({"verdict": "pass"})[0] is True
+       and PC16.landing_authorized({"verdict": "pass"})[0] is False)
+
+# R50
+with tempfile.TemporaryDirectory(prefix="v16r50") as _v16_r50:
+    _v16_cand = Path(_v16_r50) / "candidate"
+    (_v16_cand / "scripts").mkdir(parents=True)
+    _v16_inst = Path(_v16_r50) / "installed" / "veldo" / "scripts"
+    _v16_inst.mkdir(parents=True)
+    expect("VELDO-0016 AC4 policy-boundaries/installed-verifier: a verifier outside the candidate tree is independent; "
+           "the seeded verifier inside the candidate tree, and the candidate root itself, are refused",
+           PC16.verifier_independent(_v16_inst / "verify.sh", _v16_cand)[0] is True
+           and PC16.verifier_independent(_v16_cand / "scripts" / "verify.sh", _v16_cand)[0] is False
+           and PC16.verifier_independent(_v16_cand, _v16_cand)[0] is False
+           and "cannot supply the enforcement" in PC16.verifier_independent(_v16_cand / "scripts" / "verify.sh", _v16_cand)[1])
+
+# R53
+expect("VELDO-0016 AC4 policy-boundaries/exclusive-responsibilities: each of the four actions is allowed to its owner "
+       "alone; the seeded violation (the runner publishing source), a store launching an engine, and an unassigned "
+       "action are each refused by name",
+       all(PC16.responsibility_allowed(o, a)[0] is True for a, o in PC16.RESPONSIBILITIES.items())
+       and PC16.responsibility_allowed("runner", "publish_source") == (False, "only the lander may publish_source; 'runner' may not (R53)")
+       and PC16.responsibility_allowed("store", "launch_engine")[0] is False
+       and PC16.responsibility_allowed("store", "delete_history")[0] is False
+       and set(PC16.RESPONSIBILITIES.values()) == {"store", "runner", "lander", "evidence_service"})

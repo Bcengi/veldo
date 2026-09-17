@@ -98,7 +98,7 @@ def _read_contract(root, V, reads=None):
         contract_cause = cause or (load.reason if getattr(load, "refused", False) else None)
     declared = sorted(arch.area_ids(contract)) if (arch is not None and contract is not None) else None
     contract_problem = None
-    if (present or getattr(load, "refused", False)) and not declared:
+    if (present or getattr(load, "kind", None) == "required_absence") and not declared:
         contract_problem = ("the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area "
                             "could be read from it (it is truncated, malformed, a directory, a symlink that does "
                             "not resolve, or it declares none), or is ABSENT while this repository's policy REQUIRES "
