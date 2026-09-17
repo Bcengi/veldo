@@ -48,6 +48,32 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0020 | Signing and authority contracts for enrolled channels | draft | critical | dmitry | required | VELDO-0020-signing-authority-contracts.md |
 | VELDO-0021 | Completion and executable eligibility predicates | draft | critical | dmitry | required | VELDO-0021-completion-eligibility-contracts.md |
 | VELDO-0022 | Section 2 admission semantics | draft | critical | dmitry | required | VELDO-0022-section-2-admission-contracts.md |
+| VELDO-0023 | Atomic journaled commands and deterministic replay | draft | critical | dmitry | required | VELDO-0023-journaled-commands.md |
+| VELDO-0024 | Signed Git replication and off-host acknowledgement | draft | critical | dmitry | required | VELDO-0024-signed-git-replication.md |
+| VELDO-0025 | Authenticated membership and scoped delegation | draft | critical | dmitry | required | VELDO-0025-membership-and-delegation.md |
+| VELDO-0026 | Revocation and authorization rechecks | draft | critical | dmitry | required | VELDO-0026-authorization-rechecks.md |
+| VELDO-0027 | Protected signing and key lifecycle | draft | critical | dmitry | required | VELDO-0027-protected-signing.md |
+| VELDO-0028 | Protected effect execution and atomic nonce consumption | draft | critical | dmitry | required | VELDO-0028-protected-effects.md |
+| VELDO-0029 | Explicit repository enrollment and authority routing | draft | critical | dmitry | required | VELDO-0029-repository-enrollment.md |
+| VELDO-0030 | Exclusive leadership and authority-generation fencing | draft | critical | dmitry | required | VELDO-0030-authority-generation-fencing.md |
+| VELDO-0031 | Authority-backed claims and claim-generation fencing | draft | critical | dmitry | required | VELDO-0031-authority-backed-claims.md |
+| VELDO-0032 | Clock uncertainty in task reporting | draft | high | dmitry | required | VELDO-0032-clock-task-reporting.md |
+| VELDO-0033 | Clock claim-refusal propagation through execution and landing | draft | high | dmitry | required | VELDO-0033-clock-refusal-propagation.md |
+| VELDO-0034 | Clock uncertainty in the status display | draft | high | dmitry | required | VELDO-0034-clock-status-display.md |
+| VELDO-0035 | Complete read-set validation and authoritative snapshots | draft | critical | dmitry | required | VELDO-0035-authoritative-snapshots.md |
+| VELDO-0036 | Durable capacity and spend reservations | draft | critical | dmitry | required | VELDO-0036-capacity-and-spend-reservations.md |
+| VELDO-0037 | Atomic specification alias allocation and document publication | draft | high | dmitry | required | VELDO-0037-specification-alias-publication.md |
+| VELDO-0038 | Effect-specific reconciliation and recovery commands | draft | critical | dmitry | required | VELDO-0038-effect-recovery-commands.md |
+| VELDO-0039 | Durable dispatch acceptance and launch records | draft | critical | dmitry | required | VELDO-0039-durable-dispatch-acceptance.md |
+| VELDO-0040 | Provider-neutral process supervision and descendant containment | draft | critical | dmitry | required | VELDO-0040-process-containment.md |
+| VELDO-0041 | Independent heartbeat, bounded stopping, and safe capacity retirement | draft | critical | dmitry | required | VELDO-0041-heartbeat-and-retirement.md |
+| VELDO-0042 | Isolated worker clones and pinned read-only shared object cache | draft | critical | dmitry | required | VELDO-0042-isolated-worker-clones.md |
+| VELDO-0043 | Replaceable LangGraph execution adapter | draft | high | dmitry | required | VELDO-0043-replaceable-langgraph-adapter.md |
+| VELDO-0044 | Checkpoint namespace isolation and bounded contention | draft | critical | dmitry | required | VELDO-0044-checkpoint-isolation.md |
+| VELDO-0045 | Pinned isolated runtime, dependency licenses, and distribution inventory | draft | high | dmitry | required | VELDO-0045-isolated-runtime-distribution.md |
+| VELDO-0046 | Durable wake-up, cursor replay, and notification delivery | draft | high | dmitry | required | VELDO-0046-durable-notification-delivery.md |
+| VELDO-0047 | Authority service installation, startup, stop, and absent-service behavior | draft | critical | dmitry | required | VELDO-0047-authority-service-lifecycle.md |
+| VELDO-0048 | Integrity verification, replica restoration, and host-replacement fencing | draft | critical | dmitry | required | VELDO-0048-integrity-and-replica-restoration.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |

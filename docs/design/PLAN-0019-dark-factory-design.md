@@ -184,6 +184,8 @@ Veldo owns the signed journal, entity records, accepted document digests, dispat
 
 The model execution process receives no database path, handle, or filesystem access. A trusted checkpoint access boundary restricts adapter operations to checkpoint data and rejects cross-namespace SQL and indirect writes. Domain code imports no LangGraph package. Qualification must prove these restrictions and bounded checkpoint contention.
 
+The boundary must refuse reads of every domain table, including direct SELECT, INSERT ... SELECT into checkpoint tables, views and triggers reading domain tables, and ATTACH of the same file under another schema name; qualification enumerates the domain tables and proves read refusal for each.
+
 Removing LangGraph removes its adapter and checkpoint data without changing Veldo's domain schema or history. Sharing a file does not confer shared authority.
 
 **R22. Transaction and version contract.**
@@ -397,6 +399,8 @@ Exit detection uses OS notifications. Process identity includes boot identity an
 The trusted wrapper emits a heartbeat every ten seconds, independent of model output. A thirty-second missed-heartbeat deadline marks liveness uncertain and closes effect permissions. Claim renewal cannot depend on a blocking engine call returning.
 
 Cooperative stop asks the adapter to terminate and flush observations. After ten seconds, the supervisor terminates the containment group; after another five seconds, it kills remaining descendants. These are versioned policy defaults. Loss of leadership still closes new-dispatch acceptance within R24's two-second bound.
+
+The trusted checkpoint boundary owns the adapter connection and independently cancels a checkpoint lock holder within the declared contention budget, using sqlite3 interrupt on the owning connection with rollback or termination of the owning process to release the lock; qualification must SIGSTOP the writer during a write transaction and prove cancellation and subsequent recovery of signed domain writes, including a committed revocation within a declared command completion bound. A busy timeout that only releases waiting commands does not satisfy this obligation.
 
 Capacity is released only after containment is empty and outcome and accounting are durably recorded. Unproven emptiness quarantines the slot. Silence is not proof of death.
 
