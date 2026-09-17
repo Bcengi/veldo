@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0023
 title: Install-and-run observations resolve git metadata in either checkout shape
-status: draft
+status: ready
 risk: standard
 owner: dmitry
 human_approval: not_required

@@ -17,6 +17,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0011 | The release contract and its registry - a release is a typed, ordered group of plans with the | ready | standard | dmitry | not_required | VELDO-0011-release-contract-and-registry.md |
 | VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | VELDO-0015 | Liveness stands down on clock disagreement - a heartbeat from the future is answered | ready | high | dmitry | not_required | VELDO-0015-liveness-stands-down-on-clock-disagreement.md |
+| VELDO-0023 | Install-and-run observations resolve git metadata in either checkout shape | ready | standard | dmitry | not_required | VELDO-0023-worktree-git-shape.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to | ready | high | dmitry | not_required | WARP-0714-compute-once.md |
@@ -47,7 +48,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0020 | Signing and authority contracts for enrolled channels | draft | critical | dmitry | required | VELDO-0020-signing-authority-contracts.md |
 | VELDO-0021 | Completion and executable eligibility predicates | draft | critical | dmitry | required | VELDO-0021-completion-eligibility-contracts.md |
 | VELDO-0022 | Section 2 admission semantics | draft | critical | dmitry | required | VELDO-0022-section-2-admission-contracts.md |
-| VELDO-0023 | Install-and-run observations resolve git metadata in either checkout shape | draft | standard | dmitry | not_required | VELDO-0023-worktree-git-shape.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
