@@ -133,5 +133,41 @@
     "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture. No gate result or failure row is removed.",
     "raw_sha256": "e5e355b0477fbae4ca0ddd9aec05d91f344180faf63903f98ef7c8d88eb02b24",
     "stored_sha256": "8688c31e4af6dfbc814010e292a4fed2a488c67e5d4be7b255cff26a591ccf38"
+  },
+  {
+    "file": "proof/VELDO-0099/gate-round-five-before-linked.log",
+    "lines": [
+      46
+    ],
+    "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture. No gate result or failure row is removed.",
+    "raw_sha256": "ec4bef0a948578d142a114cc348f23e8bbbbf751a2b7a6a46718fca2d204ed64",
+    "stored_sha256": "49b7abb880e9958bbefd5fb020136816e04deada6859cd3bf399cb335ea406a3"
+  },
+  {
+    "file": "proof/VELDO-0099/gate-round-five-before-primary.log",
+    "lines": [
+      46
+    ],
+    "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture. No gate result or failure row is removed.",
+    "raw_sha256": "ed55511abf3cebbda5115b3761e5705f7c901a189d9ac9ea5824b5856a4ab8ca",
+    "stored_sha256": "ee780a20f717caf9a5c650cfdb6acaec4f4268321cee340d68313b34d16c1eee"
+  },
+  {
+    "file": "proof/VELDO-0099/gate-round-five-after-linked.log",
+    "lines": [
+      46
+    ],
+    "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture. No gate result or failure row is removed.",
+    "raw_sha256": "7f5727fb6d2b5ad7ad6b9d89b4cccb0bffd42773e24941821ca6c7085ab99632",
+    "stored_sha256": "934427a58c71c37ec6ce435296332795cea9c3855eb26ed903858c2cb27b9243"
+  },
+  {
+    "file": "proof/VELDO-0099/gate-round-five-after-primary.log",
+    "lines": [
+      46
+    ],
+    "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture. No gate result or failure row is removed.",
+    "raw_sha256": "013fc97390b50fddc4dfcdde011cf8dbd4b1463e43e940143d020f3f45cb4b68",
+    "stored_sha256": "0c1fdaf33aa67fee09a90245bc9684ddebca14b7ac2cb4bd2aa5f5201acc369e"
   }
 ]

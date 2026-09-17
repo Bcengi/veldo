@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0099",
-  "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
+  "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-17T05:14:35.231940Z",
+  "produced_at": "2026-09-17T05:36:12.871267Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -17,8 +17,8 @@
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-third-review-linked.log; proof/VELDO-0099/gate-third-review-primary.log",
-          "detail": "Complete canonical gates at 499bbd5a3fad1820bc40ebdf775eb95da17f3483: GREEN, 4838 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-five-after-linked.log; proof/VELDO-0099/gate-round-five-after-primary.log",
+          "detail": "Complete canonical gates at 6e1179560b8871014d059e6322d2bc523e66ec0d: GREEN, 4842 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
         }
       ]
     },
@@ -33,8 +33,8 @@
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-third-review-linked.log; proof/VELDO-0099/gate-third-review-primary.log",
-          "detail": "Complete canonical gates at 499bbd5a3fad1820bc40ebdf775eb95da17f3483: GREEN, 4838 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-five-after-linked.log; proof/VELDO-0099/gate-round-five-after-primary.log",
+          "detail": "Complete canonical gates at 6e1179560b8871014d059e6322d2bc523e66ec0d: GREEN, 4842 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Copied claims and runs retain bytes. A real stage deleting an existing copied claim reds only the sandbox-write row in both shapes. Real sibling heartbeats leave all 14 AC4 rows green; restoring shared live inventory reds the live row. All earlier inventory, split-index, race and disappearing-entry mutations remain driven."
+          "detail": "Whole common store except worktrees, including unpredictable future-store names, retains content. Restored allowlist reds both fidelity rows; restored timestamps reds both timestamp-refresh rows. Clean split-index AC4 is 14/0 in both shapes. Stage deletion of a reflog, a randomly selected copied file, and a reflog with split index reds only the sandbox row in each shape. Sharedindex corruption remains observed; all prior mutations are re-driven."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-third-review-linked.log; proof/VELDO-0099/gate-third-review-primary.log",
-          "detail": "Complete canonical gates at 499bbd5a3fad1820bc40ebdf775eb95da17f3483: GREEN, 4838 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
+          "ref": "proof/VELDO-0099/gate-round-five-after-linked.log; proof/VELDO-0099/gate-round-five-after-primary.log",
+          "detail": "Complete canonical gates at 6e1179560b8871014d059e6322d2bc523e66ec0d: GREEN, 4842 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
         }
       ]
     },
@@ -61,80 +61,87 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Full gates in the assigned linked checkout and disposable primary repository at the same implementation commit each pass 4838/0 and first-use integration. All original and review mutations are re-driven with exact expected failures. The before gate RED and its unexplained first-use live-inventory failure are retained."
+          "detail": "Every original and review mutation is re-driven with exact red-row sets and full labels. Baseline AC4 misses reflog deletion at 14/0 and falsely fails clean split indexes at 12/2 in both shapes. Full before gates are 4838/0 and full after gates 4842/0, green in both shapes. Suite search retains only explicit fixture shape assertions."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-third-review-linked.log; proof/VELDO-0099/gate-third-review-primary.log",
-          "detail": "Complete canonical gates at 499bbd5a3fad1820bc40ebdf775eb95da17f3483: GREEN, 4838 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
-        },
-        {
-          "type": "integration",
-          "ref": "proof/VELDO-0099/gate-third-review-final.log",
-          "detail": "Final linked gate with refreshed proof at 90641482aecfbf637758dbe267a2e02c20decbce: GREEN, exit 0, 4838 passed, 0 failed."
+          "ref": "proof/VELDO-0099/gate-round-five-after-linked.log; proof/VELDO-0099/gate-round-five-after-primary.log",
+          "detail": "Complete canonical gates at 6e1179560b8871014d059e6322d2bc523e66ec0d: GREEN, 4842 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
         }
       ]
     }
   ],
   "checks": [
     {
-      "name": "third-review-gate-before",
-      "status": "failed",
-      "command": "./scripts/verify.sh",
-      "exit_code": 1,
-      "commit": "482fa12ec5179c8f938d5fc1e0e3c57c12c7b113",
-      "ref": "proof/VELDO-0099/gate-third-review-before.log",
-      "detail": "4832 passed, 0 failed in top-level selftests; first-use integration failed on the AC4 live-inventory row; cause not established."
-    },
-    {
-      "name": "third-review-gate-linked",
+      "name": "round-five-before-linked",
       "status": "passed",
       "command": "./scripts/verify.sh",
       "exit_code": 0,
-      "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
-      "ref": "proof/VELDO-0099/gate-third-review-linked.log",
-      "detail": "4838 passed, 0 failed in top-level selftests; first-use integration passed; 8 required catalog checks passed."
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
+      "ref": "proof/VELDO-0099/gate-round-five-before-linked.log",
+      "detail": "4838 passed, 0 failed; first-use integration passed; 8 required catalog checks passed."
     },
     {
-      "name": "third-review-gate-primary",
+      "name": "round-five-before-primary",
       "status": "passed",
       "command": "./scripts/verify.sh",
       "exit_code": 0,
-      "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
-      "ref": "proof/VELDO-0099/gate-third-review-primary.log",
-      "detail": "4838 passed, 0 failed in top-level selftests; first-use integration passed; 8 required catalog checks passed."
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
+      "ref": "proof/VELDO-0099/gate-round-five-before-primary.log",
+      "detail": "4838 passed, 0 failed; first-use integration passed; 8 required catalog checks passed."
     },
     {
-      "name": "paired-mutations",
+      "name": "round-five-after-linked",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "ref": "proof/VELDO-0099/gate-round-five-after-linked.log",
+      "detail": "4842 passed, 0 failed; first-use integration passed; 8 required catalog checks passed."
+    },
+    {
+      "name": "round-five-after-primary",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "ref": "proof/VELDO-0099/gate-round-five-after-primary.log",
+      "detail": "4842 passed, 0 failed; first-use integration passed; 8 required catalog checks passed."
+    },
+    {
+      "name": "all-mutation-diagnostics",
       "status": "passed",
       "command": "python3 proof/VELDO-0099/drive.py",
       "exit_code": 0,
-      "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
-      "ref": "proof/VELDO-0099/driven.json",
-      "detail": "All exact red-row sets asserted; suite hash unchanged."
+      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "ref": "proof/VELDO-0099/driven.json"
+    },
+    {
+      "name": "baseline-mutation-diagnostics",
+      "status": "passed",
+      "command": "python3 /tmp/veldo-0099-round5/drive.py /home/dmitry/projects/veldo-worktrees/fix-worktree-git-shape --baseline",
+      "exit_code": 0,
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
+      "ref": "proof/VELDO-0099/baseline-driven.json",
+      "detail": "Driver prepared outside the checkout before implementation; baseline mode expects the demonstrated defects. Use the committed driver with an isolated baseline checkout path and --baseline to reproduce."
     },
     {
       "name": "ready",
       "status": "passed",
       "command": "python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md",
       "exit_code": 0,
-      "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
+      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
       "ref": "proof/VELDO-0099/ready-check.txt"
-    },
-    {
-      "name": "gate-with-refreshed-proof",
-      "status": "passed",
-      "command": "./scripts/verify.sh",
-      "exit_code": 0,
-      "commit": "90641482aecfbf637758dbe267a2e02c20decbce",
-      "ref": "proof/VELDO-0099/gate-third-review-final.log",
-      "detail": "GREEN, 4838 passed, 0 failed; first-use integration passed; all 8 required catalog checks passed."
     }
   ],
   "artifacts": [
     {
       "ref": "proof/VELDO-0099/README.md",
-      "sha256": "c130a826ccfa2ffa486402350642291681117245188d5378590a264ca6c7d751"
+      "sha256": "5bd420ebbf20f7dfef0558fc6df1f1269a3c6d278e7212ec4133c796c256fff6"
+    },
+    {
+      "ref": "proof/VELDO-0099/baseline-driven.json",
+      "sha256": "f4a975da19de42652f24897fa6f85efa79763ba4c0083027702aaee5863ae147"
     },
     {
       "ref": "proof/VELDO-0099/baseline-gate.log",
@@ -142,11 +149,11 @@
     },
     {
       "ref": "proof/VELDO-0099/drive.py",
-      "sha256": "b0dfe52d44d8b674a772cc3ce3b02b4843893fc1e50e6ceaf4d85ea51e04b845"
+      "sha256": "add72d4c09e11434b24b1ed38c2767f599b6eef57fb83e6103972659c35a3a28"
     },
     {
       "ref": "proof/VELDO-0099/driven.json",
-      "sha256": "faba894ca9896c9399aa504ea352bd0f793f8ad74228d083f2956fc104de99a2"
+      "sha256": "27b61d5f6956db14615797e64a1d519182d6a0e5b3a90bc7271ca4666b1538f1"
     },
     {
       "ref": "proof/VELDO-0099/gate-final.log",
@@ -171,6 +178,22 @@
     {
       "ref": "proof/VELDO-0099/gate-review-final.log",
       "sha256": "f9d8957056953914a4c6f60f3b67c42ac94f3a153ea9a7f0a67d69814c05e036"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-five-after-linked.log",
+      "sha256": "934427a58c71c37ec6ce435296332795cea9c3855eb26ed903858c2cb27b9243"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-five-after-primary.log",
+      "sha256": "0c1fdaf33aa67fee09a90245bc9684ddebca14b7ac2cb4bd2aa5f5201acc369e"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-five-before-linked.log",
+      "sha256": "49b7abb880e9958bbefd5fb020136816e04deada6859cd3bf399cb335ea406a3"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-round-five-before-primary.log",
+      "sha256": "ee780a20f717caf9a5c650cfdb6acaec4f4268321cee340d68313b34d16c1eee"
     },
     {
       "ref": "proof/VELDO-0099/gate-second-review-before.log",
@@ -206,15 +229,15 @@
     },
     {
       "ref": "proof/VELDO-0099/log-redactions.json",
-      "sha256": "c9fe8d019bd38b58097fe7883b4ad75575cc67fd25fc22b19cc265db686045d4"
+      "sha256": "19f1bf82336d6ae8789909dde16f7a33224ef10458f187f7900a289769c4735a"
     },
     {
       "ref": "proof/VELDO-0099/ready-check.txt",
-      "sha256": "932e85334eaac1082437aa8aeb79d5f14934032d9bcc514283d8b087e909f240"
+      "sha256": "7cd114197308cdf96e42a408bcfc07d81569993044807a7f03f42a94693b63d8"
     },
     {
       "ref": "proof/VELDO-0099/sibling-search.txt",
-      "sha256": "5c1334afa68774a0cc2952c404c291ed5831b0b922caefa4e5cfaae9b0660327"
+      "sha256": "9e234ccdd494f4f03b94471d2c4e3c2d914ad7c5d16efcba43adabab20b58c38"
     }
   ],
   "rollback": "Revert the suite changes and regenerate the index; retain historical proof records.",

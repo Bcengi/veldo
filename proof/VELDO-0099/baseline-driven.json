@@ -1,6 +1,6 @@
 {
-  "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
-  "suite_sha256": "ff21e8821d65f9f1cf4b020c676b1eeb078e76584848dacf6e3a719a96295750",
+  "commit": "0f69276d907183a17a61f099cb27d6939920a710",
+  "suite_sha256": "b310ea087de77a4867b16848993b3e0ca500702109e910ea3fb3c60b8731dd71",
   "suite_unchanged": true,
   "layout_environment": "Empty HOME and XDG_CONFIG_HOME; system/global git config disabled; no identity in fixture repo or environment",
   "description": "Paired mutation controls, not a selected-suite gate claim",
@@ -388,7 +388,7 @@
     {
       "case": "review_control",
       "mutation": null,
-      "passed": 17,
+      "passed": 13,
       "failed": 0,
       "rows": [
         {
@@ -404,179 +404,11 @@
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: primary split index corruption is observed",
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary copied claims and runs retain bytes and claim deletion is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked copied claims and runs retain bytes and claim deletion is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: primary redirected config and alternates are isolated and original edit survives checkout-index",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: linked redirected config and alternates are isolated and original edit survives checkout-index",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: primary relative C-quoted alternate has objects and copy fidelity",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: primary absolute C-quoted alternate has objects and copy fidelity",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: linked relative C-quoted alternate has objects and copy fidelity",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: linked absolute C-quoted alternate has objects and copy fidelity",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "case": "restore_common_allowlist",
-      "mutation": "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name in {'objects', 'refs', 'packed-refs', 'shallow', 'HEAD', 'veldo', 'index', 'config', 'config.worktree'} or p.name.startswith('sharedindex.')]",
-      "passed": 15,
-      "failed": 2,
-      "rows": [
-        {
-          "label": "VELDO-0099 AC3: primary 50 copies during sibling staging have zero raises and no sibling state",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked 50 copies during sibling staging have zero raises and no sibling state",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: an entry vanishing after enumeration does not raise",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0099 AC3: primary copied claims and runs retain bytes and claim deletion is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked copied claims and runs retain bytes and claim deletion is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: primary redirected config and alternates are isolated and original edit survives checkout-index",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: linked redirected config and alternates are isolated and original edit survives checkout-index",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: primary relative C-quoted alternate has objects and copy fidelity",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: primary absolute C-quoted alternate has objects and copy fidelity",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: linked relative C-quoted alternate has objects and copy fidelity",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC1: linked absolute C-quoted alternate has objects and copy fidelity",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "case": "restore_timestamps",
-      "mutation": "def _iar_inventory(root, *, entries=None):\n    result = original_inventory(root, entries=entries)\n    return {k: (v, (Path(root) / k).lstat().st_mtime_ns) for k, v in result.items()}",
-      "passed": 15,
-      "failed": 2,
-      "rows": [
-        {
-          "label": "VELDO-0099 AC3: primary 50 copies during sibling staging have zero raises and no sibling state",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked 50 copies during sibling staging have zero raises and no sibling state",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: an entry vanishing after enumeration does not raise",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0099 AC3: primary split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
           "passed": true
         },
         {
@@ -616,7 +448,7 @@
     {
       "case": "quotes_as_filename_characters",
       "mutation": "def _iar_resolve_alternates(original, copied):\n    path = copied / 'info/alternates'\n    if path.exists():\n        _iar_write_alternates(path, [(original / line).resolve() for line in path.read_text().splitlines()])",
-      "passed": 13,
+      "passed": 9,
       "failed": 4,
       "rows": [
         {
@@ -632,27 +464,11 @@
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: primary split index corruption is observed",
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
           "passed": true
         },
         {
@@ -692,7 +508,7 @@
     {
       "case": "omit_copied_ledger",
       "mutation": "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name != 'veldo']",
-      "passed": 15,
+      "passed": 11,
       "failed": 2,
       "rows": [
         {
@@ -708,27 +524,11 @@
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: primary split index corruption is observed",
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
           "passed": true
         },
         {
@@ -768,7 +568,7 @@
     {
       "case": "skip_config_normalization",
       "mutation": "def _iar_normalize_config(common, private): pass",
-      "passed": 15,
+      "passed": 11,
       "failed": 2,
       "rows": [
         {
@@ -784,27 +584,11 @@
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: primary split index corruption is observed",
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
           "passed": true
         },
         {
@@ -844,8 +628,8 @@
     {
       "case": "copy_sibling_state",
       "mutation": "def _iar_common_entries(common, primary): return list(common.iterdir())",
-      "passed": 13,
-      "failed": 4,
+      "passed": 11,
+      "failed": 2,
       "rows": [
         {
           "label": "VELDO-0099 AC3: primary 50 copies during sibling staging have zero raises and no sibling state",
@@ -860,28 +644,12 @@
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: primary split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
           "passed": true
         },
         {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
           "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
-          "passed": false
         },
         {
           "label": "VELDO-0099 AC3: primary copied claims and runs retain bytes and claim deletion is observed",
@@ -920,7 +688,7 @@
     {
       "case": "raise_on_vanished_entry",
       "mutation": "def _iar_copy_entry(source, target, *, skip=()):\n    if source.is_dir():\n        target.mkdir(parents=True, exist_ok=True)\n        for child in source.iterdir(): _iar_copy_entry(child, target / child.name)\n        _iar_sh.copystat(source, target)\n    else: _iar_sh.copy2(source, target)",
-      "passed": 16,
+      "passed": 12,
       "failed": 1,
       "rows": [
         {
@@ -936,27 +704,11 @@
           "passed": false
         },
         {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: primary split index corruption is observed",
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
           "passed": true
         },
         {
@@ -996,7 +748,7 @@
     {
       "case": "omit_sharedindex",
       "mutation": "def _iar_live_inventory(root):\n    result = original_live_inventory(root)\n    if _iar_git_dirs(root)[0] == _iar_git_dirs(root)[1]:\n        result = {k: v for k, v in result.items() if not k.startswith('git-dir/sharedindex.')}\n    return result",
-      "passed": 16,
+      "passed": 12,
       "failed": 1,
       "rows": [
         {
@@ -1012,27 +764,11 @@
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: primary split index corruption is observed",
           "passed": false
         },
         {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
           "passed": true
         },
         {
@@ -1072,7 +808,7 @@
     {
       "case": "skip_alternate_rewrite",
       "mutation": "def _iar_copy_alternates(objects, sandbox, copied=None): pass",
-      "passed": 11,
+      "passed": 7,
       "failed": 6,
       "rows": [
         {
@@ -1088,27 +824,11 @@
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: primary split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: primary split index corruption is observed",
           "passed": true
         },
         {
-          "label": "VELDO-0099 AC3: linked split index timestamp refresh leaves both inventories unchanged",
-          "passed": true
-        },
-        {
           "label": "VELDO-0099 AC3: linked split index corruption is observed",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: primary whole common directory except worktrees retains content",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0099 AC3: linked whole common directory except worktrees retains content",
           "passed": true
         },
         {
@@ -1152,7 +872,7 @@
       "mutation": "Read ROOT config user.name and user.email before fixture commit",
       "rows": [
         {
-          "label": "VELDO-0007 VELDO-0099 checkout shape controls: the block ran to completion rather than raising (CalledProcessError(1, ['git', '-C', '/tmp/veldo-0099-no-identity-v6ch5ghw/repo', 'config', 'user.name']))",
+          "label": "VELDO-0007 VELDO-0099 checkout shape controls: the block ran to completion rather than raising (CalledProcessError(1, ['git', '-C', '/tmp/veldo-0099-no-identity-2ffixkw9/repo', 'config', 'user.name']))",
           "passed": false
         }
       ]
@@ -1162,7 +882,7 @@
     {
       "shape": "primary",
       "case": "control",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -1176,7 +896,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -1188,7 +908,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -1228,7 +948,7 @@
     {
       "shape": "primary",
       "case": "restore_directory_shape",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -1242,7 +962,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -1254,7 +974,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -1294,7 +1014,7 @@
     {
       "shape": "primary",
       "case": "sibling_staging",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -1308,7 +1028,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -1320,7 +1040,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -1360,7 +1080,7 @@
     {
       "shape": "primary",
       "case": "sibling_staging_shared_live",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -1374,7 +1094,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -1386,7 +1106,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-common/objects/42/35a5459286aaed5cf7bff21045f25327d79996', 'git-common/worktrees/primary-sibling_staging_shared_live/index', 'git-dir/objects/42/35a5459286aaed5cf7bff21045f25327d79996', 'git-dir/worktrees/primary-sibling_staging_shared_live/index', 'tree/.git/objects/42/35a5459286aaed5cf7bff21045f25327d79996', 'tree/.git/worktrees/primary-sibling_staging_shared_live/index']",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-common/objects/42', 'git-common/objects/42/35a5459286aaed5cf7bff21045f25327d79996', 'git-common/worktrees/primary-sibling_staging_shared_live', 'git-common/worktrees/primary-sibling_staging_shared_live/index', 'git-dir/objects/42', 'git-dir/objects/42/35a5459286aaed5cf7bff21045f25327d79996']",
           "passed": false
         },
         {
@@ -1426,7 +1146,7 @@
     {
       "shape": "primary",
       "case": "sandbox_common_write",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -1440,7 +1160,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/common-write-probe', 'git-dir/common-write-probe', 'tree/.git/common-write-probe']",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/common-write-probe', 'git-dir/common-write-probe', 'tree/.git', 'tree/.git/common-write-probe']",
           "passed": false
         },
         {
@@ -1452,7 +1172,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -1492,7 +1212,7 @@
     {
       "shape": "primary",
       "case": "redirected_config",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -1506,7 +1226,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -1518,7 +1238,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -1558,7 +1278,7 @@
     {
       "shape": "primary",
       "case": "sandbox_claim_delete",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -1572,7 +1292,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/veldo/claims/probe.json', 'git-dir/veldo/claims/probe.json', 'tree/.git/veldo/claims/probe.json']",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/veldo/claims', 'git-common/veldo/claims/probe.json', 'git-dir/veldo/claims', 'git-dir/veldo/claims/probe.json', 'tree/.git/veldo/claims', 'tree/.git/veldo/claims/probe.json']",
           "passed": false
         },
         {
@@ -1584,7 +1304,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -1624,7 +1344,7 @@
     {
       "shape": "primary",
       "case": "sibling_heartbeat",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -1638,7 +1358,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -1650,7 +1370,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -1690,7 +1410,7 @@
     {
       "shape": "primary",
       "case": "sibling_heartbeat_shared_live",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -1704,7 +1424,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -1716,7 +1436,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-common/veldo/claims/probe.json', 'git-dir/veldo/claims/probe.json', 'tree/.git/veldo/claims/probe.json']",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-common/veldo/claims', 'git-common/veldo/claims/probe.json', 'git-dir/veldo/claims', 'git-dir/veldo/claims/probe.json', 'tree/.git/veldo/claims', 'tree/.git/veldo/claims/probe.json']",
           "passed": false
         },
         {
@@ -1756,10 +1476,10 @@
     {
       "shape": "primary",
       "case": "split_index",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
-      "passed": 14,
-      "failed": 0,
+      "passed": 12,
+      "failed": 2,
       "rows": [
         {
           "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
@@ -1770,8 +1490,8 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
-          "passed": true
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/sharedindex.2fa69ea56e6812de469684520a9766fb19f3e493', 'git-dir/sharedindex.2fa69ea56e6812de469684520a9766fb19f3e493', 'tree/.git/sharedindex.2fa69ea56e6812de469684520a9766fb19f3e493']",
+          "passed": false
         },
         {
           "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
@@ -1782,8 +1502,8 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
-          "passed": true
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-dir/sharedindex.2fa69ea56e6812de469684520a9766fb19f3e493']",
+          "passed": false
         },
         {
           "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
@@ -1822,10 +1542,10 @@
     {
       "shape": "primary",
       "case": "sandbox_reflog_delete",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
-      "passed": 13,
-      "failed": 1,
+      "passed": 14,
+      "failed": 0,
       "rows": [
         {
           "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
@@ -1836,8 +1556,8 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/logs/refs/heads/round-five-probe', 'git-dir/logs/refs/heads/round-five-probe', 'tree/.git/logs/refs/heads/round-five-probe']",
-          "passed": false
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "passed": true
         },
         {
           "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
@@ -1848,139 +1568,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "shape": "primary",
-      "case": "sandbox_random_delete",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
-      "random_deleted_path": "objects/98/7a57c3dbbd0a3f11835d7a94b6780c25a3f70f",
-      "passed": 13,
-      "failed": 1,
-      "rows": [
-        {
-          "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: ' stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\\n      stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)\\ninstall-and-run: pass'",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/objects/98/7a57c3dbbd0a3f11835d7a94b6780c25a3f70f', 'git-dir/objects/98/7a57c3dbbd0a3f11835d7a94b6780c25a3f70f', 'tree/.git/objects/98/7a57c3dbbd0a3f11835d7a94b6780c25a3f70f']",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "shape": "primary",
-      "case": "split_index_reflog_delete",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
-      "random_deleted_path": null,
-      "passed": 13,
-      "failed": 1,
-      "rows": [
-        {
-          "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: ' stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\\n      stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)\\ninstall-and-run: pass'",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/logs/refs/heads/round-five-probe', 'git-dir/logs/refs/heads/round-five-probe', 'tree/.git/logs/refs/heads/round-five-probe']",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -2020,7 +1608,7 @@
     {
       "shape": "linked",
       "case": "control",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -2034,7 +1622,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -2046,7 +1634,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -2086,7 +1674,7 @@
     {
       "shape": "linked",
       "case": "restore_directory_shape",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -2100,7 +1688,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -2112,7 +1700,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -2152,7 +1740,7 @@
     {
       "shape": "linked",
       "case": "sibling_staging",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -2166,7 +1754,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -2178,7 +1766,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -2218,7 +1806,7 @@
     {
       "shape": "linked",
       "case": "sibling_staging_shared_live",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -2232,7 +1820,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -2244,7 +1832,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-common/objects/fc/b54cad7cf359e2a216bc54cd2586475b6bb7fc', 'git-common/worktrees/linked-sibling_staging_shared_live/index']",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-common/objects/fc', 'git-common/objects/fc/b54cad7cf359e2a216bc54cd2586475b6bb7fc', 'git-common/worktrees/linked-sibling_staging_shared_live', 'git-common/worktrees/linked-sibling_staging_shared_live/index']",
           "passed": false
         },
         {
@@ -2284,7 +1872,7 @@
     {
       "shape": "linked",
       "case": "sandbox_common_write",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -2298,7 +1886,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/common-write-probe']",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/common-write-probe']",
           "passed": false
         },
         {
@@ -2310,7 +1898,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -2350,7 +1938,7 @@
     {
       "shape": "linked",
       "case": "redirected_config",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -2364,7 +1952,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -2376,7 +1964,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -2416,7 +2004,7 @@
     {
       "shape": "linked",
       "case": "sandbox_claim_delete",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -2430,7 +2018,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/veldo/claims/probe.json']",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/veldo/claims', 'git-common/veldo/claims/probe.json']",
           "passed": false
         },
         {
@@ -2442,7 +2030,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -2482,7 +2070,7 @@
     {
       "shape": "linked",
       "case": "sibling_heartbeat",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 14,
       "failed": 0,
@@ -2496,7 +2084,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -2508,7 +2096,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
@@ -2548,7 +2136,7 @@
     {
       "shape": "linked",
       "case": "sibling_heartbeat_shared_live",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
       "passed": 13,
       "failed": 1,
@@ -2562,7 +2150,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
           "passed": true
         },
         {
@@ -2574,7 +2162,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-common/veldo/claims/probe.json']",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-common/veldo/claims', 'git-common/veldo/claims/probe.json']",
           "passed": false
         },
         {
@@ -2614,10 +2202,10 @@
     {
       "shape": "linked",
       "case": "split_index",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
-      "passed": 14,
-      "failed": 0,
+      "passed": 12,
+      "failed": 2,
       "rows": [
         {
           "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
@@ -2628,8 +2216,8 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
-          "passed": true
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-dir/sharedindex.b035543bb3ad5f6607b9b042f43a37ca3b0d011c']",
+          "passed": false
         },
         {
           "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
@@ -2640,8 +2228,8 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
-          "passed": true
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: ['git-dir/sharedindex.b035543bb3ad5f6607b9b042f43a37ca3b0d011c']",
+          "passed": false
         },
         {
           "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
@@ -2680,10 +2268,10 @@
     {
       "shape": "linked",
       "case": "sandbox_reflog_delete",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
+      "commit": "0f69276d907183a17a61f099cb27d6939920a710",
       "random_deleted_path": null,
-      "passed": 13,
-      "failed": 1,
+      "passed": 14,
+      "failed": 0,
       "rows": [
         {
           "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
@@ -2694,8 +2282,8 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/logs/refs/heads/round-five-probe']",
-          "passed": false
+          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size, modification time and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: []",
+          "passed": true
         },
         {
           "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
@@ -2706,139 +2294,7 @@
           "passed": true
         },
         {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "shape": "linked",
-      "case": "sandbox_random_delete",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
-      "random_deleted_path": "objects/27/b287e4fbc39dd54d37a040cd94c93734204ee4",
-      "passed": 13,
-      "failed": 1,
-      "rows": [
-        {
-          "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: ' stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\\n      stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)\\ninstall-and-run: pass'",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/objects/27/b287e4fbc39dd54d37a040cd94c93734204ee4']",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: it makes no network call - no urlopen, no requests, no socket - and no second process-launch mechanism. AST identifiers rather than substrings, because prose describing what it refuses to do is prose. THE DETACHED-PROCESS HALF IS NOT THIS ROW: a keyword argument has no identifier, which is why start_new_session=True passed this scan untouched, and the two rows below are what carry it",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE PUBLISHER, THE CHILD THIS STAGE LAUNCHES FIRST, MAKES NO NETWORK CALL EITHER - the same AST identifier set asked of scripts/publish.py, whose own contract is that producing a public tree and publishing it are two acts. Found by a review: the no-network property was asserted over ONE file and the file it runs was checked only by hand. Identifiers that would have failed: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 AND THE NESTED GATE - the shipped scripts/verify.sh, which is what the pack's copy is a byte-for-byte descendant of - reaches no network either: no curl, wget, nc, ssh, scp, pip or npm, and no git subcommand that talks to a remote (push, fetch, pull, clone, ls-remote). A shell script has no AST, so this is a token scan and it says so. Hits: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 NEGATIVE CONTROL for the two rows above, ADDITIVE: source carrying urlopen, socket and requests is DETECTED by the same identifier set, and a script carrying curl, `git push` and `pip install` is DETECTED by the same token set - so the empty answers above are measurements and not a scan that cannot fire. Found in the control: ['requests', 'socket', 'urlopen'] and ['\\\\bcurl\\\\b', '\\\\bgit\\\\s+(push|fetch|pull|clone|ls-remote|remote\\\\s+add)\\\\b', '\\\\bpip\\\\s+install\\\\b']",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE INERT CONTROL IS GONE: the module hands no child a VELDO_NO_NETWORK variable, because nothing in this repository ever read one - a control that appears to enforce and executes nothing is worse than no control, since it stops the reader looking, and the two rows above are what carries the property now. Asserted over string CONSTANTS AND CALL KEYWORD NAMES with docstrings excluded, so the file stays free to explain in prose why the flag went while the exact shape it had - a keyword, not a string - is still caught. The additive control carrying that line IS caught: ['VELDO_NO_NETWORK']",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE SINGLE FUNNEL: every child this stage starts is launched from ONE helper (_run), asserted over the file's own call graph, which is what makes the keyword observation below a statement about EVERY child rather than about one call site. Launch sites found: [(133, ['capture_output', 'cwd', 'text', 'timeout'])]",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, and every keyword passed is one of the declared benign set, so a spelling nobody thought of is red too. A review added start_new_session=True and the identifier scan above could not see it. Keywords found: [['capture_output', 'cwd', 'text', 'timeout']]",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and its output came back, and the keyword arguments it actually passed were RECORDED - no detaching spelling among them, all within the benign set. Recorded: [['capture_output', 'cwd', 'text', 'timeout']]",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "shape": "linked",
-      "case": "split_index_reflog_delete",
-      "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
-      "random_deleted_path": null,
-      "passed": 13,
-      "failed": 1,
-      "rows": [
-        {
-          "label": "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE: the WORKING TREE was copied - not a clone of HEAD, so a mutation under review is inside the tree being observed - and the copy carries the stage and its git directory, so the run below is the real compose-install-gate path rather than a fixture",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: ' stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\\n      stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)\\ninstall-and-run: pass'",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - every path, size and sha256 identical, ignored paths and resolved private and common git stores included, which is the half a `git status` comparison could not see: a review wrote .veldo/trackers.json (the one file the ignore rule exists to protect) and a file inside scripts/__pycache__ and every row stayed green. Entries that moved: ['git-common/logs/refs/heads/round-five-probe']",
-          "passed": false
-        },
-        {
-          "label": "VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a HOME of its own and that directory, sentinel file included, is byte-identical afterwards. A review's probe wrote a 36-byte file into $HOME on every single call and no row noticed, because the old assertion could only see tracked paths inside this one tree. Entries that moved: []",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
-          "passed": true
-        },
-        {
-          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+          "label": "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, modification time and sha256 before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
           "passed": true
         },
         {
