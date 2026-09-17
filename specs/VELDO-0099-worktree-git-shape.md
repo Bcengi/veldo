@@ -30,8 +30,11 @@ acceptance_criteria:
       checkout shape and resolves metadata through git rev-parse --git-dir and --git-common-dir.
       Set: Primary checkout with a .git directory and linked checkout with a .git pointer file,
       both at the same commit. Completeness: Drive both in isolated fixtures, assert equal HEADs,
-      and require the copied stage, index, private git directory, and shared store to resolve
-      inside the observation sandbox. The fixture supplies its own fixed commit identity;
+      and require the copied stage, index, private git directory, shared store, worktree,
+      config paths, and object alternates to resolve inside the observation sandbox before
+      executing the copied stage. Drive core.worktree pointing at the original dirty checkout
+      and require checkout-index in the sandbox to preserve the original edit byte for byte;
+      skipping config normalization must red that row. The fixture supplies its own fixed commit identity;
       drive the controls with an empty HOME and no configured identity. Falsifier: Restore the .git is_dir requirement and the
       linked-checkout substrate row must fail while the primary control passes.
     falsified_by: >
@@ -59,14 +62,19 @@ acceptance_criteria:
       live observation and require it to stay green, while a real stage write into the copied
       common store reds the sandbox row. Falsifier: Inventory only the working tree and the
       linked metadata-write row must fail; restore shared live inventory and sibling staging
-      must red the live row.
+      must red the live row. Include sharedindex.*, pseudorefs, operation state, logs/HEAD,
+      private refs, and config.worktree in primary private-state observation. Corrupt a real
+      split index base and require its changed entry to be observed. Copy only common stores
+      and this checkout's private state, never sibling private state; tolerate entries vanishing
+      during traversal. Drive 50 copies per shape during concurrent sibling staging and
+      unstaging with zero raises, and a deterministic disappearing-file control.
     falsified_by: >
       Inventory only the working tree and the linked metadata-write row must fail.
   - id: AC4
     text: >
       Claim: Proof demonstrates full green gates in this linked worktree and a disposable
       primary checkout of the same implementation commit, with the regression controls driven.
-      Set: Both full gate invocations, all three declared code mutations, and the suite-wide
+      Set: Both full gate invocations, all original and review code mutations, and the suite-wide
       search for sibling .git directory assumptions. Completeness: Record commands, commit,
       exit codes, counts, and failing mutation rows in proof/VELDO-0099; map every criterion in
       its manifest and distinguish diagnostics from full gate evidence. Falsifier: Restore the
@@ -117,3 +125,9 @@ and sibling indexes. For a primary checkout, private HEAD, index, and operation 
 are selected from the otherwise shared .git directory. Disposable sibling staging and
 private-state writes exercise both layouts. This corrects AC3's attribution boundary
 without dropping the original sandbox metadata-write controls.
+
+Second review correction: sandbox configs retain only repository storage semantics;
+external config includes and execution paths are discarded, git pointer files are rewritten,
+and object alternates are copied into the sandbox. Containment is checked before the copied
+stage runs. Common-store copies exclude sibling worktree state and tolerate vanished entries.
+Primary private-state observation includes split indexes and lowercase operation state.
