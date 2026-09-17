@@ -281,7 +281,7 @@ def _iar_copy_tree(source, target):
         (target / ".git").write_text("gitdir: " + str(copied_private) + "\n")
     _iar_normalize_config(copied_common, copied_private)
     _iar_resolve_alternates(common / "objects", copied_common / "objects")
-    _iar_copy_alternates(copied_common / "objects", target.parent)
+    _iar_copy_alternates(copied_common / "objects", copied_common)
     _iar_assert_isolated(target, copied_private, copied_common)
 
 
@@ -481,6 +481,11 @@ def _iar_review_controls():
                 _iar_git(sandbox / "repo", "checkout-index", "-f", "-a")
                 completed = (sandbox / "repo" / "tracked").read_bytes() == b"committed bytes\n"
                 _iar_git(sandbox / "repo", "cat-file", "-e", "HEAD^{tree}")
+                inventory = _iar_repository_inventory(sandbox / "repo")
+                alternate = next(sandbox.rglob("git-alternate-0"))
+                (alternate / "alternate-write-probe").write_text("must be observed\n")
+                completed = completed and any(p.endswith("/alternate-write-probe") for p in
+                    _iar_changed(inventory, _iar_repository_inventory(sandbox / "repo")))
             except (AssertionError, ValueError):
                 # An unsafe-copy mutation must red this row before executing git writes.
                 pass
