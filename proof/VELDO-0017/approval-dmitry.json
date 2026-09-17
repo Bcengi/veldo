@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0017-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0017",
+    "commit": "364be283c3c35de84d9d48acac240bfac18ad382",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0017 (risk high, human_approval required, no protected paths) over Telegram on 2026-09-17 at 12:33 UTC (message 27906, 'approve 0017'), answering an ask that described the item: one identity envelope for the sixteen coordination record kinds, six lifecycles with only declared transitions and named entry predicates, terminal history never reopened, one owner per record, and the canonical claim validator called before any unit artifact is written. Landing follows the gate and the Codex review. paths is empty because the approval is of the landing, not of a protected path.",
+  "recorded_at": "2026-09-17T12:36:00Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval of 2026-09-17; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}

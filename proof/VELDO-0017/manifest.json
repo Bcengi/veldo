@@ -87,8 +87,9 @@
     "proof/VELDO-0017/drive.py",
     "proof/VELDO-0017/gate-implementation.log",
     "proof/VELDO-0017/log-redactions.json",
-    "proof/VELDO-0017/README.md"
+    "proof/VELDO-0017/README.md",
+    "proof/VELDO-0017/approval-dmitry.json"
   ],
   "rollback": "Revert the entity contract organ, its capability and scaffold registrations and suite 30 through the ordinary reviewed path (a revert commit, never a force). The module is pure and persists nothing, so there is no data to migrate; the store, scheduler and alias counter that will consume it are later packages.",
-  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here."
+  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here. Dmitry's approval of the landing (2026-09-17, Telegram message 27906) is recorded in approval-dmitry.json."
 }
