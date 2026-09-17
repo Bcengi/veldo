@@ -1,0 +1,144 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0022",
+  "commit": "111da90f481fedfc79d9964d70ccdc4a98e3f0b8",
+  "taken_at": "2026-09-17T22:32:13Z",
+  "fragment": "scripts/suites/34_veldo_0022_admission.py",
+  "fragment_sha256": "5947f31968ba39355313099ac33323cdd4ad9281fbad5068e1baff2c5f2818fb",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/admission_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
+  "rows_total": 20,
+  "rows_passed": 20,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0022 AC1 admission/technical-authority DRIVEN (the declared falsifier): with a preparation agent permitted to admit TECHNICAL_CHANGE in a copy, the agent's admission passes, so the row reds; unmutated it is refused",
+    "VELDO-0022 AC2 admission/untrusted-reproduction DRIVEN (the declared falsifier): with an agent assertion accepted as a reproduction in a copy, the defect is admitted, so the row reds; unmutated it is refused",
+    "VELDO-0022 AC3 quarantine/unknown-scan DRIVEN (the declared falsifier): with an unavailable inspection read as clean in a copy, the record passes quarantine, so the row reds; unmutated it is refused",
+    "VELDO-0022 AC4 readmission/signed-ceiling DRIVEN (the declared falsifier): with increases under twenty percent treated as free in a copy, a ten percent increase past the signed ceiling stands, so the row reds; unmutated it invalidates"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "admission/technical-authority DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "admission/untrusted-reproduction DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "quarantine/unknown-scan DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC4": {
+      "row_contains": "readmission/signed-ceiling DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 6,
+      "passed": 6,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 5,
+      "passed": 5,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 5,
+      "passed": 5,
+      "driven": 1
+    },
+    "AC4": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0022 AC1 admission/registry: the work classes are exactly the seven of R08, the class policy registry equals them in both directions, every lane is one of the three, and the machine set is bound to authorization.MACHINE_ACTORS",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC1 admission/classify: no class, two classes and an unknown class each stay quarantined; one known class classifies",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC1 admission/matrix: every class admits under its permitted control (its person's role or its signed policy) and refuses a preparation agent, an unsigned request revision, a role-less person without policy, a wrong lane and an automatic priority (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC1 admission/context: compliance work with no enrolled obligation and named authority refuses (none is enrolled for Veldo), and a production containment or deployment target with no admitted adapter refuses",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC1 admission/technical-authority: a preparation agent cannot admit a TECHNICAL_CHANGE; the admission authority can",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC1 admission/technical-authority DRIVEN (the declared falsifier): with a preparation agent permitted to admit TECHNICAL_CHANGE in a copy, the agent's admission passes, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC2 admission/defect-table: the R66 table has thirteen predicates each citing R66, and a complete defect with a trusted quarantined reproduction is admitted as POLICY_DEFECT with its severity kept",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC2 admission/defect-table: every predicate has one independently failing fixture refused by its own name with the positive control admitted (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC2 admission/routing: a disqualifying interface change routes to AWAITING_GROOMING as PRODUCT_CHANGE, a dependency policy change as TECHNICAL_CHANGE, a cross-repository defect is BLOCKED and never partially admitted, a critical defect without clean reproduction goes to security handling, and any other failure goes to grooming; severity is never lowered",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC2 admission/untrusted-reproduction: an agent's reproduction assertion, a trusted record missing a field, one whose violation was not demonstrated, and one without a quarantine id are each not a trusted reproduction and refuse admission",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC2 admission/untrusted-reproduction DRIVEN (the declared falsifier): with an agent assertion accepted as a reproduction in a copy, the defect is admitted, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC3 quarantine/fields-and-bounds: a complete clean record passes; each missing field refuses by name; each expansion bound (1 GB, 10000 files, depth 10, ratio 100:1) accepts the bound and refuses one over it; a granted sandbox capability, a network default other than denied, and an allowlisted request missing a recorded field each refuse",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC3 quarantine/unknown-scan: an unavailable, unknown, pending or errored malware or secret scan is a failure, never clean; a flagged scan refuses; a surviving injection taint refuses",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC3 quarantine/unknown-scan DRIVEN (the declared falsifier): with an unavailable inspection read as clean in a copy, the record passes quarantine, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC3 quarantine/standing-ticket: an in-force signed ticket with a fresh occurrence inside its bounds runs; a missing field, a machine signer, an expired ticket, a reused occurrence id, an over-budget occurrence and an ineligible path each refuse by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC3 quarantine/break-glass: a bounded grant acts; a machine responder, an unlisted action, a forbidden authorization (permanent feature, API change), an elapsed duration, a ratification overdue past four hours, an overdue review, an unratified canary over five percent or not isolated, and a missing reversible action or independent deadline enforcer each refuse by name; the constants are the R68 numbers",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC4 readmission/dimensions: the nine scope dimensions are machine-comparable and an unchanged scope stands; a missing dimension refuses comparison; a new protected path, an interface change, a migration, an unlisted dependency, a new target, increased risk, a changed criterion and a class change each invalidate by name; a security escalation grants only its bounded authority",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC4 readmission/budget: a budget increase at twenty percent stands, above it invalidates, and a ten percent increase that exceeds the signed ceiling invalidates while one within the ceiling stands; invalidation moves units to AWAITING_AUTHORITY and the item to AWAITING_GROOMING with build and merge stopped",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC4 readmission/signed-ceiling DRIVEN (the declared falsifier): with increases under twenty percent treated as free in a copy, a ten percent increase past the signed ceiling stands, so the row reds; unmutated it invalidates",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC4 readmission/debt: the report counts RAW, PREPARED and AWAITING_GROOMING with oldest ages (7, 14 and 15 days at seven and fourteen-day thresholds), lists the prepared items older than seven days as debt with their known effort and the number of unknown estimates (never zero), raises an andon warning past fourteen days, and grants no authority",
+      "passed": true
+    }
+  ]
+}
