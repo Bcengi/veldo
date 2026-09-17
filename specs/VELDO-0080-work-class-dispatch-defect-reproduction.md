@@ -60,12 +60,12 @@ acceptance_criteria:
       authorization.is_authorized for PRODUCT_CHANGE, POLICY_DEFECT, SECURITY_EMERGENCY,
       INCIDENT_CONTAINMENT, STANDING_MAINTENANCE, TECHNICAL_CHANGE and COMPLIANCE_EXPIRY.
       Completeness: Require equality of R08/A classes and registered handlers, with unknown and
-      multiple-class refusals. Exercise each handler with every required predicate removed and a
-      valid control. Product/technical and non-standing compliance work require deliberate shaping
-      and priority; absent compliance obligation or qualified target blocks. W67/W68 supply
-      standing/emergency handlers before activation. Falsifier: Route TECHNICAL_CHANGE through
-      automatic defect admission solely from its label; classes/technical-authority must detect
-      unauthorized admission.
+      multiple-class input held in quarantine. Exercise each handler with every required predicate
+      removed and a valid control. Product/technical and non-standing compliance work require
+      deliberate shaping and priority; absent compliance obligation or qualified target blocks.
+      W67/W68 supply standing/emergency handlers before activation. Falsifier: Route
+      TECHNICAL_CHANGE through automatic defect admission solely from its label;
+      classes/technical-authority must detect unauthorized admission.
     falsified_by: >
       Route TECHNICAL_CHANGE through automatic defect admission solely from its label;
       classes/technical-authority must detect unauthorized admission.

@@ -52,19 +52,21 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Standing work requires deliberately authored signed authorization covering every
-      occurrence limit. Set: control_occurrence validation with
-      request.validate_record/authorization.is_authorized over R68 cadence, start/expiry,
+      Claim: Standing work requires authorization deliberately authored by a person through an
+      enrolled E surface and covering every occurrence limit. Set: control_occurrence validation
+      with request.validate_record/authorization.is_authorized over R68 cadence, start/expiry,
       paths/dependencies, version movement, breaking-change prohibition, budget, concurrency,
       tests and release limits. Completeness: Compare accepted standing schema fields and
       maintenance categories to coverage. Remove each bound; exercise refactors, upgrades,
       renewal, SDK migration, flakes, observability, build maintenance, dead code and deprecation
       both covered and uncovered. Uncovered debt requires TECHNICAL_CHANGE grooming; prepared
-      recurring text cannot self-sign. Falsifier: Permit a generated recurring request without an
-      authorized personal signature; standing/deliberate-ticket must detect automatic admission.
-    falsified_by: >
-      Permit a generated recurring request without an authorized personal signature;
+      recurring text cannot self-sign. Falsifier: Permit a generated recurring request without a
+      current signature or enrolled edge assertion bound to its authorized author;
       standing/deliberate-ticket must detect automatic admission.
+    falsified_by: >
+      Permit a generated recurring request without a current signature or enrolled edge assertion
+      bound to its authorized author; standing/deliberate-ticket must detect automatic
+      admission.
   - id: AC2
     text: >
       Claim: Each cadence occurrence has a distinct item and receipt chain, while retries reuse

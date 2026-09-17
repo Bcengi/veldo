@@ -118,6 +118,11 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0091 | Budgeted requirements elaboration | draft | critical | dmitry | required | VELDO-0091-budgeted-requirements-elaboration.md |
 | VELDO-0092 | Typed proposals and complete authorization validation | draft | critical | dmitry | required | VELDO-0092-typed-proposals-authorization-validation.md |
 | VELDO-0093 | Per-project cycle serialization and replaceable checkpoint recovery | draft | critical | dmitry | required | VELDO-0093-project-cycle-serialization-checkpoint-recovery.md |
+| VELDO-0094 | Every-pack runtime installation and floor-slice qualification | draft | high | dmitry | required | VELDO-0094-every-pack-installation-floor-slice.md |
+| VELDO-0095 | Historical migration and atomic reader-writer cutover | draft | critical | dmitry | required | VELDO-0095-historical-migration-atomic-cutover.md |
+| VELDO-0096 | Clone and enrolled-principal adoption qualification | draft | high | dmitry | required | VELDO-0096-clone-principal-adoption-qualification.md |
+| VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
+| VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
