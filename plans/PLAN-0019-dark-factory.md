@@ -81,10 +81,11 @@ constraints:
       that runner is prohibited.
   - id: C3
     text: >
-      The four R03 architectural recommendations remain open for Dmitry: SQLite authority with
-      signed Git replica, off-host acknowledgement before success, Linux systemd cgroup v2 runner,
-      and isolated clones with a shared object cache. The guardian recommendation is not Dmitry's
-      approval.
+      The four R03 architectural decisions were ruled by Dmitry on 2026-09-17: SQLite authority with
+      signed Git replica (approved), off-host acknowledgement before success (accepted), Linux
+      systemd cgroup v2 runner (accepted, with plural host profiles per C12), and isolated clones
+      with a shared object cache (approved, with the attachment rule per C13). The rulings are
+      recorded on VEL-18, attributed to the channel they arrived on.
   - id: C4
     text: >
       R21 permits one local SQLite authority at <git-common-dir>/veldo/control/control.sqlite3 per
@@ -133,6 +134,22 @@ constraints:
       criteria, proof, independent review, and green gate. Live provider proof belongs to D; real
       decision-channel and interrupted-settlement proof belongs to E, never to C's approval
       fixtures. Activation is separate from source landing.
+  - id: C12
+    text: >
+      Dmitry's 2026-09-17 ruling on D3: the authority and its workers must run in the cloud and on
+      several kinds of workstation, not only one Linux box. Host profiles are plural. Each profile
+      passes the same containment, lifecycle and credential contract before activation; a Linux
+      host with systemd and cgroup v2, local or cloud, qualifies under R43 as it stands, and any
+      other host kind needs its own qualified adapter. Remote workers reach the authority through
+      the authenticated relay of R20. No profile is presumed qualified.
+  - id: C13
+    text: >
+      Dmitry's 2026-09-17 ruling on D4: a worker reads other repositories
+      only through attachments its contract names, each pinned to an exact accepted commit and
+      provisioned read-only from the shared object cache; it cannot reach a repository the
+      contract did not name and cannot write to an attached one. A write to another repository is
+      its own unit, admitted in that repository's own domain and linked here by a dependency.
+      An interactive session run by a person is not a worker and is not confined by this plan.
 
 feature_tree:
   - id: F1
@@ -737,23 +754,7 @@ release:
   observation:
     duration: Complete installed-pack and operational recovery qualification before activation; retain rollback material through the full proof plan.
 
-open_decisions:
-  - id: D1
-    owner: Dmitry
-    text: Dmitry must ratify SQLite as authority with a signed Git audit and recovery replica before effective policy and storage implementation.
-    blocks: [VELDO-0016, VELDO-0023, VELDO-0024, VELDO-0044, VELDO-0048]
-  - id: D2
-    owner: Dmitry
-    text: Dmitry must ratify off-host durable acknowledgement before mutation success, external dispatch, or dependent publication; local commit alone stays pending.
-    blocks: [VELDO-0016, VELDO-0024, VELDO-0039]
-  - id: D3
-    owner: Dmitry
-    text: Dmitry must ratify Linux systemd and cgroup v2 as the production runner requirement before lifecycle policy, containment, and service activation.
-    blocks: [VELDO-0016, VELDO-0040, VELDO-0041, VELDO-0047]
-  - id: D4
-    owner: Dmitry
-    text: Dmitry must ratify isolated per-run clones with a pinned read-only shared object cache before provisioning replaces shared worktrees.
-    blocks: [VELDO-0016, VELDO-0042]
+open_decisions: []
 ---
 
 ## Intent
@@ -762,7 +763,7 @@ open_decisions:
 
 **Trust.** The existing specification, proof, review, gate, and serialized landing machinery is the factory floor and must be repaired before coordination depends on it. A successful process, model assertion, tracker status, graph checkpoint, or locally committed transaction does not establish accepted completion. Owners answer on enrolled input surfaces, with the exact presentation and canonical actor evidence bound to one settlement in Veldo. Projects, plans, releases, and behavior floors retain distinct meanings and authority.
 
-**Delivery.** Build the contracts and durable control foundation first, prove a real installed floor slice with a fake model, then qualify production engines and decision channels. Only after those boundaries work may project operations and model coordination rely on them. These artifacts remain drafts; the four architectural recommendations await Dmitry, and no implementation, channel activation, or operational authority is claimed here.
+**Delivery.** Build the contracts and durable control foundation first, prove a real installed floor slice with a fake model, then qualify production engines and decision channels. Only after those boundaries work may project operations and model coordination rely on them. These artifacts remain drafts; Dmitry ruled on the four architectural decisions on 2026-09-17 (D1 approved, D2 accepted, D3 accepted with plural host profiles, D4 approved), recorded on VEL-18 and in constraints C12 and C13, and no implementation, channel activation, or operational authority is claimed here.
 
 ## Ordered delivery rationale
 

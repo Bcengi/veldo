@@ -24,7 +24,7 @@ No repository files were changed. No full gate run or implementation completion 
 
 Decision records shall precede executable changes for orchestrator ownership of process lifetime, operational authority and persistence, LangGraph's replaceable execution boundary, and review and completion semantics.
 
-The SQLite authority with signed Git replication, off-host publication before mutation acknowledgement, Linux systemd and cgroup v2 runner requirement, and isolated worker clones with shared object storage are ACCEPTED for this draft under the guardian's recommendation, pending Dmitry's word.
+The SQLite authority with signed Git replication (D1, approved), off-host publication before mutation acknowledgement (D2, accepted), the Linux systemd and cgroup v2 runner requirement (D3, accepted with host profiles plural by his requirement), and isolated worker clones with shared object storage (D4, approved with contract-named, commit-pinned, read-only repository attachments) were ruled by Dmitry on 2026-09-17, recorded on VEL-18 and attributed to the channel the rulings arrived on.
 
 The process decision records Dmitry's retirement of `no_detached_processes` and agent-mediated launch requirements for this project layer. It shall identify the architecture-contract revision, policy loading changes, capability declarations, and affected tests that activate the replacement. Recording a decision alone does not change effective enforcement. The lexical prohibition in `scripts/suites/06_capabilities_manifest_honesty_veldo.py` shall be replaced for the governed runner by lifecycle and containment obligations with real failure tests. Extending that lexical scan to reject the adopted runner is prohibited.
 
@@ -384,7 +384,7 @@ Unsupported output, missing terminal records, and malformed or absent usage fail
 
 **R43. Process lifetime and descendant containment. [REVISED]**
 
-Production autonomous workers require Linux, systemd, and cgroup v2. Other hosts, including a Mac, refuse activation until an equivalent adapter passes the same contract.
+Production autonomous workers require Linux, systemd, and cgroup v2. Other hosts, including a Mac, refuse activation until an equivalent adapter passes the same contract. Dmitry's ruling of 2026-09-17 makes host profiles plural by requirement: the factory must run in the cloud and on several kinds of workstation, each profile qualified against this same contract, with remote workers reaching the authority through R20's relay.
 
 Each dispatch has a dedicated containment group and trusted wrapper. Forking, new sessions, and grandchildren cannot escape it. Worker credentials and namespaces cannot modify containment controls, reach the authority's service manager, or signal authority processes.
 
