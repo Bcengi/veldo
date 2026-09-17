@@ -1,18 +1,18 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0017",
-  "commit": "364be283c3c35de84d9d48acac240bfac18ad382",
-  "taken_at": "2026-09-17T12:32:12Z",
+  "commit": "3d1e05c59a6b6dff38679625efce7e586f656296",
+  "taken_at": "2026-09-17T12:46:18Z",
   "fragment": "scripts/suites/30_veldo_0017_entity_lifecycle.py",
-  "fragment_sha256": "ce880e561f7ba7dcf586bfdb99eb7be615f56b15a4d0c0d8fd59097ff7ee5f01",
+  "fragment_sha256": "b82620fd86fe50f95aa40fbaae8e230f720da60341c83c6c8aadccd716372901",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/entity_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the historical alias corpus is read from specs/ and plans/ as a population.",
-  "rows_total": 23,
-  "rows_passed": 23,
+  "rows_total": 29,
+  "rows_passed": 29,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0017 AC1 entity-schema/version-separation DRIVEN (the declared falsifier): with the conflation refusal removed, a record whose concurrency version is taken from its scope revision passes the envelope, so the row reds; unmutated it is refused",
     "VELDO-0017 AC2 lifecycle/backlog-direct-execution DRIVEN (the declared falsifier): with RAW -> ACTIVE declared in a copy, the transition is allowed, so the row reds; unmutated it is refused as undeclared",
-    "VELDO-0017 AC3 ownership/duplicate-project DRIVEN (the declared falsifier): with two owners per unit declared the cardinality refusal disappears and only the two-projects rule still refuses; with that rule removed too the second project owns the unit, so the row reds; unmutated both refuse",
+    "VELDO-0017 AC3 ownership/duplicate-project DRIVEN (the declared falsifier): ONE copy carrying both mutations (two owners per unit and the two-projects rule removed) accepts the unit two projects reach with no ownership problem at all, so the row reds; the cardinality-only mutant still refuses through the two-projects rule, and the unmutated module refuses on both counts",
     "VELDO-0017 AC4 identity/canonical-unit-validation DRIVEN (the declared falsifier): with the check skipped a bad id is written, so the row reds; unmutated the write never happens"
   ],
   "declared_falsifiers": {
@@ -39,18 +39,18 @@
   },
   "per_criterion": {
     "AC1": {
-      "rows": 6,
-      "passed": 6,
+      "rows": 7,
+      "passed": 7,
       "driven": 1
     },
     "AC2": {
-      "rows": 5,
-      "passed": 5,
+      "rows": 6,
+      "passed": 6,
       "driven": 1
     },
     "AC3": {
-      "rows": 6,
-      "passed": 6,
+      "rows": 10,
+      "passed": 10,
       "driven": 1
     },
     "AC4": {
@@ -117,7 +117,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0017 AC3 ownership/duplicate-project DRIVEN (the declared falsifier): with two owners per unit declared the cardinality refusal disappears and only the two-projects rule still refuses; with that rule removed too the second project owns the unit, so the row reds; unmutated both refuse",
+      "label": "VELDO-0017 AC3 ownership/duplicate-project DRIVEN (the declared falsifier): ONE copy carrying both mutations (two owners per unit and the two-projects rule removed) accepts the unit two projects reach with no ownership problem at all, so the row reds; the cardinality-only mutant still refuses through the two-projects rule, and the unmutated module refuses on both counts",
       "passed": true
     },
     {
@@ -150,6 +150,30 @@
     },
     {
       "label": "VELDO-0017 AC4 identity/canonical-unit-validation DRIVEN (the declared falsifier): with the check skipped a bad id is written, so the row reds; unmutated the write never happens",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/transfer (review 1): a transfer that also swaps the uuid, the domain or the repository is a substitution and is refused by field; only the owner field may move",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/duplicate-project (review 1): two records carrying one unit uuid, reaching two projects through two items, are refused as a duplicate identity (an identity names one entity), never silently collapsed into the last record read",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/retry (review 1): a retry with no scope digest on the unit or on either attempt is refused as unproven scope continuity, never accepted because three absent values compare equal",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC1 entity-schema/envelope (review 1): creation provenance is immutable through a concurrency update and a scope change alike; replacing source, creator or creation time is refused by field",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC2 lifecycle/terminal-history (review 1): terminal links are append-only - replacing ['original'] with ['replacement', 'new'] is refused as a rewrite, appending to it is allowed, and a change that only bumps the concurrency version without appending is a rewrite",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0017 AC3 ownership/cardinality (review 1): an item naming its objective as a list is walked like the cardinality pass walks it - two objectives in two projects make the unit owned by two projects and the item a duplicate owner, a one-element list is one owner - and nothing raises",
       "passed": true
     }
   ]
