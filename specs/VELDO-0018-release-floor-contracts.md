@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0018
 title: Release and behavior-floor integration contracts
-status: ready
+status: shipped
 risk: high
 owner: dmitry
 human_approval: required
