@@ -101,6 +101,29 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0073 | Per-channel live ingress activation and real sandbox qualification | draft | critical | dmitry | required | VELDO-0073-channel-ingress-activation.md |
 | VELDO-0074 | Interrupted and concurrent decisions across enrolled channels | draft | critical | dmitry | required | VELDO-0074-interrupted-channel-decisions.md |
 | VELDO-0075 | Andon delivery and authorized resumption through enrolled channels | draft | critical | dmitry | required | VELDO-0075-andon-delivery-resumption.md |
+| VELDO-0076 | Project ownership, charter, lifecycle, and transfers | draft | critical | dmitry | required | VELDO-0076-project-ownership-charter-lifecycle.md |
+| VELDO-0077 | Objective acceptance and signed outcome assessment | draft | critical | dmitry | required | VELDO-0077-objective-acceptance-outcome-assessment.md |
+| VELDO-0078 | Backlog lifecycle and priority-controlled execution | draft | critical | dmitry | required | VELDO-0078-backlog-lifecycle-priority-execution.md |
+| VELDO-0079 | Grooming and admission requests through enrolled decision surfaces | draft | critical | dmitry | required | VELDO-0079-grooming-enrolled-decision-surfaces.md |
+| VELDO-0080 | Section 2 work-class dispatch and trusted defect reproduction | draft | critical | dmitry | required | VELDO-0080-work-class-dispatch-defect-reproduction.md |
+| VELDO-0081 | Quarantine inspection, taint propagation, and bounded execution | draft | critical | dmitry | required | VELDO-0081-quarantine-inspection-taint-execution.md |
+| VELDO-0082 | Standing maintenance and compliance occurrence admission | draft | critical | dmitry | required | VELDO-0082-standing-maintenance-compliance-occurrences.md |
+| VELDO-0083 | Bounded security emergency and incident containment admission | draft | critical | dmitry | required | VELDO-0083-security-emergency-incident-containment.md |
+| VELDO-0084 | Readmission, scope enforcement, and admission-debt reporting | draft | critical | dmitry | required | VELDO-0084-readmission-scope-admission-debt.md |
+| VELDO-0085 | Decomposition and concurrent elaboration publication | draft | critical | dmitry | required | VELDO-0085-decomposition-concurrent-publication.md |
+| VELDO-0086 | Release-execution ownership and contribution binding | draft | critical | dmitry | required | VELDO-0086-release-execution-ownership-contributions.md |
+| VELDO-0087 | Project dependency invalidation and outcome-to-evidence traceability | draft | critical | dmitry | required | VELDO-0087-project-dependency-invalidation-traceability.md |
+| VELDO-0088 | Project-manager execution graphs | draft | critical | dmitry | required | VELDO-0088-project-manager-execution-graphs.md |
+| VELDO-0089 | Versioned team configuration | draft | critical | dmitry | required | VELDO-0089-versioned-team-configuration.md |
+| VELDO-0090 | Capability-bound specialist selection | draft | critical | dmitry | required | VELDO-0090-capability-bound-specialist-selection.md |
+| VELDO-0091 | Budgeted requirements elaboration | draft | critical | dmitry | required | VELDO-0091-budgeted-requirements-elaboration.md |
+| VELDO-0092 | Typed proposals and complete authorization validation | draft | critical | dmitry | required | VELDO-0092-typed-proposals-authorization-validation.md |
+| VELDO-0093 | Per-project cycle serialization and replaceable checkpoint recovery | draft | critical | dmitry | required | VELDO-0093-project-cycle-serialization-checkpoint-recovery.md |
+| VELDO-0094 | Every-pack runtime installation and floor-slice qualification | draft | high | dmitry | required | VELDO-0094-every-pack-installation-floor-slice.md |
+| VELDO-0095 | Historical migration and atomic reader-writer cutover | draft | critical | dmitry | required | VELDO-0095-historical-migration-atomic-cutover.md |
+| VELDO-0096 | Clone and enrolled-principal adoption qualification | draft | high | dmitry | required | VELDO-0096-clone-principal-adoption-qualification.md |
+| VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
+| VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
