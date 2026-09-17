@@ -55,8 +55,11 @@ acceptance_criteria:
       Claim: The sandbox no-write observation includes resolved private and common git stores
       even when those stores are outside the working tree; the live observation covers only
       this checkout's working tree and private git state, excluding sibling-owned shared data.
-      Set: The sandbox and live-tree inventories in VELDO-0007 AC4, with primary and linked git
-      layouts. Completeness: Inventory all three sandbox roots and plant writes in the private
+      Set: The whole common directory except worktrees/, the copied private directory and working
+      tree, and the live checkout-owned inventory in both git layouts, using content digests,
+      not timestamps. Completeness: Copy the whole common directory except worktrees/, retaining
+      config normalization, alternates materialization and containment assertions. Inventory all
+      three sandbox roots using content digests, not timestamps, plus size and existence; plant writes in the private
       directory and common store in disposable fixtures; require each write to appear in the
       changed entries and a clean control to stay unchanged. Drive sibling staging during the
       live observation and require it to stay green, while a real stage write into the copied
@@ -64,8 +67,11 @@ acceptance_criteria:
       linked metadata-write row must fail; restore shared live inventory and sibling staging
       must red the live row. Include sharedindex.*, pseudorefs, operation state, logs/HEAD,
       private refs, and config.worktree in primary private-state observation. Corrupt a real
-      split index base and require its changed entry to be observed. Copy only common stores
-      and this checkout's private state, never sibling private state; tolerate entries vanishing
+      split index base and require its changed entry to be observed. A clean split-index AC4 run
+      must pass all 14 rows in both shapes. Stage deletion of a copied branch reflog and of an
+      additional file selected randomly per run from the copied common directory must red the
+      sandbox-write row; reflog deletion must also red it with a split index. Copy this checkout's
+      private state separately, never sibling private state; tolerate entries vanishing
       during traversal. Drive 50 copies per shape during concurrent sibling staging and
       unstaging with zero raises, and a deterministic disappearing-file control.
     falsified_by: >
@@ -148,3 +154,13 @@ fidelity and path normalization. It does not establish absence of writes to arbi
 absolute paths, external working-tree symlink targets, shared live stores, or writes
 whose inventoried state is completely restored before the second snapshot. The
 separate sandbox HOME inventory does not extend the claim to the host filesystem.
+
+Fourth review correction (round five): the sandbox copies the whole common directory
+except worktrees/, with no store allowlist. This includes branch reflogs and unknown
+future stores. Config normalization, alternate materialization and containment checks
+still apply before the stage runs. Both inventories compare content digests and sizes,
+entry kinds, symlink targets and existence, not timestamps. Git's split-index timestamp
+refresh is a read for this observation. Identical-byte rewrites, timestamp-only changes,
+permission-only changes and writes fully restored before the second snapshot are not
+observed. Copying mutable shared state is not an atomic snapshot. The before-and-after
+boundary above remains in force; this construction is not a process trace.
