@@ -48,13 +48,17 @@ acceptance_criteria:
       Replace the working-tree copy with a clone of HEAD and the copy-fidelity row must fail.
   - id: AC3
     text: >
-      Claim: The sibling no-write observations include resolved private and common git stores
-      even when those stores are outside the working tree. Set: The sandbox and live-tree
-      inventories in VELDO-0007 AC4, with primary and linked git layouts. Completeness: Inventory
-      all three roots and plant writes in the private directory and common store in disposable
-      fixtures; require each write to appear in the changed entries and a clean control to stay
-      unchanged. Falsifier: Inventory only the working tree and the linked metadata-write row
-      must fail.
+      Claim: The sandbox no-write observation includes resolved private and common git stores
+      even when those stores are outside the working tree; the live observation covers only
+      this checkout's working tree and private git state, excluding sibling-owned shared data.
+      Set: The sandbox and live-tree inventories in VELDO-0007 AC4, with primary and linked git
+      layouts. Completeness: Inventory all three sandbox roots and plant writes in the private
+      directory and common store in disposable fixtures; require each write to appear in the
+      changed entries and a clean control to stay unchanged. Drive sibling staging during the
+      live observation and require it to stay green, while a real stage write into the copied
+      common store reds the sandbox row. Falsifier: Inventory only the working tree and the
+      linked metadata-write row must fail; restore shared live inventory and sibling staging
+      must red the live row.
     falsified_by: >
       Inventory only the working tree and the linked metadata-write row must fail.
   - id: AC4
@@ -105,3 +109,10 @@ The initial draft used VELDO-0023, the next number after specs/. Contract valida
 revealed that PLAN-0019 reserves VELDO-0023 through VELDO-0098 for uncreated work.
 This standalone item therefore uses VELDO-0099, the first unreserved ID, leaving the
 plan and its reservations intact. The ready check is repeated after renumbering.
+
+Review correction: shared live metadata is not attributable to this stage. The sandbox
+still inventories every resolved root; the live inventory excludes shared objects, refs,
+and sibling indexes. For a primary checkout, private HEAD, index, and operation state
+are selected from the otherwise shared .git directory. Disposable sibling staging and
+private-state writes exercise both layouts. This corrects AC3's attribution boundary
+without dropping the original sandbox metadata-write controls.

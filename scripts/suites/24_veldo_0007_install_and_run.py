@@ -37,10 +37,12 @@ def _iar_block(label, fn):
                % (label, _iar_e), False)
 
 
-def _iar_inventory(root):
-    """relative path -> (size, mtime_ns, sha256) for EVERY entry under root, recursively.
+def _iar_inventory(root, *, entries=None):
+    """relative path -> (size, mtime_ns, sha256), recursively unless entries are supplied.
 
-    THE OBSERVATION AC4 RESTS ON, AND IT EXCLUDES NOTHING. The assertion this replaced was
+    THE SANDBOX OBSERVATION AC4 RESTS ON, AND IT EXCLUDES NOTHING. The live caller supplies
+    only checkout-owned entries because sibling writes to shared metadata are not attributable.
+    The assertion this replaced was
     `git status --porcelain` equality, which cannot see a path outside the repository nor an
     ignored path inside it: a review wrote into $HOME on every call and into .veldo/trackers.json
     and scripts/__pycache__/l2probe.txt and the suite stayed at 47 passed / 0 failed. An inventory
@@ -57,7 +59,7 @@ def _iar_inventory(root):
     rewrite, identical bytes included."""
     root = Path(root)
     inv = {}
-    for p in sorted(root.rglob("*")):
+    for p in sorted(root.rglob("*") if entries is None else entries):
         rel = p.relative_to(root).as_posix()
         try:
             st = p.lstat()
@@ -94,6 +96,39 @@ def _iar_repository_inventory(root):
     return {label + "/" + rel: value
             for label, base in (("tree", root), ("git-dir", private), ("git-common", common))
             for rel, value in _iar_inventory(base).items()}
+
+
+def _iar_live_inventory(root):
+    """Observe only this checkout; a sibling owns its index and shares the objects.
+
+    The primary checkout keeps its private state inside the common directory.
+    Select that state explicitly instead of walking the shared object/ref store.
+    Sandbox inventories still use _iar_repository_inventory over all three roots.
+    """
+    root = Path(root)
+    entries = []
+    for directory, dirs, files in _iar_os.walk(root):
+        if Path(directory) == root:
+            dirs[:] = [name for name in dirs if name != ".git"]
+        entries.extend(Path(directory) / name for name in dirs + files)
+    result = {"tree/" + rel: value for rel, value in
+              _iar_inventory(root, entries=entries).items()}
+    private, common = _iar_git_dirs(root)
+    if private == common:
+        # Per-worktree pseudorefs, index, operation state, HEAD reflog and refs.
+        names = {"index", "config.worktree", "sequencer", "rebase-apply", "rebase-merge"}
+        paths = [p for p in private.iterdir()
+                 if p.name.removesuffix(".lock") in names
+                 or (not p.is_dir() and p.name.removesuffix(".lock").isupper())]
+        paths += [private / rel for rel in
+                  ("logs/HEAD", "logs/HEAD.lock", "refs/bisect", "refs/worktree", "refs/rewritten")
+                  if (private / rel).exists()]
+        entries = [entry for p in paths for entry in ([p, *p.rglob("*")] if p.is_dir() else [p])]
+        metadata = _iar_inventory(private, entries=entries)
+    else:
+        metadata = _iar_inventory(private)
+    result.update({"git-dir/" + rel: value for rel, value in metadata.items()})
+    return result
 
 
 def _iar_copy_tree(source, target):
@@ -155,6 +190,19 @@ def _iar_layout_controls():
             (source / "staged-only").write_text("staged bytes\n")
             _iar_git(source, "add", "staged-only")
             (source / "untracked").write_text("untracked bytes\n")
+            sibling = base / (shape + "-sibling")
+            _iar_git(primary, "worktree", "add", "--detach", str(sibling), "HEAD")
+            before = _iar_live_inventory(source)
+            (sibling / "sibling-staged").write_text(shape + " sibling bytes\n")
+            _iar_git(sibling, "add", "sibling-staged")
+            expect("VELDO-0099 AC3: %s sibling staging leaves live inventory unchanged" % shape,
+                   _iar_changed(before, _iar_live_inventory(source)) == [])
+            private, _ = _iar_git_dirs(source)
+            before = _iar_live_inventory(source)
+            (private / "ORIG_HEAD").write_text("this checkout's private write\n")
+            expect("VELDO-0099 AC3: %s live private metadata write is observed" % shape,
+                   any(p.endswith("/ORIG_HEAD") for p in
+                       _iar_changed(before, _iar_live_inventory(source))))
             sandbox = base / (shape + "-sandbox")
             sandbox.mkdir()
             target = sandbox / "repo"
@@ -633,9 +681,9 @@ def _iar_ac4():
     _iar_pyc = _iar_os.environ.get("PYTHONDONTWRITEBYTECODE")
     _iar_os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
     try:
-        b_live = _iar_repository_inventory(ROOT)
+        b_live = _iar_live_inventory(ROOT)
         ok2, rep2 = IAR.check(only=_IAR_REP["composed"][0])
-        a_live = _iar_repository_inventory(ROOT)
+        a_live = _iar_live_inventory(ROOT)
     finally:
         if _iar_pyc is None:
             _iar_os.environ.pop("PYTHONDONTWRITEBYTECODE", None)
@@ -643,7 +691,8 @@ def _iar_ac4():
             _iar_os.environ["PYTHONDONTWRITEBYTECODE"] = _iar_pyc
     expect("VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole "
            "tree inventoried by path, size, modification time and sha256 before and after, "
-           "ignored paths and resolved private and common git stores included, with the run PASSING "
+           "ignored paths and this checkout's private git state included, shared stores excluded, "
+           "with the run PASSING "
            "so the identity is across work "
            "rather than across a no-op. A check that mutated the tree it is checking is the shape "
            "that makes a green gate meaningless. Entries that moved: %r"
