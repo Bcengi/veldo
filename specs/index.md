@@ -47,6 +47,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0020 | Signing and authority contracts for enrolled channels | draft | critical | dmitry | required | VELDO-0020-signing-authority-contracts.md |
 | VELDO-0021 | Completion and executable eligibility predicates | draft | critical | dmitry | required | VELDO-0021-completion-eligibility-contracts.md |
 | VELDO-0022 | Section 2 admission semantics | draft | critical | dmitry | required | VELDO-0022-section-2-admission-contracts.md |
+| VELDO-0023 | Install-and-run observations resolve git metadata in either checkout shape | draft | standard | dmitry | not_required | VELDO-0023-worktree-git-shape.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
