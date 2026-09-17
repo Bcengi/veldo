@@ -27,10 +27,10 @@ names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_d
          '_iar_copy_alternates', '_iar_resolve_alternates', '_iar_assert_isolated',
          '_iar_review_controls', '_iar_git_environment', '_iar_unquote_alternate',
          '_iar_read_alternates', '_iar_write_alternates', '_iar_alternate_paths',
-         '_iar_nested_repository', '_iar_ac4', '_iar_nested_controls',
+         '_iar_nested_repository', '_iar_ac4', '_iar_ac4_inventory', '_iar_ac4_process', '_iar_nested_controls',
          '_iar_alternates_name_controls'}
 if baseline:
-    names -= {'_iar_alternate_paths', '_iar_nested_repository', '_iar_nested_controls',
+    names -= {'_iar_ac4_inventory', '_iar_ac4_process', '_iar_alternate_paths', '_iar_nested_repository', '_iar_nested_controls',
               '_iar_alternates_name_controls'}
 nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in names]
 assert {n.name for n in nodes} == names

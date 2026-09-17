@@ -1021,6 +1021,13 @@ _IAR_STOOD_DOWN = []
 
 
 def _iar_ac4():
+    # Only inventory observations need a self-contained repository. Process and
+    # network assertions always inspect the current stage, even during stand-down.
+    _iar_ac4_inventory()
+    _iar_ac4_process()
+
+
+def _iar_ac4_inventory():
     if _iar_nested_repository(ROOT):
         reason = "nested repository present; the copied observation is not self-contained"
         _IAR_STOOD_DOWN.append(("VELDO-0007", "AC4", reason))
@@ -1118,6 +1125,7 @@ def _iar_ac4():
            % (_iar_changed(b_live, a_live)[:6],),
            _iar_changed(b_live, a_live) == [] and ok2 is True and rep2["results"])
 
+def _iar_ac4_process():
     src = (ROOT / "scripts" / "check_install_and_run.py").read_text()
     _iar_mod = _iar_ast.parse(src)
     names = set()
@@ -1251,7 +1259,10 @@ def _iar_ac4():
     _iar_real_sp = IAR.subprocess
     IAR.subprocess = _IarRecorder(_iar_real_sp)
     try:
-        child = IAR._run([_iar_sys.executable, "-c", "print('veldo-0007 child ran')"])
+        # The child only prints; an empty temporary cwd needs no repository copy.
+        with tempfile.TemporaryDirectory(prefix="veldo-0007-process-") as cwd:
+            child = IAR._run([_iar_sys.executable, "-c", "print('veldo-0007 child ran')"],
+                             cwd=cwd)
     finally:
         _iar_rec, IAR.subprocess = IAR.subprocess, _iar_real_sp
     expect("VELDO-0007 AC4 THE LAUNCH IS DRIVEN: the one helper was called for real, a child ran and "
@@ -1303,7 +1314,7 @@ def _iar_nested_controls():
                     (tree / ".gitmodules").write_bytes(modules)
                 elif marker == "nested-gitmodules":
                     (tree / ".gitmodules").rename(nested / ".gitmodules")
-                records, counted, copies, git_operations = [], [], [], []
+                records, counted, copies, git_operations, processes = [], [], [], [], []
                 def refuse_copy(*args):
                     copies.append(args)
                     # The detection mutation must be safe to drive, even against this pointer.
@@ -1314,7 +1325,9 @@ def _iar_nested_controls():
                         raise RuntimeError("unexpected subprocess during refusal")
                 ns = dict(globals(), ROOT=tree, _IAR_STOOD_DOWN=records,
                           _iar_copy_tree=refuse_copy, _iar_sp=NoGit(),
+                          _iar_ac4_process=lambda: processes.append(True),
                           expect=lambda label, ok: counted.append((label, ok)))
+                ns["_iar_ac4_inventory"] = type(_iar_ac4_inventory)(_iar_ac4_inventory.__code__, ns)
                 observe = type(_iar_ac4)(_iar_ac4.__code__, ns)
                 output = _iar_io.StringIO()
                 try:
@@ -1326,6 +1339,7 @@ def _iar_nested_controls():
                 expect("VELDO-0099 AC1: %s %s AC4 stand-down is recorded, printed, and never passed"
                        % (shape, marker),
                        records == [("VELDO-0007", "AC4", reason)] and not counted
+                       and processes == [True]
                        and output.getvalue() == "   VELDO-0007: AC4 STANDS DOWN, recorded rather than passed: " + reason + ".\n")
                 expect("VELDO-0099 AC1: %s %s original edit survives with no copy or nested git operations"
                        % (shape, marker),
