@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Drive the gate's real layout controls and three mutations without editing the suite."""
+"""Drive layout, identity, and real AC4 regressions without editing the live suite."""
 import ast
 import hashlib
 import importlib.util
@@ -17,7 +17,7 @@ SUITE = ROOT / 'scripts/suites/24_veldo_0007_install_and_run.py'
 source = SUITE.read_text()
 before = hashlib.sha256(SUITE.read_bytes()).hexdigest()
 names = {'_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_dirs',
-         '_iar_repository_inventory', '_iar_copy_tree', '_iar_substrate',
+         '_iar_repository_inventory', '_iar_live_inventory', '_iar_copy_tree', '_iar_substrate',
          '_iar_copy_matches', '_iar_layout_controls'}
 nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in names]
 assert {n.name for n in nodes} == names
@@ -30,6 +30,9 @@ mutations = {
     'substitute_clone_of_head': '''def _iar_copy_tree(source, target):
     _iar_git(source, 'clone', '--no-hardlinks', '-q', str(source), str(target))
 ''',
+    'restore_shared_live_inventory': '''def _iar_live_inventory(root):
+    return _iar_repository_inventory(root)
+''',
     'omit_external_git_inventory': '''def _iar_repository_inventory(root):
     return _iar_inventory(root)
 ''',
@@ -41,26 +44,68 @@ expected_failures = {
     'substitute_clone_of_head': [
         'VELDO-0099 AC2: primary copy preserves dirty stage, index, and untracked bytes',
         'VELDO-0099 AC2: linked copy preserves dirty stage, index, and untracked bytes'],
+    'restore_shared_live_inventory': [
+        'VELDO-0099 AC3: primary sibling staging leaves live inventory unchanged',
+        'VELDO-0099 AC3: linked sibling staging leaves live inventory unchanged'],
     'omit_external_git_inventory': [
         'VELDO-0099 AC3: linked private metadata write is observed',
         'VELDO-0099 AC3: linked common metadata write is observed'],
 }
-results = []
-for case, mutation in mutations.items():
-    rows = []
-    ns = dict(ROOT=ROOT, Path=Path, tempfile=tempfile, _iar_os=os, _iar_sp=subprocess,
-              _iar_sh=shutil, _iar_hl=hashlib,
-              expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
-    exec(compile(module, str(SUITE), 'exec'), ns)
-    ns['original_substrate'] = ns['_iar_substrate']
-    if mutation:
-        exec(compile(mutation, '<' + case + '>', 'exec'), ns)
-    ns['_iar_layout_controls']()
-    failures = [r['label'] for r in rows if not r['passed']]
-    assert len(rows) == 13, (case, rows)
-    assert failures == expected_failures[case], (case, failures)
-    results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
-                    'failed': len(failures), 'rows': rows})
+identity_environment = dict(os.environ)
+with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
+    home, identity_root = Path(d) / 'home', Path(d) / 'repo'
+    home.mkdir()
+    identity_root.mkdir()
+    for key in list(os.environ):
+        if key.startswith(('GIT_CONFIG', 'GIT_AUTHOR_', 'GIT_COMMITTER_')) or key == 'EMAIL':
+            os.environ.pop(key)
+    os.environ.update(HOME=str(home), XDG_CONFIG_HOME=str(home),
+                      GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL=os.devnull)
+    try:
+        subprocess.run(['git', '-C', str(identity_root), 'init', '-q'], check=True)
+        for key in ('user.name', 'user.email'):
+            assert subprocess.run(['git', '-C', str(identity_root), 'config', '--get', key],
+                                  capture_output=True).returncode == 1
+        results = []
+        for case, mutation in mutations.items():
+            rows = []
+            ns = dict(ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os, _iar_sp=subprocess,
+                      _iar_sh=shutil, _iar_hl=hashlib,
+                      expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
+            exec(compile(module, str(SUITE), 'exec'), ns)
+            ns['original_substrate'] = ns['_iar_substrate']
+            if mutation:
+                exec(compile(mutation, '<' + case + '>', 'exec'), ns)
+            ns['_iar_layout_controls']()
+            failures = [r['label'] for r in rows if not r['passed']]
+            assert len(rows) == 17, (case, rows)
+            assert failures == expected_failures[case], (case, failures)
+            results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
+                            'failed': len(failures), 'rows': rows})
+
+        # Reintroduce exactly the caller-config reads that prevented fixture setup.
+        identity_rows = []
+        ns['expect'] = lambda label, ok: identity_rows.append({'label': label, 'passed': bool(ok)})
+        exec(compile(module, str(SUITE), 'exec'), ns)
+        fixed_git = ns['_iar_git']
+        def caller_identity(root, *args, **kwargs):
+            if 'commit' in args:
+                fixed_git(identity_root, 'config', 'user.name')
+                fixed_git(identity_root, 'config', 'user.email')
+            return fixed_git(root, *args, **kwargs)
+        ns['_iar_git'] = caller_identity
+        try:
+            ns['_iar_layout_controls']()
+        except subprocess.CalledProcessError as exc:
+            identity_rows.append({'label': 'VELDO-0099 checkout shape controls: caller identity lookup raised',
+                                  'passed': False, 'returncode': exc.returncode})
+        assert len(identity_rows) == 1 and not identity_rows[0]['passed'], identity_rows
+        results.append({'case': 'restore_caller_identity', 'passed': 0, 'failed': 1,
+                        'mutation': 'Read ROOT config user.name and user.email before fixture commit',
+                        'rows': identity_rows})
+    finally:
+        os.environ.clear()
+        os.environ.update(identity_environment)
 
 # Drive the existing AC4 function, including its real compose-install-gate path,
 # in separate disposable primary and linked checkouts of the same source commit.
@@ -89,24 +134,56 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
             spec.loader.exec_module(iar)
             ok, report = iar.check(only='claude')
             assert ok, report
-            for restored in (False, True):
+            for case in ('control', 'restore_directory_shape', 'sibling_staging',
+                         'sibling_staging_shared_live', 'sandbox_common_write'):
                 rows = []
                 ns = dict(ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
                           _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib,
                           _iar_ast=ast, _iar_sys=sys, _iar_re=re, IAR=iar, _IAR_REP=report,
                           expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
                 exec(compile(ast.Module(body=ac4_nodes, type_ignores=[]), str(SUITE), 'exec'), ns)
+                restored = case == 'restore_directory_shape'
                 if restored:
                     ns['original_substrate'] = ns['_iar_substrate']
                     exec(compile(mutations['restore_directory_shape'], '<restore-shape>', 'exec'), ns)
-                ns['_iar_ac4']()
+                original_check = iar.check
+                stage = tree / 'scripts/check_install_and_run.py'
+                stage_bytes = stage.read_bytes()
+                if case.startswith('sibling_staging'):
+                    sibling = base / (shape + '-' + case)
+                    git('worktree', 'add', '--detach', str(sibling), 'HEAD', cwd=primary)
+                    def sibling_check(*args, **kwargs):
+                        outcome = original_check(*args, **kwargs)
+                        (sibling / 'staging-probe').write_text(shape + case + '\n')
+                        git('add', 'staging-probe', cwd=sibling)
+                        return outcome
+                    iar.check = sibling_check
+                    if case == 'sibling_staging_shared_live':
+                        ns['_iar_live_inventory'] = ns['_iar_repository_inventory']
+                if case == 'sandbox_common_write':
+                    anchor = '    sys.exit(main())'
+                    assert stage_bytes.decode().count(anchor) == 1
+                    injected = """    common = _run(['git', 'rev-parse', '--git-common-dir']).stdout.strip()
+    (Path(common) / 'common-write-probe').write_text('must red the sandbox row\\n')
+"""
+                    stage.write_text(stage_bytes.decode().replace(anchor, injected + anchor))
+                try:
+                    ns['_iar_ac4']()
+                finally:
+                    iar.check = original_check
+                    if case == 'sandbox_common_write':
+                        stage.write_bytes(stage_bytes)
                 failures = [r['label'] for r in rows if not r['passed']]
-                expected = int(shape == 'linked' and restored)
-                assert len(failures) == expected, (shape, restored, failures)
+                expected = int((shape == 'linked' and restored) or case in
+                               ('sibling_staging_shared_live', 'sandbox_common_write'))
+                assert len(failures) == expected, (shape, case, failures)
                 if expected:
-                    assert "VELDO-0007 AC4 THE OBSERVATION'S OWN SUBSTRATE" in failures[0]
-                assert len(rows) > 10, rows
-                ac4_results.append({'shape': shape, 'restored_directory_assertion': restored,
+                    label = ("THE OBSERVATION'S OWN SUBSTRATE" if restored else
+                             'THIS repository is untouched' if case == 'sibling_staging_shared_live'
+                             else 'NOT ONE BYTE of the repository under check')
+                    assert label in failures[0], failures
+                assert len(rows) == 14, rows
+                ac4_results.append({'shape': shape, 'case': case,
                                     'commit': git('rev-parse', 'HEAD', cwd=tree),
                                     'passed': len(rows) - len(failures), 'failed': len(failures),
                                     'rows': rows})
@@ -117,5 +194,6 @@ assert hashlib.sha256(SUITE.read_bytes()).hexdigest() == before
 print(json.dumps({'commit': subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'],
                                                   text=True).strip(),
                   'suite_sha256': before, 'suite_unchanged': True,
+                  'layout_environment': 'Empty HOME and XDG_CONFIG_HOME; system/global git config disabled; no identity in fixture repo or environment',
                   'description': 'Paired mutation controls, not a selected-suite gate claim',
                   'results': results, 'original_ac4': ac4_results}, indent=2))

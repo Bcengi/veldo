@@ -80,9 +80,9 @@ def _iar_changed(before, after):
     return sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
 
 
-def _iar_git(root, *args):
+def _iar_git(root, *args, env=None):
     return _iar_sp.run(["git", "-C", str(root), *args], capture_output=True,
-                       text=True, check=True, timeout=60).stdout.strip()
+                       text=True, check=True, timeout=60, env=env).stdout.strip()
 
 
 def _iar_git_dirs(root):
@@ -178,9 +178,13 @@ def _iar_layout_controls():
         stage = "scripts/check_install_and_run.py"
         (primary / stage).write_text("# committed stage\n")
         _iar_git(primary, "add", ".")
-        _iar_git(primary, "-c", "user.name=" + _iar_git(ROOT, "config", "user.name"),
-                 "-c", "user.email=" + _iar_git(ROOT, "config", "user.email"),
-                 "commit", "-qm", "Seed checkout shape fixture")
+        identity = dict(_iar_os.environ, GIT_AUTHOR_NAME="Veldo fixture",
+                        GIT_AUTHOR_EMAIL="fixture@example.invalid",
+                        GIT_COMMITTER_NAME="Veldo fixture",
+                        GIT_COMMITTER_EMAIL="fixture@example.invalid")
+        _iar_git(primary, "-c", "user.name=Veldo fixture",
+                 "-c", "user.email=fixture@example.invalid",
+                 "commit", "-qm", "Seed checkout shape fixture", env=identity)
         _iar_git(primary, "worktree", "add", "--detach", str(linked), "HEAD")
         expect("VELDO-0099 AC1: primary and linked fixtures have the same HEAD and both git shapes",
                _iar_git(primary, "rev-parse", "HEAD") == _iar_git(linked, "rev-parse", "HEAD")

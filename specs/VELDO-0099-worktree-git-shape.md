@@ -31,7 +31,8 @@ acceptance_criteria:
       Set: Primary checkout with a .git directory and linked checkout with a .git pointer file,
       both at the same commit. Completeness: Drive both in isolated fixtures, assert equal HEADs,
       and require the copied stage, index, private git directory, and shared store to resolve
-      inside the observation sandbox. Falsifier: Restore the .git is_dir requirement and the
+      inside the observation sandbox. The fixture supplies its own fixed commit identity;
+      drive the controls with an empty HOME and no configured identity. Falsifier: Restore the .git is_dir requirement and the
       linked-checkout substrate row must fail while the primary control passes.
     falsified_by: >
       Restore the .git is_dir requirement and the linked-checkout substrate row must fail while
