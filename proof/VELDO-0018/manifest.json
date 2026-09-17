@@ -1,0 +1,94 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0018",
+  "commit": "4efcf5fa74378b3897ea1f2885daf01df62e5376",
+  "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
+  "produced_at": "2026-09-17T13:08:09Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0018/driven.json",
+          "detail": "4 rows (1 driven): RELEASE_RELATIONS carries the two typed membership relations, the two owning relations and the non-owning contribution link; a well-formed forest with one owner per root and standalone plan and a cross-project contribution has no problem; a specification member, a member declared twice, a ring, two parents, a root with no owner, a root with two owners and a member owned separately refuse by name; owners_of reads project ownership only and a contribution flagged owning refuses. DRIVEN: a contribution counted as a second owner in a module copy makes the forest refuse (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0018/gate-implementation.log",
+          "detail": "Complete canonical gate at 4efcf5fa74378b3897ea1f2885daf01df62e5376 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5216 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0018/driven.json",
+          "detail": "4 rows (1 driven): a complete receipt set moves the execution ACTIVE to ACCEPTED with deployment_authorized False and a concurrency bump; a deleted member receipt, a stale digest, a duplicated journey receipt, a receipt for an unresolved member, a wrong candidate, a wrong environment, a declaration that is not an observation, a different release revision, a non-ACTIVE execution and a released status string without receipts refuse by name; a declared journey without an execution receipt refuses. DRIVEN: the missing-receipt refusal removed in a copy accepts an execution with a journey never run (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0018/gate-implementation.log",
+          "detail": "Complete canonical gate at 4efcf5fa74378b3897ea1f2885daf01df62e5376 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5216 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0018/driven.json",
+          "detail": "4 rows (1 driven): the required pin set is the join of applicable floors and affected pins against the registry with no unexamined member and correctly bound settlements make the execution eligible; a missing floor, a changed floor digest, an undeclared affected pin, no settlement, the wrong authority, an expanded scope and an unknown ruling block by name; a settlement for an earlier floor digest is stale. DRIVEN: the digest equality removed in a copy accepts the stale settlement (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0018/gate-implementation.log",
+          "detail": "Complete canonical gate at 4efcf5fa74378b3897ea1f2885daf01df62e5376 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5216 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0018/driven.json",
+          "detail": "6 rows (1 driven): the cancellation table derives from the ownership schema; project cancellation needs a disposition for every unfinished owned record and refuses a missing, unknown or unreconciled alternative disposition; objective cancellation needs an explicit disposition per non-terminal item and refuses one naming a unit directly; an accepted execution authorizes no deployment and only a separate signed deployment_authorization bound to it does; a deployer handed to the acceptance path is never called and the module never loads release.py. DRIVEN: rollout invoked on acceptance in a copy makes the deployer spy record a call (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0018/gate-implementation.log",
+          "detail": "Complete canonical gate at 4efcf5fa74378b3897ea1f2885daf01df62e5376 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5216 passed, 0 failed, every required check passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "4efcf5fa74378b3897ea1f2885daf01df62e5376",
+      "ref": "proof/VELDO-0018/gate-implementation.log",
+      "detail": "GATE GREEN; selftest 5216 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0018/driven.json",
+    "proof/VELDO-0018/drive.py",
+    "proof/VELDO-0018/gate-implementation.log",
+    "proof/VELDO-0018/log-redactions.json",
+    "proof/VELDO-0018/README.md"
+  ],
+  "rollback": "Revert the release and floor contract organ, its capability and scaffold registrations and suite 31 through the ordinary reviewed path (a revert commit, never a force). The module is pure and persists nothing; the release execution store and floor settlement channel that will consume it are later packages.",
+  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here."
+}

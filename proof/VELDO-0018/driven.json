@@ -1,0 +1,136 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0018",
+  "commit": "4efcf5fa74378b3897ea1f2885daf01df62e5376",
+  "taken_at": "2026-09-17T13:08:09Z",
+  "fragment": "scripts/suites/31_veldo_0018_release_floor.py",
+  "fragment_sha256": "f127d4d87d6f851c59f3fc0df86bd4d4799665a3fdbc863bc52555fc9ea2cb81",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/release_floor_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the relation and cancellation tables are enumerated from the module itself.",
+  "rows_total": 18,
+  "rows_passed": 18,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0018 AC1 release-ownership/contribution DRIVEN (the declared falsifier): with a contribution counted as a second project owner in a copy, REL-0001 (owned by P1, contributed to by P2's objective) reads as owned by two projects and the forest is refused, so the row reds; unmutated the contribution adds no owner",
+    "VELDO-0018 AC2 release-acceptance/missing-regression DRIVEN (the declared falsifier): with the missing-receipt refusal removed in a copy, the execution is ACCEPTED with a journey never run, so the row reds; unmutated it is refused",
+    "VELDO-0018 AC3 floor-eligibility/stale-settlement DRIVEN (the declared falsifier): with the digest equality removed in a copy the stale settlement makes the execution eligible, so the row reds; unmutated it blocks",
+    "VELDO-0018 AC4 release-boundary/no-deployment DRIVEN (the declared falsifier): with rollout invoked on acceptance in a copy the deployer spy records a roll_out call, so the row reds; unmutated it records nothing"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "release-ownership/contribution DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "release-acceptance/missing-regression DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "floor-eligibility/stale-settlement DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC4": {
+      "row_contains": "release-boundary/no-deployment DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    },
+    "AC4": {
+      "rows": 6,
+      "passed": 6,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0018 AC1 release-ownership/relations: the relation table has the two typed membership relations of veldo.release/v1, the two owning relations of R65 and the non-owning contribution link; permitted member endpoints are release and plan only",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC1 release-ownership/forest: a well-formed forest with one owner per root and standalone plan and a cross-project contribution has no problem; a specification member, a member declared twice, a ring, two parents, a root with no owner, a root with two owners and a member owned separately are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC1 release-ownership/contribution: an objective in another project contributing to PLAN-0019 adds no owner (owners_of reads project ownership only), a contribution flagged owning is refused, and an unknown contribution kind is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC1 release-ownership/contribution DRIVEN (the declared falsifier): with a contribution counted as a second project owner in a copy, REL-0001 (owned by P1, contributed to by P2's objective) reads as owned by two projects and the forest is refused, so the row reds; unmutated the contribution adds no owner",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC2 release-acceptance/complete: with every resolved member's outcome receipt at its exact digest, every declared journey's execution receipt against the snapshot's candidate and environment, and the acceptance authority's signed receipt for the exact revision, the execution moves ACTIVE -> ACCEPTED with deployment_authorized False and its concurrency version bumped",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC2 release-acceptance/set-equality: a deleted member receipt, a stale member digest, a duplicated journey receipt, a receipt for a member the snapshot does not resolve, a wrong candidate, a wrong environment, a declaration result that is not an observation, a different release revision, a non-ACTIVE execution, and a released status string with no receipts are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC2 release-acceptance/missing-regression: a declared journey without an execution receipt refuses acceptance by name, so a journey declaration alone is insufficient (R65)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC2 release-acceptance/missing-regression DRIVEN (the declared falsifier): with the missing-receipt refusal removed in a copy, the execution is ACCEPTED with a journey never run, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC3 floor-eligibility/required-set: the required pin set is the join of the snapshot's applicable floors and affected pins against the floor registry (three pins here, no unexamined member), and correctly bound settlements make the execution eligible",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC3 floor-eligibility/blocks: a missing floor, a floor named at another digest, an affected pin the floor does not declare, a pin with no settlement, the wrong authority, an expanded settlement scope and an unknown ruling each block by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC3 floor-eligibility/stale-settlement: a settlement bound to an earlier floor digest is stale and blocks by name until the authority settles the exact version",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC3 floor-eligibility/stale-settlement DRIVEN (the declared falsifier): with the digest equality removed in a copy the stale settlement makes the execution eligible, so the row reds; unmutated it blocks",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC4 release-boundary/cancellation-relations: the cancellation table derives from the ownership schema - a project disposes of its release executions, units, assignments and reservations through disposition records, an objective disposes of backlog items explicitly, an item of its units, a release execution stops uncompleted work",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC4 release-boundary/project-cancellation: cancelling a project with a disposition for every unfinished owned record is allowed (the completed unit needs none); a missing disposition, an unknown disposition, and an alternative outcome without a signed reconciliation are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC4 release-boundary/objective-cancellation: cancelling an objective needs an explicit disposition for each of its non-terminal backlog items (not for a done item, not for another objective's item), and a disposition naming a unit directly is refused: units are reached only through their items",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC4 release-boundary/no-deployment: an accepted release execution authorizes no deployment; only a separate signed deployment_authorization bound to that acceptance does; an acceptance record claiming deployment_authorized True is refused as a claim acceptance cannot carry",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC4 release-boundary/no-deployment: a deployer handed to the acceptance path is never called (spy records nothing) and the module names neither roll_out nor release.py: acceptance has no seam to a rollout",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0018 AC4 release-boundary/no-deployment DRIVEN (the declared falsifier): with rollout invoked on acceptance in a copy the deployer spy records a roll_out call, so the row reds; unmutated it records nothing",
+      "passed": true
+    }
+  ]
+}
