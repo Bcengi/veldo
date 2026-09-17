@@ -84,6 +84,10 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0057 | Exact-tip publication, lost acknowledgement recovery, and completion receipt | draft | critical | dmitry | required | VELDO-0057-exact-tip-completion.md |
 | VELDO-0058 | Gate-output isolation and exact tested-tree evidence | draft | critical | dmitry | required | VELDO-0058-isolated-gate-observations.md |
 | VELDO-0059 | Installed end-to-end floor slice with fake model and real enforcement | draft | critical | dmitry | required | VELDO-0059-installed-floor-slice.md |
+| VELDO-0060 | Claude Code production adapter qualification | draft | critical | dmitry | required | VELDO-0060-claude-code-adapter-qualification.md |
+| VELDO-0061 | Codex production adapter qualification | draft | critical | dmitry | required | VELDO-0061-codex-adapter-qualification.md |
+| VELDO-0062 | Provider credential separation and live usage accounting | draft | critical | dmitry | required | VELDO-0062-provider-credentials-and-usage.md |
+| VELDO-0063 | Production governor and lifecycle failure qualification | draft | critical | dmitry | required | VELDO-0063-production-governor-lifecycle.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
