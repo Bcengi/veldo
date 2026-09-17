@@ -123,3 +123,16 @@ The latest unpushed proof commit was amended to remove the diagnostic from
 reachable history. No implementation commit, policy, or secret disposition was
 changed. The failed gate event remains in the append-only event log with the
 commit it actually named, even though that proof commit was replaced.
+
+## Final gate with proof present
+
+After committing this bundle, ./scripts/verify.sh ran again in the assigned
+linked worktree at 08a7a748f7e9e25d07e61f96093ee65874045a03. It exited 0 and
+reported GREEN: 4821 passed, 0 failed; first use passed; 8 catalog checks ran,
+15 were not applicable, 0 waived, and 0 undeclared. gate-final.log is the full
+output with the documented diagnostic redaction. The committed proof driver
+was also replayed successfully, reproducing all recorded counts with the same
+suite SHA-256.
+
+The final receipt commit changes only proof records and the gate's own event
+and stamp. The spec remains ready for the external independent review.

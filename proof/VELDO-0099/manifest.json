@@ -3,7 +3,7 @@
   "spec_id": "VELDO-0099",
   "commit": "64413f029ff5479ab583a8a8d01bd24279bacc9b",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-17T03:44:43.290796Z",
+  "produced_at": "2026-09-17T03:55:35.181758Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -67,6 +67,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0099/driven.json",
           "detail": "Reproduce with python3 proof/VELDO-0099/drive.py. These paired controls supplement full gate evidence; no selected-suite run is cited as a gate pass."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0099/gate-final.log",
+          "detail": "Full gate with the proof bundle present is GREEN at 08a7a748f7e9e25d07e61f96093ee65874045a03, exit 0."
         }
       ]
     }
@@ -104,6 +109,15 @@
       "command": "python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md",
       "exit_code": 0,
       "ref": "proof/VELDO-0099/ready-check.txt"
+    },
+    {
+      "name": "gate-with-proof",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "08a7a748f7e9e25d07e61f96093ee65874045a03",
+      "ref": "proof/VELDO-0099/gate-final.log",
+      "detail": "Full gate in the assigned linked worktree after the proof bundle was committed: 4821 passed, 0 failed; first use passed; 8 required catalog checks passed."
     }
   ],
   "artifacts": [
@@ -117,7 +131,7 @@
     },
     {
       "ref": "proof/VELDO-0099/README.md",
-      "sha256": "3ff0ac914caf3e29461848b219de0c546decb916368a61650e2af63d571b08bf"
+      "sha256": "47097f5ab8e7456049bf74e6f0acdd453b25f087de2ab356ce3fdf9f9c5c049a"
     },
     {
       "ref": "proof/VELDO-0099/gate-linked.log",
@@ -141,7 +155,11 @@
     },
     {
       "ref": "proof/VELDO-0099/log-redactions.json",
-      "sha256": "d8573cc0067bbb3a7f98974b00045d36241ff9e2e9e6614b3eb503b3dc5db85d"
+      "sha256": "cd101f64812744742c3790f5292ae613692b58d858b22c9911b2bda124099042"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-final.log",
+      "sha256": "a481369bd46f5962076a72504950bfc60446efb74ebb3b0dfb9172c86ceb1a30"
     }
   ],
   "rollback": "Revert the suite change and regenerate the index; preserve historical proof and append-only events.",
