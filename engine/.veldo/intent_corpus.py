@@ -572,9 +572,17 @@ def open_corpus(root=None):
     dspec = importlib.util.spec_from_file_location("veldo_decision", here / "decision.py")
     D = importlib.util.module_from_spec(dspec)
     dspec.loader.exec_module(D)
+    # A REFUSED contract refuses the corpus by name (IntentCorpusError, the error this module
+    # already raises for a corpus it cannot trust) rather than opening one whose area joins
+    # silently answer "no area" for every spec (VELDO-0016 AC3).
+    try:
+        repo_contract = V.load_repo_contract(repo_root=str(root))
+    except V.ContractRefused as e:
+        raise IntentCorpusError("architecture contract refused, so the corpus cannot join specs "
+                                "to areas and refuses to open: %s" % e)
     return build_corpus(
         root, V.parse_yamlish, V.proof_digest, plan_registry=V.plan_registry,
-        repo_contract=V.load_repo_contract(repo_root=str(root)),
+        repo_contract=repo_contract,
         decision_loader=D.load_record, decisions_dir=D.default_decisions_dir(root))
 
 

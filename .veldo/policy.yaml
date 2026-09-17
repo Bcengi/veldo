@@ -42,6 +42,13 @@ protected_paths:
   # so the agent being gated cannot author the record that exempts it.
   - {path: ".veldo/floors/*",                     floor: high}
   - {path: ".veldo/settlements/*",                floor: high}
+# VELDO-0016 (PLAN-0019 W1), 2026-09-17: this repository's architecture contract is REQUIRED.
+# The loader (validate_checks.load_contract_state) reads this one line; with it, an absent
+# .veldo/architecture.yaml refuses the ready transition, the frontier, run-check and the shape
+# gate instead of standing them down as "adoption safe", which is the right answer for a
+# repository that has a contract and depends on it. A repository that never adopted a contract
+# leaves the line out (or says optional) and is unaffected.
+architecture_contract: required
 merge_rule: >
   Auto-merge if and only if: the specification is ready and valid; every
   acceptance criterion is passed in a valid proof manifest for this exact

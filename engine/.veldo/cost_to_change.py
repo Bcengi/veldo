@@ -447,6 +447,17 @@ def standdown(reason):
             "coverage": _coverage_block([], [], [], 0)}
 
 
+def refused(reason):
+    """The REFUSED report: the stand-down shape with `standdown` False and `refused` True, so
+    a consumer that reads `standdown` to mean "no contract, adoption safe" is never told that
+    about a contract that exists and cannot be read (VELDO-0016 AC3). Same keys, same empty
+    blocks, one spelling of empty."""
+    out = standdown(reason)
+    out["standdown"] = False
+    out["refused"] = True
+    return out
+
+
 def report(corpus, contract, arch, fm_of=None, paths_of=None):
     """The per-area cost-to-change map: the whole output of this item.
 
@@ -567,6 +578,8 @@ def report(corpus, contract, arch, fm_of=None, paths_of=None):
 def render_text(rep):
     """The report as text, with every figure drawn straight from the report so a reader and a
     consumer of the JSON can never see two different numbers."""
+    if rep.get("refused"):
+        return "VELDO cost-to-change: REFUSED (%s)" % rep.get("reason", "")
     if rep.get("standdown"):
         return "VELDO cost-to-change: standing down (%s)" % rep.get("reason", "")
     lines = ["VELDO cost-to-change per area (from the TOE actuals corpus; advisory, never "
@@ -687,7 +700,10 @@ def repo_report(root=None, load=None):
     TC = load("veldo_toe_corpus_ctc", ".veldo/toe_corpus.py")
     M = load("veldo_metrics_ctc", ".veldo/metrics.py")
     PC = load("veldo_policy_check_ctc", ".veldo/policy_check.py")
-    arch, contract = V.load_repo_contract(repo_root=str(base))
+    try:
+        arch, contract = V.load_repo_contract(repo_root=str(base))
+    except V.ContractRefused as e:
+        return refused("architecture contract refused, so no area can be attributed: %s" % e)
     corpus = TC.build(specs_dir=base / "specs", events=M.load(),
                       protected=PC.protected_patterns())
     fm = front_matter_index(base / "specs", V.parse_yamlish)

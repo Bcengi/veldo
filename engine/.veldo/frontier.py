@@ -186,6 +186,15 @@ def withheld(repo_root=None, scope=None):
     return out
 
 
+def contract_refusal(repo_root=None):
+    """The reason the architecture contract refuses, or None when it is valid or optionally
+    absent: the diagnostic half of claimable()'s contract refusal, the way withheld() is the
+    diagnostic half of the dependency gate. Reads through the ONE loader, so it can never
+    disagree with what claimable() refused on."""
+    load = V.load_contract_state(repo_root or ROOT)
+    return load.reason if load.refused else None
+
+
 def _in_scope(fm, plan_id, scope):
     if not scope:
         return True
@@ -240,7 +249,18 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None):
     # read specs) and reusing the one predicate in arch via validate, so it agrees with
     # the ready transition and run-check. Review units are not gated: a review is of an
     # already-built spec, not a build claim.
-    arch, contract = V.load_repo_contract(repo_root)
+    #
+    # A REFUSED contract (present but unreadable, malformed or invalid, or absent while the
+    # policy requires it) offers NOTHING, build or review: a worker cannot be handed work
+    # against a shape nobody can read, and offering review units while build is refused would
+    # let a review land against an unknown shape (VELDO-0016 AC3; every eligibility entry is
+    # VELDO-0053). The reason is a diagnostic, not a queue: contract_refusal() names it and the
+    # CLI prints it on stderr beside the withheld report, so an empty frontier caused by a
+    # broken contract never looks like an empty queue.
+    try:
+        arch, contract = V.load_repo_contract(repo_root)
+    except V.ContractRefused:
+        return []
     out, seen = [], set()
 
     def _add(sid, plan_id, kind):
@@ -307,6 +327,10 @@ def main(argv=None):
                                        (" requires " + ",".join(u["requires"])) if u["requires"] else ""))
     # The withheld report goes to STDERR in both modes, so it is always visible next to a short
     # or empty queue while stdout stays exactly the claimable set that callers already parse.
+    # A refused contract is reported the same way and first: it empties the whole queue.
+    refusal = contract_refusal()
+    if refusal:
+        sys.stderr.write("architecture contract REFUSED, nothing is claimable: %s\n" % refusal)
     for h in withheld(scope=scope or None):
         sys.stderr.write("withheld %-12s waiting on %s\n"
                          % (h["spec"], ", ".join("%s (%s)" % (d, s) for d, s in h["unmet"])))

@@ -11,16 +11,36 @@ plan: PLAN-0019
 work: W1
 plan_revision: 1
 depends_on: []
-placement: [contracts, enforcement]
+placement: [contracts, enforcement, fleet]
 protected_paths: [.veldo/policy.yaml]
 footprint:
   - ".veldo/architecture.yaml"
   - ".veldo/arch.py"
   - "engine/.veldo/arch.py"
+  - ".veldo/validate.py"
+  - "engine/.veldo/validate.py"
   - ".veldo/validate_checks.py"
   - "engine/.veldo/validate_checks.py"
+  - ".veldo/frontier.py"
+  - "engine/.veldo/frontier.py"
+  - ".veldo/shape_gate.py"
+  - "engine/.veldo/shape_gate.py"
+  - ".veldo/observability.py"
+  - "engine/.veldo/observability.py"
+  - ".veldo/intent_corpus.py"
+  - "engine/.veldo/intent_corpus.py"
+  - ".veldo/cost_to_change.py"
+  - "engine/.veldo/cost_to_change.py"
+  - ".veldo/metrics_read_closure.py"
+  - "engine/.veldo/metrics_read_closure.py"
+  - ".veldo/metrics_shape_readers.py"
+  - "engine/.veldo/metrics_shape_readers.py"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - ".veldo/capabilities.yaml"
+  - "engine/.veldo/capabilities.yaml"
   - ".veldo/policy.yaml"
+  - ".veldo/*contract*.py"
   - "scripts/suites/06_capabilities_manifest_honesty_veldo.py"
   - "engine/.veldo/*contract*.py"
   - "scripts/suites/*"

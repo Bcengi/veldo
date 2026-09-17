@@ -52,6 +52,10 @@ _FILES = [
     "VELDO.md",
     ".veldo/validate.py",
     ".veldo/validate_checks.py",
+    # VELDO-0016 (PLAN-0019 W1): the project-layer policy contract, loaded by the suite and by
+    # the packages above it; laid down beside the loader whose adapters it registers. Not in
+    # REQUIRED_SUBSTRATE: no gate stage of validate_checks loads it.
+    ".veldo/policy_contract.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",

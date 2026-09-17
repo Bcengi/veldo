@@ -297,7 +297,12 @@ def _cli(argv):
     except ValueError as e:
         print("  %s: front matter outside the parser subset: %s" % (arg, e))
         return 1
-    _arch, contract = V.load_repo_contract(repo_root=str(here.parent))
+    try:
+        _arch, contract = V.load_repo_contract(repo_root=str(here.parent))
+    except V.ContractRefused as e:
+        print("  %s: architecture contract refused, so the diagnosability gate cannot join to "
+              "the contract's observability rules and refuses: %s" % (arg, e))
+        return 1
     errs = validate_observability(fm, arg, V.fail)
     for msg in observability_gate(fm, contract):
         errs += V.fail(arg, msg)

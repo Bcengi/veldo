@@ -98,7 +98,14 @@ def _read_contract(root, V, reads=None):
         contract_cause = cause or None
     declared = sorted(arch.area_ids(contract)) if (arch is not None and contract is not None) else None
     contract_problem = None
-    if present and not declared:
+    if not present and contract_cause is not None:
+        # VELDO-0016 AC3: the loader refused an ABSENT contract, which it does for exactly one
+        # reason - this repository's policy declares the contract required - so the join is not
+        # standing down by name, it is refused by name.
+        contract_problem = ("the architecture contract at .veldo/architecture.yaml is ABSENT and this "
+                            "repository's policy REQUIRES one, so the shape this join needs is refused "
+                            "rather than absent; the read raised %s" % contract_cause)
+    elif present and not declared:
         contract_problem = ("the architecture contract at .veldo/architecture.yaml EXISTS but NO declared area "
                             "could be read from it (it is truncated, malformed, a directory, a symlink that "
                             "does not resolve, or it declares none%s), so the shape this join needs is "

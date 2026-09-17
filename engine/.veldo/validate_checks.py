@@ -20,8 +20,10 @@ name defined here into its own namespace, keeping the public API (V.check_arch,
 V.check_placement, V.check_ready, V.load_repo_contract, V.tripwire_status, ...)
 byte-identical for every caller.
 """
+import collections
 import functools
 import importlib.util
+import os
 import re
 from pathlib import Path
 
@@ -229,16 +231,23 @@ _shape_review_module = functools.partial(_organ, "shape_review", ROOT / ".veldo"
 _release_contract_module = functools.partial(_organ, "release_contract", ROOT / ".veldo" / "release_contract.py")
 
 
-def check_arch(path=None, root=None, required=False):
-    """Validate the architecture contract (veldo.arch/v1) structurally, delegating
-    to .veldo/arch.py. Adoption safe: an absent contract stands down (unless it is
-    required), and a repository without a contract is byte-identically unaffected.
-    Present, or required-and-absent: fails closed. The parser and the failure
-    reporter passed in are this module's own, so arch.py adds no second YAML
-    parser and there is no import cycle."""
+def check_arch(path=None, root=None, required=None):
+    """Validate the architecture contract (veldo.arch/v1) structurally, through the one
+    tri-state loader (load_contract_state) so the gate's verdict and every consumer's are
+    the same verdict over the same artifact. Adoption safe: an absent contract stands down
+    unless it is required (explicitly, or by the repository's policy flag), and a repository
+    without a contract is byte-identically unaffected. Present and not valid, or
+    required-and-absent: fails closed, each problem reported by name. The parser and the
+    failure reporter are this module's own, so arch.py adds no second YAML parser and
+    there is no import cycle."""
     base = Path(root) if root else ROOT
-    contract = Path(path) if path else base / ".veldo" / "architecture.yaml"
-    return _arch_module().check_contract(contract, base, required, parse_yamlish, fail)
+    load = load_contract_state(base, required, contract_path=path)
+    if not load.refused:
+        return 0
+    errs = 0
+    for msg in load.problems:
+        errs += fail(load.path, msg)
+    return errs
 
 
 def check_placement(path, repo_root=None):
@@ -323,23 +332,120 @@ def check_observability(path, repo_root=None):
     return _observability_module().validate_observability(fm, str(path), fail)
 
 
-def load_repo_contract(repo_root=None):
-    """(arch_module, parsed_contract) for this repository, or (None, None) when no
-    contract exists or it is malformed (adoption safe: a repository without a contract
-    is unaffected, and a malformed contract is reported by check_arch, not double
-    refused here). This is the single place the mandatory placement gate's consumers -
-    the ready transition (check_ready), the claimable frontier (frontier.claimable),
-    and run-check (plan.cmd_run_check) - obtain the parsed contract, so arch.py is
-    loaded once per pass and all three gate against the SAME artifact."""
+# --- THE ARCHITECTURE CONTRACT LOADER (VELDO-0016 AC3, PLAN-0019 W1) ---------------------
+# Three states and a flag, never two. The loader this replaced answered (None, None) both for
+# "this repository has no contract" and for "this repository has a contract nobody can read", so
+# a truncated, unreadable, malformed or structurally invalid contract stood EVERY consumer down
+# exactly as if the repository had adopted none: the ready transition let a placeless spec
+# through, the frontier offered it, run-check cleared it, the shape gate printed "standing down
+# (adoption safe)". Absence is a state a repository's policy may call optional. Presence never is.
+CONTRACT_ABSENT, CONTRACT_VALID, CONTRACT_INVALID = "absent", "valid", "invalid"
+# The error taxonomy VELDO-0016 and VELDO-0053 name, one word each, so a consumer's diagnostic
+# and a suite's row can name the class without parsing prose.
+CONTRACT_KINDS = ("optional_absence", "required_absence", "unreadable", "parse_failure",
+                  "invalid_structure", "valid")
+
+
+class ContractLoad(collections.namedtuple(
+        "ContractLoad", "state kind arch contract problems path required")):
+    """The one result type every architecture-loading entry point shares. `state` is one of
+    CONTRACT_ABSENT / CONTRACT_VALID / CONTRACT_INVALID, `kind` one of CONTRACT_KINDS, `arch`
+    the loaded arch organ (None only when nothing was at the path), `contract` the parsed
+    dict (only when valid), `problems` the refusal reasons by name (empty unless refused),
+    `path` where the contract was looked for and `required` the flag that was in force."""
+    __slots__ = ()
+
+    @property
+    def refused(self):
+        """True when a consumer may NOT proceed as if the shape were known: a present contract
+        that is not valid, or an absent contract the policy requires. Optional absence is the
+        one state that stands down (adoption safe)."""
+        return self.state == CONTRACT_INVALID or (self.state == CONTRACT_ABSENT and self.required)
+
+    @property
+    def reason(self):
+        return "; ".join(self.problems) if self.problems else None
+
+
+class ContractRefused(ValueError):
+    """Raised by load_repo_contract when the load is refused, carrying the ContractLoad, so a
+    consumer written against the (arch, contract) pair cannot receive (None, None) for a
+    contract that exists: it either handles the refusal by name or fails closed."""
+
+    def __init__(self, load):
+        super().__init__(load.reason or "architecture contract refused")
+        self.load = load
+
+
+def contract_requirement(repo_root=None):
+    """Whether this repository's policy declares its architecture contract REQUIRED: the line
+    `architecture_contract: required` (or `optional`) at the top level of .veldo/policy.yaml.
+    No line means optional (adoption safe: a repository that never said is unaffected). A line
+    that is present and does not say `optional` means required, so a misspelling closes rather
+    than opens. Proportionate line reader, the posture policy_check.protected_patterns and
+    decision_review.required_reviews_for take with the same file (one policy, no second parser
+    for it)."""
     base = Path(repo_root) if repo_root else ROOT
-    contract_path = base / ".veldo" / "architecture.yaml"
-    if not contract_path.is_file():
-        return None, None
+    try:
+        text = (base / ".veldo" / "policy.yaml").read_text()
+    except OSError:
+        return False
+    for line in text.splitlines():
+        m = re.match(r"^architecture_contract:\s*([^#\s]+)", line)
+        if m:
+            return m.group(1).strip().strip("'\"") != "optional"
+    return False
+
+
+def load_contract_state(repo_root=None, required=None, contract_path=None):
+    """The tri-state load of this repository's architecture contract, as a ContractLoad.
+    `required` None reads the policy flag (contract_requirement); True or False overrides it
+    (the CLI's and a fixture's explicit flag). Presence is decided by os.path.lexists, so a
+    directory, a dangling symlink or an unreadable file at the path is PRESENT and refused as
+    unreadable, never mistaken for absence. A present file is read by arch.load_contract (the one
+    reader) and then structurally validated by arch.validate_contract with a collecting
+    reporter, so "valid" here means exactly what check_arch means by it and a consumer never
+    gates against a contract the gate would refuse."""
+    base = Path(repo_root) if repo_root else ROOT
+    p = Path(contract_path) if contract_path else base / ".veldo" / "architecture.yaml"
+    req = contract_requirement(base) if required is None else bool(required)
+    if not os.path.lexists(p):
+        if req:
+            return ContractLoad(CONTRACT_ABSENT, "required_absence", None, None,
+                                ("architecture contract is required by this repository's policy "
+                                 "but absent (fail closed): nothing is placeable, claimable or "
+                                 "buildable until it exists",), str(p), True)
+        return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)
     arch = _arch_module()
     try:
-        return arch, arch.load_contract(contract_path, parse_yamlish)
-    except arch.ArchContractError:
-        return None, None
+        data = arch.load_contract(p, parse_yamlish)
+    except arch.ArchContractError as e:
+        kind = "unreadable" if getattr(e, "kind", None) == "unreadable" else "parse_failure"
+        return ContractLoad(CONTRACT_INVALID, kind, arch, None, (str(e),), str(p), req)
+    problems = []
+    arch.validate_contract(data, base, p, lambda _where, msg: (problems.append(msg), 1)[1])
+    if problems:
+        return ContractLoad(CONTRACT_INVALID, "invalid_structure", arch, None,
+                            tuple(problems), str(p), req)
+    return ContractLoad(CONTRACT_VALID, "valid", arch, data, (), str(p), req)
+
+
+def load_repo_contract(repo_root=None, required=None):
+    """(arch_module, parsed_contract) for this repository when the contract is VALID, or
+    (None, None) when it is ABSENT AND OPTIONAL (adoption safe: a repository without a contract
+    is unaffected). Every other state RAISES ContractRefused carrying the ContractLoad: a
+    present contract that is unreadable, outside the parser subset or structurally invalid, or
+    an absent contract the policy requires. This is the single place the mandatory placement
+    gate's consumers - the ready transition (check_ready), the claimable frontier
+    (frontier.claimable), run-check (plan.cmd_run_check via placement_gate_problems), the shape
+    gate and the metrics readers - obtain the parsed contract, so all of them gate against the
+    SAME artifact and none can read a broken one as no contract. `required` None defers to the
+    policy flag; the loading registry that enumerates these consumers is
+    policy_contract.LOADER_ADAPTERS."""
+    load = load_contract_state(repo_root, required)
+    if load.refused:
+        raise ContractRefused(load)
+    return load.arch, load.contract
 
 
 def placement_gate_problems(fm, repo_root=None):
@@ -348,8 +454,14 @@ def placement_gate_problems(fm, repo_root=None):
     repository's contract; empty when the spec passes OR when no contract exists
     (adoption safe). run-check renders these as its refusal reasons. Delegates to the
     one predicate arch.placement_gate so the frontier, run-check, and the ready
-    transition never diverge on what a resolving placement is."""
-    arch, contract = load_repo_contract(repo_root)
+    transition never diverge on what a resolving placement is. A REFUSED contract is a
+    problem in its own right, rendered by name: while the contract cannot be read nothing
+    resolves to an area, so nothing is placeable (VELDO-0016 AC3)."""
+    try:
+        arch, contract = load_repo_contract(repo_root)
+    except ContractRefused as e:
+        return ["architecture contract refused, so no placement can resolve until it is "
+                "repaired: %s" % e]
     if contract is None:
         return []
     return arch.placement_gate(fm, contract)
@@ -374,7 +486,11 @@ def check_ready(path, repo_root=None):
     corpus is past ready and past claim, so it is never re-evaluated here and needs no
     migration. Enforcing it at the transition is what makes O3/RJ2 true without sweeping
     the shipped specs."""
-    arch, contract = load_repo_contract(repo_root)
+    try:
+        arch, contract = load_repo_contract(repo_root)
+    except ContractRefused as e:
+        return fail(path, "architecture contract refused, so the ready transition cannot gate "
+                          "placement and refuses (VELDO-0016 AC3): %s" % e)
     if contract is None:
         return 0
     text = Path(path).read_text()
@@ -525,8 +641,13 @@ def check_shape_review(spec_path, changed_paths, repo_root=None):
     .veldo/shape_review.py. Each finding is reported by name and counts as an error, so a change
     that does not fit the declared shape fails closed. Adoption safe: no contract in this
     repository stands the whole check down (0), and the pattern-fit JUDGMENT half is the delegated
-    fresh-context reviewer's (shape_review.ShapeReviewer), never graded here."""
-    arch, contract = load_repo_contract(repo_root)
+    fresh-context reviewer's (shape_review.ShapeReviewer), never graded here. A REFUSED
+    contract refuses the check: a shape nobody can read fits nothing (VELDO-0016 AC3)."""
+    try:
+        arch, contract = load_repo_contract(repo_root)
+    except ContractRefused as e:
+        return fail(spec_path, "architecture contract refused, so shape-fit cannot be graded "
+                               "and the check refuses: %s" % e)
     if contract is None:
         return 0
     text = Path(spec_path).read_text()

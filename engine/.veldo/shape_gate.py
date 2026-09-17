@@ -97,18 +97,19 @@ _BUDGET_KINDS = {"file_lines", "function_lines", "duplication_ratio", "cyclomati
 
 
 def _load(root):
-    """(V, arch, contract) for root, reusing the one parser and the one contract loader
-    (validate.load_repo_contract). The validate module and, through it, arch.py are loaded
-    from THIS engine's location (the way check_placement does), while the CONTRACT is read
-    from repo_root, so the gate runs in-repo in production (root is the repo) and a test can
-    point root at a temporary tree without copying the engine. contract is None when no
-    contract exists or it is malformed (adoption safe: a malformed contract is reported by the
-    contract validator, not double refused here)."""
+    """(V, load) for root: the validate module and the tri-state ContractLoad from the one
+    contract loader (validate.load_contract_state). The validate module and, through it,
+    arch.py are loaded from THIS engine's location (the way check_placement does), while the
+    CONTRACT is read from repo_root, so the gate runs in-repo in production (root is the repo)
+    and a test can point root at a temporary tree without copying the engine. The load says
+    which of three things is true: no contract and none required (stand down, adoption safe),
+    a valid contract (enforce it), or a REFUSED one (present but unreadable, malformed or
+    invalid, or absent while the policy requires it), which run() reports as a gate-blocking
+    problem rather than as absence (VELDO-0016 AC3)."""
     vspec = importlib.util.spec_from_file_location("veldo_validate_shape", ROOT / ".veldo" / "validate.py")
     V = importlib.util.module_from_spec(vspec)
     vspec.loader.exec_module(V)
-    arch, contract = V.load_repo_contract(repo_root=str(root))
-    return V, arch, contract
+    return V, V.load_contract_state(repo_root=str(root))
 
 
 def _as_list(v):
@@ -401,9 +402,13 @@ def run(root=None, changed=None):
     NON-BLOCKING reviewer-guidance findings. Pure over the loaded contract and the change set
     except for reading source files."""
     root = Path(root or ROOT)
-    V, arch, contract = _load(root)
-    if contract is None:
+    V, load = _load(root)
+    if load.refused:
+        return False, ["architecture contract refused (%s), so the shape gate cannot stand "
+                       "down as adoption safe and fails closed: %s" % (load.kind, load.reason)], []
+    if load.contract is None:
         return True, [], []
+    arch, contract = load.arch, load.contract
     if changed is None:
         changed = changed_source_paths(root)
     problems, notes = [], []

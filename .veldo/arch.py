@@ -61,7 +61,14 @@ ANALYZER_KINDS = {"reference", "external"}
 
 class ArchContractError(ValueError):
     """The architecture contract is malformed. Raised by name so a bad contract
-    never silently no-ops (parallels PackManifestError and TrackerConfigError)."""
+    never silently no-ops (parallels PackManifestError and TrackerConfigError).
+    `kind` names the class of failure for the loader's taxonomy (VELDO-0016 AC3):
+    "unreadable" when the file could not be read at all, "parse_failure" when it
+    was read but is not a mapping in the contract subset."""
+
+    def __init__(self, message, kind="parse_failure"):
+        super().__init__(message)
+        self.kind = kind
 
 
 def default_contract_path(root=None):
@@ -81,7 +88,7 @@ def load_contract(path, parse):
     try:
         text = p.read_text()
     except OSError as e:
-        raise ArchContractError("architecture contract unreadable: %s" % e)
+        raise ArchContractError("architecture contract unreadable: %s" % e, kind="unreadable")
     try:
         data = parse(text)
     except ValueError as e:

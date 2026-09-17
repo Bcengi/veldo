@@ -101,6 +101,7 @@ SUPPORT_DELEGATED_CLOSURE = (
     {"gate": "architecture_contract", "unit": ".veldo/architecture.yaml", "kind": "file",
      "owner": ".veldo/validate.py", "call": "load_repo_contract", "opens": (
          (".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"),
+         (".veldo/policy.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
          (".veldo/*.py", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc.*", "OPENER", "importlib's O_EXCL cache write"))},
@@ -112,6 +113,7 @@ SUPPORT_DELEGATED_CLOSURE = (
          ("plans/*.md", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
          (".veldo/decisions/*.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
          (".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"),
+         (".veldo/policy.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
          (".veldo/events.jsonl", "UNIT", ".veldo/metrics_event_stream.py:read_stream"),
          (".veldo/*.py", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
@@ -120,6 +122,7 @@ SUPPORT_DELEGATED_CLOSURE = (
      "owner": ".veldo/entropy.py", "call": "spec_area_index", "opens": (
          ("specs/*.md", "STORE", ".veldo/metrics_shape_readers.py:_read_area_index"),
          (".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"),
+         (".veldo/policy.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
          (".veldo/*.py", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc.*", "OPENER", "importlib's O_EXCL cache write"))},
@@ -127,6 +130,7 @@ SUPPORT_DELEGATED_CLOSURE = (
      "owner": ".veldo/entropy.py", "call": "entropy_report", "opens": (
          ("specs/*.md", "STORE", ".veldo/dashboard.py:entropy_figures"),
          (".veldo/architecture.yaml", "UNIT", ".veldo/metrics_shape_readers.py:_read_contract"),
+         (".veldo/policy.yaml", "HERE", ".veldo/metrics_read_closure.py:unopenable_under"),
          (".veldo/*.py", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc", "ORGAN", ".veldo/metrics_owner_reads.py:_owner"),
          (".veldo/__pycache__/*.pyc.*", "OPENER", "importlib's O_EXCL cache write"),
