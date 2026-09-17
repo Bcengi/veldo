@@ -111,6 +111,12 @@ LOADER_ADAPTERS = (
     {"id": "validate_checks.placement_gate_ok", "module": ".veldo/validate_checks.py",
      "entry": "placement_gate_ok", "takes_required": False, "via": "placement_gate_problems",
      "refusal": "False"},
+    {"id": "validate_checks.check_placement", "module": ".veldo/validate_checks.py",
+     "entry": "check_placement", "takes_required": False, "via": "load_repo_contract",
+     "refusal": "a nonzero error count naming the refusal (the declaration cannot be validated)"},
+    {"id": "validate_checks.check_observability", "module": ".veldo/validate_checks.py",
+     "entry": "check_observability", "takes_required": False, "via": "load_repo_contract",
+     "refusal": "a nonzero error count naming the refusal"},
     {"id": "validate_checks.check_ready", "module": ".veldo/validate_checks.py",
      "entry": "check_ready", "takes_required": False, "via": "load_repo_contract",
      "refusal": "a nonzero error count naming the refusal at the ready transition"},
@@ -131,7 +137,7 @@ LOADER_ADAPTERS = (
      "refusal": "exit 1 naming the refusal"},
     {"id": "intent_corpus.open_corpus", "module": ".veldo/intent_corpus.py",
      "entry": "open_corpus", "takes_required": False, "via": "load_repo_contract",
-     "refusal": "the corpus opens (its own reads are its own) and every area join, area_of first, "
+     "refusal": "the corpus opens (its own reads are its own) and every area join, area_of and trace, "
                 "raises IntentCorpusError naming the refusal; stats() says contract_refused"},
     {"id": "entropy.entropy_report", "module": ".veldo/entropy.py",
      "entry": "entropy_report", "takes_required": False, "via": "load_repo_contract",
@@ -277,6 +283,15 @@ POLICY_BOUNDARIES = (
 
 DECISION_SCHEMA = "veldo.decision/v1"
 
+# THE MACHINE ACTORS THAT ARE NOT A PERSON, mirrored from authorization.MACHINE_ACTORS (the human
+# authorization refusal of the safety core) and bound to it by the suite so the two sets cannot
+# drift. A decided record whose decider normalizes to one of these activates nothing.
+MACHINE_ACTORS = frozenset({
+    "veldo-executor", "veldo-responder", "executor", "responder", "machine",
+    "agent", "bot", "ava", "automation",
+    "service", "service_account", "service-account",
+})
+
 # The refusal classes activation_authority can answer with, one word each, so a consumer's
 # diagnostic and a suite row name the class rather than parse prose.
 ACTIVATION_REFUSALS = ("unknown_boundary", "missing", "malformed", "wrong_record", "draft",
@@ -292,20 +307,23 @@ def boundary(boundary_id):
     return None
 
 
-def activation_authority(boundary_id, record, bound_supporting_reviews, required_reviews):
+def activation_authority(boundary_id, record, bound_supporting_reviews, required_reviews, record_problems=()):
     """(accepted, refusal_class, reason): may `record` activate `boundary_id`? PURE over its
     arguments; the caller supplies the parsed veldo.decision/v1 record (None when none resolves),
     the number of structurally valid, bound, SUPPORTING adversarial reviews the record carries
-    (decision_review._valid_bound_reviews_by_decision) and the number its risk tier requires
-    (decision_review.required_reviews_for). Accepts ONLY a record that is the registered one,
-    at the registered version, decided by a named person, choosing the activating option, with
-    enough bound reviews. Everything else is refused by class and by name: a missing record, a
-    malformed one, a record for another decision, a draft, a superseded record, a record whose
-    version moved past the registry (stale: the registry must be re-read against the new
-    version, never assumed), a decided record that chose a different option, a decided record
-    without a decider, and a decided record with fewer bound supporting reviews than its tier
-    requires. Draft, superseded and stale are refused BEFORE the option is looked at, so a draft
-    that already names the activating option in prose is still a draft."""
+    (decision_review._valid_bound_reviews_by_decision), the number its risk tier requires
+    (decision_review.required_reviews_for) and the problems the canonical record validator
+    (decision.validate_record) reported for it, which activation_report computes. Accepts ONLY a
+    record that validates, is the registered one, at the registered version, decided by a named
+    PERSON (a decider that normalizes to a machine actor is no decider), with a decided_at,
+    choosing the activating option, with enough bound reviews. Everything else is refused by
+    class and by name: a missing record, a malformed one, a record for another decision, a
+    draft, a superseded record, a record whose version moved past the registry (stale: the
+    registry must be re-read against the new version, never assumed), a decided record that
+    chose a different option, a decided record without a person as decider, and a decided record
+    with fewer bound supporting reviews than its tier requires. Draft, superseded and stale are
+    refused BEFORE the option is looked at, so a draft that already names the activating option
+    in prose is still a draft."""
     b = boundary(boundary_id)
     if b is None:
         return False, "unknown_boundary", "no policy boundary %r is registered" % (boundary_id,)
@@ -313,6 +331,9 @@ def activation_authority(boundary_id, record, bound_supporting_reviews, required
         return False, "missing", "decision record %s for boundary %s does not resolve" % (b["decision"], boundary_id)
     if not isinstance(record, dict) or record.get("schema") != DECISION_SCHEMA:
         return False, "malformed", "the record offered for boundary %s is not a %s record" % (boundary_id, DECISION_SCHEMA)
+    if record_problems:
+        return False, "malformed", ("the record offered for boundary %s fails the decision validator: %s"
+                                    % (boundary_id, "; ".join(str(p) for p in record_problems)))
     if record.get("id") != b["decision"]:
         return False, "wrong_record", ("boundary %s is activated by %s, not by %r"
                                        % (boundary_id, b["decision"], record.get("id")))
@@ -334,6 +355,13 @@ def activation_authority(boundary_id, record, bound_supporting_reviews, required
     if not (isinstance(decided_by, str) and decided_by.strip()):
         return False, "undecided_by_a_person", ("%s is decided but names no decider: only a person "
                                                 "decides, on the record" % b["decision"])
+    if decided_by.strip().lower() in MACHINE_ACTORS:
+        return False, "undecided_by_a_person", ("%s names %r as its decider, a machine actor: only a person "
+                                                "decides, on the record" % (b["decision"], decided_by))
+    decided_at = decision.get("decided_at")
+    if not (isinstance(decided_at, str) and decided_at.strip()):
+        return False, "undecided_by_a_person", ("%s is decided but carries no decided_at: a decision without "
+                                                "a date is not on the record" % b["decision"])
     chosen = decision.get("chosen")
     if chosen != b["activating_option"]:
         return False, "wrong_option", ("%s chose %r; boundary %s is activated only by %r"
@@ -423,25 +451,43 @@ def activation_report(root=None, load_modules=None):
     DR = load_modules("decision_review", "decision_review.py")
     quiet = lambda _name, _msg: 1
     ddir = D.default_decisions_dir(base)
-    records = []
+    records, problems_by_id = [], {}
     if Path(ddir).is_dir():
         for p in sorted(Path(ddir).glob("*.yaml")):
             try:
-                records.append(D.load_record(p, V.parse_yamlish))
-            except Exception:
+                rec = D.load_record(p, V.parse_yamlish)
+            except Exception as e:
+                problems_by_id.setdefault(p.stem, []).append(str(e))
                 continue
-    counts, _seen, _errs = DR._valid_bound_reviews_by_decision(
+            records.append(rec)
+            # THE CANONICAL VALIDATOR JUDGES THE RECORD, never this module: a decided record that
+            # decision.validate_record refuses (no decided_at, a chosen option that does not resolve,
+            # a smuggled decision block) is malformed here whatever else it says.
+            found = []
+            D.validate_record(rec, base, p, lambda _n, m: (found.append(m), 1)[1])
+            if found and isinstance(rec, dict):
+                problems_by_id[rec.get("id")] = found
+    counts, _seen, review_errs = DR._valid_bound_reviews_by_decision(
         DR.default_reviews_dir(base), ddir, base, V.parse_yamlish, quiet, D.load_record)
+    if review_errs:
+        # A REVIEW SET WITH A PROBLEM VOUCHES FOR NOTHING. The reader counts a review before it reports
+        # that a second file carries the same id, so two copies of one supporting review would count
+        # as two; an error anywhere in the set zeroes every count until the set is repaired.
+        counts = {}
     policy_path = base / ".veldo" / "policy.yaml"
     by_id = {r.get("id"): r for r in records if isinstance(r, dict)}
     rows = []
     for b in POLICY_BOUNDARIES:
         rec = by_id.get(b["decision"])
         need = DR.required_reviews_for(rec.get("risk") if isinstance(rec, dict) else None, policy_path)
-        accepted, refusal, reason = activation_authority(b["id"], rec, counts.get(b["decision"], 0), need)
+        accepted, refusal, reason = activation_authority(
+            b["id"], rec, counts.get(b["decision"], 0), need, record_problems=problems_by_id.get(b["decision"], ()))
+        if review_errs and refusal == "under_reviewed":
+            reason += " (the review set carries %d problem(s), so no review counts until it is repaired)" % review_errs
         rows.append({"boundary": b["id"], "decision": b["decision"], "accepted": accepted,
                      "refusal": refusal, "reason": reason})
     return {"schema": SCHEMA, "boundaries": rows, "matrix_problems": boundary_matrix_problems(records),
+            "review_set_problems": review_errs, "record_problems": problems_by_id,
             "activated": sorted(r["boundary"] for r in rows if r["accepted"])}
 
 
@@ -627,8 +673,9 @@ def exception_clause_problems(contract):
 
 def exception_effective(contract, activation_rows, registrations=None):
     """(effective, reason): whether the process exception is IN FORCE. It is, only when the contract
-    carries the clause without problems, the contract's version is the accepted architecture
-    revision the process_lifetime boundary is registered against, that boundary is ACTIVATED
+    carries the clause without problems, the contract is APPROVED on the record (status approved
+    with approved_by and approved_at), its version is the accepted architecture revision the
+    process_lifetime boundary is registered against, that boundary is ACTIVATED
     (activation_authority accepted its decided record), and the runner profile is eligible (every
     obligation has a registered test). Editing the yaml changes nothing here: the clause is a
     declaration, the activation is the authority."""
@@ -637,6 +684,10 @@ def exception_effective(contract, activation_rows, registrations=None):
         return False, "exception clause refused: " + "; ".join(problems)
     if not exception_clauses(contract):
         return False, "the contract carries no exception clause: the invariant binds everywhere"
+    if contract.get("status") != "approved" or not all(
+            isinstance(contract.get(k), str) and contract.get(k).strip() for k in ("approved_by", "approved_at")):
+        return False, ("the contract is %r and not approved on the record (approved_by and approved_at): a "
+                       "revision nobody approved makes no exception effective" % contract.get("status"))
     b = boundary(EXCEPTION_BOUNDARY)
     if contract.get("version") != b.get("architecture_version"):
         return False, ("the contract is version %r; the %s boundary is registered against architecture "
@@ -663,29 +714,68 @@ def exception_effective(contract, activation_rows, registrations=None):
 DOMAIN_TABLES = ("journal", "entities", "accepted_documents", "dispatches", "assignments", "decisions",
                  "nonces", "reservations", "receipts", "publication_cursors", "claims", "leases")
 CHECKPOINT_PREFIX = "langgraph_"
-_CHECKPOINT_FORBIDDEN = ("ATTACH", "CREATE VIEW", "CREATE TRIGGER", "CREATE TEMP VIEW", "CREATE TEMPORARY VIEW",
-                         "CREATE TEMP TRIGGER", "CREATE TEMPORARY TRIGGER", "PRAGMA", "VACUUM INTO")
+# The statement verbs checkpoint work consists of, and nothing else: no transaction control (a
+# ROLLBACK or BEGIN EXCLUSIVE from the adapter's connection reaches every table in the file), no
+# PRAGMA, ATTACH, DETACH, VACUUM, REINDEX or ANALYZE, no view or trigger (they read domain tables
+# under a checkpoint name), no temporary objects.
+_CHECKPOINT_VERBS = ("SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP")
+_CHECKPOINT_REFUSED_WORDS = ("BEGIN", "COMMIT", "END", "ROLLBACK", "SAVEPOINT", "RELEASE", "PRAGMA", "ATTACH",
+                             "DETACH", "VACUUM", "REINDEX", "ANALYZE", "VIEW", "TRIGGER", "TEMP", "TEMPORARY")
+# The keywords a table name follows in the verbs above; every identifier in one of these positions
+# must carry the checkpoint prefix.
+_CHECKPOINT_TABLE_AFTER = ("FROM", "INTO", "JOIN", "UPDATE", "TABLE", "ON")
+_CHECKPOINT_SKIP = ("IF", "NOT", "EXISTS", "OR", "REPLACE", "UNIQUE", "INDEX")
+
+
+def _sql_words(statement):
+    """The statement's words with comments and string literals removed, so a token hidden in a
+    comment or a value can neither qualify nor disqualify it (a `-- langgraph_checkpoint` comment on
+    a ROLLBACK is the reviewer's reproduction)."""
+    text = re.sub(r"/\*.*?\*/", " ", str(statement), flags=re.S)
+    text = re.sub(r"--[^\n]*", " ", text)
+    text = re.sub(r"'(?:[^']|'')*'", " 'lit' ", text)
+    text = re.sub(r'"(?:[^"]|"")*"', ' "lit" ', text)
+    return re.findall(r"[A-Za-z_][A-Za-z0-9_.]*|[();,*=<>]", text)
 
 
 def checkpoint_statement_allowed(statement, domain_tables=DOMAIN_TABLES, prefix=CHECKPOINT_PREFIX):
-    """(allowed, reason) for one SQL statement the checkpoint adapter wants to run (R21). A statement
-    is allowed only when every table it names is under the checkpoint namespace and it is none of the
-    forms that reach another namespace indirectly: ATTACH of any file, a view or trigger (which read
-    domain tables under a checkpoint name), PRAGMA, VACUUM INTO. A domain table named anywhere in the
-    statement, including inside INSERT ... SELECT, refuses. Token-level and deliberately strict: an
-    unqualified statement (no checkpoint table named) refuses too, because the boundary admits only
-    what it can see is checkpoint work."""
-    text = " ".join(str(statement).split())
-    upper = text.upper()
-    for form in _CHECKPOINT_FORBIDDEN:
-        if form in upper:
-            return False, "statement uses %s, which reaches past the checkpoint namespace (R21)" % form
-    words = set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", text))
-    bare = {w.split(".")[-1].lower() for w in words}
+    """(allowed, reason) for one SQL statement the checkpoint adapter wants to run (R21). The
+    statement is READ, not searched: comments and string literals are removed first; the first word
+    must be a checkpoint verb (SELECT, INSERT, UPDATE, DELETE, CREATE TABLE or INDEX, DROP TABLE or
+    INDEX); no transaction-control, PRAGMA, ATTACH, VACUUM, view, trigger or temporary word may appear
+    anywhere; every table position (after FROM, INTO, JOIN, UPDATE, TABLE, ON) must name a
+    checkpoint-prefixed table; a domain table named anywhere refuses; and at least one checkpoint
+    table must be named. A lexical guard for a contract organ, deliberately strict: what it cannot
+    read as checkpoint work it refuses, and the store's real boundary (Package B) may only narrow it."""
+    words = _sql_words(statement)
+    if not words:
+        return False, "empty statement (R21)"
+    upper = [w.upper() for w in words]
+    if upper[0] not in _CHECKPOINT_VERBS:
+        return False, "statement begins with %s, not a checkpoint verb %s (R21)" % (upper[0], _CHECKPOINT_VERBS)
+    for w in upper:
+        if w in _CHECKPOINT_REFUSED_WORDS:
+            return False, "statement uses %s, which reaches past the checkpoint namespace (R21)" % w
+    if upper[0] in ("CREATE", "DROP") and not any(w in ("TABLE", "INDEX") for w in upper[1:4]):
+        return False, "%s of anything but a TABLE or INDEX is refused (R21)" % upper[0]
+    bare = [w.split(".")[-1].lower() for w in words]
     hit = sorted(t for t in domain_tables if t.lower() in bare)
     if hit:
         return False, "statement names domain table(s) %s: checkpoint writes cannot touch domain tables (R21)" % ", ".join(hit)
-    if not any(w.split(".")[-1].lower().startswith(prefix) for w in words):
+    tables = []
+    for i, w in enumerate(upper[:-1]):
+        if w in _CHECKPOINT_TABLE_AFTER or (w == "INDEX" and upper[0] in ("CREATE", "DROP")):
+            j = i + 1
+            while j < len(upper) and upper[j] in _CHECKPOINT_SKIP:
+                j += 1
+            if j < len(words) and re.match(r"[A-Za-z_]", words[j]):
+                tables.append(bare[j])
+    if upper[0] == "UPDATE" and len(bare) > 1:
+        tables.append(bare[1])
+    unprefixed = sorted({t for t in tables if not t.startswith(prefix)})
+    if unprefixed:
+        return False, "statement names table(s) %s outside the %s* namespace (R21)" % (", ".join(unprefixed), prefix)
+    if not any(t.startswith(prefix) for t in tables):
         return False, "statement names no %s* table: the boundary admits only visible checkpoint work (R21)" % prefix
     return True, "checkpoint-namespace statement"
 

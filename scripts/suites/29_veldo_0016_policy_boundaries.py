@@ -51,6 +51,7 @@ lane: standalone
 placement: [contracts]
 footprint:
   - ".veldo/validate.py"
+behavior_bearing: false
 depends_on: []
 acceptance_criteria:
   - id: AC1
@@ -180,6 +181,12 @@ def _v16_probe(adapter, fx, V):
     if adapter_id == "placement_gate_ok":
         ok = V.placement_gate_ok(dict(_V16_FM_OK), repo_root=str(fx))
         return (P if ok else R), ok
+    if adapter_id == "check_placement":
+        n, text = _v16_quiet(lambda: V.check_placement(spec_path, repo_root=str(fx)))
+        return (R if n else P), text.strip()
+    if adapter_id == "check_observability":
+        n, text = _v16_quiet(lambda: V.check_observability(spec_path, repo_root=str(fx)))
+        return (R if n else P), text.strip()
     if adapter_id == "check_ready":
         n, text = _v16_quiet(lambda: V.check_ready(spec_path, repo_root=str(fx)))
         return (R if n else P), text.strip()
@@ -236,7 +243,8 @@ def _v16_probe(adapter, fx, V):
 
 # The ENTRIES this suite probes, compared with the registry in both directions below.
 _V16_PROBED = {"load_contract_state", "load_repo_contract", "check_arch", "placement_gate_problems",
-               "placement_gate_ok", "check_ready", "check_shape_review", "claimable", "cmd_run_check",
+               "placement_gate_ok", "check_placement", "check_observability", "check_ready",
+               "check_shape_review", "claimable", "cmd_run_check",
                "run", "_cli", "open_corpus", "entropy_report", "repo_report", "_read_contract"}
 
 
@@ -271,7 +279,7 @@ _v16_reg_problems = PC16.loader_registry_problems(ROOT)
 expect("VELDO-0016 AC3 policy-loading/registry: the loader adapter registry is exactly the set of "
        "engine modules whose source calls the loader or a placement predicate, in both directions "
        "(problems: %s)" % _v16_reg_problems,
-       _v16_reg_problems == [] and len(PC16.LOADER_ADAPTERS) >= 15)
+       _v16_reg_problems == [] and len(PC16.LOADER_ADAPTERS) == 17)
 expect("VELDO-0016 AC3 policy-loading/registry: every registered adapter has a probe in this suite "
        "and every probe is a registered adapter, so the product below covers the registry and nothing "
        "is probed off the record",
@@ -756,7 +764,7 @@ expect("VELDO-0016 AC4 policy-boundaries/checkpoint-isolation: a checkpoint-name
            False, "statement names domain table(s) claims: checkpoint writes cannot touch domain tables (R21)")
        and PC16.checkpoint_statement_allowed("SELECT * FROM journal")[0] is False
        and PC16.checkpoint_statement_allowed("ATTACH DATABASE 'control.sqlite3' AS other")[1].startswith("statement uses ATTACH")
-       and PC16.checkpoint_statement_allowed("CREATE VIEW langgraph_v AS SELECT * FROM receipts")[1].startswith("statement uses CREATE VIEW")
+       and PC16.checkpoint_statement_allowed("CREATE VIEW langgraph_v AS SELECT * FROM receipts")[1].startswith("statement uses VIEW")
        and PC16.checkpoint_statement_allowed("SELECT 1")[0] is False
        and PC16.checkpoint_statement_allowed("select id from main.langgraph_writes where thread_id = ?")[0] is True)
 
@@ -848,3 +856,121 @@ try:
     _v16_sock.close()
 finally:
     _v16_shutil.rmtree(_v16_fs, ignore_errors=True)
+
+
+# ---------------------------------------------------------------------------------------------
+# The six findings of the first Codex review (review-20260917-074919), each pinned.
+# ---------------------------------------------------------------------------------------------
+# 1. A checkpoint token in a comment qualifies nothing; transaction control is refused.
+expect("VELDO-0016 AC4 policy-boundaries/checkpoint-isolation (review 1): a ROLLBACK or BEGIN EXCLUSIVE carrying a "
+       "checkpoint token in a comment is refused (it reaches every table in the file), a domain table in a string "
+       "literal does not disqualify a checkpoint statement, an unprefixed table in a table position is refused, and "
+       "CREATE TABLE / DROP INDEX on checkpoint tables are allowed",
+       PC16.checkpoint_statement_allowed("ROLLBACK -- langgraph_checkpoint")[0] is False
+       and "ROLLBACK" in PC16.checkpoint_statement_allowed("ROLLBACK -- langgraph_checkpoint")[1]
+       and PC16.checkpoint_statement_allowed("BEGIN EXCLUSIVE /* langgraph_checkpoint */")[0] is False
+       and PC16.checkpoint_statement_allowed("COMMIT; -- langgraph_writes")[0] is False
+       and PC16.checkpoint_statement_allowed("SELECT 1 -- langgraph_checkpoint")[0] is False
+       and PC16.checkpoint_statement_allowed("DELETE FROM langgraph_checkpoints WHERE thread_id = 'journal'")[0] is True
+       and PC16.checkpoint_statement_allowed("SELECT a.id FROM langgraph_a a JOIN other_table b ON a.id = b.id")[0] is False
+       and "other_table" in PC16.checkpoint_statement_allowed("SELECT a.id FROM langgraph_a a JOIN other_table b ON a.id = b.id")[1]
+       and PC16.checkpoint_statement_allowed("UPDATE langgraph_writes SET blob = ? WHERE id = ?")[0] is True
+       and PC16.checkpoint_statement_allowed("CREATE TABLE IF NOT EXISTS langgraph_new (id TEXT PRIMARY KEY)")[0] is True
+       and PC16.checkpoint_statement_allowed("CREATE INDEX langgraph_idx ON langgraph_writes (thread_id)")[0] is True
+       and PC16.checkpoint_statement_allowed("CREATE INDEX langgraph_idx ON journal (id)")[0] is False
+       and PC16.checkpoint_statement_allowed("DROP INDEX langgraph_idx")[0] is True
+       and PC16.checkpoint_statement_allowed("CREATE TEMP TABLE langgraph_t (x)")[0] is False
+       and PC16.checkpoint_statement_allowed("PRAGMA writable_schema = 1 -- langgraph_")[0] is False
+       and PC16.checkpoint_statement_allowed("")[0] is False)
+
+# 2. Only a person decides: a machine decider, a missing decided_at and a record the canonical
+#    validator refuses each activate nothing; the machine set is bound to the safety core's.
+_v16_authspec = _v16_ilu.spec_from_file_location("v16_authz", ROOT / ".veldo" / "authorization.py")
+AUTH16 = _v16_ilu.module_from_spec(_v16_authspec)
+_v16_authspec.loader.exec_module(AUTH16)
+expect("VELDO-0016 AC1 policy-activation/undecided_by_a_person (review 1): a decided record whose decider is a "
+       "machine actor (agent, Ava, service account), or that carries no decided_at, is refused by class; the machine "
+       "set is exactly authorization.MACHINE_ACTORS so the two cannot drift",
+       PC16.MACHINE_ACTORS == AUTH16.MACHINE_ACTORS
+       and all(PC16.activation_authority("process_lifetime", _v16_decided("process_lifetime", decision={
+                   "chosen": "governed-service-and-runner", "decided_by": who, "decided_at": "2026-09-17"}), 2, 2)[1]
+               == "undecided_by_a_person" for who in ("agent", "Ava", " service-account ", "bot"))
+       and PC16.activation_authority("process_lifetime", _v16_decided("process_lifetime", decision={
+               "chosen": "governed-service-and-runner", "decided_by": "dmitry"}), 2, 2)[1] == "undecided_by_a_person")
+expect("VELDO-0016 AC1 policy-activation/malformed (review 1): a record the canonical decision validator refuses is "
+       "malformed here whatever its status says, and activation_report runs that validator over every record",
+       PC16.activation_authority("process_lifetime", _v16_decided("process_lifetime"), 2, 2, record_problems=("x",))[1] == "malformed"
+       and "record_problems" in _v16_rep and _v16_rep["record_problems"] == {})
+
+# 3. A review set with a problem (a duplicated review id among them) vouches for nothing: driven
+#    through activation_report's injected module loader over a decided copy of VELDO-DEC-0004.
+import types as _v16_types
+with tempfile.TemporaryDirectory(prefix="v16rev") as _v16_rv:
+    _v16_rvroot = Path(_v16_rv)
+    (_v16_rvroot / ".veldo" / "decisions").mkdir(parents=True)
+    _v16_rtxt = (ROOT / ".veldo" / "decisions" / "0004-dark-factory-process-lifetime.yaml").read_text()
+    assert _v16_rtxt.count("status: draft\n") == 1
+    _v16_rtxt = _v16_rtxt.replace("status: draft\n", "status: decided\n") + (
+        "\ndecision:\n  chosen: governed-service-and-runner\n  decided_by: dmitry\n  decided_at: 2026-09-17\n")
+    (_v16_rvroot / ".veldo" / "decisions" / "0004.yaml").write_text(_v16_rtxt)
+    (_v16_rvroot / ".veldo" / "policy.yaml").write_text(_V16_POLICY % "required")
+
+    def _v16_fake_dr(counts, errs):
+        return _v16_types.SimpleNamespace(
+            _valid_bound_reviews_by_decision=lambda *a, **k: (counts, {}, errs),
+            default_reviews_dir=lambda base: Path(base) / ".veldo" / "decision_reviews",
+            required_reviews_for=lambda risk, path: 2)
+
+    def _v16_real_loader(fake_dr):
+        def load(name, rel):
+            if name == "decision_review":
+                return fake_dr
+            spec = _v16_ilu.spec_from_file_location("v16_ar_" + name, ROOT / ".veldo" / rel)
+            m = _v16_ilu.module_from_spec(spec)
+            spec.loader.exec_module(m)
+            return m
+        return load
+    _v16_good = PC16.activation_report(_v16_rvroot, load_modules=_v16_real_loader(_v16_fake_dr({"VELDO-DEC-0004": 2}, 0)))
+    _v16_dup = PC16.activation_report(_v16_rvroot, load_modules=_v16_real_loader(_v16_fake_dr({"VELDO-DEC-0004": 2}, 1)))
+    _v16_pl_good = [r for r in _v16_good["boundaries"] if r["boundary"] == "process_lifetime"][0]
+    _v16_pl_dup = [r for r in _v16_dup["boundaries"] if r["boundary"] == "process_lifetime"][0]
+    expect("VELDO-0016 AC1 policy-activation/under_reviewed (review 1): over a decided, valid VELDO-DEC-0004 with two "
+           "bound supporting reviews the report ACTIVATES process_lifetime (the wiring accepts a real decision), and "
+           "with the same counts but one problem in the review set (the reader's duplicate-id error) it refuses as "
+           "under_reviewed and names the review-set problem: a copied review never counts twice",
+           _v16_pl_good["accepted"] is True and _v16_good["activated"] == ["process_lifetime"]
+           and _v16_pl_dup["accepted"] is False and _v16_pl_dup["refusal"] == "under_reviewed"
+           and "review set carries 1 problem" in _v16_pl_dup["reason"] and _v16_dup["review_set_problems"] == 1)
+    (_v16_rvroot / ".veldo" / "decisions" / "0004.yaml").write_text(_v16_rtxt.replace("  decided_at: 2026-09-17\n", ""))
+    _v16_nodate = PC16.activation_report(_v16_rvroot, load_modules=_v16_real_loader(_v16_fake_dr({"VELDO-DEC-0004": 2}, 0)))
+    _v16_pl_nd = [r for r in _v16_nodate["boundaries"] if r["boundary"] == "process_lifetime"][0]
+    expect("VELDO-0016 AC1 policy-activation/malformed (review 1): the same decided record without decided_at is refused "
+           "by the canonical validator through activation_report (malformed), not accepted",
+           _v16_pl_nd["accepted"] is False and _v16_pl_nd["refusal"] == "malformed"
+           and "VELDO-DEC-0004" in _v16_nodate["record_problems"])
+
+# 4. An unapproved revision makes no exception effective.
+expect("VELDO-0016 AC2 policy-activation/exception (review 1): a revision 2 contract set back to draft, or stripped of "
+       "approved_by / approved_at, makes the exception NOT effective even with the boundary activated and every "
+       "obligation tested",
+       PC16.exception_effective(dict(_v16_contract, status="draft"), _v16_rows_on, _v16_all)[0] is False
+       and "not approved" in PC16.exception_effective(dict(_v16_contract, status="draft"), _v16_rows_on, _v16_all)[1]
+       and PC16.exception_effective({k: v for k, v in _v16_contract.items() if k != "approved_by"}, _v16_rows_on, _v16_all)[0] is False
+       and PC16.exception_effective(_v16_contract, _v16_rows_on, _v16_all)[0] is True)
+
+# 6. A trace over a refused contract is refused by name (5 is covered by the product above).
+_v16_ft = _v16_fixture("malformed", False)
+try:
+    _v16_ICt = _v16_mod(_v16_ft, "intent_corpus")
+    _v16_ct = _v16_ICt.open_corpus(_v16_ft)
+    try:
+        _v16_ct.trace("FX-0001")
+        _v16_trace_refused = False
+    except _v16_ICt.IntentCorpusError as e:
+        _v16_trace_refused = "architecture contract refused" in str(e)
+    expect("VELDO-0016 AC3 policy-loading/malformed (review 1): a trace over a corpus whose contract is refused raises "
+           "IntentCorpusError naming the refusal, never contract_present=False with areas None, while spec_ids and "
+           "stats still answer (the corpus's own reads are its own)",
+           _v16_trace_refused is True and "FX-0001" in _v16_ct.spec_ids() and _v16_ct.stats()["contract_refused"] is True)
+finally:
+    _v16_shutil.rmtree(_v16_ft, ignore_errors=True)

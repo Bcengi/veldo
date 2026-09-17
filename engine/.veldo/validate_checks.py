@@ -252,9 +252,11 @@ def check_placement(path, repo_root=None):
     validation only. Mechanically enforcing the declared footprint against the
     actual diff at gate time is WARP-1102 (W2), and grading shape-fit is WARP-1104
     (W4); neither is done here."""
-    base = Path(repo_root) if repo_root else ROOT
-    contract_path = base / ".veldo" / "architecture.yaml"
-    if not contract_path.is_file():
+    try:
+        arch, contract = load_repo_contract(repo_root)
+    except ContractRefused as e:
+        return fail(path, "architecture contract refused, so the placement declaration cannot be validated: %s" % e)
+    if contract is None:
         return 0  # adoption safe: no contract in this repo, the check stands down
     text = Path(path).read_text()
     m = re.match(r"^---\n(.*?)\n---", text, re.S)
@@ -269,11 +271,6 @@ def check_placement(path, repo_root=None):
         fm = parse_yamlish(body)
     except ValueError as e:
         return fail(path, f"placement/footprint declared but the front matter is outside the parser subset: {e}")
-    arch = _arch_module()
-    try:
-        contract = arch.load_contract(contract_path, parse_yamlish)
-    except arch.ArchContractError:
-        return 0  # a malformed contract is reported by check_arch; do not double-refuse here
     return arch.validate_placement(fm, contract, str(path), fail)
 
 
@@ -297,9 +294,11 @@ def check_observability(path, repo_root=None):
     check_spec sweep, exactly as the placement gate is; so the shipped corpus is never
     re-evaluated (RJ6). Whether the declared criteria are SUFFICIENT is a review-lane
     judgment, never graded here (NG5)."""
-    base = Path(repo_root) if repo_root else ROOT
-    contract_path = base / ".veldo" / "architecture.yaml"
-    if not contract_path.is_file():
+    try:
+        _arch, contract = load_repo_contract(repo_root)
+    except ContractRefused as e:
+        return fail(path, "architecture contract refused, so the observability declaration cannot be validated: %s" % e)
+    if contract is None:
         return 0  # adoption safe: no contract in this repo, the check stands down
     text = Path(path).read_text()
     m = re.match(r"^---\n(.*?)\n---", text, re.S)

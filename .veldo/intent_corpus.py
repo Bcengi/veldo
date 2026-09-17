@@ -404,6 +404,7 @@ class IntentCorpus:
         artifact. An unknown spec id returns a truthful ungoverned Trace ("no governing
         artifact"), never a fabricated one. Fail closed on a malformed query."""
         spec_id = _require_query(spec_id, "spec id")
+        self._refuse_area_join()
         s = self._specs.get(spec_id)
         if s is None:
             return Trace.ungoverned(
