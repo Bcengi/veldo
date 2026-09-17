@@ -1,0 +1,1 @@
+scripts/suites/24_veldo_0007_install_and_run.py:191:               and (primary / ".git").is_dir() and (linked / ".git").is_file())

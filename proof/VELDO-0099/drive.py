@@ -16,7 +16,7 @@ ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).reso
 SUITE = ROOT / 'scripts/suites/24_veldo_0007_install_and_run.py'
 source = SUITE.read_text()
 before = hashlib.sha256(SUITE.read_bytes()).hexdigest()
-names = {'_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_dirs',
+names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_dirs',
          '_iar_repository_inventory', '_iar_live_inventory', '_iar_copy_tree', '_iar_substrate',
          '_iar_copy_matches', '_iar_layout_controls'}
 nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in names]
@@ -94,12 +94,9 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                 fixed_git(identity_root, 'config', 'user.email')
             return fixed_git(root, *args, **kwargs)
         ns['_iar_git'] = caller_identity
-        try:
-            ns['_iar_layout_controls']()
-        except subprocess.CalledProcessError as exc:
-            identity_rows.append({'label': 'VELDO-0099 checkout shape controls: caller identity lookup raised',
-                                  'passed': False, 'returncode': exc.returncode})
+        ns['_iar_block']('VELDO-0099 checkout shape controls', ns['_iar_layout_controls'])
         assert len(identity_rows) == 1 and not identity_rows[0]['passed'], identity_rows
+        assert 'rather than raising' in identity_rows[0]['label'], identity_rows
         results.append({'case': 'restore_caller_identity', 'passed': 0, 'failed': 1,
                         'mutation': 'Read ROOT config user.name and user.email before fixture commit',
                         'rows': identity_rows})
