@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0099",
-  "commit": "c63df48ae9087dfdaddab83a9f34d0a8ceabd329",
+  "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-17T04:47:35.984984Z",
+  "produced_at": "2026-09-17T05:08:55.795582Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Both shapes resolve all copied Git paths internally before stage execution. Config and alternate mutations each red both preservation rows. Actual AC4 with redirected config is 14/0 in both shapes and original dirty stage bytes survive."
+          "detail": "Both checkout shapes resolve copied paths internally; valid relative and absolute C-quoted alternates pass cat-file and copy fidelity. Treating quotes as filename characters reds all four quoted rows. Identity, config and shape mutations remain driven."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-second-review-linked.log; proof/VELDO-0099/gate-second-review-primary.log",
-          "detail": "Complete canonical gates in linked and primary checkouts at the same commit; 4832 passed, 0 failed each."
+          "ref": "proof/VELDO-0099/gate-third-review-linked.log; proof/VELDO-0099/gate-third-review-primary.log",
+          "detail": "Complete canonical gates at 499bbd5a3fad1820bc40ebdf775eb95da17f3483: GREEN, 4838 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
         }
       ]
     },
@@ -29,12 +29,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Dirty working stage, staged index and untracked bytes survive copying in both shapes; clone substitution reds both fidelity rows, 15/2."
+          "detail": "Both shapes preserve dirty stage, staged index and untracked bytes. Clone substitution reds both copy-fidelity rows. Quoted alternate fixtures also require copy fidelity."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-second-review-linked.log; proof/VELDO-0099/gate-second-review-primary.log",
-          "detail": "Complete canonical gates in linked and primary checkouts at the same commit; 4832 passed, 0 failed each."
+          "ref": "proof/VELDO-0099/gate-third-review-linked.log; proof/VELDO-0099/gate-third-review-primary.log",
+          "detail": "Complete canonical gates at 499bbd5a3fad1820bc40ebdf775eb95da17f3483: GREEN, 4838 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Sharedindex corruption is observed in both shapes; omitting primary observation reds only the primary row. All 100 concurrent control copies succeed without sibling state. Vanished-entry and sibling-copy mutations red the expected rows. Existing private/common sandbox writes and live attribution mutations remain driven. Copied alternate writes are inventoried."
+          "detail": "Copied claims and runs retain bytes. A real stage deleting an existing copied claim reds only the sandbox-write row in both shapes. Real sibling heartbeats leave all 14 AC4 rows green; restoring shared live inventory reds the live row. All earlier inventory, split-index, race and disappearing-entry mutations remain driven."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-second-review-linked.log; proof/VELDO-0099/gate-second-review-primary.log",
-          "detail": "Complete canonical gates in linked and primary checkouts at the same commit; 4832 passed, 0 failed each."
+          "ref": "proof/VELDO-0099/gate-third-review-linked.log; proof/VELDO-0099/gate-third-review-primary.log",
+          "detail": "Complete canonical gates at 499bbd5a3fad1820bc40ebdf775eb95da17f3483: GREEN, 4838 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
         }
       ]
     },
@@ -61,79 +61,66 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0099/driven.json",
-          "detail": "Full linked and disposable primary gates at the same implementation commit are GREEN, each 4832/0, with first-use integration and all 8 required catalog checks passing. Every original and review mutation is driven; logs, commands, limitations and scope search are recorded."
+          "detail": "Full gates in the assigned linked checkout and disposable primary repository at the same implementation commit each pass 4838/0 and first-use integration. All original and review mutations are re-driven with exact expected failures. The before gate RED and its unexplained first-use live-inventory failure are retained."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0099/gate-second-review-linked.log; proof/VELDO-0099/gate-second-review-primary.log",
-          "detail": "Complete canonical gates in linked and primary checkouts at the same commit; 4832 passed, 0 failed each."
-        },
-        {
-          "type": "integration",
-          "ref": "proof/VELDO-0099/gate-second-review-final.log",
-          "detail": "Full GREEN linked gate with refreshed proof present at bf55cfaadd3589d9be05e5f8732e9c0a7c7755f5, exit 0, 4832 passed and 0 failed."
+          "ref": "proof/VELDO-0099/gate-third-review-linked.log; proof/VELDO-0099/gate-third-review-primary.log",
+          "detail": "Complete canonical gates at 499bbd5a3fad1820bc40ebdf775eb95da17f3483: GREEN, 4838 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
         }
       ]
     }
   ],
   "checks": [
     {
-      "name": "second-review-gate-before",
-      "status": "passed",
+      "name": "third-review-gate-before",
+      "status": "failed",
       "command": "./scripts/verify.sh",
-      "exit_code": 0,
-      "commit": "f3ac2e7cc631f5b28a2f4ddd72f527d258202013",
-      "ref": "proof/VELDO-0099/gate-second-review-before.log",
-      "detail": "4825 passed, 0 failed; first use passed; 8 required catalog checks passed. See README for before-run working-tree timing."
+      "exit_code": 1,
+      "commit": "482fa12ec5179c8f938d5fc1e0e3c57c12c7b113",
+      "ref": "proof/VELDO-0099/gate-third-review-before.log",
+      "detail": "4832 passed, 0 failed in top-level selftests; first-use integration failed on the AC4 live-inventory row; cause not established."
     },
     {
-      "name": "second-review-gate-linked",
+      "name": "third-review-gate-linked",
       "status": "passed",
       "command": "./scripts/verify.sh",
       "exit_code": 0,
-      "commit": "c63df48ae9087dfdaddab83a9f34d0a8ceabd329",
-      "ref": "proof/VELDO-0099/gate-second-review-linked.log",
-      "detail": "4832 passed, 0 failed; first use passed; 8 required catalog checks passed. See README for before-run working-tree timing."
+      "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
+      "ref": "proof/VELDO-0099/gate-third-review-linked.log",
+      "detail": "4838 passed, 0 failed in top-level selftests; first-use integration passed; 8 required catalog checks passed."
     },
     {
-      "name": "second-review-gate-primary",
+      "name": "third-review-gate-primary",
       "status": "passed",
       "command": "./scripts/verify.sh",
       "exit_code": 0,
-      "commit": "c63df48ae9087dfdaddab83a9f34d0a8ceabd329",
-      "ref": "proof/VELDO-0099/gate-second-review-primary.log",
-      "detail": "4832 passed, 0 failed; first use passed; 8 required catalog checks passed. See README for before-run working-tree timing."
+      "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
+      "ref": "proof/VELDO-0099/gate-third-review-primary.log",
+      "detail": "4838 passed, 0 failed in top-level selftests; first-use integration passed; 8 required catalog checks passed."
     },
     {
       "name": "paired-mutations",
       "status": "passed",
       "command": "python3 proof/VELDO-0099/drive.py",
       "exit_code": 0,
-      "commit": "c63df48ae9087dfdaddab83a9f34d0a8ceabd329",
+      "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
       "ref": "proof/VELDO-0099/driven.json",
-      "detail": "All exact red-row sets asserted; live suite hash unchanged."
+      "detail": "All exact red-row sets asserted; suite hash unchanged."
     },
     {
       "name": "ready",
       "status": "passed",
       "command": "python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md",
       "exit_code": 0,
+      "commit": "499bbd5a3fad1820bc40ebdf775eb95da17f3483",
       "ref": "proof/VELDO-0099/ready-check.txt"
-    },
-    {
-      "name": "gate-with-refreshed-proof",
-      "status": "passed",
-      "command": "./scripts/verify.sh",
-      "exit_code": 0,
-      "commit": "bf55cfaadd3589d9be05e5f8732e9c0a7c7755f5",
-      "ref": "proof/VELDO-0099/gate-second-review-final.log",
-      "detail": "Final linked gate with refreshed proof committed: GREEN, 4832 passed, 0 failed; first use passed; 8 required catalog checks passed."
     }
   ],
   "artifacts": [
     {
       "ref": "proof/VELDO-0099/README.md",
-      "sha256": "af5a9ef87be8b4ca851dc81fe7d1690b259f0eaf8411f39e2effa824300130f6"
+      "sha256": "3a92f90577e1ac08c25fb5a6065a8c5d7b1956b532c14bb165814f401e7aaf64"
     },
     {
       "ref": "proof/VELDO-0099/baseline-gate.log",
@@ -141,11 +128,11 @@
     },
     {
       "ref": "proof/VELDO-0099/drive.py",
-      "sha256": "a561f132c337d651b5c01f3a6aaced39d8d7a1a5d8fcf1d14ddc401708890271"
+      "sha256": "b0dfe52d44d8b674a772cc3ce3b02b4843893fc1e50e6ceaf4d85ea51e04b845"
     },
     {
       "ref": "proof/VELDO-0099/driven.json",
-      "sha256": "01a38873e25aed1141f51ee3a1f5f63b4e0f86731635aaa118bcc2bc9d1ed91c"
+      "sha256": "faba894ca9896c9399aa504ea352bd0f793f8ad74228d083f2956fc104de99a2"
     },
     {
       "ref": "proof/VELDO-0099/gate-final.log",
@@ -188,16 +175,28 @@
       "sha256": "7323d7ce09830ad175f5f165a09ee869cda94ac6c2b1ca5ca6c42de82916bed9"
     },
     {
+      "ref": "proof/VELDO-0099/gate-third-review-before.log",
+      "sha256": "05b9fe52472a7da0272c741f3f5e97b306a8fb6e1af9b2a840f11a610505f7ed"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-third-review-linked.log",
+      "sha256": "37c6e3c7c4055d262ccd362557372e33ae94b168cce588dc1bdf8bf110e2b3a2"
+    },
+    {
+      "ref": "proof/VELDO-0099/gate-third-review-primary.log",
+      "sha256": "997e485edbd03167aa265d0c29e56df68c6914e8feb482c5e305984b4132dbeb"
+    },
+    {
       "ref": "proof/VELDO-0099/log-redactions.json",
-      "sha256": "03536f64f8bcb0b0c177c46ed7f23b24fc77030f02bb4b861708cf2f14c0c609"
+      "sha256": "a3ec2494ef9e93044c270bd519fb2abdbb47e9e06631e6ab082ff7812040152d"
     },
     {
       "ref": "proof/VELDO-0099/ready-check.txt",
-      "sha256": "afd5031dcb89b8e9514d87cb0df16ef4b0436de3add5d85198b439b9d4dabb59"
+      "sha256": "932e85334eaac1082437aa8aeb79d5f14934032d9bcc514283d8b087e909f240"
     },
     {
       "ref": "proof/VELDO-0099/sibling-search.txt",
-      "sha256": "d0eef66aa79e0c1fae6b42f7f6de1ad6c34958891b44fd4fc28cd16267add31b"
+      "sha256": "5c1334afa68774a0cc2952c404c291ed5831b0b922caefa4e5cfaae9b0660327"
     }
   ],
   "rollback": "Revert the suite changes and regenerate the index; retain historical proof records.",

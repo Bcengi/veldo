@@ -1,148 +1,141 @@
-# VELDO-0099 proof after the second review
+# VELDO-0099 proof after the third review
 
-The implementation and mutation driver are bound to c63df48ae9087dfdaddab83a9f34d0a8ceabd329. The spec remains
-ready for the external independent reviewer. No self-approval or landing is claimed.
-Engine and pack files do not change.
+Implementation and mutation-driver commit: 499bbd5a3fad1820bc40ebdf775eb95da17f3483. The specification remains ready
+for external independent review. No self-approval, landing, or push is claimed.
+Engine and pack files are unchanged.
 
-## Corrections
+## Fixes and observation boundary
 
-All code changes are in scripts/suites/24_veldo_0007_install_and_run.py:
+In scripts/suites/24_veldo_0007_install_and_run.py:
 
-- Lines 84-97, 176-293: rebuild config using only non-path storage settings;
-  discard includes, core.worktree, hooks and execution paths; clear inherited Git
-  redirects; rewrite .git, commondir and gitdir; materialize symlinked metadata
-  and recursive object alternates without hardlinks. Alternate stores live under
-  the copied common store so writes to them remain observed. Static path/config
-  assertions precede Git discovery in the copy, then Git's resolved working tree,
-  private directory, common directory, index, objects, HEAD, config and hooks are
-  checked before the copied stage can execute.
-- Lines 150-173, 261-293: select common objects, refs, packed-refs, shallow and HEAD,
-  plus config and this checkout's private state. Never traverse sibling worktrees.
-  Recursive metadata copying tolerates FileNotFoundError at enumeration and copy;
-  other failures remain failures. No common index is copied for a linked checkout.
-- Lines 111-147: the primary private inventory includes sharedindex.*, index,
-  config.worktree, uppercase pseudorefs and operation files (including HEAD,
-  ORIG_HEAD and MERGE_HEAD), sequencer/rebase directories, logs/HEAD, and the
-  per-worktree bisect/worktree/rewritten refs. Linked private state stays recursive.
-- Lines 370-500: real fixtures exercise concurrent sibling activity, deterministic
-  disappearance, corrupt split index bases, external configs and relative alternates.
+- Lines 169-173 include veldo/ in the copied common store. Claims and runs now
+  enter the sandbox inventory. Lines 125-147 still exclude shared live stores.
+  Lines 504-526 assert copied claim/run bytes and detect a deleted copied claim
+  in both shapes while preserving the source claim.
+- Lines 199-274 read C-quoted alternate entries as filesystem bytes, including
+  named escapes and three-digit octal escapes. Resolution and rewriting preserve
+  quoting, and missing alternate directories or malformed quoting fail by name.
+  Lines 569-595 drive both relative and absolute quoted entries in both shapes.
+  Git validates the source with cat-file before copying; the copy must also pass
+  cat-file and preserve working bytes, index entries, and HEAD.
+- specs/VELDO-0099-worktree-git-shape.md:135-150 names the isolated sandbox surface:
+  working tree, private git directory, copied common store including claims/runs,
+  and materialized alternates. Shared stores written by other workers are observed
+  only through this copy. Live inventory covers only this checkout and its private
+  git state. The separate sandbox HOME check does not cover arbitrary host paths.
 
-The redirect fixture enables worktree config, sets core.worktree in common and
-private configs, adds an external config include and hooks path, and supplies all
-objects through a relative external alternate. It executes checkout-index -f -a
-inside the copy and requires committed bytes there and byte-identical dirty bytes
-in the source. It also checks object availability and observation of an alternate
-store write. Skipping normalization reds this row before any unsafe Git write runs.
-The real AC4 stage additionally runs with redirected config and a dirty original
-stage in each checkout shape: 14 passed, 0 failed, original bytes unchanged.
+The byte decoder follows the escape set in Git's unquote_c_style:
+https://github.com/git/git/blob/master/quote.c
+The quoted fixtures contain a quote, backslash, tab, newline, and an octal-escaped
+UTF-8 filename. The code and this proof's text remain ASCII.
+
+This is a snapshot comparison, not process file-operation tracing or OS confinement.
+It depends on faithful copying and normalized paths. It cannot prove absence of
+writes to arbitrary absolute paths, external working-tree symlink targets, shared
+live stores, or writes that restore all inventoried state before the second snapshot.
+Copying mutable shared state is also not an atomic snapshot of all live records.
 
 ## Full gates
 
-All full gates use ./scripts/verify.sh:
+Every invocation is ./scripts/verify.sh. Logs retain all gate outcomes and rows.
 
-| Run | Commit | Exit | Selftest | Catalog |
+| Run | Commit | Exit | Top-level selftests | Result |
 | --- | --- | ---: | --- | --- |
-| Before, assigned linked checkout | f3ac2e7 | 0 | 4825 passed, 0 failed | 8 run |
-| After, assigned linked checkout | c63df48 | 0 | 4832 passed, 0 failed | 8 run |
-| After, disposable primary checkout | c63df48 | 0 | 4832 passed, 0 failed | 8 run |
+| Before, assigned linked checkout | 482fa12 | 1 | 4832 passed, 0 failed | RED in first-use integration |
+| After, assigned linked checkout | 499bbd5 | 0 | 4838 passed, 0 failed | GREEN |
+| After, disposable primary checkout | 499bbd5 | 0 | 4838 passed, 0 failed | GREEN |
 
-Each complete gate is GREEN and includes passing first-use integration. Catalogs
-also report 15 not applicable, 0 waived and 0 undeclared. Full outputs are
- gate-second-review-before.log, gate-second-review-linked.log, and
- gate-second-review-primary.log. The before run launched from a clean tree;
- specification edits began while it was running. Its suite counts reflect the
- prior implementation, but it is not claimed as an immutable all-file snapshot.
-The after runs started from the same clean implementation commit; no implementation
-or proof bytes were edited while those runs executed. These receipts are packaged
-afterward. Historical stand-downs remain visible and are not newly proven history.
+The before run began clean, and no repository source or proof edits were made while
+it ran. Its first-use mutated copy reported 4831 passed and 1 failed, on VELDO-0007
+AC4's live-inventory row (THIS repository is untouched). The untouched-copy rerun
+reported 4832/0, so first-use returned failure. Its diagnostic truncates the row
+before the changed-entry details. The cause of that before-run failure is not
+established; this proof does not claim the two fixes caused it or repaired it.
 
-The primary fixture was created with:
+Both after gates started at the same committed implementation and driver. No source
+or proof files were edited during those gates. Receipt packaging followed them.
+The primary repository was created using git clone --no-hardlinks --no-checkout of
+the assigned checkout, then checkout --detach of the exact implementation commit.
+It is disposable and independent of all existing branches and worktrees.
 
-```
-git clone --no-hardlinks --no-checkout <assigned-worktree> <temporary-primary>
-git -C <temporary-primary> checkout --detach c63df48ae9087dfdaddab83a9f34d0a8ceabd329
-cd <temporary-primary>
-./scripts/verify.sh
-```
+Full logs: gate-third-review-before.log, gate-third-review-linked.log, and
+ gate-third-review-primary.log. Historical gate logs are retained but are not
+current evidence. All complete gates ran 8 catalog checks with 15 not applicable,
+0 waived, and 0 undeclared. See manifest.json for exact commits and commands.
 
-It is an independent disposable repository. No other existing branch or worktree
-was changed. Nothing was pushed. The assigned checkout's .veldo/last_verify and
-.veldo/events.jsonl are restored with git checkout before receipt commits.
+## Every driven mutation
 
-## Driven mutations
+Run python3 proof/VELDO-0099/drive.py. The final driven.json binds the source hash,
+exact commit, complete row labels and all expected red-row sets. The driver asserts
+that it did not modify the live suite. These are diagnostics, not full gates.
 
-Reproduce with python3 proof/VELDO-0099/drive.py. The driver extracts the actual
-suite functions through their AST, mutates them only in memory or in disposable
-fixtures, asserts each exact expected red-row set, and records the live suite hash
-before and after. driven.json contains every complete row label and result.
-These are paired diagnostics, not selected-suite results claimed as full gates.
-
-| Mutation | Passed/failed | Red row |
+| Mutation | Passed/failed | Red rows |
 | --- | --- | --- |
 | Restore .git directory requirement | 16/1 | Linked copied substrate resolves inside its sandbox |
-| Substitute clone of HEAD | 15/2 | Primary and linked dirty stage, index and untracked copy fidelity |
-| Inventory only sandbox working tree | 15/2 | Linked private and common metadata write is observed |
+| Substitute clone of HEAD | 15/2 | Primary and linked dirty stage/index/untracked copy fidelity |
 | Restore shared live inventory | 15/2 | Primary and linked sibling staging leaves live inventory unchanged |
-| Restore caller identity reads | 0/1 | Checkout shape controls block raises during setup |
-| Skip config normalization | 5/2 | Primary and linked redirected config and alternates are isolated and original edit survives checkout-index |
-| Copy sibling state | 5/2 | Primary and linked 50 copies during sibling staging have zero raises and no sibling state |
-| Raise on vanished entries | 6/1 | An entry vanishing after enumeration does not raise |
-| Omit sharedindex from primary observation | 6/1 | Primary split index corruption is observed |
-| Skip alternate rewrite | 5/2 | Primary and linked redirected config and alternates are isolated and original edit survives checkout-index |
+| Inventory only sandbox working tree | 15/2 | Linked private and common metadata write is observed |
+| Treat alternate quotes as filename characters | 9/4 | Both shapes, relative and absolute C-quoted alternate has objects and copy fidelity |
+| Omit copied veldo/ ledger | 11/2 | Both shapes, copied claims and runs retain bytes and claim deletion is observed |
+| Skip config normalization | 11/2 | Both shapes, redirected config and alternates are isolated and original edit survives checkout-index |
+| Copy sibling private state | 11/2 | Both shapes, 50 copies during sibling staging have zero raises and no sibling state |
+| Raise on vanished entry | 12/1 | An entry vanishing after enumeration does not raise |
+| Omit primary sharedindex observation | 12/1 | Primary split index corruption is observed |
+| Skip alternate rewriting | 7/6 | Both redirected-config rows and all four quoted-alternate rows |
+| Restore caller identity reads | 0/1 | Checkout shape controls block completes rather than raising |
 | Actual AC4 directory requirement | Primary 14/0, linked 13/1 | Linked THE OBSERVATION'S OWN SUBSTRATE |
 | Actual AC4 shared live inventory during sibling staging | Each shape 13/1 | THIS repository is untouched |
 | Actual AC4 stage writes copied common store | Each shape 13/1 | NOT ONE BYTE of the repository under check changed |
+| Actual AC4 stage deletes copied claim | Each shape 13/1 | NOT ONE BYTE of the repository under check changed, naming veldo/claims/probe.json |
+| Actual AC4 shared live inventory during sibling heartbeat | Each shape 13/1 | THIS repository is untouched |
 
-Unmutated layout controls are 17/0 and review controls are 7/0 under empty HOME,
-empty XDG_CONFIG_HOME, disabled global/system config and no caller identity.
-The review control performs 50 copies per shape while a sibling continuously
-stages and unstages; all 100 complete without a raise or copied sibling state.
-A separate deterministic control deletes index.lock after enumeration and before
-copying it. Both primary and linked fixtures corrupt a real sharedindex base:
-Git ls-files fails, and the inventory identifies the changed sharedindex entry.
-Real AC4 controls, sibling staging controls, and redirected-config controls each
-pass 14/0 in both shapes.
+Unmutated layout and review controls are 17/0 and 13/0 with empty HOME and
+XDG_CONFIG_HOME, disabled system/global Git config, and no caller identity. The
+review controls include 50 copies per shape during concurrent sibling staging.
 
-## Scope, unsuccessful probes and limits
+Actual AC4 control, sibling-staging, redirected-config, and sibling-heartbeat runs
+are each 14/0 in both shapes. The heartbeat invokes the real claim module from a
+disposable sibling subprocess within the live before/after inventory window. The
+first worker's claim is granted and the second is refused as claimed before and
+after each observation. Only then does the driver release the first worker's claim.
+The deletion mutation edits only the copied stage's __main__ path; the original
+claim survives. The sandbox row, not the live row, detects the deletion.
 
-Readiness is validated by the command in ready-check.txt. sibling-search.txt records:
+The first diagnostic drive passed before the final implementation commit. A fresh
+complete drive at the committed implementation produced driven.json. Temporary
+preview probes caught a syntax error in a generated test edit and an overbroad
+expected failure set for the config mutation; both were corrected before the final
+drive. They are not reported as successful evidence.
 
-```
-rg -n '\.git.*is_dir|\.git.*isdir|isdir.*\.git|\[.*-d.*\.git' scripts/suites
-```
+## Packaging and remaining review
 
-Remaining directory checks are fixture controls or repositories created with
-Git init; the live substrate has no .git directory requirement.
+Readiness is revalidated in ready-check.txt. sibling-search.txt records the suite
+search for .git directory assumptions; remaining matches are fixture checks.
+Only the existing synthetic pkg/dirty.py diagnostic is redacted from gate logs.
+log-redactions.json records raw/stored hashes and line numbers; no gate result,
+failure row, or stand-down is removed. Raw logs remain outside this repository.
 
-An early config mutation also tripped the race rows because the assertion rejected
-the harmless core.logallrefupdates default; that setting is now preserved.
-An early split-index mutation removed sharedindex from both copying and observation,
-so checkout-index failed before the observation probe. The final mutation removes
-only primary observation entries, isolating the reviewed defect. Those interrupted
-probe attempts are not claimed as successful mutation evidence.
+Gate byproducts .veldo/events.jsonl and .veldo/last_verify are restored with
+ git checkout -- .veldo/last_verify .veldo/events.jsonl before receipt commits.
+The external reviewer owns independent review and any real landing stamp.
 
-Two gate attempts at 1e9b2c0 were deliberately stopped before completion after
-inspection showed alternate copies should live inside the inventoried common root.
-They are not gate evidence. The complete runs above verify the corrected location.
+## Design judgment
 
-Independent review and landing remain with the external reviewer, as the spec's
-scope requires. No implementation self-approval is recorded. Old gate logs remain
-as historical artifacts; their results do not describe this correction.
+Another class of omitted store or path redirection that lets the stage mutate
+repository state while this observation stays green would justify replacing the
+copy-and-diff design with process-attributed file-operation observation. A requirement
+to detect transient writes restored before the second snapshot would independently
+justify that change. Another parser bug that fails loudly would warrant a local fix.
 
-## Log redaction
+That replacement would cost macOS adopters a native observation component and platform
+maintenance beyond the current Python standard library. DTrace cannot inspect
+SIP-protected system processes. An Endpoint Security route requires an entitled,
+signed helper, root execution, and user-granted Full Disk Access; a system extension
+also has installation approval. A VM-based alternative adds a runtime and resource
+cost. Neither alternative is implemented or verified by this proof.
 
-Only pattern-shaped pkg/dirty.py synthetic diagnostics are replaced by
-[REDACTED synthetic selftest diagnostic]. No result, failure, or stand-down row is
-removed. log-redactions.json records affected lines and raw/stored SHA-256 values.
-Unredacted logs remain outside the repository. Manifest artifact hashes cover the
-stored files. No scanner exemption or protected-path change was made.
-
-## Final linked gate with refreshed proof present
-
-After committing the refreshed proof, ./scripts/verify.sh ran in the assigned
-linked checkout at bf55cfaadd3589d9be05e5f8732e9c0a7c7755f5. It exited 0, GREEN:
-4832 passed, 0 failed; first-use integration passed; 8 catalog checks ran,
-15 were not applicable, 0 were waived, and 0 were undeclared.
-gate-second-review-final.log preserves the complete output with the documented synthetic
-diagnostic redaction. This final receipt changes proof records only. The two
-checkout-local gate byproducts are restored before committing the receipt.
+Sources: Apple's runtime protection guide
+https://developer.apple.com/library/archive/documentation/Security/Conceptual/System_Integrity_Protection_Guide/RuntimeProtections/RuntimeProtections.html
+and Endpoint Security client/setup documentation
+https://developer.apple.com/documentation/endpointsecurity/client
+https://developer.apple.com/documentation/endpointsecurity/monitoring-system-events-with-endpoint-security
