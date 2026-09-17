@@ -134,7 +134,9 @@ Primary private-state observation includes split indexes and lowercase operation
 
 Third review correction: the write observation's surface is the isolated sandbox
 copy, over the working tree, private git directory, and copied common store,
-including veldo/ claims and runs and materialized object alternates. Shared stores
+including veldo/ claims and runs and materialized object alternates. C-quoted
+alternate entries are decoded as path bytes and rewritten with C quoting after
+resolution; malformed quotes and missing alternate directories fail by name. Shared stores
 that other worktrees and workers write are deliberately not inventoried live;
 their writes are observed only through the sandbox copy, where changes during the
 stage run belong to that run. The live inventory covers this checkout's working

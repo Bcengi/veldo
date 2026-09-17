@@ -196,6 +196,52 @@ def _iar_normalize_config(common, private):
         (directory / "config.worktree").write_text("")
 
 
+def _iar_unquote_alternate(line):
+    """Git C-style path bytes: named escapes and exactly three octal digits."""
+    if not line.startswith(b'"'):
+        return line
+    escapes = dict(zip(b'abfnrtv\\"', b'\a\b\f\n\r\t\v\\"'))
+    result = bytearray()
+    i = 1
+    while i < len(line):
+        char = line[i]
+        i += 1
+        if char == ord('"'):
+            if i == len(line) and b'\0' not in result:
+                return bytes(result)
+            break
+        if char == ord('\\'):
+            if i == len(line):
+                break
+            char = line[i]
+            i += 1
+            if char in escapes:
+                char = escapes[char]
+            elif ord('0') <= char <= ord('3') and i + 2 <= len(line) and all(
+                    ord('0') <= c <= ord('7') for c in line[i:i + 2]):
+                char = int(bytes([char]) + line[i:i + 2], 8)
+                i += 2
+            else:
+                break
+        result.append(char)
+    raise ValueError("Invalid C-quoted object alternate: %r" % line)
+
+
+def _iar_read_alternates(path):
+    # Split only on LF: other control bytes can be part of a Git path.
+    return [Path(_iar_os.fsdecode(_iar_unquote_alternate(line)))
+            for line in path.read_bytes().split(b'\n') if line and not line.startswith(b'#')]
+
+
+def _iar_write_alternates(path, entries):
+    # Quote bytes, not Unicode code points; escaped newlines must stay on one line.
+    def quote(entry):
+        return b'"' + b''.join(bytes([c]) if 32 <= c < 127 and c not in (34, 92)
+                               else ("\\%03o" % c).encode('ascii')
+                               for c in _iar_os.fsencode(entry)) + b'"\n'
+    path.write_bytes(b''.join(quote(entry) for entry in entries))
+
+
 def _iar_copy_alternates(objects, sandbox, copied=None):
     """Materialize recursive object alternates and rewrite every edge locally."""
     copied = {} if copied is None else copied
@@ -204,12 +250,13 @@ def _iar_copy_alternates(objects, sandbox, copied=None):
     if not alternate_file.exists():
         return
     destinations = []
-    for line in alternate_file.read_text().splitlines():
-        original = Path(line)
+    for original in _iar_read_alternates(alternate_file):
         # Relative alternates were resolved at the source before the initial copy.
         if not original.is_absolute():
             raise ValueError("Unresolved relative object alternate")
         original = original.resolve()
+        if not original.is_dir():
+            raise ValueError("Missing object alternate directory: %s" % original)
         if original not in copied:
             target = sandbox / ("git-alternate-%d" % len(copied))
             copied[original] = target
@@ -217,14 +264,14 @@ def _iar_copy_alternates(objects, sandbox, copied=None):
             _iar_resolve_alternates(original, target)
             _iar_copy_alternates(target, sandbox, copied)
         destinations.append(str(copied[original]))
-    alternate_file.write_text("".join(p + "\n" for p in destinations))
+    _iar_write_alternates(alternate_file, destinations)
 
 
 def _iar_resolve_alternates(original, copied):
     path = copied / "info" / "alternates"
     if path.exists():
-        path.write_text("".join(str((original / line).resolve()) + "\n"
-                                for line in path.read_text().splitlines()))
+        _iar_write_alternates(path, [(original / entry).resolve()
+                                     for entry in _iar_read_alternates(path)])
 
 
 def _iar_assert_isolated(target, private, common):
@@ -245,8 +292,8 @@ def _iar_assert_isolated(target, private, common):
                            "extensions.refstorage", "extensions.worktreeconfig"}
                 assert set(proc.stdout.lower().splitlines()) <= allowed, config
         for path in root.rglob("alternates"):
-            for line in path.read_text().splitlines():
-                assert Path(line).is_absolute() and Path(line).resolve().is_relative_to(sandbox), path
+            for entry in _iar_read_alternates(path):
+                assert entry.is_absolute() and entry.resolve().is_relative_to(sandbox), path
     assert (target / ".git").is_dir() or (target / ".git").read_text().strip() == "gitdir: " + str(private)
     if private != common:
         assert (private / "commondir").read_text().strip() == str(common)
@@ -517,6 +564,33 @@ def _iar_review_controls():
                    completed and (tree / "tracked").read_bytes() == original)
             (common / "config").write_bytes(config_bytes)
             (private / "config.worktree").unlink()
+
+
+        # Git itself validates the quoted fixture before this copier is asked to read it.
+        quoted = base / 'quoted "objects"\\with\ttab\nand-\u00e9'
+        external.rename(quoted)
+        for shape, tree in (("primary", primary), ("linked", linked)):
+            for form in ("relative", "absolute"):
+                entry = (_iar_os.path.relpath(quoted, common / "objects")
+                         if form == "relative" else str(quoted))
+                # Exercise named escapes and octal UTF-8 bytes in the same valid entry.
+                encoded = _iar_os.fsencode(entry).replace(b'\\', b'\\\\').replace(b'"', b'\\"')
+                encoded = encoded.replace(b'\t', b'\\t').replace(b'\n', b'\\n')
+                encoded = encoded.replace(b'\xc3\xa9', b'\\303\\251')
+                (common / "objects/info/alternates").write_bytes(b'"' + encoded + b'"\n')
+                _iar_git(tree, "cat-file", "-e", "HEAD^{tree}")
+                sandbox = base / (shape + "-quoted-" + form)
+                sandbox.mkdir()
+                completed = False
+                try:
+                    target = sandbox / "repo"
+                    _iar_copy_tree(tree, target)
+                    _iar_git(target, "cat-file", "-e", "HEAD^{tree}")
+                    completed = _iar_copy_matches(tree, target)
+                except (AssertionError, ValueError, OSError, _iar_sp.CalledProcessError):
+                    pass
+                expect("VELDO-0099 AC1: %s %s C-quoted alternate has objects and copy fidelity" % (shape, form),
+                       completed)
 
 
 def _iar_dotted(node):

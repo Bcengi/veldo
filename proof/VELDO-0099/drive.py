@@ -22,7 +22,8 @@ names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_d
          '_iar_copy_matches', '_iar_layout_controls', '_iar_private_paths',
          '_iar_copy_entry', '_iar_common_entries', '_iar_normalize_config',
          '_iar_copy_alternates', '_iar_resolve_alternates', '_iar_assert_isolated',
-         '_iar_review_controls', '_iar_git_environment'}
+         '_iar_review_controls', '_iar_git_environment', '_iar_unquote_alternate',
+         '_iar_read_alternates', '_iar_write_alternates'}
 nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in names]
 assert {n.name for n in nodes} == names
 module = ast.Module(body=nodes, type_ignores=[])
@@ -89,6 +90,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
 
         review_mutations = {
             'review_control': None,
+            'quotes_as_filename_characters': "def _iar_resolve_alternates(original, copied):\n    path = copied / 'info/alternates'\n    if path.exists():\n        _iar_write_alternates(path, [(original / line).resolve() for line in path.read_text().splitlines()])",
             'omit_copied_ledger': "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name != 'veldo']",
             'skip_config_normalization': 'def _iar_normalize_config(common, private): pass',
             'copy_sibling_state': "def _iar_common_entries(common, primary): return list(common.iterdir())",
@@ -111,14 +113,15 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
             failures = [r['label'] for r in rows if not r['passed']]
             expected = {
                 'review_control': [],
+                'quotes_as_filename_characters': [r['label'] for r in rows if 'C-quoted alternate' in r['label']],
                 'omit_copied_ledger': [r['label'] for r in rows if 'copied claims and runs' in r['label']],
                 'skip_config_normalization': [r['label'] for r in rows if 'redirected config' in r['label']],
                 'copy_sibling_state': [r['label'] for r in rows if '50 copies' in r['label']],
                 'raise_on_vanished_entry': [r['label'] for r in rows if 'vanishing after' in r['label']],
                 'omit_sharedindex': ['VELDO-0099 AC3: primary split index corruption is observed'],
-                'skip_alternate_rewrite': [r['label'] for r in rows if 'redirected config' in r['label']],
+                'skip_alternate_rewrite': [r['label'] for r in rows if 'redirected config' in r['label'] or 'C-quoted alternate' in r['label']],
             }[case]
-            assert len(rows) == 9, (case, rows)
+            assert len(rows) == 13, (case, rows)
             assert failures == expected, (case, failures, expected)
             results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
                             'failed': len(failures), 'rows': rows})
