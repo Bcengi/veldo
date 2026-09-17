@@ -40,6 +40,13 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | WARP-0620 | The live-sandbox proof of the inbound edge - execute the codified path against a real board for | blocked | high | dmitry | required | WARP-0620-live-sandbox-proof.md |
 | VELDO-0013 | A declared falsification is DRIVEN once per item and recorded against the commit it was driven | draft | standard | dmitry | not_required | VELDO-0013-a-declared-falsification-is-driven-and-recorded.md |
 | VELDO-0014 | What a criterion may assert about the live repository - a stated rule that a check describes a | draft | standard | dmitry | not_required | VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md |
+| VELDO-0016 | Decision records and effective policy amendments | draft | critical | dmitry | required | VELDO-0016-policy-boundaries.md |
+| VELDO-0017 | Entity identity and lifecycle schemas | draft | high | dmitry | required | VELDO-0017-entity-lifecycle-contracts.md |
+| VELDO-0018 | Release and behavior-floor integration contracts | draft | high | dmitry | required | VELDO-0018-release-floor-contracts.md |
+| VELDO-0019 | Combined dependency graph and decision observation rules | draft | high | dmitry | required | VELDO-0019-combined-graph-contracts.md |
+| VELDO-0020 | Signing and authority contracts for enrolled channels | draft | critical | dmitry | required | VELDO-0020-signing-authority-contracts.md |
+| VELDO-0021 | Completion and executable eligibility predicates | draft | critical | dmitry | required | VELDO-0021-completion-eligibility-contracts.md |
+| VELDO-0022 | Section 2 admission semantics | draft | critical | dmitry | required | VELDO-0022-section-2-admission-contracts.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
@@ -538,7 +545,7 @@ Open decision D4 blocks: VELDO-0016, VELDO-0042.
 | Item | Spec | Title | Depends on | State |
 |---|---|---|---|---|
 | W1 | VELDO-0016 | Decision records and effective policy amendments | - | blocked: decision D1,D2,D3,D4 |
-| W2 | VELDO-0017 | Entity identity and lifecycle schemas | - | unstarted (frontier) |
+| W2 | VELDO-0017 | Entity identity and lifecycle schemas | - | draft (frontier) |
 | W3 | VELDO-0018 | Release and behavior-floor integration contracts | VELDO-0017 | waiting: VELDO-0017 |
 | W4 | VELDO-0019 | Combined dependency graph and decision observation rules | VELDO-0017, VELDO-0018 | waiting: VELDO-0017, VELDO-0018 |
 | W5 | VELDO-0020 | Signing and authority contracts for enrolled channels | VELDO-0016, VELDO-0017 | waiting: VELDO-0016, VELDO-0017 |
