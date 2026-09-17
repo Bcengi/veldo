@@ -139,3 +139,13 @@ https://developer.apple.com/library/archive/documentation/Security/Conceptual/Sy
 and Endpoint Security client/setup documentation
 https://developer.apple.com/documentation/endpointsecurity/client
 https://developer.apple.com/documentation/endpointsecurity/monitoring-system-events-with-endpoint-security
+
+## Final gate with refreshed proof
+
+The final ./scripts/verify.sh in this linked checkout at 90641482aecfbf637758dbe267a2e02c20decbce
+exited 0, GREEN, with the refreshed proof committed: 4838 passed, 0 failed;
+first-use integration passed; 8 required catalog checks passed, 15 not applicable,
+0 waived, and 0 undeclared. gate-third-review-final.log records the output.
+This receipt changes proof records only; it does not claim a new implementation
+verification or a landing stamp. The two gate byproducts are restored before the
+receipt commit.
