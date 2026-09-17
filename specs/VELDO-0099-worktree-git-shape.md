@@ -15,6 +15,8 @@ footprint:
   - "specs/VELDO-0099-worktree-git-shape.md"
   - "specs/index.md"
   - "proof/VELDO-0099/*"
+  - ".veldo/events.jsonl"
+  - ".veldo/last_verify"
 behavior_bearing: true
 observability:
   logs: Named selftest rows distinguish copy fidelity, git resolution, and writes outside the temporary directory.
