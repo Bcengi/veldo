@@ -67,6 +67,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0099/gate-round-five-after-linked.log; proof/VELDO-0099/gate-round-five-after-primary.log",
           "detail": "Complete canonical gates at 6e1179560b8871014d059e6322d2bc523e66ec0d: GREEN, 4842 passed, 0 failed in each shape; first-use passed and all 8 required catalog checks passed."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0099/gate-round-five-final.log",
+          "detail": "Full linked gate with refreshed proof at 640a65d66ed771d46ceeae393f40dac109ba0ad1: GREEN, exit 0, 4842 passed, 0 failed."
         }
       ]
     }
@@ -132,12 +137,21 @@
       "exit_code": 0,
       "commit": "6e1179560b8871014d059e6322d2bc523e66ec0d",
       "ref": "proof/VELDO-0099/ready-check.txt"
+    },
+    {
+      "name": "gate-with-refreshed-proof",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "640a65d66ed771d46ceeae393f40dac109ba0ad1",
+      "ref": "proof/VELDO-0099/gate-round-five-final.log",
+      "detail": "GREEN, 4842 passed, 0 failed; first-use integration passed; all 8 required catalog checks passed."
     }
   ],
   "artifacts": [
     {
       "ref": "proof/VELDO-0099/README.md",
-      "sha256": "5bd420ebbf20f7dfef0558fc6df1f1269a3c6d278e7212ec4133c796c256fff6"
+      "sha256": "76c1ddf7eefa871041146b6ae6ac002dabf0c204b5f15619b488facd1a1a1f3b"
     },
     {
       "ref": "proof/VELDO-0099/baseline-driven.json",
@@ -196,6 +210,10 @@
       "sha256": "ee780a20f717caf9a5c650cfdb6acaec4f4268321cee340d68313b34d16c1eee"
     },
     {
+      "ref": "proof/VELDO-0099/gate-round-five-final.log",
+      "sha256": "14f2628fdd82893153bac27e33b19a837c47e16673ccda559d61e16a2d678396"
+    },
+    {
       "ref": "proof/VELDO-0099/gate-second-review-before.log",
       "sha256": "c5506c9e6436b7941048deefa5c98fc0839e9726cc3ddcfca892fc2e4fb4d3a5"
     },
@@ -229,7 +247,7 @@
     },
     {
       "ref": "proof/VELDO-0099/log-redactions.json",
-      "sha256": "19f1bf82336d6ae8789909dde16f7a33224ef10458f187f7900a289769c4735a"
+      "sha256": "50a46ba3ab898f58164e48db96429b7c6ee77a69071616bbe4bd698c502c62cd"
     },
     {
       "ref": "proof/VELDO-0099/ready-check.txt",

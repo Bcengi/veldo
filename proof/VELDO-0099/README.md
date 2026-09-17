@@ -154,3 +154,12 @@ failure rows are retained. Raw logs are in /tmp/veldo-0099-round5/.
 Gate byproducts .veldo/events.jsonl and .veldo/last_verify are restored with
  git checkout -- .veldo/last_verify .veldo/events.jsonl before proof commits.
 The external reviewer owns independent review and the real landing stamp.
+
+## Final gate with refreshed proof
+
+The full ./scripts/verify.sh at 640a65d66ed771d46ceeae393f40dac109ba0ad1 in the assigned linked
+checkout exited 0: GREEN, 4842 passed, 0 failed; first-use integration passed;
+8 required catalog checks passed, 15 not applicable, 0 waived, 0 undeclared.
+The output is gate-round-five-final.log. This final receipt changes proof records
+only and does not claim a landing stamp or a new implementation verification.
+The two gate byproducts are restored before committing the receipt.

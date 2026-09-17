@@ -169,5 +169,14 @@
     "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture. No gate result or failure row is removed.",
     "raw_sha256": "013fc97390b50fddc4dfcdde011cf8dbd4b1463e43e940143d020f3f45cb4b68",
     "stored_sha256": "0c1fdaf33aa67fee09a90245bc9684ddebca14b7ac2cb4bd2aa5f5201acc369e"
+  },
+  {
+    "file": "proof/VELDO-0099/gate-round-five-final.log",
+    "lines": [
+      46
+    ],
+    "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture. No gate result or failure row is removed.",
+    "raw_sha256": "5fbe7ec49e3c64a761fbda0e354d6a152fecf9a1bb1803ad6dbbab798c3e4baa",
+    "stored_sha256": "14f2628fdd82893153bac27e33b19a837c47e16673ccda559d61e16a2d678396"
   }
 ]
