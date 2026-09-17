@@ -69,6 +69,7 @@ default on its own inability would be a worse version of the defect it refuses.
 import json
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -147,8 +148,23 @@ def _spend_carrying(tree):
 
 
 def _copy(src, dest, what):
+    def skip_special(directory, names):
+        # Runtime endpoints carry no repository bytes. Preserve ordinary symlinks.
+        skipped = []
+        for name in names:
+            path = Path(directory) / name
+            mode = path.lstat().st_mode
+            for predicate, kind in ((stat.S_ISSOCK, "socket"), (stat.S_ISFIFO, "fifo"),
+                                    (stat.S_ISCHR, "character-device"),
+                                    (stat.S_ISBLK, "block-device")):
+                if predicate(mode):
+                    print("   %s copy: skipped %s %s" % (what, kind, path), flush=True)
+                    skipped.append(name)
+                    break
+        return skipped
+
     try:
-        shutil.copytree(src, dest, symlinks=True)
+        shutil.copytree(src, dest, symlinks=True, ignore=skip_special)
     except (OSError, shutil.Error) as e:
         raise CannotAnswer("could not build the %s tree at %s: %s" % (what, dest, e))
     if not (dest / "scripts" / "selftest.py").exists():

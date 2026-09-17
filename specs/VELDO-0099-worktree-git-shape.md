@@ -12,6 +12,7 @@ placement: [enforcement]
 protected_paths: []
 footprint:
   - "scripts/suites/24_veldo_0007_install_and_run.py"
+  - "scripts/check_first_use.py"
   - "specs/VELDO-0099-worktree-git-shape.md"
   - "specs/index.md"
   - "proof/VELDO-0099/*"
@@ -64,10 +65,14 @@ acceptance_criteria:
       even when those stores are outside the working tree; the live observation covers only
       this checkout's working tree and private git state, excluding sibling-owned shared data.
       Set: The whole common directory except worktrees/, the copied private directory and working
-      tree, and the live checkout-owned inventory in both git layouts, using content digests,
-      not timestamps. Completeness: Copy the whole common directory except worktrees/, retaining
+      tree, and the live checkout-owned inventory in both git layouts, using content digests
+      and working-tree and sandbox HOME modification times; git metadata stays content-only. Completeness: Copy the whole common directory except worktrees/, retaining
       config normalization, alternates materialization and containment assertions. Inventory all
-      three sandbox roots using content digests, not timestamps, plus size and existence; plant writes in the private
+      three sandbox roots using content digests, size and existence, plus modification times
+      for the working tree and sandbox HOME only. Private and common git metadata remain
+      content-only because git reads refresh index and sharedindex timestamps. Drive a stage
+      that rewrites an existing working-tree file with identical bytes and require the
+      sandbox-write row to fail. Plant writes in the private
       directory and common store in disposable fixtures; require each write to appear in the
       changed entries and a clean control to stay unchanged. Drive sibling staging during the
       live observation and require it to stay green, while a real stage write into the copied
@@ -81,7 +86,9 @@ acceptance_criteria:
       sandbox-write row; reflog deletion must also red it with a split index. Copy this checkout's
       private state separately, never sibling private state; tolerate entries vanishing
       during traversal. Drive 50 copies per shape during concurrent sibling staging and
-      unstaging with zero raises, and a deterministic disappearing-file control.
+      unstaging with zero raises, and a deterministic disappearing-file control. Skip and record sockets, FIFOs and device
+      nodes in metadata, working-tree and first-use whole-repository copies. Drive bound sockets
+      in .git and the working tree; first-use and all 14 AC4 rows must pass.
     falsified_by: >
       Inventory only the working tree and the linked metadata-write row must fail.
   - id: AC4
@@ -167,10 +174,12 @@ Fourth review correction (round five): the sandbox copies the whole common direc
 except worktrees/, with no store allowlist. This includes branch reflogs and unknown
 future stores. Config normalization, alternate materialization and containment checks
 still apply before the stage runs. Both inventories compare content digests and sizes,
-entry kinds, symlink targets and existence, not timestamps. Git's split-index timestamp
-refresh is a read for this observation. Identical-byte rewrites, timestamp-only changes,
-permission-only changes and writes fully restored before the second snapshot are not
-observed. Copying mutable shared state is not an atomic snapshot. The before-and-after
+entry kinds, symlink targets and existence. Round nine restores modification times for
+working-tree and sandbox HOME entries, so identical-byte rewrites are observed there.
+Private and common git metadata stay content-only: git reads refresh index and
+sharedindex timestamps without changing bytes. Metadata timestamp-only changes,
+permission-only changes and writes whose entire inventoried state is restored before
+the second snapshot are not observed. Copying mutable shared state is not an atomic snapshot. The before-and-after
 boundary above remains in force; this construction is not a process trace.
 
 Final design closure (round six): this observation is a before-and-after content
@@ -189,3 +198,10 @@ a nested marker alone must record inventory stand-down while all eight rows pass
 Primary checkout private state includes info/sparse-checkout, following the documented
 Git per-worktree boundary. Changing sparse rules during the live run must red that row
 in either checkout shape. The proof re-drives the prior mutations and both full gates.
+
+Round nine correction: working-tree and first-use whole-repository copies also skip
+and record sockets, FIFOs and device nodes. They are runtime endpoints, not copied
+content; their kinds are recorded without reading them. Copy fidelity compares the
+remaining entries. scripts/check_first_use.py is in the footprint for this copy
+behavior alone. The root-specific timestamp rule above restores detection of repeated
+identical working-tree writes without reviving split-index refresh false positives.

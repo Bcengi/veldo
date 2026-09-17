@@ -51,8 +51,8 @@ def _iar_special_kind(mode):
     return None
 
 
-def _iar_inventory(root, *, entries=None):
-    """relative path -> (kind, size, sha256 or symlink target), recursively unless entries are supplied.
+def _iar_inventory(root, *, entries=None, observe_mtime=False):
+    """Relative path -> kind, size, content/target, and optionally modification time.
 
     THE SANDBOX OBSERVATION AC4 RESTS ON, AND IT EXCLUDES NOTHING. The live caller supplies
     only checkout-owned entries because sibling writes to shared metadata are not attributable.
@@ -65,19 +65,22 @@ def _iar_inventory(root, *, entries=None):
     the interpreter writes is not this stage writing, while a file the stage writes with any name at
     all, inside __pycache__ included, still moves an entry here. Directories and symlinks are
     entries too, so an empty directory or a relinked path is a change. Special files
-    are recorded by kind as skipped by metadata copying; their contents are never read.
+    are recorded by kind as skipped by copying; their contents are never read.
 
-    Compare content and existence, never timestamps: git reads may refresh split-index
-    timestamps without changing bytes. Identical rewrites and writes restored before
-    the second snapshot are outside this before-and-after observation."""
+    Working-tree and sandbox HOME callers also observe modification time, so repeated
+    identical-byte writes are changes. Private and common git roots stay content-only:
+    git reads refresh index and sharedindex timestamps without changing bytes. Writes
+    that restore all inventoried state before the second snapshot remain outside this
+    before-and-after observation."""
     root = Path(root)
     inv = {}
     for p in sorted(root.rglob("*") if entries is None else entries):
         rel = p.relative_to(root).as_posix()
         try:
-            special = _iar_special_kind(p.lstat().st_mode)
+            state = p.lstat()
+            special = _iar_special_kind(state.st_mode)
             if special:
-                inv[rel] = (special, 0, "skipped by metadata copy")
+                inv[rel] = (special, 0, "skipped by copy")
             elif p.is_symlink():
                 inv[rel] = ("symlink", 0, _iar_os.readlink(p))
             elif p.is_dir():
@@ -85,6 +88,8 @@ def _iar_inventory(root, *, entries=None):
             else:
                 data = p.read_bytes()
                 inv[rel] = ("file", len(data), _iar_hl.sha256(data).hexdigest())
+            if observe_mtime and not special:
+                inv[rel] += (state.st_mtime_ns,)
         except OSError as _iar_e:                # a path that cannot be read is still an OBSERVATION
             inv[rel] = ("unreadable", 0, str(_iar_e))
     return inv
@@ -115,11 +120,24 @@ def _iar_git_dirs(root):
                  for flag in ("--git-dir", "--git-common-dir"))
 
 
+def _iar_working_inventory(root, *, observe_mtime=True):
+    # Git metadata is observed separately with content-only comparison.
+    root = Path(root)
+    entries = []
+    for directory, dirs, files in _iar_os.walk(root):
+        if Path(directory) == root:
+            dirs[:] = [name for name in dirs if name != ".git"]
+        entries.extend(Path(directory) / name for name in dirs + files)
+    return _iar_inventory(root, entries=entries, observe_mtime=observe_mtime)
+
+
 def _iar_repository_inventory(root):
     private, common = _iar_git_dirs(root)
-    return {label + "/" + rel: value
-            for label, base in (("tree", root), ("git-dir", private), ("git-common", common))
-            for rel, value in _iar_inventory(base).items()}
+    result = {"tree/" + rel: value for rel, value in _iar_working_inventory(root).items()}
+    result.update({label + "/" + rel: value
+                   for label, base in (("git-dir", private), ("git-common", common))
+                   for rel, value in _iar_inventory(base).items()})
+    return result
 
 
 def _iar_private_paths(private):
@@ -150,13 +168,7 @@ def _iar_live_inventory(root):
     Sandbox inventories still use _iar_repository_inventory over all three roots.
     """
     root = Path(root)
-    entries = []
-    for directory, dirs, files in _iar_os.walk(root):
-        if Path(directory) == root:
-            dirs[:] = [name for name in dirs if name != ".git"]
-        entries.extend(Path(directory) / name for name in dirs + files)
-    result = {"tree/" + rel: value for rel, value in
-              _iar_inventory(root, entries=entries).items()}
+    result = {"tree/" + rel: value for rel, value in _iar_working_inventory(root).items()}
     private, common = _iar_git_dirs(root)
     if private == common:
         paths = _iar_private_paths(private)
@@ -338,12 +350,25 @@ def _iar_assert_isolated(target, private, common):
         assert (target / path).resolve().is_relative_to(sandbox), path
 
 
+def _iar_copy_ignore(directory, names):
+    """Omit runtime endpoints without reading them; record their paths and kinds."""
+    skipped = []
+    for name in names:
+        path = Path(directory) / name
+        kind = _iar_special_kind(path.lstat().st_mode)
+        if kind:
+            print("   install-and-run copy: skipped %s %s" % (kind, path))
+            skipped.append(name)
+    return skipped
+
+
 def _iar_copy_tree(source, target):
     """Copy working bytes, the whole common store except worktrees/, and private state."""
     source, target = Path(source), Path(target)
     private, common = _iar_git_dirs(source)
     _iar_sh.copytree(source, target, symlinks=True,
-                     ignore=lambda directory, names: [".git"] if Path(directory) == source else [])
+                     ignore=lambda directory, names: _iar_copy_ignore(directory, names)
+                     + ([".git"] if Path(directory) == source else []))
     copied_common = target / ".git" if private == common else target.parent / "git-common"
     copied_common.mkdir()
     for entry in _iar_common_entries(common, private == common):
@@ -371,8 +396,10 @@ def _iar_substrate(repo):
 
 def _iar_copy_matches(source, target):
     def working(root):
-        return {rel: value for rel, value in _iar_inventory(root).items()
-                if rel != ".git" and not rel.startswith(".git/")}
+        return {rel: value for rel, value in
+                _iar_working_inventory(root, observe_mtime=False).items()
+                if rel != ".git" and value[0] not in
+                {"socket", "fifo", "character-device", "block-device"}}
     return (working(source) == working(target)
             and _iar_git(source, "ls-files", "--stage") == _iar_git(target, "ls-files", "--stage")
             and _iar_git(source, "rev-parse", "HEAD") == _iar_git(target, "rev-parse", "HEAD"))
@@ -459,11 +486,16 @@ def _iar_special_and_reflog_controls():
         for shape, tree in (("primary", primary), ("linked", linked)):
             private, common = _iar_git_dirs(tree)
             endpoint, fifo = private / "fsmonitor--daemon.ipc", private / "probe.fifo"
-            with _iar_socket.socket(_iar_socket.AF_UNIX) as sock:
+            working_endpoint, working_fifo = tree / "working.ipc", tree / "working.fifo"
+            with _iar_socket.socket(_iar_socket.AF_UNIX) as sock, \
+                    _iar_socket.socket(_iar_socket.AF_UNIX) as working_sock:
                 sock.bind(str(endpoint))
+                working_sock.bind(str(working_endpoint))
                 _iar_os.mkfifo(fifo)
+                _iar_os.mkfifo(working_fifo)
                 try:
                     inventory = _iar_inventory(private)
+                    working = _iar_working_inventory(tree)
                     sandbox = base / (shape + "-copy")
                     sandbox.mkdir()
                     raised = None
@@ -474,13 +506,20 @@ def _iar_special_and_reflog_controls():
                     expect("VELDO-0099 AC1: %s socket and FIFO are inventoried by skipped kind and not copied (%r)"
                            % (shape, raised),
                            raised is None
-                           and inventory[endpoint.name] == ("socket", 0, "skipped by metadata copy")
-                           and inventory[fifo.name] == ("fifo", 0, "skipped by metadata copy")
+                           and inventory[endpoint.name] == ("socket", 0, "skipped by copy")
+                           and inventory[fifo.name] == ("fifo", 0, "skipped by copy")
                            and not list(sandbox.rglob(endpoint.name))
-                           and not list(sandbox.rglob(fifo.name)))
+                           and not list(sandbox.rglob(fifo.name))
+                           and working[working_endpoint.name] == ("socket", 0, "skipped by copy")
+                           and working[working_fifo.name] == ("fifo", 0, "skipped by copy")
+                           and not list(sandbox.rglob(working_endpoint.name))
+                           and not list(sandbox.rglob(working_fifo.name))
+                           and _iar_copy_matches(tree, sandbox / "repo"))
                 finally:
                     endpoint.unlink()
                     fifo.unlink()
+                    working_endpoint.unlink()
+                    working_fifo.unlink()
             logs = []
             for name in ("bisect", "worktree", "rewritten"):
                 _iar_git(tree, "-c", "user.name=Veldo fixture", "-c",
@@ -1084,7 +1123,7 @@ _iar_block("AC3", _iar_ac3)
 #
 # SO THE PROXY IS GONE AND THE WRITES ARE OBSERVED. The stage is run as a subprocess in a sandbox
 # where every root it could legitimately write to is DECLARED - its own copy of the working tree, its
-# own HOME, its own TMPDIR - and a recursive inventory of path, size and sha256 over the first two is
+# own HOME, its own TMPDIR - and a recursive inventory of path, size, sha256 and mtime over the first two is
 # required to be identical across the run while the run demonstrably did the work. The copy is of the
 # WORKING TREE and not a clone of HEAD, so a mutation under review is inside the thing observed; a
 # clone would run the committed code and report green about a mutation it never executed.
@@ -1139,11 +1178,11 @@ def _iar_ac4_inventory():
                and all(p.is_relative_to(sand) for p in _iar_git_dirs(repo)))
         env = dict(_iar_git_environment(), HOME=str(home), TMPDIR=str(run_tmp),
                    PYTHONDONTWRITEBYTECODE="1")
-        b_repo, b_home = _iar_repository_inventory(repo), _iar_inventory(home)
+        b_repo, b_home = _iar_repository_inventory(repo), _iar_inventory(home, observe_mtime=True)
         proc = _iar_sp.run([_iar_sys.executable, "scripts/check_install_and_run.py",
                             "--pack", _IAR_REP["composed"][0]],
                            cwd=str(repo), env=env, capture_output=True, text=True, timeout=900)
-        a_repo, a_home = _iar_repository_inventory(repo), _iar_inventory(home)
+        a_repo, a_home = _iar_repository_inventory(repo), _iar_inventory(home, observe_mtime=True)
         laid = _iar_re.search(r"installed (\d+) file\(s\) from (\S+)", proc.stdout)
         expect("VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows "
                "below being vacuous: the sandboxed stage composed with the real publisher, installed "
@@ -1155,7 +1194,7 @@ def _iar_ac4_inventory():
                and laid is not None and int(laid.group(1)) > 10
                and laid.group(2).startswith(str(run_tmp) + "/"))
         expect("VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - "
-               "every path, size and sha256 identical, ignored paths and resolved "
+               "every path, size, sha256 and working-tree mtime identical, ignored paths and resolved "
                "private and common git stores included, "
                "which is the half a `git status` comparison could not see: a review wrote "
                ".veldo/trackers.json (the one file the ignore rule exists to protect) and a file "
@@ -1163,7 +1202,7 @@ def _iar_ac4_inventory():
                % (_iar_changed(b_repo, a_repo)[:6],),
                _iar_changed(b_repo, a_repo) == [])
         expect("VELDO-0007 AC4: NOT ONE BYTE outside the repository either - the process ran with a "
-               "HOME of its own and that directory, sentinel file included, is byte-identical "
+               "HOME of its own and that directory, sentinel file included, retains bytes and mtimes "
                "afterwards. A review's probe wrote a 36-byte file into $HOME on every single call "
                "and no row noticed, because the old assertion could only see tracked paths inside "
                "this one tree. Entries that moved: %r" % (_iar_changed(b_home, a_home)[:6],),
@@ -1204,7 +1243,7 @@ def _iar_ac4_inventory():
         else:
             _iar_os.environ["PYTHONDONTWRITEBYTECODE"] = _iar_pyc
     expect("VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole "
-           "tree inventoried by path, size and sha256 before and after, "
+           "tree inventoried by path, size, sha256 and mtime before and after, "
            "ignored paths and this checkout's private git state included, shared stores excluded, "
            "with the run PASSING "
            "so the identity is across work "
