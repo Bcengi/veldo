@@ -95,8 +95,10 @@ def authorize(boundary, requirement, attestations, membership, now):
     is satisfied by that person's own attestation and by nothing else: never an agent, a service,
     a display name or a delegate); at least `quorum` DISTINCT principals attested; at least
     `min_independence` distinct independence groups are represented; the requirement has not
-    expired; and no attestation is stale (bound to another subject digest). Refusals are named,
-    all of them, so a reader sees every unmet condition at once."""
+    expired; and no attestation is stale (bound to another subject digest). A role counts only
+    when the member's `scope` covers the requirement's `scope` (a member scoped to project A holds
+    no role in project B; "*" is every scope). Refusals are named, all of them, so a reader sees
+    every unmet condition at once."""
     refusals = []
     admitted = BOUNDARIES.get(boundary)
     if admitted is None:
@@ -119,10 +121,14 @@ def authorize(boundary, requirement, attestations, membership, now):
             refusals.append("attestation_stale:%s" % a.get("principal"))
             continue
         valid.append((a, entry))
-    held_roles = {r for _a, e in valid for r in (e.get("roles") or [])}
+    scope = requirement.get("scope")
+    def _in_scope(entry):
+        member_scope = entry.get("scope")
+        return scope is None or member_scope == "*" or (isinstance(member_scope, (list, tuple)) and (scope in member_scope or "*" in member_scope))
+    held_roles = {r for _a, e in valid if _in_scope(e) for r in (e.get("roles") or [])}
     for role in requirement.get("roles") or []:
         if role not in held_roles:
-            refusals.append("role_not_satisfied:%s" % role)
+            refusals.append("role_not_satisfied:%s%s" % (role, (" (no holder scoped to %s)" % scope) if scope is not None else ""))
     for name in requirement.get("named_principals") or []:
         if not any(a.get("principal") == name and e.get("principal_type") == "person" for a, e in valid):
             refusals.append("named_principal_not_satisfied:%s" % name)
@@ -213,6 +219,12 @@ def envelope_problems(envelope, command, authority, now, seen_nonces, keyring, m
     ok, why = active_member(membership_entry(membership, envelope["principal"]), now)
     if not ok:
         problems.append("principal %r: %s" % (envelope["principal"], why))
+    if envelope.get("delegation_id") is not None:
+        d = next((x for x in delegations or [] if isinstance(x, dict) and x.get("id") == envelope["delegation_id"]), None)
+        if d is None or d.get("principal") != envelope["principal"]:
+            problems.append("envelope names delegation %r, which does not resolve for this principal" % envelope["delegation_id"])
+        elif (d.get("revoked_at") is not None and d["revoked_at"] <= now) or d.get("expires_at", now + 1) <= now:
+            problems.append("envelope names delegation %r, which is revoked or expired" % envelope["delegation_id"])
     if active_key(keyring, envelope["principal"], now) is None:
         problems.append("principal %r has no active verification key at %r (retired, revoked or not yet effective)" % (envelope["principal"], now))
     return problems
@@ -283,7 +295,7 @@ ASSERTION_KINDS = ("decision_answer", "assignment_acceptance", "review_dispositi
 TEXT_ONLY_FIELDS = ("text", "display_name", "sender_name")
 
 
-def edge_assertion_problems(assertion, delegation, now, channels=None):
+def edge_assertion_problems(assertion, delegation, now, channels=None, required_scope=None, request_version=None):
     """Why a channel edge's assertion is NOT accepted, by name (R38, R72): the channel is unknown or
     not enrolled; the delegation lacks a field, is expired, or binds another principal, channel,
     assertion kind, request version or presentation version than the assertion carries; the edge
@@ -304,9 +316,18 @@ def edge_assertion_problems(assertion, delegation, now, channels=None):
         problems.append("channel %s is not enrolled: its assertions refuse until enrollment and attribution are qualified" % assertion["channel"])
     if delegation["expires_at"] <= now:
         problems.append("delegation expired at %r" % delegation["expires_at"])
+    if delegation.get("revoked_at") is not None and delegation["revoked_at"] <= now:
+        problems.append("delegation revoked at %r: a revoked delegation signs nothing, whatever the principal's membership and key say" % delegation["revoked_at"])
+    scope = delegation.get("authority_scope")
+    if not isinstance(scope, (list, tuple)) or not scope:
+        problems.append("delegation authority_scope is empty: a delegation names the scope it may assert in")
+    elif required_scope is not None and required_scope not in scope and "*" not in scope:
+        problems.append("delegation authority_scope %s does not cover the request's scope %r" % (list(scope), required_scope))
     for f in ("principal", "channel", "request_version", "presentation_version"):
         if delegation.get(f) != assertion.get(f):
             problems.append("delegation binds %s %r, the assertion carries %r" % (f, delegation.get(f), assertion.get(f)))
+    if request_version is not None and assertion.get("request_version") != request_version:
+        problems.append("the assertion answers request version %r, the request is at %r: a stale answer settles nothing" % (assertion.get("request_version"), request_version))
     if assertion.get("assertion_kind") not in ASSERTION_KINDS:
         problems.append("assertion kind %r is not one of %s" % (assertion.get("assertion_kind"), ASSERTION_KINDS))
     elif assertion.get("assertion_kind") not in (delegation.get("assertion_kinds") or []):
@@ -316,8 +337,11 @@ def edge_assertion_problems(assertion, delegation, now, channels=None):
                         % (delegation.get("edge_key_id"), assertion.get("edge_key_id"), assertion["channel"], ch["edge_key_id"]))
     evidence = assertion.get("attribution") or {}
     for f in ch["attribution"]:
-        if f not in evidence or evidence.get(f) in (None, "", False):
-            problems.append("attribution lacks %s pulled from the platform: text, a display name or a sender name substitutes for nothing (R72)" % f)
+        v = evidence.get(f)
+        ok = (v is True) if f.endswith("_verified") else (_is_str(v) or (isinstance(v, (int, float)) and not isinstance(v, bool)))
+        if not ok:
+            problems.append("attribution lacks %s pulled from the platform (a verification flag must be literally True): text, a display name "
+                            "or a sender name substitutes for nothing (R72)" % f)
     if not _is_str(assertion.get("presentation_id")) or not _is_str(assertion.get("presentation_digest")):
         problems.append("the assertion names no presentation (id and digest): an answer must identify the presentation it addresses")
     return problems
@@ -327,11 +351,12 @@ def edge_assertion_problems(assertion, delegation, now, channels=None):
 # AC4: one settlement per request version, attributed to the originating channel.
 # ---------------------------------------------------------------------------------------------
 
-PRESENTATION_FIELDS = ("presentation_id", "request_id", "request_version", "request_digest", "subject_digests",
+PRESENTATION_FIELDS = ("presentation_id", "presentation_version", "request_id", "request_version", "request_digest", "subject_digests",
                        "brief_digest", "channel", "external_id", "published_at")
 SETTLEMENT_REFUSALS = ("already_settled", "request_expired", "framing_changed", "stale_presentation", "unknown_presentation",
-                       "presentation_channel_mismatch", "edge_refused", "principal_not_member", "revoked_key",
-                       "quorum_not_met", "no_assertion")
+                       "presentation_channel_mismatch", "edge_refused", "principal_not_member", "revoked_key", "not_a_decision_answer",
+                       "not_authorized", "conflicting_rulings", "quorum_not_met", "no_assertion")
+RULINGS = ("approve", "reject", "return_for_elaboration")
 
 
 def presentation_problems(receipt):
@@ -339,19 +364,23 @@ def presentation_problems(receipt):
 
 
 def settle(request, assertions, delegations, presentations, membership, keyring, now, prior_settlement=None):
-    """The ONE settlement transition for a request version (R40, R41, R72). Returns one atomic
-    result {settled, settlement, refusals, quorum: {principals}, nonce_consumed, projection_obligations,
-    decision_effects}. Refuses when the request version already has a terminal settlement, the
-    request expired, or the request's framing digest is not the one every valid assertion's
-    presentation carries. Each assertion must pass its edge check, name a presentation receipt
-    of THIS request version on THIS channel whose digests match the request's current framing
-    (a receipt for an earlier brief or a changed subject is stale), come from an active member
-    whose key was not revoked, and only then counts toward the quorum BY DISTINCT PRINCIPAL:
-    one person answering on two channels is one quorum member. The winner among concurrent
-    valid answers is the earliest by platform timestamp, then by channel registry order, and the
-    settlement is attributed to that answer's channel; every other channel receives a projection
-    obligation, never a second record."""
-    result = {"settled": False, "settlement": None, "refusals": [], "quorum": {"principals": []},
+    """The ONE settlement transition for a request version (R39, R40, R41, R72). Returns one atomic
+    result {settled, settlement, refusals, quorum: {principals, by_ruling}, nonce_consumed,
+    projection_obligations, decision_effects}. Refuses when the request version already has a
+    terminal settlement or the request expired. Each assertion must be a decision_answer carrying
+    a ruling from RULINGS (an acknowledgement settles nothing and consumes nothing), pass its edge
+    check against the request's scope and version, name a presentation receipt of THIS request
+    version at the assertion's presentation version on THIS channel whose digests match the
+    request's current framing, and come from an active member whose key was not revoked. The
+    valid answers are then AUTHORIZED at the decision_settlement boundary against the request's
+    roles, named principals, quorum, independence and scope through authorize(): settlement never
+    bypasses authorization. The quorum is counted BY RULING and by distinct principal: one person
+    on two channels is one member, and a rejection never counts toward an approval. Exactly one
+    ruling may reach the quorum; two rulings reaching it is a conflict the authority resolves. The
+    winner among that ruling's answers is the earliest by platform timestamp, then channel order,
+    and the settlement is attributed to its channel; every other enrolled channel receives a
+    projection obligation, never a second record."""
+    result = {"settled": False, "settlement": None, "refusals": [], "quorum": {"principals": [], "by_ruling": {}},
               "nonce_consumed": None, "projection_obligations": [], "decision_effects": []}
     if prior_settlement is not None and prior_settlement.get("request_version") == request.get("version"):
         result["refusals"].append("already_settled")
@@ -362,8 +391,11 @@ def settle(request, assertions, delegations, presentations, membership, keyring,
     by_pid = {p.get("presentation_id"): p for p in presentations or [] if isinstance(p, dict) and not presentation_problems(p)}
     valid = []
     for a in assertions or []:
+        if a.get("assertion_kind") != "decision_answer" or a.get("ruling") not in RULINGS:
+            result["refusals"].append("not_a_decision_answer:%s:%s" % (a.get("principal"), a.get("assertion_kind")))
+            continue
         d = next((x for x in delegations or [] if isinstance(x, dict) and x.get("principal") == a.get("principal") and x.get("channel") == a.get("channel")), None)
-        edge = edge_assertion_problems(a, d, now)
+        edge = edge_assertion_problems(a, d, now, required_scope=request.get("scope"), request_version=request.get("version"))
         if edge:
             result["refusals"].append("edge_refused:%s:%s" % (a.get("principal"), edge[0]))
             continue
@@ -375,6 +407,7 @@ def settle(request, assertions, delegations, presentations, membership, keyring,
             result["refusals"].append("presentation_channel_mismatch:%s" % a.get("presentation_id"))
             continue
         if p.get("request_id") != request.get("id") or p.get("request_version") != request.get("version") \
+                or p.get("presentation_version") != a.get("presentation_version") \
                 or p.get("request_digest") != request.get("framing_digest") or p.get("subject_digests") != request.get("subject_digests") \
                 or a.get("presentation_digest") != p.get("brief_digest"):
             result["refusals"].append("stale_presentation:%s" % a.get("presentation_id"))
@@ -387,20 +420,41 @@ def settle(request, assertions, delegations, presentations, membership, keyring,
             result["refusals"].append("revoked_key:%s" % a.get("principal"))
             continue
         valid.append(a)
-    principals = sorted({a.get("principal") for a in valid})
-    result["quorum"]["principals"] = principals
     if not valid:
         result["refusals"].append("no_assertion")
         return result
-    if len(principals) < int(request.get("quorum") or 1):
-        result["refusals"].append("quorum_not_met:%d<%d" % (len(principals), int(request.get("quorum") or 1)))
+    requirement = {"roles": request.get("roles") or [], "named_principals": request.get("named_principals") or [],
+                   "quorum": int(request.get("quorum") or 1), "min_independence": int(request.get("min_independence") or 0),
+                   "subject_digest": request.get("framing_digest"), "scope": request.get("scope"), "expires_at": request.get("expires_at")}
+    by_ruling = {}
+    for a in valid:
+        by_ruling.setdefault(a["ruling"], set()).add(a.get("principal"))
+    result["quorum"]["by_ruling"] = {r: sorted(ps) for r, ps in by_ruling.items()}
+    result["quorum"]["principals"] = sorted({a.get("principal") for a in valid})
+    reaching = []
+    for ruling, principals in sorted(by_ruling.items()):
+        attestations = [{"principal": p, "subject_digest": request.get("framing_digest")} for p in sorted(principals)]
+        authorized, refusals = authorize("decision_settlement", requirement, attestations, membership, now)
+        if authorized:
+            reaching.append(ruling)
+        else:
+            result["refusals"].append("not_authorized:%s:%s" % (ruling, ";".join(refusals)))
+    if not reaching:
+        if not any(r.startswith("not_authorized") for r in result["refusals"]):
+            result["refusals"].append("quorum_not_met")
         return result
+    if len(reaching) > 1:
+        result["refusals"].append("conflicting_rulings:%s" % ",".join(reaching))
+        return result
+    ruling = reaching[0]
+    result["refusals"] = [r for r in result["refusals"] if not r.startswith("not_authorized:%s:" % ruling)]
     order = list(CHANNELS)
-    winner = sorted(valid, key=lambda a: (str(a.get("attribution", {}).get("platform_timestamp") or a.get("attribution", {}).get("changelog_timestamp")
-                                              or a.get("attribution", {}).get("signed_at") or ""), order.index(a.get("channel"))))[0]
+    answers = [a for a in valid if a["ruling"] == ruling]
+    winner = sorted(answers, key=lambda a: (str(a.get("attribution", {}).get("platform_timestamp") or a.get("attribution", {}).get("changelog_timestamp")
+                                                or a.get("attribution", {}).get("signed_at") or ""), order.index(a.get("channel"))))[0]
     settlement = {"request_id": request.get("id"), "request_version": request.get("version"), "framing_digest": request.get("framing_digest"),
-                  "ruling": winner.get("ruling"), "originating_channel": winner.get("channel"), "presentation_id": winner.get("presentation_id"),
-                  "principals": principals, "settled_at": now}
+                  "ruling": ruling, "originating_channel": winner.get("channel"), "presentation_id": winner.get("presentation_id"),
+                  "principals": sorted(by_ruling[ruling]), "settled_at": now}
     result.update(settled=True, settlement=settlement, nonce_consumed=request.get("nonce"),
                   projection_obligations=[c for c in order if c != winner.get("channel") and CHANNELS[c]["enrolled"]],
                   decision_effects=[{"binding": request.get("decision_binding"), "effect": "update dependent eligibility atomically (R71)"}])
