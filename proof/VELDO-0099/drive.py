@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 
 ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parents[2]
 SUITE = ROOT / 'scripts/suites/24_veldo_0007_install_and_run.py'
@@ -18,7 +19,10 @@ source = SUITE.read_text()
 before = hashlib.sha256(SUITE.read_bytes()).hexdigest()
 names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_dirs',
          '_iar_repository_inventory', '_iar_live_inventory', '_iar_copy_tree', '_iar_substrate',
-         '_iar_copy_matches', '_iar_layout_controls'}
+         '_iar_copy_matches', '_iar_layout_controls', '_iar_private_paths',
+         '_iar_copy_entry', '_iar_common_entries', '_iar_normalize_config',
+         '_iar_copy_alternates', '_iar_resolve_alternates', '_iar_assert_isolated',
+         '_iar_review_controls', '_iar_git_environment'}
 nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in names]
 assert {n.name for n in nodes} == names
 module = ast.Module(body=nodes, type_ignores=[])
@@ -70,7 +74,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
         for case, mutation in mutations.items():
             rows = []
             ns = dict(ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os, _iar_sp=subprocess,
-                      _iar_sh=shutil, _iar_hl=hashlib,
+                      _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
                       expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
             exec(compile(module, str(SUITE), 'exec'), ns)
             ns['original_substrate'] = ns['_iar_substrate']
@@ -80,6 +84,39 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
             failures = [r['label'] for r in rows if not r['passed']]
             assert len(rows) == 17, (case, rows)
             assert failures == expected_failures[case], (case, failures)
+            results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
+                            'failed': len(failures), 'rows': rows})
+
+        review_mutations = {
+            'review_control': None,
+            'skip_config_normalization': 'def _iar_normalize_config(common, private): pass',
+            'copy_sibling_state': "def _iar_common_entries(common, primary): return list(common.iterdir())",
+            'raise_on_vanished_entry': "def _iar_copy_entry(source, target, *, skip=()):\n    if source.is_dir():\n        target.mkdir(parents=True, exist_ok=True)\n        for child in source.iterdir(): _iar_copy_entry(child, target / child.name)\n        _iar_sh.copystat(source, target)\n    else: _iar_sh.copy2(source, target)",
+            'omit_sharedindex': "def _iar_live_inventory(root):\n    result = original_live_inventory(root)\n    if _iar_git_dirs(root)[0] == _iar_git_dirs(root)[1]:\n        result = {k: v for k, v in result.items() if not k.startswith('git-dir/sharedindex.')}\n    return result",
+            'skip_alternate_rewrite': 'def _iar_copy_alternates(objects, sandbox, copied=None): pass',
+        }
+        for case, mutation in review_mutations.items():
+            rows = []
+            ns = dict(ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os,
+                      _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib,
+                      _iar_threading=threading,
+                      expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
+            exec(compile(module, str(SUITE), 'exec'), ns)
+            ns['original_live_inventory'] = ns['_iar_live_inventory']
+            if mutation:
+                exec(compile(mutation, '<' + case + '>', 'exec'), ns)
+            ns['_iar_review_controls']()
+            failures = [r['label'] for r in rows if not r['passed']]
+            expected = {
+                'review_control': [],
+                'skip_config_normalization': [r['label'] for r in rows if 'redirected config' in r['label']],
+                'copy_sibling_state': [r['label'] for r in rows if '50 copies' in r['label']],
+                'raise_on_vanished_entry': [r['label'] for r in rows if 'vanishing after' in r['label']],
+                'omit_sharedindex': ['VELDO-0099 AC3: primary split index corruption is observed'],
+                'skip_alternate_rewrite': [r['label'] for r in rows if 'redirected config' in r['label']],
+            }[case]
+            assert len(rows) == 7, (case, rows)
+            assert failures == expected, (case, failures, expected)
             results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
                             'failed': len(failures), 'rows': rows})
 
@@ -132,10 +169,10 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
             ok, report = iar.check(only='claude')
             assert ok, report
             for case in ('control', 'restore_directory_shape', 'sibling_staging',
-                         'sibling_staging_shared_live', 'sandbox_common_write'):
+                         'sibling_staging_shared_live', 'sandbox_common_write', 'redirected_config'):
                 rows = []
                 ns = dict(ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
-                          _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib,
+                          _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
                           _iar_ast=ast, _iar_sys=sys, _iar_re=re, IAR=iar, _IAR_REP=report,
                           expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
                 exec(compile(ast.Module(body=ac4_nodes, type_ignores=[]), str(SUITE), 'exec'), ns)
@@ -146,6 +183,16 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                 original_check = iar.check
                 stage = tree / 'scripts/check_install_and_run.py'
                 stage_bytes = stage.read_bytes()
+                saved_configs = {}
+                if case == 'redirected_config':
+                    private, common = ns['_iar_git_dirs'](tree)
+                    for config in {common / 'config', private / 'config.worktree'}:
+                        saved_configs[config] = config.read_bytes() if config.exists() else None
+                    git('config', '--file', str(common / 'config'), 'extensions.worktreeConfig', 'true', cwd=tree)
+                    for config in saved_configs:
+                        git('config', '--file', str(config), 'core.worktree', str(tree), cwd=tree)
+                    stage.write_bytes(stage_bytes + b'\n# uncommitted original stage sentinel\n')
+                    dirty_stage = stage.read_bytes()
                 if case.startswith('sibling_staging'):
                     sibling = base / (shape + '-' + case)
                     git('worktree', 'add', '--detach', str(sibling), 'HEAD', cwd=primary)
@@ -166,10 +213,17 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                     stage.write_text(stage_bytes.decode().replace(anchor, injected + anchor))
                 try:
                     ns['_iar_ac4']()
+                    if case == 'redirected_config':
+                        assert stage.read_bytes() == dirty_stage
                 finally:
                     iar.check = original_check
-                    if case == 'sandbox_common_write':
+                    if case in ('sandbox_common_write', 'redirected_config'):
                         stage.write_bytes(stage_bytes)
+                    for config, saved in saved_configs.items():
+                        if saved is None:
+                            config.unlink()
+                        else:
+                            config.write_bytes(saved)
                 failures = [r['label'] for r in rows if not r['passed']]
                 expected = int((shape == 'linked' and restored) or case in
                                ('sibling_staging_shared_live', 'sandbox_common_write'))
