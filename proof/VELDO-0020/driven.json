@@ -1,13 +1,13 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0020",
-  "commit": "550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23",
-  "taken_at": "2026-09-17T21:59:11Z",
+  "commit": "271735dd8e2b426fb8cef15f6159aa3f23e32d07",
+  "taken_at": "2026-09-17T22:17:33Z",
   "fragment": "scripts/suites/33_veldo_0020_authority.py",
-  "fragment_sha256": "bf3ace0810e9a9954027856657f66fc2674a81a1ad85a300b6fa5a89ad16077a",
+  "fragment_sha256": "86d27b412501c082b95b7c9bc37b2b42df742811ef366dd1e4fe31441f66d019",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/authority_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
-  "rows_total": 18,
-  "rows_passed": 18,
+  "rows_total": 25,
+  "rows_passed": 25,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0020 AC1 authority-substitution/named-principal DRIVEN (the declared falsifier): with an agent run allowed to satisfy a named-person predicate in a copy, run-7f3a authorizes a proposal that names dmitry, so the row reds; unmutated it is refused",
@@ -49,13 +49,13 @@
       "driven": 1
     },
     "AC3": {
-      "rows": 5,
-      "passed": 5,
+      "rows": 7,
+      "passed": 7,
       "driven": 1
     },
     "AC4": {
-      "rows": 4,
-      "passed": 4,
+      "rows": 8,
+      "passed": 8,
       "driven": 1
     }
   },
@@ -130,6 +130,34 @@
     },
     {
       "label": "VELDO-0020 AC4 settlement/cross-channel-principal DRIVEN (the declared falsifier): with quorum members counted per channel in a copy, dmitry on two channels meets a quorum of two and the request settles, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC4 settlement/authorization (review 1): settlement runs authorize() at the decision_settlement boundary - a roleless agent run whose edge, presentation and key all pass is refused as not authorized (its type is not admitted at that boundary), and a request naming dmitry refuses asya's answer",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC1/AC3 authority-substitution/scope (review 1): a member scoped to PROJ-A holds no role for a PROJ-B requirement while a '*' member does; a delegation with an empty authority_scope, or one not covering the request's scope, is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC3 channel-attribution/revocation (review 1): a revoked delegation signs nothing even while the principal's membership and key stay active, at the edge and for a command envelope naming it",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC4 settlement/quorum-by-ruling (review 1): one approval and one rejection under a quorum of two settle nothing (the quorum is counted per ruling, by distinct principal), the result names both rulings; under a quorum of one two different rulings each reaching it are a conflict for the authority, never a winner picked by timestamp",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC3 channel-attribution/cli-verification (review 1): a signed CLI assertion is accepted only when personal_envelope_verified is literally True; 'false', 'not-verified', an empty list and an empty mapping each refuse",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC4 settlement/version-binding (review 1): an assertion and delegation both naming request version 2 are refused against the version 3 request, and a presentation receipt at another presentation version is stale",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC4 settlement/decision-answer-only (review 1): an acknowledgement settles nothing and consumes no nonce, so a later real answer still settles; an answer whose ruling is outside the vocabulary settles nothing",
       "passed": true
     }
   ]

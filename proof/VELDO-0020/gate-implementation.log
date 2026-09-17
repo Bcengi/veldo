@@ -1,74 +1,74 @@
 == lint
-lint: pass (320 python, 34 shell, 0.52s)
+lint: pass (321 python, 34 shell, 0.51s)
    lint: pass
 == unit
 no such run 'run-does-not-exist' (start it with veldo run)
-  /tmp/tmpzbdzpxco: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpzbdzpxco/nocrit.md: no acceptance criteria
-  /tmp/tmpzbdzpxco/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpzbdzpxco/status.md: bad status: donezo
-  /tmp/tmpzbdzpxco/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpzbdzpxco/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpzbdzpxco/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpzbdzpxco/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpzbdzpxco/verdict.json: bad verdict: looks_fine
-  /tmp/tmpagsgigbd/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmpagsgigbd/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmpagsgigbd/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmpagsgigbd/fref.md: work W1: unknown feature ref F9
-  /tmp/tmpagsgigbd/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmpagsgigbd/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmpagsgigbd/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmpagsgigbd/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmpagsgigbd/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmpagsgigbd/dupspec.md: duplicate spec ids across work items
-  /tmp/tmpagsgigbd/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmpagsgigbd/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmp_rg_vxcf: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp_rg_vxcf/nocrit.md: no acceptance criteria
+  /tmp/tmp_rg_vxcf/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmp_rg_vxcf/status.md: bad status: donezo
+  /tmp/tmp_rg_vxcf/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmp_rg_vxcf/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmp_rg_vxcf/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmp_rg_vxcf/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmp_rg_vxcf/verdict.json: bad verdict: looks_fine
+  /tmp/tmpvr4ed8v0/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpvr4ed8v0/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpvr4ed8v0/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpvr4ed8v0/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpvr4ed8v0/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpvr4ed8v0/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpvr4ed8v0/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpvr4ed8v0/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpvr4ed8v0/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpvr4ed8v0/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpvr4ed8v0/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpvr4ed8v0/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  /tmp/tmpwa5b74e9/dup.md: front matter outside the contract subset: duplicate key 'depends_on' in list item
-  /tmp/tmpwa5b74e9/dupk.md: front matter outside the contract subset: duplicate key 'owner': last-wins would silently drop the first value
-  /tmp/tmpwa5b74e9/tab.md: front matter outside the contract subset: tab indentation (line 11): the subset is space-indented only
-  /tmp/tmpwa5b74e9/nofr.md: work W1: no feature_refs - unattributed work is exactly the random stream the plan exists to end
-  /tmp/tmpwa5b74e9/noor.md: feature F1: no outcome_refs - a feature that serves no outcome does not belong in the plan
-  /tmp/tmpwa5b74e9/intspec.md: work W1: spec id 9101 must be a string like PREFIX-0000
-  /tmp/tmpb4tq071h/v3.json: findings must be a dict {blocking, non_blocking} or a list of {severity, text}
-  /tmp/tmpb4tq071h/v4.json: list-shaped findings entries need severity blocking|note and text
-  /tmp/tmpb4tq071h/v5.json: findings dict key 'blockers' (allowed: blocking, non_blocking)
-  /tmp/tmpb4tq071h/v6.json: findings.blocking must be a list
-  /tmp/tmprm9w3_s1/bad.jsonl: line 1: unknown event type 'made.up'
-  /tmp/tmprm9w3_s1/bad2.jsonl: line 1: missing at (timestamp)
-  /tmp/tmprm9w3_s1/bad3.jsonl: line 1: not valid JSON
+  /tmp/tmpauzgvgff/dup.md: front matter outside the contract subset: duplicate key 'depends_on' in list item
+  /tmp/tmpauzgvgff/dupk.md: front matter outside the contract subset: duplicate key 'owner': last-wins would silently drop the first value
+  /tmp/tmpauzgvgff/tab.md: front matter outside the contract subset: tab indentation (line 11): the subset is space-indented only
+  /tmp/tmpauzgvgff/nofr.md: work W1: no feature_refs - unattributed work is exactly the random stream the plan exists to end
+  /tmp/tmpauzgvgff/noor.md: feature F1: no outcome_refs - a feature that serves no outcome does not belong in the plan
+  /tmp/tmpauzgvgff/intspec.md: work W1: spec id 9101 must be a string like PREFIX-0000
+  /tmp/tmp73kt6tmw/v3.json: findings must be a dict {blocking, non_blocking} or a list of {severity, text}
+  /tmp/tmp73kt6tmw/v4.json: list-shaped findings entries need severity blocking|note and text
+  /tmp/tmp73kt6tmw/v5.json: findings dict key 'blockers' (allowed: blocking, non_blocking)
+  /tmp/tmp73kt6tmw/v6.json: findings.blocking must be a list
+  /tmp/tmpo_bcjdtq/bad.jsonl: line 1: unknown event type 'made.up'
+  /tmp/tmpo_bcjdtq/bad2.jsonl: line 1: missing at (timestamp)
+  /tmp/tmpo_bcjdtq/bad3.jsonl: line 1: not valid JSON
 guardrail: clean (2 rule(s) hold)
 service/user_service.py:7: no-db-import-outside-repository: 'import db'
 guardrail: 1 violation(s) across 2 rule(s)
    [line redacted: pattern-shaped text emitted by a selftest fixture; see proof/VELDO-0020/log-redactions.json]
 guardrail: 1 violation(s) across 1 rule(s)
 guardrail: clean (1 rule(s) hold)
-  /tmp/tmpamb_vs_5/r1.md: regression RJ1: bad activation when 'someday' (start | after:<spec> | manual)
-  /tmp/tmpamb_vs_5/r2.md: regression RJ1: activation after:WARP-9999 is not a work item spec
-  /tmp/tmpamb_vs_5/r4.md: regression RJ1: owner_spec WARP-9999 is not a work item spec
-  /tmp/tmpamb_vs_5/r6.md: regression RJ1: profiles must be a list from per_spec, release
-  /tmp/tmpamb_vs_5/r7.md: regression RJ1: profiles is empty - a journey that runs nowhere is dead
-  /tmp/tmp0l5pfk1h: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmp0l5pfk1h/p2.md: lane: planned requires both plan and work
-  /tmp/tmp0l5pfk1h/p3.md: lane: standalone must not declare plan or work
-  /tmp/tmp0l5pfk1h/p4.md: bad lane: 'bogus' (planned | standalone)
-  /tmp/tmpx64dxlfm/a1.json: bad approval decision: 'approve' (canonical: approved, rejected) - a near-miss value makes the approval silently inert
-  /tmp/tmp6mvo086c.json: criterion AC1 passed without evidence
-cmd-e2292cb14c7c
-  /tmp/tmpr63qehei: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpr63qehei/s_unknown.md: tracker_repo 'repo-zzz' is not a known repo in the tracker config (known: ['repo-a', 'repo-b'])
-  /tmp/tmpr63qehei/s_empty.md: tracker_repo, when present, must be a non-empty string
-  /tmp/tmpr63qehei/s_nt_b.md: tracker_repo 'repo-a' is not a known repo in the tracker config (known: ['repo-b'])
-  /tmp/tmpr63qehei/PLAN-9002-unknown.md: tracker_repo 'repo-zzz' is not a known repo in the tracker config (known: ['repo-a', 'repo-b'])
-  /tmp/tmpr63qehei/PLAN-9002-list.md: tracker_repo, when present, must be a non-empty string
-  /tmp/tmpr63qehei/PLAN-9002-nt-b.md: tracker_repo 'repo-a' is not a known repo in the tracker config (known: ['repo-b'])
-  /tmp/tmpmrhnd4ki: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmp7pqjj1u0: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpffw1xr6n: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmplafdpqc0: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpkinshklf/r1.md: regression RJ1: bad activation when 'someday' (start | after:<spec> | manual)
+  /tmp/tmpkinshklf/r2.md: regression RJ1: activation after:WARP-9999 is not a work item spec
+  /tmp/tmpkinshklf/r4.md: regression RJ1: owner_spec WARP-9999 is not a work item spec
+  /tmp/tmpkinshklf/r6.md: regression RJ1: profiles must be a list from per_spec, release
+  /tmp/tmpkinshklf/r7.md: regression RJ1: profiles is empty - a journey that runs nowhere is dead
+  /tmp/tmpy0dbp5cp: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpy0dbp5cp/p2.md: lane: planned requires both plan and work
+  /tmp/tmpy0dbp5cp/p3.md: lane: standalone must not declare plan or work
+  /tmp/tmpy0dbp5cp/p4.md: bad lane: 'bogus' (planned | standalone)
+  /tmp/tmpu2amboqn/a1.json: bad approval decision: 'approve' (canonical: approved, rejected) - a near-miss value makes the approval silently inert
+  /tmp/tmp96bfpth_.json: criterion AC1 passed without evidence
+cmd-5754bfaf2cfb
+  /tmp/tmp7w3r05tb: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp7w3r05tb/s_unknown.md: tracker_repo 'repo-zzz' is not a known repo in the tracker config (known: ['repo-a', 'repo-b'])
+  /tmp/tmp7w3r05tb/s_empty.md: tracker_repo, when present, must be a non-empty string
+  /tmp/tmp7w3r05tb/s_nt_b.md: tracker_repo 'repo-a' is not a known repo in the tracker config (known: ['repo-b'])
+  /tmp/tmp7w3r05tb/PLAN-9002-unknown.md: tracker_repo 'repo-zzz' is not a known repo in the tracker config (known: ['repo-a', 'repo-b'])
+  /tmp/tmp7w3r05tb/PLAN-9002-list.md: tracker_repo, when present, must be a non-empty string
+  /tmp/tmp7w3r05tb/PLAN-9002-nt-b.md: tracker_repo 'repo-a' is not a known repo in the tracker config (known: ['repo-b'])
+  /tmp/tmpeo4sx1b7: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp7jifjpkk: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpnxaxgbk8: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp9yilix62: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
   selftest.arch: budget b1: unknown rule kind 'loc_count' (allowed: ['cyclomatic_complexity', 'duplication_ratio', 'file_lines', 'function_lines'])
   selftest.arch: schema must be 'veldo.arch/v1' (got 'veldo.arch/v9')
   selftest.arch: pattern p1: enforcement must be one of ['mechanizable', 'review'] (got 'perhaps')
@@ -78,8 +78,8 @@ cmd-e2292cb14c7c
   selftest.arch: dependency edge from 'edge' is not a declared area
   selftest.arch: status approved requires approved_by: the shape leaves draft only by a recorded human approval
   selftest.arch: analyzer python: referenced file 'nope/missing_0011.cfg' is absent (referenced but absent)
-  /tmp/tmp_nu_ao69/architecture.yaml: architecture contract is referenced as required but absent (fail closed)
-  /tmp/tmp_nu_ao69/tab.yaml: architecture contract outside the contract subset: tab indentation (line 2): the subset is space-indented only
+  /tmp/tmp85q0snph/architecture.yaml: architecture contract is referenced as required but absent (fail closed)
+  /tmp/tmp85q0snph/tab.yaml: architecture contract outside the contract subset: tab indentation (line 2): the subset is space-indented only
   selftest.arch: dependency edge to 'ghost_area' is not a declared area
   selftest.arch: status approved requires approved_by: the shape leaves draft only by a recorded human approval
   selftest.decision: schema must be 'veldo.decision/v1' (got 'veldo.decision/v9')
@@ -98,9 +98,9 @@ cmd-e2292cb14c7c
   selftest.decision: decision.chosen 'ghost_opt' is not a declared option (referenced but absent)
   selftest.decision: status 'draft' carries a decision block with a decider or a chosen option: a record is decided only when its status says so, never by smuggling a decision under a draft
   selftest.decision: reversal_cost irreversible must map to risk critical (D5): the irreversible choices carry the highest tier, with recorded human approval and the most independent verdicts
-  /tmp/tmp_ajj02a3/nope.yaml: decision record is referenced as required but absent (fail closed)
-  /tmp/tmp_ajj02a3/decisions/tab.yaml: decision record outside the record subset: tab indentation (line 2): the subset is space-indented only
-  /tmp/tmp_ajj02a3/decisions: duplicate decision id 'DEC-FIX' across records: dup.yaml, good.yaml
+  /tmp/tmpt_dxiloj/nope.yaml: decision record is referenced as required but absent (fail closed)
+  /tmp/tmpt_dxiloj/decisions/tab.yaml: decision record outside the record subset: tab indentation (line 2): the subset is space-indented only
+  /tmp/tmpt_dxiloj/decisions: duplicate decision id 'DEC-FIX' across records: dup.yaml, good.yaml
   selftest.decision: option db_poll: a dead_end condition is required (where and when this option stops working)
   selftest.decision: status decided requires a decision block (chosen, decided_by, decided_at): only a human decides, on the record
   selftest.placement: placement area 'ghost' is not declared in the architecture contract (referenced but absent): a change cannot land in an area the contract does not declare
@@ -110,12 +110,12 @@ cmd-e2292cb14c7c
   selftest.placement: footprint entries must be non-empty path globs (got 5)
   selftest.placement: footprint declared without a placement: a change's footprint is placeless without an area it lands in
   selftest.placement: duplicate placement area 'core'
-  /tmp/tmpryl2wj6e/S.md: placement area 'ghost' is not declared in the architecture contract (referenced but absent): a change cannot land in an area the contract does not declare
+  /tmp/tmp52rozqc1/S.md: placement area 'ghost' is not declared in the architecture contract (referenced but absent): a change cannot land in an area the contract does not declare
   <repo>/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 134 spec(s) declare behaviour of 299, 134 already comply, 0 would be refused (0 criterion(s): none), 165 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
   selftest.placement: placement area 'ghost_area' is not declared in the architecture contract (referenced but absent): a change cannot land in an area the contract does not declare
   selftest.placement: footprint declared without a placement: a change's footprint is placeless without an area it lands in
-  /tmp/tmpv2_qg5ez/specs/S.md: no placement that resolves to a contract area: while a contract exists a spec cannot reach ready or be claimed placeless (declare placement: [<area-id>] and a footprint)
-  /tmp/tmpv2_qg5ez/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpy3workvi/specs/S.md: no placement that resolves to a contract area: while a contract exists a spec cannot reach ready or be claimed placeless (declare placement: [<area-id>] and a footprint)
+  /tmp/tmpy3workvi/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
   selftest.review: schema must be 'veldo.decision_review/v1' (got 'veldo.decision_review/v9')
   selftest.review: missing or empty required field: recommendation
   selftest.review: version must be an integer >= 1: a decision review is versioned
@@ -134,17 +134,17 @@ cmd-e2292cb14c7c
   t: option 'opt_b' is not challenged: an adversarial review must attack every option in the framing
   t: option_challenge references option 'ghost' the decision does not declare (referenced but absent)
   t: assumption 'a1' is not challenged: an adversarial review must attack every recorded assumption
-  /tmp/tmpks650vo9/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: none bound. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
-  /tmp/tmpbpbe_xgu/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 1 review(s) with a supporting disposition; its risk tier 'critical' requires 2. Reviews bound to it: DR-FIX=defensible. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
-  /tmp/tmpgz8_c1cm/.veldo/decision_reviews/r.yaml: decision_version 2 does not match decision 'DEC-FIX' version 1: a stale review does not vouch for the current framing
-  /tmp/tmpgz8_c1cm/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: none bound. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
+  /tmp/tmphbn3vj89/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: none bound. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
+  /tmp/tmp6zql3hlq/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 1 review(s) with a supporting disposition; its risk tier 'critical' requires 2. Reviews bound to it: DR-FIX=defensible. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
+  /tmp/tmp4zeaa54o/.veldo/decision_reviews/r.yaml: decision_version 2 does not match decision 'DEC-FIX' version 1: a stale review does not vouch for the current framing
+  /tmp/tmp4zeaa54o/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: none bound. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
   selftest.review: option_challenge db_poll: a finding is required (does this option's dead_end hold, where and when)
   selftest.review: missing or empty required field: recommendation
-  /tmp/tmpcwxxqzov/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: none bound. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
-  /tmp/tmp5fk4k7p4/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: DR-FIX=refuted. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
-  /tmp/tmpl1a7cibm/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: DR-FIX=reframe. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
-  /tmp/tmpky3j15ql/.veldo/decisions/d.yaml: review_override on decision 'DEC-FIX' names review 'REV-DOES-NOT-EXIST', which is not bound to this decision (bound: ['DR-FIX']). An override may only override a review that exists
-  /tmp/tmpep30ij6o/.veldo/decisions/d.yaml: review_override on decision 'DEC-FIX' names review 'DR-FIX', whose disposition is 'defensible' and already SUPPORTS the record. Overriding a review that agrees with you records an override that did not happen
+  /tmp/tmp7tzaoh2r/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: none bound. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
+  /tmp/tmpmdai7z92/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: DR-FIX=refuted. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
+  /tmp/tmpi7z7f4p1/.veldo/decisions/d.yaml: decision 'DEC-FIX' is decided but carries 0 review(s) with a supporting disposition; its risk tier 'high' requires 1. Reviews bound to it: DR-FIX=reframe. A disposition of ['reframe', 'refuted'] does NOT support a decided record: it says the framing did not survive, and the honest response is a new version of the record. To decide anyway, record a review_override block naming the review(s) you are overriding, who you are and why
+  /tmp/tmpfye06n0y/.veldo/decisions/d.yaml: review_override on decision 'DEC-FIX' names review 'REV-DOES-NOT-EXIST', which is not bound to this decision (bound: ['DR-FIX']). An override may only override a review that exists
+  /tmp/tmph2fw5q70/.veldo/decisions/d.yaml: review_override on decision 'DEC-FIX' names review 'DR-FIX', whose disposition is 'defensible' and already SUPPORTS the record. Overriding a review that agrees with you records an override that did not happen
   selftest.readings: readings schema must be 'veldo.readings/v1' (got 'veldo.readings/v9')
   selftest.readings: reading references assumption 'zz' the decision does not declare (referenced but absent)
   selftest.readings: reading a1: kind must be one of ['manual_review', 'measured'] (got 'guessing')
@@ -163,16 +163,16 @@ cmd-e2292cb14c7c
   tripwire DEC-TW/a1: unmonitored - no reading recorded for this assumption (assumption: the fan-out grows over the life of the system.)
   tripwire DEC-TW/a2: unmonitored - no reading recorded for this assumption (assumption: more than one producer type will emit the signal.)
   tripwire DEC-TW/a3: unmonitored - no reading recorded for this assumption (assumption: consumers reconcile on reconnect.)
-  /tmp/tmp1nj411zc/.veldo/readings/r.yaml: readings name decision 'DEC-GHOST' which no record declares (referenced but absent)
+  /tmp/tmpx7k428q1/.veldo/readings/r.yaml: readings name decision 'DEC-GHOST' which no record declares (referenced but absent)
   tripwire DEC-TW/a1: unmonitored - no reading recorded for this assumption (assumption: the fan-out grows over the life of the system.)
   tripwire DEC-TW/a2: unmonitored - no reading recorded for this assumption (assumption: more than one producer type will emit the signal.)
   tripwire DEC-TW/a3: unmonitored - no reading recorded for this assumption (assumption: consumers reconcile on reconnect.)
   tripwire DEC-TW/a1: FIRED (breached): measured value 45 meets breach_when '>= 40'; assumption: the fan-out grows over the life of the system.. Re-decide the foundation against the problem class (W7 drafts one re-decision unit: run tripwires --draft)
   tripwire DEC-TW/a1: FIRED (breached): measured value 45 meets breach_when '>= 40'; assumption: the fan-out grows over the life of the system.. Re-decide the foundation against the problem class (W7 drafts one re-decision unit: run tripwires --draft)
-  /tmp/tmpe6_15015/sf3.json: shape_fit.verdict must be one of ['does_not_fit', 'fits'] (got 'meh')
-  /tmp/tmpe6_15015/sf4.json: shape_fit.mechanical must be a list of findings
-  /tmp/tmpe6_15015/sf5.json: shape_fit.review.verdict must be one of ['does_not_fit', 'fits'] (got 'wat')
-  /tmp/tmpe6_15015/sf6.json: shape_fit.verdict is does_not_fit but no finding is recorded: a misfit must name what does not fit (mechanical or review)
+  /tmp/tmpro02qruw/sf3.json: shape_fit.verdict must be one of ['does_not_fit', 'fits'] (got 'meh')
+  /tmp/tmpro02qruw/sf4.json: shape_fit.mechanical must be a list of findings
+  /tmp/tmpro02qruw/sf5.json: shape_fit.review.verdict must be one of ['does_not_fit', 'fits'] (got 'wat')
+  /tmp/tmpro02qruw/sf6.json: shape_fit.verdict is does_not_fit but no finding is recorded: a misfit must name what does not fit (mechanical or review)
   <repo>/specs/WARP-1104-shape-fit-review-dimension.md: the diff touches '.veldo/policy_check.py', outside the declared footprint: a change may not silently touch a path it did not declare
   <repo>/specs/WARP-1104-shape-fit-review-dimension.md: the diff touches area 'enforcement' (path '.veldo/policy_check.py') outside the declared placement ['contracts', 'fleet']: the footprint does not stay within the declared areas
   selftest.incident: schema must be 'veldo.incident/v1' (got 'veldo.incident/v9')
@@ -199,12 +199,12 @@ cmd-e2292cb14c7c
   selftest.remedy: proposed_action.parameters is required (a mapping of the action's validated parameters)
   selftest.remedy: canary.shape is required when canary.supported is true (what the canary runs first)
   selftest: remedy references incident 'INC-FIX' which is malformed or absent (referenced but absent, fail closed)
-  /tmp/tmpi3hohrn5/nope.yaml: incident record is referenced as required but absent (fail closed)
-  /tmp/tmpi3hohrn5/nope.yaml: remedy record is referenced as required but absent (fail closed)
-  /tmp/tmpi3hohrn5/.veldo/remedies/rem.yaml: remedy references incident 'INC-GHOST' which is malformed or absent (referenced but absent, fail closed)
-  /tmp/tmpi3hohrn5/.veldo/incidents/tab.yaml: incident record outside the record subset: tab indentation (line 2): the subset is space-indented only
-  /tmp/tmpi3hohrn5/.veldo/incidents: duplicate incident id 'INC-FIX' across records: dup.yaml, inc.yaml
-  /tmp/tmpi3hohrn5/.veldo/remedies: duplicate remedy id 'REM-FIX' across records: dup.yaml, rem.yaml
+  /tmp/tmpdtlvlwju/nope.yaml: incident record is referenced as required but absent (fail closed)
+  /tmp/tmpdtlvlwju/nope.yaml: remedy record is referenced as required but absent (fail closed)
+  /tmp/tmpdtlvlwju/.veldo/remedies/rem.yaml: remedy references incident 'INC-GHOST' which is malformed or absent (referenced but absent, fail closed)
+  /tmp/tmpdtlvlwju/.veldo/incidents/tab.yaml: incident record outside the record subset: tab indentation (line 2): the subset is space-indented only
+  /tmp/tmpdtlvlwju/.veldo/incidents: duplicate incident id 'INC-FIX' across records: dup.yaml, inc.yaml
+  /tmp/tmpdtlvlwju/.veldo/remedies: duplicate remedy id 'REM-FIX' across records: dup.yaml, rem.yaml
   selftest.incident: status 'diagnosed' requires timeline.diagnosed_at: a diagnosed incident records when the diagnosis was reached (time-to-diagnosis)
   selftest.remedy: a remedy carries no execution capability: field 'self_executing' is forbidden even set to false (a remedy is a PROPOSAL, never an execution; execution is a separate organ, WARP-1206 W6)
   selftest.remedy: rollback is required: a remedy that omits its rollback plan is invalid (fail closed)
@@ -219,13 +219,13 @@ cmd-e2292cb14c7c
   selftest.evidence: source app-logs: timeout_ms must be a positive integer (a read-only source still needs a row cap, a rate cap, and a timeout; reads can overload)
   selftest.evidence: source app-logs: rate_max must be a positive integer (a read-only source still needs a row cap, a rate cap, and a timeout; reads can overload)
   selftest.evidence: schema must be 'veldo.evidence/v1' (got 'veldo.evidence/v9')
-  /tmp/tmplobp5mkn/nope.yaml: evidence-plane config is referenced as required but absent (fail closed)
-  /tmp/tmplobp5mkn/.veldo/evidence: duplicate evidence-plane id 'fixture-plane' across configs: dup.yaml, plane.yaml
+  /tmp/tmpywgqqyar/nope.yaml: evidence-plane config is referenced as required but absent (fail closed)
+  /tmp/tmpywgqqyar/.veldo/evidence: duplicate evidence-plane id 'fixture-plane' across configs: dup.yaml, plane.yaml
   selftest.obs: behavior_bearing, when present, must be true or false (got 'yes'): whether a change is behavior-bearing is a recorded decision, not a near-miss
   selftest.obs: observability, when present, must be a mapping of criteria (one or more of error_taxonomy (an honest error taxonomy), logs (structured logs at decision points), metrics (metrics), traces (traces)), each a non-empty description
   selftest.obs: observability criterion 'vibes' is not in the vocabulary ['error_taxonomy', 'logs', 'metrics', 'traces']: the recognized criteria are structured logs at decision points, metrics, traces, and an honest error taxonomy
   selftest.obs: observability.logs must be a non-empty description (what is logged, measured, or traced, and at which decision point)
-  /tmp/tmp4mt1zdai/specs/bb_noobs.md: a behavior-bearing spec declares NO observability criteria: observability - one or more of error_taxonomy (an honest error taxonomy), logs (structured logs at decision points), metrics (metrics), traces (traces) - becomes acceptance criteria for a behavior-bearing change, because every future responder is a stranger to the code. Declare an observability: block naming at least one criterion (the sufficiency of the criteria is a review-lane judgment; declaring none is refused here)
+  /tmp/tmpm615p23w/specs/bb_noobs.md: a behavior-bearing spec declares NO observability criteria: observability - one or more of error_taxonomy (an honest error taxonomy), logs (structured logs at decision points), metrics (metrics), traces (traces) - becomes acceptance criteria for a behavior-bearing change, because every future responder is a stranger to the code. Declare an observability: block naming at least one criterion (the sufficiency of the criteria is a review-lane judgment; declaring none is refused here)
   selftest.action: schema must be 'veldo.action/v1' (got 'veldo.action/v9')
   selftest.action: missing or empty required field: id (an action names its id, a human-readable title, and the system it acts against)
   selftest.action: missing or empty required field: system (an action names its id, a human-readable title, and the system it acts against)
@@ -261,11 +261,11 @@ cmd-e2292cb14c7c
   sel: missing required parameter 'pool' for action 'scale_pool'
   sel: parameter 'strategy' value 'nuke' is not in the allowed set ['rolling', 'immediate'] (out-of-enum, refused)
   sel: parameter 'service' value 'API-Svc' does not match the declared pattern '^[a-z][a-z0-9-]{1,62}$' (invalid, refused)
-  /tmp/tmpwj8dsbgq/nope.yaml: action record is referenced as required but absent (fail closed)
-  /tmp/tmpwj8dsbgq/.veldo/actions/stale.yaml: review is STALE: the action content changed after it was reviewed (review.reviewed_digest no longer matches); a vetted action cannot be silently edited (re-review it, WARP-0109 digest binding)
-  /tmp/tmpwj8dsbgq/.veldo/actions/stale.yaml: review is STALE: the action content changed after it was reviewed; it is not admitted to the whitelist
-  /tmp/tmpwj8dsbgq/.veldo/actions/tab.yaml: action record outside the record subset: tab indentation (line 2): the subset is space-indented only
-  /tmp/tmpwj8dsbgq/.veldo/actions: duplicate action id 'scale_pool' across records: dup.yaml, scale.yaml (a whitelist reference must resolve to exactly one action)
+  /tmp/tmp258pyb98/nope.yaml: action record is referenced as required but absent (fail closed)
+  /tmp/tmp258pyb98/.veldo/actions/stale.yaml: review is STALE: the action content changed after it was reviewed (review.reviewed_digest no longer matches); a vetted action cannot be silently edited (re-review it, WARP-0109 digest binding)
+  /tmp/tmp258pyb98/.veldo/actions/stale.yaml: review is STALE: the action content changed after it was reviewed; it is not admitted to the whitelist
+  /tmp/tmp258pyb98/.veldo/actions/tab.yaml: action record outside the record subset: tab indentation (line 2): the subset is space-indented only
+  /tmp/tmp258pyb98/.veldo/actions: duplicate action id 'scale_pool' across records: dup.yaml, scale.yaml (a whitelist reference must resolve to exactly one action)
   selftest.action: review is required: every action carries a recorded review (an action is code, reviewed through the normal VELDO loop); a proposed action declares review.status proposed
   selftest.action: risk_class 'standard' is below the floor 'high' for this action: the whitelist carries a high risk floor and a data-mutating or irreversible action carries critical (C2, anything may raise a risk class, nothing may lower it)
   selftest.action: risk_class 'high' is below the floor 'critical' for this action: the whitelist carries a high risk floor and a data-mutating or irreversible action carries critical (C2, anything may raise a risk class, nothing may lower it)
@@ -316,18 +316,18 @@ veldo jira snapshot: no tracker config (.veldo/trackers.json); the tracker is no
   selftest.request: missing or malformed bound_artifact: a request REFERENCES a settlement record by {kind, ref, digest}
   selftest.request: status accepted requires bound_artifact.digest: an accepted request is BOUND to the settlement it accepted (an unbound acceptance binds nothing)
   selftest.request: status superseded requires superseded_by: a re-request names the request that replaces it
-  /tmp/tmpg79k6v_r/nope.yaml: request record is referenced as required but absent (fail closed)
-  /tmp/tmpg79k6v_r/.veldo/requests/tab.yaml: request record outside the record subset: tab indentation (line 2): the subset is space-indented only
-  /tmp/tmpg79k6v_r/.veldo/requests: duplicate request id 'REQ-1' across records: dup.yaml, good.yaml
-  /tmp/tmpg79k6v_r/.veldo/requests/settled.yaml: settlement.path 'proof/WARP-0615/nope.json' does not exist: an accepted request references its settlement record by path and the record must be present (fail closed)
-  /tmp/tmp9okt3d6o/req_bad.yaml: decision_choice tier 'low' is not the bound decision's risk 'high': a decision-choice's tier is DERIVED from the bound decision (single derivation), not set independently
+  /tmp/tmplvt1wx74/nope.yaml: request record is referenced as required but absent (fail closed)
+  /tmp/tmplvt1wx74/.veldo/requests/tab.yaml: request record outside the record subset: tab indentation (line 2): the subset is space-indented only
+  /tmp/tmplvt1wx74/.veldo/requests: duplicate request id 'REQ-1' across records: dup.yaml, good.yaml
+  /tmp/tmplvt1wx74/.veldo/requests/settled.yaml: settlement.path 'proof/WARP-0615/nope.json' does not exist: an accepted request references its settlement record by path and the record must be present (fail closed)
+  /tmp/tmp05c41pv0/req_bad.yaml: decision_choice tier 'low' is not the bound decision's risk 'high': a decision-choice's tier is DERIVED from the bound decision (single derivation), not set independently
   selftest.request: bad touchpoint 'rubber_stamp' (allowed: ['decision_choice', 'escalation', 'plan_approval', 'review_disposition', 'risky_action_authorization', 'spec_approval'])
-  /tmp/tmpbcdi2amd/.veldo/requests: duplicate request id 'REQ-DUP' across records: a.yaml, b.yaml
+  /tmp/tmpg6m3oryr/.veldo/requests: duplicate request id 'REQ-DUP' across records: a.yaml, b.yaml
   selftest.request: status accepted requires bound_artifact.digest: an accepted request is BOUND to the settlement it accepted (an unbound acceptance binds nothing)
   selftest.request: an irreversible impact must map to the critical tier (consistent with decision.py): the irreversible touchpoints carry the highest tier, never a lower one
-  /tmp/tmp2ctebv6t/r.yaml: decision_choice tier 'low' is not the bound decision's risk 'high': a decision-choice's tier is DERIVED from the bound decision (single derivation), not set independently
+  /tmp/tmpo72v2bhw/r.yaml: decision_choice tier 'low' is not the bound decision's risk 'high': a decision-choice's tier is DERIVED from the bound decision (single derivation), not set independently
   selftest.request: request_hash 'sha256:deadbeefdeadbeef' is not request_digest(record) 'sha256:320560b4e1c7c51a': request_hash MUST equal the canonical digest of the record's own substance (self-consistency enforced at creation; the repo-recompute stays W5)
-  /tmp/tmpzk4ngrwo/events.jsonl: line 1: unknown event type 'incident.closed'
+  /tmp/tmp1xbvgu91/events.jsonl: line 1: unknown event type 'incident.closed'
    WARP-1210 AC6: historical corroboration STANDS DOWN, and this is recorded rather than passed: this history begins with .veldo/metrics.py already in place (its oldest revision is a root commit), so no revision of it earlier than that exists here to resolve, and none can appear later. The criterion itself is still proven above against the pinned pre-change bytes over the same stream. The from-history leg was proven in the predecessor repository, which is frozen and retains that history; it cannot be re-derived here and does not re-arm as commits accumulate.
    WARP-1210 AC6: the dashboard's PRE-CHANGE render differential STANDS DOWN, and this is recorded rather than passed: this history begins with .veldo/dashboard.py already in place (its oldest revision is a root commit), so no revision of it earlier than that exists here to resolve, and none can appear later. The two legs that need no history - the support section landing after every pre-existing block and before the footer, and the honest empty state on both human surfaces - are SPLIT OUT and still run here, immediately below. The from-history leg was proven in the predecessor repository, which is frozen and retains that history; it cannot be re-derived here and does not re-arm as commits accumulate.
    WARP-1210 AC6: the PRE-GUARD loop reader differential STANDS DOWN, and this is recorded rather than passed: this history begins with .veldo/metrics.py already in place (its oldest revision is a root commit), so no revision of it earlier than that exists here to resolve, and none can appear later. What this reader does with the undecodable byte, and the guard's presence in the shipped source, are asserted immediately above without history; the no-number-moved claim is also carried by the pinned pre-change bytes. The from-history leg was proven in the predecessor repository, which is frozen and retains that history; it cannot be re-derived here and does not re-arm as commits accumulate.
@@ -364,77 +364,77 @@ veldo jira snapshot: no tracker config (.veldo/trackers.json); the tracker is no
   proof: 1 artifact(s) matching approval*.json are validated on disk and the enumerated domain holds NONE of them, while git's index carries 3 entr(ies) at or below this root (e.g. proof/WARP-9742/verdict.json): no review event can ever be derived for any of them
   proof: 1 artifact(s) matching manifest.json are validated on disk and the enumerated domain holds NONE of them, while git's index carries 3 entr(ies) at or below this root (e.g. proof/WARP-9742/verdict.json): no review event can ever be derived for any of them
   proof/WARP-9743/nested/verdict.json: named like verdict*.json but not at <proof>/<spec id>/<name>, so no review event can ever be derived for it: move it or rename it
-  /tmp/tmpif0v4txv/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmplolx7k4v/plans/PLAN-9728.md: mirroring: WARP-9729.md exists but does not declare plan: PLAN-9728 / work: W1 (declares plan: None / work: None)
-  /tmp/tmpf_k59gnr/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not dict {'id': 'VELDO-D0', 'status': 'ready'}: readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
-  /tmp/tmpf_k59gnr/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpf_k59gnr/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not dict {'id': 'VELDO-D0'}: readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
-  /tmp/tmpf_k59gnr/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not list ['VELDO-D0']: readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
-  /tmp/tmpf_k59gnr/specs/VELDO-D1.md: depends_on must be a LIST of spec ids (use [] for none), not str 'VELDO-D0': readers iterate this value and look each member up in a status map, and a value that is not a list of ids cannot be read that way
-  /tmp/tmpf_k59gnr/specs/VELDO-D1.md: depends_on must be a LIST of spec ids (use [] for none), not NoneType None: readers iterate this value and look each member up in a status map, and a value that is not a list of ids cannot be read that way
-  /tmp/tmpf_k59gnr/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not int 9001: readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
-  /tmp/tmpf_k59gnr/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not str 'VELDO-D0: ready': readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
-  /tmp/tmpmee89tv6/specs: spec id VELDO-D0 is declared by more than one file (a-VELDO-D0.md, z-VELDO-D0.md): every reader resolves an id last-wins by sorted filename, so one file's status silently hides the other's and an unshipped prerequisite can read as shipped
+  /tmp/tmpglmd38md/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp1p_r2lq_/plans/PLAN-9728.md: mirroring: WARP-9729.md exists but does not declare plan: PLAN-9728 / work: W1 (declares plan: None / work: None)
+  /tmp/tmp5iwfrifk/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not dict {'id': 'VELDO-D0', 'status': 'ready'}: readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
+  /tmp/tmp5iwfrifk/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp5iwfrifk/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not dict {'id': 'VELDO-D0'}: readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
+  /tmp/tmp5iwfrifk/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not list ['VELDO-D0']: readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
+  /tmp/tmp5iwfrifk/specs/VELDO-D1.md: depends_on must be a LIST of spec ids (use [] for none), not str 'VELDO-D0': readers iterate this value and look each member up in a status map, and a value that is not a list of ids cannot be read that way
+  /tmp/tmp5iwfrifk/specs/VELDO-D1.md: depends_on must be a LIST of spec ids (use [] for none), not NoneType None: readers iterate this value and look each member up in a status map, and a value that is not a list of ids cannot be read that way
+  /tmp/tmp5iwfrifk/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not int 9001: readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
+  /tmp/tmp5iwfrifk/specs/VELDO-D1.md: depends_on[0] must be one whitespace-free spec id string, not str 'VELDO-D0: ready': readers look each member up in a status map, where a mapping or a list is unhashable and a value carrying whitespace matches no spec id
+  /tmp/tmpt9p20aua/specs: spec id VELDO-D0 is declared by more than one file (a-VELDO-D0.md, z-VELDO-D0.md): every reader resolves an id last-wins by sorted filename, so one file's status silently hides the other's and an unshipped prerequisite can read as shipped
   mobile settle: 31 waits, 46.0 simulated seconds absorbed by the injected waiter
   mobile settle order (android): launch=2, tap=1, text=0.5, key=0.5, wait=1, redrive.rotation.landscape=1, redrive.rotation.portrait=1, redrive.process_death.after_force_stop=1, redrive.process_death.relaunch=2, redrive.background_foreground.home=1, redrive.background_foreground.relaunch=2, redrive.network_loss.off=1, redrive.network_loss.on=1
   mobile settle order (ios): launch=2, tap=1, type=0.5, wait=1, redrive.process_death.after_terminate=1, redrive.process_death.relaunch=2, redrive.background_foreground.home=1, redrive.background_foreground.relaunch=2, redrive.appearance.dark=1, redrive.appearance.light=1
-  /tmp/tmpkjoygjgh/proof-without.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmp5hdmzjj6/repo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmp5hdmzjj6/repo/specs/WARP-9403-broken.md: bad status: donezo
-  /tmp/tmpa9vgwdx7/vrepo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpa9vgwdx7/vrepo/specs/WARP-9405-broken.md: bad status: donezo
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'reconciled_at'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'unit'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'estimate_committed_at'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'estimate_calibration'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'estimate_low'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'estimate_high'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'actual_source'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'outcome'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'error_pct'
-  /tmp/tmpvjqsba46/repo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpvjqsba46/repo/specs/WARP-9498-broken.md: bad status: donezo
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'reconciled_at'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'unit'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'estimate_committed_at'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'estimate_calibration'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'estimate_low'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'estimate_high'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'actual_source'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'outcome'
-  /tmp/tmpvjqsba46/mixed/WARP-9499.yaml: missing required key 'error_pct'
-  /tmp/tmp2dzw1t22/repo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmp2dzw1t22/repo/specs/WARP-9422.md: bad status: donezo
+  /tmp/tmp_yo79nwp/proof-without.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpqtkni3rn/repo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpqtkni3rn/repo/specs/WARP-9403-broken.md: bad status: donezo
+  /tmp/tmpy38li7pk/vrepo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpy38li7pk/vrepo/specs/WARP-9405-broken.md: bad status: donezo
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'reconciled_at'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'unit'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'estimate_committed_at'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'estimate_calibration'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'estimate_low'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'estimate_high'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'actual_source'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'outcome'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'error_pct'
+  /tmp/tmp2i11imwy/repo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp2i11imwy/repo/specs/WARP-9498-broken.md: bad status: donezo
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'reconciled_at'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'unit'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'estimate_committed_at'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'estimate_calibration'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'estimate_low'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'estimate_high'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'actual_source'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'outcome'
+  /tmp/tmp2i11imwy/mixed/WARP-9499.yaml: missing required key 'error_pct'
+  /tmp/tmp9eb5jer8/repo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp9eb5jer8/repo/specs/WARP-9422.md: bad status: donezo
   toe actuals corpus: record 0 (spec WARP-9418): spend must be a mapping, got NoneType
-  /tmp/tmph25ccjsf/repo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmph25ccjsf/repo/specs/WARP-9404-broken.md: bad status: donezo
-  /tmp/tmp87vp8q0k/bare3.md: criterion AC1 declares no falsified_by: a behaviour-bearing criterion states the SINGLE change to the implementation that must make its own check fail, so the implementer builds that mutation instead of inventing a falsification (and the cheapest invention is one that passes). Add `falsified_by: <the one change that must turn this criterion red>` to it
-  /tmp/tmp87vp8q0k/bare3.md: criterion AC2 declares no falsified_by: a behaviour-bearing criterion states the SINGLE change to the implementation that must make its own check fail, so the implementer builds that mutation instead of inventing a falsification (and the cheapest invention is one that passes). Add `falsified_by: <the one change that must turn this criterion red>` to it
-  /tmp/tmp87vp8q0k/bare3.md: criterion AC3 declares no falsified_by: a behaviour-bearing criterion states the SINGLE change to the implementation that must make its own check fail, so the implementer builds that mutation instead of inventing a falsification (and the cheapest invention is one that passes). Add `falsified_by: <the one change that must turn this criterion red>` to it
-  /tmp/tmp87vp8q0k/scalar2.md: acceptance_criteria is str 'yes' rather than a list of criteria, so no criterion in it can carry a falsified_by: a behaviour-bearing spec declares its criteria as a list of entries, each with an id and its own falsification
-  /tmp/tmp87vp8q0k/empty2.md: acceptance_criteria is declared but EMPTY, so a behaviour-bearing spec carries no criterion to falsify at all: emptying the field would otherwise be the one way to be asked nothing, which is the escape hatch this rule refuses to have
-  /tmp/tmp87vp8q0k/empty2.md: acceptance_criteria is declared but EMPTY, so a behaviour-bearing spec carries no criterion to falsify at all: emptying the field would otherwise be the one way to be asked nothing, which is the escape hatch this rule refuses to have
+  /tmp/tmp4r4j7bvk/repo/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp4r4j7bvk/repo/specs/WARP-9404-broken.md: bad status: donezo
+  /tmp/tmpe4q7qcox/bare3.md: criterion AC1 declares no falsified_by: a behaviour-bearing criterion states the SINGLE change to the implementation that must make its own check fail, so the implementer builds that mutation instead of inventing a falsification (and the cheapest invention is one that passes). Add `falsified_by: <the one change that must turn this criterion red>` to it
+  /tmp/tmpe4q7qcox/bare3.md: criterion AC2 declares no falsified_by: a behaviour-bearing criterion states the SINGLE change to the implementation that must make its own check fail, so the implementer builds that mutation instead of inventing a falsification (and the cheapest invention is one that passes). Add `falsified_by: <the one change that must turn this criterion red>` to it
+  /tmp/tmpe4q7qcox/bare3.md: criterion AC3 declares no falsified_by: a behaviour-bearing criterion states the SINGLE change to the implementation that must make its own check fail, so the implementer builds that mutation instead of inventing a falsification (and the cheapest invention is one that passes). Add `falsified_by: <the one change that must turn this criterion red>` to it
+  /tmp/tmpe4q7qcox/scalar2.md: acceptance_criteria is str 'yes' rather than a list of criteria, so no criterion in it can carry a falsified_by: a behaviour-bearing spec declares its criteria as a list of entries, each with an id and its own falsification
+  /tmp/tmpe4q7qcox/empty2.md: acceptance_criteria is declared but EMPTY, so a behaviour-bearing spec carries no criterion to falsify at all: emptying the field would otherwise be the one way to be asked nothing, which is the escape hatch this rule refuses to have
+  /tmp/tmpe4q7qcox/empty2.md: acceptance_criteria is declared but EMPTY, so a behaviour-bearing spec carries no criterion to falsify at all: emptying the field would otherwise be the one way to be asked nothing, which is the escape hatch this rule refuses to have
   <repo>/releases: release check STANDS DOWN, recorded rather than passed: a releases directory that declares no release at all (the template is excluded from it, as plan_registry excludes it)
   <repo>/no-such-dir: release check STANDS DOWN, recorded rather than passed: no releases directory at all
-   install-and-run copy: skipped fifo /tmp/iar-special-caij25s2/p/working.fifo
-   install-and-run copy: skipped socket /tmp/iar-special-caij25s2/p/working.ipc
-   install-and-run copy: skipped fifo /tmp/iar-special-caij25s2/l/working.fifo
-   install-and-run copy: skipped socket /tmp/iar-special-caij25s2/l/working.ipc
+   install-and-run copy: skipped fifo /tmp/iar-special-9a0ibtik/p/working.fifo
+   install-and-run copy: skipped socket /tmp/iar-special-9a0ibtik/p/working.ipc
+   install-and-run copy: skipped fifo /tmp/iar-special-9a0ibtik/l/working.fifo
+   install-and-run copy: skipped socket /tmp/iar-special-9a0ibtik/l/working.ipc
   <repo>/releases: release check STANDS DOWN, recorded rather than passed: a releases directory that declares no release at all (the template is excluded from it, as plan_registry excludes it)
-selftest: 5264 passed, 0 failed
+selftest: 5271 passed, 0 failed
    unit: pass
 == integration
 == first use: no suite may require this repository's current emptiness
-   pristine copy: /tmp/veldo-first-use-s_53f6r_/pristine
+   pristine copy: /tmp/veldo-first-use-qzbr332w/pristine
    family spend_recorded: somebody used .veldo/spend.py, which is the whole point of the estimation layer: a token count is not derivable from inside the repository, so a record is the only way the corpus is ever nonempty
    mutation applied: events in .veldo/events.jsonl carrying tokens, cost_usd or human_minutes went 0 -> 2 (2 writes through .veldo/spend.py)
-   mutated(spend_recorded) run: 5264 passed, 0 failed (138s)
+   mutated(spend_recorded) run: 5271 passed, 0 failed (138s)
    spend_recorded: PASS. The suite is green with the layer in use.
    elapsed 138s
 FIRST USE: pass. Every family's sanctioned first use leaves the suite exactly as green as it was, so no assertion in scripts/suites/ requires this repository's current emptiness. What that does and does not cover is in this file's docstring.
    integration: pass
 == security
-secret inventory: 0 outstanding (0 exposed in reachable history), 74 dispositioned, 16626 advisory, 16700 scanned; posture=enforcing (reporting, not blocking)
+secret inventory: 0 outstanding (0 exposed in reachable history), 74 dispositioned, 16752 advisory, 16826 scanned; posture=enforcing (reporting, not blocking)
    security: pass
 == generated
 generated: pass (specs/index.md)
@@ -452,40 +452,40 @@ docs hygiene: pass
    docs: pass
 == packaging
 install-and-run: 7 composed pack(s) derived from the publisher: aider, antigravity, claude, codex, copilot, cursor, opencode
-  aider        installed 104 file(s) from /tmp/veldo-install-and-run-mrfy45xi/public/packs/aider (scaffolder run: /tmp/veldo-install-and-run-mrfy45xi/public/packs/aider/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
-    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit f28cbc32a0731485e620c98c51780c1d449f4330
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-aider/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-aider/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  aider        installed 104 file(s) from /tmp/veldo-install-and-run-_quf85d5/public/packs/aider (scaffolder run: /tmp/veldo-install-and-run-_quf85d5/public/packs/aider/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
+    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit 2b0089224e2c0a95c58f3838505d29c61b954caf
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-aider/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-aider/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
       stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)
-  antigravity  installed 105 file(s) from /tmp/veldo-install-and-run-mrfy45xi/public/packs/antigravity (scaffolder run: /tmp/veldo-install-and-run-mrfy45xi/public/packs/antigravity/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
-    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 40 of 87 tracked file(s); commit 6a1f091b2ed9a4bba5a950ce7d9cec1ddbf25f98
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-antigravity/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-antigravity/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  antigravity  installed 105 file(s) from /tmp/veldo-install-and-run-_quf85d5/public/packs/antigravity (scaffolder run: /tmp/veldo-install-and-run-_quf85d5/public/packs/antigravity/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
+    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 40 of 87 tracked file(s); commit 33abfe167b050755c346dbdba48efcf81c259aa3
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-antigravity/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-antigravity/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
       stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)
-  claude       installed 105 file(s) from /tmp/veldo-install-and-run-mrfy45xi/public/packs/claude (scaffolder run: /tmp/veldo-install-and-run-mrfy45xi/public/packs/claude/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
-    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 40 of 87 tracked file(s); commit d477f0abaebd9399299db447d9b95e78f3c85bab
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-claude/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-claude/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  claude       installed 105 file(s) from /tmp/veldo-install-and-run-_quf85d5/public/packs/claude (scaffolder run: /tmp/veldo-install-and-run-_quf85d5/public/packs/claude/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
+    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 40 of 87 tracked file(s); commit cbb1e39a8081351e448a41d2f42d271c323dda28
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-claude/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-claude/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
       stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)
-  codex        installed 104 file(s) from /tmp/veldo-install-and-run-mrfy45xi/public/packs/codex (scaffolder run: /tmp/veldo-install-and-run-mrfy45xi/public/packs/codex/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
-    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit e9e957d1238ab9656ba80dc5d9c10c9d1c9c7b1f
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-codex/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-codex/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  codex        installed 104 file(s) from /tmp/veldo-install-and-run-_quf85d5/public/packs/codex (scaffolder run: /tmp/veldo-install-and-run-_quf85d5/public/packs/codex/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
+    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit 725e062bd13a55cfeed69725af64f8d808d1c30f
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-codex/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-codex/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
       stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)
-  copilot      installed 104 file(s) from /tmp/veldo-install-and-run-mrfy45xi/public/packs/copilot (scaffolder run: /tmp/veldo-install-and-run-mrfy45xi/public/packs/copilot/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
-    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit 72c9bc1015875afca2eff9c6f3c33765e269e7db
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-copilot/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-copilot/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  copilot      installed 104 file(s) from /tmp/veldo-install-and-run-_quf85d5/public/packs/copilot (scaffolder run: /tmp/veldo-install-and-run-_quf85d5/public/packs/copilot/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
+    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit 0ee384c6392a0c09b88f95eeee344a0560b7299b
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-copilot/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-copilot/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
       stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)
-  cursor       installed 104 file(s) from /tmp/veldo-install-and-run-mrfy45xi/public/packs/cursor (scaffolder run: /tmp/veldo-install-and-run-mrfy45xi/public/packs/cursor/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
-    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit 9b22507097841df90ad63696bcd564ebf6d55452
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-cursor/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-cursor/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  cursor       installed 104 file(s) from /tmp/veldo-install-and-run-_quf85d5/public/packs/cursor (scaffolder run: /tmp/veldo-install-and-run-_quf85d5/public/packs/cursor/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
+    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit f54c0ce3c8b8e1b4d1cd69ced6206b865c3ee9f6
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-cursor/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-cursor/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
       stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)
-  opencode     installed 104 file(s) from /tmp/veldo-install-and-run-mrfy45xi/public/packs/opencode (scaffolder run: /tmp/veldo-install-and-run-mrfy45xi/public/packs/opencode/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
-    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit a3ce4bc839753fb69a8ee6f2182a6af3e4bd2abb
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-opencode/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
-      stood down (recorded, not measured): /tmp/veldo-install-and-run-mrfy45xi/fresh-opencode/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  opencode     installed 104 file(s) from /tmp/veldo-install-and-run-_quf85d5/public/packs/opencode (scaffolder run: /tmp/veldo-install-and-run-_quf85d5/public/packs/opencode/.veldo/init_scaffold.py, engine/ in that tree: False) -> adopter gate GREEN
+    their gate: 1 catalog slot(s) ran, 22 not-applicable; the required check scanned 38 of 86 tracked file(s); commit 03f36d3c20886dd5d28c0477952bd12f8a2dc85c
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-opencode/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+      stood down (recorded, not measured): /tmp/veldo-install-and-run-_quf85d5/fresh-opencode/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
       stood down (recorded, not measured): shape gate: no architecture contract, standing down (adoption safe)
 install-and-run: pass
    packaging: pass
@@ -509,4 +509,5 @@ template sync: pass (128 pair(s) compared, 6 declared per-repo, 131 engine-only)
    review events: 188 verdict artifact(s) tracked, 35 already recorded, 0 derivable but not appended, 154 earlier event(s) this repository cannot resolve (proof/WARP-0100/verdict-l2-resolution.json; proof/WARP-0100/verdict-l2.json) so 153 append(s) WITHHELD - FLATTENED AT MIGRATION: the commits those earlier events name are absent from this history and cannot be fetched, so the appends stay WITHHELD rather than being re-pointed at a commit where the review did not happen, 5 superseded review(s) on record
 
 catalog: 8 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
-GATE: GREEN (550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23)
+GATE: GREEN (271735dd8e2b426fb8cef15f6159aa3f23e32d07)
+gate exit 0

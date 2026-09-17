@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0020",
-  "commit": "550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23",
+  "commit": "271735dd8e2b426fb8cef15f6159aa3f23e32d07",
   "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
-  "produced_at": "2026-09-17T21:59:11Z",
+  "produced_at": "2026-09-17T22:17:33Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -18,7 +18,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0020/gate-implementation.log",
-          "detail": "Complete canonical gate at 550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5264 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 271735dd8e2b426fb8cef15f6159aa3f23e32d07 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5271 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -34,7 +34,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0020/gate-implementation.log",
-          "detail": "Complete canonical gate at 550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5264 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 271735dd8e2b426fb8cef15f6159aa3f23e32d07 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5271 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0020/driven.json",
-          "detail": "5 rows (1 driven): the channel registry has Telegram chat, Jira and signed CLI enrolled and email unenrolled, each with its own restricted edge key and platform attribution fields; generated from the registry, every enrolled channel accepts a complete assertion, email refuses while unenrolled, every missing platform field refuses by name and an edge signing with another channel's key refuses; an expired or mismatched delegation, an unpermitted or unknown assertion kind and an assertion naming no presentation refuse; a text-only chat assertion is refused naming its three missing fields. DRIVEN: message text accepted in place of platform evidence in a module copy accepts the text-only assertion (the declared falsifier)."
+          "detail": "7 rows (1 driven): the channel registry has Telegram chat, Jira and signed CLI enrolled and email unenrolled, each with its own restricted edge key and platform attribution fields; generated from the registry, every enrolled channel accepts a complete assertion, email refuses while unenrolled, every missing platform field refuses by name and an edge signing with another channel's key refuses; an expired or mismatched delegation, an unpermitted or unknown assertion kind and an assertion naming no presentation refuse; a text-only chat assertion is refused naming its three missing fields. DRIVEN: message text accepted in place of platform evidence in a module copy accepts the text-only assertion (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0020/gate-implementation.log",
-          "detail": "Complete canonical gate at 550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5264 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 271735dd8e2b426fb8cef15f6159aa3f23e32d07 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5271 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -61,12 +61,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0020/driven.json",
-          "detail": "4 rows (1 driven): one valid chat answer settles the request version once, attributed to telegram_chat and bound to its presentation, consuming the nonce with projection obligations for the other enrolled channels and the decision effect in one atomic result; an already-settled version, an expired request, a stale presentation (changed brief, framing, subject or version), an unknown or other-channel presentation, an edge-refused assertion, a revoked member, a revoked key and no valid assertion each refuse and settle nothing; dmitry on Telegram and on Jira is one quorum member while dmitry and asya are two, with the earliest platform timestamp winning. DRIVEN: quorum members counted per channel in a module copy let one person on two channels meet a quorum of two (the declared falsifier)."
+          "detail": "8 rows (1 driven): one valid chat answer settles the request version once, attributed to telegram_chat and bound to its presentation, consuming the nonce with projection obligations for the other enrolled channels and the decision effect in one atomic result; an already-settled version, an expired request, a stale presentation (changed brief, framing, subject or version), an unknown or other-channel presentation, an edge-refused assertion, a revoked member, a revoked key and no valid assertion each refuse and settle nothing; dmitry on Telegram and on Jira is one quorum member while dmitry and asya are two, with the earliest platform timestamp winning. DRIVEN: quorum members counted per channel in a module copy let one person on two channels meet a quorum of two (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0020/gate-implementation.log",
-          "detail": "Complete canonical gate at 550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5264 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 271735dd8e2b426fb8cef15f6159aa3f23e32d07 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5271 passed, 0 failed, every required check passed."
         }
       ]
     }
@@ -77,9 +77,9 @@
       "status": "passed",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23",
+      "commit": "271735dd8e2b426fb8cef15f6159aa3f23e32d07",
       "ref": "proof/VELDO-0020/gate-implementation.log",
-      "detail": "GATE GREEN; selftest 5264 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+      "detail": "GATE GREEN; selftest 5271 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
     }
   ],
   "artifacts": [
@@ -91,5 +91,5 @@
     "proof/VELDO-0020/approval-dmitry.json"
   ],
   "rollback": "Revert the authority contract organ, its capability and scaffold registrations and suite 33 through the ordinary reviewed path (a revert commit, never a force). The module holds no key material and enrolls nobody; the authority service, the channel edges and their keys are later packages.",
-  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here. Dmitry's approval of the landing (2026-09-17, Telegram message 27925) is recorded in approval-dmitry.json."
+  "review": "Independent Codex review of the branch at 07662db (research/codex-reviews/review-20260917-175932.md) found seven reproducible problems; each is fixed and pinned with the reviewer's reproduction in suite 33 (rows marked 'review 1'). The fixes carry no second Codex pass under the one-review-per-landing quota ruling until 2026-09-22. Dmitry's approval of the landing is recorded in approval-dmitry.json."
 }
