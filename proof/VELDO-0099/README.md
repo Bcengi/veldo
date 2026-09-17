@@ -1,74 +1,56 @@
-# VELDO-0099 proof after round five
+# VELDO-0099 proof after round six
 
-Implementation and mutation-driver commit: 6e1179560b8871014d059e6322d2bc523e66ec0d.
+Implementation and driver commit: f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf.
 The specification remains ready for external independent review. No self-approval,
 landing, or push is claimed. Engine and pack files are unchanged.
 
 ## Changes with file and lines
 
-- scripts/suites/24_veldo_0007_install_and_run.py:41-73 compares entry kind,
-  content digest, size, symlink target and existence, without timestamps. Both
-  sandbox and live observations use this inventory. AC4 labels at 1027 and 1076
-  state the same content-only claim.
-- scripts/suites/24_veldo_0007_install_and_run.py:165-168 copies the whole common
-  directory except worktrees/. The store allowlist is gone. Lines 304-332 retain
-  separate private-state copying, config normalization, alternate materialization
-  and containment checks. The redundant separate config copy is removed.
-- scripts/suites/24_veldo_0007_install_and_run.py:485-524 drives actual split-index
-  timestamp refreshes against both inventories, preserves corruption detection,
-  and compares source and copied common-store contents in both shapes. Each run
-  creates an unpredictable future-store name, so fidelity cannot be satisfied
-  by enumerating known stores. Normalized configs are checked separately.
-- proof/VELDO-0099/drive.py:92-137 adds allowlist and timestamp regressions;
-  lines 184-334 add real AC4 clean split-index runs, branch-reflog deletion,
-  random copied-file deletion, and reflog deletion with a split index. Each
-  deletion must name its victim in the sandbox row; original source bytes survive.
-- specs/VELDO-0099-worktree-git-shape.md:58-76 defines the complete copied set,
-  content comparison and driven cases. Lines 158-166 record the boundary.
-- proof/VELDO-0099/manifest.json, driven.json, baseline-driven.json, gate-round-five-*.log,
-  ready-check.txt, sibling-search.txt and log-redactions.json bind current evidence,
-  full row labels, commands, source digest, commits and disclosed log substitutions.
-  Historical gate logs remain historical evidence. specs/index.md regenerated
-  without a content change.
+- scripts/suites/24_veldo_0007_install_and_run.py:275 selects only info/alternates
+  and info/http-alternates in copied object stores. Line 301 validates these paths;
+  ordinary branch refs and reflogs are no longer parsed as alternate paths.
+- scripts/suites/24_veldo_0007_install_and_run.py:1006 detects nested .git entries
+  and .gitmodules without invoking git. Line 1023 records and prints AC4's stand-down
+  before copying or executing a stage, with no expect call or passed-row increment.
+  The printer matches the release check's recorded-stand-down wording.
+- scripts/suites/24_veldo_0007_install_and_run.py:1267 drives a real submodule in
+  both shapes with a valid absolute .git pointer and binary unstaged contents.
+  Five marker cases per shape cover the submodule, pointer alone, .git directory,
+  .gitmodules alone, and nested .gitmodules. Every case asserts the record, exact
+  output, no counted AC4 rows, no copying or subprocess calls, and unchanged bytes.
+  The copy tripwire stops the detection mutation before it can destroy fixture data.
+  Line 1335 drives branch refs and reflogs named alternates and http-alternates,
+  asserting byte fidelity and usable copied substrates in both shapes.
+- proof/VELDO-0099/drive.py:144 drives both new mutations and checks their red rows.
+  Line 240 adds the real AC4 branch/reflog case, requiring all 14 rows to pass.
+  Every prior mutation remains driven with its expected failure set.
+- specs/VELDO-0099-worktree-git-shape.md:34 extends the ready criteria with refusal
+  and exact alternate-path controls. Line 176 closes the design and names the
+  Landlock follow-up without implementing it. specs/index.md regenerated unchanged.
+- This README, manifest.json, driven.json, gate-round-six-*.log, ready-check.txt,
+  sibling-search.txt and log-redactions.json refresh the evidence. Earlier logs
+  and baseline-driven.json are historical records, not round-six results.
 
-## Full gates before and after, both shapes
+## Both full gates
 
-Every invocation is ./scripts/verify.sh, exit 0. No source or proof edits occurred
-while these gates ran. Both shapes used the same commit for each pair.
+Both commands were ./scripts/verify.sh, exit 0, at f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf.
+The assigned linked checkout and a disposable primary clone used identical committed
+source. No source or proof edits occurred during either gate. Both reported
+4864 passed, 0 failed, first-use integration passed, and all 8 required catalog checks passed
+(15 not applicable, 0 waived, 0 undeclared).
 
-| Run | Commit | Selftests | Gate |
-| --- | --- | --- | --- |
-| Before, assigned linked checkout | 0f69276 | 4838 passed, 0 failed | GREEN |
-| Before, disposable primary checkout | 0f69276 | 4838 passed, 0 failed | GREEN |
-| After, assigned linked checkout | 6e11795 | 4842 passed, 0 failed | GREEN |
-| After, disposable primary checkout | 6e11795 | 4842 passed, 0 failed | GREEN |
+The primary fixture was made with git clone --no-hardlinks --no-checkout from the
+assigned checkout, followed by git checkout --detach of that exact commit. No
+existing other worktree or branch was modified. Full outputs are
+ gate-round-six-linked.log and gate-round-six-primary.log.
 
-All four gates passed first-use integration and all 8 required catalog checks,
-with 15 not applicable, 0 waived and 0 undeclared. Logs are named
- gate-round-five-{before,after}-{linked,primary}.log. Disposable primary repositories
-were created with git clone --no-hardlinks --no-checkout from this checkout and
- git checkout --detach of the exact commit. No existing other branch or worktree
-was modified.
+## Driven mutations and red rows
 
-## Defects reproduced before implementation
-
-baseline-driven.json records the driver prepared outside the repository and run
-against 0f69276 before any edits. Both normal AC4 controls passed 14/0. In each shape,
-a stage mutation targeting a branch reflog still passed 14/0: the omitted store
-never entered the sandbox. A clean split index failed 12/2, naming sharedindex.*
-in both the sandbox and live rows. These are diagnostic results, distinct from
-the ordinary full baseline gates, which were green.
-
-To reproduce, create an isolated primary checkout of 0f69276 and run the current
- proof/VELDO-0099/drive.py with that checkout's absolute path followed by --baseline.
-Baseline mode expects the old suite's row count and the two demonstrated defects;
-it is not an option for validating the fixed suite.
-
-## Every driven mutation and its red row
-
-Command: python3 proof/VELDO-0099/drive.py. driven.json records every full label,
-expected red-row set, source hash, commit and random victim. The live suite digest
-is unchanged. These mutation diagnostics are not selected-suite gate claims.
+Command: python3 proof/VELDO-0099/drive.py, exit 0. driven.json retains all exact
+row labels, mutations, source digest, commit, and the randomly selected victims.
+The driver and its real AC4 clones ran at f796087c0a7a1bbc3c35b6ba6f0ee51e677a31cf.
+The recorded suite digest is unchanged and matches that commit. These are mutation
+diagnostics, not selected-suite gate evidence.
 
 | Mutation | Passed/failed | Red rows |
 | --- | --- | --- |
@@ -94,72 +76,42 @@ is unchanged. These mutation diagnostics are not selected-suite gate claims.
 | Actual AC4 stage deletes branch reflog | Each shape 13/1 | NOT ONE BYTE of the repository under check changed, naming logs/refs/heads/round-five-probe |
 | Actual AC4 stage deletes randomly selected copied file | Each shape 13/1 | NOT ONE BYTE of the repository under check changed, naming the selected file |
 | Actual AC4 stage deletes branch reflog with split index | Each shape 13/1 | NOT ONE BYTE of the repository under check changed, naming logs/refs/heads/round-five-probe |
+| Skip nested repository detection | 0/20 | Both shapes, all five markers: AC4 stand-down is recorded, printed, and never passed; original edit survives with no copy or nested git operations |
+| Match alternates basename anywhere | 0/2 | Both shapes: branch and reflog named alternates copy cleanly |
 
-Unmutated layout and review controls are 17/0 each, with empty HOME and
+
+Unmutated layout and prior-review controls are 17/0 each. The nested refusal
+controls are 20/0; these are assertions about recorded refusals, not passed AC4
+observations. Alternates-name copy controls are 2/0. All run with empty HOME and
 XDG_CONFIG_HOME, system/global git config disabled, and no caller identity.
-Review controls include 50 copies per shape during concurrent sibling staging.
-Real sharedindex corruption is detected in both shapes; removing primary
-sharedindex observation makes the primary corruption row red.
+Concurrent sibling staging still permits 50 copies per shape with zero raises.
 
-Actual AC4 control, sibling-staging, redirected-config, sibling-heartbeat and
-clean split-index cases are each 14/0 in both shapes. The heartbeat invokes the
-real claim module from a disposable sibling subprocess during the live inventory
-window. Claims remain held until explicitly released by the driver.
+Actual AC4 control, sibling staging, redirected config, sibling heartbeat,
+clean split index, and branch/reflog named alternates are each 14/0 in both shapes.
+The random deletion cases record and require the victim path in the red sandbox
+row, and verify original contents remain intact. The linked directory-shape
+mutation still reds the actual substrate row while the primary control passes.
 
-For random deletion, the driver samples an actual copied common directory,
-excluding worktrees/ and the named reflog, ledger, split-index and normalized
-config/index/HEAD controls. No positive store list selects candidates. It records
-the selected path, then injects deletion into the copied stage after its real
-compose-install-gate work. Requiring that the path appear in the sandbox row
-proves the deletion was inventoried. Source bytes are asserted unchanged.
+## Design closure and packaging
 
-Final committed-drive victims:
+This is a before-and-after content inventory of an isolated copy. A nested
+repository makes the entire AC4 observation stand down visibly, with the reason
+"nested repository present; the copied observation is not self-contained".
+The existing limits remain: absolute paths, external symlink targets, shared live
+stores, restored writes, identical-byte rewrites, timestamp-only or permission-only
+changes, and non-atomic copying are not converted into process confinement.
+The follow-up is kernel-enforced write confinement of the stage process using
+unprivileged Linux Landlock on kernel 5.13 and later, with recorded stand-down on
+other hosts. That follow-up is not implemented here.
 
-- primary: objects/98/7a57c3dbbd0a3f11835d7a94b6780c25a3f70f
-- linked: objects/27/b287e4fbc39dd54d37a040cd94c93734204ee4
+The selected-suite diagnostic was 125/0 and exited 2 by design; only the full gates
+above establish gate results. An initial primary-gate launcher used the temporary
+parent directory as cwd and failed before starting a gate; the corrected launcher
+created the disposable clone and ran the recorded gate there.
 
-The initial preview drive failed its expected-row assertion because copying
-sibling state now also reds both whole-store fidelity rows. The expected red set
-was corrected, then the complete preview and committed-implementation drives
-passed. A selected suite diagnostic reported 103/0 and exited 2 by design; it is
-not full-gate evidence and does not support the manifest's gate claims.
-
-## Snapshot boundary and next review
-
-The sandbox surface is the working tree, private git directory and whole common
-directory except worktrees/, including materialized alternates. Shared live stores
-remain excluded because their writers cannot be attributed to this stage. The
-live surface is this checkout's working tree and private git state. Configs and
-pointers are normalized before the stage runs. This is a before-and-after content
-inventory, not a process trace or operating system confinement.
-
-A fifth independent review could still find writes to arbitrary absolute paths,
-external working-tree symlink targets or shared live stores; transient writes
-restored before the second snapshot; identical-byte rewrites; timestamp-only or
-permission-only changes; or copy races that produce an inconsistent snapshot.
-Future path-redirection semantics that the retained normalization and containment
-checks do not understand are also outside what these driven cases establish.
-The separate sandbox HOME inventory does not extend coverage to the host filesystem.
-Closing a named-store omission by copying the whole common directory does not
-establish process-attributed write tracing.
-
-## Packaging
-
-ready-check.txt revalidates the ready spec. sibling-search.txt records the suite-wide
-search for .git directory assumptions; remaining matches are explicit fixture checks.
-Only the synthetic pkg/dirty.py diagnostic is replaced in gate logs;
-log-redactions.json records raw/stored digests and line numbers. Gate outcomes and
-failure rows are retained. Raw logs are in /tmp/veldo-0099-round5/.
-
-Gate byproducts .veldo/events.jsonl and .veldo/last_verify are restored with
- git checkout -- .veldo/last_verify .veldo/events.jsonl before proof commits.
-The external reviewer owns independent review and the real landing stamp.
-
-## Final gate with refreshed proof
-
-The full ./scripts/verify.sh at 640a65d66ed771d46ceeae393f40dac109ba0ad1 in the assigned linked
-checkout exited 0: GREEN, 4842 passed, 0 failed; first-use integration passed;
-8 required catalog checks passed, 15 not applicable, 0 waived, 0 undeclared.
-The output is gate-round-five-final.log. This final receipt changes proof records
-only and does not claim a landing stamp or a new implementation verification.
-The two gate byproducts are restored before committing the receipt.
+Only the synthetic pkg/dirty.py diagnostic is replaced in stored gate logs.
+log-redactions.json records raw/stored digests and line numbers. No outcome or
+failure row is removed. Raw logs are in /tmp/veldo-0099-round6/.
+Gate byproducts .veldo/last_verify and .veldo/events.jsonl are restored with
+ git checkout -- .veldo/last_verify .veldo/events.jsonl before the proof commit.
+The reviewer owns independent review and the real landing stamp.
