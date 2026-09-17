@@ -45,6 +45,9 @@ ENTITY_TYPES = (
 # entity is repository-scoped.
 IDENTITY_FIELDS = ("domain_uuid", "entity_type", "uuid", "schema_version", "provenance", "concurrency_version")
 PROVENANCE_FIELDS = ("source", "created_by", "created_at")
+# What no update may ever change: the identity, the alias and the CREATION provenance (who created
+# the record, from what, when): historical attribution is not a field a later transaction owns.
+IMMUTABLE_FIELDS = ("domain_uuid", "repository_uuid", "entity_type", "uuid", "schema_version", "alias", "provenance")
 REPOSITORY_SCOPED = frozenset({"backlog_item", "admission_request", "execution_unit", "attempt", "contract",
                                "dispatch", "reservation", "release_execution"})
 
@@ -143,9 +146,9 @@ def concurrency_update_problems(before, after):
     keeps the identity fields, the alias and the scope revision unchanged, and never rewrites a
     terminal record (R22)."""
     problems = identity_problems(after)
-    for f in ("domain_uuid", "repository_uuid", "entity_type", "uuid", "schema_version", "alias"):
+    for f in IMMUTABLE_FIELDS:
         if before.get(f) != after.get(f):
-            problems.append("a concurrency update changed %s: identity is immutable" % f)
+            problems.append("a concurrency update changed %s: identity and creation provenance are immutable" % f)
     if after.get("concurrency_version") != before.get("concurrency_version", 0) + 1:
         problems.append("concurrency_version must move from %r to %r, got %r: it increases by exactly one per committed "
                         "transaction and is never taken from a scope revision"
@@ -164,9 +167,9 @@ def scope_change_problems(before, after):
     if not scope_field:
         return ["%s has no scope revision: nothing to change" % before.get("entity_type")]
     problems = identity_problems(after)
-    for f in ("domain_uuid", "repository_uuid", "entity_type", "uuid", "schema_version", "alias"):
+    for f in IMMUTABLE_FIELDS:
         if before.get(f) != after.get(f):
-            problems.append("a scope change changed %s: identity and alias are preserved across revisions" % f)
+            problems.append("a scope change changed %s: identity, alias and creation provenance are preserved across revisions" % f)
     if after.get(scope_field) != before.get(scope_field, 0) + 1:
         problems.append("%s must move from %r to %r, got %r" % (scope_field, before.get(scope_field), before.get(scope_field, 0) + 1, after.get(scope_field)))
     if after.get("concurrency_version") != before.get("concurrency_version", 0) + 1:
@@ -410,7 +413,11 @@ def terminal_rewrite_problems(vocabulary, before, after):
         if before.get(k) != after.get(k):
             problems.append("%s in terminal state %s: %s was rewritten; terminal history retains what happened under it"
                             % (vocabulary, before.get("state"), k))
-    if not (after.get("links") or []) [len(before.get("links") or []):] and after != before and not problems:
+    old_links, new_links = list(before.get("links") or []), list(after.get("links") or [])
+    if new_links[:len(old_links)] != old_links:
+        problems.append("%s in terminal state %s: links were rewritten (%r is not a prefix of %r); terminal links are "
+                        "append-only" % (vocabulary, before.get("state"), old_links, new_links))
+    elif len(new_links) == len(old_links) and after != before and not problems:
         problems.append("%s in terminal state %s: a change that appends no link is a rewrite" % (vocabulary, before.get("state")))
     return problems
 
@@ -452,6 +459,13 @@ def ownership_problems(entities):
     projects cannot own or execute the same unit), and two non-terminal engineering units for one
     admitted specification revision (R10)."""
     problems = []
+    seen_uuid = {}
+    for e in entities:
+        if isinstance(e, dict):
+            seen_uuid.setdefault(e.get("uuid"), []).append(e.get("alias") or e.get("entity_type"))
+    for u, names in sorted(seen_uuid.items(), key=str):
+        if len(names) > 1:
+            problems.append("uuid %r is carried by %d records (%s): an identity names one entity" % (u, len(names), ", ".join(map(str, names))))
     by_uuid = {e.get("uuid"): e for e in entities if isinstance(e, dict)}
     for rel in OWNERSHIP:
         for e in entities:
@@ -481,10 +495,12 @@ def ownership_problems(entities):
         if isinstance(e, dict) and e.get("entity_type") == "execution_unit":
             projects = set()
             for item_ref in _refs(e.get("backlog_item_uuid")):
-                item = by_uuid.get(item_ref) or {}
-                objective = by_uuid.get(item.get("objective_uuid")) or {}
-                if objective.get("project_uuid"):
-                    projects.add(objective["project_uuid"])
+                item = by_uuid.get(item_ref) if isinstance(item_ref, str) else None
+                for obj_ref in _refs((item or {}).get("objective_uuid")):
+                    objective = by_uuid.get(obj_ref) if isinstance(obj_ref, str) else None
+                    for proj_ref in _refs((objective or {}).get("project_uuid")):
+                        if isinstance(proj_ref, str):
+                            projects.add(proj_ref)
             if len(projects) > 1:
                 problems.append("execution_unit %s is owned by %d projects through its backlog items: two projects cannot own or "
                                 "execute the same unit (R04)" % (e.get("alias") or e.get("uuid"), len(projects)))
@@ -506,9 +522,10 @@ def ownership_problems(entities):
 
 def transfer_problems(before, after, receipt):
     """An ownership transfer is an authorized transition with a receipt (R04): the owner field
-    changes, nothing else of the identity does, the receipt names the authorizing principal and
-    the transition, the concurrency version bumps, and the admission authority is NOT transferred
-    with it (after.admission_authority equals before's)."""
+    changes, nothing of the identity or provenance does (a transfer that swaps the uuid or the
+    repository is a substitution, refused by field), the receipt names an authorizing person and
+    the transition, the concurrency version bumps by one, and the admission authority is NOT
+    transferred with it (after.admission_authority equals before's)."""
     problems = []
     if not isinstance(receipt, dict) or not _is_str(receipt.get("authorized_by")) or receipt.get("transition") != "ownership_transfer":
         problems.append("an ownership transfer needs a receipt naming authorized_by and transition ownership_transfer (R04)")
@@ -517,7 +534,7 @@ def transfer_problems(before, after, receipt):
         problems.append("an ownership transfer authorized by %r, a machine actor, is not authorized (R04)" % receipt["authorized_by"])
     if before.get("admission_authority") != after.get("admission_authority"):
         problems.append("the transfer changed admission_authority: a transfer never transfers admission authority implicitly (R04)")
-    problems.extend(p for p in concurrency_update_problems(before, after) if "identity is immutable" not in p or "alias" in p)
+    problems.extend(concurrency_update_problems(before, after))
     return problems
 
 
@@ -530,7 +547,10 @@ def retry_problems(unit, previous_attempt, new_attempt):
         problems.append("a retry binds the same unit: both attempts must name unit %s" % unit.get("uuid"))
     if new_attempt.get("uuid") == previous_attempt.get("uuid"):
         problems.append("a retry is a NEW attempt: the previous attempt is immutable and is never reused")
-    if new_attempt.get("scope_digest") != previous_attempt.get("scope_digest") or new_attempt.get("scope_digest") != unit.get("scope_digest"):
+    digests = [unit.get("scope_digest"), previous_attempt.get("scope_digest"), new_attempt.get("scope_digest")]
+    if not all(_is_str(d) for d in digests):
+        problems.append("a retry requires a scope digest on the unit and on both attempts: unproven scope continuity is not unchanged scope")
+    elif len(set(digests)) != 1:
         problems.append("a retry requires unchanged scope: the scope digest differs, so this is a new unit under a new prioritization, not a retry")
     if not _is_str(previous_attempt.get("outcome")) or previous_attempt.get("reconciled") is not True:
         problems.append("the previous attempt is not reconciled (outcome recorded and reconciled True): no retry before reconciliation")

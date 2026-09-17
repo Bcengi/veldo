@@ -46,13 +46,15 @@ def _v17_entity(etype, n, **extra):
     return e
 
 
-def _v17_mutated(old, new, count=1):
-    """The contract module with ONE textual mutation applied to a copy under a temporary directory,
-    loaded from there; the original is never touched."""
+def _v17_mutated(old, new, count=1, more=()):
+    """The contract module with one textual mutation (plus any in `more`, as (old, new) pairs)
+    applied to a copy under a temporary directory, loaded from there; the original is never touched."""
     d = Path(tempfile.mkdtemp(prefix="v17mut"))
     src = (ROOT / ".veldo" / "entity_contract.py").read_text()
-    assert src.count(old) == count, (old[:60], src.count(old))
-    (d / "entity_contract.py").write_text(src.replace(old, new))
+    for o, n in ((old, new),) + tuple(more):
+        assert src.count(o) == count, (o[:60], src.count(o))
+        src = src.replace(o, n)
+    (d / "entity_contract.py").write_text(src)
     spec = _v17_ilu.spec_from_file_location("v17_mut_%s" % d.name, d / "entity_contract.py")
     m = _v17_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
@@ -252,16 +254,20 @@ _V17_M3 = _v17_mutated('''    {"relation": "backlog_item_owns_execution_unit", "
 ''', '''    {"relation": "backlog_item_owns_execution_unit", "owner": "backlog_item", "owned": "execution_unit", "field": "backlog_item_uuid", "owners": 2, "clause": "R04, R10"},
 ''')
 _v17_src = (ROOT / ".veldo" / "entity_contract.py").read_text()
-_V17_M3b = _v17_mutated('''            if len(projects) > 1:
+_V17_M3_BOTH = _v17_mutated('''    {"relation": "backlog_item_owns_execution_unit", "owner": "backlog_item", "owned": "execution_unit", "field": "backlog_item_uuid", "owners": 1, "clause": "R04, R10"},
+''', '''    {"relation": "backlog_item_owns_execution_unit", "owner": "backlog_item", "owned": "execution_unit", "field": "backlog_item_uuid", "owners": 2, "clause": "R04, R10"},
+''', more=(('''            if len(projects) > 1:
 ''', '''            if False:
-''')
-expect("VELDO-0017 AC3 ownership/duplicate-project DRIVEN (the declared falsifier): with two owners per unit declared the "
-       "cardinality refusal disappears and only the two-projects rule still refuses; with that rule removed too the "
-       "second project owns the unit, so the row reds; unmutated both refuse",
-       not any("names 2 owner(s)" in p for p in _V17_M3.ownership_problems(_v17_dup))
+'''),))
+expect("VELDO-0017 AC3 ownership/duplicate-project DRIVEN (the declared falsifier): ONE copy carrying both mutations (two "
+       "owners per unit and the two-projects rule removed) accepts the unit two projects reach with no ownership "
+       "problem at all, so the row reds; the cardinality-only mutant still refuses through the two-projects rule, "
+       "and the unmutated module refuses on both counts",
+       _V17_M3_BOTH.ownership_problems(_v17_dup) == []
        and any("owned by 2 projects" in p for p in _V17_M3.ownership_problems(_v17_dup))
-       and not any("owned by 2 projects" in p for p in _V17_M3b.ownership_problems(_v17_dup))
-       and any("owned by 2 projects" in p for p in EC17.ownership_problems(_v17_dup)))
+       and not any("names 2 owner(s)" in p for p in _V17_M3.ownership_problems(_v17_dup))
+       and any("owned by 2 projects" in p for p in EC17.ownership_problems(_v17_dup))
+       and any("names 2 owner(s)" in p for p in EC17.ownership_problems(_v17_dup)))
 _v17_retry = _v17_entity("attempt", 141, unit_uuid=_v17_U["uuid"], scope_digest="sha256:aaa")
 expect("VELDO-0017 AC3 ownership/retry: an unchanged-scope retry after a reconciled attempt is a new attempt under the same "
        "unit; a changed scope, an unreconciled previous attempt, a reused attempt uuid and a different unit are each "
@@ -336,3 +342,49 @@ expect("VELDO-0017 AC4 identity/canonical-unit-validation DRIVEN (the declared f
        _v17_calls_m == [("write", "bad/id")]
        and EC17.admit_unit_artifact("bad/id", lambda u: _v17_calls_m.append(("write2", u)))[0] is False
        and ("write2", "bad/id") not in _v17_calls_m)
+
+
+# ---------------------------------------------------------------------------------------------
+# The seven findings of the Codex review (review-20260917-083244), each pinned.
+# ---------------------------------------------------------------------------------------------
+expect("VELDO-0017 AC3 ownership/transfer (review 1): a transfer that also swaps the uuid, the domain or the repository "
+       "is a substitution and is refused by field; only the owner field may move",
+       any("changed uuid" in p for p in EC17.transfer_problems(_v17_I, dict(_v17_moved, uuid=_v17_uuid(777)), _v17_receipt))
+       and any("changed repository_uuid" in p for p in EC17.transfer_problems(_v17_I, dict(_v17_moved, repository_uuid=_V17_DOMAIN), _v17_receipt))
+       and any("changed domain_uuid" in p for p in EC17.transfer_problems(_v17_I, dict(_v17_moved, domain_uuid=_V17_REPO), _v17_receipt))
+       and EC17.transfer_problems(_v17_I, _v17_moved, _v17_receipt) == [])
+_v17_twin = dict(_v17_U, backlog_item_uuid=_v17_I2["uuid"], primary_specification={"alias": "VELDO-0018", "revision": 1})
+expect("VELDO-0017 AC3 ownership/duplicate-project (review 1): two records carrying one unit uuid, reaching two projects "
+       "through two items, are refused as a duplicate identity (an identity names one entity), never silently "
+       "collapsed into the last record read",
+       any("is carried by 2 records" in p for p in EC17.ownership_problems(_v17_graph + [_v17_twin])))
+expect("VELDO-0017 AC3 ownership/retry (review 1): a retry with no scope digest on the unit or on either attempt is "
+       "refused as unproven scope continuity, never accepted because three absent values compare equal",
+       any("requires a scope digest" in p for p in EC17.retry_problems(
+           {k: v for k, v in _v17_U.items() if k != "scope_digest"},
+           {k: v for k, v in _v17_A.items() if k != "scope_digest"},
+           {k: v for k, v in _v17_retry.items() if k != "scope_digest"}))
+       and any("requires a scope digest" in p for p in EC17.retry_problems(_v17_U, _v17_A, {k: v for k, v in _v17_retry.items() if k != "scope_digest"})))
+expect("VELDO-0017 AC1 entity-schema/envelope (review 1): creation provenance is immutable through a concurrency update "
+       "and a scope change alike; replacing source, creator or creation time is refused by field",
+       any("changed provenance" in p for p in EC17.concurrency_update_problems(
+           _v17_u, dict(_v17_u2, provenance=dict(_V17_PROV, created_by="agent"))))
+       and any("changed provenance" in p for p in EC17.scope_change_problems(
+           _v17_u, dict(_v17_u3, provenance=dict(_V17_PROV, created_at="2001-01-01T00:00:00Z"))))
+       and "provenance" in EC17.IMMUTABLE_FIELDS)
+_v17_linked = dict(_v17_done, links=["original"])
+expect("VELDO-0017 AC2 lifecycle/terminal-history (review 1): terminal links are append-only - replacing ['original'] "
+       "with ['replacement', 'new'] is refused as a rewrite, appending to it is allowed, and a change that only bumps "
+       "the concurrency version without appending is a rewrite",
+       any("links were rewritten" in p for p in EC17.terminal_rewrite_problems("execution_unit", _v17_linked,
+                                                                                 dict(_v17_linked, links=["replacement", "new"], concurrency_version=2)))
+       and EC17.terminal_rewrite_problems("execution_unit", _v17_linked, dict(_v17_linked, links=["original", "new"], concurrency_version=2)) == []
+       and any("appends no link" in p for p in EC17.terminal_rewrite_problems("execution_unit", _v17_linked, dict(_v17_linked, concurrency_version=2))))
+_v17_item_list = [e for e in _v17_graph if e is not _v17_I] + [dict(_v17_I, objective_uuid=[_v17_O["uuid"], _v17_O2["uuid"]])]
+_v17_item_one_list = [e for e in _v17_graph if e is not _v17_I] + [dict(_v17_I, objective_uuid=[_v17_O["uuid"]])]
+expect("VELDO-0017 AC3 ownership/cardinality (review 1): an item naming its objective as a list is walked like the "
+       "cardinality pass walks it - two objectives in two projects make the unit owned by two projects and the item "
+       "a duplicate owner, a one-element list is one owner - and nothing raises",
+       any("owned by 2 projects" in p for p in EC17.ownership_problems(_v17_item_list))
+       and any("names 2 owner(s)" in p for p in EC17.ownership_problems(_v17_item_list))
+       and EC17.ownership_problems(_v17_item_one_list) == [])
