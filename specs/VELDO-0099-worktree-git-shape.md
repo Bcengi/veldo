@@ -32,7 +32,15 @@ acceptance_criteria:
       both at the same commit. Completeness: Drive both in isolated fixtures, assert equal HEADs,
       and require the copied stage, index, private git directory, shared store, worktree,
       config paths, and object alternates to resolve inside the observation sandbox before
-      executing the copied stage. Drive core.worktree pointing at the original dirty checkout
+      executing the copied stage. Before copying, refuse nested .git files or directories
+      below the top level and .gitmodules: record AC4 as STANDS DOWN with the reason
+      "nested repository present; the copied observation is not self-contained", never as
+      passed. Drive a submodule with an absolute git pointer and an unstaged edit; require
+      byte-identical original contents and zero git operations inside nested repositories.
+      Skipping detection must red the recorded-stand-down row. Treat only each copied
+      object store's info/alternates and info/http-alternates as alternates metadata;
+      a branch and reflog named alternates must copy and pass AC4. Matching the basename
+      anywhere must red that control. Drive core.worktree pointing at the original dirty checkout
       and require checkout-index in the sandbox to preserve the original edit byte for byte;
       skipping config normalization must red that row. The fixture supplies its own fixed commit identity;
       drive the controls with an empty HOME and no configured identity. Falsifier: Restore the .git is_dir requirement and the
@@ -164,3 +172,11 @@ refresh is a read for this observation. Identical-byte rewrites, timestamp-only 
 permission-only changes and writes fully restored before the second snapshot are not
 observed. Copying mutable shared state is not an atomic snapshot. The before-and-after
 boundary above remains in force; this construction is not a process trace.
+
+Final design closure (round six): this observation is a before-and-after content
+inventory of an isolated copy. It stands down when the checkout is not self-contained;
+its remaining boundary is as stated above. The follow-up that replaces it is
+kernel-enforced write confinement of the stage process using Linux Landlock,
+unprivileged, on kernel 5.13 and later, with recorded stand-down on other hosts.
+That turns "no writes outside the sandbox" from an inventory into an enforced
+property. That follow-up is not implemented here.

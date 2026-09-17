@@ -18,6 +18,8 @@ the wall clock for no extra teeth.
 
 EVERY CRITERION'S BLOCK IS WRAPPED, so a raise reds a NAMED row instead of shortening the run.
 """
+import contextlib as _iar_contextlib
+import io as _iar_io
 import ast as _iar_ast
 import hashlib as _iar_hl
 import os as _iar_os
@@ -270,6 +272,14 @@ def _iar_resolve_alternates(original, copied):
                                      for entry in _iar_read_alternates(path)])
 
 
+def _iar_alternate_paths(common):
+    """Only object-store info files carry alternate edges, never refs or reflogs."""
+    return [objects / "info" / name
+            for objects in (common / "objects", *common.glob("git-alternate-*"))
+            for name in ("alternates", "http-alternates")
+            if (objects / "info" / name).exists()]
+
+
 def _iar_assert_isolated(target, private, common):
     """Check static redirects before asking git to resolve any copied repository path."""
     sandbox = target.parent.resolve()
@@ -287,9 +297,10 @@ def _iar_assert_isolated(target, private, common):
                            "core.symlinks", "core.bare", "core.logallrefupdates", "extensions.objectformat",
                            "extensions.refstorage", "extensions.worktreeconfig"}
                 assert set(proc.stdout.lower().splitlines()) <= allowed, config
-        for path in root.rglob("alternates"):
-            for entry in _iar_read_alternates(path):
-                assert entry.is_absolute() and entry.resolve().is_relative_to(sandbox), path
+    for path in _iar_alternate_paths(common):
+        assert path.name != "http-alternates", path
+        for entry in _iar_read_alternates(path):
+            assert entry.is_absolute() and entry.resolve().is_relative_to(sandbox), path
     assert (target / ".git").is_dir() or (target / ".git").read_text().strip() == "gitdir: " + str(private)
     if private != common:
         assert (private / "commondir").read_text().strip() == str(common)
@@ -992,7 +1003,31 @@ _iar_block("AC3", _iar_ac3)
 # ---------------------------------------------------------------------------------------
 
 
+def _iar_nested_repository(root):
+    """Inspect working-tree markers without invoking git in a nested repository."""
+    root = Path(root)
+    def unreadable(error):
+        raise error
+    for directory, dirs, files in _iar_os.walk(root, onerror=unreadable):
+        names = dirs + files
+        if ".gitmodules" in names or (Path(directory) != root and ".git" in names):
+            return True
+        if Path(directory) == root:
+            dirs[:] = [name for name in dirs if name != ".git"]
+    return False
+
+
+_IAR_STOOD_DOWN = []
+
+
 def _iar_ac4():
+    if _iar_nested_repository(ROOT):
+        reason = "nested repository present; the copied observation is not self-contained"
+        _IAR_STOOD_DOWN.append(("VELDO-0007", "AC4", reason))
+        # Match shared.py's recorded-stand-down printer, without its history-only claim.
+        print("   %s: %s STANDS DOWN, and this is recorded rather than passed: %s."
+              % ("VELDO-0007", "AC4", reason))
+        return
     sand = Path(tempfile.mkdtemp(prefix="veldo-0007-write-scope-"))
     try:
         repo, home, run_tmp = sand / "repo", sand / "home", sand / "tmp"
@@ -1229,9 +1264,116 @@ def _iar_ac4():
                    for kw in _iar_rec.calls))
 
 
+def _iar_nested_controls():
+    """A real dirty submodule with an absolute pointer must never reach the copy."""
+    with tempfile.TemporaryDirectory(prefix="veldo-0099-nested-") as d:
+        base = Path(d)
+        primary, linked, origin = (base / name for name in ("primary", "linked", "origin"))
+        identity = dict(_iar_os.environ, GIT_AUTHOR_NAME="Veldo fixture",
+                        GIT_AUTHOR_EMAIL="fixture@example.invalid",
+                        GIT_COMMITTER_NAME="Veldo fixture",
+                        GIT_COMMITTER_EMAIL="fixture@example.invalid")
+        for tree in (origin, primary):
+            tree.mkdir()
+            _iar_git(tree, "init", "-q")
+            (tree / "tracked").write_bytes(b"committed bytes\n")
+            _iar_git(tree, "add", ".")
+            _iar_git(tree, "commit", "-qm", "Seed nested fixture", env=identity)
+        _iar_git(primary, "-c", "protocol.file.allow=always", "submodule", "add", "-q",
+                 str(origin), "nested")
+        _iar_git(primary, "commit", "-qam", "Add fixture submodule", env=identity)
+        _iar_git(primary, "worktree", "add", "--detach", str(linked), "HEAD")
+        _iar_git(linked, "-c", "protocol.file.allow=always", "submodule", "update", "--init")
+        for shape, tree in (("primary", primary), ("linked", linked)):
+            nested = tree / "nested"
+            private, _ = _iar_git_dirs(nested)
+            pointer = nested / ".git"
+            pointer.write_text("gitdir: " + str(private) + "\n")
+            dirty = b"unstaged submodule edit must survive\n\x00\xff"
+            (nested / "tracked").write_bytes(dirty)
+            modules = (tree / ".gitmodules").read_bytes()
+            for marker in ("submodule", "pointer-only", "directory", "gitmodules-only", "nested-gitmodules"):
+                if marker == "pointer-only":
+                    (tree / ".gitmodules").unlink()
+                elif marker == "directory":
+                    pointer.unlink()
+                    pointer.mkdir()
+                elif marker == "gitmodules-only":
+                    pointer.rmdir()
+                    (tree / ".gitmodules").write_bytes(modules)
+                elif marker == "nested-gitmodules":
+                    (tree / ".gitmodules").rename(nested / ".gitmodules")
+                records, counted, copies, git_operations = [], [], [], []
+                def refuse_copy(*args):
+                    copies.append(args)
+                    # The detection mutation must be safe to drive, even against this pointer.
+                    raise RuntimeError("copy intercepted after missing refusal")
+                class NoGit:
+                    def run(self, *args, **kwargs):
+                        git_operations.append((args, kwargs))
+                        raise RuntimeError("unexpected subprocess during refusal")
+                ns = dict(globals(), ROOT=tree, _IAR_STOOD_DOWN=records,
+                          _iar_copy_tree=refuse_copy, _iar_sp=NoGit(),
+                          expect=lambda label, ok: counted.append((label, ok)))
+                observe = type(_iar_ac4)(_iar_ac4.__code__, ns)
+                output = _iar_io.StringIO()
+                try:
+                    with _iar_contextlib.redirect_stdout(output):
+                        observe()
+                except RuntimeError:
+                    pass
+                reason = "nested repository present; the copied observation is not self-contained"
+                expect("VELDO-0099 AC1: %s %s AC4 stand-down is recorded, printed, and never passed"
+                       % (shape, marker),
+                       records == [("VELDO-0007", "AC4", reason)] and not counted
+                       and output.getvalue() == "   VELDO-0007: AC4 STANDS DOWN, and this is recorded rather than passed: " + reason + ".\n")
+                expect("VELDO-0099 AC1: %s %s original edit survives with no copy or nested git operations"
+                       % (shape, marker),
+                       not copies and not git_operations and (nested / "tracked").read_bytes() == dirty)
+
+
+def _iar_alternates_name_controls():
+    """Ordinary branch refs and reflogs are not object-alternates files."""
+    with tempfile.TemporaryDirectory(prefix="veldo-0099-alternate-names-") as d:
+        base = Path(d)
+        primary, linked = base / "primary", base / "linked"
+        primary.mkdir()
+        _iar_git(primary, "init", "-q")
+        (primary / "scripts").mkdir()
+        (primary / "scripts/check_install_and_run.py").write_text("# fixture stage\n")
+        _iar_git(primary, "add", ".")
+        identity = dict(_iar_os.environ, GIT_AUTHOR_NAME="Veldo fixture",
+                        GIT_AUTHOR_EMAIL="fixture@example.invalid",
+                        GIT_COMMITTER_NAME="Veldo fixture",
+                        GIT_COMMITTER_EMAIL="fixture@example.invalid")
+        _iar_git(primary, "commit", "-qm", "Seed alternates name fixture", env=identity)
+        for name in ("alternates", "http-alternates"):
+            _iar_git(primary, "branch", "--create-reflog", name)
+        _iar_git(primary, "worktree", "add", "--detach", str(linked), "HEAD")
+        for shape, tree in (("primary", primary), ("linked", linked)):
+            target = base / (shape + "-sandbox") / "repo"
+            target.parent.mkdir()
+            completed = False
+            try:
+                _iar_copy_tree(tree, target)
+                _, source_common = _iar_git_dirs(tree)
+                _, common = _iar_git_dirs(target)
+                completed = (_iar_copy_matches(tree, target) and _iar_substrate(target)
+                             and all((common / kind / name).read_bytes()
+                                     == (source_common / kind / name).read_bytes()
+                                     for kind in ("refs/heads", "logs/refs/heads")
+                                     for name in ("alternates", "http-alternates")))
+            except (AssertionError, ValueError, OSError, _iar_sp.CalledProcessError):
+                pass
+            expect("VELDO-0099 AC1: %s branch and reflog named alternates copy cleanly" % shape,
+                   completed)
+
+
 _iar_block("AC4", _iar_ac4)
 _iar_block("VELDO-0099 checkout shape controls", _iar_layout_controls)
 _iar_block("VELDO-0099 review controls", _iar_review_controls)
+_iar_block("VELDO-0099 nested repository controls", _iar_nested_controls)
+_iar_block("VELDO-0099 alternates name controls", _iar_alternates_name_controls)
 
 
 # ---------------------------------------------------------------------------------------
