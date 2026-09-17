@@ -64,6 +64,9 @@ _FILES = [
     # VELDO-0018 (PLAN-0019 W3): release and behavior-floor integration contracts, loaded by the
     # suite and by the release execution store above it; not substrate.
     ".veldo/release_floor_contract.py",
+    # VELDO-0019 (PLAN-0019 W4): the combined dependency graph and decision observation rules,
+    # loaded by the suite and by the eligibility service above it; not substrate.
+    ".veldo/graph_contract.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0019
 title: Combined dependency graph and decision observation rules
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -25,6 +25,11 @@ footprint:
   - ".veldo/tripwire.py"
   - "engine/.veldo/tripwire.py"
   - "engine/.veldo/*contract*.py"
+  - ".veldo/*contract*.py"
+  - ".veldo/capabilities.yaml"
+  - "engine/.veldo/capabilities.yaml"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - "scripts/suites/*"
   - "packs/**/.veldo/*contract*.py"
   - "specs/VELDO-0019-combined-graph-contracts.md"
