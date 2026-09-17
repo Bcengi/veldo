@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Drive layout, identity, and real AC4 regressions without editing the live suite."""
 import ast
+import contextlib
+import io
 import hashlib
 import importlib.util
 import re
@@ -24,7 +26,12 @@ names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_d
          '_iar_copy_entry', '_iar_common_entries', '_iar_normalize_config',
          '_iar_copy_alternates', '_iar_resolve_alternates', '_iar_assert_isolated',
          '_iar_review_controls', '_iar_git_environment', '_iar_unquote_alternate',
-         '_iar_read_alternates', '_iar_write_alternates'}
+         '_iar_read_alternates', '_iar_write_alternates', '_iar_alternate_paths',
+         '_iar_nested_repository', '_iar_ac4', '_iar_nested_controls',
+         '_iar_alternates_name_controls'}
+if baseline:
+    names -= {'_iar_alternate_paths', '_iar_nested_repository', '_iar_nested_controls',
+              '_iar_alternates_name_controls'}
 nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in names]
 assert {n.name for n in nodes} == names
 module = ast.Module(body=nodes, type_ignores=[])
@@ -75,7 +82,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
         results = []
         for case, mutation in mutations.items():
             rows = []
-            ns = dict(ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os, _iar_sp=subprocess,
+            ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os, _iar_sp=subprocess,
                       _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
                       expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
             exec(compile(module, str(SUITE), 'exec'), ns)
@@ -105,7 +112,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
         }
         for case, mutation in review_mutations.items():
             rows = []
-            ns = dict(ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os,
+            ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os,
                       _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib,
                       _iar_threading=threading,
                       expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
@@ -133,6 +140,33 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
             assert failures == expected, (case, failures, expected)
             results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
                             'failed': len(failures), 'rows': rows})
+
+        if not baseline:
+            for case, control, mutation, count in (
+                ('nested_control', '_iar_nested_controls', None, 20),
+                ('skip_nested_detection', '_iar_nested_controls',
+                 'def _iar_nested_repository(root): return False', 20),
+                ('alternates_name_control', '_iar_alternates_name_controls', None, 2),
+                ('match_alternates_basename_anywhere', '_iar_alternates_name_controls',
+                 'def _iar_alternate_paths(common): return list(common.rglob("alternates"))', 2),
+            ):
+                rows = []
+                ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[],
+                          ROOT=identity_root, Path=Path, tempfile=tempfile, _iar_os=os,
+                          _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib,
+                          _iar_threading=threading,
+                          expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
+                exec(compile(module, str(SUITE), 'exec'), ns)
+                if mutation:
+                    exec(compile(mutation, '<' + case + '>', 'exec'), ns)
+                ns[control]()
+                failures = [r['label'] for r in rows if not r['passed']]
+                assert len(rows) == count, (case, rows)
+                assert len(failures) == (count if mutation else 0), (case, failures)
+                if case == 'skip_nested_detection':
+                    assert sum('stand-down is recorded' in label for label in failures) == 10
+                results.append({'case': case, 'mutation': mutation,
+                                'passed': count - len(failures), 'failed': len(failures), 'rows': rows})
 
         # Reintroduce exactly the caller-config reads that prevented fixture setup.
         identity_rows = []
@@ -186,9 +220,9 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                          'sibling_staging_shared_live', 'sandbox_common_write', 'redirected_config',
                          'sandbox_claim_delete', 'sibling_heartbeat', 'sibling_heartbeat_shared_live',
                          'split_index', 'sandbox_reflog_delete',
-                         *(() if baseline else ('sandbox_random_delete', 'split_index_reflog_delete'))):
+                         *(() if baseline else ('sandbox_random_delete', 'split_index_reflog_delete', 'branch_alternates'))):
                 rows = []
-                ns = dict(ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
+                ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
                           _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
                           _iar_ast=ast, _iar_sys=sys, _iar_re=re, IAR=iar, _IAR_REP=report,
                           expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
@@ -203,6 +237,11 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                 saved_configs = {}
                 random_path = None
                 split = case in ('split_index', 'split_index_reflog_delete')
+                if case == 'branch_alternates':
+                    git('branch', '--force', '--create-reflog', 'alternates', 'HEAD', cwd=tree)
+                    _, branch_common = ns['_iar_git_dirs'](tree)
+                    assert (branch_common / 'refs/heads/alternates').is_file()
+                    assert (branch_common / 'logs/refs/heads/alternates').is_file()
                 if split:
                     git('update-index', '--split-index', cwd=tree)
                 private, common = ns['_iar_git_dirs'](tree)
