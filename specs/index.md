@@ -73,6 +73,12 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0046 | Durable wake-up, cursor replay, and notification delivery | draft | high | dmitry | required | VELDO-0046-durable-notification-delivery.md |
 | VELDO-0047 | Authority service installation, startup, stop, and absent-service behavior | draft | critical | dmitry | required | VELDO-0047-authority-service-lifecycle.md |
 | VELDO-0048 | Integrity verification, replica restoration, and host-replacement fencing | draft | critical | dmitry | required | VELDO-0048-integrity-and-replica-restoration.md |
+| VELDO-0049 | Dispatch and tracker bridge consume authoritative state transitions | draft | critical | dmitry | required | VELDO-0049-authoritative-floor-transitions.md |
+| VELDO-0050 | Executor persists proof and performs complete contextual validation | draft | critical | dmitry | required | VELDO-0050-durable-contextual-proof.md |
+| VELDO-0051 | Canonical event vocabulary and journal-derived publication | draft | critical | dmitry | required | VELDO-0051-journal-event-publication.md |
+| VELDO-0052 | Shared eligibility in work, frontier, plan, direct executor, and review | draft | critical | dmitry | required | VELDO-0052-shared-floor-eligibility.md |
+| VELDO-0053 | Architecture failure handling at every eligibility entry | draft | high | dmitry | required | VELDO-0053-architecture-entry-refusals.md |
+| VELDO-0054 | Decision-record dependency evaluation for the floor slice | draft | high | dmitry | required | VELDO-0054-floor-decision-dependencies.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
