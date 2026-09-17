@@ -135,6 +135,60 @@ def release_ownership_problems(records, plan_ids, projects, objectives=()):
 # ---------------------------------------------------------------------------------------------
 
 ACCEPTED_RESULTS = ("accepted", "passed")
+SNAPSHOT_FIELDS = ("release", "release_revision", "snapshot_digest", "candidate", "environment",
+                   "acceptance_authority", "deployment_authority", "members", "journeys")
+# The actors that are never an authority (mirrors authorization.MACHINE_ACTORS; bound by the suite).
+MACHINE_ACTORS = frozenset({"veldo-executor", "veldo-responder", "executor", "responder", "machine",
+                            "agent", "bot", "ava", "automation", "service", "service_account", "service-account"})
+
+
+def _is_person(name):
+    return _is_str(name) and name.strip().lower() not in MACHINE_ACTORS
+
+
+def snapshot_problems(snapshot):
+    """Why an accepted release snapshot cannot be accepted against, by name: a missing or malformed
+    field (release id, revision, snapshot digest, candidate, environment, the two named authorities,
+    the member list, the journey list), a member entry without an id and a digest, a journey entry
+    without an id, or a duplicate member or journey id. A malformed entry is refused, never dropped:
+    a snapshot that silently loses a member conceals an unevidenced revision."""
+    if not isinstance(snapshot, dict):
+        return ["an accepted snapshot is a mapping"]
+    problems = []
+    for f in SNAPSHOT_FIELDS:
+        if f not in snapshot:
+            problems.append("snapshot lacks %s" % f)
+    for f in ("release", "snapshot_digest", "candidate", "environment"):
+        if f in snapshot and not _is_str(snapshot.get(f)):
+            problems.append("snapshot %s must be a non-empty string" % f)
+    for f in ("acceptance_authority", "deployment_authority"):
+        if f in snapshot and not _is_person(snapshot.get(f)):
+            problems.append("snapshot %s must name a person or named authority, not %r" % (f, snapshot.get(f)))
+    if "release_revision" in snapshot and not _is_pos_int(snapshot.get("release_revision")):
+        problems.append("snapshot release_revision must be an integer >= 1")
+    members = snapshot.get("members")
+    if "members" in snapshot and (not isinstance(members, list) or not members):
+        problems.append("snapshot members must be a non-empty list: a release execution with no required member accepts nothing")
+    seen = set()
+    for m in members if isinstance(members, list) else []:
+        if not isinstance(m, dict) or not _is_str(m.get("id")) or not _is_str(m.get("digest")):
+            problems.append("snapshot member %r must be {id, digest}" % (m,))
+            continue
+        if m["id"] in seen:
+            problems.append("snapshot member %s is listed twice" % m["id"])
+        seen.add(m["id"])
+    journeys = snapshot.get("journeys")
+    if "journeys" in snapshot and not isinstance(journeys, list):
+        problems.append("snapshot journeys must be a list (empty when the release declares none)")
+    seen = set()
+    for j in journeys if isinstance(journeys, list) else []:
+        if not isinstance(j, dict) or not _is_str(j.get("id")):
+            problems.append("snapshot journey %r must be {id}" % (j,))
+            continue
+        if j["id"] in seen:
+            problems.append("snapshot journey %s is listed twice" % j["id"])
+        seen.add(j["id"])
+    return problems
 
 
 def _receipts_by(receipts, kind, key):
@@ -154,9 +208,14 @@ def acceptance_problems(execution, snapshot, receipts):
     receipt's result is not an accepted observation (a declaration is not a receipt); or the
     release record's `released` status string stands where receipts should. Empty iff acceptance
     may proceed."""
-    problems = []
     if not isinstance(execution, dict) or not isinstance(snapshot, dict):
         return ["an execution and its accepted snapshot are mappings"]
+    problems = snapshot_problems(snapshot)
+    if problems:
+        return problems
+    if execution.get("release") != snapshot.get("release"):
+        problems.append("execution %s is of release %r but the snapshot is of %r: evidence never transfers between releases"
+                        % (execution.get("alias") or execution.get("uuid"), execution.get("release"), snapshot.get("release")))
     if execution.get("state") != "ACTIVE":
         problems.append("release execution %s is %r; only ACTIVE executions are accepted (R65)" % (execution.get("alias") or execution.get("uuid"), execution.get("state")))
     if execution.get("release_revision") != snapshot.get("release_revision"):
@@ -209,11 +268,18 @@ def accept_release_execution(execution, snapshot, receipts, authority_receipt, d
     deployer handed to this function is ignored, by construction and by the suite's spy; the
     rollout machinery in .veldo/release.py has its own separately receipted authorization (R65)."""
     problems = acceptance_problems(execution, snapshot, receipts)
-    signed = isinstance(authority_receipt, dict) and _is_str(authority_receipt.get("signed_by")) \
-        and authority_receipt.get("subject") == "release_execution_acceptance" \
-        and authority_receipt.get("release_revision") == snapshot.get("release_revision")
-    if not signed:
-        problems.append("acceptance requires the named acceptance authority's signed receipt for this exact release revision")
+    if not isinstance(authority_receipt, dict):
+        problems.append("acceptance requires the named acceptance authority's signed receipt")
+    else:
+        if authority_receipt.get("subject") != "release_execution_acceptance":
+            problems.append("the authority receipt is not a release_execution_acceptance receipt")
+        if authority_receipt.get("signed_by") != snapshot.get("acceptance_authority") or not _is_person(authority_receipt.get("signed_by")):
+            problems.append("the acceptance receipt is signed by %r; the snapshot names %r as acceptance authority, and only that "
+                            "authority accepts" % (authority_receipt.get("signed_by"), snapshot.get("acceptance_authority")))
+        for f in ("release", "release_revision", "snapshot_digest"):
+            if authority_receipt.get(f) != snapshot.get(f):
+                problems.append("the acceptance receipt binds %s %r, the snapshot is %r: an approval is for one exact snapshot"
+                                % (f, authority_receipt.get(f), snapshot.get(f)))
     if problems:
         return None, problems
     EC = _organ("entity_contract")
@@ -223,8 +289,11 @@ def accept_release_execution(execution, snapshot, receipts, authority_receipt, d
         return None, [why]
     _ = deployer  # IGNORED ON PURPOSE: acceptance has no seam to a rollout
     record = dict(execution, state="ACCEPTED", concurrency_version=int(execution.get("concurrency_version", 0)) + 1,
-                  deployment_authorized=False, accepted_against={"release_revision": snapshot.get("release_revision"),
-                                                                 "candidate": snapshot.get("candidate"), "environment": snapshot.get("environment")})
+                  deployment_authorized=False,
+                  accepted_against={"release": snapshot.get("release"), "release_revision": snapshot.get("release_revision"),
+                                    "snapshot_digest": snapshot.get("snapshot_digest"), "candidate": snapshot.get("candidate"),
+                                    "environment": snapshot.get("environment"),
+                                    "deployment_authority": snapshot.get("deployment_authority")})
     return record, []
 
 
@@ -243,6 +312,12 @@ def required_pins(snapshot_floors, floors):
         floor = floors.get(fid) if isinstance(floors, dict) else None
         if floor is None:
             problems.append("applicable floor %r is missing from the floor registry: missing required floors block (R65)" % (fid,))
+            continue
+        if not _is_str(floor.get("digest")) or not _is_person(floor.get("authority")) or not isinstance(floor.get("pins"), list):
+            problems.append("floor %s is registered without a digest, a designated authority or a pin list: an unbound floor cannot be examined" % fid)
+            continue
+        if not _is_str(entry.get("digest")):
+            problems.append("floor %s is named by the snapshot without a digest: an unbound floor reference cannot match anything" % fid)
             continue
         if entry.get("digest") != floor.get("digest"):
             problems.append("floor %s is named at digest %r but the registry holds %r: changed pinned behavior blocks until settled" % (fid, entry.get("digest"), floor.get("digest")))
@@ -263,6 +338,10 @@ def floor_eligibility_problems(snapshot_floors, floors, settlements):
     required pin with no such settlement is unresolved and blocks. Empty iff eligible."""
     BF = _organ("behavior_floor")
     required, problems = required_pins(snapshot_floors, floors)
+    affected = {}
+    for entry in snapshot_floors or []:
+        if isinstance(entry, dict):
+            affected.setdefault(entry.get("floor"), set()).update(entry.get("affected_pins") or [])
     for fid, pin in sorted(required):
         floor = floors[fid]
         matching = [s for s in settlements or [] if isinstance(s, dict) and s.get("floor") == fid and pin in (s.get("scope") or [])]
@@ -270,14 +349,17 @@ def floor_eligibility_problems(snapshot_floors, floors, settlements):
             problems.append("floor %s pin %s has no settlement: unresolved dispositions block until the authority settles the exact version" % (fid, pin))
             continue
         for s in matching:
-            if s.get("floor_digest") != floor.get("digest"):
+            if not _is_str(s.get("floor_digest")):
+                problems.append("floor %s pin %s: settlement carries no floor digest: an unbound settlement settles nothing" % (fid, pin))
+            elif s.get("floor_digest") != floor.get("digest"):
                 problems.append("floor %s pin %s: settlement is bound to digest %r, the floor is at %r: a settlement for an earlier floor digest is stale"
                                 % (fid, pin, s.get("floor_digest"), floor.get("digest")))
-            if s.get("settled_by") != floor.get("authority"):
+            if not _is_person(s.get("settled_by")) or s.get("settled_by") != floor.get("authority"):
                 problems.append("floor %s pin %s: settled by %r, the designated baseline authority is %r" % (fid, pin, s.get("settled_by"), floor.get("authority")))
-            outside = sorted(set(s.get("scope") or []) - set(floor.get("pins") or []))
+            outside = sorted(set(s.get("scope") or []) - affected.get(fid, set()))
             if outside:
-                problems.append("floor %s pin %s: settlement scope reaches pins %s the floor does not declare: expanded scope" % (fid, pin, ", ".join(map(str, outside))))
+                problems.append("floor %s pin %s: settlement scope reaches pins %s outside the execution's affected set: a settlement cannot "
+                                "authorize unrelated scope expansion" % (fid, pin, ", ".join(map(str, outside))))
             if s.get("ruling") not in BF.RULINGS:
                 problems.append("floor %s pin %s: ruling %r is not one of %s" % (fid, pin, s.get("ruling"), sorted(BF.RULINGS)))
     return problems
@@ -359,7 +441,11 @@ def deployment_authorization_problems(acceptance, authorization=None):
         problems.append("no accepted release execution to deploy")
     elif acceptance.get("deployment_authorized") is not False:
         problems.append("an acceptance record claims deployment_authorized %r: acceptance never carries deployment authority (R65)" % (acceptance.get("deployment_authorized"),))
+    authority = ((acceptance or {}).get("accepted_against") or {}).get("deployment_authority") if isinstance(acceptance, dict) else None
     if not (isinstance(authorization, dict) and authorization.get("kind") == "deployment_authorization"
             and _is_str(authorization.get("signed_by")) and authorization.get("acceptance_uuid") == (acceptance or {}).get("uuid")):
         problems.append("deployment needs its own deployment_authorization receipt signed by the deployment authority and bound to this acceptance; the acceptance alone authorizes nothing")
+    elif not _is_person(authority) or authorization.get("signed_by") != authority:
+        problems.append("the deployment authorization is signed by %r; the accepted snapshot names %r as deployment authority, and only that "
+                        "authority deploys" % (authorization.get("signed_by"), authority))
     return problems

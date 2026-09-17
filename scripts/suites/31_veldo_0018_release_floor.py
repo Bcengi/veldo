@@ -94,16 +94,19 @@ expect("VELDO-0018 AC1 release-ownership/contribution DRIVEN (the declared falsi
 # ---------------------------------------------------------------------------------------------
 # AC2: acceptance over exact member revisions and observed regression receipts.
 # ---------------------------------------------------------------------------------------------
-_v18_snap = {"release_revision": 2, "release_status": "in_progress", "candidate": "sha256:cand", "environment": "staging",
+_v18_snap = {"release": "REL-0001", "release_revision": 2, "snapshot_digest": "sha256:snap", "release_status": "in_progress",
+             "candidate": "sha256:cand", "environment": "staging", "acceptance_authority": "dmitry", "deployment_authority": "release-ops",
              "members": [{"id": "PLAN-0019", "digest": "d19"}, {"id": "REL-0002", "digest": "d02"}, {"id": "PLAN-0001", "digest": "d01"}],
              "journeys": [{"id": "J-signup"}, {"id": "J-refill"}]}
-_v18_ex = {"uuid": "00000000-0000-4000-8000-000000000042", "alias": "RX-1", "state": "ACTIVE", "release_revision": 2, "concurrency_version": 3}
+_v18_ex = {"uuid": "00000000-0000-4000-8000-000000000042", "alias": "RX-1", "state": "ACTIVE", "release": "REL-0001",
+           "release_revision": 2, "concurrency_version": 3}
 _v18_rc = [{"kind": "member_outcome", "member": "PLAN-0019", "digest": "d19", "result": "accepted", "observed": True},
            {"kind": "member_outcome", "member": "REL-0002", "digest": "d02", "result": "accepted", "observed": True},
            {"kind": "member_outcome", "member": "PLAN-0001", "digest": "d01", "result": "passed", "observed": True},
            {"kind": "journey_execution", "journey": "J-signup", "candidate": "sha256:cand", "environment": "staging", "result": "passed", "observed": True},
            {"kind": "journey_execution", "journey": "J-refill", "candidate": "sha256:cand", "environment": "staging", "result": "passed", "observed": True}]
-_v18_auth = {"signed_by": "dmitry", "subject": "release_execution_acceptance", "release_revision": 2}
+_v18_auth = {"signed_by": "dmitry", "subject": "release_execution_acceptance", "release": "REL-0001", "release_revision": 2,
+             "snapshot_digest": "sha256:snap"}
 _v18_accepted, _v18_acc_problems = RF18.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, _v18_auth)
 expect("VELDO-0018 AC2 release-acceptance/complete: with every resolved member's outcome receipt at its exact digest, every "
        "declared journey's execution receipt against the snapshot's candidate and environment, and the acceptance "
@@ -132,7 +135,7 @@ expect("VELDO-0018 AC2 release-acceptance/set-equality: a deleted member receipt
        and any("exact accepted revision" in p for p in RF18.acceptance_problems(dict(_v18_ex, release_revision=1), _v18_snap, _v18_rc))
        and any("only ACTIVE executions are accepted" in p for p in RF18.acceptance_problems(dict(_v18_ex, state="BLOCKED"), _v18_snap, _v18_rc))
        and any("released string alone" in p for p in RF18.acceptance_problems(_v18_ex, dict(_v18_snap, release_status="released"), []))
-       and RF18.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, {"signed_by": "dmitry", "subject": "release_execution_acceptance", "release_revision": 1})[0] is None)
+       and RF18.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, dict(_v18_auth, release_revision=1))[0] is None)
 expect("VELDO-0018 AC2 release-acceptance/missing-regression: a declared journey without an execution receipt refuses "
        "acceptance by name, so a journey declaration alone is insufficient (R65)",
        any("J-refill has no execution receipt" in p for p in RF18.acceptance_problems(_v18_ex, _v18_snap, _v18_without(_v18_rc, lambda r: r.get("journey") == "J-refill")))
@@ -171,14 +174,14 @@ expect("VELDO-0018 AC3 floor-eligibility/blocks: a missing floor, a floor named 
        and any("unexamined member" in p for p in RF18.floor_eligibility_problems([dict(_v18_sf[0], affected_pins=["p1", "p9"]), _v18_sf[1]], _v18_floors, _v18_setts))
        and any("has no settlement" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, _v18_setts[1:]))
        and any("designated baseline authority is 'dmitry'" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, [dict(_v18_setts[0], settled_by="agent"), _v18_setts[1]]))
-       and any("expanded scope" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, [dict(_v18_setts[0], scope=["p1", "p2", "p7"]), _v18_setts[1]]))
+       and any("scope expansion" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, [dict(_v18_setts[0], scope=["p1", "p2", "p7"]), _v18_setts[1]]))
        and any("ruling 'meh' is not one of" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, [dict(_v18_setts[0], ruling="meh"), _v18_setts[1]])))
 expect("VELDO-0018 AC3 floor-eligibility/stale-settlement: a settlement bound to an earlier floor digest is stale and blocks "
        "by name until the authority settles the exact version",
        any("earlier floor digest is stale" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, [dict(_v18_setts[0], floor_digest="fd1"), _v18_setts[1]])))
 # THE DECLARED FALSIFIER: accept a settlement for an earlier floor digest in a copy; the row reds.
-_V18_M3 = _v18_mutated('''            if s.get("floor_digest") != floor.get("digest"):
-''', '''            if False:  # mutant: any digest will do
+_V18_M3 = _v18_mutated('''            elif s.get("floor_digest") != floor.get("digest"):
+''', '''            elif False:  # mutant: any digest will do
 ''')
 expect("VELDO-0018 AC3 floor-eligibility/stale-settlement DRIVEN (the declared falsifier): with the digest equality removed "
        "in a copy the stale settlement makes the execution eligible, so the row reds; unmutated it blocks",
@@ -221,7 +224,7 @@ expect("VELDO-0018 AC4 release-boundary/objective-cancellation: cancelling an ob
        and any("names execution unit u-1 directly" in p for p in RF18.objective_cancellation_problems(
            _v18_O, _v18_items, [{"target": "i-1", "disposition": "stop", "recorded_by": "dmitry"},
                                 {"target": "u-1", "target_type": "execution_unit", "disposition": "stop", "recorded_by": "dmitry"}])))
-_v18_dep_ok = {"kind": "deployment_authorization", "signed_by": "dmitry", "acceptance_uuid": _v18_accepted["uuid"]}
+_v18_dep_ok = {"kind": "deployment_authorization", "signed_by": "release-ops", "acceptance_uuid": _v18_accepted["uuid"]}
 expect("VELDO-0018 AC4 release-boundary/no-deployment: an accepted release execution authorizes no deployment; only a "
        "separate signed deployment_authorization bound to that acceptance does; an acceptance record claiming "
        "deployment_authorized True is refused as a claim acceptance cannot carry",
@@ -256,3 +259,54 @@ _V18_M4.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, _v18_auth, deploye
 expect("VELDO-0018 AC4 release-boundary/no-deployment DRIVEN (the declared falsifier): with rollout invoked on acceptance "
        "in a copy the deployer spy records a roll_out call, so the row reds; unmutated it records nothing",
        len(_v18_spy_m.calls) == 1 and _v18_spy_m.calls[0][0] == "roll_out" and _v18_spy.calls == [])
+
+
+# ---------------------------------------------------------------------------------------------
+# The five findings of the Codex review (review-20260917-090840), each pinned.
+# ---------------------------------------------------------------------------------------------
+_v18_authspec = _v18_ilu.spec_from_file_location("v18_authz", ROOT / ".veldo" / "authorization.py")
+AUTH18 = _v18_ilu.module_from_spec(_v18_authspec)
+_v18_authspec.loader.exec_module(AUTH18)
+expect("VELDO-0018 AC2/AC4 release-acceptance/authority (review 1): only the snapshot's named acceptance authority accepts "
+       "and only its named deployment authority deploys; an untrusted signer, a machine actor and a person other than "
+       "the named one are each refused by name; the machine set is bound to authorization.MACHINE_ACTORS",
+       RF18.MACHINE_ACTORS == AUTH18.MACHINE_ACTORS
+       and RF18.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, dict(_v18_auth, signed_by="untrusted-actor"))[0] is None
+       and any("only that authority accepts" in p for p in RF18.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, dict(_v18_auth, signed_by="untrusted-actor"))[1])
+       and RF18.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, dict(_v18_auth, signed_by="agent"))[0] is None
+       and any("only that authority deploys" in p for p in RF18.deployment_authorization_problems(_v18_accepted, dict(_v18_dep_ok, signed_by="untrusted-actor")))
+       and RF18.deployment_authorization_problems(_v18_accepted, dict(_v18_dep_ok, signed_by="dmitry")) != []
+       and RF18.deployment_authorization_problems(_v18_accepted, _v18_dep_ok) == [])
+expect("VELDO-0018 AC2 release-acceptance/binding (review 1): execution, snapshot and approval are bound by release id and "
+       "snapshot digest, not by the revision number alone; an execution of release A refuses release B's snapshot at the "
+       "same revision, and an approval bound to another snapshot digest or release refuses",
+       any("evidence never transfers between releases" in p for p in RF18.acceptance_problems(dict(_v18_ex, release="REL-0009"), _v18_snap, _v18_rc))
+       and RF18.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, dict(_v18_auth, snapshot_digest="sha256:other"))[0] is None
+       and RF18.accept_release_execution(_v18_ex, _v18_snap, _v18_rc, dict(_v18_auth, release="REL-0009"))[0] is None
+       and _v18_accepted["accepted_against"]["snapshot_digest"] == "sha256:snap" and _v18_accepted["accepted_against"]["release"] == "REL-0001")
+expect("VELDO-0018 AC2 release-acceptance/snapshot (review 1): an incomplete snapshot ({release_revision: 2} and nothing "
+       "else) is refused field by field and never accepted; a malformed member entry is refused rather than dropped; "
+       "duplicate member and journey ids are refused; an empty member list is refused; a machine actor as acceptance "
+       "authority is refused",
+       RF18.accept_release_execution(_v18_ex, {"release_revision": 2}, [], _v18_auth)[0] is None
+       and any("snapshot lacks members" in p for p in RF18.acceptance_problems(_v18_ex, {"release_revision": 2}, []))
+       and any("must be {id, digest}" in p for p in RF18.snapshot_problems(dict(_v18_snap, members=_v18_snap["members"] + ["PLAN-0002"])))
+       and any("listed twice" in p for p in RF18.snapshot_problems(dict(_v18_snap, members=_v18_snap["members"] + [_v18_snap["members"][0]])))
+       and any("journey J-signup is listed twice" in p for p in RF18.snapshot_problems(dict(_v18_snap, journeys=_v18_snap["journeys"] + [{"id": "J-signup"}])))
+       and any("non-empty list" in p for p in RF18.snapshot_problems(dict(_v18_snap, members=[])))
+       and any("acceptance_authority must name a person" in p for p in RF18.snapshot_problems(dict(_v18_snap, acceptance_authority="agent")))
+       and RF18.snapshot_problems(_v18_snap) == [])
+expect("VELDO-0018 AC3 floor-eligibility/bindings (review 1): a floor registered without a digest or authority, a snapshot "
+       "floor reference without a digest, and a settlement without a floor digest or signer are each refused; absent "
+       "values never compare equal",
+       any("registered without a digest" in p for p in RF18.floor_eligibility_problems(_v18_sf, {"F-claims": {"pins": ["p1", "p2", "p3"]}, "F-lander": _v18_floors["F-lander"]}, _v18_setts))
+       and any("without a digest: an unbound floor reference" in p for p in RF18.floor_eligibility_problems([{"floor": "F-claims", "affected_pins": ["p1"]}, _v18_sf[1]], _v18_floors, _v18_setts))
+       and any("carries no floor digest" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, [{k: v for k, v in _v18_setts[0].items() if k != "floor_digest"}, _v18_setts[1]]))
+       and any("designated baseline authority" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, [{k: v for k, v in _v18_setts[0].items() if k != "settled_by"}, _v18_setts[1]]))
+       and RF18.floor_eligibility_problems(_v18_sf, {"F-claims": dict(_v18_floors["F-claims"], authority=None), "F-lander": _v18_floors["F-lander"]},
+                                           [dict(_v18_setts[0], settled_by=None), _v18_setts[1]]) != [])
+expect("VELDO-0018 AC3 floor-eligibility/scope (review 1): a settlement covering a pin the floor declares but the execution "
+       "did not affect (p3 beside p1 and p2) is expanded scope and blocks; the scope is bounded by the affected set, not "
+       "by the floor's declared pins",
+       any("outside the execution's affected set" in p for p in RF18.floor_eligibility_problems(_v18_sf, _v18_floors, [dict(_v18_setts[0], scope=["p1", "p2", "p3"]), _v18_setts[1]]))
+       and RF18.floor_eligibility_problems(_v18_sf, _v18_floors, _v18_setts) == [])
