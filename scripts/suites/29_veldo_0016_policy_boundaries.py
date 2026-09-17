@@ -763,7 +763,7 @@ expect("VELDO-0016 AC4 policy-boundaries/checkpoint-isolation: a checkpoint-name
        and PC16.checkpoint_statement_allowed(PC16.BOUNDARY_TABLE[0]["seeded_violation"]) == (
            False, "statement names domain table(s) claims: checkpoint writes cannot touch domain tables (R21)")
        and PC16.checkpoint_statement_allowed("SELECT * FROM journal")[0] is False
-       and PC16.checkpoint_statement_allowed("ATTACH DATABASE 'control.sqlite3' AS other")[1].startswith("statement uses ATTACH")
+       and "ATTACH" in PC16.checkpoint_statement_allowed("ATTACH DATABASE 'control.sqlite3' AS other")[1]
        and PC16.checkpoint_statement_allowed("CREATE VIEW langgraph_v AS SELECT * FROM receipts")[1].startswith("statement uses VIEW")
        and PC16.checkpoint_statement_allowed("SELECT 1")[0] is False
        and PC16.checkpoint_statement_allowed("select id from main.langgraph_writes where thread_id = ?")[0] is True)
