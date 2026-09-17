@@ -305,6 +305,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/graph_contract.py and .veldo/authorization.py by path (the graph organ loads release_floor_contract by path from the engine), mutates copies of the module under a temporary directory, writes only there and spawns no subprocess."
   },
   {
+   "name": "33_veldo_0020_authority",
+   "file": "33_veldo_0020_authority.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "33_veldo_0020_authority"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/authority_contract.py and .veldo/authorization.py by path, mutates copies of the module under a temporary directory, generates a throwaway Ed25519 key pair with the installed ssh-keygen and signs and verifies through it (standing down by name when ssh-keygen is absent), writes only under temporary directories."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

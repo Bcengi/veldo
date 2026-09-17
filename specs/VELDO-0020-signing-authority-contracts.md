@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0020
 title: Signing and authority contracts for enrolled channels
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -23,6 +23,11 @@ footprint:
   - ".veldo/request_projection.py"
   - "engine/.veldo/request_projection.py"
   - "engine/.veldo/*contract*.py"
+  - ".veldo/*contract*.py"
+  - ".veldo/capabilities.yaml"
+  - "engine/.veldo/capabilities.yaml"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - "scripts/suites/*"
   - "packs/**/.veldo/*contract*.py"
   - "specs/VELDO-0020-signing-authority-contracts.md"

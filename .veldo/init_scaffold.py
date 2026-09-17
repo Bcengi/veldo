@@ -67,6 +67,9 @@ _FILES = [
     # VELDO-0019 (PLAN-0019 W4): the combined dependency graph and decision observation rules,
     # loaded by the suite and by the eligibility service above it; not substrate.
     ".veldo/graph_contract.py",
+    # VELDO-0020 (PLAN-0019 W5): signing and authority contracts, loaded by the suite and by the
+    # authority service above it; not substrate.
+    ".veldo/authority_contract.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",
