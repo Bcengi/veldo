@@ -3,9 +3,11 @@ schema: veldo.plan/v1
 id: PLAN-0019
 title: Dark Factory project coordination inside Veldo
 kind: mvp
-status: draft
+status: ready
 revision: 1
 owner: dmitry
+approved_by: dmitry
+approved_at: 2026-09-17
 risk: critical
 
 outcomes:

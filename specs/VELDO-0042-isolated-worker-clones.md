@@ -62,13 +62,17 @@ acceptance_criteria:
       clones/accepted-source must detect the wrong tree.
   - id: AC2
     text: >
-      Claim: The shared cache exposes only read-only Git objects and pins every referenced object
-      until all dependent clones retire. Set: Real Git alternates or an equivalently qualified
+      Claim: The shared cache exposes only read-only Git objects of the repositories the contract
+      names, never objects of any other repository, and pins every referenced object until all
+      dependent clones retire. Set: Real Git alternates or an equivalently qualified
       sharing mechanism with concurrent clone provisioning, object reads, and git gc.
       Completeness: Enumerate accepted commit reachability with Git, race garbage collection and
       clone creation, and try worker writes to shared objects. Require all pinned object reads to
       succeed and cache bytes to remain unchanged, including during a worker build that creates
-      local objects. Falsifier: Drop a live clone pin before running git gc on an otherwise
+      local objects. Seed a second repository's objects in a separate cache and require that a
+      worker whose contract does not name it cannot enumerate or read them through cat-file
+      --batch-all-objects, cat-file -p, or its alternates file; a pooled cache holding both
+      repositories' objects must refuse provisioning by name. Falsifier: Drop a live clone pin before running git gc on an otherwise
       unreachable accepted commit; clones/gc-pin must detect a missing running-checkout object.
     falsified_by: >
       Drop a live clone pin before running git gc on an otherwise unreachable accepted commit;

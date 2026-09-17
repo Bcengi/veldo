@@ -408,7 +408,7 @@ Capacity is released only after containment is empty and outcome and accounting 
 
 Workers receive isolated per-run clones at an explicit accepted commit. They cannot write the authority clone, Git common directory, claims, signing material, other workers, or operational database. This replaces PLAN-0007's shared-worktree provisioning boundary for enrolled autonomous work.
 
-Provisioning shall use a trusted shared object cache through read-only Git alternates or an equivalently qualified object-sharing mechanism. Cache access exposes Git objects only, never authority metadata or credentials. Referenced objects are pinned until dependent clones retire; garbage collection cannot invalidate a running checkout. Workers cannot mutate shared object bytes.
+Provisioning shall use a trusted shared object cache through read-only Git alternates or an equivalently qualified object-sharing mechanism. The cache a worker can reach holds objects of exactly the repositories its contract names and nothing else: one cache per repository, never a pooled cache across repositories, because an alternate exposes every object it holds to enumeration regardless of the checkout or the attachment list. Cache access exposes Git objects only, never authority metadata or credentials, and qualification includes a negative read test proving a worker cannot enumerate or read an object of a repository its contract did not name. Referenced objects are pinned until dependent clones retire; garbage collection cannot invalidate a running checkout. Workers cannot mutate shared object bytes.
 
 The Credential Service is the real issuer of short-lived internal capability handles derived from accepted contracts, not caller-supplied task declarations. Security and operations authorities revoke them. Protected service storage holds provider and target credentials. The trusted Effect Executor alone exchanges handles for permitted privileged operations and rechecks authority at use.
 
@@ -724,7 +724,7 @@ Compensation is a new contracted effect with its own identity, authorization, an
 
 **R75. Authority deployment, startup, and routing.**
 
-The authority runs on the designated Linux workstation as a user systemd service under an operations-controlled account. One instance serves one coordination domain. Operations installs a versioned unit, fixed executable path, protected configuration, runtime socket permissions, and the constrained runner helper.
+The authority runs on a designated qualified Linux host, a workstation or a cloud host, as a systemd service under an operations-controlled account; by Dmitry's 2026-09-17 ruling (plan constraint C12) the host is chosen for reachability, and once several boxes work on a repository the always-on host is the right one. One instance serves one coordination domain. Operations installs a versioned unit, fixed executable path, protected configuration, runtime socket permissions, and the constrained runner helper.
 
 An authorized installation step enables the instance after host qualification and enrollment. Systemd starts it according to that activation and restarts unexpected exits only through the recovery startup path. Repeated failures leave it stopped with a durable diagnostic. An explicit operations stop remains stopped until authorized restart. Running while logged out requires separately established systemd user-service persistence.
 

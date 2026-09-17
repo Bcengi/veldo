@@ -52,8 +52,11 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Only a qualified Linux systemd and cgroup v2 profile launches autonomous workers,
-      with one dedicated containment group and trusted wrapper per dispatch. Set: Real workers
+      Claim: Only a qualified host profile launches autonomous workers, with one dedicated
+      containment group and trusted wrapper per dispatch; the first qualified profile is Linux
+      with systemd and cgroup v2, on a workstation or a cloud host, and any other host kind
+      enters only through its own qualified adapter that passes this same contract (plan
+      constraint C12). Set: Real workers
       that fork, create new sessions, spawn grandchildren, attempt cgroup changes, reach the
       service manager, or signal the authority. Completeness: Derive attacks from each R43
       privilege boundary and execute actual descendant programs under the worker identity. Inspect

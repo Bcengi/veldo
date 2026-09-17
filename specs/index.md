@@ -613,16 +613,12 @@ Open decision D4 blocks: VELDO-0007.
 
 ### PLAN-0019 - Dark Factory project coordination inside Veldo
 
-Status draft, revision 1, owner dmitry. 0/83 work items shipped.
-Ready frontier: VELDO-0017 (W2).
-Open decision D1 blocks: VELDO-0016, VELDO-0023, VELDO-0024, VELDO-0044, VELDO-0048.
-Open decision D2 blocks: VELDO-0016, VELDO-0024, VELDO-0039.
-Open decision D3 blocks: VELDO-0016, VELDO-0040, VELDO-0041, VELDO-0047.
-Open decision D4 blocks: VELDO-0016, VELDO-0042.
+Status ready, revision 1, owner dmitry. 0/83 work items shipped.
+Ready frontier: VELDO-0016 (W1), VELDO-0017 (W2).
 
 | Item | Spec | Title | Depends on | State |
 |---|---|---|---|---|
-| W1 | VELDO-0016 | Decision records and effective policy amendments | - | blocked: decision D1,D2,D3,D4 |
+| W1 | VELDO-0016 | Decision records and effective policy amendments | - | draft (frontier) |
 | W2 | VELDO-0017 | Entity identity and lifecycle schemas | - | draft (frontier) |
 | W3 | VELDO-0018 | Release and behavior-floor integration contracts | VELDO-0017 | waiting: VELDO-0017 |
 | W4 | VELDO-0019 | Combined dependency graph and decision observation rules | VELDO-0017, VELDO-0018 | waiting: VELDO-0017, VELDO-0018 |
