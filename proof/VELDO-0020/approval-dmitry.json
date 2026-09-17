@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0020-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0020",
+    "commit": "550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0020 (risk critical, human_approval required, no protected paths) over Telegram on 2026-09-17 at 21:46 UTC (message 27925, 'Approve 0020'), answering an ask (message 27924) that described the item: the nine authorization boundaries with role, quorum, named person and independence required together and an agent never standing in for a named person; the Ed25519 command envelope over the whole command with a swapped enrollment key refused before anything runs, tested with a real key through ssh-keygen; one restricted key per channel with platform evidence required; one settlement per request with a person on two channels counted once. The item enrolls nobody and Dmitry stays the only named authority. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-17T22:40:00Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval of 2026-09-17; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}

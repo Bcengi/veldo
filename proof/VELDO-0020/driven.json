@@ -1,0 +1,136 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0020",
+  "commit": "550aa5863e305a1a95cb9ceb8f77e2a7a7dacc23",
+  "taken_at": "2026-09-17T21:59:11Z",
+  "fragment": "scripts/suites/33_veldo_0020_authority.py",
+  "fragment_sha256": "bf3ace0810e9a9954027856657f66fc2674a81a1ad85a300b6fa5a89ad16077a",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/authority_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
+  "rows_total": 18,
+  "rows_passed": 18,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0020 AC1 authority-substitution/named-principal DRIVEN (the declared falsifier): with an agent run allowed to satisfy a named-person predicate in a copy, run-7f3a authorizes a proposal that names dmitry, so the row reds; unmutated it is refused",
+    "VELDO-0020 AC2 signing/enrollment-key-substitution DRIVEN (the declared falsifier): with the digest no longer recomputed in a copy, the substituted enrollment key passes under the original signature (a permissive verifier standing for a valid signature), so the row reds; unmutated it is refused",
+    "VELDO-0020 AC3 channel-attribution/text-only DRIVEN (the declared falsifier): with message text accepted in place of platform evidence in a copy, the text-only assertion is accepted, so the row reds; unmutated it is refused",
+    "VELDO-0020 AC4 settlement/cross-channel-principal DRIVEN (the declared falsifier): with quorum members counted per channel in a copy, dmitry on two channels meets a quorum of two and the request settles, so the row reds; unmutated it is refused"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "authority-substitution/named-principal DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "signing/enrollment-key-substitution DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "channel-attribution/text-only DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC4": {
+      "row_contains": "settlement/cross-channel-principal DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 5,
+      "passed": 5,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 5,
+      "passed": 5,
+      "driven": 1
+    },
+    "AC4": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0020 AC1 authority-substitution/matrix: the boundary table is exactly the nine R39 boundaries, every admitted type is one of the four principal types, the seven R37 roles are registered, and the machine set is bound to authorization.MACHINE_ACTORS",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC1 authority-substitution/conjunction: Dmitry's own attestation at decision_settlement satisfies role, named principal, quorum and independence together; each condition failing alone is refused by name (a policy holding the role but not the named person; two people without the role; a quorum of two with one person; two independence groups with one; an expired requirement; a revoked member; a stale attestation; a type the boundary does not admit)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC1 authority-substitution/named-principal: an agent run, a service and a policy each fail a named-person predicate for dmitry even when they attest; only dmitry's own attestation satisfies it",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC1 authority-substitution/named-principal DRIVEN (the declared falsifier): with an agent run allowed to satisfy a named-person predicate in a copy, run-7f3a authorizes a proposal that names dmitry, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC2 signing/envelope: the twelve envelope fields are each required by name; mutating each command component (operation, target, parameters) makes the recomputed canonical digest mismatch and refuses before execution; a clean envelope over the clean command passes the everything-else check",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC2 signing/context: a replayed nonce, an expired envelope, a wrong repository, a stale membership version, a stale delegation version, a revoked principal and a retired or revoked key are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC2 signing/real-key: a command envelope signed with a fresh Ed25519 key through the installed ssh-keygen verifies against the keyring's active key through the module's default verifier; the same signature over an envelope with one changed field does not verify; the same signature checked against another key does not verify",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC2 signing/enrollment-key-substitution: an enrollment command whose public key parameter was substituted under an unchanged signed envelope is refused before execution because the recomputed digest differs",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC2 signing/enrollment-key-substitution DRIVEN (the declared falsifier): with the digest no longer recomputed in a copy, the substituted enrollment key passes under the original signature (a permissive verifier standing for a valid signature), so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC3 channel-attribution/registry: the channel registry has Telegram chat, Jira and signed CLI enrolled and email unenrolled, each with its own restricted edge key and its platform attribution fields; a well-formed chat assertion under a matching delegation is accepted",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC3 channel-attribution/conformance: generated from the registry, every enrolled channel accepts a complete assertion, email refuses while unenrolled, every missing platform attribution field refuses by name, and an edge signing with another channel's key refuses (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC3 channel-attribution/delegation: an expired delegation, a delegation for another principal, request version or presentation version, an assertion kind the delegation does not permit, an unknown assertion kind, and an assertion naming no presentation are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC3 channel-attribution/text-only: a chat assertion carrying message text and a display name but no platform message id, sender id or timestamp is refused naming each missing field",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC3 channel-attribution/text-only DRIVEN (the declared falsifier): with message text accepted in place of platform evidence in a copy, the text-only assertion is accepted, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC4 settlement/single: one valid chat answer settles the request version once, attributed to telegram_chat and bound to its presentation, consuming the nonce, with projection obligations for the other enrolled channels and the decision effect in the same atomic result",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC4 settlement/refusals: an already-settled version, an expired request, a stale presentation (changed brief, changed framing, changed subject, other version), an unknown presentation, a presentation from another channel, an edge-refused assertion, a revoked member, a revoked key and no valid assertion each refuse by name and settle nothing",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC4 settlement/cross-channel-principal: dmitry answering on Telegram and on Jira is ONE quorum member (a quorum of two is not met), while dmitry and asya on two channels are two and settle; the winner among concurrent valid answers is the earliest by platform timestamp and the settlement is attributed to that channel with the other channel owed a projection",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0020 AC4 settlement/cross-channel-principal DRIVEN (the declared falsifier): with quorum members counted per channel in a copy, dmitry on two channels meets a quorum of two and the request settles, so the row reds; unmutated it is refused",
+      "passed": true
+    }
+  ]
+}
