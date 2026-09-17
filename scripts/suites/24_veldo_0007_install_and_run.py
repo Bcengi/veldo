@@ -25,6 +25,8 @@ import hashlib as _iar_hl
 import os as _iar_os
 import re as _iar_re
 import shutil as _iar_sh
+import socket as _iar_socket
+import stat as _iar_stat
 import subprocess as _iar_sp
 import sys as _iar_sys
 import threading as _iar_threading
@@ -40,6 +42,15 @@ def _iar_block(label, fn):
                % (label, _iar_e), False)
 
 
+def _iar_special_kind(mode):
+    for predicate, kind in ((_iar_stat.S_ISSOCK, "socket"), (_iar_stat.S_ISFIFO, "fifo"),
+                            (_iar_stat.S_ISCHR, "character-device"),
+                            (_iar_stat.S_ISBLK, "block-device")):
+        if predicate(mode):
+            return kind
+    return None
+
+
 def _iar_inventory(root, *, entries=None):
     """relative path -> (kind, size, sha256 or symlink target), recursively unless entries are supplied.
 
@@ -53,7 +64,8 @@ def _iar_inventory(root, *, entries=None):
     interpreter's own bytecode caching is suppressed with PYTHONDONTWRITEBYTECODE instead: a cache
     the interpreter writes is not this stage writing, while a file the stage writes with any name at
     all, inside __pycache__ included, still moves an entry here. Directories and symlinks are
-    entries too, so an empty directory or a relinked path is a change.
+    entries too, so an empty directory or a relinked path is a change. Special files
+    are recorded by kind as skipped by metadata copying; their contents are never read.
 
     Compare content and existence, never timestamps: git reads may refresh split-index
     timestamps without changing bytes. Identical rewrites and writes restored before
@@ -63,7 +75,10 @@ def _iar_inventory(root, *, entries=None):
     for p in sorted(root.rglob("*") if entries is None else entries):
         rel = p.relative_to(root).as_posix()
         try:
-            if p.is_symlink():
+            special = _iar_special_kind(p.lstat().st_mode)
+            if special:
+                inv[rel] = (special, 0, "skipped by metadata copy")
+            elif p.is_symlink():
                 inv[rel] = ("symlink", 0, _iar_os.readlink(p))
             elif p.is_dir():
                 inv[rel] = ("dir", 0, "")
@@ -109,7 +124,7 @@ def _iar_repository_inventory(root):
 
 def _iar_private_paths(private):
     # Checkout-owned state, even when the primary stores it in the common directory.
-    # Git documents the boundary and private refs/config in git-worktree (REFS,
+    # Git documents the boundary and private refs, their reflogs, and config in git-worktree (REFS,
     # CONFIGURATION FILE, DETAILS): https://git-scm.com/docs/git-worktree
     # Index/sharedindex, logs/HEAD and info/sparse-checkout are described in
     # https://git-scm.com/docs/gitrepository-layout . Include operation state and
@@ -121,6 +136,7 @@ def _iar_private_paths(private):
              or (not p.is_dir() and p.name.removesuffix(".lock").isupper())]
     paths += [private / rel for rel in
               ("logs/HEAD", "logs/HEAD.lock", "refs/bisect", "refs/worktree", "refs/rewritten",
+               "logs/refs/bisect", "logs/refs/worktree", "logs/refs/rewritten",
                "info/sparse-checkout", "info/sparse-checkout.lock")
               if (private / rel).exists()]
     return paths
@@ -159,6 +175,10 @@ def _iar_copy_entry(source, target, *, skip=()):
     The working-tree copy keeps symlinks, matching its original working bytes.
     """
     try:
+        # These are runtime endpoints, not repository content. Follow symlinks as
+        # copy2 does, so a metadata symlink to a special file is also omitted.
+        if _iar_special_kind(source.stat().st_mode):
+            return
         if source.is_dir():
             target.mkdir(parents=True, exist_ok=True)
             for child in source.iterdir():
@@ -423,6 +443,58 @@ def _iar_layout_controls():
                 changed = _iar_changed(before, _iar_repository_inventory(target))
                 expect("VELDO-0099 AC3: %s %s metadata write is observed" % (shape, store),
                        any(p.endswith("/" + store + "-write-probe") for p in changed))
+
+
+def _iar_special_and_reflog_controls():
+    with tempfile.TemporaryDirectory(prefix="iar-special-") as d:
+        base = Path(d)
+        primary, linked = base / "p", base / "l"
+        primary.mkdir()
+        _iar_git(primary, "init", "-q")
+        (primary / "tracked").write_text("fixture\n")
+        _iar_git(primary, "add", ".")
+        _iar_git(primary, "-c", "user.name=Veldo fixture", "-c",
+                 "user.email=fixture@example.invalid", "commit", "-qm", "Seed special fixtures")
+        _iar_git(primary, "worktree", "add", "--detach", str(linked), "HEAD")
+        for shape, tree in (("primary", primary), ("linked", linked)):
+            private, common = _iar_git_dirs(tree)
+            endpoint, fifo = private / "fsmonitor--daemon.ipc", private / "probe.fifo"
+            with _iar_socket.socket(_iar_socket.AF_UNIX) as sock:
+                sock.bind(str(endpoint))
+                _iar_os.mkfifo(fifo)
+                try:
+                    inventory = _iar_inventory(private)
+                    sandbox = base / (shape + "-copy")
+                    sandbox.mkdir()
+                    raised = None
+                    try:
+                        _iar_copy_tree(tree, sandbox / "repo")
+                    except OSError as error:
+                        raised = repr(error)
+                    expect("VELDO-0099 AC1: %s socket and FIFO are inventoried by skipped kind and not copied (%r)"
+                           % (shape, raised),
+                           raised is None
+                           and inventory[endpoint.name] == ("socket", 0, "skipped by metadata copy")
+                           and inventory[fifo.name] == ("fifo", 0, "skipped by metadata copy")
+                           and not list(sandbox.rglob(endpoint.name))
+                           and not list(sandbox.rglob(fifo.name)))
+                finally:
+                    endpoint.unlink()
+                    fifo.unlink()
+            logs = []
+            for name in ("bisect", "worktree", "rewritten"):
+                _iar_git(tree, "-c", "user.name=Veldo fixture", "-c",
+                         "user.email=fixture@example.invalid", "update-ref", "--create-reflog",
+                         "refs/" + name + "/probe", "HEAD")
+                log = private / "logs/refs" / name / "probe"
+                assert log.is_file(), log
+                logs.append(log)
+            before = _iar_live_inventory(tree)
+            for log in logs:
+                log.unlink()
+            changed = _iar_changed(before, _iar_live_inventory(tree))
+            expect("VELDO-0099 AC3: %s private reflog deletions are observed" % shape,
+                   all("git-dir/" + log.relative_to(private).as_posix() in changed for log in logs))
 
 
 def _iar_review_controls():
@@ -1402,6 +1474,7 @@ def _iar_alternates_name_controls():
 _iar_block("AC4", _iar_ac4)
 _iar_block("VELDO-0099 checkout shape controls", _iar_layout_controls)
 _iar_block("VELDO-0099 review controls", _iar_review_controls)
+_iar_block("VELDO-0099 special files and private reflogs", _iar_special_and_reflog_controls)
 _iar_block("VELDO-0099 nested repository controls", _iar_nested_controls)
 _iar_block("VELDO-0099 alternates name controls", _iar_alternates_name_controls)
 
