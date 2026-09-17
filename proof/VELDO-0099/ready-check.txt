@@ -1,3 +1,2 @@
-command: python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md
-commit: 74ae1daa2136f0025e933a9761ccdea103db09fd
-exit_code: 0
+Command: python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md
+Exit: 0

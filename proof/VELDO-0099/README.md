@@ -1,140 +1,138 @@
-# VELDO-0099 proof
+# VELDO-0099 proof after the second review
 
-## Review corrections
+The implementation and mutation driver are bound to c63df48ae9087dfdaddab83a9f34d0a8ceabd329. The spec remains
+ready for the external independent reviewer. No self-approval or landing is claimed.
+Engine and pack files do not change.
 
-The corrected implementation is bound to 74ae1daa2136f0025e933a9761ccdea103db09fd.
-The changes are in scripts/suites/24_veldo_0007_install_and_run.py. The spec remains
-ready. Engine and pack files do not change. Independent review and landing belong
-to the external reviewer; this implementing agent does not approve its own work.
+## Corrections
 
-Finding 1: the sandbox inventory still covers the working tree, resolved private
-Git directory, and copied common store. The live inventory covers only this
-checkout's working bytes and private Git state. It prunes the primary .git tree
-before traversal and selects private state from it; linked metadata is read from
-that checkout's private directory. Shared objects, refs, and sibling indexes are
-excluded from the live comparison. AC3 now states this attribution boundary.
+All code changes are in scripts/suites/24_veldo_0007_install_and_run.py:
 
-Finding 2: the layout fixture commits with fixed user.name and user.email options
-and fixed GIT_AUTHOR_NAME, GIT_AUTHOR_EMAIL, GIT_COMMITTER_NAME, and
-GIT_COMMITTER_EMAIL values. It never reads the caller's identity. The proof driver
-uses an empty HOME and XDG_CONFIG_HOME, disables global/system Git configuration,
-removes inherited identity/configuration environment variables, and verifies
-that neither identity setting exists in its disposable source repository.
+- Lines 84-97, 176-293: rebuild config using only non-path storage settings;
+  discard includes, core.worktree, hooks and execution paths; clear inherited Git
+  redirects; rewrite .git, commondir and gitdir; materialize symlinked metadata
+  and recursive object alternates without hardlinks. Alternate stores live under
+  the copied common store so writes to them remain observed. Static path/config
+  assertions precede Git discovery in the copy, then Git's resolved working tree,
+  private directory, common directory, index, objects, HEAD, config and hooks are
+  checked before the copied stage can execute.
+- Lines 150-173, 261-293: select common objects, refs, packed-refs, shallow and HEAD,
+  plus config and this checkout's private state. Never traverse sibling worktrees.
+  Recursive metadata copying tolerates FileNotFoundError at enumeration and copy;
+  other failures remain failures. No common index is copied for a linked checkout.
+- Lines 111-147: the primary private inventory includes sharedindex.*, index,
+  config.worktree, uppercase pseudorefs and operation files (including HEAD,
+  ORIG_HEAD and MERGE_HEAD), sequencer/rebase directories, logs/HEAD, and the
+  per-worktree bisect/worktree/rewritten refs. Linked private state stays recursive.
+- Lines 370-500: real fixtures exercise concurrent sibling activity, deterministic
+  disappearance, corrupt split index bases, external configs and relative alternates.
 
-## Full gate evidence
+The redirect fixture enables worktree config, sets core.worktree in common and
+private configs, adds an external config include and hooks path, and supplies all
+objects through a relative external alternate. It executes checkout-index -f -a
+inside the copy and requires committed bytes there and byte-identical dirty bytes
+in the source. It also checks object availability and observation of an alternate
+store write. Skipping normalization reds this row before any unsafe Git write runs.
+The real AC4 stage additionally runs with redirected config and a dirty original
+stage in each checkout shape: 14 passed, 0 failed, original bytes unchanged.
 
-Every full gate command is ./scripts/verify.sh. The baseline ran in the assigned
-linked worktree at b43e0f28db06abd3feae645fae47b741340f7318 before edits: exit 0,
-4821 passed, 0 failed. It used the caller's configured identity and did not inject
-sibling activity. This GREEN does not refute either reviewer finding.
-Its complete output is gate-review-before.log.
+## Full gates
 
-The corrected linked and disposable primary runs are gate-linked.log and
-gate-primary.log, at 74ae1daa2136f0025e933a9761ccdea103db09fd: exit 0, 4825 passed,
-0 failed. Both first-use integration runs passed. Each catalog ran 8 checks,
-with 15 not applicable, 0 waived, and 0 undeclared. Existing history stand-downs
-remain visible and are not claimed as newly measured history.
+All full gates use ./scripts/verify.sh:
 
-The primary checkout was created in a fresh temporary directory with:
+| Run | Commit | Exit | Selftest | Catalog |
+| --- | --- | ---: | --- | --- |
+| Before, assigned linked checkout | f3ac2e7 | 0 | 4825 passed, 0 failed | 8 run |
+| After, assigned linked checkout | c63df48 | 0 | 4832 passed, 0 failed | 8 run |
+| After, disposable primary checkout | c63df48 | 0 | 4832 passed, 0 failed | 8 run |
+
+Each complete gate is GREEN and includes passing first-use integration. Catalogs
+also report 15 not applicable, 0 waived and 0 undeclared. Full outputs are
+ gate-second-review-before.log, gate-second-review-linked.log, and
+ gate-second-review-primary.log. The before run launched from a clean tree;
+ specification edits began while it was running. Its suite counts reflect the
+ prior implementation, but it is not claimed as an immutable all-file snapshot.
+The after runs started from the same clean implementation commit; no implementation
+or proof bytes were edited while those runs executed. These receipts are packaged
+afterward. Historical stand-downs remain visible and are not newly proven history.
+
+The primary fixture was created with:
 
 ```
 git clone --no-hardlinks --no-checkout <assigned-worktree> <temporary-primary>
-git -C <temporary-primary> checkout --detach 74ae1daa2136f0025e933a9761ccdea103db09fd
+git -C <temporary-primary> checkout --detach c63df48ae9087dfdaddab83a9f34d0a8ceabd329
+cd <temporary-primary>
+./scripts/verify.sh
 ```
 
-No identity was copied from the caller into that clone. It has its own object
-store and no registration in this repository's common directory. Sibling staging
-is performed only in disposable fixture repositories, never in another existing
-worktree. Nothing was pushed. Gate-generated .veldo/last_verify and
-.veldo/events.jsonl in the assigned checkout are restored before the final commit
-and are not included in any correction commit.
+It is an independent disposable repository. No other existing branch or worktree
+was changed. Nothing was pushed. The assigned checkout's .veldo/last_verify and
+.veldo/events.jsonl are restored with git checkout before receipt commits.
 
-A gate verifies working bytes. The linked run included the sanitized baseline
-log and redaction-record update as uncommitted proof changes; its suite and
-spec bytes match the named implementation commit. Later proof commits package
-the observed results rather than claiming those receipts existed before the run.
+## Driven mutations
 
-## Driven regressions
+Reproduce with python3 proof/VELDO-0099/drive.py. The driver extracts the actual
+suite functions through their AST, mutates them only in memory or in disposable
+fixtures, asserts each exact expected red-row set, and records the live suite hash
+before and after. driven.json contains every complete row label and result.
+These are paired diagnostics, not selected-suite results claimed as full gates.
 
-Reproduce with python3 proof/VELDO-0099/drive.py. This is a paired mutation driver,
-not a partial selftest cited as a full gate. It extracts the actual suite functions
-from their AST, mutates only the in-memory functions or disposable fixture files,
-and verifies that the live suite SHA-256 is unchanged. driven.json includes all
-row labels, outcomes, source hash, environment description, and commit IDs.
+| Mutation | Passed/failed | Red row |
+| --- | --- | --- |
+| Restore .git directory requirement | 16/1 | Linked copied substrate resolves inside its sandbox |
+| Substitute clone of HEAD | 15/2 | Primary and linked dirty stage, index and untracked copy fidelity |
+| Inventory only sandbox working tree | 15/2 | Linked private and common metadata write is observed |
+| Restore shared live inventory | 15/2 | Primary and linked sibling staging leaves live inventory unchanged |
+| Restore caller identity reads | 0/1 | Checkout shape controls block raises during setup |
+| Skip config normalization | 5/2 | Primary and linked redirected config and alternates are isolated and original edit survives checkout-index |
+| Copy sibling state | 5/2 | Primary and linked 50 copies during sibling staging have zero raises and no sibling state |
+| Raise on vanished entries | 6/1 | An entry vanishing after enumeration does not raise |
+| Omit sharedindex from primary observation | 6/1 | Primary split index corruption is observed |
+| Skip alternate rewrite | 5/2 | Primary and linked redirected config and alternates are isolated and original edit survives checkout-index |
+| Actual AC4 directory requirement | Primary 14/0, linked 13/1 | Linked THE OBSERVATION'S OWN SUBSTRATE |
+| Actual AC4 shared live inventory during sibling staging | Each shape 13/1 | THIS repository is untouched |
+| Actual AC4 stage writes copied common store | Each shape 13/1 | NOT ONE BYTE of the repository under check changed |
 
-| Drive | Passed | Failed | Red row |
-| --- | ---: | ---: | --- |
-| Layout controls with empty HOME and no identity | 17 | 0 | None |
-| Restore .git directory requirement | 16 | 1 | Linked copied substrate |
-| Substitute clone of HEAD | 15 | 2 | Primary and linked dirty-copy fidelity |
-| Inventory sandbox working tree only | 15 | 2 | Linked private and common metadata writes |
-| Restore shared live inventory | 15 | 2 | Primary and linked sibling staging |
-| Restore caller-identity lookup | 0 | 1 | Checkout-shape fixture setup raises |
-| Actual AC4 control, either shape | 14 | 0 | None |
-| Actual AC4 old shape requirement, primary | 14 | 0 | None |
-| Actual AC4 old shape requirement, linked | 13 | 1 | Observation substrate |
-| Actual AC4 sibling staging, either shape | 14 | 0 | None |
-| Actual AC4 sibling staging with shared live inventory, either shape | 13 | 1 | THIS repository is untouched |
-| Actual AC4 stage writes copied common store, either shape | 13 | 1 | NOT ONE BYTE of the repository under check changed |
+Unmutated layout controls are 17/0 and review controls are 7/0 under empty HOME,
+empty XDG_CONFIG_HOME, disabled global/system config and no caller identity.
+The review control performs 50 copies per shape while a sibling continuously
+stages and unstages; all 100 complete without a raise or copied sibling state.
+A separate deterministic control deletes index.lock after enumeration and before
+copying it. Both primary and linked fixtures corrupt a real sharedindex base:
+Git ls-files fails, and the inventory identifies the changed sharedindex entry.
+Real AC4 controls, sibling staging controls, and redirected-config controls each
+pass 14/0 in both shapes.
 
-The sibling control wraps the real IAR.check call and stages a new file in the
-sibling after that real call succeeds, before the live after-snapshot. The common
-store mutation modifies the disposable stage's __main__ path to resolve and write
-its own Git common directory, so the real sandboxed stage does the forbidden write
-and still completes successfully. The sandbox row alone goes red. The first draft
-of this probe used an additional subprocess launcher and also reddened the existing
-single-funnel row; the final probe uses the stage's existing _run funnel to isolate
-the common-store write. No production launcher rule was changed.
+## Scope, unsuccessful probes and limits
 
-The earlier diagnostic selected-suite run after finding 1 reported 86 passed,
-0 failed and exit 2, the runner's deliberate PARTIAL status. It is not evidence
-of a full gate pass. Readiness was validated with:
-
-```
-python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md
-```
-
-## Scope search and historical evidence
-
-The sibling search was repeated with:
+Readiness is validated by the command in ready-check.txt. sibling-search.txt records:
 
 ```
 rg -n '\.git.*is_dir|\.git.*isdir|isdir.*\.git|\[.*-d.*\.git' scripts/suites
 ```
 
-The live shape assertion was unique to VELDO-0007 AC4. Other .git/index literals
-in the codified-live suite address repositories it creates with git init. The
-malformed-pointer fixture in this suite is deliberately invalid, and the layout
-controls deliberately assert both shapes they construct. None is a live shape pin.
+Remaining directory checks are fixture controls or repositories created with
+Git init; the live substrate has no .git directory requirement.
 
-Historical logs are retained: baseline-gate.log records the original pre-fix run
-(4805 passed, 3 failed, including a temporary reserved-ID collision);
-gate-proof-packaging-red.log records the earlier secret-inventory failure while
-packaging synthetic diagnostics; gate-final.log records the original 4821/0 green
-with proof present at 08a7a748f7e9e25d07e61f96093ee65874045a03. Those logs predate
-these review corrections and are not evidence that the corrected implementation
-passed. The previous manifest and narrative remain available in branch history.
+An early config mutation also tripped the race rows because the assertion rejected
+the harmless core.logallrefupdates default; that setting is now preserved.
+An early split-index mutation removed sharedindex from both copying and observation,
+so checkout-index failed before the observation probe. The final mutation removes
+only primary observation entries, isolating the reviewed defect. Those interrupted
+probe attempts are not claimed as successful mutation evidence.
 
-The initial draft used VELDO-0023, then moved to VELDO-0099 after validation found
-PLAN-0019 reserved VELDO-0023 through VELDO-0098. No plan reservation changed.
+Two gate attempts at 1e9b2c0 were deliberately stopped before completion after
+inspection showed alternate copies should live inside the inventoried common root.
+They are not gate evidence. The complete runs above verify the corrected location.
+
+Independent review and landing remain with the external reviewer, as the spec's
+scope requires. No implementation self-approval is recorded. Old gate logs remain
+as historical artifacts; their results do not describe this correction.
 
 ## Log redaction
 
-Full gate logs contain one pattern-shaped diagnostic emitted by the synthetic
-pkg/dirty.py selftest fixture. The existing .veldo/secret_scan.py PATTERNS replace
-only matching text with [REDACTED synthetic selftest diagnostic]. No result,
-failure, or stand-down row is removed. log-redactions.json records each stored
-log's affected line numbers and raw/stored SHA-256 digests. Unredacted output was
-kept outside the repository and was never committed. The manifest hashes the
-stored artifacts, including the redaction record.
-
-## Final gate with refreshed proof present
-
-After the refreshed bundle was committed, ./scripts/verify.sh ran in the assigned
-linked worktree at 71979dd1a0daee9f6dd76081a83cdfb5eb7abe07. It exited 0: GREEN,
-4825 passed, 0 failed; first-use integration passed; 8 catalog checks ran,
-15 were not applicable, 0 were waived, and 0 were undeclared.
-gate-review-final.log records the full output with the documented diagnostic
-redaction. This final receipt commit changes only proof records. The gate's
-checkout-local stamp and event byproducts were restored with git checkout before
-that commit. No implementation bytes changed after the paired full gates.
+Only pattern-shaped pkg/dirty.py synthetic diagnostics are replaced by
+[REDACTED synthetic selftest diagnostic]. No result, failure, or stand-down row is
+removed. log-redactions.json records affected lines and raw/stored SHA-256 values.
+Unredacted logs remain outside the repository. Manifest artifact hashes cover the
+stored files. No scanner exemption or protected-path change was made.

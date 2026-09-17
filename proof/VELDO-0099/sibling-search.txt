@@ -1,1 +1,2 @@
-scripts/suites/24_veldo_0007_install_and_run.py:191:               and (primary / ".git").is_dir() and (linked / ".git").is_file())
+scripts/suites/24_veldo_0007_install_and_run.py:250:    assert (target / ".git").is_dir() or (target / ".git").read_text().strip() == "gitdir: " + str(private)
+scripts/suites/24_veldo_0007_install_and_run.py:324:               and (primary / ".git").is_dir() and (linked / ".git").is_file())
