@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0020
 title: Signing and authority contracts for enrolled channels
-status: ready
+status: shipped
 risk: critical
 owner: dmitry
 human_approval: required
