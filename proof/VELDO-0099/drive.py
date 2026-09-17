@@ -175,25 +175,26 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                 results.append({'case': case, 'mutation': mutation,
                                 'passed': count - len(failures), 'failed': len(failures), 'rows': rows})
 
-        for case, mutation in (
-            ('special_and_reflog_control', None),
-            ('restore_special_copy', "def _iar_copy_entry(source, target, *, skip=()):\n    if source.is_socket(): _iar_sh.copy2(source, target)\n    else: original_copy_entry(source, target, skip=skip)"),
-            ('omit_private_reflogs', "def _iar_private_paths(private): return [p for p in original_private_paths(private) if not p.relative_to(private).as_posix().startswith('logs/refs/')]")
-        ):
-            rows = []
-            ns['expect'] = lambda label, ok: rows.append({'label': label, 'passed': bool(ok)})
-            exec(compile(module, str(SUITE), 'exec'), ns)
-            ns['original_private_paths'] = ns['_iar_private_paths']
-            ns['original_copy_entry'] = ns['_iar_copy_entry']
-            if mutation:
-                exec(compile(mutation, '<' + case + '>', 'exec'), ns)
-            ns['_iar_special_and_reflog_controls']()
-            failures = [r['label'] for r in rows if not r['passed']]
-            assert len(rows) == 4 and len(failures) == {
-                'special_and_reflog_control': 0, 'restore_special_copy': 2,
-                'omit_private_reflogs': 1}[case], (case, rows)
-            results.append({'case': case, 'mutation': mutation, 'passed': 4 - len(failures),
-                            'failed': len(failures), 'rows': rows})
+        if not baseline:
+            for case, mutation in (
+                ('special_and_reflog_control', None),
+                ('restore_special_copy', "def _iar_copy_entry(source, target, *, skip=()):\n    if source.is_socket(): _iar_sh.copy2(source, target)\n    else: original_copy_entry(source, target, skip=skip)"),
+                ('omit_private_reflogs', "def _iar_private_paths(private): return [p for p in original_private_paths(private) if not p.relative_to(private).as_posix().startswith('logs/refs/')]")
+            ):
+                rows = []
+                ns['expect'] = lambda label, ok: rows.append({'label': label, 'passed': bool(ok)})
+                exec(compile(module, str(SUITE), 'exec'), ns)
+                ns['original_private_paths'] = ns['_iar_private_paths']
+                ns['original_copy_entry'] = ns['_iar_copy_entry']
+                if mutation:
+                    exec(compile(mutation, '<' + case + '>', 'exec'), ns)
+                ns['_iar_special_and_reflog_controls']()
+                failures = [r['label'] for r in rows if not r['passed']]
+                assert len(rows) == 4 and len(failures) == {
+                    'special_and_reflog_control': 0, 'restore_special_copy': 2,
+                    'omit_private_reflogs': 1}[case], (case, rows)
+                results.append({'case': case, 'mutation': mutation, 'passed': 4 - len(failures),
+                                'failed': len(failures), 'rows': rows})
 
         # Reintroduce exactly the caller-config reads that prevented fixture setup.
         identity_rows = []
@@ -313,6 +314,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                         ns['_iar_copy_entry'] = old_copy
                 if private_log_case:
                     private_log_dir, _ = ns['_iar_git_dirs'](tree)
+                    git('update-ref', '-d', 'refs/worktree/round-eight-probe', cwd=tree)
                     git('-c', 'user.name=Veldo fixture', '-c', 'user.email=fixture@example.invalid',
                         'update-ref', '--create-reflog', 'refs/worktree/round-eight-probe', 'HEAD', cwd=tree)
                     private_log = private_log_dir / 'logs/refs/worktree/round-eight-probe'
