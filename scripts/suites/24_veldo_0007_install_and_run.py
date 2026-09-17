@@ -168,7 +168,7 @@ def _iar_copy_entry(source, target, *, skip=()):
 
 def _iar_common_entries(common, primary):
     # Never traverse worktrees/: each sibling owns its transient index and locks.
-    shared = {"objects", "refs", "packed-refs", "shallow", "HEAD"}
+    shared = {"objects", "refs", "packed-refs", "shallow", "HEAD", "veldo"}
     paths = [p for p in common.iterdir() if p.name in shared]
     return paths + (_iar_private_paths(common) if primary else [])
 
@@ -453,6 +453,30 @@ def _iar_review_controls():
             expect("VELDO-0099 AC3: %s split index corruption is observed" % shape,
                    failed and "git-dir/" + shared.name in changed)
             shared.write_bytes(saved)
+
+        # Shared coordination records are observed only in the isolated copy.
+        common = primary / ".git"
+        for rel, data in (("claims/held.json", b'{"worker_id": "first"}\n'),
+                          ("runs/active.json", b'{"status": "running"}\n')):
+            path = common / "veldo" / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+        for shape, tree in (("primary", primary), ("linked", linked)):
+            sandbox = base / (shape + "-ledger")
+            sandbox.mkdir()
+            target = sandbox / "repo"
+            _iar_copy_tree(tree, target)
+            _, copied_common = _iar_git_dirs(target)
+            ledger = copied_common / "veldo"
+            faithful = all((ledger / rel).is_file()
+                           and (ledger / rel).read_bytes() == (common / "veldo" / rel).read_bytes()
+                           for rel in ("claims/held.json", "runs/active.json"))
+            before = _iar_repository_inventory(target)
+            (ledger / "claims/held.json").unlink(missing_ok=True)
+            changed = _iar_changed(before, _iar_repository_inventory(target))
+            expect("VELDO-0099 AC3: %s copied claims and runs retain bytes and claim deletion is observed" % shape,
+                   faithful and "git-common/veldo/claims/held.json" in changed
+                   and (common / "veldo/claims/held.json").exists())
 
         # A relative alternate supplies all objects; the isolated copy must retain them.
         common = primary / ".git"

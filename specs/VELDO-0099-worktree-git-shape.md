@@ -131,3 +131,18 @@ external config includes and execution paths are discarded, git pointer files ar
 and object alternates are copied into the sandbox. Containment is checked before the copied
 stage runs. Common-store copies exclude sibling worktree state and tolerate vanished entries.
 Primary private-state observation includes split indexes and lowercase operation state.
+
+Third review correction: the write observation's surface is the isolated sandbox
+copy, over the working tree, private git directory, and copied common store,
+including veldo/ claims and runs and materialized object alternates. Shared stores
+that other worktrees and workers write are deliberately not inventoried live;
+their writes are observed only through the sandbox copy, where changes during the
+stage run belong to that run. The live inventory covers this checkout's working
+tree and private git state, so a sibling heartbeat is not attributed to the stage.
+
+This is a before-and-after inventory of those surfaces, not a trace of the process's
+file operations or an operating system confinement boundary. It depends on copy
+fidelity and path normalization. It does not establish absence of writes to arbitrary
+absolute paths, external working-tree symlink targets, shared live stores, or writes
+whose inventoried state is completely restored before the second snapshot. The
+separate sandbox HOME inventory does not extend the claim to the host filesystem.

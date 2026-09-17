@@ -89,6 +89,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
 
         review_mutations = {
             'review_control': None,
+            'omit_copied_ledger': "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name != 'veldo']",
             'skip_config_normalization': 'def _iar_normalize_config(common, private): pass',
             'copy_sibling_state': "def _iar_common_entries(common, primary): return list(common.iterdir())",
             'raise_on_vanished_entry': "def _iar_copy_entry(source, target, *, skip=()):\n    if source.is_dir():\n        target.mkdir(parents=True, exist_ok=True)\n        for child in source.iterdir(): _iar_copy_entry(child, target / child.name)\n        _iar_sh.copystat(source, target)\n    else: _iar_sh.copy2(source, target)",
@@ -103,19 +104,21 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                       expect=lambda label, ok: rows.append({'label': label, 'passed': bool(ok)}))
             exec(compile(module, str(SUITE), 'exec'), ns)
             ns['original_live_inventory'] = ns['_iar_live_inventory']
+            ns['original_common_entries'] = ns['_iar_common_entries']
             if mutation:
                 exec(compile(mutation, '<' + case + '>', 'exec'), ns)
             ns['_iar_review_controls']()
             failures = [r['label'] for r in rows if not r['passed']]
             expected = {
                 'review_control': [],
+                'omit_copied_ledger': [r['label'] for r in rows if 'copied claims and runs' in r['label']],
                 'skip_config_normalization': [r['label'] for r in rows if 'redirected config' in r['label']],
                 'copy_sibling_state': [r['label'] for r in rows if '50 copies' in r['label']],
                 'raise_on_vanished_entry': [r['label'] for r in rows if 'vanishing after' in r['label']],
                 'omit_sharedindex': ['VELDO-0099 AC3: primary split index corruption is observed'],
                 'skip_alternate_rewrite': [r['label'] for r in rows if 'redirected config' in r['label']],
             }[case]
-            assert len(rows) == 7, (case, rows)
+            assert len(rows) == 9, (case, rows)
             assert failures == expected, (case, failures, expected)
             results.append({'case': case, 'mutation': mutation, 'passed': len(rows) - len(failures),
                             'failed': len(failures), 'rows': rows})
@@ -169,7 +172,8 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
             ok, report = iar.check(only='claude')
             assert ok, report
             for case in ('control', 'restore_directory_shape', 'sibling_staging',
-                         'sibling_staging_shared_live', 'sandbox_common_write', 'redirected_config'):
+                         'sibling_staging_shared_live', 'sandbox_common_write', 'redirected_config',
+                         'sandbox_claim_delete', 'sibling_heartbeat', 'sibling_heartbeat_shared_live'):
                 rows = []
                 ns = dict(ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
                           _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading,
@@ -204,6 +208,33 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                     iar.check = sibling_check
                     if case == 'sibling_staging_shared_live':
                         ns['_iar_live_inventory'] = ns['_iar_repository_inventory']
+                if case in ('sandbox_claim_delete', 'sibling_heartbeat', 'sibling_heartbeat_shared_live'):
+                    claim_spec = importlib.util.spec_from_file_location('proof_claim', tree / '.veldo/claim.py')
+                    claims = importlib.util.module_from_spec(claim_spec)
+                    claim_spec.loader.exec_module(claims)
+                    _, common = ns['_iar_git_dirs'](tree)
+                    ledger_root = str(common / 'veldo')
+                    assert claims.claim('probe', 'first', root=ledger_root) == (True, 'granted')
+                    assert claims.claim('probe', 'second', root=ledger_root) == (False, 'claimed')
+                    if case.startswith('sibling_heartbeat'):
+                        sibling = base / (shape + '-' + case)
+                        git('worktree', 'add', '--detach', str(sibling), 'HEAD', cwd=primary)
+                        def heartbeat_check(*args, **kwargs):
+                            outcome = original_check(*args, **kwargs)
+                            code = "import sys; sys.path.insert(0, '.veldo'); import claim; assert claim.heartbeat('probe', 'first')"
+                            env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
+                            env.pop('VELDO_RUNS_ROOT', None)
+                            subprocess.run([sys.executable, '-c', code], cwd=sibling, env=env, check=True)
+                            return outcome
+                        iar.check = heartbeat_check
+                        if case == 'sibling_heartbeat_shared_live':
+                            ns['_iar_live_inventory'] = ns['_iar_repository_inventory']
+                    else:
+                        anchor = '    sys.exit(main())'
+                        injected = """    common = _run(['git', 'rev-parse', '--git-common-dir']).stdout.strip()
+    (Path(common) / 'veldo/claims/probe.json').unlink(missing_ok=True)
+"""
+                        stage.write_text(stage_bytes.decode().replace(anchor, injected + anchor))
                 if case == 'sandbox_common_write':
                     anchor = '    sys.exit(main())'
                     assert stage_bytes.decode().count(anchor) == 1
@@ -217,20 +248,24 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                         assert stage.read_bytes() == dirty_stage
                 finally:
                     iar.check = original_check
-                    if case in ('sandbox_common_write', 'redirected_config'):
+                    if case in ('sandbox_common_write', 'sandbox_claim_delete', 'redirected_config'):
                         stage.write_bytes(stage_bytes)
                     for config, saved in saved_configs.items():
                         if saved is None:
                             config.unlink()
                         else:
                             config.write_bytes(saved)
+                if case in ('sandbox_claim_delete', 'sibling_heartbeat', 'sibling_heartbeat_shared_live'):
+                    assert claims.claim('probe', 'second', root=ledger_root) == (False, 'claimed')
+                    assert claims.release('probe', 'first', root=ledger_root)
                 failures = [r['label'] for r in rows if not r['passed']]
                 expected = int((shape == 'linked' and restored) or case in
-                               ('sibling_staging_shared_live', 'sandbox_common_write'))
+                               ('sibling_staging_shared_live', 'sandbox_common_write',
+                                'sandbox_claim_delete', 'sibling_heartbeat_shared_live'))
                 assert len(failures) == expected, (shape, case, failures)
                 if expected:
                     label = ("THE OBSERVATION'S OWN SUBSTRATE" if restored else
-                             'THIS repository is untouched' if case == 'sibling_staging_shared_live'
+                             'THIS repository is untouched' if case in ('sibling_staging_shared_live', 'sibling_heartbeat_shared_live')
                              else 'NOT ONE BYTE of the repository under check')
                     assert label in failures[0], failures
                 assert len(rows) == 14, rows
