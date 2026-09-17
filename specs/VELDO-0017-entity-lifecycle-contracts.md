@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0017
 title: Entity identity and lifecycle schemas
-status: ready
+status: shipped
 risk: high
 owner: dmitry
 human_approval: required
