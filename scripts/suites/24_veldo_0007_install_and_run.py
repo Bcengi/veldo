@@ -78,6 +78,110 @@ def _iar_changed(before, after):
     return sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
 
 
+def _iar_git(root, *args):
+    return _iar_sp.run(["git", "-C", str(root), *args], capture_output=True,
+                       text=True, check=True, timeout=60).stdout.strip()
+
+
+def _iar_git_dirs(root):
+    # .git is an entry point, not necessarily the directory that owns the index.
+    return tuple((Path(root) / _iar_git(root, "rev-parse", flag)).resolve()
+                 for flag in ("--git-dir", "--git-common-dir"))
+
+
+def _iar_repository_inventory(root):
+    private, common = _iar_git_dirs(root)
+    return {label + "/" + rel: value
+            for label, base in (("tree", root), ("git-dir", private), ("git-common", common))
+            for rel, value in _iar_inventory(base).items()}
+
+
+def _iar_copy_tree(source, target):
+    """Copy working bytes and isolate the metadata a linked .git file points to.
+
+    A clone loses uncommitted mutations. A raw copy of a linked pointer leaves the
+    index and shared store outside the sandbox. Neither is the observation we need.
+    """
+    _iar_sp.run(["cp", "-a", str(source), str(target)], capture_output=True,
+                text=True, check=True, timeout=60)
+    private, common = _iar_git_dirs(source)
+    if private != (Path(source) / ".git").resolve():
+        copied_common = target.parent / "git-common"
+        _iar_sh.copytree(common, copied_common, symlinks=True)
+        copied_private = copied_common
+        if private != common:
+            copied_private = target.parent / "git-private"
+            _iar_sh.copytree(private, copied_private, symlinks=True)
+            (copied_private / "commondir").write_text(str(copied_common) + "\n")
+            (copied_private / "gitdir").write_text(str(target / ".git") + "\n")
+        (target / ".git").write_text("gitdir: " + str(copied_private) + "\n")
+
+
+def _iar_substrate(repo):
+    private, common = _iar_git_dirs(repo)
+    return ((repo / "scripts" / "check_install_and_run.py").is_file()
+            and private.is_dir() and common.is_dir() and (private / "index").is_file())
+
+
+def _iar_copy_matches(source, target):
+    def working(root):
+        return {rel: value for rel, value in _iar_inventory(root).items()
+                if rel != ".git" and not rel.startswith(".git/")}
+    return (working(source) == working(target)
+            and _iar_git(source, "ls-files", "--stage") == _iar_git(target, "ls-files", "--stage")
+            and _iar_git(source, "rev-parse", "HEAD") == _iar_git(target, "rev-parse", "HEAD"))
+
+
+def _iar_layout_controls():
+    """Real git layouts with dirty bytes, clone controls, and metadata write probes."""
+    with tempfile.TemporaryDirectory(prefix="veldo-0099-layouts-") as d:
+        base = Path(d)
+        primary, linked = base / "primary", base / "linked"
+        primary.mkdir()
+        _iar_git(primary, "init", "-q")
+        (primary / "scripts").mkdir()
+        stage = "scripts/check_install_and_run.py"
+        (primary / stage).write_text("# committed stage\n")
+        _iar_git(primary, "add", ".")
+        _iar_git(primary, "-c", "user.name=" + _iar_git(ROOT, "config", "user.name"),
+                 "-c", "user.email=" + _iar_git(ROOT, "config", "user.email"),
+                 "commit", "-qm", "Seed checkout shape fixture")
+        _iar_git(primary, "worktree", "add", "--detach", str(linked), "HEAD")
+        expect("VELDO-0099 AC1: primary and linked fixtures have the same HEAD and both git shapes",
+               _iar_git(primary, "rev-parse", "HEAD") == _iar_git(linked, "rev-parse", "HEAD")
+               and (primary / ".git").is_dir() and (linked / ".git").is_file())
+        for shape, source in (("primary", primary), ("linked", linked)):
+            (source / stage).write_text("# uncommitted stage mutation\n")
+            (source / "staged-only").write_text("staged bytes\n")
+            _iar_git(source, "add", "staged-only")
+            (source / "untracked").write_text("untracked bytes\n")
+            sandbox = base / (shape + "-sandbox")
+            sandbox.mkdir()
+            target = sandbox / "repo"
+            _iar_copy_tree(source, target)
+            expect("VELDO-0099 AC1: %s copied substrate resolves inside its sandbox" % shape,
+                   _iar_substrate(target)
+                   and all(p.is_relative_to(sandbox) for p in _iar_git_dirs(target)))
+            expect("VELDO-0099 AC2: %s copy preserves dirty stage, index, and untracked bytes" % shape,
+                   _iar_copy_matches(source, target))
+            clone = base / (shape + "-clone")
+            _iar_git(base, "clone", "--no-hardlinks", "-q", str(source), str(clone))
+            expect("VELDO-0099 AC2: %s clone of HEAD is rejected by copy fidelity" % shape,
+                   _iar_substrate(clone) and not _iar_copy_matches(source, clone)
+                   and (clone / stage).read_text() == "# committed stage\n"
+                   and not (clone / "staged-only").exists()
+                   and not (clone / "untracked").exists())
+            before = _iar_repository_inventory(target)
+            expect("VELDO-0099 AC3: %s clean inventory control has no changes" % shape,
+                   _iar_changed(before, _iar_repository_inventory(target)) == [])
+            for store, path in zip(("private", "common"), _iar_git_dirs(target)):
+                before = _iar_repository_inventory(target)
+                (path / (store + "-write-probe")).write_text("must be observed\n")
+                changed = _iar_changed(before, _iar_repository_inventory(target))
+                expect("VELDO-0099 AC3: %s %s metadata write is observed" % (shape, store),
+                       any(p.endswith("/" + store + "-write-probe") for p in changed))
+
+
 def _iar_dotted(node):
     """The dotted spelling of a call target: subprocess.run, os.system, run."""
     bits = []
@@ -393,7 +497,8 @@ def _iar_ac3():
     # THE COMMIT LEG'S OWN TEETH, DRIVEN THROUGH REAL GIT AND NOT A STUB. A commit that silently
     # failed would put the stage straight back in the state this leg exists to leave: a gate reading
     # an empty index and a required check scanning nothing, under the word GREEN. So the target is
-    # given a .git that is a FILE, which real git refuses, while init still lays the repository down
+    # given a MALFORMED .git pointer, which git refuses (a valid linked pointer is accepted),
+    # while init still lays the repository down
     # happily - so the failure is attributable to the commit alone and carries its own name.
     with tempfile.TemporaryDirectory() as d:
         pub = Path(d) / "public"
@@ -459,7 +564,7 @@ def _iar_ac4():
     sand = Path(tempfile.mkdtemp(prefix="veldo-0007-write-scope-"))
     try:
         repo, home, run_tmp = sand / "repo", sand / "home", sand / "tmp"
-        cp = _iar_sp.run(["cp", "-a", str(ROOT), str(repo)], capture_output=True, text=True)
+        _iar_copy_tree(ROOT, repo)
         home.mkdir()
         (home / ".veldo-write-scope-sentinel").write_text(
             "a byte written outside a temporary directory lands in here\n")
@@ -468,15 +573,15 @@ def _iar_ac4():
                "clone of HEAD, so a mutation under review is inside the tree being observed - and "
                "the copy carries the stage and its git directory, so the run below is the real "
                "compose-install-gate path rather than a fixture",
-               cp.returncode == 0 and (repo / "scripts" / "check_install_and_run.py").is_file()
-               and (repo / ".git").is_dir())
+               _iar_substrate(repo) and _iar_copy_matches(ROOT, repo)
+               and all(p.is_relative_to(sand) for p in _iar_git_dirs(repo)))
         env = dict(_iar_os.environ, HOME=str(home), TMPDIR=str(run_tmp),
                    PYTHONDONTWRITEBYTECODE="1")
-        b_repo, b_home = _iar_inventory(repo), _iar_inventory(home)
+        b_repo, b_home = _iar_repository_inventory(repo), _iar_inventory(home)
         proc = _iar_sp.run([_iar_sys.executable, "scripts/check_install_and_run.py",
                             "--pack", _IAR_REP["composed"][0]],
                            cwd=str(repo), env=env, capture_output=True, text=True, timeout=900)
-        a_repo, a_home = _iar_inventory(repo), _iar_inventory(home)
+        a_repo, a_home = _iar_repository_inventory(repo), _iar_inventory(home)
         laid = _iar_re.search(r"installed (\d+) file\(s\) from (\S+)", proc.stdout)
         expect("VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows "
                "below being vacuous: the sandboxed stage composed with the real publisher, installed "
@@ -488,7 +593,8 @@ def _iar_ac4():
                and laid is not None and int(laid.group(1)) > 10
                and laid.group(2).startswith(str(run_tmp) + "/"))
         expect("VELDO-0007 AC4: NOT ONE BYTE of the repository under check changed across that run - "
-               "every path, size, modification time and sha256 identical, GIT-IGNORED PATHS INCLUDED, "
+               "every path, size, modification time and sha256 identical, ignored paths and resolved "
+               "private and common git stores included, "
                "which is the half a `git status` comparison could not see: a review wrote "
                ".veldo/trackers.json (the one file the ignore rule exists to protect) and a file "
                "inside scripts/__pycache__ and every row stayed green. Entries that moved: %r"
@@ -527,9 +633,9 @@ def _iar_ac4():
     _iar_pyc = _iar_os.environ.get("PYTHONDONTWRITEBYTECODE")
     _iar_os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
     try:
-        b_live = _iar_inventory(ROOT)
+        b_live = _iar_repository_inventory(ROOT)
         ok2, rep2 = IAR.check(only=_IAR_REP["composed"][0])
-        a_live = _iar_inventory(ROOT)
+        a_live = _iar_repository_inventory(ROOT)
     finally:
         if _iar_pyc is None:
             _iar_os.environ.pop("PYTHONDONTWRITEBYTECODE", None)
@@ -537,7 +643,8 @@ def _iar_ac4():
             _iar_os.environ["PYTHONDONTWRITEBYTECODE"] = _iar_pyc
     expect("VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole "
            "tree inventoried by path, size, modification time and sha256 before and after, "
-           "ignored paths and .git included, with the run PASSING so the identity is across work "
+           "ignored paths and resolved private and common git stores included, with the run PASSING "
+           "so the identity is across work "
            "rather than across a no-op. A check that mutated the tree it is checking is the shape "
            "that makes a green gate meaningless. Entries that moved: %r"
            % (_iar_changed(b_live, a_live)[:6],),
@@ -690,6 +797,7 @@ def _iar_ac4():
 
 
 _iar_block("AC4", _iar_ac4)
+_iar_block("VELDO-0099 checkout shape controls", _iar_layout_controls)
 
 
 # ---------------------------------------------------------------------------------------
