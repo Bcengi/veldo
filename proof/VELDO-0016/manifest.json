@@ -1,0 +1,95 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0016",
+  "commit": "a970266ce82ba3f1752144330ed3a5b6af3bc1fd",
+  "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
+  "produced_at": "2026-09-17T11:48:17Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0016/driven.json",
+          "detail": "72 rows: the decision-to-policy matrix derived from the six records' policy_boundary declarations equals POLICY_BOUNDARIES in both directions (four matrix teeth); for each of the six boundaries the nine refusal classes (missing, malformed, wrong_record, draft, superseded, stale, wrong_option, undecided_by_a_person, under_reviewed) refuse by class and the accepted record activates; over this repository nothing is activated (six drafts). Three DRIVEN mutants: the draft refusal removed (the declared falsifier, VELDO-DEC-0004 no longer refused as draft), the version check removed, the review-count check removed, each turning its row red while the unmutated module passes it."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0016/gate-implementation.log",
+          "detail": "Complete canonical gate at a970266ce82ba3f1752144330ed3a5b6af3bc1fd in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5142 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0016/driven.json",
+          "detail": "13 rows: RUNNER_OBLIGATIONS (15) covers every group VELDO-DEC-0004 names and nothing else (two teeth); the profile is ineligible with any untested obligation; retirement needs all four proofs, each refused by name, and a non-True value never counts; the revision 2 contract carries exactly one exception clause (four teeth on area, boundary, rule and count, plus the contract validator's own refusal of an undeclared area); exception_effective is False today (draft boundary), False with the boundary activated but the profile untested, True only with both, False at another revision or without the clause; suite 06's scan still reads fleet.py and never names the runner. One DRIVEN mutant: empty-containment removed from RETIREMENT_PROOFS (the declared falsifier) releases an unproven slot."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0016/gate-implementation.log",
+          "detail": "Complete canonical gate at a970266ce82ba3f1752144330ed3a5b6af3bc1fd in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5142 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0016/driven.json",
+          "detail": "177 rows: LOADER_ADAPTERS equals the loader's callers derived from the source in both directions (two teeth); the full product of 15 adapters x 5 states x 2 flags on fixture trees carrying a copy of the engine, every adapter loaded from its own root; the loader's (state, kind) exact per fixture; the explicit flag separate from the policy line in both directions; a misspelled or non-regular-file policy closes; permission-bit and socket unreadable cases; canonical and root copies byte-identical with one result type. Three DRIVEN mutants on a copy of contract_loader.py: presence by is_file (the declared falsifier, a directory reads as absent: 14 of 15 optional-flag rows red, the presence-guarded metrics reader excepted by name), the pre-fix ArchContractError handler (malformed reads as absent), a dead required flag; plus the additive control that the unmutated engine passes the same rows."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0016/gate-implementation.log",
+          "detail": "Complete canonical gate at a970266ce82ba3f1752144330ed3a5b6af3bc1fd in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5142 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0016/driven.json",
+          "detail": "10 rows: BOUNDARY_TABLE covers R21, R35, R46, R50, R53 with a callable predicate and a seeded violation each; checkpoint_statement_allowed refuses the seeded INSERT ... SELECT from a domain table, a bare domain read, ATTACH, a view and an unqualified statement; enforcement_imports_stdlib_only is clean over the engine and refuses a seeded langgraph import and a missing module by an AST walk with no runtime loaded; landing_authorized refuses verdict-pass-only, an open blocking finding and a builder-reviewer identity; verifier_independent refuses a verifier inside the candidate; responsibility_allowed refuses the runner publishing source. One DRIVEN mutant: a passing verdict treated as authorization (the declared falsifier) lands the seeded receipt."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0016/gate-implementation.log",
+          "detail": "Complete canonical gate at a970266ce82ba3f1752144330ed3a5b6af3bc1fd in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5142 passed, 0 failed, every required check passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "a970266ce82ba3f1752144330ed3a5b6af3bc1fd",
+      "ref": "proof/VELDO-0016/gate-implementation.log",
+      "detail": "GATE GREEN; selftest 5142 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0016/driven.json",
+    "proof/VELDO-0016/drive.py",
+    "proof/VELDO-0016/gate-implementation.log",
+    "proof/VELDO-0016/log-redactions.json",
+    "proof/VELDO-0016/approval-dmitry.json",
+    "proof/VELDO-0016/README.md"
+  ],
+  "rollback": "Revert the loader organ and its thin wrappers, the consumer refusals, the policy line and contract revision 2 through the ordinary reviewed path (a revert commit, never a force); the six decision records stay as drafts (they activate nothing); the prior (None, None) loader is restored byte for byte from history. Nothing was activated, so nothing is deactivated.",
+  "review": "Independent review by Codex follows this bundle; no self-approval, landing or push is claimed here. Dmitry's two owner approvals of 2026-09-17 are recorded in approval-dmitry.json and in the contract."
+}

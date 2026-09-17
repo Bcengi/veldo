@@ -1,13 +1,13 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0016",
-  "commit": "8ae864ff48a179855d11c6faaac269d8e1e75622",
-  "taken_at": "2026-09-17T11:38:30Z",
+  "commit": "a970266ce82ba3f1752144330ed3a5b6af3bc1fd",
+  "taken_at": "2026-09-17T11:45:49Z",
   "fragment": "scripts/suites/29_veldo_0016_policy_boundaries.py",
-  "fragment_sha256": "1c3b91f4117b3176f32b8509d32fdaa53c2c695b7367da5d646ec0afec8135f7",
+  "fragment_sha256": "f3a0d2dc2330a2d4abfb2d9a4ca53cedab505a3e4866cc2bae306c33b30f26d9",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of the engine's .veldo/*.py or of .veldo/policy_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the fixture trees carry a copy of the engine so each adapter runs from its own root.",
-  "rows_total": 271,
-  "rows_passed": 271,
+  "rows_total": 272,
+  "rows_passed": 272,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0016 AC3 policy-loading/unreadable DRIVEN (the declared falsifier): mapping an unreadable present contract to optional absence turns the unreadable row RED for the loader and for every adapter without a presence guard of its own under the optional flag (14 of 30 rows red; guarded: ['metrics_shape_readers._read_contract'])",
@@ -43,8 +43,8 @@
   },
   "per_criterion": {
     "AC3": {
-      "rows": 176,
-      "passed": 176,
+      "rows": 177,
+      "passed": 177,
       "driven": 3
     },
     "AC1": {
@@ -197,7 +197,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_arch: refused (observed refused: /tmp/v16fx00_9ps7b/.veldo/architecture.yaml: architecture contract is required by this repository's policy but absent (fail closed): nothing is placeable, claim)",
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_arch: refused (observed refused: /tmp/v16fx3juqvk94/.veldo/architecture.yaml: architecture contract is required by this repository's policy but absent (fail closed): nothing is placeable, claim)",
       "passed": true
     },
     {
@@ -209,11 +209,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_ready: refused (observed refused: /tmp/v16fx00_9ps7b/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract is required )",
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_ready: refused (observed refused: /tmp/v16fx3juqvk94/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract is required )",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx00_9ps7b/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract is required by this)",
+      "label": "VELDO-0016 AC3 policy-loading/absent/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx3juqvk94/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract is required by this)",
       "passed": true
     },
     {
@@ -229,7 +229,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/absent/required observability._cli: refused (observed refused: /tmp/v16fx00_9ps7b/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "label": "VELDO-0016 AC3 policy-loading/absent/required observability._cli: refused (observed refused: /tmp/v16fx3juqvk94/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
       "passed": true
     },
     {
@@ -257,11 +257,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_arch: refused (observed refused: /tmp/v16fxq78puxf_/.veldo/architecture.yaml: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78puxf_/.veldo/architecture.yaml')",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_arch: refused (observed refused: /tmp/v16fxj29psw23/.veldo/architecture.yaml: architecture contract at /tmp/v16fxj29psw23/.veldo/architecture.yaml is present but not a regular file, so it is un)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.placement_gate_problems: refused (observed refused: [\"architecture contract refused, so no placement can resolve until it is repaired: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78pu)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.placement_gate_problems: refused (observed refused: ['architecture contract refused, so no placement can resolve until it is repaired: architecture contract at /tmp/v16fxj29psw23/.veldo/architecture.yaml is prese)",
       "passed": true
     },
     {
@@ -269,31 +269,31 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_ready: refused (observed refused: /tmp/v16fxq78puxf_/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract unreadable: )",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_ready: refused (observed refused: /tmp/v16fxj29psw23/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract at /tmp/v16f)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxq78puxf_/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract unreadable: [Errno )",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxj29psw23/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract at /tmp/v16fxj29psw)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable frontier.claimable: refused (observed refused: ([], \"architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78puxf_/.veldo/architecture.yaml'\"))",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable frontier.claimable: refused (observed refused: ([], 'architecture contract at /tmp/v16fxj29psw23/.veldo/architecture.yaml is present but not a regular file, so it is unreadable and was not opened'))",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract unreadable: [Errno 21] Is )",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract at /tmp/v16fxj29psw23/.vel)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable shape_gate.run: refused (observed refused: (False, [\"architecture contract refused (unreadable), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract unreadable: [)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable shape_gate.run: refused (observed refused: (False, ['architecture contract refused (unreadable), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract at /tmp/v16fx)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable observability._cli: refused (observed refused: /tmp/v16fxq78puxf_/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable observability._cli: refused (observed refused: /tmp/v16fxj29psw23/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78puxf_/.veldo/architecture.)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract at /tmp/v16fxj29psw23/.veldo/architecture.yaml is present but not a regular fil)",
       "passed": true
     },
     {
@@ -301,7 +301,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fxq78puxf_/.veldo/architectur)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract at /tmp/v16fxj29psw23/.veldo/architecture.yaml is present but not a regular f)",
       "passed": true
     },
     {
@@ -317,11 +317,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_arch: refused (observed refused: /tmp/v16fx8k9u0s4k/.veldo/architecture.yaml: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0s4k/.veldo/architecture.yaml')",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_arch: refused (observed refused: /tmp/v16fxea0btivf/.veldo/architecture.yaml: architecture contract at /tmp/v16fxea0btivf/.veldo/architecture.yaml is present but not a regular file, so it is un)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.placement_gate_problems: refused (observed refused: [\"architecture contract refused, so no placement can resolve until it is repaired: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.placement_gate_problems: refused (observed refused: ['architecture contract refused, so no placement can resolve until it is repaired: architecture contract at /tmp/v16fxea0btivf/.veldo/architecture.yaml is prese)",
       "passed": true
     },
     {
@@ -329,31 +329,31 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_ready: refused (observed refused: /tmp/v16fx8k9u0s4k/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract unreadable: )",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_ready: refused (observed refused: /tmp/v16fxea0btivf/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract at /tmp/v16f)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx8k9u0s4k/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract unreadable: [Errno )",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxea0btivf/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract at /tmp/v16fxea0bti)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required frontier.claimable: refused (observed refused: ([], \"architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0s4k/.veldo/architecture.yaml'\"))",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required frontier.claimable: refused (observed refused: ([], 'architecture contract at /tmp/v16fxea0btivf/.veldo/architecture.yaml is present but not a regular file, so it is unreadable and was not opened'))",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract unreadable: [Errno 21] Is )",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required plan.cmd_run_check: refused (observed refused: run-check FX-0001: REFUSED   - architecture contract refused, so no placement can resolve until it is repaired: architecture contract at /tmp/v16fxea0btivf/.vel)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required shape_gate.run: refused (observed refused: (False, [\"architecture contract refused (unreadable), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract unreadable: [)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required shape_gate.run: refused (observed refused: (False, ['architecture contract refused (unreadable), so the shape gate cannot stand down as adoption safe and fails closed: architecture contract at /tmp/v16fx)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required observability._cli: refused (observed refused: /tmp/v16fx8k9u0s4k/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required observability._cli: refused (observed refused: /tmp/v16fxea0btivf/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0s4k/.veldo/architecture.)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required intent_corpus.open_corpus: refused (observed refused: architecture contract refused, so no area can be answered: architecture contract at /tmp/v16fxea0btivf/.veldo/architecture.yaml is present but not a regular fil)",
       "passed": true
     },
     {
@@ -361,7 +361,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/unreadable/required cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract unreadable: [Errno 21] Is a directory: '/tmp/v16fx8k9u0s4k/.veldo/architectur)",
+      "label": "VELDO-0016 AC3 policy-loading/unreadable/required cost_to_change.repo_report: refused (observed refused: architecture contract refused, so no area can be attributed: architecture contract at /tmp/v16fxea0btivf/.veldo/architecture.yaml is present but not a regular f)",
       "passed": true
     },
     {
@@ -377,7 +377,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_arch: refused (observed refused: /tmp/v16fxwcp2ekk6/.veldo/architecture.yaml: architecture contract must be a mapping at the top level)",
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_arch: refused (observed refused: /tmp/v16fxkvt1js41/.veldo/architecture.yaml: architecture contract must be a mapping at the top level)",
       "passed": true
     },
     {
@@ -389,11 +389,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_ready: refused (observed refused: /tmp/v16fxwcp2ekk6/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract must be a ma)",
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_ready: refused (observed refused: /tmp/v16fxkvt1js41/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract must be a ma)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxwcp2ekk6/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract must be a mapping a)",
+      "label": "VELDO-0016 AC3 policy-loading/malformed validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxkvt1js41/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract must be a mapping a)",
       "passed": true
     },
     {
@@ -409,7 +409,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/malformed observability._cli: refused (observed refused: /tmp/v16fxwcp2ekk6/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "label": "VELDO-0016 AC3 policy-loading/malformed observability._cli: refused (observed refused: /tmp/v16fxkvt1js41/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
       "passed": true
     },
     {
@@ -437,7 +437,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_arch: refused (observed refused: /tmp/v16fx5bk_awjy/.veldo/architecture.yaml: architecture contract must be a mapping at the top level)",
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_arch: refused (observed refused: /tmp/v16fx2066l3a9/.veldo/architecture.yaml: architecture contract must be a mapping at the top level)",
       "passed": true
     },
     {
@@ -449,11 +449,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_ready: refused (observed refused: /tmp/v16fx5bk_awjy/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract must be a ma)",
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_ready: refused (observed refused: /tmp/v16fx2066l3a9/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): architecture contract must be a ma)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx5bk_awjy/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract must be a mapping a)",
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx2066l3a9/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: architecture contract must be a mapping a)",
       "passed": true
     },
     {
@@ -469,7 +469,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/malformed/required observability._cli: refused (observed refused: /tmp/v16fx5bk_awjy/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "label": "VELDO-0016 AC3 policy-loading/malformed/required observability._cli: refused (observed refused: /tmp/v16fx2066l3a9/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
       "passed": true
     },
     {
@@ -497,7 +497,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_arch: refused (observed refused: /tmp/v16fx2hc2dmhc/.veldo/architecture.yaml: no areas: a contract without areas declares no shape)",
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_arch: refused (observed refused: /tmp/v16fxm9c97r6n/.veldo/architecture.yaml: no areas: a contract without areas declares no shape)",
       "passed": true
     },
     {
@@ -509,11 +509,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_ready: refused (observed refused: /tmp/v16fx2hc2dmhc/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): no areas: a contract without areas)",
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_ready: refused (observed refused: /tmp/v16fxm9c97r6n/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): no areas: a contract without areas)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_shape_review: refused (observed refused: /tmp/v16fx2hc2dmhc/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: no areas: a contract without areas declar)",
+      "label": "VELDO-0016 AC3 policy-loading/invalid validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxm9c97r6n/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: no areas: a contract without areas declar)",
       "passed": true
     },
     {
@@ -529,7 +529,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/invalid observability._cli: refused (observed refused: /tmp/v16fx2hc2dmhc/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "label": "VELDO-0016 AC3 policy-loading/invalid observability._cli: refused (observed refused: /tmp/v16fxm9c97r6n/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
       "passed": true
     },
     {
@@ -557,7 +557,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_arch: refused (observed refused: /tmp/v16fxtxsfqgw3/.veldo/architecture.yaml: no areas: a contract without areas declares no shape)",
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_arch: refused (observed refused: /tmp/v16fxw820ndvy/.veldo/architecture.yaml: no areas: a contract without areas declares no shape)",
       "passed": true
     },
     {
@@ -569,11 +569,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_ready: refused (observed refused: /tmp/v16fxtxsfqgw3/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): no areas: a contract without areas)",
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_ready: refused (observed refused: /tmp/v16fxw820ndvy/specs/FX-0001-fixture.md: architecture contract refused, so the ready transition refuses (VELDO-0016 AC3): no areas: a contract without areas)",
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxtxsfqgw3/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: no areas: a contract without areas declar)",
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required validate_checks.check_shape_review: refused (observed refused: /tmp/v16fxw820ndvy/specs/FX-0001-fixture.md: architecture contract refused, so shape-fit cannot be graded and refuses: no areas: a contract without areas declar)",
       "passed": true
     },
     {
@@ -589,7 +589,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0016 AC3 policy-loading/invalid/required observability._cli: refused (observed refused: /tmp/v16fxtxsfqgw3/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
+      "label": "VELDO-0016 AC3 policy-loading/invalid/required observability._cli: refused (observed refused: /tmp/v16fxw820ndvy/specs/FX-0001-fixture.md: architecture contract refused, so the diagnosability gate cannot join to the contract's observability rules and ref)",
       "passed": true
     },
     {
@@ -1146,6 +1146,10 @@
     },
     {
       "label": "VELDO-0016 AC4 policy-boundaries/exclusive-responsibilities: each of the four actions is allowed to its owner alone; the seeded violation (the runner publishing source), a store launching an engine, and an unassigned action are each refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0016 AC3 policy-loading/unreadable: a socket at the contract path is present, refused as unreadable and never opened (the loader asks the kind question before any read), so a FIFO there cannot block the gate, the frontier or the metrics surfaces",
       "passed": true
     }
   ]
