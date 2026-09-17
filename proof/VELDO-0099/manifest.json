@@ -3,7 +3,7 @@
   "spec_id": "VELDO-0099",
   "commit": "c63df48ae9087dfdaddab83a9f34d0a8ceabd329",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-17T04:42:00.941913Z",
+  "produced_at": "2026-09-17T04:47:35.984984Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -67,6 +67,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0099/gate-second-review-linked.log; proof/VELDO-0099/gate-second-review-primary.log",
           "detail": "Complete canonical gates in linked and primary checkouts at the same commit; 4832 passed, 0 failed each."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0099/gate-second-review-final.log",
+          "detail": "Full GREEN linked gate with refreshed proof present at bf55cfaadd3589d9be05e5f8732e9c0a7c7755f5, exit 0, 4832 passed and 0 failed."
         }
       ]
     }
@@ -114,12 +119,21 @@
       "command": "python3 .veldo/validate.py ready specs/VELDO-0099-worktree-git-shape.md",
       "exit_code": 0,
       "ref": "proof/VELDO-0099/ready-check.txt"
+    },
+    {
+      "name": "gate-with-refreshed-proof",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "bf55cfaadd3589d9be05e5f8732e9c0a7c7755f5",
+      "ref": "proof/VELDO-0099/gate-second-review-final.log",
+      "detail": "Final linked gate with refreshed proof committed: GREEN, 4832 passed, 0 failed; first use passed; 8 required catalog checks passed."
     }
   ],
   "artifacts": [
     {
       "ref": "proof/VELDO-0099/README.md",
-      "sha256": "c912d178f04fece6a25dbf23d4ffa5486d3f6096d5321370bf4449ce818d43d8"
+      "sha256": "af5a9ef87be8b4ca851dc81fe7d1690b259f0eaf8411f39e2effa824300130f6"
     },
     {
       "ref": "proof/VELDO-0099/baseline-gate.log",
@@ -162,6 +176,10 @@
       "sha256": "c5506c9e6436b7941048deefa5c98fc0839e9726cc3ddcfca892fc2e4fb4d3a5"
     },
     {
+      "ref": "proof/VELDO-0099/gate-second-review-final.log",
+      "sha256": "bb280541816ee5902cba41be47f9c8e65ae21ead16ba9816db0d8342687245fb"
+    },
+    {
       "ref": "proof/VELDO-0099/gate-second-review-linked.log",
       "sha256": "70c3c41c45054efb3032df788b4cd8dce7fb33e7b65d6d412e323f4c1f2ecfc4"
     },
@@ -171,7 +189,7 @@
     },
     {
       "ref": "proof/VELDO-0099/log-redactions.json",
-      "sha256": "6d372213328cf6ece7f8cb52cae6dc2a2f4ade21480d29c2cf8e3f72b70710a9"
+      "sha256": "03536f64f8bcb0b0c177c46ed7f23b24fc77030f02bb4b861708cf2f14c0c609"
     },
     {
       "ref": "proof/VELDO-0099/ready-check.txt",

@@ -136,3 +136,13 @@ Only pattern-shaped pkg/dirty.py synthetic diagnostics are replaced by
 removed. log-redactions.json records affected lines and raw/stored SHA-256 values.
 Unredacted logs remain outside the repository. Manifest artifact hashes cover the
 stored files. No scanner exemption or protected-path change was made.
+
+## Final linked gate with refreshed proof present
+
+After committing the refreshed proof, ./scripts/verify.sh ran in the assigned
+linked checkout at bf55cfaadd3589d9be05e5f8732e9c0a7c7755f5. It exited 0, GREEN:
+4832 passed, 0 failed; first-use integration passed; 8 catalog checks ran,
+15 were not applicable, 0 were waived, and 0 were undeclared.
+gate-second-review-final.log preserves the complete output with the documented synthetic
+diagnostic redaction. This final receipt changes proof records only. The two
+checkout-local gate byproducts are restored before committing the receipt.
