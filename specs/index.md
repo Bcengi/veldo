@@ -85,6 +85,22 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0057 | Exact-tip publication, lost acknowledgement recovery, and completion receipt | draft | critical | dmitry | required | VELDO-0057-exact-tip-completion.md |
 | VELDO-0058 | Gate-output isolation and exact tested-tree evidence | draft | critical | dmitry | required | VELDO-0058-isolated-gate-observations.md |
 | VELDO-0059 | Installed end-to-end floor slice with fake model and real enforcement | draft | critical | dmitry | required | VELDO-0059-installed-floor-slice.md |
+| VELDO-0060 | Claude Code production adapter qualification | draft | critical | dmitry | required | VELDO-0060-claude-code-adapter-qualification.md |
+| VELDO-0061 | Codex production adapter qualification | draft | critical | dmitry | required | VELDO-0061-codex-adapter-qualification.md |
+| VELDO-0062 | Provider credential separation and live usage accounting | draft | critical | dmitry | required | VELDO-0062-provider-credentials-and-usage.md |
+| VELDO-0063 | Production governor and lifecycle failure qualification | draft | critical | dmitry | required | VELDO-0063-production-governor-lifecycle.md |
+| VELDO-0064 | Assignment inbox and durable projections on enrolled input surfaces | draft | high | dmitry | required | VELDO-0064-assignment-inbox-projections.md |
+| VELDO-0065 | Versioned presentation receipts for every enrolled channel | draft | critical | dmitry | required | VELDO-0065-versioned-channel-presentations.md |
+| VELDO-0066 | Canonical channel attribution including platform-derived chat message, sender, and time | draft | critical | dmitry | required | VELDO-0066-canonical-channel-attribution.md |
+| VELDO-0067 | Per-channel restricted edge signing and enrollment | draft | critical | dmitry | required | VELDO-0067-restricted-channel-edges.md |
+| VELDO-0068 | Atomic cross-channel settlement and principal-based quorum enforcement | draft | critical | dmitry | required | VELDO-0068-atomic-cross-channel-settlement.md |
+| VELDO-0069 | Governing decision binding, supersession, and eligibility updates | draft | critical | dmitry | required | VELDO-0069-governing-decision-bindings.md |
+| VELDO-0070 | Independent decision review bound to full framing and distinct principals | draft | critical | dmitry | required | VELDO-0070-independent-decision-review.md |
+| VELDO-0071 | Governing assumption observations and tripwire review flow | draft | critical | dmitry | required | VELDO-0071-governing-assumptions-tripwires.md |
+| VELDO-0072 | PLAN-0016 tracker projection and canonical-history repair | draft | high | dmitry | required | VELDO-0072-tracker-projection-history-repair.md |
+| VELDO-0073 | Per-channel live ingress activation and real sandbox qualification | draft | critical | dmitry | required | VELDO-0073-channel-ingress-activation.md |
+| VELDO-0074 | Interrupted and concurrent decisions across enrolled channels | draft | critical | dmitry | required | VELDO-0074-interrupted-channel-decisions.md |
+| VELDO-0075 | Andon delivery and authorized resumption through enrolled channels | draft | critical | dmitry | required | VELDO-0075-andon-delivery-resumption.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
