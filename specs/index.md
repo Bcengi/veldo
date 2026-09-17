@@ -112,6 +112,12 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0085 | Decomposition and concurrent elaboration publication | draft | critical | dmitry | required | VELDO-0085-decomposition-concurrent-publication.md |
 | VELDO-0086 | Release-execution ownership and contribution binding | draft | critical | dmitry | required | VELDO-0086-release-execution-ownership-contributions.md |
 | VELDO-0087 | Project dependency invalidation and outcome-to-evidence traceability | draft | critical | dmitry | required | VELDO-0087-project-dependency-invalidation-traceability.md |
+| VELDO-0088 | Project-manager execution graphs | draft | critical | dmitry | required | VELDO-0088-project-manager-execution-graphs.md |
+| VELDO-0089 | Versioned team configuration | draft | critical | dmitry | required | VELDO-0089-versioned-team-configuration.md |
+| VELDO-0090 | Capability-bound specialist selection | draft | critical | dmitry | required | VELDO-0090-capability-bound-specialist-selection.md |
+| VELDO-0091 | Budgeted requirements elaboration | draft | critical | dmitry | required | VELDO-0091-budgeted-requirements-elaboration.md |
+| VELDO-0092 | Typed proposals and complete authorization validation | draft | critical | dmitry | required | VELDO-0092-typed-proposals-authorization-validation.md |
+| VELDO-0093 | Per-project cycle serialization and replaceable checkpoint recovery | draft | critical | dmitry | required | VELDO-0093-project-cycle-serialization-checkpoint-recovery.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
