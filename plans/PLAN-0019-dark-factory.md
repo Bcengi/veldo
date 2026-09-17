@@ -62,7 +62,7 @@ non_goals:
   - id: NG3
     text: >
       No new management console, unverified Jira board changes, modifications to published prose, or
-      Sompo material.
+      material from client engagements.
 
 constraints:
   - id: C1

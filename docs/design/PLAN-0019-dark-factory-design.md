@@ -172,7 +172,7 @@ Each enrolled repository belongs to one coordination domain with one designated 
 
 Separate clones may coordinate the same project when enrolled against those identities. Local clients use authenticated IPC; remote clients use an authenticated SSH command relay to that IPC endpoint. No separate network application server is introduced. An unreachable authority makes mutation and execution admission unavailable.
 
-One authority instance does not serve several repositories in this design. One installed Veldo distribution and workstation may host separate domain service instances for Veldo, CoreConnect, and the mobile repository. Each has its own Git common directory, store, lock, keys, journal, and enrollment. These are separate installations of the same storage boundary, not additional databases inside one domain.
+One authority instance does not serve several repositories in this design. One installed Veldo distribution and workstation may host separate domain service instances for Veldo and other product repositories. Each has its own Git common directory, store, lock, keys, journal, and enrollment. These are separate installations of the same storage boundary, not additional databases inside one domain.
 
 Cross-domain work is unsupported. R75 specifies service installation, startup, restart, and absent-service behavior.
 
@@ -584,7 +584,7 @@ Source-tree tests alone cannot establish release readiness.
 
 This plan introduces no Kafka, Redis, Temporal, Kubernetes, second database within a coordination domain, microservice decomposition, LangGraph server, automatic host failover, or cross-repository execution transaction.
 
-It does not authorize customer charging, production deployment, telecom operations, or integration with another operator. It does not design a new management console, prescribe unverified Jira board changes, modify published prose, or incorporate Sompo material.
+It does not authorize customer charging, production deployment, telecom operations, or integration with another operator. It does not design a new management console, prescribe unverified Jira board changes, modify published prose, or incorporate material from client engagements.
 
 Remaining installation facts are the workstation's qualified containment and helper configuration, protected remote durability and access controls, exact engine and dependency versions, safe provider authentication separation, quarantine scanner qualification, and a permitted tracker notification transport. Their implementation specifications and observed tests settle them.
 
