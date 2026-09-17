@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0022
 title: Section 2 admission semantics
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -21,6 +21,11 @@ footprint:
   - ".veldo/validate.py"
   - "engine/.veldo/validate.py"
   - "engine/.veldo/*contract*.py"
+  - ".veldo/*contract*.py"
+  - ".veldo/capabilities.yaml"
+  - "engine/.veldo/capabilities.yaml"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - "scripts/suites/*"
   - "packs/**/.veldo/*contract*.py"
   - "specs/VELDO-0022-section-2-admission-contracts.md"

@@ -70,6 +70,9 @@ _FILES = [
     # VELDO-0020 (PLAN-0019 W5): signing and authority contracts, loaded by the suite and by the
     # authority service above it; not substrate.
     ".veldo/authority_contract.py",
+    # VELDO-0022 (PLAN-0019 W7): Section 2 admission semantics, loaded by the suite and by the Admission
+    # Service above it; not substrate.
+    ".veldo/admission_contract.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",

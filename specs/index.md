@@ -17,6 +17,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0011 | The release contract and its registry - a release is a typed, ordered group of plans with the | ready | standard | dmitry | not_required | VELDO-0011-release-contract-and-registry.md |
 | VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | VELDO-0015 | Liveness stands down on clock disagreement - a heartbeat from the future is answered | ready | high | dmitry | not_required | VELDO-0015-liveness-stands-down-on-clock-disagreement.md |
+| VELDO-0022 | Section 2 admission semantics | ready | critical | dmitry | required | VELDO-0022-section-2-admission-contracts.md |
 | VELDO-0099 | Install-and-run observations resolve git metadata in either checkout shape | ready | standard | dmitry | not_required | VELDO-0099-worktree-git-shape.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
@@ -42,7 +43,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0013 | A declared falsification is DRIVEN once per item and recorded against the commit it was driven | draft | standard | dmitry | not_required | VELDO-0013-a-declared-falsification-is-driven-and-recorded.md |
 | VELDO-0014 | What a criterion may assert about the live repository - a stated rule that a check describes a | draft | standard | dmitry | not_required | VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md |
 | VELDO-0021 | Completion and executable eligibility predicates | draft | critical | dmitry | required | VELDO-0021-completion-eligibility-contracts.md |
-| VELDO-0022 | Section 2 admission semantics | draft | critical | dmitry | required | VELDO-0022-section-2-admission-contracts.md |
 | VELDO-0023 | Atomic journaled commands and deterministic replay | draft | critical | dmitry | required | VELDO-0023-journaled-commands.md |
 | VELDO-0024 | Signed Git replication and off-host acknowledgement | draft | critical | dmitry | required | VELDO-0024-signed-git-replication.md |
 | VELDO-0025 | Authenticated membership and scoped delegation | draft | critical | dmitry | required | VELDO-0025-membership-and-delegation.md |
@@ -624,7 +624,7 @@ Ready frontier: VELDO-0021 (W6), VELDO-0022 (W7).
 | W4 | VELDO-0019 | Combined dependency graph and decision observation rules | VELDO-0017, VELDO-0018 | shipped |
 | W5 | VELDO-0020 | Signing and authority contracts for enrolled channels | VELDO-0016, VELDO-0017 | shipped |
 | W6 | VELDO-0021 | Completion and executable eligibility predicates | VELDO-0018, VELDO-0019, VELDO-0020 | draft (frontier) |
-| W7 | VELDO-0022 | Section 2 admission semantics | VELDO-0017, VELDO-0020 | draft (frontier) |
+| W7 | VELDO-0022 | Section 2 admission semantics | VELDO-0017, VELDO-0020 | ready (frontier) |
 | W8 | VELDO-0023 | Atomic journaled commands and deterministic replay | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022 | waiting: VELDO-0021, VELDO-0022 |
 | W9 | VELDO-0024 | Signed Git replication and off-host acknowledgement | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023 | waiting: VELDO-0021, VELDO-0022, VELDO-0023 |
 | W10 | VELDO-0025 | Authenticated membership and scoped delegation | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023 | waiting: VELDO-0021, VELDO-0022, VELDO-0023 |
