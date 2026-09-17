@@ -50,10 +50,10 @@ _v19_execs = [{"alias": "RX-2", "after": ["RX-1"]}]
 _v19_edges = {fam: GC19.GRAPH_ADAPTERS[fam](src) for fam, src in (("plan_work", _v19_plans), ("spec_depends_on", _v19_specs), ("project_dependency", _v19_projects),
                                                                    ("decision_prerequisite", _v19_decisions), ("release_execution_order", _v19_execs))}
 expect("VELDO-0019 AC1 combined-graph/adapters: each adapter derives its family's edges from plain records (plan work, spec "
-       "depends_on, project dependencies, unsettled decision prerequisites only, release execution order), and the union "
-       "of these acyclic families is acyclic",
+       "depends_on, project dependencies, decision prerequisites whatever the decision's status, release execution order), "
+       "and the union of these acyclic families is acyclic",
        _v19_edges["plan_work"] == {("S-A", "S-B")} and _v19_edges["spec_depends_on"] == {("S-B", "S-C")}
-       and _v19_edges["project_dependency"] == {("P1", "P2")} and _v19_edges["decision_prerequisite"] == {("S-C", "DEC-1")}
+       and _v19_edges["project_dependency"] == {("P1", "P2")} and _v19_edges["decision_prerequisite"] == {("S-C", "DEC-1"), ("S-A", "DEC-2")}
        and _v19_edges["release_execution_order"] == {("RX-2", "RX-1")}
        and GC19.authorization_problems(_v19_edges) == [])
 # Every pair of families gets a ring spanning it; each family alone stays acyclic.
@@ -260,15 +260,82 @@ _v19_req = {"framing_digest": "sha256:frame", "expires_at": _v19_now + 100, "aut
 _v19_ans = {"framing_digest": "sha256:frame", "decided_by": "dmitry", "ruling": "accept"}
 _v19_reviews = [{"principal": "codex", "framing_digest": "sha256:frame", "blocking": False},
                 {"principal": "opus", "framing_digest": "sha256:frame", "blocking": True, "disposition": "fixed"}]
+_v19_members = [{"principal": "dmitry", "kind": "person", "independence_group": "founder"},
+                {"principal": "asya", "kind": "person", "independence_group": "ops"},
+                {"principal": "codex", "kind": "service", "independence_group": "reviewer-a"},
+                {"principal": "opus", "kind": "service", "independence_group": "reviewer-b"}]
 expect("VELDO-0019 AC4 decision-observation/settlement: an answer binding the exact framing by a named authority with two "
        "distinct reviewers and every blocking objection disposed settles; a changed framing, an expired request, an "
        "already-settled request, a machine decider, a decider outside the named authorities, two reviews by one principal "
        "counted as one, and an undisposed blocking objection each refuse by name",
-       GC19.settlement_problems(_v19_req, _v19_ans, _v19_reviews, 2, _v19_now) == []
-       and any("exact framing content" in p for p in GC19.settlement_problems(_v19_req, dict(_v19_ans, framing_digest="sha256:other"), _v19_reviews, 2, _v19_now))
-       and any("expired" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, _v19_reviews, 2, _v19_now + 500))
-       and any("several winners" in p for p in GC19.settlement_problems(dict(_v19_req, settled=True), _v19_ans, _v19_reviews, 2, _v19_now))
-       and any("not a person" in p for p in GC19.settlement_problems(_v19_req, dict(_v19_ans, decided_by="agent"), _v19_reviews, 2, _v19_now))
-       and any("not among the request's named authorities" in p for p in GC19.settlement_problems(_v19_req, dict(_v19_ans, decided_by="asya"), _v19_reviews, 2, _v19_now))
-       and any("one principal fill one position" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, [dict(_v19_reviews[0]), dict(_v19_reviews[0])], 2, _v19_now))
-       and any("without an explicit disposition" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, [_v19_reviews[0], dict(_v19_reviews[1], disposition=None)], 2, _v19_now)))
+       GC19.settlement_problems(_v19_req, _v19_ans, _v19_reviews, 2, _v19_now, _v19_members) == []
+       and any("exact framing content" in p for p in GC19.settlement_problems(_v19_req, dict(_v19_ans, framing_digest="sha256:other"), _v19_reviews, 2, _v19_now, _v19_members))
+       and any("expired" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, _v19_reviews, 2, _v19_now + 500, _v19_members))
+       and any("several winners" in p for p in GC19.settlement_problems(dict(_v19_req, settled=True), _v19_ans, _v19_reviews, 2, _v19_now, _v19_members))
+       and any("not an authenticated person" in p for p in GC19.settlement_problems(_v19_req, dict(_v19_ans, decided_by="agent"), _v19_reviews, 2, _v19_now, _v19_members))
+       and any("not among the request's named authorities" in p for p in GC19.settlement_problems(_v19_req, dict(_v19_ans, decided_by="asya"), _v19_reviews, 2, _v19_now, _v19_members))
+       and any("one principal fill one position" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, [dict(_v19_reviews[0]), dict(_v19_reviews[0])], 2, _v19_now, _v19_members))
+       and any("without an explicit disposition" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, [_v19_reviews[0], dict(_v19_reviews[1], disposition=None)], 2, _v19_now, _v19_members)))
+
+
+# ---------------------------------------------------------------------------------------------
+# The eight findings of the Codex review (review-20260917-172837), each pinned.
+# ---------------------------------------------------------------------------------------------
+expect("VELDO-0019 AC4 decision-observation/settlement (review 1): a decider or reviewer is an AUTHENTICATED member, never a "
+       "label - 'Veldo Agent' (not a member) settles nothing, 'Alice' and ' Alice ' are one reviewer by normalized identity and "
+       "an unauthenticated label fills no position, two reviewers from one independence group fail a two-group requirement",
+       any("not an authenticated person" in p for p in GC19.settlement_problems(_v19_req, dict(_v19_ans, decided_by="Veldo Agent"), _v19_reviews, 2, _v19_now, _v19_members))
+       and any("2 required" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, [{"principal": "Alice", "framing_digest": "sha256:frame"}, {"principal": " alice ", "framing_digest": "sha256:frame"}], 2, _v19_now,
+                                                                   _v19_members + [{"principal": "alice", "kind": "person", "independence_group": "x"}]))
+       and any("2 required" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, [{"principal": "Ghost", "framing_digest": "sha256:frame"}, _v19_reviews[0]], 2, _v19_now, _v19_members))
+       and any("independence group" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, _v19_reviews, 2, _v19_now,
+                                                                            [dict(m, independence_group="one") for m in _v19_members], min_independence=2))
+       and GC19.settlement_problems(_v19_req, _v19_ans, _v19_reviews, 2, _v19_now, _v19_members, min_independence=2) == [])
+_v19_settled_dec = [{"id": "DEC-S", "status": "decided", "binding": {"subjects": [{"id": "U-dep"}]}}]
+_v19_g2 = GC19.combined_graph({"decision_prerequisite": GC19.GRAPH_ADAPTERS["decision_prerequisite"](_v19_settled_dec)})
+_v19_units2 = {"U-dep": {"state": "RUNNING", "ready": False, "publication_eligible": True}}
+expect("VELDO-0019 AC3 graph-invalidation/running-publication (review 1): a SETTLED decision keeps its prerequisite edge, so "
+       "invalidating it pulls publication permission from its running dependent",
+       ("U-dep", "DEC-S") in GC19.GRAPH_ADAPTERS["decision_prerequisite"](_v19_settled_dec)
+       and GC19.invalidate(_v19_g2, "DEC-S", _v19_units2, "prerequisite_invalidated")["U-dep"]["publication_eligible"] is False)
+_v19_pu = [{"uuid": "11111111-0000-4000-8000-000000000001", "alias": "PA", "dependencies": ["22222222-0000-4000-8000-000000000002"]},
+           {"uuid": "22222222-0000-4000-8000-000000000002", "alias": "PB", "dependencies": ["PA"]}]
+expect("VELDO-0019 AC1 combined-graph/cross-family-cycle (review 1): two projects referencing each other, one by uuid and one by "
+       "alias, resolve to two canonical nodes and the ring is refused; the same holds for release executions",
+       any("has a ring" in p for p in GC19.authorization_problems({"project_dependency": GC19.GRAPH_ADAPTERS["project_dependency"](_v19_pu)}))
+       and any("has a ring" in p for p in GC19.authorization_problems({"release_execution_order": GC19.GRAPH_ADAPTERS["release_execution_order"](
+           [{"uuid": "u-1", "alias": "RX-A", "after": ["u-2"]}, {"uuid": "u-2", "alias": "RX-B", "after": ["RX-A"]}])})))
+expect("VELDO-0019 AC4 decision-observation/settlement (review 1): a request and an answer with no framing digest cannot settle, "
+       "and a review without a framing digest counts for nothing",
+       any("no framing digest" in p for p in GC19.settlement_problems({k: v for k, v in _v19_req.items() if k != "framing_digest"},
+                                                                       {k: v for k, v in _v19_ans.items() if k != "framing_digest"}, _v19_reviews, 2, _v19_now, _v19_members))
+       and any("2 required" in p for p in GC19.settlement_problems(_v19_req, _v19_ans, [{"principal": "codex"}, {"principal": "opus"}], 2, _v19_now, _v19_members)))
+expect("VELDO-0019 AC2 graph-resolution/matrix (review 1): an edge declaring no exact revision, and a candidate carrying none, are "
+       "wrong_revision, never resolved",
+       GC19.resolve_dependency("spec_depends_on", "T", None, [{"kind": "completion_receipt", "signed": True}])["state"] == "wrong_revision"
+       and GC19.resolve_dependency("spec_depends_on", "T", 1, [{"kind": "completion_receipt", "signed": True}])["state"] == "wrong_revision")
+expect("VELDO-0019 AC4 decision-observation/matrix (review 1): an assumption with no trusted source or no subject digest, a "
+       "non-positive or non-finite max_age, an observation dated NaN or infinity, and a non-finite now are each invalid and "
+       "never current, so a blocking assumption built on them blocks",
+       GC19.observation_state(dict(_v19_asm_m, source=None), dict(_v19_obs_ok_m, source=None), _v19_now)[0] == "invalid"
+       and GC19.observation_state(dict(_v19_asm_m, subject_digest=None), dict(_v19_obs_ok_m, subject_digest=None), _v19_now)[0] == "invalid"
+       and GC19.observation_state(dict(_v19_asm_m, max_age=0), _v19_obs_ok_m, _v19_now)[0] == "invalid"
+       and GC19.observation_state(dict(_v19_asm_m, max_age=float("inf")), _v19_obs_ok_m, _v19_now)[0] == "invalid"
+       and GC19.observation_state(_v19_asm_m, dict(_v19_obs_ok_m, at=float("nan")), _v19_now)[0] == "invalid"
+       and GC19.observation_state(_v19_asm_m, dict(_v19_obs_ok_m, at=float("inf")), _v19_now)[0] == "invalid"
+       and GC19.observation_state(_v19_asm_m, dict(_v19_obs_ok_m, at="yesterday"), _v19_now)[0] == "invalid"
+       and GC19.observation_state(_v19_asm_m, _v19_obs_ok_m, float("nan"))[0] == "invalid"
+       and GC19.eligibility_effect(_v19_dec, [_v19_asm_m], {"a-measured": dict(_v19_obs_ok_m, at=float("nan"))}, _v19_now)["eligible"] is False)
+_v19_after_ok = GC19.invalidate(_v19_g, "U1", _v19_units, "prerequisite_withdrawn")
+_v19_rewritten = dict(_v19_after_ok, U4=dict(_v19_after_ok["U4"], state="RUNNING", publication_eligible=True,
+                                            impact_records=[{"event": "forged"}, _v19_after_ok["U4"]["impact_records"][0]]))
+expect("VELDO-0019 AC3 graph-invalidation/effect (review 1): a completed dependent whose state was reopened, whose publication "
+       "permission was restored or whose prior impact records were replaced while the count still grew by one is refused "
+       "by the checker field by field",
+       any("state was rewritten" in p for p in GC19.invalidation_problems(_v19_units, _v19_rewritten, _v19_g, "U1"))
+       and any("publication_eligible was rewritten" in p for p in GC19.invalidation_problems(_v19_units, _v19_rewritten, _v19_g, "U1"))
+       and any("not this invalidation's" in p for p in GC19.invalidation_problems(_v19_units, dict(_v19_after_ok, U4=dict(_v19_after_ok["U4"], impact_records=[{"event": "forged"}])), _v19_g, "U1"))
+       and any("prior records must stay" in p for p in GC19.invalidation_problems(
+           dict(_v19_units, U4=dict(_v19_units["U4"], impact_records=[{"event": "earlier"}])),
+           dict(_v19_after_ok, U4=dict(_v19_after_ok["U4"], impact_records=[{"event": "replaced"}, _v19_after_ok["U4"]["impact_records"][0]])), _v19_g, "U1"))
+       and GC19.invalidation_problems(_v19_units, _v19_after_ok, _v19_g, "U1") == [])

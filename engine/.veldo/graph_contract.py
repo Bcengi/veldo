@@ -16,6 +16,7 @@ validate.py's plan DAG check and release_contract.member_cycles use; the machine
 authorization.MACHINE_ACTORS and the suite binds them.
 """
 import importlib.util
+import math
 import re
 from pathlib import Path
 
@@ -37,6 +38,11 @@ def _is_str(v):
 
 def _is_pos_int(v):
     return isinstance(v, int) and not isinstance(v, bool) and v >= 1
+
+
+def _finite(v):
+    """A real, finite number: not a bool, not NaN, not an infinity, not a string."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
 MACHINE_ACTORS = frozenset({"veldo-executor", "veldo-responder", "executor", "responder", "machine",
@@ -79,22 +85,42 @@ def _edges_spec_depends_on(specs):
     return out
 
 
+def _canon(records):
+    """{alias or uuid: canonical node id} over records carrying uuid and alias: the uuid when the
+    record has one, else the alias, so a reference by either spelling lands on ONE node."""
+    canon = {}
+    for r in records or []:
+        if isinstance(r, dict):
+            node = r.get("uuid") if _is_str(r.get("uuid")) else r.get("alias")
+            for key in (r.get("uuid"), r.get("alias")):
+                if _is_str(key) and _is_str(node):
+                    canon[key] = node
+    return canon
+
+
 def _edges_project_dependency(projects):
+    """(project, dependency) with BOTH endpoints resolved to canonical identity, so a reference by
+    alias and a reference by uuid to the same project are one node and a ring between them is seen."""
+    canon = _canon(projects)
     out = set()
     for p in projects or []:
         if isinstance(p, dict) and _is_str(p.get("alias") or p.get("uuid")):
+            src = canon.get(p.get("uuid")) or canon.get(p.get("alias"))
             for d in p.get("dependencies") or []:
                 if _is_str(d):
-                    out.add((p.get("alias") or p.get("uuid"), d))
+                    out.add((src, canon.get(d, d)))
     return out
 
 
 def _edges_decision_prerequisite(decisions):
-    """A governing decision that a subject waits on: (subject, decision id) for every subject the
-    decision's binding names while the decision is not settled (R71: unresolved references block)."""
+    """A governing decision a subject waits on: (subject, decision id) for every subject the
+    decision's binding names, WHATEVER the decision's status: an unsettled decision blocks its
+    subjects through resolution (R71), and a settled one keeps the edge so its later supersession,
+    expiry or invalidation reaches every dependent through the reverse closure (R14, R71). Dropping
+    the edge on settlement would leave a running dependent publication-eligible after withdrawal."""
     out = set()
     for d in decisions or []:
-        if isinstance(d, dict) and _is_str(d.get("id")) and d.get("status") != "decided":
+        if isinstance(d, dict) and _is_str(d.get("id")):
             for s in (d.get("binding") or {}).get("subjects") or []:
                 if isinstance(s, dict) and _is_str(s.get("id")):
                     out.add((s["id"], d["id"]))
@@ -102,12 +128,14 @@ def _edges_decision_prerequisite(decisions):
 
 
 def _edges_release_execution_order(executions):
+    canon = _canon(executions)
     out = set()
     for e in executions or []:
         if isinstance(e, dict) and _is_str(e.get("alias") or e.get("uuid")):
+            src = canon.get(e.get("uuid")) or canon.get(e.get("alias"))
             for d in e.get("after") or []:
                 if _is_str(d):
-                    out.add((e.get("alias") or e.get("uuid"), d))
+                    out.add((src, canon.get(d, d)))
     return out
 
 
@@ -227,10 +255,13 @@ def resolve_dependency(family, target, expected_revision, candidates):
                 "refusal": "%s resolves to %r, a status string or path, never a completion receipt or accepted revision (R14)" % (target, c)}
     if c.get("inaccessible") is True:
         return {"reference": ref, "state": "inaccessible", "refusal": "%s resolves to a record this authority cannot read: inaccessible targets block" % target}
+    if not _is_pos_int(expected_revision):
+        return {"reference": ref, "state": "wrong_revision",
+                "refusal": "the edge to %s declares no exact revision (%r): a dependency binds an exact accepted revision or nothing" % (target, expected_revision)}
     if c.get("kind") != kind or c.get("signed") is not True:
         return {"reference": ref, "state": "unsupported_receipt",
                 "refusal": "%s resolves to %r; a %s edge needs a signed %s, never a status string" % (target, c.get("kind"), family, kind)}
-    if c.get("revision") != expected_revision:
+    if not _is_pos_int(c.get("revision")) or c.get("revision") != expected_revision:
         return {"reference": ref, "state": "wrong_revision",
                 "refusal": "%s resolves at revision %r, the edge expects %r: dependencies bind exact accepted revisions" % (target, c.get("revision"), expected_revision)}
     return {"reference": ref, "state": "resolved", "refusal": None}
@@ -305,8 +336,20 @@ def invalidation_problems(before, after, graph, prerequisite):
         if u.get("state") == "COMPLETED":
             if a.get("receipts") != u.get("receipts"):
                 problems.append("%s is completed and its receipts were rewritten" % uid)
-            if len(a.get("impact_records") or []) != len(u.get("impact_records") or []) + 1:
-                problems.append("%s is completed and gained no impact record" % uid)
+            old_impacts = list(u.get("impact_records") or [])
+            new_impacts = list(a.get("impact_records") or [])
+            if new_impacts[:len(old_impacts)] != old_impacts or len(new_impacts) != len(old_impacts) + 1:
+                problems.append("%s is completed and its impact records were not appended to by exactly one (prior records must "
+                                "stay as they were)" % uid)
+            else:
+                added = new_impacts[-1] if isinstance(new_impacts[-1], dict) else {}
+                if added.get("prerequisite") != prerequisite or added.get("event") not in INVALIDATION_EVENTS \
+                        or added.get("receipts_retained") is not True or added.get("requires") != "new decision":
+                    problems.append("%s is completed and the appended impact record is not this invalidation's (it must name the "
+                                    "prerequisite, a known event, retained receipts and the new decision it requires)" % uid)
+            for k in sorted(set(u) | set(a)):
+                if k not in ("impact_records",) and a.get(k) != u.get(k):
+                    problems.append("%s is completed and %s was rewritten: completed history is never rewritten" % (uid, k))
         else:
             if a.get("ready") is not False:
                 problems.append("%s is a queued or running dependent and is still ready" % uid)
@@ -352,9 +395,15 @@ def observation_state(assumption, observation, now):
     digest and carry a value and a time (else invalid), be within max_age (else stale), and for a
     measured kind meet the declared expectation (else contradictory). A measured reading expires
     exactly as an attestation does."""
-    for f in ("id", "kind", "source", "subject_digest", "max_age"):
-        if f not in (assumption or {}):
-            return "invalid", "assumption declares no %s" % f
+    if not isinstance(assumption, dict):
+        return "invalid", "an assumption is a record"
+    for f in ("id", "kind", "source", "subject_digest"):
+        if not _is_str(assumption.get(f)):
+            return "invalid", "assumption declares no usable %s (a trusted source and a subject digest are named, never absent)" % f
+    if not _finite(assumption.get("max_age")) or assumption["max_age"] <= 0:
+        return "invalid", "assumption max_age %r is not a positive finite number" % (assumption.get("max_age"),)
+    if not _finite(now):
+        return "invalid", "now %r is not a finite time" % (now,)
     if assumption["kind"] not in OBSERVATION_KINDS:
         return "invalid", "assumption kind %r is not one of %s" % (assumption["kind"], OBSERVATION_KINDS)
     if observation is None:
@@ -364,12 +413,11 @@ def observation_state(assumption, observation, now):
     for f, want in (("kind", assumption["kind"]), ("source", assumption["source"]), ("subject_digest", assumption["subject_digest"])):
         if observation.get(f) != want:
             return "invalid", "observation %s is %r, the assumption trusts %r" % (f, observation.get(f), want)
-    if "at" not in observation or "value" not in observation:
-        return "invalid", "observation carries no time or no value"
-    try:
-        age = now - observation["at"]
-    except TypeError:
-        return "invalid", "observation time %r cannot be compared with now %r" % (observation["at"], now)
+    if "value" not in observation:
+        return "invalid", "observation carries no value"
+    if not _finite(observation.get("at")):
+        return "invalid", "observation time %r is not a finite time (a NaN, an infinity or a non-number compares with nothing)" % (observation.get("at"),)
+    age = now - observation["at"]
     if age < 0:
         return "invalid", "observation is dated after now"
     if age > assumption["max_age"]:
@@ -383,30 +431,58 @@ def observation_state(assumption, observation, now):
     return "current", "observed %r within %r" % (observation["value"], assumption["max_age"])
 
 
-def settlement_problems(request, answer, reviews, required_reviewers, now):
-    """Why an answer cannot settle a decision request (R40, R71): the answer's framing digest
-    differs from the request's (a settlement binds the exact framing); the request expired; the
-    answer's decider is not a person or not among the request's named authorities when it names
-    any; fewer DISTINCT authenticated reviewers than required (several reviews by one principal
-    fill one position); an unresolved blocking objection; or the request already has a terminal
-    settlement (one request version, one settlement)."""
+def _member(membership, principal):
+    """The membership entry an authenticated principal resolves to, by NORMALIZED identity (case and
+    surrounding whitespace do not make a second principal), or None. A name denylist is not
+    authentication: the entry must exist, be of a known kind and not be revoked."""
+    key = principal.strip().lower() if isinstance(principal, str) else None
+    for m in membership or []:
+        if isinstance(m, dict) and isinstance(m.get("principal"), str) and m["principal"].strip().lower() == key \
+                and m.get("kind") in ("person", "service") and m.get("revoked_at") is None and key not in MACHINE_ACTORS:
+            return m
+    return None
+
+
+def settlement_problems(request, answer, reviews, required_reviewers, now, membership, min_independence=1):
+    """Why an answer cannot settle a decision request (R40, R71): the request or the answer carries no
+    framing digest, or they differ (a settlement binds the exact framing content); the request
+    expired; the request already has a terminal settlement (one request version, one settlement);
+    the answer's decider is not an AUTHENTICATED PERSON in `membership` (a label is not an actor;
+    a machine actor never settles) or not among the request's named authorities when it names any;
+    fewer DISTINCT authenticated reviewers of this exact framing than required, distinct by
+    normalized identity (several reviews by one principal fill one position) and drawn from at least
+    `min_independence` independence groups; or an unresolved blocking objection."""
     problems = []
-    if request.get("framing_digest") != answer.get("framing_digest"):
-        problems.append("answer binds framing %r, the request is %r: a settlement binds the exact framing content" % (answer.get("framing_digest"), request.get("framing_digest")))
+    fd = request.get("framing_digest")
+    if not _is_str(fd) or not _is_str(answer.get("framing_digest")):
+        problems.append("the request or the answer carries no framing digest: a settlement binds full framing content, never its absence")
+    elif fd != answer.get("framing_digest"):
+        problems.append("answer binds framing %r, the request is %r: a settlement binds the exact framing content" % (answer.get("framing_digest"), fd))
     if request.get("expires_at") is not None and now > request["expires_at"]:
         problems.append("the request expired at %r; an expired answer cannot settle" % (request["expires_at"],))
     if request.get("settled") is True:
         problems.append("this request version already has a terminal settlement; several answers cannot create several winners")
     who = answer.get("decided_by")
-    if not _is_person(who):
-        problems.append("the answer's decider %r is not a person: only a person or a named authority settles" % (who,))
-    elif request.get("authorities") and who not in request["authorities"]:
+    decider = _member(membership, who)
+    if decider is None or decider.get("kind") != "person":
+        problems.append("the answer's decider %r is not an authenticated person in the membership: only a person or a named authority settles" % (who,))
+    elif request.get("authorities") and decider["principal"] not in request["authorities"]:
         problems.append("the answer's decider %r is not among the request's named authorities %s" % (who, sorted(request["authorities"])))
-    principals = {r.get("principal") for r in reviews or [] if isinstance(r, dict) and _is_person(r.get("principal"))
-                  and r.get("framing_digest") == request.get("framing_digest")}
-    if len(principals) < required_reviewers:
-        problems.append("%d distinct authenticated reviewer(s) of this framing, %d required: several reviews by one principal fill one position"
-                        % (len(principals), required_reviewers))
+    seen, groups = {}, set()
+    for r in reviews or []:
+        if not isinstance(r, dict) or not _is_str(r.get("framing_digest")) or r.get("framing_digest") != fd:
+            continue
+        m = _member(membership, r.get("principal"))
+        if m is None:
+            continue
+        seen[m["principal"]] = m
+        if m.get("independence_group"):
+            groups.add(m["independence_group"])
+    if len(seen) < required_reviewers:
+        problems.append("%d distinct authenticated reviewer(s) of this framing, %d required: several reviews by one principal fill one "
+                        "position, and an unauthenticated label fills none" % (len(seen), required_reviewers))
+    if len(groups) < min_independence:
+        problems.append("%d independence group(s) among the reviewers, %d required" % (len(groups), min_independence))
     open_obj = [r for r in reviews or [] if isinstance(r, dict) and r.get("blocking") is True and r.get("disposition") is None]
     if open_obj:
         problems.append("%d blocking objection(s) without an explicit disposition" % len(open_obj))
