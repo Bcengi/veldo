@@ -23,7 +23,7 @@ source = SUITE.read_text()
 baseline = '--baseline' in sys.argv
 before = hashlib.sha256(SUITE.read_bytes()).hexdigest()
 names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_dirs',
-         '_iar_repository_inventory', '_iar_live_inventory', '_iar_copy_tree', '_iar_substrate',
+         '_iar_repository_inventory', '_iar_working_inventory', '_iar_copy_ignore', '_iar_live_inventory', '_iar_copy_tree', '_iar_substrate',
          '_iar_copy_matches', '_iar_layout_controls', '_iar_private_paths',
          '_iar_copy_entry', '_iar_common_entries', '_iar_normalize_config',
          '_iar_copy_alternates', '_iar_resolve_alternates', '_iar_assert_isolated',
@@ -32,7 +32,7 @@ names = {'_iar_block', '_iar_inventory', '_iar_changed', '_iar_git', '_iar_git_d
          '_iar_nested_repository', '_iar_ac4', '_iar_ac4_inventory', '_iar_ac4_process', '_iar_nested_controls',
          '_iar_alternates_name_controls', '_iar_special_kind', '_iar_special_and_reflog_controls'}
 if baseline:
-    names -= {'_iar_ac4_inventory', '_iar_ac4_process', '_iar_alternate_paths', '_iar_nested_repository', '_iar_nested_controls',
+    names -= {'_iar_working_inventory', '_iar_copy_ignore', '_iar_ac4_inventory', '_iar_ac4_process', '_iar_alternate_paths', '_iar_nested_repository', '_iar_nested_controls',
               '_iar_alternates_name_controls', '_iar_special_kind', '_iar_special_and_reflog_controls'}
 nodes = [n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name in names]
 assert {n.name for n in nodes} == names
@@ -102,7 +102,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
             'review_control': None,
             **({} if baseline else {
                 'restore_common_allowlist': "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name in {'objects', 'refs', 'packed-refs', 'shallow', 'HEAD', 'veldo', 'index', 'config', 'config.worktree'} or p.name.startswith('sharedindex.')]",
-                'restore_timestamps': "def _iar_inventory(root, *, entries=None):\n    result = original_inventory(root, entries=entries)\n    return {k: (v, (Path(root) / k).lstat().st_mtime_ns) for k, v in result.items()}",
+                'restore_timestamps': "def _iar_inventory(root, *, entries=None, observe_mtime=False):\n    result = original_inventory(root, entries=entries, observe_mtime=observe_mtime)\n    return {k: (v, (Path(root) / k).lstat().st_mtime_ns) for k, v in result.items()}",
             }),
             'quotes_as_filename_characters': "def _iar_resolve_alternates(original, copied):\n    path = copied / 'info/alternates'\n    if path.exists():\n        _iar_write_alternates(path, [(original / line).resolve() for line in path.read_text().splitlines()])",
             'omit_copied_ledger': "def _iar_common_entries(common, primary): return [p for p in original_common_entries(common, primary) if p.name != 'veldo']",
@@ -188,7 +188,8 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
                 ns['original_copy_entry'] = ns['_iar_copy_entry']
                 if mutation:
                     exec(compile(mutation, '<' + case + '>', 'exec'), ns)
-                ns['_iar_special_and_reflog_controls']()
+                with contextlib.redirect_stdout(io.StringIO()):
+                    ns['_iar_special_and_reflog_controls']()
                 failures = [r['label'] for r in rows if not r['passed']]
                 assert len(rows) == 4 and len(failures) == {
                     'special_and_reflog_control': 0, 'restore_special_copy': 2,
@@ -220,6 +221,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-no-identity-') as d:
 # Drive the existing AC4 function, including its real compose-install-gate path,
 # in separate disposable primary and linked checkouts of the same source commit.
 ac4_results = []
+first_use_results = []
 constants = {'_IAR_LAUNCHERS', '_IAR_DETACHING', '_IAR_LAUNCH_OK', '_IAR_NETWORK', '_IAR_NET_CMDS'}
 ac4_nodes = [n for n in ast.parse(source).body
              if (isinstance(n, ast.FunctionDef) and n.name in names | {'_iar_ac4', '_iar_dotted'})
@@ -252,7 +254,10 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                                                'nested_only', 'nested_detached', 'nested_network',
                                                'sparse_rules', 'sparse_rules_omitted',
                                                'bound_socket', 'bound_socket_old_copy',
-                                               'private_log_delete', 'private_log_delete_omitted'))):
+                                               'private_log_delete', 'private_log_delete_omitted',
+                                               'identical_rewrite', 'identical_rewrite_content_only',
+                                               'home_identical_rewrite', 'home_identical_rewrite_content_only',
+                                               'working_socket', 'working_socket_old_copy'))):
                 rows = []
                 ns = dict(_iar_contextlib=contextlib, _iar_io=io, _IAR_STOOD_DOWN=[], ROOT=tree, Path=Path, tempfile=tempfile, _iar_os=os,
                           _iar_sp=subprocess, _iar_sh=shutil, _iar_hl=hashlib, _iar_threading=threading, _iar_socket=socket, _iar_stat=stat,
@@ -295,15 +300,40 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                         private_paths = ns['_iar_private_paths']
                         ns['_iar_private_paths'] = lambda private: [
                             p for p in private_paths(private) if p.name != 'sparse-checkout']
-                socket_case = case.startswith('bound_socket')
+                rewrite_case = 'identical_rewrite' in case
+                if rewrite_case:
+                    anchor = '    base = Path(root) if root is not None else ROOT'
+                    # The same write runs before the snapshots and again in both observations.
+                    # HOME uses the sandbox's already existing sentinel; the host HOME is untouched.
+                    injected = ("    probe = Path(os.environ['HOME']) / '.veldo-write-scope-sentinel'\n"
+                                "    if probe.exists(): probe.write_bytes(probe.read_bytes())\n"
+                                if case.startswith('home_') else
+                                "    probe = base / 'CLAUDE.md'\n"
+                                "    probe.write_bytes(probe.read_bytes())\n")
+                    text = stage_bytes.decode()
+                    pos = text.index(anchor, text.index('def check('))
+                    text = text[:pos] + text[pos:].replace(anchor, anchor + '\n' + injected, 1)
+                    stage.write_text(text)
+                    mutated = importlib.util.module_from_spec(spec)
+                    exec(compile(stage.read_bytes(), str(stage), 'exec'), mutated.__dict__)
+                    ns['IAR'] = mutated
+                    initial_ok, initial_report = mutated.check(only='claude')
+                    assert initial_ok, initial_report
+                    if case.endswith('content_only'):
+                        original_inventory = ns['_iar_inventory']
+                        ns['_iar_inventory'] = lambda root, *, entries=None, observe_mtime=False: original_inventory(root, entries=entries)
+                socket_case = case.startswith(('bound_socket', 'working_socket'))
                 private_log_case = case.startswith('private_log_delete')
                 if socket_case:
                     socket_private, socket_common = ns['_iar_git_dirs'](tree)
-                    endpoint = socket_private / 'fsmonitor--daemon.ipc'
+                    endpoint = (tree / 'working.ipc' if case.startswith('working_socket')
+                                else socket_private / 'fsmonitor--daemon.ipc')
                     bound = socket.socket(socket.AF_UNIX)
                     bound.bind(str(endpoint))
-                    assert ns['_iar_inventory'](socket_private)[endpoint.name] == (
-                        'socket', 0, 'skipped by metadata copy')
+                    assert ns['_iar_inventory'](endpoint.parent)[endpoint.name] == (
+                        'socket', 0, 'skipped by copy')
+                    if case == 'working_socket_old_copy':
+                        ns['_iar_copy_ignore'] = lambda directory, names: []
                     if case == 'bound_socket_old_copy':
                         original_copy = ns['_iar_copy_entry']
                         def old_copy(source, target, *, skip=()):
@@ -433,6 +463,8 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                     if socket_case:
                         bound.close()
                         endpoint.unlink()
+                    if rewrite_case:
+                        stage.write_bytes(stage_bytes)
                     if nested_case:
                         (tree / '.gitmodules').unlink()
                         stage.write_bytes(stage_bytes)
@@ -478,7 +510,7 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                         assert len(failures) == 1 and 'THIS repository is untouched' in failures[0], failures
                         assert 'git-dir/info/sparse-checkout' in failures[0], failures
                 if socket_case:
-                    expected = int(case == 'bound_socket_old_copy')
+                    expected = int(case.endswith('old_copy'))
                     if expected:
                         assert len(rows) == 1 and 'No such device or address' in failures[0], rows
                 if private_log_case:
@@ -486,15 +518,23 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                     if expected:
                         assert len(failures) == 1 and 'THIS repository is untouched' in failures[0], failures
                         assert 'git-dir/logs/refs/worktree/round-eight-probe' in failures[0], failures
+                if rewrite_case:
+                    expected = 0 if case.endswith('content_only') else 1 if case.startswith('home_') else 2
+                    if expected:
+                        labels = ('NOT ONE BYTE outside the repository',) if case.startswith('home_') else (
+                            'NOT ONE BYTE of the repository', 'THIS repository is untouched')
+                        assert all(any(label in row for row in failures) for label in labels), failures
+                        assert all(('.veldo-write-scope-sentinel' if case.startswith('home_') else 'tree/CLAUDE.md') in row
+                                   for row in failures), failures
                 assert len(failures) == expected, (shape, case, failures)
-                if expected and not nested_case and not sparse_case and not socket_case and not private_log_case and not (baseline and case == 'split_index'):
+                if expected and not nested_case and not sparse_case and not socket_case and not private_log_case and not rewrite_case and not (baseline and case == 'split_index'):
                     label = ("THE OBSERVATION'S OWN SUBSTRATE" if restored else
                              'THIS repository is untouched' if case in ('sibling_staging_shared_live', 'sibling_heartbeat_shared_live')
                              else 'NOT ONE BYTE of the repository under check')
                     assert label in failures[0], failures
                     if random_path is not None or 'reflog_delete' in case:
                         assert victim in failures[0], failures
-                assert len(rows) == (1 if case == 'bound_socket_old_copy' else 8 if nested_case else 14), rows
+                assert len(rows) == (1 if socket_case and case.endswith('old_copy') else 8 if nested_case else 14), rows
                 ac4_results.append({'shape': shape, 'case': case,
                                     'commit': git('rev-parse', 'HEAD', cwd=tree),
                                     'random_deleted_path': random_path,
@@ -502,6 +542,44 @@ with tempfile.TemporaryDirectory(prefix='veldo-0099-ac4-') as d:
                                     'output': output.getvalue(),
                                     'passed': len(rows) - len(failures), 'failed': len(failures),
                                     'rows': rows})
+            if not baseline:
+                # Real first-use execution, with live endpoints in both copy surfaces.
+                private, _ = ns['_iar_git_dirs'](tree)
+                endpoints = [private / 'fsmonitor--daemon.ipc', tree / 'working.ipc']
+                fifos = [private / 'probe.fifo', tree / 'working.fifo']
+                with contextlib.ExitStack() as stack:
+                    for endpoint in endpoints:
+                        bound = stack.enter_context(socket.socket(socket.AF_UNIX))
+                        bound.bind(str(endpoint))
+                        stack.callback(endpoint.unlink)
+                    for fifo in fifos:
+                        os.mkfifo(fifo)
+                        stack.callback(fifo.unlink)
+                    proc = subprocess.run([sys.executable, 'scripts/check_first_use.py'], cwd=tree,
+                                          capture_output=True, text=True, timeout=1800)
+                    assert proc.returncode == 0, (shape, proc.stdout, proc.stderr)
+                    assert 'FIRST USE: pass.' in proc.stdout
+                    assert all('skipped socket ' + str(p) in proc.stdout for p in endpoints)
+                    assert all('skipped fifo ' + str(p) in proc.stdout for p in fifos)
+                    first_use_results.append({'shape': shape, 'commit': git('rev-parse', 'HEAD', cwd=tree),
+                                              'command': 'python3 scripts/check_first_use.py',
+                                              'exit_code': proc.returncode, 'output': proc.stdout + proc.stderr})
+                    first_spec = importlib.util.spec_from_file_location('first_use_probe', tree / 'scripts/check_first_use.py')
+                    first = importlib.util.module_from_spec(first_spec)
+                    first_spec.loader.exec_module(first)
+                    def old_first_copy(src, dest, what):
+                        try:
+                            shutil.copytree(src, dest, symlinks=True)
+                        except (OSError, shutil.Error) as error:
+                            raise first.CannotAnswer(str(error))
+                        return dest
+                    first._copy = old_first_copy
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        exit_code = first.main([])
+                    assert exit_code == 2 and 'CANNOT ANSWER' in output.getvalue(), output.getvalue()
+                    first_use_results.append({'shape': shape, 'mutation': 'restore ordinary copytree',
+                                              'exit_code': exit_code, 'output': output.getvalue()})
     finally:
         sys.dont_write_bytecode = old_pyc
 
@@ -511,4 +589,4 @@ print(json.dumps({'commit': subprocess.check_output(['git', '-C', str(ROOT), 're
                   'suite_sha256': before, 'suite_unchanged': True,
                   'layout_environment': 'Empty HOME and XDG_CONFIG_HOME; system/global git config disabled; no identity in fixture repo or environment',
                   'description': 'Paired mutation controls, not a selected-suite gate claim',
-                  'results': results, 'original_ac4': ac4_results}, indent=2))
+                  'results': results, 'original_ac4': ac4_results, 'first_use': first_use_results}, indent=2))
