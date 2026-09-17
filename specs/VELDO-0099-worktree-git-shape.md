@@ -1,8 +1,8 @@
 ---
 schema: veldo.spec/v1
-id: VELDO-0023
+id: VELDO-0099
 title: Install-and-run observations resolve git metadata in either checkout shape
-status: ready
+status: draft
 risk: standard
 owner: dmitry
 human_approval: not_required
@@ -12,9 +12,9 @@ placement: [enforcement]
 protected_paths: []
 footprint:
   - "scripts/suites/24_veldo_0007_install_and_run.py"
-  - "specs/VELDO-0023-worktree-git-shape.md"
+  - "specs/VELDO-0099-worktree-git-shape.md"
   - "specs/index.md"
-  - "proof/VELDO-0023/*"
+  - "proof/VELDO-0099/*"
 behavior_bearing: true
 observability:
   logs: Named selftest rows distinguish copy fidelity, git resolution, and writes outside the temporary directory.
@@ -61,7 +61,7 @@ acceptance_criteria:
       primary checkout of the same implementation commit, with the regression controls driven.
       Set: Both full gate invocations, all three declared code mutations, and the suite-wide
       search for sibling .git directory assumptions. Completeness: Record commands, commit,
-      exit codes, counts, and failing mutation rows in proof/VELDO-0023; map every criterion in
+      exit codes, counts, and failing mutation rows in proof/VELDO-0099; map every criterion in
       its manifest and distinguish diagnostics from full gate evidence. Falsifier: Restore the
       original shape assertion in a disposable linked fixture and the recorded baseline must
       show the named VELDO-0007 AC4 row red.
@@ -98,3 +98,8 @@ branches or worktrees other than this task branch. Shape fixtures are disposable
 
 Keep the specification ready pending independent review. No implementation self-approval is
 part of this work. Full gate output is evidence; selected suite runs are diagnostics only.
+
+The initial draft used VELDO-0023, the next number after specs/. Contract validation
+revealed that PLAN-0019 reserves VELDO-0023 through VELDO-0098 for uncreated work.
+This standalone item therefore uses VELDO-0099, the first unreserved ID, leaving the
+plan and its reservations intact. The ready check is repeated after renumbering.
