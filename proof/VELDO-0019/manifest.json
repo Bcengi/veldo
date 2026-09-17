@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0019",
-  "commit": "bcb408b68280be49e318a3564454fce816821ce6",
+  "commit": "aa8f0ee5692752382ff1db5e633c959fc028e890",
   "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
-  "produced_at": "2026-09-17T21:28:07Z",
+  "produced_at": "2026-09-17T21:43:55Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0019/driven.json",
-          "detail": "5 rows (1 driven): the edge-family registry is exactly the five R14 families and the adapter table equals it; each adapter derives its edges from plain records and the union of acyclic families is acyclic; for every pair of families a ring spanning the pair is refused while each family alone is acyclic, a ring through all five is refused, an unknown family is refused; a valid release membership forest introduces no edge and an invalid one blocks. DRIVEN: families validated one at a time in a module copy pass a cross-family ring (the declared falsifier)."
+          "detail": "6 rows (1 driven): the edge-family registry is exactly the five R14 families and the adapter table equals it; each adapter derives its edges from plain records and the union of acyclic families is acyclic; for every pair of families a ring spanning the pair is refused while each family alone is acyclic, a ring through all five is refused, an unknown family is refused; a valid release membership forest introduces no edge and an invalid one blocks. DRIVEN: families validated one at a time in a module copy pass a cross-family ring (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0019/gate-implementation.log",
-          "detail": "Complete canonical gate at bcb408b68280be49e318a3564454fce816821ce6 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5239 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at aa8f0ee5692752382ff1db5e633c959fc028e890 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5246 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -29,12 +29,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0019/driven.json",
-          "detail": "3 rows (1 driven): over every family and every target state (30 cells) the resolver answers the state by name, preserves the reference and carries a refusal for every state but resolved; a shipped status string, an unsigned receipt and a receipt of another kind are unsupported for an engineering edge. DRIVEN: a shipped string counted as a completion receipt in a module copy resolves (the declared falsifier)."
+          "detail": "4 rows (1 driven): over every family and every target state (30 cells) the resolver answers the state by name, preserves the reference and carries a refusal for every state but resolved; a shipped status string, an unsigned receipt and a receipt of another kind are unsupported for an engineering edge. DRIVEN: a shipped string counted as a completion receipt in a module copy resolves (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0019/gate-implementation.log",
-          "detail": "Complete canonical gate at bcb408b68280be49e318a3564454fce816821ce6 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5239 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at aa8f0ee5692752382ff1db5e633c959fc028e890 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5246 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0019/driven.json",
-          "detail": "4 rows (1 driven): the module's reverse closure equals an independent brute-force oracle for every node of a chain spanning all five families; withdrawing a prerequisite makes the running dependent publication-ineligible, the queued one not ready, the completed one keep its receipts and gain an impact record, and leaves nodes outside the closure untouched, for every invalidation event; the checker refuses a result that leaves a running dependent publication-eligible, rewrites a completed receipt or changes a unit outside the closure. DRIVEN: running dependents left publication-eligible in a module copy are named by the checker (the declared falsifier)."
+          "detail": "6 rows (1 driven): the module's reverse closure equals an independent brute-force oracle for every node of a chain spanning all five families; withdrawing a prerequisite makes the running dependent publication-ineligible, the queued one not ready, the completed one keep its receipts and gain an impact record, and leaves nodes outside the closure untouched, for every invalidation event; the checker refuses a result that leaves a running dependent publication-eligible, rewrites a completed receipt or changes a unit outside the closure. DRIVEN: running dependents left publication-eligible in a module copy are named by the checker (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0019/gate-implementation.log",
-          "detail": "Complete canonical gate at bcb408b68280be49e318a3564454fce816821ce6 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5239 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at aa8f0ee5692752382ff1db5e633c959fc028e890 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5246 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -61,12 +61,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0019/driven.json",
-          "detail": "6 rows (1 driven): a binding names a framing digest and subjects of every R71 kind with id and digest, each omission refused; over measured and attestation assumptions crossed with missing, current, stale, contradictory and invalid observations (12 cells) the state is answered by name and a measured reading expires like an attestation; eligibility is one atomic result in which an undecided decision, a broken binding or a missing or stale blocking observation blocks every subject while a stale advisory assumption only warns; settlement binds the exact framing, refuses an expired or already-settled request, a machine or unnamed decider, one principal counted twice and an undisposed blocking objection. DRIVEN: stale measurements read as current in a module copy make the decision eligible on a 4000-second-old reading against a 3600-second allowance (the declared falsifier)."
+          "detail": "9 rows (1 driven): a binding names a framing digest and subjects of every R71 kind with id and digest, each omission refused; over measured and attestation assumptions crossed with missing, current, stale, contradictory and invalid observations (12 cells) the state is answered by name and a measured reading expires like an attestation; eligibility is one atomic result in which an undecided decision, a broken binding or a missing or stale blocking observation blocks every subject while a stale advisory assumption only warns; settlement binds the exact framing, refuses an expired or already-settled request, a machine or unnamed decider, one principal counted twice and an undisposed blocking objection. DRIVEN: stale measurements read as current in a module copy make the decision eligible on a 4000-second-old reading against a 3600-second allowance (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0019/gate-implementation.log",
-          "detail": "Complete canonical gate at bcb408b68280be49e318a3564454fce816821ce6 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5239 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at aa8f0ee5692752382ff1db5e633c959fc028e890 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5246 passed, 0 failed, every required check passed."
         }
       ]
     }
@@ -77,9 +77,9 @@
       "status": "passed",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "bcb408b68280be49e318a3564454fce816821ce6",
+      "commit": "aa8f0ee5692752382ff1db5e633c959fc028e890",
       "ref": "proof/VELDO-0019/gate-implementation.log",
-      "detail": "GATE GREEN; selftest 5239 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+      "detail": "GATE GREEN; selftest 5246 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
     }
   ],
   "artifacts": [
@@ -91,5 +91,5 @@
     "proof/VELDO-0019/approval-dmitry.json"
   ],
   "rollback": "Revert the graph contract organ, its capability and scaffold registrations and suite 32 through the ordinary reviewed path (a revert commit, never a force). The module is pure and persists nothing; the eligibility service, the store and the tripwire production that will consume it are later packages.",
-  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here. Dmitry's approval of the landing (2026-09-17, Telegram message 27921) is recorded in approval-dmitry.json."
+  "review": "Independent Codex review of the branch at 0a9ba90 (research/codex-reviews/review-20260917-172837.md) found eight reproducible problems; each is fixed and pinned with the reviewer's reproduction in suite 32 (rows marked 'review 1'). The fixes carry no second Codex pass under the one-review-per-landing quota ruling until 2026-09-22. Dmitry's approval of the landing is recorded in approval-dmitry.json."
 }

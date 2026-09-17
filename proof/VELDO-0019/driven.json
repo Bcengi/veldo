@@ -1,13 +1,13 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0019",
-  "commit": "bcb408b68280be49e318a3564454fce816821ce6",
-  "taken_at": "2026-09-17T21:28:07Z",
+  "commit": "aa8f0ee5692752382ff1db5e633c959fc028e890",
+  "taken_at": "2026-09-17T21:43:55Z",
   "fragment": "scripts/suites/32_veldo_0019_combined_graph.py",
-  "fragment_sha256": "7cd48e8c8d63b294cdfa8e269bd0abb271991249b7ac693b736133d4b9a752a6",
+  "fragment_sha256": "87892d3bd15b43f1788651f35d4a57a699179779a1b96e8f9086c77cfc4dfca9",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/graph_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the invalidation closure is checked against an independent oracle in the fragment.",
-  "rows_total": 18,
-  "rows_passed": 18,
+  "rows_total": 25,
+  "rows_passed": 25,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0019 AC1 combined-graph/cross-family-cycle DRIVEN (the declared falsifier): with families validated one at a time in a copy, a ring spanning plan_work and spec_depends_on passes, so the row reds; unmutated it is refused",
@@ -39,23 +39,23 @@
   },
   "per_criterion": {
     "AC1": {
-      "rows": 5,
-      "passed": 5,
+      "rows": 6,
+      "passed": 6,
       "driven": 1
     },
     "AC2": {
-      "rows": 3,
-      "passed": 3,
-      "driven": 1
-    },
-    "AC3": {
       "rows": 4,
       "passed": 4,
       "driven": 1
     },
-    "AC4": {
+    "AC3": {
       "rows": 6,
       "passed": 6,
+      "driven": 1
+    },
+    "AC4": {
+      "rows": 9,
+      "passed": 9,
       "driven": 1
     }
   },
@@ -65,7 +65,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0019 AC1 combined-graph/adapters: each adapter derives its family's edges from plain records (plan work, spec depends_on, project dependencies, unsettled decision prerequisites only, release execution order), and the union of these acyclic families is acyclic",
+      "label": "VELDO-0019 AC1 combined-graph/adapters: each adapter derives its family's edges from plain records (plan work, spec depends_on, project dependencies, decision prerequisites whatever the decision's status, release execution order), and the union of these acyclic families is acyclic",
       "passed": true
     },
     {
@@ -130,6 +130,34 @@
     },
     {
       "label": "VELDO-0019 AC4 decision-observation/settlement: an answer binding the exact framing by a named authority with two distinct reviewers and every blocking objection disposed settles; a changed framing, an expired request, an already-settled request, a machine decider, a decider outside the named authorities, two reviews by one principal counted as one, and an undisposed blocking objection each refuse by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0019 AC4 decision-observation/settlement (review 1): a decider or reviewer is an AUTHENTICATED member, never a label - 'Veldo Agent' (not a member) settles nothing, 'Alice' and ' Alice ' are one reviewer by normalized identity and an unauthenticated label fills no position, two reviewers from one independence group fail a two-group requirement",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0019 AC3 graph-invalidation/running-publication (review 1): a SETTLED decision keeps its prerequisite edge, so invalidating it pulls publication permission from its running dependent",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0019 AC1 combined-graph/cross-family-cycle (review 1): two projects referencing each other, one by uuid and one by alias, resolve to two canonical nodes and the ring is refused; the same holds for release executions",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0019 AC4 decision-observation/settlement (review 1): a request and an answer with no framing digest cannot settle, and a review without a framing digest counts for nothing",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0019 AC2 graph-resolution/matrix (review 1): an edge declaring no exact revision, and a candidate carrying none, are wrong_revision, never resolved",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0019 AC4 decision-observation/matrix (review 1): an assumption with no trusted source or no subject digest, a non-positive or non-finite max_age, an observation dated NaN or infinity, and a non-finite now are each invalid and never current, so a blocking assumption built on them blocks",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0019 AC3 graph-invalidation/effect (review 1): a completed dependent whose state was reopened, whose publication permission was restored or whose prior impact records were replaced while the count still grew by one is refused by the checker field by field",
       "passed": true
     }
   ]

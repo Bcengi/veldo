@@ -5,7 +5,7 @@
       46
     ],
     "reason": "Pattern-shaped text emitted by the pkg/dirty.py selftest fixture (the guardrail's own forbidden-token fixture). No gate result or failure row is removed. The checkout's absolute path is replaced by <repo> throughout.",
-    "raw_sha256": "13ca8338d1cb6e9877f2ff9339eb28fe804882943926953ecddd7f47880e503a",
-    "stored_sha256": "d0704da9d7863cdefcf842b9d610735cdff330f3a47a0902706864210de20443"
+    "raw_sha256": "ae913f279b7ecf6729009bdbd410052b1b546e2c6e9952552d350a20edfd47f6",
+    "stored_sha256": "98bb6e41b12f65df72f1ff596fb11dc858594853d344d508d9452b48d3303abc"
   }
 ]
