@@ -61,6 +61,9 @@ _FILES = [
     # VELDO-0017 (PLAN-0019 W2): entity identity and lifecycle schemas, loaded by the suite and by
     # the store above it; not substrate (no gate stage of validate_checks loads it).
     ".veldo/entity_contract.py",
+    # VELDO-0018 (PLAN-0019 W3): release and behavior-floor integration contracts, loaded by the
+    # suite and by the release execution store above it; not substrate.
+    ".veldo/release_floor_contract.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",

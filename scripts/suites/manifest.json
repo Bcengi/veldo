@@ -287,6 +287,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/entity_contract.py and .veldo/claim.py by path, reads the historical alias corpus from specs/ and plans/, mutates copies of the contract module under a temporary directory, writes only there and spawns no subprocess."
   },
   {
+   "name": "31_veldo_0018_release_floor",
+   "file": "31_veldo_0018_release_floor.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "31_veldo_0018_release_floor"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/release_floor_contract.py by path (which loads release_contract, entity_contract and behavior_floor by path from the engine), mutates copies of the module under a temporary directory, writes only there and spawns no subprocess."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"
