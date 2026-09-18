@@ -1,13 +1,13 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0021",
-  "commit": "aaf46ddeb4c535d8f21ef7f4002cc26a34c388a3",
-  "taken_at": "2026-09-18T01:20:18Z",
+  "commit": "365754417fdf91fbe40cdffc222e2684de57203a",
+  "taken_at": "2026-09-18T01:35:27Z",
   "fragment": "scripts/suites/35_veldo_0021_completion.py",
-  "fragment_sha256": "cf20407bb7f4761c20ff30c7ddd1ac314db895733def118de8f23bf299c5e531",
+  "fragment_sha256": "f13588f5cbac5b73e1c766f2d004b22c2fc0aecd6fc0b3e4437f74776db43a04",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/completion_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
-  "rows_total": 20,
-  "rows_passed": 20,
+  "rows_total": 26,
+  "rows_passed": 26,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0021 AC1 completion/build-only DRIVEN (the declared falsifier): with revision_landed inferred from attempt_finished in a copy, a build-only attempt reads as landed, so the row reds; unmutated it does not",
@@ -44,18 +44,18 @@
       "driven": 1
     },
     "AC2": {
+      "rows": 8,
+      "passed": 8,
+      "driven": 1
+    },
+    "AC3": {
       "rows": 7,
       "passed": 7,
       "driven": 1
     },
-    "AC3": {
-      "rows": 3,
-      "passed": 3,
-      "driven": 1
-    },
     "AC4": {
-      "rows": 5,
-      "passed": 5,
+      "rows": 6,
+      "passed": 6,
       "driven": 1
     }
   },
@@ -109,11 +109,31 @@
       "passed": true
     },
     {
-      "label": "VELDO-0021 AC3 completion/obligations: a complete bundle is complete; each of the thirteen obligations has one fixture refused by its own name (nonexistent commit, draft spec, empty criteria, missing evidence, no producer, a fabricated check, no reviewer, builder as reviewer, undisposed objection, no candidate tree, verifier inside the candidate, unapproved protected path, mutated tree) (failures: [])",
+      "label": "VELDO-0021 AC2 eligibility/charge-sign (review 1): a reconciled charge of -100 against an allocation of 10 releases nothing (never 110: reconciliation cannot manufacture capacity); NaN, infinity and a non-numeric charge release nothing; a charge above the allocation releases nothing and settles the charge; a charge of zero releases the whole allocation",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC3 completion/obligations: a complete bundle is complete; each of the fifteen obligations has one fixture refused by its own name (nonexistent commit, draft spec, empty criteria, missing evidence, no producer, a fabricated check, a red check, no reviewer, builder as reviewer, an unbound review, undisposed objection, no candidate tree, verifier inside the candidate, unapproved protected path, mutated tree) (failures: [])",
       "passed": true
     },
     {
       "label": "VELDO-0021 AC3 completion/empty-proof: an empty criterion universe, in the proof or in the specification, proves nothing and is refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC3 completion/review-binding (review 1): a review is bound to the exact implementation commit, candidate tree and proof digest it reviewed: a review carrying only a reviewer name, one naming another commit, another source tree or another proof digest, and a proof without a digest each refuse as review_bound; the bound review passes",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC3 completion/checks-passed (review 1): a canonical gate that exited 1 is refused as checks_passed (a red gate completes nothing); exit code True is not an exit code; a second red check beside a green one refuses",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC3 completion/post-run-tree (review 1): a candidate without a post-run tree digest, or with None, is refused as post_run_tree_equal (the observation is required, not optional); a differing digest refuses; an equal one passes",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC3 completion/verifier-containment (review 1): a verifier at /opt/../cand/scripts/verify.sh resolves inside candidate root /cand and is refused; a relative verifier path, a missing candidate root and a verifier equal to the root are refused; /opt/veldo/scripts/verify.sh and /candidate-2/verify.sh (a sibling whose name shares the prefix) are outside",
       "passed": true
     },
     {
@@ -130,6 +150,10 @@
     },
     {
       "label": "VELDO-0021 AC4 completion/unknown-publication: a lost acknowledgement after the push moves the chain to awaiting_authority, never to published, confirmed or completed; only trusted target evidence moves it on to published, and only remote confirmation and a replicated receipt complete it",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC4 completion/recovery-recheck (review 1): recovery with receiver evidence of no start returns to verified, never straight to authorized: from there push_cas_ok is not a declared step, and authority_recheck_ok with authority_generation_current False refuses naming it, so revocation during the recovery interval stops the publication; with every recheck True it proceeds",
       "passed": true
     },
     {
