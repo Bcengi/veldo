@@ -359,6 +359,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_membership.py, .veldo/control_store.py and .veldo/authority_contract.py by path (and mutated copies of them side by side under a temporary directory), opens REAL SQLite stores there, generates throwaway Ed25519 key pairs with the installed ssh-keygen and signs and verifies every envelope through it (standing down by name when ssh-keygen is absent), runs short-lived client child processes with the same interpreter (each waited on; one SIGKILLs itself after COMMIT), and writes only under that temporary directory."
   },
   {
+   "name": "39_veldo_0026_revocation",
+   "file": "39_veldo_0026_revocation.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "39_veldo_0026_revocation"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_revocation.py, .veldo/control_membership.py, .veldo/control_store.py, .veldo/authority_contract.py and .veldo/control_replay.py by path (and mutated copies of them side by side under a temporary directory), opens REAL SQLite stores there, generates throwaway Ed25519 key pairs with the installed ssh-keygen and signs and verifies every envelope and journal record through it (standing down by name when ssh-keygen is absent), runs short-lived receiver and mutator child processes with the same interpreter (each waited on; one SIGKILLs itself after COMMIT), and writes only under that temporary directory."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"
