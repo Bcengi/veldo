@@ -54,7 +54,8 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
-            "read_only_handle")
+            "read_only_handle", "publication_backfill_required")
+DURABILITY_GRADES = ("off_host", "protocol_only")
 
 _DDL = (
     "CREATE TABLE IF NOT EXISTS entities (id TEXT PRIMARY KEY, kind TEXT NOT NULL, version INTEGER NOT NULL, digest TEXT NOT NULL, data TEXT NOT NULL)",
@@ -72,7 +73,8 @@ _DDL = (
     # record inside the SAME transaction (committed_at), the export identity and digest recorded
     # when the export is built, the acknowledgement (the remote's own answer) when it arrives.
     "CREATE TABLE IF NOT EXISTS publication (seq INTEGER PRIMARY KEY REFERENCES journal(seq), command_id TEXT NOT NULL REFERENCES commands(command_id), "
-    "committed_at REAL NOT NULL, export_id TEXT, export_digest TEXT, remote_commit TEXT, remote TEXT, ref TEXT, acked_at REAL)",
+    "committed_at REAL NOT NULL, export_id TEXT, export_digest TEXT, remote_commit TEXT, remote TEXT, ref TEXT, acked_at REAL, "
+    "durability TEXT, dispatched_at REAL, backfilled INTEGER NOT NULL DEFAULT 0)",
     "CREATE TABLE IF NOT EXISTS publication_control (id INTEGER PRIMARY KEY CHECK (id = 1), paused_reason TEXT, paused_at REAL)",
 )
 
@@ -155,11 +157,14 @@ def resolved_target(path):
     return os.path.realpath(os.path.abspath(path))
 
 
-def open_store(path, mode="rw", mounts_text=None):
+def open_store(path, mode="rw", mounts_text=None, allow_unbackfilled=False):
     """A connection to the store with foreign keys, WAL and FULL synchronous set AND READ BACK; a
     write-mode open refuses an unsupported filesystem by name (judged at the RESOLVED target, so a
     symlink cannot place the authority on network storage) and creates the schema; a read-mode open
-    is a genuinely read-only SQLite handle (URI mode=ro) through which no write can commit.
+    is a genuinely read-only SQLite handle (URI mode=ro) through which no write can commit. A store
+    whose journal has sequences without a publication row (written before the cursor existed)
+    refuses a write-mode open as publication_backfill_required unless `allow_unbackfilled` is set
+    by the explicit backfill step: an upgrade never leaves history out of the replica silently.
     Autocommit is off in the sqlite3 sense (isolation_level=None): every transaction is explicit."""
     if mode not in ("r", "rw"):
         raise ValueError("mode is r or rw")
@@ -185,6 +190,12 @@ def open_store(path, mode="rw", mounts_text=None):
     if fk != 1 or (mode == "rw" and sync != 2):
         conn.close()
         raise StoreRefused("durability_not_enabled", "foreign_keys=%r synchronous=%r after opening; the store refuses to run without both" % (fk, sync))
+    if mode == "rw" and not allow_unbackfilled:
+        missing = publication_gaps(conn)
+        if missing:
+            conn.close()
+            raise StoreRefused("publication_backfill_required", "journal sequences %s have no publication row (a store written before the publication cursor "
+                               "existed): run backfill_publication() explicitly; the replica must carry the complete history, never a tail" % missing[:5])
     return conn
 
 
@@ -456,10 +467,33 @@ def state_digest(state):
 
 def _pub_row(r):
     return {"seq": r[0], "command_id": r[1], "committed_at": r[2], "export_id": r[3], "export_digest": r[4], "remote_commit": r[5],
-            "remote": r[6], "ref": r[7], "acked_at": r[8]}
+            "remote": r[6], "ref": r[7], "acked_at": r[8], "durability": r[9], "dispatched_at": r[10], "backfilled": bool(r[11])}
 
 
-_PUB_COLS = "seq, command_id, committed_at, export_id, export_digest, remote_commit, remote, ref, acked_at"
+_PUB_COLS = "seq, command_id, committed_at, export_id, export_digest, remote_commit, remote, ref, acked_at, durability, dispatched_at, backfilled"
+
+
+def publication_gaps(conn):
+    """Journal sequences with no publication row: history the replica would leave out."""
+    return [r[0] for r in conn.execute("SELECT j.seq FROM journal j LEFT JOIN publication p ON p.seq = j.seq WHERE p.seq IS NULL ORDER BY j.seq").fetchall()]
+
+
+def backfill_publication(path, now, mounts_text=None):
+    """The EXPLICIT upgrade step for a store written before the publication cursor existed: one
+    pending row per journal sequence lacking one, marked backfilled, committed_at = now, so the
+    publisher exports the whole history in order. Returns the sequences backfilled."""
+    conn = open_store(path, mounts_text=mounts_text, allow_unbackfilled=True)
+    try:
+        gaps = publication_gaps(conn)
+        if gaps:
+            conn.execute("BEGIN IMMEDIATE")
+            for seq in gaps:
+                cid = conn.execute("SELECT command_id FROM journal WHERE seq=?", (seq,)).fetchone()[0]
+                conn.execute("INSERT INTO publication (seq, command_id, committed_at, backfilled) VALUES (?,?,?,1)", (seq, cid, float(now)))
+            conn.execute("COMMIT")
+        return gaps
+    finally:
+        conn.close()
 
 
 def pending_exports(conn):
@@ -488,17 +522,39 @@ def record_export(conn, seq, export_id, export_digest):
     _write(conn, "UPDATE publication SET export_id=?, export_digest=? WHERE seq=?", (export_id, export_digest, seq))
 
 
-def acknowledge_export(conn, seq, remote_commit, remote, ref, acked_at):
-    """Persist the off-host acknowledgement: the remote's own answer that `ref` names `remote_commit`
-    holding this sequence's export. Idempotent for the same commit; a different commit for an
-    acknowledged sequence is refused."""
+def acknowledge_export(conn, seq, remote_commit, remote, ref, acked_at, durability):
+    """Persist the acknowledgement: the remote's own answer that `ref` names `remote_commit` holding
+    this sequence's export, GRADED: off_host (a remote whose contract the operations authority
+    qualified) or protocol_only (a local remote; never success). Idempotent for the same commit; a
+    different commit for an acknowledged sequence is refused."""
+    if durability not in DURABILITY_GRADES:
+        raise StoreRefused("malformed_command", "durability is one of %s" % (DURABILITY_GRADES,))
     row = publication_row(conn, seq)
     if row is None or row["export_id"] is None:
         raise StoreRefused("incomplete_transaction", "seq %r has no export to acknowledge" % (seq,))
     if row["remote_commit"] not in (None, remote_commit):
         raise StoreRefused("command_content_conflict", "seq %r was acknowledged at %s; %s is a different replica commit" % (seq, row["remote_commit"], remote_commit))
     if row["acked_at"] is None:
-        _write(conn, "UPDATE publication SET remote_commit=?, remote=?, ref=?, acked_at=? WHERE seq=?", (remote_commit, remote, ref, float(acked_at), seq))
+        _write(conn, "UPDATE publication SET remote_commit=?, remote=?, ref=?, acked_at=?, durability=? WHERE seq=?", (remote_commit, remote, ref, float(acked_at), durability, seq))
+
+
+def acknowledged_exports(conn):
+    """Every acknowledged sequence, in order (what the remote must still hold)."""
+    return [_pub_row(r) for r in conn.execute("SELECT %s FROM publication WHERE acked_at IS NOT NULL ORDER BY seq" % _PUB_COLS).fetchall()]
+
+
+def undispatched_exports(conn):
+    """Acknowledged OFF-HOST sequences whose external dispatch has not been recorded: the durable
+    dispatch obligation a crash between acknowledgement and dispatch leaves behind."""
+    return [_pub_row(r) for r in conn.execute("SELECT %s FROM publication WHERE acked_at IS NOT NULL AND durability='off_host' AND dispatched_at IS NULL ORDER BY seq" % _PUB_COLS).fetchall()]
+
+
+def mark_dispatched(conn, seq, at):
+    row = publication_row(conn, seq)
+    if row is None or row["acked_at"] is None:
+        raise StoreRefused("incomplete_transaction", "seq %r is not acknowledged; nothing is dispatched before acknowledgement" % (seq,))
+    if row["dispatched_at"] is None:
+        _write(conn, "UPDATE publication SET dispatched_at=? WHERE seq=?", (float(at), seq))
 
 
 def pause_publication(conn, reason, at):
@@ -511,11 +567,14 @@ def resume_publication(conn):
 
 
 def publication_watermark(conn):
-    """{last_durable_seq, local_committed_seq, paused_reason, paused_at}: the R23 numbers."""
-    durable = conn.execute("SELECT MAX(seq) FROM publication WHERE acked_at IS NOT NULL").fetchone()[0]
+    """{last_durable_seq (off-host acknowledged), last_acknowledged_seq (any grade), local_committed_seq,
+    paused_reason, paused_at}: the R23 numbers."""
+    durable = conn.execute("SELECT MAX(seq) FROM publication WHERE acked_at IS NOT NULL AND durability='off_host'").fetchone()[0]
+    proto = conn.execute("SELECT MAX(seq) FROM publication WHERE acked_at IS NOT NULL").fetchone()[0]
     local = conn.execute("SELECT MAX(seq) FROM journal").fetchone()[0]
     ctl = conn.execute("SELECT paused_reason, paused_at FROM publication_control WHERE id=1").fetchone()
-    return {"last_durable_seq": durable or 0, "local_committed_seq": local or 0, "paused_reason": ctl[0] if ctl else None, "paused_at": ctl[1] if ctl else None}
+    return {"last_durable_seq": durable or 0, "last_acknowledged_seq": proto or 0, "local_committed_seq": local or 0,
+            "paused_reason": ctl[0] if ctl else None, "paused_at": ctl[1] if ctl else None}
 
 
 def _write(conn, sql, params):

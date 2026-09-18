@@ -282,9 +282,11 @@ def render_text(model):
     rp = model.get("replication") or {}
     if rp.get("present"):
         oldest = rp.get("oldest_pending_age_seconds")
-        lines.append("replication: %s  durable_seq=%s committed_seq=%s pending=%s oldest_pending=%s" % (
-            rp.get("condition"), rp.get("last_durable_seq"), rp.get("local_committed_seq"), rp.get("pending_exports"),
-            "none" if oldest is None else "%ds" % int(oldest)))
+        lines.append("replication: %s  durable_seq=%s acked_seq=%s committed_seq=%s pending=%s undispatched=%s oldest_pending=%s" % (
+            rp.get("condition"), rp.get("last_durable_seq"), rp.get("last_acknowledged_seq"), rp.get("local_committed_seq"), rp.get("pending_exports"),
+            rp.get("undispatched"), "none" if oldest is None else "%ds" % int(oldest)))
+        if rp.get("backfill_required"):
+            lines.append("  BACKFILL_REQUIRED: journal sequences without a publication row; run the store's backfill before publishing")
         if rp.get("paused_publication"):
             lines.append("  PAUSED_PUBLICATION: %s" % rp.get("paused_reason"))
         for pend in rp.get("pending") or []:
