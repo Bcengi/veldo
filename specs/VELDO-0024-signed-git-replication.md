@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0024
 title: Signed Git replication and off-host acknowledgement
-status: ready
+status: shipped
 risk: critical
 owner: dmitry
 human_approval: required
