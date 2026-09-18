@@ -332,6 +332,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/completion_contract.py and .veldo/authorization.py by path, mutates copies of the module under a temporary directory, writes only there and spawns no subprocess."
   },
   {
+   "name": "36_veldo_0023_journal",
+   "file": "36_veldo_0023_journal.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "36_veldo_0023_journal"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_store.py and .veldo/control_replay.py by path, opens REAL SQLite stores under a temporary directory it removes, mutates copies of the modules there, spawns short-lived writer and reader child processes with the same interpreter (each waited on; the crash matrix has them SIGKILL themselves at durable boundaries), generates a throwaway Ed25519 key pair with the installed ssh-keygen and signs and verifies the journal through it (standing down by name when ssh-keygen is absent), and writes only under that temporary directory."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

@@ -30,7 +30,9 @@ areas:
     # the refusals that type it. One entry, and the contract's version is deliberately not bumped,
     # following the precedent this file already set for an amendment inside an ordinary item
     # (the docs area below, added by WARP-0735).
-    includes: [".veldo/validate.py", ".veldo/arch.py", ".veldo/plan.py", ".veldo/request.py", ".veldo/release_contract.py"]
+    # ADDED 2026-09-18 (VELDO-0023, PLAN-0019 W8). The control store is the one writer of domain
+    # state, a truth-layer organ beside the validators; same amendment precedent as VELDO-0011.
+    includes: [".veldo/validate.py", ".veldo/arch.py", ".veldo/plan.py", ".veldo/request.py", ".veldo/release_contract.py", ".veldo/control_store*.py"]
   - id: engine
     title: The safety-core decision engine, the pure functions that decide whether a human decision is authorized
     includes: [".veldo/authorization.py"]
@@ -42,7 +44,9 @@ areas:
     includes: [".veldo/executor.py", ".veldo/runlog.py", ".veldo/runstatus.py", ".veldo/runcmd.py", ".veldo/status_server.py"]
   - id: fleet
     title: Elastic parallel workers, claiming and dispatching and landing under a pacer
-    includes: [".veldo/fleet.py", ".veldo/fleet_env.py", ".veldo/claim.py", ".veldo/frontier.py", ".veldo/work.py", ".veldo/lander.py", ".veldo/governor.py", ".veldo/accounts.py", ".veldo/env_provision.py", ".veldo/supervisor.py", ".veldo/dispatch.py"]
+    # ADDED 2026-09-18 (VELDO-0023, PLAN-0019 W8): journal replay, the operational reader that
+    # rebuilds state from signed history for recovery and reconciliation.
+    includes: [".veldo/fleet.py", ".veldo/fleet_env.py", ".veldo/claim.py", ".veldo/frontier.py", ".veldo/work.py", ".veldo/lander.py", ".veldo/governor.py", ".veldo/accounts.py", ".veldo/env_provision.py", ".veldo/supervisor.py", ".veldo/dispatch.py", ".veldo/control_replay*.py"]
   - id: metrics
     title: Event-derived measures, the numbers the loop keeps about itself
     includes: [".veldo/events.py", ".veldo/metrics.py", ".veldo/dashboard.py", ".veldo/budget.py"]

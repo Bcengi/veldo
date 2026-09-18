@@ -1,0 +1,402 @@
+#!/usr/bin/env python3
+"""The control store: atomic journaled commands over one local SQLite authority (PLAN-0019 W8,
+VELDO-0023, R21, R22, R53).
+
+WHAT THIS MODULE IS. The ONLY writer of domain state. One local SQLite database at
+<git-common-dir>/veldo/control/control.sqlite3 on a filesystem qualified for locking and
+durability (network-mounted storage refuses to open for writes); foreign keys enforced and full
+durability set, both read back after opening rather than assumed. A registered mutating command
+carries a globally unique command id, an authenticated principal, its expected entity versions,
+referenced artifact digests and a nonce; one transaction commits the entity versions, the signed
+journal record, the consumed nonce, the reservation rows and the effect obligations together, or
+none of them. A duplicate command with identical content returns its prior committed result; the
+same id with different content is refused as a content conflict; a stale expected version is
+refused before anything is written. The journal record carries sequence, previous-record digest,
+authority generation, command digest, identities, before and after versions, transition data and
+receipt references in a versioned deterministic canonical encoding; the record digest covers all
+of them and the signature (OpenSSH, through a signer callable the caller supplies) covers the
+digest's bytes. Plan revision is never used as a concurrency version.
+
+WHAT IT IS NOT. It imports no execution runtime (no LangGraph, no worker engine) and no other
+Veldo organ: signing and verification are callables passed in, so the store never holds key
+material. Replication is W9; the checkpoint adapter's tables are not created here. Standard
+library only.
+
+CRASH POINTS. For the SIGKILL matrix the spec requires, a writer process may be told through the
+environment to kill itself at a durable boundary (before COMMIT, inside COMMIT through the
+progress handler, or after COMMIT before replying). The hooks act only when
+VELDO_CONTROL_TEST_HARNESS=1 is also set, so no production path can be told to die.
+"""
+import hashlib
+import json
+import os
+import signal
+import sqlite3
+import subprocess
+
+SCHEMA = "veldo.control_store/v1"
+JOURNAL_ENCODING = "veldo.journal/v1"
+GENESIS_DIGEST = "sha256:genesis"
+DB_RELATIVE = os.path.join("veldo", "control", "control.sqlite3")
+
+# Network or otherwise unqualified filesystems: SQLite locking is not trustworthy there (R21).
+UNSUPPORTED_FSTYPES = frozenset({"nfs", "nfs4", "cifs", "smb", "smb2", "smb3", "smbfs", "sshfs", "fuse.sshfs", "9p", "afs",
+                                 "ceph", "glusterfs", "davfs", "fuse.davfs2", "lustre", "gpfs", "beegfs"})
+
+# The domain tables Veldo owns (R21). Checkpoint tables are adapter-owned and never listed here.
+DOMAIN_TABLES = ("entities", "journal", "commands", "nonces", "reservations", "effects")
+
+COMMAND_FIELDS = ("command_id", "principal", "operation", "parameters", "expected_versions", "artifact_digests", "nonce")
+JOURNAL_FIELDS = ("seq", "prev_digest", "authority_generation", "command_id", "command_digest", "principal", "signer",
+                  "before_versions", "after_versions", "transition", "receipt_refs", "artifact_digests", "encoding")
+JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
+
+REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
+            "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused")
+
+_DDL = (
+    "CREATE TABLE IF NOT EXISTS entities (id TEXT PRIMARY KEY, kind TEXT NOT NULL, version INTEGER NOT NULL, digest TEXT NOT NULL, data TEXT NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS journal (seq INTEGER PRIMARY KEY, prev_digest TEXT NOT NULL, record_digest TEXT NOT NULL UNIQUE, "
+    "authority_generation INTEGER NOT NULL, command_id TEXT NOT NULL UNIQUE, command_digest TEXT NOT NULL, principal TEXT NOT NULL, "
+    "signer TEXT NOT NULL, signature TEXT NOT NULL, before_versions TEXT NOT NULL, after_versions TEXT NOT NULL, transition TEXT NOT NULL, "
+    "receipt_refs TEXT NOT NULL, artifact_digests TEXT NOT NULL, encoding TEXT NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS commands (command_id TEXT PRIMARY KEY, command_digest TEXT NOT NULL, result TEXT NOT NULL, result_digest TEXT NOT NULL, "
+    "seq INTEGER NOT NULL REFERENCES journal(seq))",
+    "CREATE TABLE IF NOT EXISTS nonces (nonce TEXT PRIMARY KEY, command_id TEXT NOT NULL REFERENCES commands(command_id))",
+    "CREATE TABLE IF NOT EXISTS reservations (id TEXT PRIMARY KEY, command_id TEXT NOT NULL REFERENCES commands(command_id), ceiling TEXT NOT NULL, delta REAL NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS effects (id TEXT PRIMARY KEY, command_id TEXT NOT NULL REFERENCES commands(command_id), kind TEXT NOT NULL, target TEXT NOT NULL, state TEXT NOT NULL)",
+)
+
+
+class StoreRefused(Exception):
+    """A named refusal (one of REFUSALS) with its detail; nothing was written."""
+
+    def __init__(self, code, detail):
+        super().__init__("%s: %s" % (code, detail))
+        self.code, self.detail = code, detail
+
+
+def _is_str(v):
+    return isinstance(v, str) and v.strip() != ""
+
+
+def canonical_bytes(obj):
+    """THE canonical encoding: sorted-key compact JSON, UTF-8. Versioned by JOURNAL_ENCODING on the
+    record; deterministic across hosts because nothing about it depends on dict order or locale."""
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True, default=str).encode("utf-8")
+
+
+def digest_of(obj):
+    return "sha256:" + hashlib.sha256(canonical_bytes(obj)).hexdigest()
+
+
+def command_digest(command):
+    """The digest a command's content is judged by: every COMMAND_FIELDS value, so a retry with the
+    same id and one changed parameter is a different command."""
+    return digest_of({k: command.get(k) for k in COMMAND_FIELDS})
+
+
+# ---------------------------------------------------------------------------------------------
+# Placement and qualification (R21).
+# ---------------------------------------------------------------------------------------------
+
+def control_db_path(override=None):
+    """<git-common-dir>/veldo/control/control.sqlite3, shared across worktrees, or an explicit
+    override (VELDO_CONTROL_DB or the argument) for tests."""
+    root = override or os.environ.get("VELDO_CONTROL_DB")
+    if root:
+        return os.path.abspath(root)
+    common = subprocess.check_output(["git", "rev-parse", "--git-common-dir"], text=True).strip()
+    return os.path.join(os.path.abspath(common), DB_RELATIVE)
+
+
+def filesystem_type(path, mounts_text=None):
+    """The filesystem type of the mount holding `path` (longest mount-point prefix in /proc/mounts),
+    or None when it cannot be determined. `mounts_text` lets a test supply the table."""
+    try:
+        text = mounts_text if mounts_text is not None else open("/proc/mounts").read()
+    except OSError:
+        return None
+    target = os.path.abspath(path)
+    best, best_type = "", None
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) < 3:
+            continue
+        mp = parts[1].replace("\\040", " ")
+        if (target == mp or target.startswith(mp.rstrip("/") + "/")) and len(mp) > len(best):
+            best, best_type = mp, parts[2]
+    return best_type
+
+
+def filesystem_problems(path, mounts_text=None):
+    """Why `path` may NOT hold the authority for writes (R21): a network or otherwise unsupported
+    filesystem, or one whose type cannot be determined (unknown is not qualified)."""
+    fstype = filesystem_type(path, mounts_text)
+    if fstype is None:
+        return ["filesystem type of %s cannot be determined: an unqualified filesystem does not hold the authority" % path]
+    if fstype.lower() in UNSUPPORTED_FSTYPES or fstype.lower().startswith("fuse.sshfs"):
+        return ["filesystem %s at %s is network-mounted or unsupported for SQLite locking and durability" % (fstype, path)]
+    return []
+
+
+def open_store(path, mode="rw", mounts_text=None):
+    """A connection to the store with foreign keys, WAL and FULL synchronous set AND READ BACK; a
+    write-mode open refuses an unsupported filesystem by name and creates the schema. Autocommit
+    is off in the sqlite3 sense (isolation_level=None): every transaction is explicit."""
+    if mode not in ("r", "rw"):
+        raise ValueError("mode is r or rw")
+    if mode == "rw":
+        problems = filesystem_problems(os.path.dirname(os.path.abspath(path)) or ".", mounts_text)
+        if problems:
+            raise StoreRefused("unsupported_filesystem", "; ".join(problems))
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    elif not os.path.exists(path):
+        raise StoreRefused("incomplete_transaction", "no store at %s to read" % path)
+    conn = sqlite3.connect(path, isolation_level=None, timeout=30)
+    conn.execute("PRAGMA foreign_keys=ON")
+    if mode == "rw":
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA synchronous=FULL")
+        for ddl in _DDL:
+            conn.execute(ddl)
+    fk = conn.execute("PRAGMA foreign_keys").fetchone()[0]
+    sync = conn.execute("PRAGMA synchronous").fetchone()[0]
+    if fk != 1 or (mode == "rw" and sync != 2):
+        conn.close()
+        raise StoreRefused("durability_not_enabled", "foreign_keys=%r synchronous=%r after opening; the store refuses to run without both" % (fk, sync))
+    return conn
+
+
+# ---------------------------------------------------------------------------------------------
+# The command registry (R22): every mutating operation and its transition.
+# ---------------------------------------------------------------------------------------------
+
+def _t_upsert_entity(params, before):
+    """parameters: entity_id, kind, data (mapping). New or existing; the caller's expected version
+    must match the existing one (checked before this runs)."""
+    if not _is_str(params.get("entity_id")) or not _is_str(params.get("kind")) or not isinstance(params.get("data"), dict):
+        raise StoreRefused("transition_refused", "upsert_entity needs entity_id, kind and a data mapping")
+    return {params["entity_id"]: {"kind": params["kind"], "data": params["data"]}}
+
+
+def _t_retire_entity(params, before):
+    if not _is_str(params.get("entity_id")) or params["entity_id"] not in before:
+        raise StoreRefused("transition_refused", "retire_entity needs an existing entity_id")
+    cur = before[params["entity_id"]]
+    return {params["entity_id"]: {"kind": cur["kind"], "data": dict(cur["data"], retired=True)}}
+
+
+def _t_record_receipt(params, before):
+    if not _is_str(params.get("receipt_id")) or not _is_str(params.get("subject")) or not _is_str(params.get("digest")):
+        raise StoreRefused("transition_refused", "record_receipt needs receipt_id, subject and digest")
+    return {params["receipt_id"]: {"kind": "receipt", "data": {"subject": params["subject"], "digest": params["digest"]}}}
+
+
+def _t_reserve(params, before):
+    if not _is_str(params.get("reservation_id")) or params.get("ceiling") not in ("account", "project", "unit") \
+            or not isinstance(params.get("delta"), (int, float)) or isinstance(params.get("delta"), bool):
+        raise StoreRefused("transition_refused", "reserve needs reservation_id, a ceiling (account, project, unit) and a numeric delta")
+    return {}
+
+
+def _t_record_effect(params, before):
+    if not _is_str(params.get("effect_id")) or not _is_str(params.get("kind")) or not _is_str(params.get("target")):
+        raise StoreRefused("transition_refused", "record_effect needs effect_id, kind and target")
+    return {}
+
+
+COMMAND_REGISTRY = {
+    "upsert_entity": {"transition": _t_upsert_entity, "writes": ("entities", "journal", "commands", "nonces")},
+    "retire_entity": {"transition": _t_retire_entity, "writes": ("entities", "journal", "commands", "nonces")},
+    "record_receipt": {"transition": _t_record_receipt, "writes": ("entities", "journal", "commands", "nonces")},
+    "reserve": {"transition": _t_reserve, "writes": ("reservations", "journal", "commands", "nonces")},
+    "record_effect": {"transition": _t_record_effect, "writes": ("effects", "journal", "commands", "nonces")},
+}
+
+
+def command_problems(command):
+    """Why a command is malformed, by name: a missing field, a blank id or principal, an
+    operation outside the registry, expected_versions not a mapping of ids to positive integers,
+    artifact_digests not a list of strings, a blank nonce."""
+    if not isinstance(command, dict):
+        return ["a command is a mapping"]
+    problems = ["command lacks %s" % f for f in COMMAND_FIELDS if f not in command]
+    if problems:
+        return problems
+    if not _is_str(command["command_id"]):
+        problems.append("command_id is blank: every command carries a globally unique id")
+    if not _is_str(command["principal"]):
+        problems.append("principal is blank: every command carries its authenticated principal")
+    if command["operation"] not in COMMAND_REGISTRY:
+        problems.append("operation %r is not a registered command (%s)" % (command["operation"], ", ".join(sorted(COMMAND_REGISTRY))))
+    if not isinstance(command["parameters"], dict):
+        problems.append("parameters is not a mapping")
+    ev = command["expected_versions"]
+    if not isinstance(ev, dict) or not all(_is_str(k) and isinstance(v, int) and not isinstance(v, bool) and v >= 0 for k, v in ev.items()):
+        problems.append("expected_versions is not a mapping of entity id to a non-negative integer version (0 means the entity must not exist)")
+    if not isinstance(command["artifact_digests"], list) or not all(_is_str(d) for d in command["artifact_digests"]):
+        problems.append("artifact_digests is not a list of digests")
+    if not _is_str(command["nonce"]):
+        problems.append("nonce is blank")
+    return problems
+
+
+# ---------------------------------------------------------------------------------------------
+# Execution: one transaction, all of it or none (R22).
+# ---------------------------------------------------------------------------------------------
+
+def _kill_point(name):
+    """Self-inflicted SIGKILL at a named boundary, only under the test harness. This is how the
+    crash matrix reaches the durable boundaries of a real writer process."""
+    if os.environ.get("VELDO_CONTROL_TEST_HARNESS") == "1" and os.environ.get("VELDO_CONTROL_KILL_AT") == name:
+        os.kill(os.getpid(), signal.SIGKILL)
+
+
+def _entities(conn, ids):
+    out = {}
+    for eid in ids:
+        row = conn.execute("SELECT kind, version, digest, data FROM entities WHERE id=?", (eid,)).fetchone()
+        if row:
+            out[eid] = {"kind": row[0], "version": row[1], "digest": row[2], "data": json.loads(row[3])}
+    return out
+
+
+def _last_journal(conn):
+    row = conn.execute("SELECT seq, record_digest FROM journal ORDER BY seq DESC LIMIT 1").fetchone()
+    return (row[0], row[1]) if row else (0, GENESIS_DIGEST)
+
+
+def journal_record_digest(record):
+    """The record digest: over every JOURNAL_FIELDS value in canonical encoding."""
+    return digest_of({k: record.get(k) for k in JOURNAL_FIELDS})
+
+
+def journal_signed_bytes(record):
+    """The bytes a journal signature covers: the JOURNAL_FIELDS plus the record digest."""
+    return canonical_bytes({k: record.get(k) for k in JOURNAL_SIGNED_FIELDS})
+
+
+def execute(conn, command, signer, sign, authority_generation, receipt_refs=()):
+    """Run one registered command in ONE transaction. `sign(message_bytes) -> signature_text` is
+    the caller's signer (OpenSSH in production; the store holds no key). Returns the committed
+    result; an identical retry returns the ORIGINAL result with replayed=True and writes nothing;
+    every refusal raises StoreRefused with its name and nothing written."""
+    problems = command_problems(command)
+    if problems:
+        raise StoreRefused("malformed_command", "; ".join(problems))
+    if not _is_str(signer) or not isinstance(authority_generation, int) or isinstance(authority_generation, bool) or authority_generation < 1:
+        raise StoreRefused("malformed_command", "signer must be named and authority_generation a positive integer")
+    cdigest = command_digest(command)
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        prior = conn.execute("SELECT command_digest, result FROM commands WHERE command_id=?", (command["command_id"],)).fetchone()
+        if prior:
+            if prior[0] != cdigest:
+                raise StoreRefused("command_content_conflict", "command %s was committed with content %s; this retry carries %s" % (command["command_id"], prior[0], cdigest))
+            conn.execute("ROLLBACK")
+            return dict(json.loads(prior[1]), replayed=True)
+        if conn.execute("SELECT 1 FROM nonces WHERE nonce=?", (command["nonce"],)).fetchone():
+            raise StoreRefused("nonce_consumed", "nonce %s was consumed by an earlier command" % command["nonce"])
+        touched = set(command["expected_versions"]) | {v for v in (command["parameters"].get("entity_id"), command["parameters"].get("receipt_id")) if _is_str(v)}
+        before = _entities(conn, sorted(touched))
+        for eid, expected in command["expected_versions"].items():
+            actual = before.get(eid, {}).get("version", 0)
+            if actual != expected:
+                raise StoreRefused("stale_version", "entity %s is at version %r, the command expected %r" % (eid, actual, expected))
+        reg = COMMAND_REGISTRY[command["operation"]]
+        changes = reg["transition"](command["parameters"], before)
+        for eid in changes:
+            if eid not in command["expected_versions"]:
+                raise StoreRefused("stale_version", "entity %s is written without an expected version: a command declares every version it depends on" % eid)
+        before_versions = {eid: before.get(eid, {}).get("version", 0) for eid in sorted(set(before) | set(changes))}
+        after_versions = dict(before_versions)
+        transition = {}
+        for eid, new in changes.items():
+            after_versions[eid] = before_versions[eid] + 1
+            edigest = digest_of({"kind": new["kind"], "data": new["data"], "version": after_versions[eid]})
+            transition[eid] = {"kind": new["kind"], "data": new["data"], "version": after_versions[eid], "digest": edigest}
+            conn.execute("INSERT INTO entities (id, kind, version, digest, data) VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
+                         "kind=excluded.kind, version=excluded.version, digest=excluded.digest, data=excluded.data",
+                         (eid, new["kind"], after_versions[eid], edigest, json.dumps(new["data"], sort_keys=True)))
+        seq, prev = _last_journal(conn)
+        record = {"seq": seq + 1, "prev_digest": prev, "authority_generation": authority_generation, "command_id": command["command_id"],
+                  "command_digest": cdigest, "principal": command["principal"], "signer": signer, "before_versions": before_versions,
+                  "after_versions": after_versions, "transition": transition, "receipt_refs": list(receipt_refs), "artifact_digests": list(command["artifact_digests"]),
+                  "encoding": JOURNAL_ENCODING}
+        record["record_digest"] = journal_record_digest(record)
+        signature = sign(journal_signed_bytes(record))
+        if not _is_str(signature):
+            raise StoreRefused("incomplete_transaction", "the signer returned no signature; an unsigned record is not appended")
+        conn.execute("INSERT INTO journal (seq, prev_digest, record_digest, authority_generation, command_id, command_digest, principal, signer, signature, "
+                     "before_versions, after_versions, transition, receipt_refs, artifact_digests, encoding) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                     (record["seq"], prev, record["record_digest"], authority_generation, command["command_id"], cdigest, command["principal"], signer, signature,
+                      json.dumps(before_versions, sort_keys=True), json.dumps(after_versions, sort_keys=True), json.dumps(transition, sort_keys=True),
+                      json.dumps(list(receipt_refs)), json.dumps(list(command["artifact_digests"])), JOURNAL_ENCODING))
+        p = command["parameters"]
+        result = {"committed": True, "command_id": command["command_id"], "seq": record["seq"], "record_digest": record["record_digest"],
+                  "after_versions": after_versions, "effects": [p["effect_id"]] if command["operation"] == "record_effect" else [],
+                  "reservations": [p["reservation_id"]] if command["operation"] == "reserve" else []}
+        result["result_digest"] = digest_of({k: v for k, v in result.items() if k != "result_digest"})
+        # The commands row first: nonces, reservations and effects reference it by foreign key.
+        conn.execute("INSERT INTO commands (command_id, command_digest, result, result_digest, seq) VALUES (?,?,?,?,?)",
+                     (command["command_id"], cdigest, json.dumps(result, sort_keys=True), result["result_digest"], record["seq"]))
+        if command["operation"] == "reserve":
+            conn.execute("INSERT INTO reservations (id, command_id, ceiling, delta) VALUES (?,?,?,?)", (p["reservation_id"], command["command_id"], p["ceiling"], float(p["delta"])))
+        if command["operation"] == "record_effect":
+            conn.execute("INSERT INTO effects (id, command_id, kind, target, state) VALUES (?,?,?,?,?)", (p["effect_id"], command["command_id"], p["kind"], p["target"], "obligated"))
+        conn.execute("INSERT INTO nonces (nonce, command_id) VALUES (?,?)", (command["nonce"], command["command_id"]))
+        _kill_point("before_commit")
+        if os.environ.get("VELDO_CONTROL_TEST_HARNESS") == "1" and os.environ.get("VELDO_CONTROL_KILL_AT") == "in_commit":
+            conn.set_progress_handler(lambda: os.kill(os.getpid(), signal.SIGKILL), 1)
+        conn.execute("COMMIT")
+        conn.set_progress_handler(None, 0)
+        _kill_point("after_commit")
+        return dict(result, replayed=False)
+    except sqlite3.IntegrityError as e:
+        conn.execute("ROLLBACK")
+        raise StoreRefused("foreign_key_violation", str(e))
+    except StoreRefused:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    except Exception:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+
+
+# ---------------------------------------------------------------------------------------------
+# Reading back: the state a replay is compared with, and the journal a replay reads.
+# ---------------------------------------------------------------------------------------------
+
+def export_journal(conn):
+    """Every journal record as a plain mapping (JOURNAL_SIGNED_FIELDS plus signature), in sequence."""
+    rows = conn.execute("SELECT seq, prev_digest, record_digest, authority_generation, command_id, command_digest, principal, signer, signature, "
+                        "before_versions, after_versions, transition, receipt_refs, artifact_digests, encoding FROM journal ORDER BY seq").fetchall()
+    out = []
+    for r in rows:
+        out.append({"seq": r[0], "prev_digest": r[1], "record_digest": r[2], "authority_generation": r[3], "command_id": r[4], "command_digest": r[5],
+                    "principal": r[6], "signer": r[7], "signature": r[8], "before_versions": json.loads(r[9]), "after_versions": json.loads(r[10]),
+                    "transition": json.loads(r[11]), "receipt_refs": json.loads(r[12]), "artifact_digests": json.loads(r[13]), "encoding": r[14]})
+    return out
+
+
+def materialized_state(conn):
+    """The live entity table as {id: {kind, version, digest, data}}."""
+    rows = conn.execute("SELECT id, kind, version, digest, data FROM entities ORDER BY id").fetchall()
+    return {r[0]: {"kind": r[1], "version": r[2], "digest": r[3], "data": json.loads(r[4])} for r in rows}
+
+
+def state_digest(state):
+    """One digest over a materialized state, the comparison a replay is judged by."""
+    return digest_of({eid: {"kind": e["kind"], "version": e["version"], "digest": e["digest"], "data": e["data"]} for eid, e in sorted(state.items())})
+
+
+def table_snapshot(conn):
+    """Every domain table's rows, for the crash matrix to compare a reopened store with the
+    complete old or complete new state."""
+    snap = {}
+    for t in DOMAIN_TABLES:
+        snap[t] = [tuple(r) for r in conn.execute("SELECT * FROM %s ORDER BY 1" % t).fetchall()]
+    return snap

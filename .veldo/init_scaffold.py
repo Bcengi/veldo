@@ -76,6 +76,10 @@ _FILES = [
     # VELDO-0021 (PLAN-0019 W6): completion and eligibility predicates, loaded by the suite and by the
     # eligibility service and lander above it; not substrate.
     ".veldo/completion_contract.py",
+    # VELDO-0023 (PLAN-0019 W8): the control store and the journal replay, the durable control
+    # foundation's first two organs; loaded by the suite and by the authority process above it.
+    ".veldo/control_store.py",
+    ".veldo/control_replay.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",

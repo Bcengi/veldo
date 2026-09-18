@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0023
 title: Atomic journaled commands and deterministic replay
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -23,6 +23,9 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - ".veldo/capabilities.yaml"
+  - "engine/.veldo/capabilities.yaml"
+  - ".veldo/architecture.yaml"
   - "scripts/suites/*_veldo_0023_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
