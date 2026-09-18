@@ -1,0 +1,78 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0025",
+  "commit": "b89f9f343b029de79042891669a570edd547c8a1",
+  "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
+  "produced_at": "2026-09-18T09:52:18Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0025/driven.json",
+          "detail": "3 rows (1 driven): with a validly signed enrollment envelope (REAL Ed25519 keys through the installed ssh-keygen over a REAL SQLite store), mutating each of the twelve envelope fields after signing refuses, substituting each operation parameter (principal, roles, public key, type, scope, group), the operation or the target under the original envelope refuses as envelope_refused because the digest is RECOMPUTED from the command to be executed, a bad command signature over an SSH-transport-authenticated envelope refuses, and membership and every store table are unchanged after all of it; the untouched command then enrolls with the key that was signed for. DRIVEN: digest recomputation bypassed in a copy of the authority contract beside a copy of the membership organ lets an enrollment with a substituted public key commit under the original signature (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0025/gate-implementation.log",
+          "detail": "Complete canonical gate at b89f9f343b029de79042891669a570edd547c8a1 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5371 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0025/driven.json",
+          "detail": "6 rows (1 driven): the owner bootstrap is accepted exactly once (a self-signed person with project_owner and membership_steward while no membership exists; four other bootstrap shapes refuse); an enrollment without the enrollee's co-signature, or with one by another key, refuses as key_possession_unproven; a service signing its own role change or an enrollment refuses as not_a_person, a person without the steward role granting herself roles refuses, a service is never given the steward role, nobody enrolls itself; two client PROCESSES racing two role changes against one membership version each verify a real signature and exactly one commits; a writer SIGKILLed after acceptance leaves one committed transition and the retry of the same envelope replays with no new record; historical authority is unchanged; an assignment naming an unenrolled principal and a two-person quorum stay blocked until that person is enrolled. DRIVEN: a non-person signer trusted in a copy of the membership organ lets a service grant itself membership_steward during the competing role change and the stored role is the unauthorized one (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0025/gate-implementation.log",
+          "detail": "Complete canonical gate at b89f9f343b029de79042891669a570edd547c8a1 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5371 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0025/driven.json",
+          "detail": "3 rows (1 driven): a delegation is granted only by the delegating person or the steward and only within that person's roles; the intact delegated use has no problems while each single predicate invalidated (channel, assertion kind, request version, scope, expiry, principal, role, quorum, actor kind, delegation version) refuses by name; supersession by another person or changing the principal refuses, asya's supersession advances the delegation version and a second supersession of the same delegation refuses, a use of the superseded delegation at the old version is stale by version and by record while a use judged against a cached pre-supersession state passes, which is why the version is checked against the store; the steward's revocation refuses further use. DRIVEN: the delegation-version check removed in a copy of the membership organ accepts a stale signed use against a moved version (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0025/gate-implementation.log",
+          "detail": "Complete canonical gate at b89f9f343b029de79042891669a570edd547c8a1 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5371 passed, 0 failed, every required check passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "b89f9f343b029de79042891669a570edd547c8a1",
+      "ref": "proof/VELDO-0025/gate-implementation.log",
+      "detail": "GATE GREEN; selftest 5371 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0025/driven.json",
+    "proof/VELDO-0025/drive.py",
+    "proof/VELDO-0025/gate-implementation.log",
+    "proof/VELDO-0025/log-redactions.json",
+    "proof/VELDO-0025/README.md"
+  ],
+  "rollback": "Stop administrative command acceptance and preserve the store's committed membership, delegation and key entities and their journal; never delete or rewrite a committed transition. The organ reverts through the ordinary reviewed path (a revert commit of control_membership.py, its registrations and suite 38, never a force). No live channel, additional person or real key is enrolled by this item; Dmitry remains the only named initial authority.",
+  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here."
+}
