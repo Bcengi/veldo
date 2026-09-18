@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0023",
-  "commit": "dbbc489c9b10593d3a6b9d9f9f9b8949e331432a",
+  "commit": "70095870544b52fe03964780603592424de559d2",
   "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
-  "produced_at": "2026-09-18T02:08:56Z",
+  "produced_at": "2026-09-18T02:28:13Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0023/driven.json",
-          "detail": "5 rows (1 driven): a real SQLite store opens with foreign keys, FULL synchronous and WAL read back after opening and exactly the six domain tables; nfs, nfs4, cifs, sshfs, 9p and an undeterminable filesystem each refuse to open for writes by name; one upsert commits the entity, the journal record (genesis predecessor, generation, command digest, before and after versions, transition digest, artifact digests, versioned encoding), the commands row and the nonce together, with the record digest recomputing and the signature covering it; eight malformed or refused commands write nothing; a real writer PROCESS is SIGKILLed before COMMIT, inside COMMIT and after COMMIT for every one of the five registered commands (fifteen kills, the registry compared to the matrix) and the reopened store is the complete old or complete new state each time. DRIVEN: journal insertion moved outside the domain transaction in a module copy, with the writer killed after the entity commit, leaves entity rows without their journal record (the declared falsifier)."
+          "detail": "8 rows (1 driven): a real SQLite store opens with foreign keys, FULL synchronous and WAL read back after opening and exactly the six domain tables; nfs, nfs4, cifs, sshfs, 9p and an undeterminable filesystem each refuse to open for writes by name; one upsert commits the entity, the journal record (genesis predecessor, generation, command digest, before and after versions, transition digest, artifact digests, versioned encoding), the commands row and the nonce together, with the record digest recomputing and the signature covering it; eight malformed or refused commands write nothing; a real writer PROCESS is SIGKILLed before COMMIT, inside COMMIT and after COMMIT for every one of the five registered commands (fifteen kills, the registry compared to the matrix) and the reopened store is the complete old or complete new state each time. DRIVEN: journal insertion moved outside the domain transaction in a module copy, with the writer killed after the entity commit, leaves entity rows without their journal record (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0023/gate-implementation.log",
-          "detail": "Complete canonical gate at dbbc489c9b10593d3a6b9d9f9f9b8949e331432a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5339 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 70095870544b52fe03964780603592424de559d2 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5343 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -34,7 +34,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0023/gate-implementation.log",
-          "detail": "Complete canonical gate at dbbc489c9b10593d3a6b9d9f9f9b8949e331432a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5339 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 70095870544b52fe03964780603592424de559d2 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5343 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0023/driven.json",
-          "detail": "4 rows (1 driven): seven records of every transition kind replay in an ISOLATED process (python -I, the replay module alone, sqlite3 never imported) to the live store's state digest with the head digest equal to the last record's; the replay module imports only hashlib and json and the store only the standard library; eleven corruptions of the history (changed field, reorder, duplicate, removal, swapped signature, changed identity, generation or versions, unknown encoding, a record re-signed with a wrong predecessor digest, a record re-signed after a field change) each refuse reconstruction by name; a history signed through the installed ssh-keygen with an Ed25519 key replays when verified against the signer's key and refuses against another key or after tampering. DRIVEN: previous-record digest verification skipped in a module copy rebuilds state from a re-chained history whose fourth record names a wrong predecessor (the declared falsifier)."
+          "detail": "5 rows (1 driven): seven records of every transition kind replay in an ISOLATED process (python -I, the replay module alone, sqlite3 never imported) to the live store's state digest with the head digest equal to the last record's; the replay module imports only hashlib and json and the store only the standard library; eleven corruptions of the history (changed field, reorder, duplicate, removal, swapped signature, changed identity, generation or versions, unknown encoding, a record re-signed with a wrong predecessor digest, a record re-signed after a field change) each refuse reconstruction by name; a history signed through the installed ssh-keygen with an Ed25519 key replays when verified against the signer's key and refuses against another key or after tampering. DRIVEN: previous-record digest verification skipped in a module copy rebuilds state from a re-chained history whose fourth record names a wrong predecessor (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0023/gate-implementation.log",
-          "detail": "Complete canonical gate at dbbc489c9b10593d3a6b9d9f9f9b8949e331432a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5339 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 70095870544b52fe03964780603592424de559d2 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5343 passed, 0 failed, every required check passed."
         }
       ]
     }
@@ -61,9 +61,9 @@
       "status": "passed",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "dbbc489c9b10593d3a6b9d9f9f9b8949e331432a",
+      "commit": "70095870544b52fe03964780603592424de559d2",
       "ref": "proof/VELDO-0023/gate-implementation.log",
-      "detail": "GATE GREEN; selftest 5339 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+      "detail": "GATE GREEN; selftest 5343 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
     }
   ],
   "artifacts": [
@@ -71,8 +71,9 @@
     "proof/VELDO-0023/drive.py",
     "proof/VELDO-0023/gate-implementation.log",
     "proof/VELDO-0023/log-redactions.json",
-    "proof/VELDO-0023/README.md"
+    "proof/VELDO-0023/README.md",
+    "proof/VELDO-0023/approval-dmitry.json"
   ],
   "rollback": "Stop command acceptance, preserve the database and journal and retain a compatible reader; never roll back by deleting committed commands. The organs themselves revert through the ordinary reviewed path (a revert commit of the two modules, their capability, scaffold and architecture registrations and suite 36, never a force). No authority process runs them yet; the checkpoint adapter and replication are W9 and later.",
-  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here."
+  "review": "Independent Codex review of the branch at a694369 (research/codex-reviews/review-20260917-220917.md) found four reproducible problems; each is fixed and pinned with the reviewer's reproduction in suite 36 (rows marked 'review 1'). The fixes carry no second Codex pass under the one-review-per-landing quota ruling until 2026-09-22. Dmitry's approval of the landing is recorded in approval-dmitry.json."
 }

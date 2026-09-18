@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0023-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0023",
+    "commit": "70095870544b52fe03964780603592424de559d2",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0023 (risk critical, human_approval required, no protected paths) over Telegram on 2026-09-18T02:27:28Z (message 27941, 'Approved'), answering an ask (message 27939) that described the item: one local SQLite database as the single writer of domain state; every command's entity changes, signed journal record, consumed nonce, reservations and effects committed in one transaction or not at all, proven by killing a real writer process before, during and after commit for every command type; identical retries returning the original result and altered content refused; one winner in two-process races; a replay module that rebuilds the whole state from the signed journal and refuses tampered, reordered or re-signed history. The ask named the four Codex findings and said the approval covers the item with those fixes in; the commit bound here is the fixes commit. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-18T02:27:28Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}

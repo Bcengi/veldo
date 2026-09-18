@@ -1,13 +1,13 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0023",
-  "commit": "dbbc489c9b10593d3a6b9d9f9f9b8949e331432a",
-  "taken_at": "2026-09-18T02:08:56Z",
+  "commit": "70095870544b52fe03964780603592424de559d2",
+  "taken_at": "2026-09-18T02:28:13Z",
   "fragment": "scripts/suites/36_veldo_0023_journal.py",
-  "fragment_sha256": "99b2927f7326e84065417ba79d467b940be12b3e531acaf0c8074b63c8ab2bb8",
+  "fragment_sha256": "63c587f0bbe923d81e301cc7496faf90eee9dae48ba20529f4d6645c5802e694",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/control_store.py or .veldo/control_replay.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
-  "rows_total": 13,
-  "rows_passed": 13,
+  "rows_total": 17,
+  "rows_passed": 17,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0023 AC1 journal/atomic-kill DRIVEN (the declared falsifier): with journal insertion moved outside the domain transaction in a copy and the writer SIGKILLed after the entity commit, the reopened store holds entity rows without their journal record, so the row reds; unmutated, that kill point never fires and every command commits whole",
@@ -33,8 +33,8 @@
   },
   "per_criterion": {
     "AC1": {
-      "rows": 5,
-      "passed": 5,
+      "rows": 8,
+      "passed": 8,
       "driven": 1
     },
     "AC2": {
@@ -43,8 +43,8 @@
       "driven": 1
     },
     "AC3": {
-      "rows": 4,
-      "passed": 4,
+      "rows": 5,
+      "passed": 5,
       "driven": 1
     }
   },
@@ -78,7 +78,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0023 AC2 journal/one-winner: two client processes racing the SAME command both reply (one commits, one replays) and one row of each kind exists; racing two payloads under one id, exactly one commits and the other is a content conflict; racing two ids with the same expected version, exactly one commits and the other is stale, E1 ends at version 4 with one journal record per committed command (outcomes: ['REPLIED', 'REPLIED'] ['REPLIED', 'command_content_conflict'] ['stale_version', 'REPLIED'])",
+      "label": "VELDO-0023 AC2 journal/one-winner: two client processes racing the SAME command both reply (one commits, one replays) and one row of each kind exists; racing two payloads under one id, exactly one commits and the other is a content conflict; racing two ids with the same expected version, exactly one commits and the other is stale, E1 ends at version 4 with one journal record per committed command (outcomes: ['REPLIED', 'REPLIED'] ['command_content_conflict', 'REPLIED'] ['REPLIED', 'stale_version'])",
       "passed": true
     },
     {
@@ -90,7 +90,23 @@
       "passed": true
     },
     {
-      "label": "VELDO-0023 AC3 journal/replay-chain: every corruption of the signed history refuses reconstruction by name: a changed field (digest mismatch), reorder, duplicate and removal (sequence broken), a swapped signature, a changed identity, generation or versions (digest mismatch), an unknown encoding, and a record RE-SIGNED with a wrong predecessor digest or re-signed after a field change (chain broken: the next record's prev_digest no longer matches) (got: {})",
+      "label": "VELDO-0023 AC3 journal/full-state-recovery (review 1): the signed record carries the consumed nonce, the reservation and the effect, so replay rebuilds reservations, effects and nonces (seven nonces, R1 with its ceiling and delta, F1 obligated) beside the entities; a live store whose reservations, effects and nonces were deleted no longer matches the rebuilt state and the differences name each lost row; the state digest covers all four parts",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC1 journal/receipt-refs-once (review 1): receipt references passed as an ITERATOR are materialized once, so the signed record and the stored record carry the same ['R-a', 'R-b'] and the committed history replays; a non-string receipt reference is refused as malformed before the transaction opens",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC1 journal/read-only-handle (review 1): a store opened with mode='r' is a genuinely read-only SQLite handle: a command through it is refused as read_only_handle, the journal is unchanged and still readable, and a missing store refuses to open read-only rather than being created",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC1 journal/symlink-qualification (review 1): qualification judges the RESOLVED target: a symlinked directory and a symlinked database file that both point into a network mount (fixture mount table) refuse to open for writes exactly as the direct path does, and resolved_target returns the real path; a symlink into a qualified directory opens",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC3 journal/replay-chain: every corruption of the signed history refuses reconstruction by name: a changed field (digest mismatch), reorder, duplicate and removal (sequence broken), a swapped signature, a changed identity, generation or versions (digest mismatch), an unknown encoding, and a record RE-SIGNED with a wrong predecessor digest or re-signed after a field change (chain broken: the next record's prev_digest no longer matches), a changed nonce or reservation delta (digest mismatch: they are signed fields) (got: {})",
       "passed": true
     },
     {

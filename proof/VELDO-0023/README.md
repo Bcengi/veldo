@@ -1,6 +1,6 @@
 # VELDO-0023 proof
 
-Implementation commit: dbbc489. Gate GREEN there (selftest 5339 passed, 0 failed) in the plan-0019 branch
+Implementation commit: 7009587. Gate GREEN there (selftest 5343 passed, 0 failed) in the plan-0019 branch
 worktree. Author: Ava (Claude); one Codex review per landing until 2026-09-22 by Dmitry's quota ruling.
 
 ## What landed
@@ -17,7 +17,7 @@ the caller supplies (OpenSSH in production); the store holds no key.
 
 ## Driven
 
-`drive.py` records one run of suite 36 as `driven.json`: 13 rows, 13 passed, 3 DRIVEN rows, the three
+`drive.py` records one run of suite 36 as `driven.json`: 17 rows, 17 passed, 3 DRIVEN rows, the three
 declared falsifiers among them, each applied to a copy of the module and required to turn its named row
 red while the unmutated module passes it. The crash matrix and the races run real writer processes
 against real SQLite files under a temporary directory; the journal rows sign through the installed
@@ -28,3 +28,12 @@ ssh-keygen.
 VELDO-0023 is a critical-risk item with no protected paths; the spec asks for the owner's approval before
 landing. The approval, when recorded, is `approval-dmitry.json` in this directory, attributed to the
 channel it arrived on.
+
+## Review
+
+Codex reviewed the branch at a694369 and found four reproducible problems (reservations, effects and consumed
+nonces absent from the signed record so a rebuild lost spend holds and replay protection, receipt references
+passed as an iterator signed as one list and stored as another, a read-only open that returned a writable
+handle, and filesystem qualification judged at a symlink rather than its target). Each is fixed and pinned
+with the reviewer's reproduction in suite 36. The fixes carry no second Codex pass (one review per landing
+until 2026-09-22).
