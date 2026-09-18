@@ -13,7 +13,9 @@ Admission Service that applies these predicates, the quarantine execution enviro
 scanners are later packages; a scanner this module never ran is an unavailable inspection, which
 is a failure, never a clean result.
 """
+import importlib.util
 import math
+from pathlib import Path
 
 SCHEMA = "veldo.admission_contract/v1"
 
@@ -82,30 +84,90 @@ def _signed_policy(policy, kind):
         and _is_pos_int(policy.get("version")) and policy.get("expired") is not True
 
 
+REQUEST_FIELDS = ("item", "revision", "content_digest", "signed_revision", "signed_digest", "signed_by")
+PRIORITY_AUTHORITY_ROLES = {"priority_authority": "priority_authority", "security_authority": "security_authority",
+                            "operations_authority": "operations_authority"}
+
+
+def request_problems(item, request, admitting_identity):
+    """Why an admission request does NOT authorize this item (R09): a field missing; a revision
+    that is not the signed revision; a content digest the signature does not cover; a request for
+    another item; a machine signer; or a signer who is not the identity that admits (the person
+    holding the class's role, or the signed policy's signer). A signature is a join of signer,
+    item, revision and content, never a name beside a number."""
+    if not isinstance(request, dict):
+        return ["no admission request: machine-prepared material is a draft (R09)"]
+    problems = ["the admission request lacks %s" % f for f in REQUEST_FIELDS if f not in request]
+    if problems:
+        return problems
+    if not _is_pos_int(request["revision"]) or request["signed_revision"] != request["revision"]:
+        problems.append("the admission request's exact revision is not the signed revision: machine-prepared material is a draft (R09)")
+    if not _is_str(request["content_digest"]) or request["signed_digest"] != request["content_digest"]:
+        problems.append("the signature does not cover the request's content digest: approval binds to the request's content, not to its number")
+    if request["item"] != (item or {}).get("id") or not _is_str(request["item"]):
+        problems.append("the admission request names item %r, not this item %r" % (request["item"], (item or {}).get("id")))
+    if not _is_str(request["signed_by"]) or request["signed_by"].strip().lower() in MACHINE_ACTORS:
+        problems.append("the admission request is signed by %r, not by an authorized person or named policy identity" % (request["signed_by"],))
+    elif admitting_identity is not None and request["signed_by"] != admitting_identity:
+        problems.append("the admission request is signed by %r but the admitting identity is %r: the signer is the authority, or there is no approval"
+                        % (request["signed_by"], admitting_identity))
+    return problems
+
+
+def priority_problems(priority, cls, policy):
+    """Why a priority claim does NOT grant queue precedence (R08): a source outside the class's
+    permitted sources; a signed-policy source with no signed policy of the class's kind or a policy
+    digest the claim does not name; an authority source without that authority's decision (a person
+    holding the role, not a machine, with the decision's digest)."""
+    pol = CLASS_POLICY[cls]
+    if not isinstance(priority, dict):
+        return ["priority is not a decision record"]
+    src = priority.get("source")
+    if src not in pol["priority_from"]:
+        return ["priority from %r is not one of %s for %s: automatic admission does not grant queue precedence" % (src, pol["priority_from"], cls)]
+    problems = []
+    if src == "signed_policy":
+        if not (pol["policy_kind"] and _signed_policy(policy, pol["policy_kind"])):
+            problems.append("priority claims a signed policy but no signed %s policy admits %s" % (pol["policy_kind"] or "(none)", cls))
+        elif priority.get("policy_digest") != policy.get("digest"):
+            problems.append("priority names policy digest %r, not the admitting policy's %r" % (priority.get("policy_digest"), policy.get("digest")))
+    else:
+        decider = priority.get("decided_by")
+        if not _person_with_role(decider, (PRIORITY_AUTHORITY_ROLES[src],)):
+            problems.append("priority from %s needs that authority's decision by a person holding %s; got %r"
+                            % (src, PRIORITY_AUTHORITY_ROLES[src], (decider or {}).get("principal") if isinstance(decider, dict) else decider))
+        if not _is_str(priority.get("decision_digest")):
+            problems.append("priority from %s names no decision digest" % src)
+    return problems
+
+
 def admission_problems(item, request, admitter, policy=None, priority=None, context=None):
     """Why an item may NOT be admitted, by name (R07, R08, R09): no single class; no admission
-    request or one whose revision is not signed (machine-prepared material is a draft until the
-    authorized person or named policy identity signs the exact revision); an admitter that is not a
-    person holding the class's role and no signed policy of the class's kind (a preparation agent
-    admits nothing, whatever the class); a class whose lane does not match; a compliance class with
-    no enrolled obligation and named authority in `context`; a production containment or
-    deployment target with no admitted adapter in `context`; a priority that comes from neither the
-    priority authority nor a signed policy (automatic admission grants no queue precedence)."""
+    request, or one not signed for this item's exact revision and content by the identity that
+    admits (machine-prepared material is a draft until the authorized person or named policy
+    identity signs it; see request_problems); an admitter that is not a person holding the class's
+    role and no signed policy of the class's kind (a preparation agent admits nothing, whatever the
+    class); a class whose lane does not match; a compliance class with no enrolled obligation and
+    named authority in `context`; a production containment or deployment target with no admitted
+    adapter in `context`; a priority that is not an authority's or a signed policy's decision
+    (see priority_problems; automatic admission grants no queue precedence)."""
     problems = []
     cls, why = classify(item)
     if cls == QUARANTINED_CLASS:
         return ["quarantined: %s" % why]
     pol = CLASS_POLICY[cls]
     context = context or {}
-    if not isinstance(request, dict) or not _is_pos_int(request.get("revision")) or request.get("signed_revision") != request.get("revision") \
-            or not _is_str(request.get("signed_by")) or request["signed_by"].strip().lower() in MACHINE_ACTORS:
-        problems.append("the admission request's exact revision is not signed by an authorized person or named policy identity: "
-                        "machine-prepared material is a draft (R09)")
+    admitting_identity = None
     if isinstance(admitter, dict) and admitter.get("kind") in PREPARATION_AGENT_KINDS:
         problems.append("a preparation agent cannot admit %s (or anything): admission is an authorization ceremony (R12)" % cls)
-    elif not (_person_with_role(admitter, pol["person_roles"]) or (pol["policy_kind"] and _signed_policy(policy, pol["policy_kind"]))):
+    elif _person_with_role(admitter, pol["person_roles"]):
+        admitting_identity = admitter["principal"]
+    elif pol["policy_kind"] and _signed_policy(policy, pol["policy_kind"]):
+        admitting_identity = policy["signer"]
+    else:
         problems.append("%s needs a person holding %s or a signed %s policy; got admitter %r and policy %r"
                         % (cls, list(pol["person_roles"]) or "no role", pol["policy_kind"] or "no", (admitter or {}).get("principal"), (policy or {}).get("kind")))
+    problems.extend(request_problems(item, request, admitting_identity))
     if item.get("lane") not in (None, pol["lane"]):
         problems.append("%s runs in the %s lane, not %r; no lane bypasses identity, scope, priority, evidence, quarantine or audit" % (cls, pol["lane"], item.get("lane")))
     if cls == "COMPLIANCE_EXPIRY" and not (context.get("enrolled_obligation") and _is_str(context.get("compliance_authority"))):
@@ -113,9 +175,7 @@ def admission_problems(item, request, admitter, policy=None, priority=None, cont
     if item.get("target_kind") in ("production_containment", "deployment") and not context.get("admitted_adapter"):
         problems.append("a %s target has no admitted target adapter: production containment and deployment actions stay unavailable" % item["target_kind"])
     if priority is not None:
-        src = priority.get("source") if isinstance(priority, dict) else None
-        if src not in pol["priority_from"]:
-            problems.append("priority from %r is not one of %s for %s: automatic admission does not grant queue precedence" % (src, pol["priority_from"], cls))
+        problems.extend(priority_problems(priority, cls, policy))
     return problems
 
 
@@ -145,20 +205,29 @@ DEFECT_PREDICATES = (
 SEVERITIES = ("low", "medium", "high", "critical")
 
 
-def trusted_reproduction(rep):
-    """A reproduction counts only when a TRUSTED quarantined operation recorded it (kind
-    trusted_reproduction with an operator that is not a machine actor's bare assertion, a
-    quarantine id) with every R66 field. An agent's statement that it reproduced is an assertion."""
+def trusted_reproduction(rep, quarantine_records=(), trusted_operators=()):
+    """A reproduction counts only when a TRUSTED quarantined operation recorded it: kind
+    trusted_reproduction, run by an operator in `trusted_operators` (the quarantine execution
+    environment identities the caller enrolls; nothing else, and never a bare name), inside a
+    quarantine whose record is in `quarantine_records`, passes quarantine_problems() and whose
+    environment digest the reproduction names, with every R66 field. The record's id and digest
+    are the join; a label is not. An agent's statement that it reproduced is an assertion."""
     if not isinstance(rep, dict) or rep.get("kind") != "trusted_reproduction":
         return False
     if not _is_str(rep.get("quarantine_id")) or rep.get("violation_demonstrated") is not True:
         return False
+    if not _is_str(rep.get("operator")) or rep["operator"] not in set(trusted_operators or ()):
+        return False
+    record = next((q for q in (quarantine_records or ()) if isinstance(q, dict) and q.get("id") == rep["quarantine_id"]), None)
+    if record is None or quarantine_problems(record) or record.get("environment_digest") != rep.get("environment_digest"):
+        return False
     return all(rep.get(f) not in (None, "", [], {}) for f in REPRODUCTION_FIELDS)
 
 
-def defect_admission(defect):
+def defect_admission(defect, quarantine_records=(), trusted_operators=()):
     """{admitted, refusals, routing, severity}: automatic POLICY_DEFECT admission (R66). Every
-    predicate of DEFECT_PREDICATES must hold; each that fails is named. On failure the item is
+    predicate of DEFECT_PREDICATES must hold; each that fails is named; the reproduction must be
+    bound to a passing quarantine record and a trusted operator (see trusted_reproduction). On failure the item is
     routed, never dropped and never lowered in severity: a disqualifying change routes to
     AWAITING_GROOMING under the class the change belongs to (PRODUCT_CHANGE or TECHNICAL_CHANGE), a
     security-relevant failure routes to security-emergency handling, and anything else to grooming.
@@ -168,7 +237,7 @@ def defect_admission(defect):
         "cited_accepted_revision": _is_pos_int(defect.get("accepted_revision")) and _is_str(defect.get("specification")),
         "named_failing_criterion": _is_str(defect.get("failing_criterion")),
         "supported_version": defect.get("version_supported") is True,
-        "trusted_reproduction": trusted_reproduction(defect.get("reproduction")),
+        "trusted_reproduction": trusted_reproduction(defect.get("reproduction"), quarantine_records, trusted_operators),
         "bounded_surface": bool(defect.get("affected_surface")),
         "change_envelope": bool(defect.get("change_envelope")),
         "not_duplicate": defect.get("duplicate_of") in (None, ""),
@@ -201,8 +270,15 @@ def defect_admission(defect):
 # AC3: quarantine, standing authorization, break-glass (R67, R68).
 # ---------------------------------------------------------------------------------------------
 
-QUARANTINE_FIELDS = ("digest", "media_type", "declared_source", "trust_label", "size", "expansion_limit", "executable_content",
-                     "secret_scan", "malware_scan", "prompt_injection_taint", "scanner_identity", "scanner_version")
+QUARANTINE_FIELDS = ("id", "digest", "environment_digest", "media_type", "declared_source", "trust_label", "size", "expansion_limit",
+                     "executable_content", "secret_scan", "malware_scan", "prompt_injection_taint", "scanner_identity", "scanner_version",
+                     "expansion", "sandbox")
+# WHAT EACH FIELD MUST BE: a key whose value is None or the wrong shape is unknown, and unknown fails.
+_QUARANTINE_SHAPE = {"id": _is_str, "digest": _is_str, "environment_digest": _is_str, "media_type": _is_str, "declared_source": _is_str,
+                     "trust_label": _is_str, "size": lambda v: _is_num(v) and v >= 0, "expansion_limit": lambda v: _is_num(v) and v > 0,
+                     "executable_content": lambda v: isinstance(v, bool), "secret_scan": _is_str, "malware_scan": _is_str,
+                     "prompt_injection_taint": lambda v: v is False or v == "none" or _is_str(v), "scanner_identity": _is_str,
+                     "scanner_version": _is_str, "expansion": lambda v: isinstance(v, dict), "sandbox": lambda v: isinstance(v, dict)}
 QUARANTINE_LIMITS = {"bytes": 1 << 30, "files": 10000, "depth": 10, "ratio": 100}
 SCAN_RESULTS = ("clean", "flagged")  # anything else, unknown and unavailable included, is a failure
 SANDBOX_DENIED = ("repository_writes", "credentials", "production_data", "deployment_access", "host_filesystem", "unrestricted_network")
@@ -227,21 +303,27 @@ def quarantine_problems(record):
     for f in QUARANTINE_FIELDS:
         if f not in record:
             problems.append("quarantine record lacks %s" % f)
+        elif not _QUARANTINE_SHAPE[f](record[f]):
+            problems.append("quarantine record's %s is %r: unknown or malformed, which is a failure for automatic admission" % (f, record[f]))
     for f in ("secret_scan", "malware_scan"):
         if f in record and record.get(f) != "clean":
             problems.append("%s is %r: an unknown or unavailable inspection is a failure for automatic admission, never a clean result" % (f, record.get(f)))
-    if record.get("prompt_injection_taint") not in (None, False, "none"):
+    if record.get("prompt_injection_taint") not in (False, "none"):
         problems.append("prompt-injection taint %r survives extraction and derivation; tainted material never authorizes instructions" % (record.get("prompt_injection_taint"),))
-    exp = record.get("expansion") or {}
+    exp = record.get("expansion") if isinstance(record.get("expansion"), dict) else {}
     for key, limit in QUARANTINE_LIMITS.items():
         v = exp.get(key)
-        if v is not None and (not _is_num(v) or v > limit):
+        if not _is_num(v):
+            problems.append("archive expansion %s was not measured (%r): unmeasured expansion is a failure, never within bounds" % (key, v))
+        elif v > limit:
             problems.append("archive expansion %s %r exceeds the %r bound; an exception needs a signed authority decision that narrows the environment" % (key, v, limit))
-    sandbox = record.get("sandbox") or {}
+    sandbox = record.get("sandbox") if isinstance(record.get("sandbox"), dict) else {}
     for d in SANDBOX_DENIED:
-        if sandbox.get(d) is True:
+        if d not in sandbox:
+            problems.append("quarantine execution does not declare %s denied: undeclared confinement is a failure" % d)
+        elif sandbox.get(d) is not False:
             problems.append("quarantine execution grants %s: refused (no repository writes, credentials, production data, deployment access, host filesystem or unrestricted network)" % d)
-    if sandbox.get("network_default") not in (None, "denied"):
+    if sandbox.get("network_default") != "denied":
         problems.append("network default is %r, not denied" % (sandbox.get("network_default"),))
     for req in record.get("network_requests") or []:
         for f in ("destination", "method", "content_digest", "byte_count", "policy_decision"):
@@ -250,46 +332,99 @@ def quarantine_problems(record):
     return problems
 
 
-def standing_ticket_problems(ticket, occurrence, now, prior_occurrences=()):
+CADENCE_SECONDS = {"daily": 86400, "weekly": 7 * 86400, "monthly": 30 * 86400}
+VERSION_MOVEMENTS = ("none", "patch", "minor", "major")
+# WHAT AN OCCURRENCE MUST DECLARE so every signed bound can be checked; an undeclared bound is a
+# bound that cannot be checked, and that is a refusal, not a pass.
+OCCURRENCE_FIELDS = ("id", "scheduled_at", "budget", "paths", "version_movement", "breaking_change", "tests_run", "releases", "concurrent_occurrences")
+
+
+def standing_ticket_problems(ticket, occurrence, now, prior_occurrences=(), last_run_at=None):
     """Why a standing-maintenance occurrence may NOT run under its ticket (R68): a missing ticket
-    field; a machine signer; a ticket not yet started or expired at `now`; an occurrence without
-    its own distinct identity (a repeated occurrence id is refused); a bound exceeded (budget,
-    concurrency, an ineligible path), which returns the occurrence to grooming."""
+    or occurrence field; a machine signer; a ticket not yet started or expired at `now`; an
+    occurrence without its own distinct identity (a repeated occurrence id is refused); or any
+    signed bound the occurrence does not fit: budget, eligible paths, permitted version movement,
+    a prohibited breaking change, the ticket's tests not all run, the release limit, the
+    concurrency limit, or the cadence (an occurrence sooner after `last_run_at` than the cadence
+    allows). Each returns the occurrence to grooming."""
     problems = []
     for f in STANDING_TICKET_FIELDS:
         if f not in (ticket or {}):
             problems.append("standing ticket lacks %s" % f)
+    for f in OCCURRENCE_FIELDS:
+        if f not in (occurrence or {}):
+            problems.append("occurrence lacks %s: an undeclared bound cannot be checked" % f)
     if problems:
         return problems
     if not _is_str(ticket["signer"]) or ticket["signer"].strip().lower() in MACHINE_ACTORS:
         problems.append("a standing ticket is deliberately authored and signed by an authorized person; %r is not one" % (ticket["signer"],))
-    if not (_is_num(ticket["start"]) and _is_num(ticket["expiry"]) and ticket["start"] <= now < ticket["expiry"]):
+    if not (_is_num(ticket["start"]) and _is_num(ticket["expiry"]) and _is_num(now) and ticket["start"] <= now < ticket["expiry"]):
         problems.append("the ticket is not in force at %r (start %r, expiry %r)" % (now, ticket["start"], ticket["expiry"]))
-    if not _is_str((occurrence or {}).get("id")) or occurrence["id"] in set(prior_occurrences):
-        problems.append("each occurrence has its own distinct identity and receipt chain; %r is missing or reused" % ((occurrence or {}).get("id"),))
-    if _is_num((occurrence or {}).get("budget")) and occurrence["budget"] > ticket["per_occurrence_budget"]:
-        problems.append("occurrence budget %r exceeds the ticket's per-occurrence budget %r: back to grooming" % (occurrence["budget"], ticket["per_occurrence_budget"]))
-    outside = sorted(set((occurrence or {}).get("paths") or []) - set(ticket["eligible_paths_or_dependencies"] or []))
-    if outside:
-        problems.append("occurrence touches %s, outside the ticket's eligible paths or dependencies: back to grooming" % ", ".join(outside))
+    if not _is_str(occurrence["id"]) or occurrence["id"] in set(prior_occurrences):
+        problems.append("each occurrence has its own distinct identity and receipt chain; %r is missing or reused" % (occurrence["id"],))
+    if not (_is_num(occurrence["budget"]) and _is_num(ticket["per_occurrence_budget"]) and occurrence["budget"] <= ticket["per_occurrence_budget"]):
+        problems.append("occurrence budget %r does not fit the ticket's per-occurrence budget %r: back to grooming" % (occurrence["budget"], ticket["per_occurrence_budget"]))
+    paths = occurrence["paths"] if isinstance(occurrence["paths"], (list, tuple)) else None
+    if not paths:
+        problems.append("occurrence declares no paths or dependencies: what it touches cannot be checked against the ticket")
+    else:
+        outside = sorted(set(paths) - set(ticket["eligible_paths_or_dependencies"] or []))
+        if outside:
+            problems.append("occurrence touches %s, outside the ticket's eligible paths or dependencies: back to grooming" % ", ".join(outside))
+    if ticket["permitted_version_movement"] not in VERSION_MOVEMENTS or occurrence["version_movement"] not in VERSION_MOVEMENTS \
+            or VERSION_MOVEMENTS.index(occurrence["version_movement"]) > VERSION_MOVEMENTS.index(ticket["permitted_version_movement"]):
+        problems.append("version movement %r is beyond the ticket's permitted %r" % (occurrence["version_movement"], ticket["permitted_version_movement"]))
+    if ticket["prohibited_breaking_changes"] is True and occurrence["breaking_change"] is not False:
+        problems.append("the ticket prohibits breaking changes and the occurrence does not establish it makes none (%r)" % (occurrence["breaking_change"],))
+    missing_tests = sorted(set(ticket["tests"] or []) - set(occurrence["tests_run"] if isinstance(occurrence["tests_run"], (list, tuple)) else []))
+    if missing_tests:
+        problems.append("the ticket's tests %s were not run for this occurrence" % ", ".join(missing_tests))
+    limits = ticket["release_limits"] if isinstance(ticket["release_limits"], dict) else None
+    if limits is None or not _is_num(limits.get("max_releases")) or not _is_num(occurrence["releases"]) or occurrence["releases"] > limits["max_releases"]:
+        problems.append("releases %r do not fit the ticket's release limits %r" % (occurrence["releases"], ticket["release_limits"]))
+    if not _is_pos_int(ticket["concurrency"]) or not _is_pos_int(occurrence["concurrent_occurrences"]) or occurrence["concurrent_occurrences"] > ticket["concurrency"]:
+        problems.append("concurrent occurrences %r exceed the ticket's concurrency %r" % (occurrence["concurrent_occurrences"], ticket["concurrency"]))
+    period = CADENCE_SECONDS.get(ticket["cadence"])
+    if period is None or not _is_num(occurrence["scheduled_at"]):
+        problems.append("cadence %r or scheduled_at %r is not checkable" % (ticket["cadence"], occurrence["scheduled_at"]))
+    elif _is_num(last_run_at) and occurrence["scheduled_at"] < last_run_at + period:
+        problems.append("occurrence at %r is sooner than the %s cadence after the last run at %r" % (occurrence["scheduled_at"], ticket["cadence"], last_run_at))
     return problems
 
 
-def break_glass_problems(grant, now):
-    """Why a break-glass grant may NOT act (R68): a missing field; a machine responder or signer;
-    an action not explicitly listed or not in the permitted containment vocabulary; a duration
-    beyond the grant; a ratification more than four hours overdue without the security authority's
-    signature; an adversarial review overdue past one business day; an unratified patch beyond a
-    five percent canary or not isolated; no qualified reversible action or independent deadline
-    enforcer (Veldo stops and requests the security authority); a grant that tries to authorize a
-    permanent feature, an API change, an irreversible migration, a new dependency or expanded
-    collection."""
+def ratification(grant, security_authorities):
+    """The security authority's ratification of a break-glass grant, or None. A ratification is a
+    record {by, at, digest}: `by` a person in `security_authorities` (the enrolled security
+    authorities the caller names; a name outside that set, a machine or a bare string is nobody),
+    `at` a finite time, `digest` the signed digest. Anything less is not a ratification."""
+    r = (grant or {}).get("ratification")
+    if not isinstance(r, dict) or not _is_str(r.get("by")) or r["by"].strip().lower() in MACHINE_ACTORS:
+        return None
+    if r["by"] not in set(security_authorities or ()) or not _is_num(r.get("at")) or not _is_str(r.get("digest")):
+        return None
+    return r
+
+
+def break_glass_problems(grant, now, security_authorities=()):
+    """Why a break-glass grant may NOT act (R68): a missing field, `granted_at` and
+    `review_due_at` included (a grant without its clock has no deadline, and a deadline that
+    cannot be checked is a refusal); a machine responder or signer; an action not explicitly
+    listed or not in the permitted containment vocabulary; a duration beyond the grant; a
+    ratification more than four hours overdue without the security authority's signature (see
+    ratification(); a name is not one); an adversarial review overdue past one business day; an
+    unratified patch beyond a five percent canary or not isolated; no qualified reversible action
+    or independent deadline enforcer (Veldo stops and requests the security authority); a grant
+    that tries to authorize a permanent feature, an API change, an irreversible migration, a new
+    dependency or expanded collection."""
     problems = []
-    for f in BREAK_GLASS_FIELDS:
+    for f in BREAK_GLASS_FIELDS + ("granted_at", "review_due_at"):
         if f not in (grant or {}):
             problems.append("break-glass grant lacks %s" % f)
     if problems:
         return problems
+    if not (_is_num(grant["granted_at"]) and _is_num(grant["review_due_at"]) and _is_num(now) and _is_num(grant["duration_seconds"])):
+        return ["the grant's clock is not checkable (granted_at %r, review_due_at %r, duration %r, now %r): no deadline can be enforced, so the grant does not act"
+                % (grant["granted_at"], grant["review_due_at"], grant["duration_seconds"], now)]
     for who in ("responder", "policy_signer"):
         if not _is_str(grant[who]) or grant[who].strip().lower() in MACHINE_ACTORS:
             problems.append("%s %r is not a named person" % (who, grant[who]))
@@ -299,15 +434,19 @@ def break_glass_problems(grant, now):
     for forbidden in ("permanent_feature", "public_api_change", "irreversible_migration", "new_dependency", "expanded_collection"):
         if grant.get(forbidden) is True:
             problems.append("break-glass cannot silently authorize %s" % forbidden)
-    granted_at = grant.get("granted_at")
-    if _is_num(granted_at) and _is_num(now):
-        if now > granted_at + grant["duration_seconds"]:
-            problems.append("the grant's duration has elapsed")
-        if now > granted_at + RATIFICATION_DUE_SECONDS and not _is_str(grant.get("ratified_by")):
-            problems.append("ratification by the security authority was due within %d hours and is absent" % (RATIFICATION_DUE_SECONDS // 3600))
-        if grant.get("review_due_at") is not None and now > grant["review_due_at"] and grant.get("reviewed") is not True:
-            problems.append("adversarial review and a decision or incident record were due within one business day and are absent")
-    if not _is_str(grant.get("ratified_by")):
+    granted_at = grant["granted_at"]
+    ratified = ratification(grant, security_authorities)
+    if now > granted_at + grant["duration_seconds"]:
+        problems.append("the grant's duration has elapsed")
+    if now > granted_at + RATIFICATION_DUE_SECONDS and ratified is None:
+        problems.append("ratification by the security authority was due within %d hours and is absent (a name is not a ratification)" % (RATIFICATION_DUE_SECONDS // 3600))
+    if ratified is not None and ratified["at"] > granted_at + RATIFICATION_DUE_SECONDS:
+        problems.append("ratification at %r came after the %d hour deadline" % (ratified["at"], RATIFICATION_DUE_SECONDS // 3600))
+    if grant["review_due_at"] > granted_at + REVIEW_DUE_BUSINESS_DAYS * 3 * 86400:
+        problems.append("review_due_at %r is not within one business day of the grant" % (grant["review_due_at"],))
+    if now > grant["review_due_at"] and grant.get("reviewed") is not True:
+        problems.append("adversarial review and a decision or incident record were due within one business day and are absent")
+    if ratified is None:
         pct = grant.get("canary_percent")
         if pct is not None and (not _is_num(pct) or pct > UNRATIFIED_CANARY_MAX_PERCENT):
             problems.append("an unratified patch cannot exceed a %d percent canary (got %r)" % (UNRATIFIED_CANARY_MAX_PERCENT, pct))
@@ -330,6 +469,15 @@ ANDON_AGE_DAYS = 14
 DEBT_STATES = ("RAW", "PREPARED", "AWAITING_GROOMING")
 
 
+def _glob_re(pattern):
+    """The ONE glob compiler, arch._glob_re (** across separators, * within a segment), loaded
+    from the sibling organ so protected-path matching here agrees with policy enforcement."""
+    spec = importlib.util.spec_from_file_location("veldo_admission_arch", Path(__file__).resolve().parent / "arch.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod._glob_re(pattern)
+
+
 def scope_change_problems(admitted, current, protected_paths=(), signed_ceiling=None):
     """The material changes between an admitted scope and the current one, each by name (R69): a
     new protected path; a public-interface change; a migration; an unlisted dependency; a new
@@ -343,11 +491,16 @@ def scope_change_problems(admitted, current, protected_paths=(), signed_ceiling=
     if problems:
         return problems
     new_paths = set(current["paths"]) - set(admitted["paths"])
+    patterns = [_glob_re(pp) for pp in protected_paths]
     for p in sorted(new_paths):
-        if any(p == pp or (pp.endswith("*") and p.startswith(pp[:-1])) for pp in protected_paths):
+        if any(rx.match(p) for rx in patterns):
             problems.append("new protected path %s" % p)
     if set(current["interfaces"]) != set(admitted["interfaces"]):
         problems.append("public interface change")
+    for d, label in (("specifications", "the admitted specification set changed"), ("data_classes", "the data classes changed"),
+                     ("artifact_types", "the artifact types changed")):
+        if set(current[d]) != set(admitted[d]):
+            problems.append("%s (%s to %s)" % (label, sorted(admitted[d]), sorted(current[d])))
     if current.get("migration") and not admitted.get("migration"):
         problems.append("a migration appeared")
     for d in sorted(set(current["dependencies"]) - set(admitted["dependencies"])):
