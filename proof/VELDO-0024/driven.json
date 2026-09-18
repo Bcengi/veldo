@@ -1,0 +1,93 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0024",
+  "commit": "21794c98a47cb9e4485c82151e360844ea40b9d7",
+  "taken_at": "2026-09-18T02:51:30Z",
+  "fragment": "scripts/suites/37_veldo_0024_replica.py",
+  "fragment_sha256": "6a7989115c1f2e6f09e8623bb6d54c0477935089c7cd8932393b24b4627633b1",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/control_replica.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
+  "rows_total": 10,
+  "rows_passed": 10,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0024 AC1 replica/pending-success DRIVEN (the declared falsifier): with a rejected push treated as success in a copy, the command whose export the remote refused is dispatched and reported succeeded although the remote never took it, so the row reds; unmutated (the row above) the same rejection leaves the command pending with zero receiver calls",
+    "VELDO-0024 AC2 replica/lost-ack-identity DRIVEN (the declared falsifier): with a fresh export identity allocated on every attempt in a copy, the restart after a kill following the remote ref update names a second identity for the same sequence: the store's cursor refuses it as export_identity_mismatch and the local audit log shows the sequence exported under a different name than the cursor recorded, so the row reds; unmutated (the row above) every window ends with one export per sequence",
+    "VELDO-0024 AC3 replica/status-pending DRIVEN (the declared falsifier): with an unpublished command rendered as rejected under an unknown identity in a copy, the pending commands after publisher death read as rejected and lose their command ids, so the row reds; unmutated (the row above) they read as pending_publication under s2 and s3"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "replica/pending-success DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "replica/lost-ack-identity DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "replica/status-pending DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 3,
+      "passed": 3,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 3,
+      "passed": 3,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0024 AC1 replica/sequence: two committed commands are pending_publication before any export (the status shows durable 0, committed 2, two pending, oldest age 5s); publishing exports both in order to refs/veldo/audit on the real bare remote (the remote's log names export 1 then export 2, the remote tip equals the local audit tip), the export commit tree carries export.json, export.sig and the artifact BYTES blob (digest checked), dispatch runs once per command only after its acknowledgement, and afterwards both commands are succeeded with durable 2 and nothing pending",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC1 replica/export-content: an export's identity is a function of sequence and record digest alone (the same record twice gives one identity, a different record digest another); an artifact with no bytes or with bytes not matching its digest refuses the export as artifact_missing; a signer that returns nothing refuses preparation as unsigned_export; the export digest covers the encoding, the record with its signature and the artifact bytes",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC1 replica/pending-success: with the remote's receive hook rejecting, a committed command's export is refused (remote_rejected), the command stays pending_publication with its identity (never succeeded, never rejected), the receiver is called zero times, the status shows one pending export of age 10s with durable 2 and committed 3; once the hook is gone the same export publishes, the receiver is called once and the command is succeeded",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC1 replica/pending-success DRIVEN (the declared falsifier): with a rejected push treated as success in a copy, the command whose export the remote refused is dispatched and reported succeeded although the remote never took it, so the row reds; unmutated (the row above) the same rejection leaves the command pending with zero receiver calls",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC2 replica/lost-ack-identity: a real publisher process SIGKILLed after the export is prepared, after the remote ref moved and after the acknowledgement persisted (three kills) is reconciled on restart against the exact remote ref: each command ends acknowledged with exactly ONE export commit for its sequence (the identity is reused, never a second export), the remote tip equals the local audit tip, the journal gained no record, the remote holds one commit per acknowledged export (four), and the kill after the ref moved is the one where the remote had moved with nothing acknowledged locally (windows: [('after_export_prepared', -9, False, [2]), ('after_remote_ref_updated', -9, False, [3]), ('after_ack_persisted', -9, True, [])])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC2 replica/lost-ack-identity DRIVEN (the declared falsifier): with a fresh export identity allocated on every attempt in a copy, the restart after a kill following the remote ref update names a second identity for the same sequence: the store's cursor refuses it as export_identity_mismatch and the local audit log shows the sequence exported under a different name than the cursor recorded, so the row reds; unmutated (the row above) every window ends with one export per sequence",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC2 replica/divergent-remote: a remote whose audit ref names a commit this authority never exported is a divergent replica: reconcile and publish both stop as divergent_replica, publication is PAUSED with the reason naming the foreign tip, the remote is left exactly as found (never overwritten), and the committed command stays pending_publication",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC3 replica/status-pending: the status surface reads an empty store (durable 0, committed 0, nothing pending), a caught-up store (durable 1, committed 1), and after the publisher died with the remote ref moved and nothing acknowledged, a pending store read through a READ-ONLY handle: durable 1, committed 3, two pending, oldest age 40s, each pending command listed by its ORIGINAL identity as pending_publication, not paused; the Run Lens model carries the same numbers with the condition PENDING_PUBLICATION and its terminal view prints the pending commands with 'not rejected'; a missing store renders as absent with a reason, never as an empty replica",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC3 replica/status-pending DRIVEN (the declared falsifier): with an unpublished command rendered as rejected under an unknown identity in a copy, the pending commands after publisher death read as rejected and lose their command ids, so the row reds; unmutated (the row above) they read as pending_publication under s2 and s3",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC3 replica/remote-contract: a local bare remote (path or file URL) is named protocol-only and never off-host durability; activation also needs recorded operations evidence of remote durability, evidence that refs/veldo/audit is protected with force updates refused, and a named person recording it (an agent is not one); a complete contract over a real remote URL has no problems; the audit ref is refs/veldo/audit",
+      "passed": true
+    }
+  ]
+}
