@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0021-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0021",
+    "commit": "aaf46ddeb4c535d8f21ef7f4002cc26a34c388a3",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0021 (risk critical, human_approval required, no protected paths) over Telegram on 2026-09-17 at 22:05 UTC (message 27930, 'Approve 0021 and approve 0022'), answering an ask (message 27929) that described both items: for VELDO-0021, the four completion facts kept distinct, an authoritative snapshot before every execution entry with stale prerequisites refused, provider charges that must fit their reservation before the call, proof and independent review before engineering completion, and a lost publication acknowledgement that is never success. The item enrolls nobody and grants no authority; the store, lander and eligibility service that apply it are later packages. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-17T22:40:00Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval of 2026-09-17; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}

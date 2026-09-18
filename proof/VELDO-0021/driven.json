@@ -1,0 +1,144 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0021",
+  "commit": "aaf46ddeb4c535d8f21ef7f4002cc26a34c388a3",
+  "taken_at": "2026-09-18T01:20:18Z",
+  "fragment": "scripts/suites/35_veldo_0021_completion.py",
+  "fragment_sha256": "cf20407bb7f4761c20ff30c7ddd1ac314db895733def118de8f23bf299c5e531",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/completion_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
+  "rows_total": 20,
+  "rows_passed": 20,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0021 AC1 completion/build-only DRIVEN (the declared falsifier): with revision_landed inferred from attempt_finished in a copy, a build-only attempt reads as landed, so the row reds; unmutated it does not",
+    "VELDO-0021 AC2 eligibility/review-draft-plan DRIVEN (the declared falsifier): with review no longer asking plan_not_draft in a copy, review against a draft plan is eligible, so the row reds; unmutated it is refused",
+    "VELDO-0021 AC3 completion/empty-proof DRIVEN (the declared falsifier): with empty-equals-empty accepted in a copy, a proof over no criteria for a spec declaring none is complete, so the row reds; unmutated it is refused",
+    "VELDO-0021 AC4 completion/unknown-publication DRIVEN (the declared falsifier): with a lost acknowledgement read as completion in a copy, the chain completes with no remote evidence, so the row reds; unmutated it waits for authority"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "completion/build-only DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "eligibility/review-draft-plan DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "completion/empty-proof DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC4": {
+      "row_contains": "completion/unknown-publication DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 5,
+      "passed": 5,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 7,
+      "passed": 7,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 3,
+      "passed": 3,
+      "driven": 1
+    },
+    "AC4": {
+      "rows": 5,
+      "passed": 5,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0021 AC1 completion/registry: the fact registry is exactly attempt_finished, artifact_accepted, revision_landed and objective_satisfied, each citing its clause with its evidence fields (R70/R76), and a complete receipt of each kind establishes its fact; the machine set is bound to authorization.MACHINE_ACTORS",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC1 completion/non-implication: over every ordered pair of facts, a receipt establishing one leaves the other unestablished and is refused as evidence for it (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC1 completion/evidence: every evidence field of every fact is required by name; a wrong subject, a superseded receipt and a machine acceptor or assessor each refuse (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC1 completion/build-only: a finished attempt with trusted exit and accounting establishes attempt_finished and nothing else: revision_landed stays False without its publication receipt",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC1 completion/build-only DRIVEN (the declared falsifier): with revision_landed inferred from attempt_finished in a copy, a build-only attempt reads as landed, so the row reds; unmutated it does not",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC2 eligibility/registry: the entries are exactly the nine of R70 with review asking the draft-plan, decision and dependency predicates like build; the read-set kinds are the twelve of R70; a complete current snapshot with every predicate true is eligible at every entry",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC2 eligibility/read-set: mutating each read-set kind's version after the snapshot while the project version stays fixed is a named stale-read refusal, and a snapshot missing any kind is incomplete (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC2 eligibility/predicates: every predicate of every entry refuses by name when it is not literally true, including the negative no_blockers predicate (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC2 eligibility/review-draft-plan: review against a draft governing plan is refused exactly as build is",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC2 eligibility/review-draft-plan DRIVEN (the declared falsifier): with review no longer asking plan_not_draft in a copy, review against a draft plan is eligible, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC2 eligibility/charge: a bounded maximum below every remainder is allocated from all three ceilings together; at a remainder it is allowed; above any one remainder it is refused naming the ceiling; an unknown or unbounded maximum and an unknown remainder are refused before the provider call; sequential requests never spend the same remainder twice",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC2 eligibility/exposure: reconciled usage releases the unspent allocation and authoritative proof of no charge releases all of it; a timeout, a cancellation and a delayed usage report release nothing",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC3 completion/obligations: a complete bundle is complete; each of the thirteen obligations has one fixture refused by its own name (nonexistent commit, draft spec, empty criteria, missing evidence, no producer, a fabricated check, no reviewer, builder as reviewer, undisposed objection, no candidate tree, verifier inside the candidate, unapproved protected path, mutated tree) (failures: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC3 completion/empty-proof: an empty criterion universe, in the proof or in the specification, proves nothing and is refused by name",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC3 completion/empty-proof DRIVEN (the declared falsifier): with empty-equals-empty accepted in a copy, a proof over no criteria for a spec declaring none is complete, so the row reds; unmutated it is refused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC4 completion/transition-table: the full chain walks candidate_built -> verified -> authorized -> published -> confirmed -> completed with every predicate; each predicate of each step refuses by name when absent; an undeclared pair and an unknown state refuse; gate red, approval rejected, dependency withdrawn, authority revoked and a moved remote tip each halt",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC4 completion/recovery-findings: the five R32 findings each need their evidence; process absence, checkpoint loss, lease expiry and nonce consumption justify only outcome_unknown",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC4 completion/unknown-publication: a lost acknowledgement after the push moves the chain to awaiting_authority, never to published, confirmed or completed; only trusted target evidence moves it on to published, and only remote confirmation and a replicated receipt complete it",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC4 completion/unknown-publication DRIVEN (the declared falsifier): with a lost acknowledgement read as completion in a copy, the chain completes with no remote evidence, so the row reds; unmutated it waits for authority",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0021 AC4 completion/landing-receipt: a receipt joining implementation, proof, reviewed source, old tip, candidate, tested tree, gate invocation with an external output location, unit, dispatch, remote confirmation and replication certifies; each missing join, gate output inside the candidate, a receipt inside its own commit, and a shipped status string, clean attempt, passing review or process exit as basis each refuse",
+      "passed": true
+    }
+  ]
+}
