@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0025",
-  "commit": "b89f9f343b029de79042891669a570edd547c8a1",
+  "commit": "4ed4025cd046c3dd8aadebb9b32be6ff2aa5dbe2",
   "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
-  "produced_at": "2026-09-18T09:52:18Z",
+  "produced_at": "2026-09-18T13:31:48Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0025/driven.json",
-          "detail": "3 rows (1 driven): with a validly signed enrollment envelope (REAL Ed25519 keys through the installed ssh-keygen over a REAL SQLite store), mutating each of the twelve envelope fields after signing refuses, substituting each operation parameter (principal, roles, public key, type, scope, group), the operation or the target under the original envelope refuses as envelope_refused because the digest is RECOMPUTED from the command to be executed, a bad command signature over an SSH-transport-authenticated envelope refuses, and membership and every store table are unchanged after all of it; the untouched command then enrolls with the key that was signed for. DRIVEN: digest recomputation bypassed in a copy of the authority contract beside a copy of the membership organ lets an enrollment with a substituted public key commit under the original signature (the declared falsifier)."
+          "detail": "5 rows (1 driven): with a validly signed enrollment envelope (REAL Ed25519 keys through the installed ssh-keygen over a REAL SQLite store), mutating each of the twelve envelope fields after signing refuses, substituting each operation parameter (principal, roles, public key, type, scope, group), the operation or the target under the original envelope refuses as envelope_refused because the digest is RECOMPUTED from the command to be executed, a bad command signature over an SSH-transport-authenticated envelope refuses, and membership and every store table are unchanged after all of it; the untouched command then enrolls with the key that was signed for. DRIVEN: digest recomputation bypassed in a copy of the authority contract beside a copy of the membership organ lets an enrollment with a substituted public key commit under the original signature (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0025/gate-implementation.log",
-          "detail": "Complete canonical gate at b89f9f343b029de79042891669a570edd547c8a1 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5371 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 4ed4025cd046c3dd8aadebb9b32be6ff2aa5dbe2 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5376 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -29,12 +29,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0025/driven.json",
-          "detail": "6 rows (1 driven): the owner bootstrap is accepted exactly once (a self-signed person with project_owner and membership_steward while no membership exists; four other bootstrap shapes refuse); an enrollment without the enrollee's co-signature, or with one by another key, refuses as key_possession_unproven; a service signing its own role change or an enrollment refuses as not_a_person, a person without the steward role granting herself roles refuses, a service is never given the steward role, nobody enrolls itself; two client PROCESSES racing two role changes against one membership version each verify a real signature and exactly one commits; a writer SIGKILLed after acceptance leaves one committed transition and the retry of the same envelope replays with no new record; historical authority is unchanged; an assignment naming an unenrolled principal and a two-person quorum stay blocked until that person is enrolled. DRIVEN: a non-person signer trusted in a copy of the membership organ lets a service grant itself membership_steward during the competing role change and the stored role is the unauthorized one (the declared falsifier)."
+          "detail": "9 rows (1 driven): the owner bootstrap is accepted exactly once (a self-signed person with project_owner and membership_steward while no membership exists; four other bootstrap shapes refuse); an enrollment without the enrollee's co-signature, or with one by another key, refuses as key_possession_unproven; a service signing its own role change or an enrollment refuses as not_a_person, a person without the steward role granting herself roles refuses, a service is never given the steward role, nobody enrolls itself; two client PROCESSES racing two role changes against one membership version each verify a real signature and exactly one commits; a writer SIGKILLed after acceptance leaves one committed transition and the retry of the same envelope replays with no new record; historical authority is unchanged; an assignment naming an unenrolled principal and a two-person quorum stay blocked until that person is enrolled. DRIVEN: a non-person signer trusted in a copy of the membership organ lets a service grant itself membership_steward during the competing role change and the stored role is the unauthorized one (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0025/gate-implementation.log",
-          "detail": "Complete canonical gate at b89f9f343b029de79042891669a570edd547c8a1 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5371 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 4ed4025cd046c3dd8aadebb9b32be6ff2aa5dbe2 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5376 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -50,7 +50,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0025/gate-implementation.log",
-          "detail": "Complete canonical gate at b89f9f343b029de79042891669a570edd547c8a1 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5371 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at 4ed4025cd046c3dd8aadebb9b32be6ff2aa5dbe2 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5376 passed, 0 failed, every required check passed."
         }
       ]
     }
@@ -61,9 +61,9 @@
       "status": "passed",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "b89f9f343b029de79042891669a570edd547c8a1",
+      "commit": "4ed4025cd046c3dd8aadebb9b32be6ff2aa5dbe2",
       "ref": "proof/VELDO-0025/gate-implementation.log",
-      "detail": "GATE GREEN; selftest 5371 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+      "detail": "GATE GREEN; selftest 5376 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
     }
   ],
   "artifacts": [
@@ -71,8 +71,9 @@
     "proof/VELDO-0025/drive.py",
     "proof/VELDO-0025/gate-implementation.log",
     "proof/VELDO-0025/log-redactions.json",
-    "proof/VELDO-0025/README.md"
+    "proof/VELDO-0025/README.md",
+    "proof/VELDO-0025/approval-dmitry.json"
   ],
   "rollback": "Stop administrative command acceptance and preserve the store's committed membership, delegation and key entities and their journal; never delete or rewrite a committed transition. The organ reverts through the ordinary reviewed path (a revert commit of control_membership.py, its registrations and suite 38, never a force). No live channel, additional person or real key is enrolled by this item; Dmitry remains the only named initial authority.",
-  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here."
+  "review": "Independent Codex review of the branch at f1c13af (research/codex-reviews/review-20260918-055239.md) found seven reproducible problems; each is fixed and pinned with the reviewer's reproduction in suite 38 (rows marked 'review 1'). The fixes carry no second Codex pass under the one-review-per-landing quota ruling until 2026-09-22. Dmitry's approval of the landing is recorded in approval-dmitry.json."
 }

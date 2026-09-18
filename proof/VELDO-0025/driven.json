@@ -1,17 +1,17 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0025",
-  "commit": "b89f9f343b029de79042891669a570edd547c8a1",
-  "taken_at": "2026-09-18T09:52:18Z",
+  "commit": "4ed4025cd046c3dd8aadebb9b32be6ff2aa5dbe2",
+  "taken_at": "2026-09-18T13:31:47Z",
   "fragment": "scripts/suites/38_veldo_0025_membership.py",
-  "fragment_sha256": "fa09259668ed219fe7f53a8d594d25edbf7f2ec62cc4dadc243533e07594112b",
+  "fragment_sha256": "3d5be10fb4ec8b8bd06b90be874a7e3e03c02f1d3e96043d96fc05fd6a40cf60",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/control_membership.py or its sibling .veldo/authority_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
-  "rows_total": 12,
-  "rows_passed": 12,
+  "rows_total": 17,
+  "rows_passed": 17,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0025 AC1 membership/key-substitution DRIVEN (the declared falsifier): with digest recomputation bypassed in a copy of the authority contract beside a copy of the membership organ, the enrollment with mallory's key substituted under dmitry's original valid signature commits and the store holds mallory's key for the service, so the row reds; unmutated (the row above) the substitution is refused before execution",
-    "VELDO-0025 AC2 membership/self-grant DRIVEN (the declared falsifier): with a non-person signer trusted in a copy of the membership organ, the service's self-grant of membership_steward during the competing role change commits and the stored role is the unauthorized one (dmitry's competing change then loses the version race), so the row reds; unmutated (the row above) the service's signature changes no membership",
+    "VELDO-0025 AC2 membership/self-grant DRIVEN (the declared falsifier): with a non-person signer trusted in a copy of the membership organ, the service's self-grant of membership_steward commits beside dmitry's competing role change: the journal records the unauthorized stored role at the service's own sequence, so the row reds; unmutated (the row above) the service's signature changes no membership",
     "VELDO-0025 AC3 membership/stale-delegation DRIVEN (the declared falsifier): with the delegation-version check removed in a copy of the membership organ, a signed use of del-1 at the pre-supersession version against a state whose version has moved (the record itself still cached as current) is accepted, so the row reds; unmutated the same use refuses as stale_delegation by version, before any record field is consulted"
   ],
   "declared_falsifiers": {
@@ -33,13 +33,13 @@
   },
   "per_criterion": {
     "AC2": {
-      "rows": 6,
-      "passed": 6,
+      "rows": 9,
+      "passed": 9,
       "driven": 1
     },
     "AC1": {
-      "rows": 3,
-      "passed": 3,
+      "rows": 5,
+      "passed": 5,
       "driven": 1
     },
     "AC3": {
@@ -74,11 +74,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0025 AC2 membership/self-grant DRIVEN (the declared falsifier): with a non-person signer trusted in a copy of the membership organ, the service's self-grant of membership_steward during the competing role change commits and the stored role is the unauthorized one (dmitry's competing change then loses the version race), so the row reds; unmutated (the row above) the service's signature changes no membership",
+      "label": "VELDO-0025 AC2 membership/self-grant DRIVEN (the declared falsifier): with a non-person signer trusted in a copy of the membership organ, the service's self-grant of membership_steward commits beside dmitry's competing role change: the journal records the unauthorized stored role at the service's own sequence, so the row reds; unmutated (the row above) the service's signature changes no membership",
       "passed": true
     },
     {
-      "label": "VELDO-0025 AC2 membership/one-transition: two client processes racing two role changes for lena against one membership version each verify a real signature and exactly one commits (the other loses as store_refused by version), lena holds one of the two role sets and the membership version advanced by one; a writer SIGKILLed after acceptance (after COMMIT, before the reply) leaves the change committed with the version advanced, and the retry of the SAME envelope replays the committed result without a new journal record; historical authority is unchanged (dmitry and asya keep their roles) (race: ['REPLIED {\"seq\": 5, \"replayed\": false}', 'REFUSED store_refused']; kill: [(-9, '')]; retry: ['REPLIED {\"seq\": 6, \"replayed\": true}'])",
+      "label": "VELDO-0025 AC2 membership/one-transition: two client processes racing two role changes for lena against one membership version each verify a real signature and exactly one commits (the other loses as store_refused by version), lena holds one of the two role sets and the membership version advanced by one; a writer SIGKILLed after acceptance (after COMMIT, before the reply) leaves the change committed with the version advanced, and the retry of the SAME envelope replays the committed result without a new journal record; historical authority is unchanged (dmitry and asya keep their roles) (race: ['REFUSED store_refused', 'REPLIED {\"seq\": 5, \"replayed\": false}']; kill: [(-9, '')]; retry: ['REPLIED {\"seq\": 6, \"replayed\": true}'])",
       "passed": true
     },
     {
@@ -86,7 +86,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0025 AC3 membership/delegation-predicates: a delegation is granted only by the delegating person or the steward (a service and another person are refused) and only within the person's roles; with asya's committed delegation the intact use has no problems, and invalidating each single predicate (channel, assertion kind, request version, scope, expiry, principal, role, quorum, actor kind at a boundary that admits no person, delegation version) refuses by name (failures: [])",
+      "label": "VELDO-0025 AC3 membership/delegation-predicates: a delegation is granted only by the delegating person or the steward (a service and another person are refused), within the person's roles and within the person's SCOPE (lena, scoped to PROJ-A, cannot delegate PROJ-B but can delegate PROJ-A; the review's finding 6: a global member delegating a project is accepted); with asya's committed delegation the intact use has no problems, and invalidating each single predicate (channel, assertion kind, request version, scope, presentation version, assertion principal, edge key, expiry, principal, role, quorum, actor kind at a boundary that admits no person, delegation version) refuses by name (failures: [])",
       "passed": true
     },
     {
@@ -95,6 +95,26 @@
     },
     {
       "label": "VELDO-0025 AC3 membership/stale-delegation DRIVEN (the declared falsifier): with the delegation-version check removed in a copy of the membership organ, a signed use of del-1 at the pre-supersession version against a state whose version has moved (the record itself still cached as current) is accepted, so the row reds; unmutated the same use refuses as stale_delegation by version, before any record field is consulted",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0025 AC2 membership/scope-authority (review 1): a steward scoped to PROJ-A cannot change its own scope to '*' (self-grant), cannot set another principal's scope to '*' or change a globally scoped person or enroll into PROJ-B (scope_refused), CAN change a PROJ-A principal's roles, and the '*'-scoped owner can widen lena's scope; lena's scope stays what the owner set",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0025 AC2 membership/re-enrollment-keys (review 1): after asya's membership is revoked and she is re-enrolled with a new key, her old key entity is revoked at the re-enrollment time and only the new one is active; a delegation grant signed with her OLD private key is refused (signature_invalid against the active key) while the same grant signed with the new key commits",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0025 AC2 membership/snapshot-versions (review 1): a command carrying predicted next versions commits with the versions of the checked snapshot (the journal's before-versions are the snapshot's, not the caller's), and a command whose envelope was signed against a membership version that another change has since moved is refused as envelope_refused: the unsigned expected versions cannot carry a change past a concurrent revocation or role change",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0025 AC1 membership/journal-signature (review 1): every committed membership record is signed by the authority's journal signer over the record's own bytes, so replay with REAL ssh-keygen verification against the authority's key rebuilds the whole history (bootstrap at seq 1 included) to the live state's digest; admit() without a journal signer commits nothing (journal_signer_required)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0025 AC1 membership/command-id-binding (review 1): a command whose id differs from the signed envelope's is refused as envelope_refused before anything is written (no row under the attacker's id, the nonce unconsumed), the original signed command then commits, and its retry replays the committed result",
       "passed": true
     }
   ]

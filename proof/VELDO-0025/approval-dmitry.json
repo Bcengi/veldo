@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0025-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0025",
+    "commit": "4ed4025cd046c3dd8aadebb9b32be6ff2aa5dbe2",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0025 (risk critical, human_approval required, no protected paths) over Telegram on 2026-09-18T13:31:03Z (message 27970, 'Approve 0025'), answering an ask (message 27947) that described the item: every membership or delegation change accepted only from a signed command whose digest is recomputed from what will execute, checked against the store's current membership, versions and the signer's active key; the owner bootstrap once; only a person holding membership_steward changes membership and nobody grants itself anything; two changes racing one version have one winner; a stale delegation is refused by version. Nothing is enrolled in the repository and Dmitry stays the only named authority. The ask named the Codex findings and said the approval covers the item with those fixes in; the commit bound here is the fixes commit. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-18T13:31:03Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
