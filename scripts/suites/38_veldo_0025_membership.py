@@ -89,7 +89,17 @@ else:
         _v25_sp.run(["ssh-keygen", "-Y", "sign", "-f", str(_v25_kd / name), "-n", AC25.SIGNATURE_NAMESPACE, str(f)], check=True, capture_output=True, stdin=_v25_sp.DEVNULL, timeout=60)
         return sig.read_text()
 
-    _v25_pub = {n: _v25_keygen(n) for n in ("dmitry", "asya", "lena", "svc", "mallory")}
+    _v25_pub = {n: _v25_keygen(n) for n in ("dmitry", "asya", "lena", "svc", "mallory", "authority", "asya2")}
+    # The AUTHORITY's journal signer: the authority process signs every journal record over its own bytes.
+    _v25_journal_signer = ("veldo-authority", lambda m: _v25_sign("authority", m))
+    _v25_allowed_authority = 'veldo-authority namespaces="%s" %s\n' % (AC25.SIGNATURE_NAMESPACE, " ".join(_v25_pub["authority"].split()[:2]))
+
+    def _v25_journal_verify(msg, sig, signer):
+        sf, sg = _v25_kd / "journal_signers", _v25_kd / "journal.sig"
+        sf.write_text(_v25_allowed_authority)
+        sg.write_text(sig)
+        r = _v25_sp.run(["ssh-keygen", "-Y", "verify", "-f", str(sf), "-I", signer, "-n", AC25.SIGNATURE_NAMESPACE, "-s", str(sg)], input=msg, capture_output=True, timeout=60)
+        return r.returncode == 0, (r.stdout + r.stderr).decode("utf-8", "replace")
 
     class _v25_World:
         """A fresh store with the owner bootstrapped, plus helpers that build and sign envelopes
@@ -103,6 +113,7 @@ else:
             self.db = str(self.dir / "control.sqlite3")
             self.conn = self.store.open_store(self.db)
             self.n = 0
+            self.keyfile = {}  # principal -> key file name, when a principal's current key is not the file named after it
 
         def nonce(self):
             self.n += 1
@@ -126,10 +137,10 @@ else:
 
         def admit(self, signer, command, enrollee=None, env=None, signature=None, enrollee_sig=None, now=_v25_NOW):
             env = env or self.envelope(signer, command)
-            sig = signature or _v25_sign(signer, self.ac.canonical_envelope_bytes(env))
-            esig = enrollee_sig if enrollee_sig is not None else (_v25_sign(enrollee, self.ac.canonical_envelope_bytes(dict(env, principal=enrollee))) if enrollee else None)
+            sig = signature or _v25_sign(self.keyfile.get(signer, signer), self.ac.canonical_envelope_bytes(env))
+            esig = enrollee_sig if enrollee_sig is not None else (_v25_sign(self.keyfile.get(enrollee, enrollee), self.ac.canonical_envelope_bytes(dict(env, principal=enrollee))) if enrollee else None)
             try:
-                return self.mem.admit(self.store, self.conn, env, command, sig, _v25_IDS, now, enrollee_signature=esig), None
+                return self.mem.admit(self.store, self.conn, env, command, sig, _v25_IDS, now, enrollee_signature=esig, journal_signer=_v25_journal_signer), None
             except Exception as e:
                 if type(e).__name__ == "MembershipRefused":
                     return None, e.code
@@ -271,12 +282,13 @@ else:
     _v25_m2_b = _v25_m2.cmd("race-b", "change_roles", {"principal": "svc", "roles": ["operations_authority"]})  # dmitry's competing change, same version
     _v25_m2_res_a = _v25_m2.admit("svc", _v25_m2_a)
     _v25_m2_res_b = _v25_m2.admit("dmitry", _v25_m2_b)
-    _v25_m2_roles = _v25_m2.members().get("svc")
+    _v25_m2_rec = next(r for r in _v25_m2_store.export_journal(_v25_m2.conn) if r["command_id"] == "race-a")
     expect("VELDO-0025 AC2 membership/self-grant DRIVEN (the declared falsifier): with a non-person signer trusted in a copy of the membership "
-           "organ, the service's self-grant of membership_steward during the competing role change commits and the stored role is the "
-           "unauthorized one (dmitry's competing change then loses the version race), so the row reds; unmutated (the row above) the "
-           "service's signature changes no membership",
-           _v25_m2_res_a[1] is None and _v25_m2_roles == ["membership_steward"] and _v25_m2_res_b[1] == "store_refused" and _v25_svc_self == "not_a_person")
+           "organ, the service's self-grant of membership_steward commits beside dmitry's competing role change: the journal records the "
+           "unauthorized stored role at the service's own sequence, so the row reds; unmutated (the row above) the service's signature "
+           "changes no membership",
+           _v25_m2_res_a[1] is None and _v25_m2_rec["transition"]["svc"]["data"]["roles"] == ["membership_steward"] and _v25_m2_rec["principal"] == "svc"
+           and _v25_m2_res_b[1] is None and _v25_svc_self == "not_a_person")
 
     # Two client PROCESSES race two role changes against one version; then a writer is SIGKILLed after
     # acceptance (after COMMIT, before the reply) and the retry of the same envelope replays.
@@ -288,7 +300,14 @@ veldo = sys.argv[1]
 CS = load("cs", veldo + "/control_store.py"); CM = load("cm", veldo + "/control_membership.py"); CM.attach(CS)
 conn = CS.open_store(sys.argv[2]); job = json.load(open(sys.argv[3]))
 try:
-    r = CM.admit(CS, conn, job["envelope"], job["command"], job["signature"], job["ids"], job["now"], enrollee_signature=job.get("enrollee_signature"))
+    import subprocess, pathlib
+    kd = pathlib.Path(job["keydir"])
+    def jsign(m):
+        f = kd / ("child-%d.msg" % __import__("os").getpid()); f.write_bytes(m); sig = pathlib.Path(str(f) + ".sig")
+        if sig.exists(): sig.unlink()
+        subprocess.run(["ssh-keygen", "-Y", "sign", "-f", str(kd / "authority"), "-n", job["namespace"], str(f)], check=True, capture_output=True, stdin=subprocess.DEVNULL, timeout=60)
+        return sig.read_text()
+    r = CM.admit(CS, conn, job["envelope"], job["command"], job["signature"], job["ids"], job["now"], enrollee_signature=job.get("enrollee_signature"), journal_signer=("veldo-authority", jsign))
     print("REPLIED " + json.dumps({"seq": r["seq"], "replayed": r["replayed"]}))
 except Exception as e:
     print("REFUSED " + getattr(e, "code", type(e).__name__))
@@ -296,7 +315,8 @@ except Exception as e:
 
     def _v25_job(world, signer, command, env=None):
         env = env or world.envelope(signer, command)
-        job = {"envelope": env, "command": command, "signature": _v25_sign(signer, world.ac.canonical_envelope_bytes(env)), "ids": _v25_IDS, "now": _v25_NOW}
+        job = {"envelope": env, "command": command, "signature": _v25_sign(signer, world.ac.canonical_envelope_bytes(env)), "ids": _v25_IDS, "now": _v25_NOW,
+               "keydir": str(_v25_kd), "namespace": AC25.SIGNATURE_NAMESPACE}
         f = world.dir / ("job-%s.json" % command["command_id"])
         f.write_text(_v25_json.dumps(job))
         return str(f)
@@ -351,22 +371,30 @@ except Exception as e:
     # ---------------------------------------------------------------------------------------------
     # AC3: delegated use, every predicate, and supersession.
     # ---------------------------------------------------------------------------------------------
-    _v25_dparams = {"id": "del-1", "principal": "asya", "channel": "telegram_chat", "assertion_kinds": ["decision_answer"], "authority_scope": ["security_authority"],
-                    "request_version": 3, "presentation_version": 2, "expires_at": _v25_NOW + 3600, "edge_key_id": "edge-telegram"}
+    # The race above left lena with whichever role set won; the steward resets her deterministically
+    # before the delegation rows depend on her roles.
+    _v25_lena_reset = _v25_w.admit("dmitry", _v25_w.cmd("reset-lena", "change_roles", {"principal": "lena", "roles": ["admission_authority"]}))[1]
+    _v25_dparams = {"id": "del-1", "principal": "asya", "channel": "telegram_chat", "assertion_kinds": ["decision_answer"], "authority_scope": ["PROJ-A"],
+                    "roles": ["security_authority"], "request_version": 3, "presentation_version": 2, "expires_at": _v25_NOW + 3600, "edge_key_id": "edge-telegram"}
     _v25_g_by_svc = _v25_w.admit("svc", _v25_w.cmd("g0", "grant_delegation", _v25_dparams))[1]
     _v25_g_by_lena = _v25_w.admit("lena", _v25_w.cmd("g0b", "grant_delegation", _v25_dparams))[1]
-    _v25_g_wide = _v25_w.admit("asya", _v25_w.cmd("g0c", "grant_delegation", dict(_v25_dparams, authority_scope=["project_owner"])))[1]
+    _v25_g_wide = _v25_w.admit("asya", _v25_w.cmd("g0c", "grant_delegation", dict(_v25_dparams, roles=["project_owner"])))[1]
+    _v25_g_lena_wide = _v25_w.admit("lena", _v25_w.cmd("g0d", "grant_delegation", dict(_v25_dparams, id="del-l", principal="lena", authority_scope=["PROJ-B"], roles=["admission_authority"])))[1]
+    _v25_g_lena_ok = _v25_w.admit("lena", _v25_w.cmd("g0e", "grant_delegation", dict(_v25_dparams, id="del-l", principal="lena", authority_scope=["PROJ-A"], roles=["admission_authority"])))[1]
     _v25_g = _v25_w.admit("asya", _v25_w.cmd("g1", "grant_delegation", _v25_dparams))
     _v25_st_g = _v25_w.state()
-    _v25_req = {"boundary": "decision_settlement", "roles": ["security_authority"], "quorum": 1, "scope": "security_authority", "subject_digest": "sha256:f"}
-    _v25_asr = {"channel": "telegram_chat", "assertion_kind": "decision_answer", "request_version": 3}
+    _v25_req = {"boundary": "decision_settlement", "roles": ["security_authority"], "quorum": 1, "scope": "PROJ-A", "subject_digest": "sha256:f"}
+    _v25_asr = {"channel": "telegram_chat", "assertion_kind": "decision_answer", "request_version": 3, "presentation_version": 2, "principal": "asya", "edge_key_id": "edge-telegram"}
     _v25_use = {"principal": "asya", "delegation_id": "del-1", "delegation_version": _v25_st_g["delegation_version"]}
     _v25_intact = CM25.delegated_use_problems(_v25_st_g, _v25_use, _v25_asr, _v25_req, _v25_NOW)
     _v25_pred = {
         "channel": CM25.delegated_use_problems(_v25_st_g, _v25_use, dict(_v25_asr, channel="jira"), _v25_req, _v25_NOW),
         "assertion_kind": CM25.delegated_use_problems(_v25_st_g, _v25_use, dict(_v25_asr, assertion_kind="acknowledgement"), _v25_req, _v25_NOW),
         "request_version": CM25.delegated_use_problems(_v25_st_g, _v25_use, dict(_v25_asr, request_version=4), _v25_req, _v25_NOW),
-        "scope": CM25.delegated_use_problems(_v25_st_g, _v25_use, _v25_asr, dict(_v25_req, scope="project_owner", roles=["project_owner"]), _v25_NOW),
+        "scope": CM25.delegated_use_problems(_v25_st_g, _v25_use, _v25_asr, dict(_v25_req, scope="PROJ-B"), _v25_NOW),
+        "presentation_version": CM25.delegated_use_problems(_v25_st_g, _v25_use, dict(_v25_asr, presentation_version=99), _v25_req, _v25_NOW),
+        "assertion_principal": CM25.delegated_use_problems(_v25_st_g, _v25_use, dict(_v25_asr, principal="mallory"), _v25_req, _v25_NOW),
+        "edge_key": CM25.delegated_use_problems(_v25_st_g, _v25_use, dict(_v25_asr, edge_key_id="edge-jira"), _v25_req, _v25_NOW),
         "expiry": CM25.delegated_use_problems(_v25_st_g, _v25_use, _v25_asr, _v25_req, _v25_NOW + 4000),
         "principal": CM25.delegated_use_problems(_v25_st_g, dict(_v25_use, principal="svc"), _v25_asr, _v25_req, _v25_NOW),
         "role": CM25.delegated_use_problems(_v25_st_g, _v25_use, _v25_asr, dict(_v25_req, roles=["admission_authority"], scope="admission_authority"), _v25_NOW),
@@ -375,11 +403,15 @@ except Exception as e:
         "version": CM25.delegated_use_problems(_v25_st_g, dict(_v25_use, delegation_version=_v25_st_g["delegation_version"] - 1), _v25_asr, _v25_req, _v25_NOW),
     }
     expect("VELDO-0025 AC3 membership/delegation-predicates: a delegation is granted only by the delegating person or the steward (a service "
-           "and another person are refused) and only within the person's roles; with asya's committed delegation the intact use has no "
-           "problems, and invalidating each single predicate (channel, assertion kind, request version, scope, expiry, principal, role, "
-           "quorum, actor kind at a boundary that admits no person, delegation version) refuses by name (failures: %s)"
+           "and another person are refused), within the person's roles and within the person's SCOPE (lena, scoped to PROJ-A, cannot "
+           "delegate PROJ-B but can delegate PROJ-A; the review's finding 6: a global member delegating a project is accepted); with asya's "
+           "committed delegation the intact use has no problems, and invalidating each single predicate (channel, assertion kind, request "
+           "version, scope, presentation version, assertion principal, edge key, expiry, principal, role, quorum, actor kind at a boundary "
+           "that admits no person, delegation version) refuses by name (failures: %s)"
            % [k for k, v in _v25_pred.items() if not v],
-           _v25_g_by_svc == "not_a_person" and _v25_g_by_lena == "delegation_refused" and _v25_g_wide == "delegation_refused" and _v25_g[1] is None
+           _v25_lena_reset is None and _v25_w.members()["lena"] == ["admission_authority"]
+           and _v25_g_by_svc == "not_a_person" and _v25_g_by_lena == "delegation_refused" and _v25_g_wide == "delegation_refused" and _v25_g[1] is None
+           and _v25_g_lena_wide == "delegation_refused" and _v25_g_lena_ok is None
            and _v25_intact == [] and all(v for v in _v25_pred.values())
            and _v25_pred["version"][0].startswith("stale_delegation") and _v25_pred["quorum"][0].endswith("quorum_not_met:1<2")
            and any("principal_type_not_admitted" in p for p in _v25_pred["actor_kind"]) and any("not permitted" in p for p in _v25_pred["assertion_kind"]))
@@ -422,14 +454,99 @@ except Exception as e:
     _v25_m3.admit("asya", _v25_m3.cmd("s1", "supersede_delegation", dict(_v25_dparams, id="del-2", supersedes="del-1", request_version=4)))
     _v25_m3_live = _v25_m3.state()
     _v25_m3_live_unsuperseded = dict(_v25_m3_live, delegations=[dict(d, superseded_by=None) if d["id"] == "del-1" else d for d in _v25_m3_live["delegations"]])
-    _v25_m3_stale = _v25_m3_mem.delegated_use_problems(_v25_m3_live_unsuperseded, _v25_use, _v25_asr, _v25_req, _v25_NOW)
-    _v25_ref_stale = CM25.delegated_use_problems(_v25_m3_live_unsuperseded, _v25_use, _v25_asr, _v25_req, _v25_NOW)
+    _v25_m3_use = dict(_v25_use, delegation_version=_v25_m3_cached["delegation_version"])  # the edge's cached (pre-supersession) version
+    _v25_m3_stale = _v25_m3_mem.delegated_use_problems(_v25_m3_live_unsuperseded, _v25_m3_use, _v25_asr, _v25_req, _v25_NOW)
+    _v25_ref_stale = CM25.delegated_use_problems(_v25_m3_live_unsuperseded, _v25_m3_use, _v25_asr, _v25_req, _v25_NOW)
     expect("VELDO-0025 AC3 membership/stale-delegation DRIVEN (the declared falsifier): with the delegation-version check removed in a copy of "
            "the membership organ, a signed use of del-1 at the pre-supersession version against a state whose version has moved (the "
            "record itself still cached as current) is accepted, so the row reds; unmutated the same use refuses as stale_delegation by "
            "version, before any record field is consulted",
            _v25_m3_live["delegation_version"] == _v25_m3_cached["delegation_version"] + 1 and _v25_m3_stale == []
            and len(_v25_ref_stale) == 1 and _v25_ref_stale[0].startswith("stale_delegation: envelope delegation_version"))
+    # ---------------------------------------------------------------------------------------------
+    # The seven findings of the Codex review (review-20260918-055239), each pinned.
+    # ---------------------------------------------------------------------------------------------
+    _v25_f = _v25_World("findings")
+    _v25_f.bootstrap()
+    _v25_f.enroll("e-asya", "asya", "person", ["security_authority"], group="ops", scope="*")
+    _v25_f.enroll("e-lena", "lena", "person", ["membership_steward", "admission_authority"], group="proj", scope=["PROJ-A"])
+    _v25_f.enroll("e-svc", "svc", "service", [], scope=["PROJ-A"])
+    # (1) a steward scoped to PROJ-A may not widen its own scope, nor act outside it; the owner may
+    _v25_f1_self = _v25_f.admit("lena", _v25_f.cmd("f1a", "change_roles", {"principal": "lena", "roles": ["membership_steward", "admission_authority"], "scope": "*"}))[1]
+    _v25_f1_other = _v25_f.admit("lena", _v25_f.cmd("f1b", "change_roles", {"principal": "svc", "roles": [], "scope": "*"}))[1]
+    _v25_f1_asya = _v25_f.admit("lena", _v25_f.cmd("f1c", "change_roles", {"principal": "asya", "roles": []}))[1]
+    _v25_f1_enroll = _v25_f.admit("lena", _v25_f.cmd("f1d", "enroll_principal", {"principal": "mallory", "principal_type": "person", "roles": [], "public_key": _v25_pub["mallory"], "independence_group": "x", "scope": ["PROJ-B"]}), enrollee="mallory")[1]
+    _v25_f1_inside = _v25_f.admit("lena", _v25_f.cmd("f1e", "change_roles", {"principal": "svc", "roles": ["operations_authority"]}))[1]
+    _v25_f1_owner = _v25_f.admit("dmitry", _v25_f.cmd("f1f", "change_roles", {"principal": "lena", "roles": ["membership_steward", "admission_authority"], "scope": ["PROJ-A", "PROJ-B"]}))[1]
+    expect("VELDO-0025 AC2 membership/scope-authority (review 1): a steward scoped to PROJ-A cannot change its own scope to '*' (self-grant), "
+           "cannot set another principal's scope to '*' or change a globally scoped person or enroll into PROJ-B (scope_refused), CAN "
+           "change a PROJ-A principal's roles, and the '*'-scoped owner can widen lena's scope; lena's scope stays what the owner set",
+           _v25_f1_self == "self_grant_refused" and _v25_f1_other == "scope_refused" and _v25_f1_asya == "scope_refused" and _v25_f1_enroll == "scope_refused"
+           and _v25_f1_inside is None and _v25_f1_owner is None
+           and next(m for m in _v25_f.state()["membership"] if m["principal"] == "lena")["scope"] == ["PROJ-A", "PROJ-B"]
+           and CM25.scope_covers("*", ["X"]) and not CM25.scope_covers(["X"], "*") and CM25.scope_covers(["X", "Y"], ["X"]) and not CM25.scope_covers(["X"], ["Y"]))
+    # (2) re-enrollment after revocation revokes the old key: the old private key opens nothing
+    _v25_f2_rev = _v25_f.admit("dmitry", _v25_f.cmd("f2a", "revoke_membership", {"principal": "asya", "revoked_at": _v25_NOW - 10}))[1]
+    _v25_f.keyfile["asya"] = "asya2"  # asya's NEW key from here on; her old private key is still the "asya" file
+    _v25_f2_re = _v25_f.admit("dmitry", _v25_f.cmd("f2b", "enroll_principal", {"principal": "asya", "principal_type": "person", "roles": ["security_authority"], "public_key": _v25_pub["asya2"], "independence_group": "ops", "scope": "*"}), enrollee="asya")
+    _v25_f2_keys = [(k["key_id"], k.get("revoked_at")) for k in _v25_f.state()["keyring"] if k["principal"] == "asya"]
+    _v25_f2_cmd = _v25_f.cmd("f2c", "grant_delegation", dict(_v25_dparams, id="del-f2", authority_scope=["*"]))
+    _v25_f2_env = _v25_f.envelope("asya", _v25_f2_cmd)
+    _v25_f2_old = _v25_f.admit("asya", _v25_f2_cmd, env=_v25_f2_env, signature=_v25_sign("asya", AC25.canonical_envelope_bytes(_v25_f2_env)))[1]
+    _v25_f2_new = _v25_f.admit("asya", _v25_f2_cmd)[1]
+    expect("VELDO-0025 AC2 membership/re-enrollment-keys (review 1): after asya's membership is revoked and she is re-enrolled with a new "
+           "key, her old key entity is revoked at the re-enrollment time and only the new one is active; a delegation grant signed with "
+           "her OLD private key is refused (signature_invalid against the active key) while the same grant signed with the new key commits",
+           _v25_f2_rev is None and _v25_f2_re[1] is None and len(_v25_f2_keys) == 2 and sorted(v is None for _k, v in _v25_f2_keys) == [False, True]
+           and _v25_f2_old == "signature_invalid" and _v25_f2_new is None)
+    # (3) the caller's expected versions are not consulted: versions come from the checked snapshot
+    _v25_f3_cmd = _v25_f.cmd("f3a", "change_roles", {"principal": "svc", "roles": ["operations_authority", "priority_authority"]})
+    _v25_f3_cmd["expected_versions"] = {k: v + 1 for k, v in _v25_f3_cmd["expected_versions"].items()}  # a prediction of the NEXT version
+    _v25_f3_res = _v25_f.admit("lena", _v25_f3_cmd)
+    _v25_f3_rec = next(r for r in CS25.export_journal(_v25_f.conn) if r["command_id"] == "f3a")
+    _v25_f3_snapshot = {k: v - 1 for k, v in _v25_f3_cmd["expected_versions"].items()}
+    _v25_f3_stale = _v25_f.cmd("f3b", "change_roles", {"principal": "svc", "roles": []})
+    _v25_f3_env = _v25_f.envelope("lena", _v25_f3_stale)
+    _v25_f3_sig = _v25_sign("lena", AC25.canonical_envelope_bytes(_v25_f3_env))
+    _v25_f.admit("dmitry", _v25_f.cmd("f3c", "change_roles", {"principal": "svc", "roles": ["operations_authority"]}))  # a change commits between lena's check and her commit
+    _v25_f3_late = _v25_f.admit("lena", _v25_f3_stale, env=_v25_f3_env, signature=_v25_f3_sig)[1]
+    expect("VELDO-0025 AC2 membership/snapshot-versions (review 1): a command carrying predicted next versions commits with the versions of the "
+           "checked snapshot (the journal's before-versions are the snapshot's, not the caller's), and a command whose envelope was signed "
+           "against a membership version that another change has since moved is refused as envelope_refused: the unsigned expected "
+           "versions cannot carry a change past a concurrent revocation or role change",
+           _v25_f3_res[1] is None and _v25_f3_rec["before_versions"] == _v25_f3_snapshot and _v25_f3_late == "envelope_refused")
+    # (4) journal records are signed by the AUTHORITY over their own bytes: replay with real verification rebuilds the authority
+    CR25 = _v25_load("v25_replay", ROOT / ".veldo" / "control_replay.py")
+    _v25_f4_hist = CS25.export_journal(_v25_f.conn)
+    _v25_f4_rb = CR25.replay(_v25_f4_hist, _v25_journal_verify)
+    _v25_f4_cmp = CR25.compare_with_live(_v25_f4_rb, CS25.materialized_state(_v25_f.conn))
+    _v25_f4_bad = _v25_try(lambda: CR25.replay([dict(_v25_f4_hist[0], signature=_v25_f4_hist[1]["signature"])] + _v25_f4_hist[1:], _v25_journal_verify)) if False else None
+    _v25_f4_no_signer = None
+    try:
+        _v25_f.mem.admit(_v25_f.store, _v25_f.conn, _v25_f.envelope("dmitry", _v25_f.cmd("f4", "change_roles", {"principal": "svc", "roles": []})), _v25_f.cmd("f4", "change_roles", {"principal": "svc", "roles": []}), "sig", _v25_IDS, _v25_NOW)
+    except Exception as e:
+        _v25_f4_no_signer = getattr(e, "code", type(e).__name__)
+    expect("VELDO-0025 AC1 membership/journal-signature (review 1): every committed membership record is signed by the authority's journal "
+           "signer over the record's own bytes, so replay with REAL ssh-keygen verification against the authority's key rebuilds the "
+           "whole history (bootstrap at seq 1 included) to the live state's digest; admit() without a journal signer commits nothing "
+           "(journal_signer_required)",
+           _v25_f4_rb["records"] == len(_v25_f4_hist) >= 10 and _v25_f4_cmp["matches"] is True and all(r["signer"] == "veldo-authority" for r in _v25_f4_hist)
+           and _v25_f4_no_signer == "journal_signer_required")
+    # (5) (6) are pinned in the delegation-predicates row above (presentation_version, assertion_principal, edge_key; lena's PROJ-A/PROJ-B)
+    # (7) the executed command id is the signed id
+    _v25_f7_cmd = _v25_f.cmd("f7-signed", "change_roles", {"principal": "svc", "roles": []})
+    _v25_f7_env = _v25_f.envelope("dmitry", _v25_f7_cmd)
+    _v25_f7_sig = _v25_sign("dmitry", AC25.canonical_envelope_bytes(_v25_f7_env))
+    _v25_f7_sub = _v25_f.admit("dmitry", dict(_v25_f7_cmd, command_id="f7-attacker"), env=_v25_f7_env, signature=_v25_f7_sig)[1]
+    _v25_f7_rows = _v25_f.conn.execute("SELECT command_id FROM commands WHERE command_id LIKE 'f7-%'").fetchall()
+    _v25_f7_ok = _v25_f.admit("dmitry", _v25_f7_cmd, env=_v25_f7_env, signature=_v25_f7_sig)
+    _v25_f7_retry = _v25_f.admit("dmitry", _v25_f7_cmd, env=_v25_f7_env, signature=_v25_f7_sig)
+    expect("VELDO-0025 AC1 membership/command-id-binding (review 1): a command whose id differs from the signed envelope's is refused as "
+           "envelope_refused before anything is written (no row under the attacker's id, the nonce unconsumed), the original signed "
+           "command then commits, and its retry replays the committed result",
+           _v25_f7_sub == "envelope_refused" and _v25_f7_rows == [] and _v25_f7_ok[1] is None and _v25_f7_ok[0]["replayed"] is False
+           and _v25_f7_retry[1] is None and _v25_f7_retry[0]["replayed"] is True and _v25_f7_retry[0]["seq"] == _v25_f7_ok[0]["seq"])
+    _v25_f.conn.close()
     for _wd in (_v25_w, _v25_m1, _v25_m2, _v25_m3):
         _wd.conn.close()
 

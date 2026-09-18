@@ -44,7 +44,26 @@ ADMIN_OPERATIONS = MEMBERSHIP_OPERATIONS + DELEGATION_OPERATIONS
 STEWARD_ROLE = "membership_steward"
 BOOTSTRAP_ROLES = frozenset({"project_owner", "membership_steward"})
 REFUSALS = ("envelope_refused", "signature_invalid", "policy_refused", "bootstrap_refused", "key_possession_unproven",
-            "self_grant_refused", "not_a_person", "stale_delegation", "delegation_refused", "store_refused")
+            "self_grant_refused", "not_a_person", "stale_delegation", "delegation_refused", "store_refused", "scope_refused",
+            "journal_signer_required")
+
+
+def _scope_set(scope):
+    """None for the universal scope "*", else the set of named scopes; a malformed scope is empty."""
+    if scope == "*":
+        return None
+    return set(scope) if isinstance(scope, (list, tuple)) else set()
+
+
+def scope_covers(outer, inner):
+    """Whether authority scoped `outer` may act on `inner`: "*" covers everything, only "*" covers
+    "*", and a named scope covers a subset of itself."""
+    o, i = _scope_set(outer), _scope_set(inner)
+    if o is None:
+        return True
+    if i is None:
+        return False
+    return i <= o
 
 
 def _organ(name):
@@ -89,7 +108,7 @@ def authority_state(store, conn):
         elif e["kind"] == "verification_key":
             keyring.append(dict(e["data"], key_id=eid))
     versions = st.get(VERSIONS_ENTITY, {}).get("data", {})
-    return {"membership": membership, "delegations": delegations, "keyring": keyring,
+    return {"membership": membership, "delegations": delegations, "keyring": keyring, "entities": st,
             "membership_version": int(versions.get("membership_version", 0)), "delegation_version": int(versions.get("delegation_version", 0)),
             "versions_entity_version": st.get(VERSIONS_ENTITY, {}).get("version", 0)}
 
@@ -124,12 +143,19 @@ def _t_enroll(params, before, StoreRefused):
     if params["principal"] in before and before[params["principal"]]["kind"] == "membership" and before[params["principal"]]["data"].get("revoked_at") is None:
         raise StoreRefused("transition_refused", "principal %s is already enrolled; use change_roles" % params["principal"])
     key_id = key_entity_id(params["principal"], params["public_key"])
-    return {params["principal"]: {"kind": "membership", "data": {"principal_type": params["principal_type"], "roles": sorted(params["roles"]),
-                                                                  "independence_group": params["independence_group"], "scope": params["scope"],
-                                                                  "revoked_at": None, "expires_at": params.get("expires_at"), "enrolled_by": params.get("enrolled_by")}},
-            key_id: {"kind": "verification_key", "data": {"principal": params["principal"], "public_key": " ".join(params["public_key"].split()[:2]),
-                                                          "effective_at": params.get("effective_at", 0), "retired_at": None, "revoked_at": None}},
-            VERSIONS_ENTITY: _bump(before, "membership_version")}
+    at = params.get("enrolled_at", 0)
+    changes = {params["principal"]: {"kind": "membership", "data": {"principal_type": params["principal_type"], "roles": sorted(params["roles"]),
+                                                                     "independence_group": params["independence_group"], "scope": params["scope"],
+                                                                     "revoked_at": None, "expires_at": params.get("expires_at"), "enrolled_by": params.get("enrolled_by")}},
+               key_id: {"kind": "verification_key", "data": {"principal": params["principal"], "public_key": " ".join(params["public_key"].split()[:2]),
+                                                             "effective_at": at, "retired_at": None, "revoked_at": None}},
+               VERSIONS_ENTITY: _bump(before, "membership_version")}
+    # A re-enrollment (after revocation) REVOKES every prior key of the principal: only the key
+    # being enrolled verifies from now on; the old private key opens nothing.
+    for eid, e in before.items():
+        if e["kind"] == "verification_key" and e["data"].get("principal") == params["principal"] and eid != key_id and e["data"].get("revoked_at") is None:
+            changes[eid] = {"kind": "verification_key", "data": dict(e["data"], revoked_at=at)}
+    return changes
 
 
 def _t_change_roles(params, before, StoreRefused):
@@ -190,16 +216,19 @@ def attach(store):
     return sorted(ADMIN_OPERATIONS)
 
 
-def touched_entities(command):
-    """The entity ids an administrative command writes, so a caller can build expected_versions
-    from the committed state: the target principal or delegation(s), any new key, and the versions
-    entity."""
+def touched_entities(command, entities=None):
+    """The entity ids an administrative command writes, so expected versions can be taken from ONE
+    committed snapshot: the target principal or delegation(s), the key being enrolled, every prior
+    key of a re-enrolled principal (they are revoked), and the versions entity."""
     p, op = command.get("parameters") or {}, command.get("operation")
     ids = [VERSIONS_ENTITY]
     if op in MEMBERSHIP_OPERATIONS:
         ids.append(p.get("principal"))
     if op == "enroll_principal" and _is_str(p.get("principal")) and _is_str(p.get("public_key")):
         ids.append(key_entity_id(p["principal"], p["public_key"]))
+        for eid, e in (entities or {}).items():
+            if e["kind"] == "verification_key" and e["data"].get("principal") == p["principal"] and eid not in ids:
+                ids.append(eid)
     if op in DELEGATION_OPERATIONS:
         ids.append(p.get("id"))
     if op == "supersede_delegation":
@@ -225,13 +254,26 @@ def policy_problems(state, signer, command, now):
         return problems
     p, op = command.get("parameters") or {}, command.get("operation")
     roles = set(entry.get("roles") or [])
+    signer_scope = entry.get("scope")
     if op in MEMBERSHIP_OPERATIONS:
         if STEWARD_ROLE not in roles:
             problems.append("policy_refused: %s requires the signer to hold %s" % (op, STEWARD_ROLE))
         if op == "enroll_principal" and p.get("principal") == signer:
             problems.append("self_grant_refused: a principal does not enroll itself")
-        if op == "change_roles" and p.get("principal") == signer and set(p.get("roles") or []) - roles:
-            problems.append("self_grant_refused: a principal does not grant itself roles it does not hold")
+        if op == "change_roles" and p.get("principal") == signer:
+            if set(p.get("roles") or []) - roles:
+                problems.append("self_grant_refused: a principal does not grant itself roles it does not hold")
+            if "scope" in p and p["scope"] != signer_scope:
+                problems.append("self_grant_refused: a principal does not change its own scope (%r to %r)" % (signer_scope, p["scope"]))
+        # A steward acts within its OWN scope: the scope it enrolls or sets, and the scope of the
+        # principal it changes or revokes, must be covered by the steward's scope (R37).
+        target = _member(state, p.get("principal"))
+        if op == "enroll_principal" and not scope_covers(signer_scope, p.get("scope")):
+            problems.append("scope_refused: steward scope %r does not cover the enrollment scope %r" % (signer_scope, p.get("scope")))
+        if op in ("change_roles", "revoke_membership") and target is not None and not scope_covers(signer_scope, target.get("scope")):
+            problems.append("scope_refused: steward scope %r does not cover %r's scope %r" % (signer_scope, p.get("principal"), target.get("scope")))
+        if op == "change_roles" and "scope" in p and not scope_covers(signer_scope, p["scope"]):
+            problems.append("scope_refused: steward scope %r does not cover the new scope %r" % (signer_scope, p["scope"]))
         target_type = p.get("principal_type") if op == "enroll_principal" else (_member(state, p.get("principal")) or {}).get("principal_type")
         if target_type in ("service", "policy", "agent_run") and STEWARD_ROLE in set(p.get("roles") or []):
             problems.append("policy_refused: a non-person principal never holds %s" % STEWARD_ROLE)
@@ -243,8 +285,14 @@ def policy_problems(state, signer, command, now):
                 problems.append("delegation_refused: delegations are granted for enrolled persons; %r is not one" % target)
             elif signer != target and STEWARD_ROLE not in roles:
                 problems.append("delegation_refused: only the delegating person or a %s grants a delegation for %r" % (STEWARD_ROLE, target))
-            elif set(p.get("authority_scope") or []) - set(delegating.get("roles") or []) - {"*"}:
-                problems.append("delegation_refused: authority_scope %s exceeds %r's roles %s" % (sorted(p.get("authority_scope") or []), target, sorted(delegating.get("roles") or [])))
+            else:
+                # authority_scope is SCOPE (the projects the delegation covers), judged against the
+                # delegating person's scope; roles, if the delegation names any, against their roles.
+                asc = p.get("authority_scope") or []
+                if not scope_covers(delegating.get("scope"), "*" if "*" in asc else asc):
+                    problems.append("delegation_refused: authority_scope %s exceeds %r's scope %r" % (sorted(asc), target, delegating.get("scope")))
+                if set(p.get("roles") or []) - set(delegating.get("roles") or []):
+                    problems.append("delegation_refused: delegation roles %s exceed %r's roles %s" % (sorted(p.get("roles") or []), target, sorted(delegating.get("roles") or [])))
             if op == "supersede_delegation":
                 old = next((d for d in state["delegations"] if d["id"] == p.get("supersedes")), None)
                 if old is not None and old.get("principal") != target:
@@ -282,7 +330,7 @@ def _verify(envelope, signature, public_key, verifier):
     return ok is True, detail
 
 
-def admit(store, conn, envelope, command, signature, authority_ids, now, verifier=None, enrollee_signature=None, committed_at=None):
+def admit(store, conn, envelope, command, signature, authority_ids, now, verifier=None, enrollee_signature=None, committed_at=None, journal_signer=None):
     """Admit and commit one administrative command, or refuse by name with nothing written.
     Order: the operation must be administrative; the store's committed state is read; the
     bootstrap or the ordinary envelope check (digest RECOMPUTED from `command`, this authority's
@@ -290,20 +338,33 @@ def admit(store, conn, envelope, command, signature, authority_ids, now, verifie
     membership and active key) runs; the signature is verified against the signer's active key
     (bootstrap: the key being enrolled); the enrollee's key-possession co-signature is verified
     for an enrollment; the policy is applied; then the store commits the transition with the
-    envelope's nonce and the expected versions the caller declared."""
+    envelope's nonce and expected versions taken from the SAME committed snapshot the checks ran
+    against (never the caller's, which are not signed), so a change committed between the check
+    and the commit loses by version. `journal_signer` is (identity, sign) for the AUTHORITY's
+    signature over the journal record's own bytes; without it nothing is committed."""
     if command.get("operation") not in ADMIN_OPERATIONS:
         raise MembershipRefused("policy_refused", "%r is not an administrative operation" % command.get("operation"))
+    if not isinstance(envelope, dict) or envelope.get("command_id") != command.get("command_id") or not _is_str(command.get("command_id")):
+        raise MembershipRefused("envelope_refused", "the envelope names command %r, the command to execute is %r: the executed id is the signed id"
+                                % ((envelope or {}).get("command_id"), command.get("command_id")))
+    if not (isinstance(journal_signer, (tuple, list)) and len(journal_signer) == 2 and _is_str(journal_signer[0]) and callable(journal_signer[1])):
+        raise MembershipRefused("journal_signer_required", "the authority's journal signer (identity, sign) is required: a journal record is signed over its own bytes")
     prior = conn.execute("SELECT command_digest, result FROM commands WHERE command_id=?", (command.get("command_id"),)).fetchone()
     if prior is not None:
         # A retry after a lost reply (R22): the same signed command, already committed, is answered
         # from the store; the same id with other content is a conflict. The envelope was verified
         # when it committed; its versions are stale now BECAUSE it committed.
-        stored = dict(command, nonce=envelope.get("nonce"), principal=envelope.get("principal"))
-        stored["parameters"] = dict(command.get("parameters") or {}, **({"enrolled_by": envelope.get("principal")} if command["operation"] == "enroll_principal" else {}),
-                                    **({"granted_by": envelope.get("principal")} if command["operation"] in ("grant_delegation", "supersede_delegation") else {}))
-        if prior[0] != store.command_digest(stored):
-            raise MembershipRefused("store_refused", "command_content_conflict: %s was committed with other content" % command.get("command_id"))
-        return dict(json.loads(prior[1]), replayed=True)
+        # The committed command is in the journal: its digest covers the expected versions and the
+        # attribution the authority added, which a retry cannot reproduce, so identity is judged on
+        # the SIGNED content: operation, target and parameters as the envelope's digest covers them.
+        rec = next((r for r in store.export_journal(conn) if r["command_id"] == command.get("command_id")), None)
+        if rec is None or rec.get("principal") != envelope.get("principal") or rec.get("nonce") != envelope.get("nonce"):
+            raise MembershipRefused("store_refused", "command_content_conflict: %s was committed by another principal or nonce" % command.get("command_id"))
+        signed_digest = AC.canonical_command_digest(command)
+        if envelope.get("command_digest") != signed_digest:
+            raise MembershipRefused("envelope_refused", "the retry's envelope digest is not the digest of the command to execute")
+        committed_view = json.loads(conn.execute("SELECT result FROM commands WHERE command_id=?", (command["command_id"],)).fetchone()[0])
+        return dict(committed_view, replayed=True)
     state = authority_state(store, conn)
     authority = dict(authority_ids, membership_version=state["membership_version"], delegation_version=state["delegation_version"])
     seen = set(store.materialized_state(conn)["nonces"])
@@ -339,20 +400,34 @@ def admit(store, conn, envelope, command, signature, authority_ids, now, verifie
             code = problems[0].split(":", 1)[0]
             raise MembershipRefused(code if code in REFUSALS else "policy_refused", "; ".join(x.split(": ", 1)[1] if x.split(":", 1)[0] in REFUSALS else x for x in problems))
     stored = dict(command, nonce=envelope["nonce"], principal=envelope["principal"])
-    stored["parameters"] = dict(p, **({"enrolled_by": envelope["principal"]} if command["operation"] == "enroll_principal" else {}),
-                                **({"granted_by": envelope["principal"]} if command["operation"] in ("grant_delegation", "supersede_delegation") else {}))
+    stored["parameters"] = _stored_parameters(command, envelope, now)
+    # Expected versions from the snapshot the checks ran against: a revocation, role change or
+    # supersession committed since then moves a version and the store refuses this commit.
+    stored["expected_versions"] = {eid: state["entities"].get(eid, {}).get("version", 0) for eid in touched_entities(stored, state["entities"])}
     try:
-        return store.execute(conn, stored, envelope["principal"], lambda m: signature, authority.get("authority_generation", 1), committed_at=committed_at)
+        result = store.execute(conn, stored, journal_signer[0], journal_signer[1], authority.get("authority_generation", 1), committed_at=committed_at)
     except store.StoreRefused as e:
         raise MembershipRefused("store_refused", "%s: %s" % (e.code, e.detail))
+    return result
+
+
+def _stored_parameters(command, envelope, now):
+    """The parameters as committed: the caller's plus the attribution the authority adds (who
+    enrolled or granted, and when an enrollment took effect, which also revokes prior keys)."""
+    p = dict(command.get("parameters") or {})
+    if command.get("operation") == "enroll_principal":
+        p.update(enrolled_by=envelope.get("principal"), enrolled_at=now)
+    if command.get("operation") in ("grant_delegation", "supersede_delegation"):
+        p["granted_by"] = envelope.get("principal")
+    return p
 
 
 def expected_versions_for(store, conn, command):
-    """The expected_versions a caller declares for an administrative command from the committed
-    state: every touched entity at its current version (0 when absent). A stale reading loses the
-    race by name in the store."""
+    """The expected_versions of an administrative command from the committed state, for a caller
+    that wants to see them: admit() derives its own from the snapshot it checked and ignores the
+    caller's (they are not a signed field)."""
     ents = store.materialized_state(conn)["entities"]
-    return {eid: ents.get(eid, {}).get("version", 0) for eid in touched_entities(command)}
+    return {eid: ents.get(eid, {}).get("version", 0) for eid in touched_entities(command, ents)}
 
 
 # ---------------------------------------------------------------------------------------------
@@ -385,6 +460,12 @@ def delegated_use_problems(state, envelope, assertion, requirement, now):
         problems.append("delegation_refused: assertion kind %r is not permitted by the delegation" % assertion.get("assertion_kind"))
     if assertion.get("request_version") != d.get("request_version"):
         problems.append("delegation_refused: request version %r is not the delegation's %r" % (assertion.get("request_version"), d.get("request_version")))
+    if assertion.get("presentation_version") != d.get("presentation_version"):
+        problems.append("delegation_refused: presentation version %r is not the delegation's %r: an assertion about another presentation" % (assertion.get("presentation_version"), d.get("presentation_version")))
+    if assertion.get("principal", envelope.get("principal")) != envelope.get("principal"):
+        problems.append("delegation_refused: the assertion names principal %r, the envelope %r" % (assertion.get("principal"), envelope.get("principal")))
+    if assertion.get("edge_key_id", d.get("edge_key_id")) != d.get("edge_key_id"):
+        problems.append("delegation_refused: edge key %r is not the delegation's %r" % (assertion.get("edge_key_id"), d.get("edge_key_id")))
     scope = requirement.get("scope")
     if scope is not None and "*" not in (d.get("authority_scope") or []) and scope not in (d.get("authority_scope") or []):
         problems.append("delegation_refused: the delegation's authority_scope %s does not cover %r" % (d.get("authority_scope"), scope))
