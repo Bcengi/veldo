@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0026-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0026",
+    "commit": "ad8b1f5cdf42a0ee596fdf26dcbff09b6ff6c9f5",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0026 (risk critical, human_approval required, no protected paths) over Telegram on 2026-09-18T14:27:27Z (message 27996, 'Approve 0026'), answering an ask (message 27984) that described the item: authorization rechecked at all nine boundaries against the current store with every input the decision read, refusing by name what moved; revocation and effect acceptance in one serialized order with in-flight effects tracked until evidence; refusals recorded durably or the boundary stands down; revoked outputs kept as evidence only. Nothing undoes an external effect. The ask named the Codex findings and said the approval covers the item with those fixes in; the commit bound here is the fixes commit. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-18T14:27:27Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
