@@ -1,0 +1,93 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0026",
+  "commit": "8a7c049129b09c6d443b606870fe0aff1143d288",
+  "taken_at": "2026-09-18T14:02:23Z",
+  "fragment": "scripts/suites/39_veldo_0026_revocation.py",
+  "fragment_sha256": "4e5e627211d64bba2f12b73e2df162af30996516f822777e70c3971152f417a0",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/control_membership.py or its sibling .veldo/authority_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
+  "rows_total": 10,
+  "rows_passed": 10,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0026 AC1 revocation/indirect-dependency DRIVEN (the declared falsifier): with the indirect prerequisite left out of the snapshot in a copy of the organ, another process withdraws the prerequisite and the claim boundary still allows the effect (the dependency itself did not move), so the row reds; unmutated (the row above) the withdrawal refuses as dependency_withdrawn at every boundary",
+    "VELDO-0026 AC2 revocation/in-flight-closure DRIVEN (the declared falsifier): with revocation reported as effective closure in a copy of the organ, a revoked principal whose effect was accepted first and is still in flight reads as closed, so the row reds; unmutated (the row above) closure waits for the stop evidence",
+    "VELDO-0026 AC3 revocation/denial-storage-failure DRIVEN (the declared falsifier): with an unrecorded refusal treated as allowance in a copy of the organ, the revoked actor is dispatched after the denial write fails, so the row reds; unmutated (the row above) the boundary stands down and permits nothing"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "revocation/indirect-dependency DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "revocation/in-flight-closure DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "revocation/denial-storage-failure DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 3,
+      "passed": 3,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 3,
+      "passed": 3,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0026 AC1 revocation/boundaries: the guard registry is exactly the nine R39 boundaries of the authority contract; with an intact snapshot over policy, scope, decision, a dependency and its indirect prerequisite (read into the snapshot without being named) and the actor's membership, every boundary that admits a person allows asya and every boundary that admits a service allows the service; a boundary that admits no person refuses asya as not_authorized and records the denial",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC1 revocation/moved-inputs: for each record kind (policy, scope, decision, dependency, the dependency's indirect prerequisite, membership) a SEPARATE PROCESS commits a change after the snapshot and before acceptance, and every person-admitting boundary then refuses with the named reason (stale_read naming the record, dependency_withdrawn for the withdrawn prerequisite) and records a denial; each child process replied (children: {'policy': 'REPLIED {\"seq\": 9}', 'scope': 'REPLIED {\"seq\": 9}', 'decision': 'REPLIED {\"seq\": 9}', 'dependency': 'REPLIED {\"seq\": 9}', 'indirect prerequisite': 'REPLIED {\"seq\": 9}', 'membership': 'REPLIED in-process (the stewar'})",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC1 revocation/indirect-dependency DRIVEN (the declared falsifier): with the indirect prerequisite left out of the snapshot in a copy of the organ, another process withdraws the prerequisite and the claim boundary still allows the effect (the dependency itself did not move), so the row reds; unmutated (the row above) the withdrawal refuses as dependency_withdrawn at every boundary",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC2 revocation/serialized-order: a receiver PROCESS accepting an effect before the revocation leaves it accepted; the revocation then marks it in flight with a stop obligation and closure is NOT effective; a receiver process accepting after the revocation is refused inside the transaction as revoked and no new effect exists; two processes racing acceptance and revocation end in exactly one of the two consistent orders (effect refused and closure effective, or effect in flight with its stop obligation and closure not effective), a revocation that lost the version race being retried by the authority rather than dropped (outcomes: ['REFUSED effect_refused stale_version: entity authority:revocations is at version 1, the command expecte', 'REPLIED {\"seq\": 4}'])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC2 revocation/in-flight-closure: the in-flight effect stays in flight until the receiver's evidence reconciles it (an outcome outside stopped, completed, failed is refused); after the stop evidence the effect is stopped, the stop obligation is satisfied and closure is effective",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC2 revocation/in-flight-closure DRIVEN (the declared falsifier): with revocation reported as effective closure in a copy of the organ, a revoked principal whose effect was accepted first and is still in flight reads as closed, so the row reds; unmutated (the row above) closure waits for the stop evidence",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC2 revocation/stop-obligations-survive-kill: the revoking process is SIGKILLed after its commit and before it notified any receiver; the reopened store lists both stop obligations as requested with their receivers, and a replay of the signed journal with real verification against the authority's key rebuilds the same obligations and the in-flight effects",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC3 revocation/outputs-are-evidence: outputs submitted before and after the revocation are both retained with their digests (the later one marked submitted after revocation), and neither satisfies the obligation at result acceptance: both refuse as output_is_evidence_only plus reauthorization_required; a reauthorization naming a stale revocation version is refused; a fresh one bound to the current version makes the output acceptable; a further revocation moves the ledger and the reauthorization is stale again by version",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC3 revocation/denial-storage-failure: with the denial journal's commit faulted (a disk write failure) the refusal of a revoked actor at dispatch acceptance is returned as a STAND DOWN (allowed False, stand_down True, denial_not_recorded named) and dispatch is not permitted; the same through a read-only handle stands down too; after restart with the store writable the refusal is recorded as a denial and dispatch is still not permitted; no denial exists from the faulted attempts",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC3 revocation/denial-storage-failure DRIVEN (the declared falsifier): with an unrecorded refusal treated as allowance in a copy of the organ, the revoked actor is dispatched after the denial write fails, so the row reds; unmutated (the row above) the boundary stands down and permits nothing",
+      "passed": true
+    }
+  ]
+}
