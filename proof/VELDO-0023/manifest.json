@@ -1,0 +1,78 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0023",
+  "commit": "dbbc489c9b10593d3a6b9d9f9f9b8949e331432a",
+  "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
+  "produced_at": "2026-09-18T02:08:56Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0023/driven.json",
+          "detail": "5 rows (1 driven): a real SQLite store opens with foreign keys, FULL synchronous and WAL read back after opening and exactly the six domain tables; nfs, nfs4, cifs, sshfs, 9p and an undeterminable filesystem each refuse to open for writes by name; one upsert commits the entity, the journal record (genesis predecessor, generation, command digest, before and after versions, transition digest, artifact digests, versioned encoding), the commands row and the nonce together, with the record digest recomputing and the signature covering it; eight malformed or refused commands write nothing; a real writer PROCESS is SIGKILLed before COMMIT, inside COMMIT and after COMMIT for every one of the five registered commands (fifteen kills, the registry compared to the matrix) and the reopened store is the complete old or complete new state each time. DRIVEN: journal insertion moved outside the domain transaction in a module copy, with the writer killed after the entity commit, leaves entity rows without their journal record (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0023/gate-implementation.log",
+          "detail": "Complete canonical gate at dbbc489c9b10593d3a6b9d9f9f9b8949e331432a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5339 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0023/driven.json",
+          "detail": "4 rows (1 driven): the identical command again returns the original committed result (same seq, record digest and result digest) marked replayed and the store is byte-identical; the same id with a changed parameter, principal, nonce or artifact digest is a content conflict, a stale expected version and a consumed nonce refuse, each writing nothing; two REAL client processes racing the same command both reply with one row of each kind, racing two payloads under one id exactly one commits and the other is a content conflict, racing two ids on one expected version exactly one commits and the other is stale, with one journal record per committed command. DRIVEN: the command-digest equality check disabled in a module copy hands both raced payloads a reply (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0023/gate-implementation.log",
+          "detail": "Complete canonical gate at dbbc489c9b10593d3a6b9d9f9f9b8949e331432a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5339 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0023/driven.json",
+          "detail": "4 rows (1 driven): seven records of every transition kind replay in an ISOLATED process (python -I, the replay module alone, sqlite3 never imported) to the live store's state digest with the head digest equal to the last record's; the replay module imports only hashlib and json and the store only the standard library; eleven corruptions of the history (changed field, reorder, duplicate, removal, swapped signature, changed identity, generation or versions, unknown encoding, a record re-signed with a wrong predecessor digest, a record re-signed after a field change) each refuse reconstruction by name; a history signed through the installed ssh-keygen with an Ed25519 key replays when verified against the signer's key and refuses against another key or after tampering. DRIVEN: previous-record digest verification skipped in a module copy rebuilds state from a re-chained history whose fourth record names a wrong predecessor (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0023/gate-implementation.log",
+          "detail": "Complete canonical gate at dbbc489c9b10593d3a6b9d9f9f9b8949e331432a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5339 passed, 0 failed, every required check passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "dbbc489c9b10593d3a6b9d9f9f9b8949e331432a",
+      "ref": "proof/VELDO-0023/gate-implementation.log",
+      "detail": "GATE GREEN; selftest 5339 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0023/driven.json",
+    "proof/VELDO-0023/drive.py",
+    "proof/VELDO-0023/gate-implementation.log",
+    "proof/VELDO-0023/log-redactions.json",
+    "proof/VELDO-0023/README.md"
+  ],
+  "rollback": "Stop command acceptance, preserve the database and journal and retain a compatible reader; never roll back by deleting committed commands. The organs themselves revert through the ordinary reviewed path (a revert commit of the two modules, their capability, scaffold and architecture registrations and suite 36, never a force). No authority process runs them yet; the checkpoint adapter and replication are W9 and later.",
+  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here."
+}

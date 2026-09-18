@@ -1,0 +1,105 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0023",
+  "commit": "dbbc489c9b10593d3a6b9d9f9f9b8949e331432a",
+  "taken_at": "2026-09-18T02:08:56Z",
+  "fragment": "scripts/suites/36_veldo_0023_journal.py",
+  "fragment_sha256": "99b2927f7326e84065417ba79d467b940be12b3e531acaf0c8074b63c8ab2bb8",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/control_store.py or .veldo/control_replay.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
+  "rows_total": 13,
+  "rows_passed": 13,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0023 AC1 journal/atomic-kill DRIVEN (the declared falsifier): with journal insertion moved outside the domain transaction in a copy and the writer SIGKILLed after the entity commit, the reopened store holds entity rows without their journal record, so the row reds; unmutated, that kill point never fires and every command commits whole",
+    "VELDO-0023 AC2 journal/content-reuse DRIVEN (the declared falsifier): with the command-digest equality check disabled in a copy, two payloads raced under one id BOTH reply (the altered retry is handed the other's result), so the row reds; unmutated, the altered retry is a content conflict, in process and in the race",
+    "VELDO-0023 AC3 journal/replay-chain DRIVEN (the declared falsifier): with previous-record digest verification skipped in a copy, a history whose fourth record was re-signed with a wrong predecessor digest (sequence continuity retained, later records re-chained onto it) rebuilds state, so the row reds; unmutated it refuses as chain_broken at seq 4"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "journal/atomic-kill DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "journal/content-reuse DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "journal/replay-chain DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 5,
+      "passed": 5,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 4,
+      "passed": 4,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0023 AC1 journal/qualified-store: a fresh store opens with foreign keys ON, synchronous FULL and WAL, all read back after opening; the six domain tables exist and are exactly DOMAIN_TABLES; a network filesystem (nfs, cifs, sshfs) and an undeterminable one each refuse to open for writes by name, while the local temp dir is qualified",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC1 journal/one-transaction: one upsert commits the entity at version 1, one journal record (seq 1, prev the genesis digest, generation 1, the command digest, before {E1: 0} and after {E1: 1}, the transition with the entity's digest, the artifact digests, the versioned encoding), the commands row with the result digest, and the consumed nonce, and the record digest recomputes from the record's fields; the result names seq, record digest and after-versions",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC1 journal/named-refusals: a malformed command (missing field, blank id, unregistered operation, a bool version), a transition refused by its own check, a signer that returns nothing, and a write without a declared expected version each refuse by name and write nothing (the snapshot is unchanged)",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC1 journal/atomic-kill: for EVERY registered command (the registry's five, compared to the matrix) and every kill point (before COMMIT, inside COMMIT via the progress handler, after COMMIT before the reply) the writer process is SIGKILLed (fifteen kills) and the reopened store holds either the complete old or the complete new rows for that command across entities, journal, commands, nonces, reservations and effects; the after-commit kills are the committed ones (inconsistencies: [])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC1 journal/atomic-kill DRIVEN (the declared falsifier): with journal insertion moved outside the domain transaction in a copy and the writer SIGKILLed after the entity commit, the reopened store holds entity rows without their journal record, so the row reds; unmutated, that kill point never fires and every command commits whole",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC2 journal/identical-retry: the same command again returns the ORIGINAL committed result (same seq, record digest, result digest) marked replayed, and writes nothing; the store is byte-identical to before the retry",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC2 journal/content-reuse: the same command id with one changed parameter, a changed principal, a changed nonce or a changed artifact digest is refused as a content conflict; a new id against a stale expected version is refused as stale; a new id reusing a consumed nonce is refused; each writes nothing",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC2 journal/one-winner: two client processes racing the SAME command both reply (one commits, one replays) and one row of each kind exists; racing two payloads under one id, exactly one commits and the other is a content conflict; racing two ids with the same expected version, exactly one commits and the other is stale, E1 ends at version 4 with one journal record per committed command (outcomes: ['REPLIED', 'REPLIED'] ['REPLIED', 'command_content_conflict'] ['stale_version', 'REPLIED'])",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC2 journal/content-reuse DRIVEN (the declared falsifier): with the command-digest equality check disabled in a copy, two payloads raced under one id BOTH reply (the altered retry is handed the other's result), so the row reds; unmutated, the altered retry is a content conflict, in process and in the race",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC3 journal/replay-determinism: seven records of every transition kind (upsert, update, reserve, receipt, retire, effect) replay in an ISOLATED process (python -I, the replay module alone, sqlite3 never imported) into a state whose digest equals the live store's, with the head digest equal to the last record's; the replay module imports only hashlib and json and the store imports only the standard library (no execution runtime); in-process replay agrees and compare_with_live matches",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC3 journal/replay-chain: every corruption of the signed history refuses reconstruction by name: a changed field (digest mismatch), reorder, duplicate and removal (sequence broken), a swapped signature, a changed identity, generation or versions (digest mismatch), an unknown encoding, and a record RE-SIGNED with a wrong predecessor digest or re-signed after a field change (chain broken: the next record's prev_digest no longer matches) (got: {})",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC3 journal/replay-chain DRIVEN (the declared falsifier): with previous-record digest verification skipped in a copy, a history whose fourth record was re-signed with a wrong predecessor digest (sequence continuity retained, later records re-chained onto it) rebuilds state, so the row reds; unmutated it refuses as chain_broken at seq 4",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0023 AC3 journal/real-signature: a history signed through the installed ssh-keygen (Ed25519, namespace veldo-journal) replays to the live state's digest when verified through ssh-keygen against the signer's key; the same history verified against another key, and a record whose field and digest were changed but not re-signed, each refuse as signature_invalid",
+      "passed": true
+    }
+  ]
+}
