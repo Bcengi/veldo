@@ -191,7 +191,7 @@ def _project_event(ev):
 
 
 def status(root=None, runs_root=None, events_path=None, tail=DEFAULT_TAIL,
-           now_epoch=None):
+           now_epoch=None, control_db=None):
     """Assemble the Run Lens read model. Pure read: git queries, registry reads,
     and an events read only. runs_root and events_path are overridable for tests
     (and for a caller that keeps the run folder elsewhere)."""
@@ -221,7 +221,36 @@ def status(root=None, runs_root=None, events_path=None, tail=DEFAULT_TAIL,
         "events_tail": [_project_event(e) for e in tail_events],
         "recent_verdicts": verdicts,
         "tripwires": _tripwires(root),
+        "replication": _replication(root, now, db_path=control_db),
     }
+
+
+def _replication(root, now, db_path=None):
+    """The R23 replication surface (VELDO-0024): last durable (acknowledged) sequence, local
+    committed sequence, pending export count, oldest pending age and PAUSED_PUBLICATION, read
+    through a READ-ONLY store handle. Absent store: {"present": False}. A pending command is
+    reported as pending_publication with its original command identity, never as rejected."""
+    CS = _load("veldo_runstatus_control_store", ".veldo/control_store.py")
+    CP = _load("veldo_runstatus_control_replica", ".veldo/control_replica.py")
+    path = db_path or (os.environ.get("VELDO_CONTROL_DB") or None)
+    if path is None:
+        common = _git(["rev-parse", "--git-common-dir"], root)
+        if not common:
+            return {"present": False, "reason": "no git common dir"}
+        path = str(Path(common if os.path.isabs(common) else str(root / common)).resolve() / CS.DB_RELATIVE)
+    if not os.path.exists(path):
+        return {"present": False, "reason": "no control store at %s" % path}
+    try:
+        conn = CS.open_store(path, mode="r")
+    except CS.StoreRefused as e:
+        return {"present": False, "reason": "%s: %s" % (e.code, e.detail)}
+    try:
+        st = CP.replication_status(conn, CS, now)
+    finally:
+        conn.close()
+    st["present"] = True
+    st["condition"] = "PAUSED_PUBLICATION" if st["paused_publication"] else ("PENDING_PUBLICATION" if st["pending_exports"] else "CAUGHT_UP")
+    return st
 
 
 def _tripwires(root):
@@ -250,6 +279,18 @@ def render_text(model):
         repo.get("branch", "unknown"), head[:12], len(model.get("runs", [])),
         model.get("at", "")))
 
+    rp = model.get("replication") or {}
+    if rp.get("present"):
+        oldest = rp.get("oldest_pending_age_seconds")
+        lines.append("replication: %s  durable_seq=%s committed_seq=%s pending=%s oldest_pending=%s" % (
+            rp.get("condition"), rp.get("last_durable_seq"), rp.get("local_committed_seq"), rp.get("pending_exports"),
+            "none" if oldest is None else "%ds" % int(oldest)))
+        if rp.get("paused_publication"):
+            lines.append("  PAUSED_PUBLICATION: %s" % rp.get("paused_reason"))
+        for pend in rp.get("pending") or []:
+            lines.append("  pending_publication seq=%s command=%s (committed locally; not rejected, not repeatable under a new identity)" % (pend.get("seq"), pend.get("command_id")))
+    else:
+        lines.append("replication: (no control store: %s)" % (rp.get("reason") or "absent"))
     lines.append("runs:")
     if not model.get("runs"):
         lines.append("  (none live)")

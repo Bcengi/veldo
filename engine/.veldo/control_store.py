@@ -33,6 +33,7 @@ import os
 import signal
 import sqlite3
 import subprocess
+import time
 
 SCHEMA = "veldo.control_store/v1"
 JOURNAL_ENCODING = "veldo.journal/v1"
@@ -44,7 +45,7 @@ UNSUPPORTED_FSTYPES = frozenset({"nfs", "nfs4", "cifs", "smb", "smb2", "smb3", "
                                  "ceph", "glusterfs", "davfs", "fuse.davfs2", "lustre", "gpfs", "beegfs"})
 
 # The domain tables Veldo owns (R21). Checkpoint tables are adapter-owned and never listed here.
-DOMAIN_TABLES = ("entities", "journal", "commands", "nonces", "reservations", "effects")
+DOMAIN_TABLES = ("entities", "journal", "commands", "nonces", "reservations", "effects", "publication", "publication_control")
 
 COMMAND_FIELDS = ("command_id", "principal", "operation", "parameters", "expected_versions", "artifact_digests", "nonce")
 JOURNAL_FIELDS = ("seq", "prev_digest", "authority_generation", "command_id", "command_digest", "principal", "signer",
@@ -67,6 +68,12 @@ _DDL = (
     "CREATE TABLE IF NOT EXISTS nonces (nonce TEXT PRIMARY KEY, command_id TEXT NOT NULL REFERENCES commands(command_id))",
     "CREATE TABLE IF NOT EXISTS reservations (id TEXT PRIMARY KEY, command_id TEXT NOT NULL REFERENCES commands(command_id), ceiling TEXT NOT NULL, delta REAL NOT NULL)",
     "CREATE TABLE IF NOT EXISTS effects (id TEXT PRIMARY KEY, command_id TEXT NOT NULL REFERENCES commands(command_id), kind TEXT NOT NULL, target TEXT NOT NULL, state TEXT NOT NULL)",
+    # The publication cursor (R21, R23): one row per committed journal sequence, created with the
+    # record inside the SAME transaction (committed_at), the export identity and digest recorded
+    # when the export is built, the acknowledgement (the remote's own answer) when it arrives.
+    "CREATE TABLE IF NOT EXISTS publication (seq INTEGER PRIMARY KEY REFERENCES journal(seq), command_id TEXT NOT NULL REFERENCES commands(command_id), "
+    "committed_at REAL NOT NULL, export_id TEXT, export_digest TEXT, remote_commit TEXT, remote TEXT, ref TEXT, acked_at REAL)",
+    "CREATE TABLE IF NOT EXISTS publication_control (id INTEGER PRIMARY KEY CHECK (id = 1), paused_reason TEXT, paused_at REAL)",
 )
 
 
@@ -266,6 +273,10 @@ def _kill_point(name):
         os.kill(os.getpid(), signal.SIGKILL)
 
 
+def _now():
+    return time.time()
+
+
 def _entities(conn, ids):
     out = {}
     for eid in ids:
@@ -290,7 +301,7 @@ def journal_signed_bytes(record):
     return canonical_bytes({k: record.get(k) for k in JOURNAL_SIGNED_FIELDS})
 
 
-def execute(conn, command, signer, sign, authority_generation, receipt_refs=()):
+def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), committed_at=None):
     """Run one registered command in ONE transaction. `sign(message_bytes) -> signature_text` is
     the caller's signer (OpenSSH in production; the store holds no key). Returns the committed
     result; an identical retry returns the ORIGINAL result with replayed=True and writes nothing;
@@ -368,6 +379,10 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=()):
         if command["operation"] == "record_effect":
             conn.execute("INSERT INTO effects (id, command_id, kind, target, state) VALUES (?,?,?,?,?)", (p["effect_id"], command["command_id"], p["kind"], p["target"], "obligated"))
         conn.execute("INSERT INTO nonces (nonce, command_id) VALUES (?,?)", (command["nonce"], command["command_id"]))
+        # The publication cursor row is born in the same transaction as the record it will publish:
+        # a committed sequence is visibly pending publication from the moment it exists (R23).
+        conn.execute("INSERT INTO publication (seq, command_id, committed_at) VALUES (?,?,?)",
+                     (record["seq"], command["command_id"], float(committed_at) if committed_at is not None else float(_now())))
         _kill_point("before_commit")
         if os.environ.get("VELDO_CONTROL_TEST_HARNESS") == "1" and os.environ.get("VELDO_CONTROL_KILL_AT") == "in_commit":
             conn.set_progress_handler(lambda: os.kill(os.getpid(), signal.SIGKILL), 1)
@@ -433,6 +448,88 @@ STATE_PARTS = ("entities", "reservations", "effects", "nonces")
 def state_digest(state):
     """One digest over every part of a materialized state, the comparison a replay is judged by."""
     return digest_of({part: state.get(part, {}) for part in STATE_PARTS})
+
+
+# ---------------------------------------------------------------------------------------------
+# The publication cursor (R23): store-owned writes outside the command path, never a command.
+# ---------------------------------------------------------------------------------------------
+
+def _pub_row(r):
+    return {"seq": r[0], "command_id": r[1], "committed_at": r[2], "export_id": r[3], "export_digest": r[4], "remote_commit": r[5],
+            "remote": r[6], "ref": r[7], "acked_at": r[8]}
+
+
+_PUB_COLS = "seq, command_id, committed_at, export_id, export_digest, remote_commit, remote, ref, acked_at"
+
+
+def pending_exports(conn):
+    """Committed sequences with no off-host acknowledgement, in order."""
+    return [_pub_row(r) for r in conn.execute("SELECT %s FROM publication WHERE acked_at IS NULL ORDER BY seq" % _PUB_COLS).fetchall()]
+
+
+def publication_row(conn, seq):
+    r = conn.execute("SELECT %s FROM publication WHERE seq=?" % _PUB_COLS, (seq,)).fetchone()
+    return _pub_row(r) if r else None
+
+
+def publication_row_for_command(conn, command_id):
+    r = conn.execute("SELECT %s FROM publication WHERE command_id=?" % _PUB_COLS, (command_id,)).fetchone()
+    return _pub_row(r) if r else None
+
+
+def record_export(conn, seq, export_id, export_digest):
+    """Bind the sequence to its ONE export identity and digest; a different identity for a sequence
+    that already has one is refused (a second export for one sequence never exists)."""
+    row = publication_row(conn, seq)
+    if row is None:
+        raise StoreRefused("incomplete_transaction", "seq %r has no publication row" % (seq,))
+    if row["export_id"] not in (None, export_id) or row["export_digest"] not in (None, export_digest):
+        raise StoreRefused("command_content_conflict", "seq %r is bound to export %s (%s); %s (%s) is a second identity" % (seq, row["export_id"], row["export_digest"], export_id, export_digest))
+    _write(conn, "UPDATE publication SET export_id=?, export_digest=? WHERE seq=?", (export_id, export_digest, seq))
+
+
+def acknowledge_export(conn, seq, remote_commit, remote, ref, acked_at):
+    """Persist the off-host acknowledgement: the remote's own answer that `ref` names `remote_commit`
+    holding this sequence's export. Idempotent for the same commit; a different commit for an
+    acknowledged sequence is refused."""
+    row = publication_row(conn, seq)
+    if row is None or row["export_id"] is None:
+        raise StoreRefused("incomplete_transaction", "seq %r has no export to acknowledge" % (seq,))
+    if row["remote_commit"] not in (None, remote_commit):
+        raise StoreRefused("command_content_conflict", "seq %r was acknowledged at %s; %s is a different replica commit" % (seq, row["remote_commit"], remote_commit))
+    if row["acked_at"] is None:
+        _write(conn, "UPDATE publication SET remote_commit=?, remote=?, ref=?, acked_at=? WHERE seq=?", (remote_commit, remote, ref, float(acked_at), seq))
+
+
+def pause_publication(conn, reason, at):
+    _write(conn, "INSERT INTO publication_control (id, paused_reason, paused_at) VALUES (1,?,?) ON CONFLICT(id) DO UPDATE SET paused_reason=excluded.paused_reason, paused_at=excluded.paused_at",
+           (reason, float(at)))
+
+
+def resume_publication(conn):
+    _write(conn, "UPDATE publication_control SET paused_reason=NULL, paused_at=NULL WHERE id=1", ())
+
+
+def publication_watermark(conn):
+    """{last_durable_seq, local_committed_seq, paused_reason, paused_at}: the R23 numbers."""
+    durable = conn.execute("SELECT MAX(seq) FROM publication WHERE acked_at IS NOT NULL").fetchone()[0]
+    local = conn.execute("SELECT MAX(seq) FROM journal").fetchone()[0]
+    ctl = conn.execute("SELECT paused_reason, paused_at FROM publication_control WHERE id=1").fetchone()
+    return {"last_durable_seq": durable or 0, "local_committed_seq": local or 0, "paused_reason": ctl[0] if ctl else None, "paused_at": ctl[1] if ctl else None}
+
+
+def _write(conn, sql, params):
+    """One store-owned write in its own transaction; a read-only handle refuses by name."""
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(sql, params)
+        conn.execute("COMMIT")
+    except sqlite3.OperationalError as e:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        if "readonly" in str(e).lower() or "read-only" in str(e).lower():
+            raise StoreRefused("read_only_handle", "this handle cannot write (%s)" % e)
+        raise
 
 
 def table_snapshot(conn):

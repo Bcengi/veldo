@@ -98,9 +98,9 @@ _v23_pragmas = (_v23_conn.execute("PRAGMA foreign_keys").fetchone()[0], _v23_con
                 _v23_conn.execute("PRAGMA journal_mode").fetchone()[0])
 _v23_tables = {r[0] for r in _v23_conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
 expect("VELDO-0023 AC1 journal/qualified-store: a fresh store opens with foreign keys ON, synchronous FULL and WAL, all read back "
-       "after opening; the six domain tables exist and are exactly DOMAIN_TABLES; a network filesystem (nfs, cifs, sshfs) and an "
+       "after opening; the eight domain tables (the six of the journal plus the two publication-cursor tables VELDO-0024 added) exist and are exactly DOMAIN_TABLES; a network filesystem (nfs, cifs, sshfs) and an "
        "undeterminable one each refuse to open for writes by name, while the local temp dir is qualified",
-       _v23_pragmas == (1, 2, "wal") and _v23_tables == set(CS23.DOMAIN_TABLES) and len(CS23.DOMAIN_TABLES) == 6
+       _v23_pragmas == (1, 2, "wal") and _v23_tables == set(CS23.DOMAIN_TABLES) and len(CS23.DOMAIN_TABLES) == 8
        and CS23.filesystem_problems(_v23_db) == []
        and all(any("network-mounted or unsupported" in p for p in CS23.filesystem_problems("/mnt/x/y", "srv:/v /mnt/x %s rw 0 0" % fs)) for fs in ("nfs", "nfs4", "cifs", "fuse.sshfs", "9p"))
        and any("cannot be determined" in p for p in CS23.filesystem_problems("/nowhere", ""))
@@ -352,7 +352,7 @@ expect("VELDO-0023 AC3 journal/replay-determinism: seven records of every transi
        "and the store imports only the standard library (no execution runtime); in-process replay agrees and compare_with_live matches",
        _v23_rp.returncode == 0 and _v23_rp_out.get("state_digest") == CS23.state_digest(_v23_live) and _v23_rp_out.get("records") == 7
        and _v23_rp_out.get("head") == _v23_hist[-1]["record_digest"] and _v23_rp_out.get("sqlite_loaded") is False
-       and _v23_replay_imports == ["hashlib", "json"] and set(_v23_store_imports) <= {"hashlib", "json", "os", "signal", "sqlite3", "subprocess"}
+       and _v23_replay_imports == ["hashlib", "json"] and set(_v23_store_imports) <= {"hashlib", "json", "os", "signal", "sqlite3", "subprocess", "time"}
        and CR23.compare_with_live(CR23.replay(_v23_hist, _v23_stub_verify), _v23_live)["matches"] is True
        and CR23.compare_with_live(CR23.replay(_v23_hist, _v23_stub_verify), dict(_v23_live, entities=dict(_v23_live["entities"], E9={"kind": "k", "version": 1, "digest": "d", "data": {}})))["matches"] is False)
 # THE REVIEW'S FOUR FINDINGS, each pinned (review-20260917-220917).

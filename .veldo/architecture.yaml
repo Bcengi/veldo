@@ -46,7 +46,7 @@ areas:
     title: Elastic parallel workers, claiming and dispatching and landing under a pacer
     # ADDED 2026-09-18 (VELDO-0023, PLAN-0019 W8): journal replay, the operational reader that
     # rebuilds state from signed history for recovery and reconciliation.
-    includes: [".veldo/fleet.py", ".veldo/fleet_env.py", ".veldo/claim.py", ".veldo/frontier.py", ".veldo/work.py", ".veldo/lander.py", ".veldo/governor.py", ".veldo/accounts.py", ".veldo/env_provision.py", ".veldo/supervisor.py", ".veldo/dispatch.py", ".veldo/control_replay*.py"]
+    includes: [".veldo/fleet.py", ".veldo/fleet_env.py", ".veldo/claim.py", ".veldo/frontier.py", ".veldo/work.py", ".veldo/lander.py", ".veldo/governor.py", ".veldo/accounts.py", ".veldo/env_provision.py", ".veldo/supervisor.py", ".veldo/dispatch.py", ".veldo/control_replay*.py", ".veldo/control_replica*.py"]
   - id: metrics
     title: Event-derived measures, the numbers the loop keeps about itself
     includes: [".veldo/events.py", ".veldo/metrics.py", ".veldo/dashboard.py", ".veldo/budget.py"]
