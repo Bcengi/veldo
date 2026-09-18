@@ -14,6 +14,7 @@ the effect executor that apply these predicates are Packages B and C; a Git obje
 asked about is looked up through a callable the caller supplies.
 """
 import math
+import posixpath
 
 SCHEMA = "veldo.completion_contract/v1"
 
@@ -197,8 +198,12 @@ def exposure_after(reservation, outcome):
     charge releases the whole allocation; a timeout, a cancellation or a delayed usage report
     releases NOTHING (outstanding exposure stays until reconciled)."""
     allocated = reservation.get("allocated")
-    if outcome.get("kind") == "reconciled_usage" and _is_num(outcome.get("charge")) and _is_num(allocated):
-        return dict(reservation, allocated=0, released=allocated - min(outcome["charge"], allocated), settled=outcome["charge"])
+    if outcome.get("kind") == "reconciled_usage":
+        charge = outcome.get("charge")
+        if not (_is_num(charge) and charge >= 0 and _is_num(allocated) and allocated >= 0):
+            return dict(reservation, released=0, note="a reconciled charge is a finite non-negative number (%r is not): nothing is released and "
+                                                     "nothing is manufactured; outstanding exposure is retained" % (charge,))
+        return dict(reservation, allocated=0, released=allocated - min(charge, allocated), settled=charge)
     if outcome.get("kind") == "proof_of_no_charge" and outcome.get("authoritative") is True:
         return dict(reservation, allocated=0, released=allocated, settled=0)
     return dict(reservation, released=0, note="outstanding exposure is retained until reconciled usage or authoritative proof of no charge (%r releases nothing)" % outcome.get("kind"))
@@ -209,8 +214,17 @@ def exposure_after(reservation, outcome):
 # ---------------------------------------------------------------------------------------------
 
 PROOF_OBLIGATIONS = ("implementation_commit_exists", "accepted_spec_revision", "complete_criterion_set", "evidence_per_criterion",
-                     "producer_identity", "checks_observed", "reviewer_identity", "reviewer_independent", "objections_disposed",
-                     "candidate_tree", "verifier_installed_outside_candidate", "protected_path_approval", "post_run_tree_equal")
+                     "producer_identity", "checks_observed", "checks_passed", "reviewer_identity", "reviewer_independent", "review_bound",
+                     "objections_disposed", "candidate_tree", "verifier_installed_outside_candidate", "protected_path_approval", "post_run_tree_equal")
+
+
+def _inside(path, root):
+    """Whether `path` resolves inside `root` by lexical normalization (no filesystem): both must
+    be absolute POSIX paths; `..` segments are collapsed first, so /opt/../cand/x is inside /cand."""
+    if not (_is_str(path) and _is_str(root) and path.startswith("/") and root.startswith("/")):
+        return None
+    np, nr = posixpath.normpath(path), posixpath.normpath(root)
+    return np == nr or np.startswith(nr.rstrip("/") + "/")
 
 
 def completion_problems(bundle, commit_exists):
@@ -219,9 +233,12 @@ def completion_problems(bundle, commit_exists):
     specification revision; an empty criterion universe or one that differs from the spec's own set
     (a proof over no criteria proves nothing); a criterion without evidence digests or a duplicate
     mapping; no producer identity; a check without a command, exit code and observation reference
-    (a fabricated default check); no reviewer, a reviewer who is the producer, or an undisposed
-    blocking objection; no candidate tree digest; a verifier that lives inside the candidate tree;
-    a touched protected path without a valid approval; a candidate tree that differs after the run."""
+    (a fabricated default check); a check that did not exit 0 (a red gate completes nothing); no
+    reviewer, a reviewer who is the producer, a review not bound to the exact implementation
+    commit, candidate tree and proof digest it reviewed, or an undisposed blocking objection; no
+    candidate tree digest or no candidate root; a verifier that lives inside the candidate tree
+    after path normalization, or whose path is not absolute; a touched protected path without a
+    valid approval; no post-run tree digest, or one that differs from the candidate's."""
     problems = []
     b = bundle or {}
     if not _is_str(b.get("implementation_commit")) or not commit_exists(b.get("implementation_commit")):
@@ -247,25 +264,40 @@ def completion_problems(bundle, commit_exists):
     if not checks:
         problems.append("checks_observed: the proof carries no checks")
     for ch in checks:
-        if not isinstance(ch, dict) or not _is_str(ch.get("command")) or not isinstance(ch.get("exit_code"), int) or not _is_str(ch.get("observation_ref")):
+        if not isinstance(ch, dict) or not _is_str(ch.get("command")) or not isinstance(ch.get("exit_code"), int) or isinstance(ch.get("exit_code"), bool) \
+                or not _is_str(ch.get("observation_ref")):
             problems.append("checks_observed: check %r has no command, exit code or observation reference (a fabricated default check)" % ((ch or {}).get("name"),))
+        elif ch["exit_code"] != 0:
+            problems.append("checks_passed: check %r exited %r; a check that did not pass completes nothing" % (ch.get("name"), ch["exit_code"]))
+    cand = b.get("candidate") or {}
     review = b.get("review") or {}
     reviewer = review.get("reviewer")
     if not _is_str(reviewer):
         problems.append("reviewer_identity: no independent review is bound")
     elif _is_str(producer) and reviewer.strip().lower() == producer.strip().lower():
         problems.append("reviewer_independent: the reviewer %r is the producer" % reviewer)
+    proof_digest = (b.get("proof") or {}).get("digest")
+    if not _is_str(proof_digest):
+        problems.append("review_bound: the proof carries no digest for a review to bind to")
+    elif review.get("implementation_commit") != b.get("implementation_commit") or review.get("source_digest") != cand.get("tree_digest") \
+            or review.get("proof_digest") != proof_digest:
+        problems.append("review_bound: the review names commit %r, source %r and proof %r, not this bundle's %r, %r and %r; a review of other bytes reviews nothing here"
+                        % (review.get("implementation_commit"), review.get("source_digest"), review.get("proof_digest"),
+                           b.get("implementation_commit"), cand.get("tree_digest"), proof_digest))
     if any(isinstance(f, dict) and f.get("blocking") is True and not _is_str(f.get("disposition")) for f in review.get("findings") or []):
         problems.append("objections_disposed: a blocking finding has no explicit disposition")
-    cand = b.get("candidate") or {}
-    if not _is_str(cand.get("tree_digest")):
-        problems.append("candidate_tree: no exact candidate tree digest")
+    if not _is_str(cand.get("tree_digest")) or not _is_str(cand.get("root")):
+        problems.append("candidate_tree: no exact candidate tree digest or no candidate root")
     verifier = b.get("verifier") or {}
-    if not _is_str(verifier.get("digest")) or not _is_str(verifier.get("path")) or (_is_str(cand.get("root")) and verifier["path"].startswith(cand["root"].rstrip("/") + "/")):
-        problems.append("verifier_installed_outside_candidate: the verifier is unnamed or lives inside the candidate tree (R50)")
+    inside = _inside(verifier.get("path"), cand.get("root"))
+    if not _is_str(verifier.get("digest")) or inside is None or inside:
+        problems.append("verifier_installed_outside_candidate: the verifier is unnamed, not an absolute path, has no candidate root to be outside of, "
+                        "or resolves inside the candidate tree (R50)")
     if b.get("protected_paths_touched") and not (isinstance(b.get("approval"), dict) and b["approval"].get("valid") is True):
         problems.append("protected_path_approval: a protected path was touched without a valid recorded approval")
-    if cand.get("tree_digest_after_run") is not None and cand.get("tree_digest_after_run") != cand.get("tree_digest"):
+    if not _is_str(cand.get("tree_digest_after_run")):
+        problems.append("post_run_tree_equal: no post-run tree digest was observed; without it nothing establishes that verification left the candidate unchanged")
+    elif cand["tree_digest_after_run"] != cand.get("tree_digest"):
         problems.append("post_run_tree_equal: the candidate tree changed during verification")
     return problems
 
@@ -299,7 +331,7 @@ PUBLICATION_TRANSITIONS = (
     ("published", "acknowledgement_lost", (), "awaiting_authority"),
     ("confirmed", "receipt_replicated", ("landing_receipt_committed", "receipt_replicated_off_host", "spec_shipped_event"), "completed"),
     ("awaiting_authority", "recovery_effect_committed", ("trusted_target_evidence",), "published"),
-    ("awaiting_authority", "recovery_not_dispatched", ("receiver_evidence_of_no_start",), "authorized"),
+    ("awaiting_authority", "recovery_not_dispatched", ("receiver_evidence_of_no_start",), "verified"),
 )
 TERMINAL_PUBLICATION = ("completed", "halted")
 
@@ -308,7 +340,11 @@ def publication_step(state, event, evidence):
     """(next_state, reason): one step of the publication chain (R49, R76). An undeclared (state,
     event) pair refuses; a declared step advances only when every predicate is literally True in
     `evidence`. A lost acknowledgement moves to awaiting_authority, never to a success state, and
-    only trusted target evidence or receiver evidence moves it on from there."""
+    only trusted target evidence or receiver evidence moves it on from there: evidence that the
+    effect committed moves to published (confirmation still needs the remote), evidence of no
+    start returns to VERIFIED, so every authority, claim, admission, scope, decision, dependency,
+    approval and tip recheck runs again before another publish (revocation during the recovery
+    interval is seen, never assumed away)."""
     if state not in PUBLICATION_STATES:
         return None, "unknown publication state %r" % (state,)
     for s, e, preds, nxt in PUBLICATION_TRANSITIONS:

@@ -153,14 +153,23 @@ expect("VELDO-0021 AC2 eligibility/exposure: reconciled usage releases the unspe
        and CC21.exposure_after({"allocated": 10.0}, {"kind": "proof_of_no_charge", "authoritative": True})["released"] == 10.0
        and all(CC21.exposure_after({"allocated": 10.0}, {"kind": k})["released"] == 0 for k in ("timeout", "cancelled", "delayed_usage_report"))
        and CC21.exposure_after({"allocated": 10.0}, {"kind": "proof_of_no_charge", "authoritative": False})["released"] == 0)
+expect("VELDO-0021 AC2 eligibility/charge-sign (review 1): a reconciled charge of -100 against an allocation of 10 releases nothing (never "
+       "110: reconciliation cannot manufacture capacity); NaN, infinity and a non-numeric charge release nothing; a charge above the "
+       "allocation releases nothing and settles the charge; a charge of zero releases the whole allocation",
+       CC21.exposure_after({"allocated": 10}, {"kind": "reconciled_usage", "charge": -100})["released"] == 0
+       and "manufactured" in CC21.exposure_after({"allocated": 10}, {"kind": "reconciled_usage", "charge": -100})["note"]
+       and all(CC21.exposure_after({"allocated": 10.0}, {"kind": "reconciled_usage", "charge": c})["released"] == 0 for c in (float("nan"), float("inf"), "4", None))
+       and CC21.exposure_after({"allocated": 10.0}, {"kind": "reconciled_usage", "charge": 12.0})["released"] == 0
+       and CC21.exposure_after({"allocated": 10.0}, {"kind": "reconciled_usage", "charge": 0})["released"] == 10.0)
 
 # ---------------------------------------------------------------------------------------------
 # AC3: engineering completion obligations.
 # ---------------------------------------------------------------------------------------------
 _v21_bundle = {"implementation_commit": "abc123", "spec": {"id": "VELDO-0021", "revision": 1, "status": "ready", "criteria": ["AC1", "AC2"]},
-               "proof": {"producer": "ava", "criteria": [{"id": "AC1", "evidence": [{"digest": "sha256:e1"}]}, {"id": "AC2", "evidence": [{"digest": "sha256:e2"}]}],
+               "proof": {"producer": "ava", "digest": "sha256:proof", "criteria": [{"id": "AC1", "evidence": [{"digest": "sha256:e1"}]}, {"id": "AC2", "evidence": [{"digest": "sha256:e2"}]}],
                          "checks": [{"name": "gate", "command": "bash scripts/verify.sh", "exit_code": 0, "observation_ref": "obs-1"}]},
-               "review": {"reviewer": "codex", "findings": [{"blocking": True, "disposition": "fixed"}]},
+               "review": {"reviewer": "codex", "implementation_commit": "abc123", "source_digest": "sha256:tree", "proof_digest": "sha256:proof",
+                          "findings": [{"blocking": True, "disposition": "fixed"}]},
                "candidate": {"root": "/cand", "tree_digest": "sha256:tree", "tree_digest_after_run": "sha256:tree"},
                "verifier": {"path": "/opt/veldo/scripts/verify.sh", "digest": "sha256:ver"}, "protected_paths_touched": [], "approval": None}
 _v21_exists = lambda c: c in {"abc123"}
@@ -171,7 +180,9 @@ _v21_obl_cases = {
     "evidence_per_criterion": dict(_v21_bundle, proof=dict(_v21_bundle["proof"], criteria=[{"id": "AC1", "evidence": []}, {"id": "AC2", "evidence": [{"digest": "sha256:e2"}]}])),
     "producer_identity": dict(_v21_bundle, proof={k: v for k, v in _v21_bundle["proof"].items() if k != "producer"}),
     "checks_observed": dict(_v21_bundle, proof=dict(_v21_bundle["proof"], checks=[{"name": "gate", "status": "passed"}])),
+    "checks_passed": dict(_v21_bundle, proof=dict(_v21_bundle["proof"], checks=[dict(_v21_bundle["proof"]["checks"][0], exit_code=1)])),
     "reviewer_identity": dict(_v21_bundle, review={}),
+    "review_bound": dict(_v21_bundle, review={"reviewer": "codex"}),
     "reviewer_independent": dict(_v21_bundle, review=dict(_v21_bundle["review"], reviewer="Ava")),
     "objections_disposed": dict(_v21_bundle, review=dict(_v21_bundle["review"], findings=[{"blocking": True}])),
     "candidate_tree": dict(_v21_bundle, candidate={"root": "/cand"}),
@@ -180,16 +191,47 @@ _v21_obl_cases = {
     "post_run_tree_equal": dict(_v21_bundle, candidate=dict(_v21_bundle["candidate"], tree_digest_after_run="sha256:mutated")),
 }
 _v21_obl_failures = [n for n, fx in _v21_obl_cases.items() if not any(p.startswith(n + ":") for p in CC21.completion_problems(fx, _v21_exists))]
-expect("VELDO-0021 AC3 completion/obligations: a complete bundle is complete; each of the thirteen obligations has one fixture refused "
-       "by its own name (nonexistent commit, draft spec, empty criteria, missing evidence, no producer, a fabricated check, no "
-       "reviewer, builder as reviewer, undisposed objection, no candidate tree, verifier inside the candidate, unapproved protected "
-       "path, mutated tree) (failures: %s)" % _v21_obl_failures,
+expect("VELDO-0021 AC3 completion/obligations: a complete bundle is complete; each of the fifteen obligations has one fixture refused "
+       "by its own name (nonexistent commit, draft spec, empty criteria, missing evidence, no producer, a fabricated check, a red "
+       "check, no reviewer, builder as reviewer, an unbound review, undisposed objection, no candidate tree, verifier inside the "
+       "candidate, unapproved protected path, mutated tree) (failures: %s)" % _v21_obl_failures,
        CC21.completion_problems(_v21_bundle, _v21_exists) == [] and set(_v21_obl_cases) == set(CC21.PROOF_OBLIGATIONS) and _v21_obl_failures == []
        and any("mapped twice" in p for p in CC21.completion_problems(dict(_v21_bundle, proof=dict(_v21_bundle["proof"], criteria=_v21_bundle["proof"]["criteria"] + [_v21_bundle["proof"]["criteria"][0]])), _v21_exists)))
 expect("VELDO-0021 AC3 completion/empty-proof: an empty criterion universe, in the proof or in the specification, proves nothing and is "
        "refused by name",
        any("complete_criterion_set" in p for p in CC21.completion_problems(dict(_v21_bundle, proof=dict(_v21_bundle["proof"], criteria=[])), _v21_exists))
        and any("complete_criterion_set" in p for p in CC21.completion_problems(dict(_v21_bundle, spec=dict(_v21_bundle["spec"], criteria=[]), proof=dict(_v21_bundle["proof"], criteria=[])), _v21_exists)))
+_v21_cp = lambda **kw: CC21.completion_problems(dict(_v21_bundle, **kw), _v21_exists)
+expect("VELDO-0021 AC3 completion/review-binding (review 1): a review is bound to the exact implementation commit, candidate tree and proof "
+       "digest it reviewed: a review carrying only a reviewer name, one naming another commit, another source tree or another proof "
+       "digest, and a proof without a digest each refuse as review_bound; the bound review passes",
+       any(p.startswith("review_bound:") for p in _v21_cp(review={"reviewer": "codex"}))
+       and any(p.startswith("review_bound:") for p in _v21_cp(review=dict(_v21_bundle["review"], implementation_commit="def456")))
+       and any(p.startswith("review_bound:") for p in _v21_cp(review=dict(_v21_bundle["review"], source_digest="sha256:other")))
+       and any(p.startswith("review_bound:") for p in _v21_cp(review=dict(_v21_bundle["review"], proof_digest="sha256:other")))
+       and any("carries no digest" in p for p in _v21_cp(proof={k: v for k, v in _v21_bundle["proof"].items() if k != "digest"}))
+       and _v21_cp() == [])
+expect("VELDO-0021 AC3 completion/checks-passed (review 1): a canonical gate that exited 1 is refused as checks_passed (a red gate completes "
+       "nothing); exit code True is not an exit code; a second red check beside a green one refuses",
+       any(p.startswith("checks_passed:") and "exited 1" in p for p in _v21_cp(proof=dict(_v21_bundle["proof"], checks=[dict(_v21_bundle["proof"]["checks"][0], exit_code=1)])))
+       and any(p.startswith("checks_observed:") for p in _v21_cp(proof=dict(_v21_bundle["proof"], checks=[dict(_v21_bundle["proof"]["checks"][0], exit_code=True)])))
+       and any(p.startswith("checks_passed:") for p in _v21_cp(proof=dict(_v21_bundle["proof"], checks=_v21_bundle["proof"]["checks"] + [dict(_v21_bundle["proof"]["checks"][0], name="lint", exit_code=2)]))))
+expect("VELDO-0021 AC3 completion/post-run-tree (review 1): a candidate without a post-run tree digest, or with None, is refused as "
+       "post_run_tree_equal (the observation is required, not optional); a differing digest refuses; an equal one passes",
+       any("no post-run tree digest was observed" in p for p in _v21_cp(candidate={k: v for k, v in _v21_bundle["candidate"].items() if k != "tree_digest_after_run"}))
+       and any("no post-run tree digest was observed" in p for p in _v21_cp(candidate=dict(_v21_bundle["candidate"], tree_digest_after_run=None)))
+       and any("changed during verification" in p for p in _v21_cp(candidate=dict(_v21_bundle["candidate"], tree_digest_after_run="sha256:x")))
+       and not any(p.startswith("post_run_tree_equal") for p in _v21_cp()))
+expect("VELDO-0021 AC3 completion/verifier-containment (review 1): a verifier at /opt/../cand/scripts/verify.sh resolves inside candidate root "
+       "/cand and is refused; a relative verifier path, a missing candidate root and a verifier equal to the root are refused; "
+       "/opt/veldo/scripts/verify.sh and /candidate-2/verify.sh (a sibling whose name shares the prefix) are outside",
+       any(p.startswith("verifier_installed_outside_candidate:") for p in _v21_cp(verifier=dict(_v21_bundle["verifier"], path="/opt/../cand/scripts/verify.sh")))
+       and any(p.startswith("verifier_installed_outside_candidate:") for p in _v21_cp(verifier=dict(_v21_bundle["verifier"], path="scripts/verify.sh")))
+       and any(p.startswith("verifier_installed_outside_candidate:") for p in _v21_cp(candidate={k: v for k, v in _v21_bundle["candidate"].items() if k != "root"}))
+       and any(p.startswith("candidate_tree:") for p in _v21_cp(candidate={k: v for k, v in _v21_bundle["candidate"].items() if k != "root"}))
+       and any(p.startswith("verifier_installed_outside_candidate:") for p in _v21_cp(verifier=dict(_v21_bundle["verifier"], path="/cand")))
+       and not any(p.startswith("verifier_installed_outside_candidate:") for p in _v21_cp(verifier=dict(_v21_bundle["verifier"], path="/candidate-2/verify.sh")))
+       and CC21._inside("/opt/../cand/scripts/verify.sh", "/cand") is True and CC21._inside("/candidate-2/x", "/cand") is False and CC21._inside("x", "/cand") is None)
 # THE DECLARED FALSIFIER: accept an empty criterion universe as valid proof.
 _V21_M3 = _v21_mutated('''    if not spec_criteria or not ids or sorted(ids) != sorted(spec_criteria):
 ''', '''    if sorted(ids) != sorted(spec_criteria):  # mutant: empty equals empty
@@ -236,6 +278,16 @@ expect("VELDO-0021 AC4 completion/unknown-publication: a lost acknowledgement af
        and CC21.publication_step("awaiting_authority", "recovery_effect_committed", {})[0] is None
        and CC21.publication_step("awaiting_authority", "recovery_effect_committed", {"trusted_target_evidence": True})[0] == "published"
        and CC21.publication_step("awaiting_authority", "receipt_replicated", _v21_ev)[0] is None)
+_v21_rec = CC21.publication_step("awaiting_authority", "recovery_not_dispatched", {"receiver_evidence_of_no_start": True, "authority_generation_current": False})
+expect("VELDO-0021 AC4 completion/recovery-recheck (review 1): recovery with receiver evidence of no start returns to verified, never straight "
+       "to authorized: from there push_cas_ok is not a declared step, and authority_recheck_ok with authority_generation_current False "
+       "refuses naming it, so revocation during the recovery interval stops the publication; with every recheck True it proceeds",
+       _v21_rec[0] == "verified"
+       and CC21.publication_step(_v21_rec[0], "push_cas_ok", {"remote_tip_was_expected_old_tip": True, "authority_generation_current": False})[0] is None
+       and CC21.publication_step(_v21_rec[0], "authority_recheck_ok", dict(_v21_ev, authority_generation_current=False))[0] is None
+       and "authority_generation_current" in CC21.publication_step(_v21_rec[0], "authority_recheck_ok", dict(_v21_ev, authority_generation_current=False))[1]
+       and CC21.publication_step(_v21_rec[0], "authority_recheck_ok", _v21_ev)[0] == "authorized"
+       and not any(s == "awaiting_authority" and n == "authorized" for s, _e, _p, n in CC21.PUBLICATION_TRANSITIONS))
 # THE DECLARED FALSIFIER: treat a lost publication acknowledgement as successful completion without remote evidence.
 _V21_M4 = _v21_mutated('''    ("authorized", "acknowledgement_lost", (), "awaiting_authority"),
 ''', '''    ("authorized", "acknowledgement_lost", (), "completed"),  # mutant: silence is success
