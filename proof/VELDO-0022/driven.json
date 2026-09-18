@@ -1,13 +1,13 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0022",
-  "commit": "111da90f481fedfc79d9964d70ccdc4a98e3f0b8",
-  "taken_at": "2026-09-17T22:32:13Z",
+  "commit": "e42feb5eaa63c9285945924b4b2160c1a51bb46c",
+  "taken_at": "2026-09-18T01:05:33Z",
   "fragment": "scripts/suites/34_veldo_0022_admission.py",
-  "fragment_sha256": "5947f31968ba39355313099ac33323cdd4ad9281fbad5068e1baff2c5f2818fb",
+  "fragment_sha256": "11e23310ba27c08601bf7812723741e85e7bbde37002b34f3db4a51adbac232b",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/admission_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
-  "rows_total": 20,
-  "rows_passed": 20,
+  "rows_total": 29,
+  "rows_passed": 29,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0022 AC1 admission/technical-authority DRIVEN (the declared falsifier): with a preparation agent permitted to admit TECHNICAL_CHANGE in a copy, the agent's admission passes, so the row reds; unmutated it is refused",
@@ -39,23 +39,23 @@
   },
   "per_criterion": {
     "AC1": {
+      "rows": 8,
+      "passed": 8,
+      "driven": 1
+    },
+    "AC2": {
       "rows": 6,
       "passed": 6,
       "driven": 1
     },
-    "AC2": {
-      "rows": 5,
-      "passed": 5,
-      "driven": 1
-    },
     "AC3": {
-      "rows": 5,
-      "passed": 5,
+      "rows": 9,
+      "passed": 9,
       "driven": 1
     },
     "AC4": {
-      "rows": 4,
-      "passed": 4,
+      "rows": 6,
+      "passed": 6,
       "driven": 1
     }
   },
@@ -81,6 +81,14 @@
       "passed": true
     },
     {
+      "label": "VELDO-0022 AC1 admission/request-binding (review 1): the request's signer must BE the admitting identity (a TECHNICAL_CHANGE signed by an outsider is refused with dmitry admitting; one signed by dmitry passes); a signature that does not cover the content digest, a request for another item, a missing field and a machine signer each refuse by name; a policy admission needs the policy's signer on the request",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC1 admission/priority-authority (review 1): a priority is a decision, not a source string: 'signed_policy' with no policy, or naming another policy's digest, refuses; an authority source needs a person holding that authority's role and a decision digest (a machine decider and a role-less person refuse); the controls pass",
+      "passed": true
+    },
+    {
       "label": "VELDO-0022 AC1 admission/technical-authority DRIVEN (the declared falsifier): with a preparation agent permitted to admit TECHNICAL_CHANGE in a copy, the agent's admission passes, so the row reds; unmutated it is refused",
       "passed": true
     },
@@ -101,6 +109,10 @@
       "passed": true
     },
     {
+      "label": "VELDO-0022 AC2 admission/reproduction-binding (review 1): a 'trusted_reproduction' record is a label until it is bound: an operator outside the trusted set (an agent, or nobody), a quarantine id that resolves to no record, a record that fails quarantine (malware scan unavailable), and an environment digest the record does not carry each make it no reproduction; the bound one is",
+      "passed": true
+    },
+    {
       "label": "VELDO-0022 AC2 admission/untrusted-reproduction DRIVEN (the declared falsifier): with an agent assertion accepted as a reproduction in a copy, the defect is admitted, so the row reds; unmutated it is refused",
       "passed": true
     },
@@ -113,6 +125,10 @@
       "passed": true
     },
     {
+      "label": "VELDO-0022 AC3 quarantine/unknown-metadata (review 1): a record whose every field is present but None except two clean scan strings is refused on each unknown field, on every unmeasured expansion dimension and on every undeclared confinement; a sandbox that omits one denial, an expansion missing one measurement, and a taint of None each refuse",
+      "passed": true
+    },
+    {
       "label": "VELDO-0022 AC3 quarantine/unknown-scan DRIVEN (the declared falsifier): with an unavailable inspection read as clean in a copy, the record passes quarantine, so the row reds; unmutated it is refused",
       "passed": true
     },
@@ -121,11 +137,31 @@
       "passed": true
     },
     {
+      "label": "VELDO-0022 AC3 quarantine/standing-ticket-bounds (review 1): an occurrence carrying only an id is refused on every undeclared bound (nothing skips); a missing budget, no paths, a major version movement under a minor ticket, a breaking change under a prohibition, a ticket test not run, a release under a zero release limit, two concurrent occurrences under concurrency one, a ticket concurrency of zero, and an occurrence sooner than the weekly cadence after the last run each refuse by name",
+      "passed": true
+    },
+    {
       "label": "VELDO-0022 AC3 quarantine/break-glass: a bounded grant acts; a machine responder, an unlisted action, a forbidden authorization (permanent feature, API change), an elapsed duration, a ratification overdue past four hours, an overdue review, an unratified canary over five percent or not isolated, and a missing reversible action or independent deadline enforcer each refuse by name; the constants are the R68 numbers",
       "passed": true
     },
     {
+      "label": "VELDO-0022 AC3 quarantine/break-glass-ratification (review 1): a five-hour-old grant at a 100 percent canary, not isolated, is refused on all three unratified restrictions when ratified_by='agent' is the only ratification offered, when the ratifier is a person outside the named security authorities, when the record lacks its time or digest, and when nobody is named as security authority; the security authority's complete ratification lifts them; a ratification after the deadline refuses",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC3 quarantine/break-glass-clock (review 1): a grant without granted_at, or without review_due_at, or with a non-finite one, does not act (no deadline can be enforced); the two-hour grant 100 days later is refused; an unreviewed ratified grant past its review deadline refuses even with review_due_at supplied late; a review deadline set beyond one business day refuses",
+      "passed": true
+    },
+    {
       "label": "VELDO-0022 AC4 readmission/dimensions: the nine scope dimensions are machine-comparable and an unchanged scope stands; a missing dimension refuses comparison; a new protected path, an interface change, a migration, an unlisted dependency, a new target, increased risk, a changed criterion and a class change each invalidate by name; a security escalation grants only its bounded authority",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC4 readmission/protected-globs (review 1): protected paths match with the one glob compiler: .veldo/policy.yaml under .veldo/** and under .veldo/*.yaml is a new protected path, a deeper file under .veldo/*.yaml is not, and an unprotected new path is no problem",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0022 AC4 readmission/every-dimension (review 1): replacing the admitted specification with VELDO-9999, changing the data classes, and changing the artifact types each invalidate by name and the invalidation effect follows; every one of the nine dimensions, changed alone, produces a problem",
       "passed": true
     },
     {

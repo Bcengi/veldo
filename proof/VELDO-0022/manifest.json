@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0022",
-  "commit": "111da90f481fedfc79d9964d70ccdc4a98e3f0b8",
+  "commit": "e42feb5eaa63c9285945924b4b2160c1a51bb46c",
   "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
-  "produced_at": "2026-09-17T22:32:13Z",
+  "produced_at": "2026-09-18T01:05:33Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0022/driven.json",
-          "detail": "6 rows (1 driven): the seven R08 work classes equal the class policy registry in both directions; no class, two classes and an unknown class stay quarantined; every class admits under its permitted control (its person's role or its signed policy) and refuses a preparation agent, an unsigned request revision, a role-less person without policy, a wrong lane and an automatic priority; compliance work with no enrolled obligation and a production target with no admitted adapter refuse. DRIVEN: a preparation agent permitted to admit TECHNICAL_CHANGE in a module copy passes (the declared falsifier)."
+          "detail": "8 rows (1 driven): the seven R08 work classes equal the class policy registry in both directions; no class, two classes and an unknown class stay quarantined; every class admits under its permitted control (its person's role or its signed policy) and refuses a preparation agent, an unsigned request revision, a role-less person without policy, a wrong lane and an automatic priority; compliance work with no enrolled obligation and a production target with no admitted adapter refuse. DRIVEN: a preparation agent permitted to admit TECHNICAL_CHANGE in a module copy passes (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0022/gate-implementation.log",
-          "detail": "Complete canonical gate at 111da90f481fedfc79d9964d70ccdc4a98e3f0b8 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5291 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at e42feb5eaa63c9285945924b4b2160c1a51bb46c in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5300 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -29,12 +29,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0022/driven.json",
-          "detail": "5 rows (1 driven): the R66 clause-to-predicate table has thirteen predicates each with one independently failing fixture refused by its own name and a positive control admitted with severity kept; a disqualifying interface change routes to grooming as PRODUCT_CHANGE, a dependency policy change as TECHNICAL_CHANGE, a cross-repository defect is blocked, a critical defect without clean reproduction goes to security handling; an agent assertion, a record missing a field, an undemonstrated violation and a missing quarantine id are not trusted reproductions. DRIVEN: an agent assertion accepted as a reproduction in a module copy admits the defect (the declared falsifier)."
+          "detail": "6 rows (1 driven): the R66 clause-to-predicate table has thirteen predicates each with one independently failing fixture refused by its own name and a positive control admitted with severity kept; a disqualifying interface change routes to grooming as PRODUCT_CHANGE, a dependency policy change as TECHNICAL_CHANGE, a cross-repository defect is blocked, a critical defect without clean reproduction goes to security handling; an agent assertion, a record missing a field, an undemonstrated violation and a missing quarantine id are not trusted reproductions. DRIVEN: an agent assertion accepted as a reproduction in a module copy admits the defect (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0022/gate-implementation.log",
-          "detail": "Complete canonical gate at 111da90f481fedfc79d9964d70ccdc4a98e3f0b8 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5291 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at e42feb5eaa63c9285945924b4b2160c1a51bb46c in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5300 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0022/driven.json",
-          "detail": "5 rows (1 driven): a complete clean quarantine record passes; each missing field refuses by name; each expansion bound (1 GB, 10000 files, depth 10, ratio 100:1) accepts the bound and refuses one over it; a granted sandbox capability, a non-denied network default and an incomplete allowlisted request refuse; unavailable, unknown, pending, errored and flagged scans are failures and a surviving taint refuses; standing tickets and break-glass grants pass their permitted controls and refuse each missing field, machine signer, expiry, reused occurrence, over-budget occurrence, ineligible path, unlisted action, forbidden authorization, elapsed duration, overdue ratification and review, over-five-percent or unisolated canary and missing deadline enforcer. DRIVEN: an unavailable inspection read as clean in a module copy passes quarantine (the declared falsifier)."
+          "detail": "9 rows (1 driven): a complete clean quarantine record passes; each missing field refuses by name; each expansion bound (1 GB, 10000 files, depth 10, ratio 100:1) accepts the bound and refuses one over it; a granted sandbox capability, a non-denied network default and an incomplete allowlisted request refuse; unavailable, unknown, pending, errored and flagged scans are failures and a surviving taint refuses; standing tickets and break-glass grants pass their permitted controls and refuse each missing field, machine signer, expiry, reused occurrence, over-budget occurrence, ineligible path, unlisted action, forbidden authorization, elapsed duration, overdue ratification and review, over-five-percent or unisolated canary and missing deadline enforcer. DRIVEN: an unavailable inspection read as clean in a module copy passes quarantine (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0022/gate-implementation.log",
-          "detail": "Complete canonical gate at 111da90f481fedfc79d9964d70ccdc4a98e3f0b8 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5291 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at e42feb5eaa63c9285945924b4b2160c1a51bb46c in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5300 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -61,12 +61,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0022/driven.json",
-          "detail": "4 rows (1 driven): the nine scope dimensions are machine-comparable, a missing one refuses comparison, and a new protected path, interface change, migration, unlisted dependency, new target, increased risk, changed criterion and class change each invalidate by name with a security escalation granting only its bounded authority; a twenty percent increase stands, above it invalidates, and a ten percent increase past the signed ceiling invalidates while one within it stands; invalidation moves units to AWAITING_AUTHORITY and the item to AWAITING_GROOMING; the debt report counts and ages the three waiting states at the seven and fourteen day thresholds, keeps unknown estimates unknown and grants no authority. DRIVEN: increases under twenty percent treated as free in a module copy let the ceiling be exceeded (the declared falsifier)."
+          "detail": "6 rows (1 driven): the nine scope dimensions are machine-comparable, a missing one refuses comparison, and a new protected path, interface change, migration, unlisted dependency, new target, increased risk, changed criterion and class change each invalidate by name with a security escalation granting only its bounded authority; a twenty percent increase stands, above it invalidates, and a ten percent increase past the signed ceiling invalidates while one within it stands; invalidation moves units to AWAITING_AUTHORITY and the item to AWAITING_GROOMING; the debt report counts and ages the three waiting states at the seven and fourteen day thresholds, keeps unknown estimates unknown and grants no authority. DRIVEN: increases under twenty percent treated as free in a module copy let the ceiling be exceeded (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0022/gate-implementation.log",
-          "detail": "Complete canonical gate at 111da90f481fedfc79d9964d70ccdc4a98e3f0b8 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5291 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at e42feb5eaa63c9285945924b4b2160c1a51bb46c in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5300 passed, 0 failed, every required check passed."
         }
       ]
     }
@@ -77,9 +77,9 @@
       "status": "passed",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "111da90f481fedfc79d9964d70ccdc4a98e3f0b8",
+      "commit": "e42feb5eaa63c9285945924b4b2160c1a51bb46c",
       "ref": "proof/VELDO-0022/gate-implementation.log",
-      "detail": "GATE GREEN; selftest 5291 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+      "detail": "GATE GREEN; selftest 5300 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
     }
   ],
   "artifacts": [
@@ -91,5 +91,5 @@
     "proof/VELDO-0022/approval-dmitry.json"
   ],
   "rollback": "Revert the admission contract organ, its capability and scaffold registrations and suite 34 through the ordinary reviewed path (a revert commit, never a force). The module admits nothing itself; the Admission Service and quarantine environment that will apply it are later packages.",
-  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here. Dmitry's approval of the landing (2026-09-17, Telegram message 27930) is recorded in approval-dmitry.json."
+  "review": "Independent Codex review of the branch at 7197200 (research/codex-reviews/review-20260917-183234.md) found nine reproducible problems; each is fixed and pinned with the reviewer's reproduction in suite 34 (rows marked 'review 1'). The fixes carry no second Codex pass under the one-review-per-landing quota ruling until 2026-09-22. Dmitry's approval of the landing is recorded in approval-dmitry.json."
 }
