@@ -35,6 +35,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import sqlite3
 from pathlib import Path
 
 SCHEMA = "veldo.control_revocation/v1"
@@ -43,7 +44,20 @@ REVOCATION_OPERATIONS = ("revoke_authorization", "accept_effect", "reconcile_eff
 EFFECT_STATES = ("accepted", "in_flight", "stopped", "completed", "failed")
 STOP_STATES = ("requested", "satisfied")
 REFUSALS = ("unknown_boundary", "not_authorized", "revoked", "stale_read", "dependency_withdrawn", "denial_not_recorded", "stand_down",
-            "effect_refused", "output_is_evidence_only", "reauthorization_required")
+            "effect_refused", "output_is_evidence_only", "reauthorization_required", "namespace_refused")
+# Entity ids this organ owns or reserves; a caller-chosen id may not collide with them (an output
+# submitted under the ledger's id would replace the ledger).
+RESERVED_PREFIXES = ("authority:", "stop:", "reauth:", "denial:", "key:")
+OWNED_KINDS = {"effect": "effect", "output_evidence": "output", "denial": "denial", "reauthorization": "reauthorization"}
+
+
+def _namespace_check(eid, kind, before, StoreRefused):
+    """A caller-chosen id must not be reserved, and must not already exist as an entity of another
+    kind: this organ never overwrites the ledger, a stop obligation, a membership or a key."""
+    if not isinstance(eid, str) or eid.startswith(RESERVED_PREFIXES):
+        raise StoreRefused("transition_refused", "namespace_refused: %r is a reserved entity id" % (eid,))
+    if eid in before and before[eid]["kind"] != kind:
+        raise StoreRefused("transition_refused", "namespace_refused: %r already exists as a %s, not a %s" % (eid, before[eid]["kind"], kind))
 
 
 def _organ(name):
@@ -113,10 +127,14 @@ def _t_accept_effect(params, before, StoreRefused):
     for f in ("effect_id", "principal", "receiver", "kind"):
         if not _is_str(params.get(f)):
             raise StoreRefused("transition_refused", "accept_effect needs %s" % f)
+    _namespace_check(params["effect_id"], "effect", before, StoreRefused)
     if params["effect_id"] in before:
         raise StoreRefused("transition_refused", "effect %s already exists" % params["effect_id"])
     if params["principal"] in _ledger(before)["revoked"]:
         raise StoreRefused("transition_refused", "revoked: %s was revoked before this effect was accepted; zero new effects" % params["principal"])
+    member = before.get(params["principal"])
+    if member is not None and member["kind"] == "membership" and member["data"].get("revoked_at") is not None:
+        raise StoreRefused("transition_refused", "revoked: %s's membership is revoked; zero new effects" % params["principal"])
     return {params["effect_id"]: {"kind": "effect", "data": {"principal": params["principal"], "receiver": params["receiver"], "kind": params["kind"],
                                                              "state": "accepted", "accepted_at": params.get("at")}},
             LEDGER_ENTITY: _bump_ledger(before)}
@@ -142,6 +160,8 @@ def _t_record_denial(params, before, StoreRefused):
             raise StoreRefused("transition_refused", "record_denial needs %s" % f)
     if not isinstance(params["refusals"], list) or not params["refusals"]:
         raise StoreRefused("transition_refused", "a denial names at least one refusal")
+    if not (isinstance(params["denial_id"], str) and params["denial_id"].startswith("denial:")) or (params["denial_id"] in before and before[params["denial_id"]]["kind"] != "denial"):
+        raise StoreRefused("transition_refused", "namespace_refused: a denial id lives under denial: and never replaces another entity")
     return {params["denial_id"]: {"kind": "denial", "data": {k: params.get(k) for k in ("boundary", "actor", "refusals", "snapshot_digest", "at", "action")}}}
 
 
@@ -150,7 +170,9 @@ def _t_submit_output(params, before, StoreRefused):
     obligation is decided by result acceptance, not by the submission."""
     if not _is_str(params.get("output_id")) or not _is_str(params.get("digest")) or not _is_str(params.get("principal")):
         raise StoreRefused("transition_refused", "submit_output needs output_id, digest and principal")
-    revoked = params["principal"] in _ledger(before)["revoked"]
+    _namespace_check(params["output_id"], "output_evidence", before, StoreRefused)
+    member = before.get(params["principal"])
+    revoked = params["principal"] in _ledger(before)["revoked"] or (member is not None and member["kind"] == "membership" and member["data"].get("revoked_at") is not None)
     return {params["output_id"]: {"kind": "output_evidence", "data": {"digest": params["digest"], "principal": params["principal"], "obligation": params.get("obligation"),
                                                                        "submitted_at": params.get("at"), "submitted_after_revocation": revoked, "satisfies": False}}}
 
@@ -162,6 +184,8 @@ def _t_reauthorize(params, before, StoreRefused):
         raise StoreRefused("transition_refused", "reauthorize needs obligation, granted_by and the revocation_version it binds to")
     if params["revocation_version"] != int(_ledger(before).get("revocation_version", 0)):
         raise StoreRefused("transition_refused", "reauthorization names revocation version %r, the ledger is at %r" % (params["revocation_version"], _ledger(before).get("revocation_version", 0)))
+    if "reauth:" + params["obligation"] in before and before["reauth:" + params["obligation"]]["kind"] != "reauthorization":
+        raise StoreRefused("transition_refused", "namespace_refused: reauth:%s is another entity" % params["obligation"])
     return {"reauth:" + params["obligation"]: {"kind": "reauthorization", "data": {"obligation": params["obligation"], "granted_by": params["granted_by"],
                                                                                    "revocation_version": params["revocation_version"], "at": params.get("at")}}}
 
@@ -189,7 +213,9 @@ def touched_entities(command, entities):
             if e["kind"] == "effect" and e["data"].get("principal") == p.get("principal") and e["data"].get("state") == "accepted":
                 ids += [eid, "stop:" + eid]
     if op == "accept_effect":
-        ids.append(p.get("effect_id"))
+        ids += [p.get("effect_id"), p.get("principal")]
+    if op == "submit_output":
+        ids.append(p.get("principal"))
     if op == "reconcile_effect":
         ids += [p.get("effect_id"), "stop:" + str(p.get("effect_id"))] if "stop:" + str(p.get("effect_id")) in entities else [p.get("effect_id")]
     if op == "record_denial":
@@ -201,19 +227,50 @@ def touched_entities(command, entities):
     return [i for i in ids if _is_str(i)]
 
 
-def execute(store, conn, command, journal_signer, now, authority_generation=1):
-    """Commit one revocation-organ command with expected versions from the committed snapshot (so
-    revocation and acceptance racing the ledger have one winner) and the authority's journal signer."""
+def execute(store, conn, command, journal_signer, now, authority_generation=1, read_set_versions=None):
+    """Commit one revocation-organ command. Expected versions are the UNION of the caller's checked
+    read set (`read_set_versions`, the guard's snapshot: every input the decision read, at the
+    version it read) and this organ's touched entities at their current committed version, so a
+    revocation, a withdrawn prerequisite or a membership change committed between the check and
+    the commit loses by version. An identical retry of an already committed command (same id, same
+    operation and parameters) returns the committed result with replayed=True instead of a content
+    conflict, so recovery after a lost acknowledgement is one call."""
     if command.get("operation") not in REVOCATION_OPERATIONS:
         raise RevocationRefused("effect_refused", "%r is not a revocation-organ operation" % command.get("operation"))
+    prior = conn.execute("SELECT result FROM commands WHERE command_id=?", (command.get("command_id"),)).fetchone()
+    if prior is not None:
+        rec = next((r for r in store.export_journal(conn) if r["command_id"] == command.get("command_id")), None)
+        signed_now = {k: (command.get("parameters") or {}).get(k) for k in (command.get("parameters") or {}) if k != "at"}
+        committed_view = json.loads(prior[0])
+        if rec is None or rec.get("principal") != command.get("principal"):
+            raise RevocationRefused("effect_refused", "command_content_conflict: %s was committed by another principal" % command.get("command_id"))
+        stored_params = committed_view.get("parameters_committed")
+        if stored_params is not None and {k: v for k, v in stored_params.items() if k != "at"} != signed_now:
+            raise RevocationRefused("effect_refused", "command_content_conflict: %s was committed with other parameters" % command.get("command_id"))
+        return dict(committed_view, replayed=True)
     ents = store.materialized_state(conn)["entities"]
     stored = dict(command)
-    stored["parameters"] = dict(command.get("parameters") or {}, at=command.get("parameters", {}).get("at", now))
-    stored["expected_versions"] = {eid: ents.get(eid, {}).get("version", 0) for eid in touched_entities(stored, ents)}
+    stored["parameters"] = dict(command.get("parameters") or {}, at=(command.get("parameters") or {}).get("at", now))
+    expected = dict(read_set_versions or {})
+    for eid in touched_entities(stored, ents):
+        expected[eid] = ents.get(eid, {}).get("version", 0)
+    stored["expected_versions"] = expected
     try:
-        return store.execute(conn, stored, journal_signer[0], journal_signer[1], authority_generation, committed_at=now)
+        result = store.execute(conn, stored, journal_signer[0], journal_signer[1], authority_generation, committed_at=now)
     except store.StoreRefused as e:
         raise RevocationRefused("effect_refused" if "revoked:" not in e.detail else "revoked", "%s: %s" % (e.code, e.detail))
+    if not result.get("replayed"):
+        # remember the committed parameters beside the result so a retry is judged on content
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            row = conn.execute("SELECT result FROM commands WHERE command_id=?", (command["command_id"],)).fetchone()
+            view = dict(json.loads(row[0]), parameters_committed=stored["parameters"])
+            conn.execute("UPDATE commands SET result=? WHERE command_id=?", (json.dumps(view, sort_keys=True), command["command_id"]))
+            conn.execute("COMMIT")
+        except Exception:
+            conn.execute("ROLLBACK")
+            raise
+    return result
 
 
 # ---------------------------------------------------------------------------------------------
@@ -226,9 +283,14 @@ def ledger(store, conn):
 
 
 def is_revoked(store, conn, principal, now):
-    led, _st = ledger(store, conn)
+    """Revoked by the ledger, OR by a committed membership revocation (revoke_membership): both end
+    the principal's authorization and quarantine its outputs."""
+    led, st = ledger(store, conn)
     r = led["revoked"].get(principal)
-    return r is not None and r.get("at", now) <= now
+    if r is not None and r.get("at", now) <= now:
+        return True
+    m = st.get(principal)
+    return m is not None and m["kind"] == "membership" and m["data"].get("revoked_at") is not None and m["data"]["revoked_at"] <= now
 
 
 def pending_stop_obligations(store, conn):
@@ -261,10 +323,15 @@ def snapshot(store, conn, read_set):
     entities snapshot at version 0 (their later insertion is a change)."""
     st = store.materialized_state(conn)["entities"]
     ids = set(read_set or [])
-    for eid in list(ids):
+    work = list(ids)
+    while work:  # TRANSITIVE: a prerequisite that is itself a dependency brings its own prerequisites
+        eid = work.pop()
         e = st.get(eid)
-        if e and e["kind"] == "dependency":
-            ids |= set(e["data"].get("prerequisites") or [])
+        if e and e["kind"] in ("dependency", "prerequisite"):
+            for pre in e["data"].get("prerequisites") or []:
+                if pre not in ids:
+                    ids.add(pre)
+                    work.append(pre)
     snap = {eid: st.get(eid, {}).get("version", 0) for eid in sorted(ids)}
     snap[LEDGER_ENTITY] = st.get(LEDGER_ENTITY, {}).get("version", 0)
     return {"versions": snap, "digest": digest_of(snap)}
@@ -285,19 +352,25 @@ def stale_reads(store, conn, snap):
                 problems.append("stale_read:%s moved from version %r to %r" % (eid, v, now_v))
     for eid, v in list(snap["versions"].items()):
         e = st.get(eid)
-        if e and e["kind"] == "dependency":
+        if e and e["kind"] in ("dependency", "prerequisite"):
             for pre in e["data"].get("prerequisites") or []:
                 if pre not in snap["versions"]:
                     problems.append("stale_read:%s references prerequisite %s that the snapshot never read" % (eid, pre))
     return problems
 
 
-def _guard_common(store, conn, membership_state, boundary, actor, requirement, snap, now):
+def _guard_common(store, conn, boundary, actor, requirement, snap, now):
     problems = []
     if boundary not in AC.BOUNDARIES:
         return ["unknown_boundary:%s" % boundary]
     if is_revoked(store, conn, actor, now):
         problems.append("revoked:%s" % actor)
+    # Membership is RELOADED from the store here, never taken from the caller: a cached copy
+    # outlives the signed revocation that ended it.
+    membership_state = CM.authority_state(store, conn)
+    st = membership_state["entities"]
+    if actor in snap["versions"] and st.get(actor, {}).get("version", 0) != snap["versions"][actor]:
+        problems.append("stale_read:%s (the actor's membership) moved since the snapshot" % actor)
     authorized, refusals = AC.authorize(boundary, dict(requirement, boundary=boundary), [{"principal": actor, "subject_digest": requirement.get("subject_digest")}],
                                         membership_state["membership"], now)
     if not authorized:
@@ -314,7 +387,10 @@ def _result_acceptance_extra(store, conn, actor, requirement):
     out = st.get(requirement.get("output"))
     if out is None or out["kind"] != "output_evidence":
         return ["output_is_evidence_only: no submitted output %r" % requirement.get("output")]
-    if out["data"].get("principal") in led["revoked"] or out["data"].get("submitted_after_revocation"):
+    producer = out["data"].get("principal")
+    producer_member = st.get(producer)
+    producer_revoked = producer in led["revoked"] or (producer_member is not None and producer_member["kind"] == "membership" and producer_member["data"].get("revoked_at") is not None)
+    if producer_revoked or out["data"].get("submitted_after_revocation"):
         re = st.get("reauth:" + str(requirement.get("obligation")))
         if re is None or re["data"].get("revocation_version") != int(led.get("revocation_version", 0)):
             return ["output_is_evidence_only: output %s was submitted by a revoked principal; it is retained as evidence and satisfies no obligation" % requirement.get("output"),
@@ -333,28 +409,36 @@ def _denial_write_fails():
     return os.environ.get("VELDO_CONTROL_TEST_HARNESS") == "1" and os.environ.get("VELDO_DENIAL_WRITE_FAIL") == "1"
 
 
-def accept(store, conn, membership_state, boundary, actor, requirement, snap, now, journal_signer, action=None):
-    """The guard at one boundary. Returns {allowed, refusals, denial, stand_down}. Every refusal is
-    written as a durable denial BEFORE it is returned; a denial that cannot be written (a read-only
-    handle, a disk fault) makes the boundary STAND DOWN: allowed False, stand_down True, and the
-    caller stops dispatch. Nothing is ever allowed on an unrecorded refusal."""
+def accept(store, conn, boundary, actor, requirement, snap, now, journal_signer, action=None):
+    """The guard at one boundary. Returns {allowed, refusals, denial, stand_down, read_set_versions}.
+    Membership is reloaded from the store, never taken from the caller. Every refusal is written
+    as a durable denial BEFORE it is returned; a denial that cannot be written (a read-only handle,
+    a disk fault, SQLite's own disk-full error) makes the boundary STAND DOWN: allowed False,
+    stand_down True, and the caller stops dispatch. Nothing is ever allowed on an unrecorded
+    refusal. An allowed verdict carries the snapshot's versions for the caller to pass to
+    execute() as read_set_versions, so the commit is bound to what was checked."""
     if boundary not in BOUNDARY_GUARDS:
         return {"allowed": False, "refusals": ["unknown_boundary:%s" % boundary], "denial": None, "stand_down": True}
-    refusals = _guard_common(store, conn, membership_state, boundary, actor, requirement, snap, now)
+    refusals = _guard_common(store, conn, boundary, actor, requirement, snap, now)
     extra = BOUNDARY_GUARDS[boundary]
     if extra is not None and not refusals:
         refusals += extra(store, conn, actor, requirement)
     if not refusals:
-        return {"allowed": True, "refusals": [], "denial": None, "stand_down": False}
+        return {"allowed": True, "refusals": [], "denial": None, "stand_down": False, "read_set_versions": dict(snap["versions"])}
     denial_id = "denial:%s:%s:%s" % (boundary, actor, digest_of([boundary, actor, action, refusals, snap["digest"], now])[7:23])
     cmd = {"command_id": "denial-" + denial_id.split(":")[-1], "principal": "veldo-authority", "operation": "record_denial", "target": "authority",
            "parameters": {"denial_id": denial_id, "boundary": boundary, "actor": actor, "refusals": refusals, "snapshot_digest": snap["digest"], "action": action},
            "artifact_digests": [], "nonce": "nonce-" + denial_id, "expected_versions": {}}
     try:
         if _denial_write_fails():
-            raise store.StoreRefused("incomplete_transaction", "disk write failure injected at the denial journal commit")
+            raise sqlite3.OperationalError("database or disk is full (injected at the denial journal commit)")
         execute(store, conn, cmd, journal_signer, now)
-    except (store.StoreRefused, RevocationRefused) as e:
+    except (store.StoreRefused, RevocationRefused, sqlite3.Error, OSError) as e:
+        if conn.in_transaction:
+            try:
+                conn.execute("ROLLBACK")
+            except sqlite3.Error:
+                pass
         return {"allowed": False, "refusals": refusals + ["denial_not_recorded: %s" % e], "denial": None, "stand_down": True,
                 "note": "the refusal could not be durably recorded: the boundary stands down and dispatch stops until the store accepts writes"}
     return {"allowed": False, "refusals": refusals, "denial": denial_id, "stand_down": False}

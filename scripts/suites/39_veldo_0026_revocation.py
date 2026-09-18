@@ -144,8 +144,8 @@ else:
         def ms(self):
             return self.mem.authority_state(self.store, self.conn)
 
-        def guard(self, boundary, actor, requirement, snap, now=_v26_NOW):
-            return self.rev.accept(self.store, self.conn, self.ms(), boundary, actor, requirement, snap, now, _v26_JS, action="test")
+        def guard(self, boundary, actor, requirement, snap, now=_v26_NOW, action="test"):
+            return self.rev.accept(self.store, self.conn, boundary, actor, requirement, snap, now, _v26_JS, action=action)
 
     # ---------------------------------------------------------------------------------------------
     # AC1: nine boundaries, one snapshot, refusal by name when another process moves an input.
@@ -249,10 +249,12 @@ except Exception as e:
            and _v26_named("policy", "stale_read:policy:main") and _v26_named("scope", "stale_read:scope:item-1") and _v26_named("decision", "stale_read:decision:D1")
            and _v26_named("dependency", "stale_read:dep:X") and _v26_named("indirect prerequisite", "dependency_withdrawn:pre:A") and _v26_named("membership", "stale_read:asya"))
     # THE DECLARED FALSIFIER: skip the indirect dependency revision check at effect acceptance while another process withdraws the prerequisite.
-    _v26_m1_dir = _v26_mutant_dir({"control_revocation.py": [('''        if e and e["kind"] == "dependency":
-            ids |= set(e["data"].get("prerequisites") or [])
+    _v26_m1_dir = _v26_mutant_dir({"control_revocation.py": [('''        if e and e["kind"] in ("dependency", "prerequisite"):
+            for pre in e["data"].get("prerequisites") or []:
+                if pre not in ids:
 ''', '''        if False:  # mutant: a dependency's prerequisites are not the caller's business
-            ids |= set(e["data"].get("prerequisites") or [])
+            for pre in e["data"].get("prerequisites") or []:
+                if pre not in ids:
 '''), ('''            for pre in e["data"].get("prerequisites") or []:
                 if pre not in snap["versions"]:
 ''', '''            for pre in []:  # mutant: and nobody asks whether they were read
@@ -394,7 +396,7 @@ except Exception as e:
     _v26_d_fault = _v26_d.guard("dispatch_acceptance", "svc", _v26_req, _v26_d_snap)
     _v26_os.environ["VELDO_DENIAL_WRITE_FAIL"] = "0"
     _v26_d_ro = CS26.open_store(_v26_d.db, mode="r")
-    _v26_d_ro_v = CR26.accept(CS26, _v26_d_ro, _v26_d.ms(), "dispatch_acceptance", "svc", _v26_req, _v26_d_snap, _v26_NOW, _v26_JS)
+    _v26_d_ro_v = CR26.accept(CS26, _v26_d_ro, "dispatch_acceptance", "svc", _v26_req, _v26_d_snap, _v26_NOW, _v26_JS)
     _v26_d_ro.close()
     _v26_d.conn.close()
     _v26_d.conn = CS26.open_store(_v26_d.db)
@@ -410,7 +412,7 @@ except Exception as e:
            and len(_v26_d_denials) == 1)
     # THE DECLARED FALSIFIER: allow dispatch after injecting a denial-journal write failure.
     _v26_m3_dir = _v26_mutant_dir({"control_revocation.py": [('''        return {"allowed": False, "refusals": refusals + ["denial_not_recorded: %s" % e], "denial": None, "stand_down": True,''',
-                                                               '''        return {"allowed": True, "refusals": refusals + ["denial_not_recorded: %s" % e], "denial": None, "stand_down": False,  # mutant: an unrecorded refusal is no refusal''')]})
+                                                               '''        return {"allowed": True, "refusals": refusals + ["denial_not_recorded: %s" % e], "denial": None, "stand_down": False, "read_set_versions": dict(snap["versions"]),  # mutant: an unrecorded refusal is no refusal''')]})
     _v26_m3 = _v26_World("m3", _v26_organs(_v26_m3_dir, "m3"))
     _v26_m3.rex("rev-m3", "revoke_authorization", {"principal": "svc", "at": _v26_NOW, "reason": "r", "revoked_by": "dmitry"})
     _v26_os.environ["VELDO_DENIAL_WRITE_FAIL"] = "1"
@@ -422,6 +424,115 @@ except Exception as e:
            _v26_m3_v["allowed"] is True and _v26_m3.rev.dispatch_permitted(_v26_m3_v) is True and any("denial_not_recorded" in r for r in _v26_m3_v["refusals"])
            and CR26.dispatch_permitted(_v26_d_fault) is False)
     _v26_m3.conn.close()
+
+    # ---------------------------------------------------------------------------------------------
+    # The seven findings of the Codex review (review-20260918-100244), each pinned.
+    # ---------------------------------------------------------------------------------------------
+    _v26_f = _v26_World("findings")
+    # (1) a caller-chosen id never replaces the ledger, a stop obligation, a membership or another kind
+    _v26_f.rex("acc-f1", "accept_effect", {"effect_id": "eff-f1", "principal": "svc", "receiver": "recv-1", "kind": "push"})
+    _v26_f1_ledger = _v26_f.rex("o-ledger", "submit_output", {"output_id": CR26.LEDGER_ENTITY, "digest": "sha256:x", "principal": "svc"})
+    _v26_f1_stop = _v26_f.rex("o-stop", "submit_output", {"output_id": "stop:eff-f1", "digest": "sha256:x", "principal": "svc"})
+    _v26_f1_member = _v26_f.rex("o-member", "submit_output", {"output_id": "asya", "digest": "sha256:x", "principal": "svc"})
+    _v26_f1_effect_over_output = _v26_f.rex("acc-over", "accept_effect", {"effect_id": "asya", "principal": "svc", "receiver": "r", "kind": "k"})
+    _v26_f1_ok = _v26_f.rex("o-ok", "submit_output", {"output_id": "out-f1", "digest": "sha256:x", "principal": "svc"})
+    _v26_f1_led, _v26_f1_st = CR26.ledger(CS26, _v26_f.conn)
+    _v26_f.rex("rev-f1", "revoke_authorization", {"principal": "svc", "at": _v26_NOW, "reason": "r", "revoked_by": "dmitry"})
+    _v26_f1_after = _v26_f.rex("acc-f1b", "accept_effect", {"effect_id": "eff-f1b", "principal": "svc", "receiver": "recv-1", "kind": "push"})
+    expect("VELDO-0026 AC2 revocation/entity-namespace (review 1): an output submitted under the ledger's id, a stop obligation's id or a "
+           "member's id, and an effect accepted under a member's id, are each refused as namespace_refused and change nothing (the "
+           "ledger entity is still the ledger); an ordinary output id is accepted; after the revocation the ledger still refuses new "
+           "effects for the revoked principal",
+           all(v[1] == "effect_refused" for v in (_v26_f1_ledger, _v26_f1_stop, _v26_f1_member, _v26_f1_effect_over_output))
+           and _v26_f1_st[CR26.LEDGER_ENTITY]["kind"] == "revocation_ledger" and _v26_f1_st["asya"]["kind"] == "membership" and "revoked" in _v26_f1_led
+           and _v26_f1_ok[1] is None and _v26_f1_after[1] == "revoked")
+    # (2) the guard's checked read set binds the commit: a prerequisite withdrawn through ANOTHER connection between guard and commit refuses
+    _v26_f.put("p-pre", "pre:A", "prerequisite", {"status": "accepted"}, 0)
+    _v26_f.put("p-dep", "dep:X", "dependency", {"prerequisites": ["pre:A"], "status": "resolved"}, 0)
+    _v26_f2_snap = CR26.snapshot(CS26, _v26_f.conn, ["dep:X", "asya"])
+    _v26_f2_v = _v26_f.guard("command_acceptance", "asya", _v26_req, _v26_f2_snap)
+    _v26_f2_other = CS26.open_store(_v26_f.db)
+    CS26.execute(_v26_f2_other, _v26_put_cmd("wd-f2", "pre:A", "prerequisite", {"status": "withdrawn"}, 1), _v26_JS[0], _v26_JS[1], 1, committed_at=_v26_NOW)
+    _v26_f2_other.close()
+    _v26_f2_cmd = {"command_id": "acc-f2", "principal": "veldo-authority", "operation": "accept_effect", "target": "authority", "parameters": {"effect_id": "eff-f2", "principal": "asya", "receiver": "r", "kind": "k"}, "artifact_digests": [], "nonce": "rn-acc-f2", "expected_versions": {}}
+    _v26_f2_code = None
+    try:
+        CR26.execute(CS26, _v26_f.conn, _v26_f2_cmd, _v26_JS, _v26_NOW, read_set_versions=_v26_f2_v["read_set_versions"])
+    except Exception as e:
+        _v26_f2_code = getattr(e, "code", type(e).__name__) + ":" + getattr(e, "detail", "")[:60]
+    _v26_f2_recheck = _v26_f.guard("command_acceptance", "asya", _v26_req, _v26_f2_snap)
+    expect("VELDO-0026 AC1 revocation/read-set-bound-commit (review 1): an allowed verdict carries the snapshot's versions; a prerequisite "
+           "withdrawn through another connection between the guard and the commit (at command acceptance, a boundary that admits a person) makes the commit refuse by version (stale_version on "
+           "the withdrawn prerequisite) when the caller passes those versions to execute, and the same guard rerun refuses as "
+           "dependency_withdrawn; nothing was committed",
+           _v26_f2_v["allowed"] is True and "pre:A" in _v26_f2_v["read_set_versions"] and _v26_f2_code is not None and _v26_f2_code.startswith("effect_refused:stale_version")
+           and "pre:A" in _v26_f2_code and "eff-f2" not in CS26.materialized_state(_v26_f.conn)["entities"]
+           and any(r.startswith("dependency_withdrawn:pre:A") for r in _v26_f2_recheck["refusals"]))
+    # (3) + (4) the guard reloads membership; a SIGNED membership revocation ends authorization and quarantines outputs
+    _v26_f.rex("o-asya", "submit_output", {"output_id": "out-asya", "digest": "sha256:a", "principal": "asya", "obligation": "ob-a"})
+    _v26_f3_snap = CR26.snapshot(CS26, _v26_f.conn, [])  # a snapshot that does not name the actor: the guard must still see the revocation
+    _v26_f3_before = _v26_f.guard("command_acceptance", "asya", _v26_req, _v26_f3_snap)
+    _v26_f.admin("rev-mem", "dmitry", "revoke_membership", {"principal": "asya", "revoked_at": _v26_NOW - 1})
+    _v26_f3_after = _v26_f.guard("command_acceptance", "asya", _v26_req, _v26_f3_snap)
+    _v26_f4_snap = CR26.snapshot(CS26, _v26_f.conn, ["out-asya"])
+    _v26_f4_v = _v26_f.guard("result_acceptance", "dmitry", dict(_v26_req, output="out-asya", obligation="ob-a"), _v26_f4_snap)
+    _v26_f4_led, _ = CR26.ledger(CS26, _v26_f.conn)
+    _v26_f4_re = _v26_f.rex("re-a", "reauthorize", {"obligation": "ob-a", "granted_by": "dmitry", "revocation_version": _v26_f4_led["revocation_version"]})
+    _v26_f4_snap2 = CR26.snapshot(CS26, _v26_f.conn, ["out-asya", "reauth:ob-a"])
+    _v26_f4_v2 = _v26_f.guard("result_acceptance", "dmitry", dict(_v26_req, output="out-asya", obligation="ob-a"), _v26_f4_snap2)
+    _v26_f4_accept = _v26_f.rex("acc-asya", "accept_effect", {"effect_id": "eff-asya", "principal": "asya", "receiver": "r", "kind": "k"})
+    expect("VELDO-0026 AC1 revocation/membership-reloaded (review 1): before the steward's signed revoke_membership asya is allowed at "
+           "command acceptance; after it, the SAME snapshot (which never named her) is refused as revoked because the guard reloads "
+           "membership from the store rather than trusting the caller; her earlier output is evidence only at result acceptance until "
+           "a version-bound reauthorization, and a new effect for her is refused as revoked inside the transaction",
+           _v26_f3_before["allowed"] is True and _v26_f3_after["allowed"] is False and any(r == "revoked:asya" for r in _v26_f3_after["refusals"])
+           and CR26.is_revoked(CS26, _v26_f.conn, "asya", _v26_NOW) is True
+           and _v26_f4_v["allowed"] is False and any(r.startswith("output_is_evidence_only") for r in _v26_f4_v["refusals"])
+           and _v26_f4_re[1] is None and _v26_f4_v2["allowed"] is True and _v26_f4_accept[1] == "revoked")
+    # (5) a REAL disk-full error from SQLite stands the boundary down
+    _v26_f5 = _v26_World("diskfull")
+    _v26_f5.rex("rev-f5", "revoke_authorization", {"principal": "svc", "at": _v26_NOW, "reason": "r", "revoked_by": "dmitry"})
+    _v26_f5_pages = _v26_f5.conn.execute("PRAGMA page_count").fetchone()[0]
+    _v26_f5.conn.execute("PRAGMA max_page_count=%d" % _v26_f5_pages)  # the database is now full for real
+    _v26_f5_v = _v26_f5.guard("dispatch_acceptance", "svc", _v26_req, CR26.snapshot(CS26, _v26_f5.conn, []), action="x" * 200000)  # the denial needs pages the capped database cannot give
+    _v26_f5.conn.execute("PRAGMA max_page_count=1073741823")
+    _v26_f5_after = _v26_f5.guard("dispatch_acceptance", "svc", _v26_req, CR26.snapshot(CS26, _v26_f5.conn, []))
+    expect("VELDO-0026 AC3 revocation/real-disk-full (review 1): with the database's page limit set to its current size (SQLite's own "
+           "'database or disk is full'), the refusal of a revoked actor is returned as a stand-down naming denial_not_recorded, no "
+           "exception escapes, no transaction is left open and dispatch is not permitted; with room restored the same refusal is "
+           "recorded as a denial",
+           _v26_f5_v["stand_down"] is True and _v26_f5_v["allowed"] is False and any("denial_not_recorded" in r and "full" in r for r in _v26_f5_v["refusals"])
+           and CR26.dispatch_permitted(_v26_f5_v) is False and not _v26_f5.conn.in_transaction
+           and _v26_f5_after["stand_down"] is False and _v26_f5_after["denial"] is not None)
+    _v26_f5.conn.close()
+    # (6) an identical retry replays; other content under the same id conflicts
+    _v26_f6 = _v26_World("retry")
+    _v26_f6_cmd = {"effect_id": "eff-r", "principal": "svc", "receiver": "recv-1", "kind": "push"}
+    _v26_f6_first = _v26_f6.rex("acc-r", "accept_effect", _v26_f6_cmd)
+    _v26_f6_again = _v26_f6.rex("acc-r", "accept_effect", dict(_v26_f6_cmd), now=_v26_NOW + 500)
+    _v26_f6_other = _v26_f6.rex("acc-r", "accept_effect", dict(_v26_f6_cmd, kind="deploy"))
+    expect("VELDO-0026 AC2 revocation/identical-retry (review 1): repeating an identical accept_effect (same id and parameters, later "
+           "clock, freshly derived versions) returns the committed result marked replayed with the same seq instead of a content "
+           "conflict; the same id with other parameters is a conflict",
+           _v26_f6_first[1] is None and _v26_f6_again[1] is None and _v26_f6_again[0]["replayed"] is True and _v26_f6_again[0]["seq"] == _v26_f6_first[0]["seq"]
+           and _v26_f6_other[1] == "effect_refused" and len(CS26.export_journal(_v26_f6.conn)) == 4)
+    _v26_f6.conn.close()
+    # (7) transitive prerequisites: A -> B -> C reads C, passes intact, refuses when C is withdrawn
+    _v26_f7 = _v26_World("chain")
+    _v26_f7.put("c", "pre:C", "prerequisite", {"status": "accepted"}, 0)
+    _v26_f7.put("b", "pre:B", "prerequisite", {"status": "accepted", "prerequisites": ["pre:C"]}, 0)
+    _v26_f7.put("a", "dep:A", "dependency", {"prerequisites": ["pre:B"], "status": "resolved"}, 0)
+    _v26_f7_snap = CR26.snapshot(CS26, _v26_f7.conn, ["dep:A"])
+    _v26_f7_ok = _v26_f7.guard("claim", "svc", _v26_req, _v26_f7_snap)
+    _v26_f7.put("wd-c", "pre:C", "prerequisite", {"status": "withdrawn"}, 1)
+    _v26_f7_bad = _v26_f7.guard("claim", "svc", _v26_req, _v26_f7_snap)
+    expect("VELDO-0026 AC1 revocation/transitive-prerequisites (review 1): a snapshot of a dependency reads its prerequisite AND that "
+           "prerequisite's own prerequisite (A, B and C); the intact chain is allowed rather than rejected for an unread reference; "
+           "withdrawing C two hops away refuses as dependency_withdrawn",
+           {"dep:A", "pre:B", "pre:C"} <= set(_v26_f7_snap["versions"]) and _v26_f7_ok["allowed"] is True
+           and _v26_f7_bad["allowed"] is False and any(r == "dependency_withdrawn:pre:C" for r in _v26_f7_bad["refusals"]))
+    _v26_f7.conn.close()
+    _v26_f.conn.close()
     for _wd in (_v26_w, _v26_r, _v26_c, _v26_e, _v26_d):
         _wd.conn.close()
 
