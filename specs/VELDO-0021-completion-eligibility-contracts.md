@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0021
 title: Completion and executable eligibility predicates
-status: ready
+status: shipped
 risk: critical
 owner: dmitry
 human_approval: required
