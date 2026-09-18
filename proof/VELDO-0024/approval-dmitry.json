@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0024-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0024",
+    "commit": "e4d2490d9b88fa547f0ec2d83cd5830498cb64ee",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0024 (risk critical, human_approval required, no protected paths) over Telegram on 2026-09-18T09:36:13Z (message 27945, 'Approved 0024'), answering an ask (message 27943) that described the item: every committed command becomes one signed export with its artifact bytes, published in order to a dedicated protected Git ref on the repository remote; success and external dispatch are withheld until the remote itself acknowledges the export; a publisher killed at any point resumes under the same export identity and a divergent remote pauses publication without overwriting; the status shows pending commands as pending, never rejected; a local remote is named protocol-only and no live remote was provisioned. The ask named the Codex findings and said the approval covers the item with those fixes in; the commit bound here is the fixes commit. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-18T09:36:13Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}

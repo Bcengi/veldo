@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0024",
-  "commit": "21794c98a47cb9e4485c82151e360844ea40b9d7",
+  "commit": "e4d2490d9b88fa547f0ec2d83cd5830498cb64ee",
   "producer": "Ava (Claude) implementing agent; Codex reviews only until 2026-09-22 by Dmitry's quota ruling",
-  "produced_at": "2026-09-18T02:51:30Z",
+  "produced_at": "2026-09-18T09:36:34Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0024/driven.json",
-          "detail": "4 rows (1 driven): two committed commands are pending_publication before any export; publishing exports both in order to refs/veldo/audit on a REAL local bare remote (the remote's log names export 1 then export 2, remote tip equals the local audit tip), the export commit tree carries export.json, export.sig and the artifact BYTES blob, dispatch runs once per command only after its acknowledgement, and both commands are then succeeded; the export identity is a function of sequence and record digest alone, a missing or mismatched artifact refuses the export and a silent signer refuses preparation; with the remote's receive hook rejecting, the committed command's export is refused, the command stays pending_publication under its identity with zero receiver calls, and once the hook is gone the same export publishes. DRIVEN: a rejected push treated as success and the remote's answer not consulted in a module copy dispatches and reports succeeded a command the remote never took (the declared falsifier)."
+          "detail": "5 rows (1 driven): two committed commands are pending_publication before any export; publishing exports both in order to refs/veldo/audit on a REAL local bare remote (the remote's log names export 1 then export 2, remote tip equals the local audit tip), the export commit tree carries export.json, export.sig and the artifact BYTES blob, dispatch runs once per command only after its acknowledgement, and both commands are then succeeded; the export identity is a function of sequence and record digest alone, a missing or mismatched artifact refuses the export and a silent signer refuses preparation; with the remote's receive hook rejecting, the committed command's export is refused, the command stays pending_publication under its identity with zero receiver calls, and once the hook is gone the same export publishes. DRIVEN: a rejected push treated as success and the remote's answer not consulted in a module copy dispatches and reports succeeded a command the remote never took (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0024/gate-implementation.log",
-          "detail": "Complete canonical gate at 21794c98a47cb9e4485c82151e360844ea40b9d7 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5353 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at e4d2490d9b88fa547f0ec2d83cd5830498cb64ee in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5359 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -29,12 +29,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0024/driven.json",
-          "detail": "3 rows (1 driven): a real publisher process SIGKILLed after the export is prepared, after the remote ref moved and after the acknowledgement persisted is reconciled on restart against the exact remote ref: each command ends acknowledged with exactly one export commit for its sequence, the remote tip equals the local tip, the journal gained no record and the remote holds one commit per acknowledged export; a remote whose audit ref names a commit this authority never exported pauses publication as divergent, is never overwritten, and leaves the command pending. DRIVEN: a fresh export identity allocated on every attempt in a module copy names a second identity for the sequence after a kill following the remote ref update, which the store's cursor refuses as export_identity_mismatch (the declared falsifier)."
+          "detail": "7 rows (1 driven): a real publisher process SIGKILLed after the export is prepared, after the remote ref moved and after the acknowledgement persisted is reconciled on restart against the exact remote ref: each command ends acknowledged with exactly one export commit for its sequence, the remote tip equals the local tip, the journal gained no record and the remote holds one commit per acknowledged export; a remote whose audit ref names a commit this authority never exported pauses publication as divergent, is never overwritten, and leaves the command pending. DRIVEN: a fresh export identity allocated on every attempt in a module copy names a second identity for the sequence after a kill following the remote ref update, which the store's cursor refuses as export_identity_mismatch (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0024/gate-implementation.log",
-          "detail": "Complete canonical gate at 21794c98a47cb9e4485c82151e360844ea40b9d7 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5353 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at e4d2490d9b88fa547f0ec2d83cd5830498cb64ee in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5359 passed, 0 failed, every required check passed."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0024/driven.json",
-          "detail": "3 rows (1 driven): the status surface reads an empty store, a caught-up store and, after the publisher died with the remote ref moved and nothing acknowledged, a pending store through a READ-ONLY handle: durable 1, committed 3, two pending, oldest age 40s, each pending command listed by its original identity as pending_publication and not paused; the Run Lens model carries the same numbers with the PENDING_PUBLICATION condition and its terminal view prints the pending commands with 'not rejected'; a missing store renders as absent with a reason; a local bare remote is named protocol-only by the remote contract check, which also requires recorded operations evidence of remote durability, a protected refs/veldo/audit with force updates refused, and a named person recording it. DRIVEN: an unpublished command rendered as rejected under an unknown identity in a module copy loses its identity and reads as rejected after publisher death (the declared falsifier)."
+          "detail": "4 rows (1 driven): the status surface reads an empty store, a caught-up store and, after the publisher died with the remote ref moved and nothing acknowledged, a pending store through a READ-ONLY handle: durable 1, committed 3, two pending, oldest age 40s, each pending command listed by its original identity as pending_publication and not paused; the Run Lens model carries the same numbers with the PENDING_PUBLICATION condition and its terminal view prints the pending commands with 'not rejected'; a missing store renders as absent with a reason; a local bare remote is named protocol-only by the remote contract check, which also requires recorded operations evidence of remote durability, a protected refs/veldo/audit with force updates refused, and a named person recording it. DRIVEN: an unpublished command rendered as rejected under an unknown identity in a module copy loses its identity and reads as rejected after publisher death (the declared falsifier)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0024/gate-implementation.log",
-          "detail": "Complete canonical gate at 21794c98a47cb9e4485c82151e360844ea40b9d7 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5353 passed, 0 failed, every required check passed."
+          "detail": "Complete canonical gate at e4d2490d9b88fa547f0ec2d83cd5830498cb64ee in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5359 passed, 0 failed, every required check passed."
         }
       ]
     }
@@ -61,9 +61,9 @@
       "status": "passed",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "21794c98a47cb9e4485c82151e360844ea40b9d7",
+      "commit": "e4d2490d9b88fa547f0ec2d83cd5830498cb64ee",
       "ref": "proof/VELDO-0024/gate-implementation.log",
-      "detail": "GATE GREEN; selftest 5353 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+      "detail": "GATE GREEN; selftest 5359 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
     }
   ],
   "artifacts": [
@@ -71,8 +71,9 @@
     "proof/VELDO-0024/drive.py",
     "proof/VELDO-0024/gate-implementation.log",
     "proof/VELDO-0024/log-redactions.json",
-    "proof/VELDO-0024/README.md"
+    "proof/VELDO-0024/README.md",
+    "proof/VELDO-0024/approval-dmitry.json"
   ],
   "rollback": "Stop publication, preserve the local audit repository, the store's publication cursor and the remote audit ref exactly as they are; never delete or rewrite exports. The organ reverts through the ordinary reviewed path (a revert commit of control_replica.py, the store's cursor tables, the status section, their registrations and suite 37, never a force). No live remote was provisioned and no authority process runs it yet; the remote contract stays unmet until the operations authority records its evidence.",
-  "review": "Independent Codex review follows this bundle; no self-approval, landing or push is claimed here."
+  "review": "Independent Codex review of the branch at c7fb61f (research/codex-reviews/review-20260917-225151.md) found six reproducible problems; each is fixed and pinned with the reviewer's reproduction in suite 37 (rows marked 'review 1'). The fixes carry no second Codex pass under the one-review-per-landing quota ruling until 2026-09-22. Dmitry's approval of the landing is recorded in approval-dmitry.json."
 }

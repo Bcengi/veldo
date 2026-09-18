@@ -1,16 +1,16 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0024",
-  "commit": "21794c98a47cb9e4485c82151e360844ea40b9d7",
-  "taken_at": "2026-09-18T02:51:30Z",
+  "commit": "e4d2490d9b88fa547f0ec2d83cd5830498cb64ee",
+  "taken_at": "2026-09-18T09:36:34Z",
   "fragment": "scripts/suites/37_veldo_0024_replica.py",
-  "fragment_sha256": "6a7989115c1f2e6f09e8623bb6d54c0477935089c7cd8932393b24b4627633b1",
+  "fragment_sha256": "c8987c7bcfb9bd1256d97362fab546656cac616a6c7110722f3e526c6b51e985",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/control_replica.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
-  "rows_total": 10,
-  "rows_passed": 10,
+  "rows_total": 16,
+  "rows_passed": 16,
   "rows_failed": [],
   "driven_rows": [
-    "VELDO-0024 AC1 replica/pending-success DRIVEN (the declared falsifier): with a rejected push treated as success in a copy, the command whose export the remote refused is dispatched and reported succeeded although the remote never took it, so the row reds; unmutated (the row above) the same rejection leaves the command pending with zero receiver calls",
+    "VELDO-0024 AC1 replica/pending-success DRIVEN (the declared falsifier): with a rejected push treated as success in a copy, the command whose export the remote refused is acknowledged although the remote never took it (the local tip is ahead of the remote's), so the row reds; unmutated (the row above) the same rejection leaves the command pending",
     "VELDO-0024 AC2 replica/lost-ack-identity DRIVEN (the declared falsifier): with a fresh export identity allocated on every attempt in a copy, the restart after a kill following the remote ref update names a second identity for the same sequence: the store's cursor refuses it as export_identity_mismatch and the local audit log shows the sequence exported under a different name than the cursor recorded, so the row reds; unmutated (the row above) every window ends with one export per sequence",
     "VELDO-0024 AC3 replica/status-pending DRIVEN (the declared falsifier): with an unpublished command rendered as rejected under an unknown identity in a copy, the pending commands after publisher death read as rejected and lose their command ids, so the row reds; unmutated (the row above) they read as pending_publication under s2 and s3"
   ],
@@ -33,24 +33,24 @@
   },
   "per_criterion": {
     "AC1": {
-      "rows": 4,
-      "passed": 4,
+      "rows": 5,
+      "passed": 5,
       "driven": 1
     },
     "AC2": {
-      "rows": 3,
-      "passed": 3,
+      "rows": 7,
+      "passed": 7,
       "driven": 1
     },
     "AC3": {
-      "rows": 3,
-      "passed": 3,
+      "rows": 4,
+      "passed": 4,
       "driven": 1
     }
   },
   "rows": [
     {
-      "label": "VELDO-0024 AC1 replica/sequence: two committed commands are pending_publication before any export (the status shows durable 0, committed 2, two pending, oldest age 5s); publishing exports both in order to refs/veldo/audit on the real bare remote (the remote's log names export 1 then export 2, the remote tip equals the local audit tip), the export commit tree carries export.json, export.sig and the artifact BYTES blob (digest checked), dispatch runs once per command only after its acknowledgement, and afterwards both commands are succeeded with durable 2 and nothing pending",
+      "label": "VELDO-0024 AC1 replica/sequence: two committed commands are pending_publication before any export (the status shows durable 0, committed 2, two pending, oldest age 5s); publishing exports both in order to refs/veldo/audit on the real bare remote (the remote's log names export 1 then export 2, the remote tip equals the local audit tip), the export commit tree carries export.json, export.sig and the artifact BYTES blob (digest checked), dispatch runs once per command only after its acknowledgement (here NEVER: a local remote is protocol-only, so no dispatch runs), and afterwards both commands are acknowledged_protocol_only (not succeeded) with acknowledged 2, durable 0 and nothing pending",
       "passed": true
     },
     {
@@ -58,11 +58,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0024 AC1 replica/pending-success: with the remote's receive hook rejecting, a committed command's export is refused (remote_rejected), the command stays pending_publication with its identity (never succeeded, never rejected), the receiver is called zero times, the status shows one pending export of age 10s with durable 2 and committed 3; once the hook is gone the same export publishes, the receiver is called once and the command is succeeded",
+      "label": "VELDO-0024 AC1 replica/pending-success: with the remote's receive hook rejecting, a committed command's export is refused (remote_rejected), the command stays pending_publication with its identity (never succeeded, never rejected), the receiver is called zero times, the status shows one pending export of age 10s with acknowledged 2 and committed 3; once the hook is gone the same export publishes and the command is acknowledged_protocol_only (a local remote; still no dispatch, still not success)",
       "passed": true
     },
     {
-      "label": "VELDO-0024 AC1 replica/pending-success DRIVEN (the declared falsifier): with a rejected push treated as success in a copy, the command whose export the remote refused is dispatched and reported succeeded although the remote never took it, so the row reds; unmutated (the row above) the same rejection leaves the command pending with zero receiver calls",
+      "label": "VELDO-0024 AC1 replica/pending-success DRIVEN (the declared falsifier): with a rejected push treated as success in a copy, the command whose export the remote refused is acknowledged although the remote never took it (the local tip is ahead of the remote's), so the row reds; unmutated (the row above) the same rejection leaves the command pending",
       "passed": true
     },
     {
@@ -74,11 +74,11 @@
       "passed": true
     },
     {
-      "label": "VELDO-0024 AC2 replica/divergent-remote: a remote whose audit ref names a commit this authority never exported is a divergent replica: reconcile and publish both stop as divergent_replica, publication is PAUSED with the reason naming the foreign tip, the remote is left exactly as found (never overwritten), and the committed command stays pending_publication",
+      "label": "VELDO-0024 AC2 replica/divergent-remote: a remote whose audit ref names a commit this authority never exported is a divergent replica: reconcile stops as divergent_replica, publication is PAUSED with the reason naming the foreign tip (so the next publish refuses as publication_paused), the remote is left exactly as found (never overwritten), and the committed command stays pending_publication",
       "passed": true
     },
     {
-      "label": "VELDO-0024 AC3 replica/status-pending: the status surface reads an empty store (durable 0, committed 0, nothing pending), a caught-up store (durable 1, committed 1), and after the publisher died with the remote ref moved and nothing acknowledged, a pending store read through a READ-ONLY handle: durable 1, committed 3, two pending, oldest age 40s, each pending command listed by its ORIGINAL identity as pending_publication, not paused; the Run Lens model carries the same numbers with the condition PENDING_PUBLICATION and its terminal view prints the pending commands with 'not rejected'; a missing store renders as absent with a reason, never as an empty replica",
+      "label": "VELDO-0024 AC3 replica/status-pending: the status surface reads an empty store (durable 0, committed 0, nothing pending), a caught-up store (acknowledged 1, committed 1), and after the publisher died with the remote ref moved and nothing acknowledged, a pending store read through a READ-ONLY handle: acknowledged 1, committed 3, two pending, oldest age 40s, each pending command listed by its ORIGINAL identity as pending_publication, not paused; the Run Lens model carries the same numbers with the condition PENDING_PUBLICATION and its terminal view prints the pending commands with 'not rejected'; a missing store renders as absent with a reason, never as an empty replica",
       "passed": true
     },
     {
@@ -87,6 +87,30 @@
     },
     {
       "label": "VELDO-0024 AC3 replica/remote-contract: a local bare remote (path or file URL) is named protocol-only and never off-host durability; activation also needs recorded operations evidence of remote durability, evidence that refs/veldo/audit is protected with force updates refused, and a named person recording it (an agent is not one); a complete contract over a real remote URL has no problems; the audit ref is refs/veldo/audit",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC3 replica/durability-grade (review 1): a Publisher over a local remote without an explicit protocol_only declaration is refused as remote_unqualified even with full operations evidence (a local path is never off-host), a relative path, ./x, an absolute path and a file URL are all local while ssh://, https:// and host:path are not; a non-local URL with no evidence is refused and with the full contract grades off_host (no git call is made at construction); a protocol-only publisher grades protocol_only and its acknowledgements never become succeeded",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC1 replica/durable-dispatch (review 1): protocol-only acknowledgements dispatch nothing; an off-host acknowledged sequence is a durable dispatch obligation: it is listed undispatched, a dispatch that ran but died before being recorded leaves it listed, the next run dispatches it again and records it (at least once, never zero times), after which it is succeeded with dispatched True and a further run dispatches nothing; the protocol-only sequence stays acknowledged_protocol_only",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC2 replica/paused-stops (review 1): with the persisted pause set, publish and reconcile both refuse as publication_paused and publish nothing (seq 3 stays pending with the remote at seq 2), dispatch runs nothing even for an undispatched off-host sequence, the status shows PAUSED with the reason; after the operations authority resumes, the same call publishes seq 3 and dispatches the obligation",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC2 replica/lost-acknowledged-history (review 1): after the remote's audit ref is rolled back from seq 3 to seq 1 with nothing pending, reconcile pauses publication as lost_acknowledged_history naming the acknowledged export the remote no longer holds, repairs nothing (the remote stays at seq 1), the status shows PAUSED with acknowledged 3 unchanged, and a new command committed afterwards is not published while paused",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC2 replica/validated-reuse (review 1): an empty-tree commit whose subject names the expected export is NOT the export: validate_commit names the missing export.json, publish refuses to reuse or acknowledge it and pauses publication as invalid_export_commit, the remote receives nothing and the command stays pending_publication",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0024 AC2 replica/upgrade-backfill (review 1): a store whose three journal records have no publication row refuses to open for writes as publication_backfill_required, reads read-only with the three gaps and backfill_required in the status, is backfilled by the explicit step (three rows, marked backfilled), and then publishes the WHOLE history in order: the remote's root commit is export 1 and all three commands are acknowledged, none unknown",
       "passed": true
     }
   ]
