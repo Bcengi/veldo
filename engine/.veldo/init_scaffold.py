@@ -73,6 +73,9 @@ _FILES = [
     # VELDO-0022 (PLAN-0019 W7): Section 2 admission semantics, loaded by the suite and by the Admission
     # Service above it; not substrate.
     ".veldo/admission_contract.py",
+    # VELDO-0021 (PLAN-0019 W6): completion and eligibility predicates, loaded by the suite and by the
+    # eligibility service and lander above it; not substrate.
+    ".veldo/completion_contract.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",

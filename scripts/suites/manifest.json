@@ -323,6 +323,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/admission_contract.py and .veldo/authorization.py by path, mutates copies of the module under a temporary directory, writes only there and spawns no subprocess."
   },
   {
+   "name": "35_veldo_0021_completion",
+   "file": "35_veldo_0021_completion.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "35_veldo_0021_completion"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/completion_contract.py and .veldo/authorization.py by path, mutates copies of the module under a temporary directory, writes only there and spawns no subprocess."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

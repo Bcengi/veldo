@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0021
 title: Completion and executable eligibility predicates
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -33,6 +33,11 @@ footprint:
   - ".veldo/events.py"
   - "engine/.veldo/events.py"
   - "engine/.veldo/*contract*.py"
+  - ".veldo/*contract*.py"
+  - ".veldo/capabilities.yaml"
+  - "engine/.veldo/capabilities.yaml"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - "scripts/suites/*"
   - "packs/**/.veldo/*contract*.py"
   - "specs/VELDO-0021-completion-eligibility-contracts.md"
