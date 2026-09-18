@@ -1,13 +1,13 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0026",
-  "commit": "8a7c049129b09c6d443b606870fe0aff1143d288",
-  "taken_at": "2026-09-18T14:02:23Z",
+  "commit": "8f1bf3f6873a4a562f18f1c981640efe66bf5367",
+  "taken_at": "2026-09-18T14:28:02Z",
   "fragment": "scripts/suites/39_veldo_0026_revocation.py",
-  "fragment_sha256": "4e5e627211d64bba2f12b73e2df162af30996516f822777e70c3971152f417a0",
+  "fragment_sha256": "7102d819ca8898ee783fb8922ec19642ebc1af4ae662bf6078b0904399dde582",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy (of .veldo/control_membership.py or its sibling .veldo/authority_contract.py), runs the same harness and requires the named row red while the unmutated copy passes it; the the signature rows sign and verify with a fresh Ed25519 key through the installed ssh-keygen.",
-  "rows_total": 10,
-  "rows_passed": 10,
+  "rows_total": 16,
+  "rows_passed": 16,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0026 AC1 revocation/indirect-dependency DRIVEN (the declared falsifier): with the indirect prerequisite left out of the snapshot in a copy of the organ, another process withdraws the prerequisite and the claim boundary still allows the effect (the dependency itself did not move), so the row reds; unmutated (the row above) the withdrawal refuses as dependency_withdrawn at every boundary",
@@ -33,18 +33,18 @@
   },
   "per_criterion": {
     "AC1": {
-      "rows": 3,
-      "passed": 3,
+      "rows": 6,
+      "passed": 6,
       "driven": 1
     },
     "AC2": {
-      "rows": 4,
-      "passed": 4,
+      "rows": 6,
+      "passed": 6,
       "driven": 1
     },
     "AC3": {
-      "rows": 3,
-      "passed": 3,
+      "rows": 4,
+      "passed": 4,
       "driven": 1
     }
   },
@@ -87,6 +87,30 @@
     },
     {
       "label": "VELDO-0026 AC3 revocation/denial-storage-failure DRIVEN (the declared falsifier): with an unrecorded refusal treated as allowance in a copy of the organ, the revoked actor is dispatched after the denial write fails, so the row reds; unmutated (the row above) the boundary stands down and permits nothing",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC2 revocation/entity-namespace (review 1): an output submitted under the ledger's id, a stop obligation's id or a member's id, and an effect accepted under a member's id, are each refused as namespace_refused and change nothing (the ledger entity is still the ledger); an ordinary output id is accepted; after the revocation the ledger still refuses new effects for the revoked principal",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC1 revocation/read-set-bound-commit (review 1): an allowed verdict carries the snapshot's versions; a prerequisite withdrawn through another connection between the guard and the commit (at command acceptance, a boundary that admits a person) makes the commit refuse by version (stale_version on the withdrawn prerequisite) when the caller passes those versions to execute, and the same guard rerun refuses as dependency_withdrawn; nothing was committed",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC1 revocation/membership-reloaded (review 1): before the steward's signed revoke_membership asya is allowed at command acceptance; after it, the SAME snapshot (which never named her) is refused as revoked because the guard reloads membership from the store rather than trusting the caller; her earlier output is evidence only at result acceptance until a version-bound reauthorization, and a new effect for her is refused as revoked inside the transaction",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC3 revocation/real-disk-full (review 1): with the database's page limit set to its current size (SQLite's own 'database or disk is full'), the refusal of a revoked actor is returned as a stand-down naming denial_not_recorded, no exception escapes, no transaction is left open and dispatch is not permitted; with room restored the same refusal is recorded as a denial",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC2 revocation/identical-retry (review 1): repeating an identical accept_effect (same id and parameters, later clock, freshly derived versions) returns the committed result marked replayed with the same seq instead of a content conflict; the same id with other parameters is a conflict",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0026 AC1 revocation/transitive-prerequisites (review 1): a snapshot of a dependency reads its prerequisite AND that prerequisite's own prerequisite (A, B and C); the intact chain is allowed rather than rejected for an unread reference; withdrawing C two hops away refuses as dependency_withdrawn",
       "passed": true
     }
   ]
