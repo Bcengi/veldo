@@ -48,17 +48,19 @@ DOMAIN_TABLES = ("entities", "journal", "commands", "nonces", "reservations", "e
 
 COMMAND_FIELDS = ("command_id", "principal", "operation", "parameters", "expected_versions", "artifact_digests", "nonce")
 JOURNAL_FIELDS = ("seq", "prev_digest", "authority_generation", "command_id", "command_digest", "principal", "signer",
-                  "before_versions", "after_versions", "transition", "receipt_refs", "artifact_digests", "encoding")
+                  "before_versions", "after_versions", "transition", "nonce", "reservations", "effects", "receipt_refs", "artifact_digests", "encoding")
 JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
-            "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused")
+            "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
+            "read_only_handle")
 
 _DDL = (
     "CREATE TABLE IF NOT EXISTS entities (id TEXT PRIMARY KEY, kind TEXT NOT NULL, version INTEGER NOT NULL, digest TEXT NOT NULL, data TEXT NOT NULL)",
     "CREATE TABLE IF NOT EXISTS journal (seq INTEGER PRIMARY KEY, prev_digest TEXT NOT NULL, record_digest TEXT NOT NULL UNIQUE, "
     "authority_generation INTEGER NOT NULL, command_id TEXT NOT NULL UNIQUE, command_digest TEXT NOT NULL, principal TEXT NOT NULL, "
     "signer TEXT NOT NULL, signature TEXT NOT NULL, before_versions TEXT NOT NULL, after_versions TEXT NOT NULL, transition TEXT NOT NULL, "
+    "nonce TEXT NOT NULL, reservations TEXT NOT NULL, effects TEXT NOT NULL, "
     "receipt_refs TEXT NOT NULL, artifact_digests TEXT NOT NULL, encoding TEXT NOT NULL)",
     "CREATE TABLE IF NOT EXISTS commands (command_id TEXT PRIMARY KEY, command_digest TEXT NOT NULL, result TEXT NOT NULL, result_digest TEXT NOT NULL, "
     "seq INTEGER NOT NULL REFERENCES journal(seq))",
@@ -140,20 +142,31 @@ def filesystem_problems(path, mounts_text=None):
     return []
 
 
+def resolved_target(path):
+    """The database's REAL location: every symlink in the path and in the file itself resolved, so
+    qualification judges the storage that will hold the bytes, not a link that points at it."""
+    return os.path.realpath(os.path.abspath(path))
+
+
 def open_store(path, mode="rw", mounts_text=None):
     """A connection to the store with foreign keys, WAL and FULL synchronous set AND READ BACK; a
-    write-mode open refuses an unsupported filesystem by name and creates the schema. Autocommit
-    is off in the sqlite3 sense (isolation_level=None): every transaction is explicit."""
+    write-mode open refuses an unsupported filesystem by name (judged at the RESOLVED target, so a
+    symlink cannot place the authority on network storage) and creates the schema; a read-mode open
+    is a genuinely read-only SQLite handle (URI mode=ro) through which no write can commit.
+    Autocommit is off in the sqlite3 sense (isolation_level=None): every transaction is explicit."""
     if mode not in ("r", "rw"):
         raise ValueError("mode is r or rw")
+    target = resolved_target(path)
     if mode == "rw":
-        problems = filesystem_problems(os.path.dirname(os.path.abspath(path)) or ".", mounts_text)
+        problems = filesystem_problems(os.path.dirname(target) or ".", mounts_text)
         if problems:
             raise StoreRefused("unsupported_filesystem", "; ".join(problems))
-        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    elif not os.path.exists(path):
-        raise StoreRefused("incomplete_transaction", "no store at %s to read" % path)
-    conn = sqlite3.connect(path, isolation_level=None, timeout=30)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        conn = sqlite3.connect(target, isolation_level=None, timeout=30)
+    else:
+        if not os.path.exists(target):
+            raise StoreRefused("incomplete_transaction", "no store at %s to read" % path)
+        conn = sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=30)
     conn.execute("PRAGMA foreign_keys=ON")
     if mode == "rw":
         conn.execute("PRAGMA journal_mode=WAL")
@@ -288,7 +301,13 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=()):
     if not _is_str(signer) or not isinstance(authority_generation, int) or isinstance(authority_generation, bool) or authority_generation < 1:
         raise StoreRefused("malformed_command", "signer must be named and authority_generation a positive integer")
     cdigest = command_digest(command)
-    conn.execute("BEGIN IMMEDIATE")
+    receipt_refs = list(receipt_refs or ())  # materialized ONCE: an iterator consumed twice signs one list and stores another
+    if not all(_is_str(r) for r in receipt_refs):
+        raise StoreRefused("malformed_command", "receipt_refs must be strings")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot write (%s): open the store with mode='rw' at a qualified location" % e)
     try:
         prior = conn.execute("SELECT command_digest, result FROM commands WHERE command_id=?", (command["command_id"],)).fetchone()
         if prior:
@@ -319,24 +338,27 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=()):
             conn.execute("INSERT INTO entities (id, kind, version, digest, data) VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
                          "kind=excluded.kind, version=excluded.version, digest=excluded.digest, data=excluded.data",
                          (eid, new["kind"], after_versions[eid], edigest, json.dumps(new["data"], sort_keys=True)))
+        p = command["parameters"]
+        reservations = [{"id": p["reservation_id"], "ceiling": p["ceiling"], "delta": float(p["delta"])}] if command["operation"] == "reserve" else []
+        effects = [{"id": p["effect_id"], "kind": p["kind"], "target": p["target"], "state": "obligated"}] if command["operation"] == "record_effect" else []
         seq, prev = _last_journal(conn)
         record = {"seq": seq + 1, "prev_digest": prev, "authority_generation": authority_generation, "command_id": command["command_id"],
                   "command_digest": cdigest, "principal": command["principal"], "signer": signer, "before_versions": before_versions,
-                  "after_versions": after_versions, "transition": transition, "receipt_refs": list(receipt_refs), "artifact_digests": list(command["artifact_digests"]),
-                  "encoding": JOURNAL_ENCODING}
+                  "after_versions": after_versions, "transition": transition, "nonce": command["nonce"], "reservations": reservations, "effects": effects,
+                  "receipt_refs": receipt_refs, "artifact_digests": list(command["artifact_digests"]), "encoding": JOURNAL_ENCODING}
         record["record_digest"] = journal_record_digest(record)
         signature = sign(journal_signed_bytes(record))
         if not _is_str(signature):
             raise StoreRefused("incomplete_transaction", "the signer returned no signature; an unsigned record is not appended")
         conn.execute("INSERT INTO journal (seq, prev_digest, record_digest, authority_generation, command_id, command_digest, principal, signer, signature, "
-                     "before_versions, after_versions, transition, receipt_refs, artifact_digests, encoding) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                     "before_versions, after_versions, transition, nonce, reservations, effects, receipt_refs, artifact_digests, encoding) "
+                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                      (record["seq"], prev, record["record_digest"], authority_generation, command["command_id"], cdigest, command["principal"], signer, signature,
                       json.dumps(before_versions, sort_keys=True), json.dumps(after_versions, sort_keys=True), json.dumps(transition, sort_keys=True),
-                      json.dumps(list(receipt_refs)), json.dumps(list(command["artifact_digests"])), JOURNAL_ENCODING))
-        p = command["parameters"]
+                      command["nonce"], json.dumps(reservations, sort_keys=True), json.dumps(effects, sort_keys=True),
+                      json.dumps(receipt_refs), json.dumps(list(command["artifact_digests"])), JOURNAL_ENCODING))
         result = {"committed": True, "command_id": command["command_id"], "seq": record["seq"], "record_digest": record["record_digest"],
-                  "after_versions": after_versions, "effects": [p["effect_id"]] if command["operation"] == "record_effect" else [],
-                  "reservations": [p["reservation_id"]] if command["operation"] == "reserve" else []}
+                  "after_versions": after_versions, "effects": [e["id"] for e in effects], "reservations": [r["id"] for r in reservations]}
         result["result_digest"] = digest_of({k: v for k, v in result.items() if k != "result_digest"})
         # The commands row first: nonces, reservations and effects reference it by foreign key.
         conn.execute("INSERT INTO commands (command_id, command_digest, result, result_digest, seq) VALUES (?,?,?,?,?)",
@@ -356,6 +378,12 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=()):
     except sqlite3.IntegrityError as e:
         conn.execute("ROLLBACK")
         raise StoreRefused("foreign_key_violation", str(e))
+    except sqlite3.OperationalError as e:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        if "readonly" in str(e).lower() or "read-only" in str(e).lower():
+            raise StoreRefused("read_only_handle", "this handle cannot write (%s)" % e)
+        raise
     except StoreRefused:
         if conn.in_transaction:
             conn.execute("ROLLBACK")
@@ -373,24 +401,38 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=()):
 def export_journal(conn):
     """Every journal record as a plain mapping (JOURNAL_SIGNED_FIELDS plus signature), in sequence."""
     rows = conn.execute("SELECT seq, prev_digest, record_digest, authority_generation, command_id, command_digest, principal, signer, signature, "
-                        "before_versions, after_versions, transition, receipt_refs, artifact_digests, encoding FROM journal ORDER BY seq").fetchall()
+                        "before_versions, after_versions, transition, nonce, reservations, effects, receipt_refs, artifact_digests, encoding "
+                        "FROM journal ORDER BY seq").fetchall()
     out = []
     for r in rows:
         out.append({"seq": r[0], "prev_digest": r[1], "record_digest": r[2], "authority_generation": r[3], "command_id": r[4], "command_digest": r[5],
                     "principal": r[6], "signer": r[7], "signature": r[8], "before_versions": json.loads(r[9]), "after_versions": json.loads(r[10]),
-                    "transition": json.loads(r[11]), "receipt_refs": json.loads(r[12]), "artifact_digests": json.loads(r[13]), "encoding": r[14]})
+                    "transition": json.loads(r[11]), "nonce": r[12], "reservations": json.loads(r[13]), "effects": json.loads(r[14]),
+                    "receipt_refs": json.loads(r[15]), "artifact_digests": json.loads(r[16]), "encoding": r[17]})
     return out
 
 
 def materialized_state(conn):
-    """The live entity table as {id: {kind, version, digest, data}}."""
-    rows = conn.execute("SELECT id, kind, version, digest, data FROM entities ORDER BY id").fetchall()
-    return {r[0]: {"kind": r[1], "version": r[2], "digest": r[3], "data": json.loads(r[4])} for r in rows}
+    """The live DOMAIN state a replay must reproduce: entities {id: {kind, version, digest, data}},
+    reservations {id: {ceiling, delta, command_id}}, effects {id: {kind, target, state, command_id}}
+    and consumed nonces {nonce: command_id}. Not just the entity table: a rebuild that loses spend
+    holds, pending obligations or replay protection has not recovered the authority."""
+    ents = conn.execute("SELECT id, kind, version, digest, data FROM entities ORDER BY id").fetchall()
+    res = conn.execute("SELECT id, command_id, ceiling, delta FROM reservations ORDER BY id").fetchall()
+    eff = conn.execute("SELECT id, command_id, kind, target, state FROM effects ORDER BY id").fetchall()
+    non = conn.execute("SELECT nonce, command_id FROM nonces ORDER BY nonce").fetchall()
+    return {"entities": {r[0]: {"kind": r[1], "version": r[2], "digest": r[3], "data": json.loads(r[4])} for r in ents},
+            "reservations": {r[0]: {"command_id": r[1], "ceiling": r[2], "delta": r[3]} for r in res},
+            "effects": {r[0]: {"command_id": r[1], "kind": r[2], "target": r[3], "state": r[4]} for r in eff},
+            "nonces": {r[0]: r[1] for r in non}}
+
+
+STATE_PARTS = ("entities", "reservations", "effects", "nonces")
 
 
 def state_digest(state):
-    """One digest over a materialized state, the comparison a replay is judged by."""
-    return digest_of({eid: {"kind": e["kind"], "version": e["version"], "digest": e["digest"], "data": e["data"]} for eid, e in sorted(state.items())})
+    """One digest over every part of a materialized state, the comparison a replay is judged by."""
+    return digest_of({part: state.get(part, {}) for part in STATE_PARTS})
 
 
 def table_snapshot(conn):

@@ -354,7 +354,61 @@ expect("VELDO-0023 AC3 journal/replay-determinism: seven records of every transi
        and _v23_rp_out.get("head") == _v23_hist[-1]["record_digest"] and _v23_rp_out.get("sqlite_loaded") is False
        and _v23_replay_imports == ["hashlib", "json"] and set(_v23_store_imports) <= {"hashlib", "json", "os", "signal", "sqlite3", "subprocess"}
        and CR23.compare_with_live(CR23.replay(_v23_hist, _v23_stub_verify), _v23_live)["matches"] is True
-       and CR23.compare_with_live(CR23.replay(_v23_hist, _v23_stub_verify), dict(_v23_live, E9={"kind": "k", "version": 1, "digest": "d", "data": {}}))["matches"] is False)
+       and CR23.compare_with_live(CR23.replay(_v23_hist, _v23_stub_verify), dict(_v23_live, entities=dict(_v23_live["entities"], E9={"kind": "k", "version": 1, "digest": "d", "data": {}})))["matches"] is False)
+# THE REVIEW'S FOUR FINDINGS, each pinned (review-20260917-220917).
+_v23_full = CR23.replay(_v23_hist, _v23_stub_verify)["state"]
+_v23_wiped = CS23.open_store(_v23_hist_db)
+_v23_wiped.execute("PRAGMA foreign_keys=OFF")
+_v23_wiped.execute("DELETE FROM reservations"); _v23_wiped.execute("DELETE FROM effects"); _v23_wiped.execute("DELETE FROM nonces")
+_v23_wiped_live = CS23.materialized_state(_v23_wiped)
+_v23_wiped_cmp = CR23.compare_with_live(CR23.replay(_v23_hist, _v23_stub_verify), _v23_wiped_live)
+_v23_wiped.close()
+expect("VELDO-0023 AC3 journal/full-state-recovery (review 1): the signed record carries the consumed nonce, the reservation and the "
+       "effect, so replay rebuilds reservations, effects and nonces (seven nonces, R1 with its ceiling and delta, F1 obligated) beside "
+       "the entities; a live store whose reservations, effects and nonces were deleted no longer matches the rebuilt state and the "
+       "differences name each lost row; the state digest covers all four parts",
+       set(_v23_full) == set(CR23.STATE_PARTS) == set(CS23.STATE_PARTS) and len(_v23_full["nonces"]) == 7 and _v23_full["nonces"]["n-h4"] == "h4"
+       and _v23_full["reservations"] == {"R1": {"command_id": "h4", "ceiling": "project", "delta": 1.0}}
+       and _v23_full["effects"] == {"F1": {"command_id": "h7", "kind": "push", "target": "origin", "state": "obligated"}}
+       and _v23_wiped_cmp["matches"] is False and {"reservations:R1", "effects:F1", "nonces:n-h1"} <= set(_v23_wiped_cmp["differences"])
+       and {"nonce", "reservations", "effects"} <= set(CS23.JOURNAL_FIELDS) and CS23.JOURNAL_FIELDS == CR23.JOURNAL_FIELDS
+       and CS23.state_digest({"entities": _v23_full["entities"]}) != CS23.state_digest(_v23_full))
+_v23_iter_db = _v23_fresh_db("iter")
+_v23_ic = CS23.open_store(_v23_iter_db)
+_v23_ir = CS23.execute(_v23_ic, _v23_cmd("i1", "upsert_entity", {"entity_id": "E1", "kind": "k", "data": {}}, {"E1": 0}), "dmitry", _v23_stub_sign, 1, receipt_refs=iter(["R-a", "R-b"]))
+_v23_irec = CS23.export_journal(_v23_ic)[0]
+expect("VELDO-0023 AC1 journal/receipt-refs-once (review 1): receipt references passed as an ITERATOR are materialized once, so the signed "
+       "record and the stored record carry the same ['R-a', 'R-b'] and the committed history replays; a non-string receipt reference "
+       "is refused as malformed before the transaction opens",
+       _v23_ir["committed"] is True and _v23_irec["receipt_refs"] == ["R-a", "R-b"] and CR23.replay(CS23.export_journal(_v23_ic), _v23_stub_verify)["records"] == 1
+       and _v23_try(lambda: CS23.execute(_v23_ic, _v23_cmd("i2", "upsert_entity", {"entity_id": "E2", "kind": "k", "data": {}}, {"E2": 0}), "dmitry", _v23_stub_sign, 1, receipt_refs=[7])) == "malformed_command")
+_v23_ro = CS23.open_store(_v23_iter_db, mode="r")
+_v23_ro_code = _v23_try(lambda: CS23.execute(_v23_ro, _v23_cmd("ro1", "upsert_entity", {"entity_id": "RO", "kind": "k", "data": {}}, {"RO": 0}), "dmitry", _v23_stub_sign, 1))
+_v23_ro_rows = len(CS23.export_journal(_v23_ro))
+_v23_ro.close()
+_v23_ic.close()
+expect("VELDO-0023 AC1 journal/read-only-handle (review 1): a store opened with mode='r' is a genuinely read-only SQLite handle: a command "
+       "through it is refused as read_only_handle, the journal is unchanged and still readable, and a missing store refuses to open "
+       "read-only rather than being created",
+       _v23_ro_code == "read_only_handle" and _v23_ro_rows == 1 and len(CS23.export_journal(CS23.open_store(_v23_iter_db))) == 1
+       and _v23_try(lambda: CS23.open_store(str(_v23_tmp / "absent" / "c.sqlite3"), mode="r")) == "incomplete_transaction"
+       and not (_v23_tmp / "absent" / "c.sqlite3").exists())
+_v23_real_dir = _v23_tmp / "real-nfs"
+_v23_real_dir.mkdir()
+_v23_link_dir = _v23_tmp / "link-dir"
+_v23_os.symlink(str(_v23_real_dir), str(_v23_link_dir))
+_v23_mounts = "srv:/v %s nfs rw 0 0\n" % str(_v23_real_dir)
+_v23_ok_db = _v23_fresh_db("ok-target")
+_v23_file_link = _v23_tmp / "file-link.sqlite3"
+_v23_os.symlink(str(_v23_real_dir / "c.sqlite3"), str(_v23_file_link))
+expect("VELDO-0023 AC1 journal/symlink-qualification (review 1): qualification judges the RESOLVED target: a symlinked directory and a "
+       "symlinked database file that both point into a network mount (fixture mount table) refuse to open for writes exactly as the "
+       "direct path does, and resolved_target returns the real path; a symlink into a qualified directory opens",
+       _v23_try(lambda: CS23.open_store(str(_v23_real_dir / "c.sqlite3"), mounts_text=_v23_mounts)) == "unsupported_filesystem"
+       and _v23_try(lambda: CS23.open_store(str(_v23_link_dir / "c.sqlite3"), mounts_text=_v23_mounts)) == "unsupported_filesystem"
+       and _v23_try(lambda: CS23.open_store(str(_v23_file_link), mounts_text=_v23_mounts)) == "unsupported_filesystem"
+       and CS23.resolved_target(str(_v23_link_dir / "c.sqlite3")) == str(_v23_real_dir.resolve() / "c.sqlite3")
+       and CS23.open_store(str(_v23_link_dir / "c.sqlite3")) is not None and (_v23_real_dir / "c.sqlite3").exists())
 
 
 def _v23_corrupt(name):
@@ -377,6 +431,10 @@ def _v23_corrupt(name):
         tt[3]["authority_generation"] = 7
     elif name == "versions":
         tt[2]["before_versions"] = {"E1": 5}
+    elif name == "nonce":
+        tt[1]["nonce"] = "stolen"
+    elif name == "reservation":
+        tt[3]["reservations"][0]["delta"] = 1000.0
     elif name == "resign_bad_prev":
         tt[3]["prev_digest"] = "sha256:wrong"
         tt[3]["record_digest"] = CR23.record_digest(tt[3])
@@ -390,12 +448,14 @@ def _v23_corrupt(name):
 
 _v23_expected_refusals = {"field": "digest_mismatch", "reorder": "sequence_broken", "duplicate": "sequence_broken", "remove": "sequence_broken",
                           "signature": "signature_invalid", "identity": "digest_mismatch", "encoding": "unsupported_encoding", "generation": "digest_mismatch",
-                          "versions": "digest_mismatch", "resign_bad_prev": "chain_broken", "resign_field": "chain_broken"}
+                          "versions": "digest_mismatch", "nonce": "digest_mismatch", "reservation": "digest_mismatch",
+                          "resign_bad_prev": "chain_broken", "resign_field": "chain_broken"}
 _v23_got = {n: _v23_try(lambda: CR23.replay(_v23_corrupt(n), _v23_stub_verify)) for n in _v23_expected_refusals}
 expect("VELDO-0023 AC3 journal/replay-chain: every corruption of the signed history refuses reconstruction by name: a changed field "
        "(digest mismatch), reorder, duplicate and removal (sequence broken), a swapped signature, a changed identity, generation or "
        "versions (digest mismatch), an unknown encoding, and a record RE-SIGNED with a wrong predecessor digest or re-signed after a "
-       "field change (chain broken: the next record's prev_digest no longer matches) (got: %s)" % {k: v for k, v in _v23_got.items() if v != _v23_expected_refusals[k]},
+       "field change (chain broken: the next record's prev_digest no longer matches), a changed nonce or reservation delta (digest "
+       "mismatch: they are signed fields) (got: %s)" % {k: v for k, v in _v23_got.items() if v != _v23_expected_refusals[k]},
        _v23_got == _v23_expected_refusals)
 # THE DECLARED FALSIFIER: skip previous-record digest verification and re-sign one record with an incorrect predecessor digest.
 _V23_M3, _V23_M3_PATH = _v23_mutated(_v23_replay_src, '''        if rec["prev_digest"] != prev:

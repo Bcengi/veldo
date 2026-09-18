@@ -22,7 +22,8 @@ SCHEMA = "veldo.control_replay/v1"
 SUPPORTED_ENCODINGS = ("veldo.journal/v1",)
 GENESIS_DIGEST = "sha256:genesis"
 JOURNAL_FIELDS = ("seq", "prev_digest", "authority_generation", "command_id", "command_digest", "principal", "signer",
-                  "before_versions", "after_versions", "transition", "receipt_refs", "artifact_digests", "encoding")
+                  "before_versions", "after_versions", "transition", "nonce", "reservations", "effects", "receipt_refs", "artifact_digests", "encoding")
+STATE_PARTS = ("entities", "reservations", "effects", "nonces")
 JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 REFUSALS = ("invalid_journal", "unsupported_encoding", "sequence_broken", "chain_broken", "digest_mismatch", "signature_invalid",
             "transition_inconsistent", "state_mismatch")
@@ -53,7 +54,7 @@ def signed_bytes(record):
 
 
 def state_digest(state):
-    return digest_of({eid: {"kind": e["kind"], "version": e["version"], "digest": e["digest"], "data": e["data"]} for eid, e in sorted(state.items())})
+    return digest_of({part: state.get(part, {}) for part in STATE_PARTS})
 
 
 def verify_chain(records, verify):
@@ -85,14 +86,28 @@ def verify_chain(records, verify):
 
 
 def replay(records, verify):
-    """Verify the chain, then rebuild {id: {kind, version, digest, data}} deterministically from the
-    transitions, checking each record's before-versions against the state built so far and each
-    transition's own digest. Returns {"state", "state_digest", "head_digest", "records"}."""
+    """Verify the chain, then rebuild the whole domain state deterministically: entities from the
+    transitions (each record's before-versions checked against the state built so far, each
+    transition's own digest recomputed), reservations, effects and consumed nonces from the record
+    (a nonce, reservation or effect seen twice is inconsistent). Returns {"state", "state_digest",
+    "head_digest", "records"} with state keyed by STATE_PARTS."""
     head = verify_chain(records, verify)
-    state = {}
+    state = {part: {} for part in STATE_PARTS}
+    ents = state["entities"]
     for rec in records:
+        if rec["nonce"] in state["nonces"]:
+            raise ReplayRefused("transition_inconsistent", rec["seq"], "nonce %r was already consumed by %s" % (rec["nonce"], state["nonces"][rec["nonce"]]))
+        state["nonces"][rec["nonce"]] = rec["command_id"]
+        for r in rec["reservations"]:
+            if r["id"] in state["reservations"]:
+                raise ReplayRefused("transition_inconsistent", rec["seq"], "reservation %s recorded twice" % r["id"])
+            state["reservations"][r["id"]] = {"command_id": rec["command_id"], "ceiling": r["ceiling"], "delta": r["delta"]}
+        for e in rec["effects"]:
+            if e["id"] in state["effects"]:
+                raise ReplayRefused("transition_inconsistent", rec["seq"], "effect %s recorded twice" % e["id"])
+            state["effects"][e["id"]] = {"command_id": rec["command_id"], "kind": e["kind"], "target": e["target"], "state": e["state"]}
         for eid, v in rec["before_versions"].items():
-            have = state.get(eid, {}).get("version", 0)
+            have = ents.get(eid, {}).get("version", 0)
             if have != v:
                 raise ReplayRefused("transition_inconsistent", rec["seq"], "record says %s was at version %r before it, the rebuilt state has %r" % (eid, v, have))
         for eid, t in rec["transition"].items():
@@ -101,10 +116,10 @@ def replay(records, verify):
                                     % (eid, rec["after_versions"].get(eid), t.get("version"), rec["before_versions"].get(eid, 0)))
             if digest_of({"kind": t.get("kind"), "data": t.get("data"), "version": t.get("version")}) != t.get("digest"):
                 raise ReplayRefused("transition_inconsistent", rec["seq"], "entity %s: the transition's digest does not recompute from its kind, data and version" % eid)
-            state[eid] = {"kind": t["kind"], "version": t["version"], "digest": t["digest"], "data": t["data"]}
+            ents[eid] = {"kind": t["kind"], "version": t["version"], "digest": t["digest"], "data": t["data"]}
         for eid, v in rec["after_versions"].items():
-            if state.get(eid, {}).get("version", 0) != v:
-                raise ReplayRefused("transition_inconsistent", rec["seq"], "record says %s is at version %r after it, the rebuilt state has %r" % (eid, v, state.get(eid, {}).get("version", 0)))
+            if ents.get(eid, {}).get("version", 0) != v:
+                raise ReplayRefused("transition_inconsistent", rec["seq"], "record says %s is at version %r after it, the rebuilt state has %r" % (eid, v, ents.get(eid, {}).get("version", 0)))
     return {"state": state, "state_digest": state_digest(state), "head_digest": head, "records": len(records)}
 
 
@@ -114,5 +129,8 @@ def compare_with_live(rebuilt, live_state):
     live_digest = state_digest(live_state)
     if rebuilt["state_digest"] == live_digest:
         return {"matches": True, "digest": live_digest, "differences": []}
-    diffs = sorted(set(rebuilt["state"]) ^ set(live_state)) + sorted(e for e in set(rebuilt["state"]) & set(live_state) if rebuilt["state"][e] != live_state[e])
+    diffs = []
+    for part in STATE_PARTS:
+        a, b = rebuilt["state"].get(part, {}), live_state.get(part, {})
+        diffs += ["%s:%s" % (part, k) for k in sorted(set(a) ^ set(b))] + ["%s:%s" % (part, k) for k in sorted(set(a) & set(b)) if a[k] != b[k]]
     return {"matches": False, "rebuilt_digest": rebuilt["state_digest"], "live_digest": live_digest, "differences": diffs}
