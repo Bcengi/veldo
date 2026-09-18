@@ -350,6 +350,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_replica.py, .veldo/control_store.py and a copy of .veldo/runstatus.py by path, opens REAL SQLite stores and REAL local bare Git remotes under a temporary directory it removes, mutates copies of the replica module there, runs the installed git and short-lived publisher child processes with the same interpreter (each waited on; the crash windows have them SIGKILL themselves at durable boundaries), and writes only under that temporary directory."
   },
   {
+   "name": "38_veldo_0025_membership",
+   "file": "38_veldo_0025_membership.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "38_veldo_0025_membership"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_membership.py, .veldo/control_store.py and .veldo/authority_contract.py by path (and mutated copies of them side by side under a temporary directory), opens REAL SQLite stores there, generates throwaway Ed25519 key pairs with the installed ssh-keygen and signs and verifies every envelope through it (standing down by name when ssh-keygen is absent), runs short-lived client child processes with the same interpreter (each waited on; one SIGKILLs itself after COMMIT), and writes only under that temporary directory."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"
