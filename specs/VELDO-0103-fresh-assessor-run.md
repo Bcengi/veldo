@@ -9,7 +9,7 @@ human_approval: required
 lane: planned
 plan: PLAN-0020
 work: W3
-plan_revision: 1
+plan_revision: 2
 depends_on: []
 placement: [engine]
 protected_paths: []
