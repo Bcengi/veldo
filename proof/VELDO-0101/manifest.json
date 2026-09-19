@@ -1,0 +1,78 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0101",
+  "commit": "c4b485fc433a680f3ea88e7c6e1b84a9d5259025",
+  "producer": "Ava (Claude) implementing agent, writing because Codex is out of quota until 2026-09-21 (Dmitry's one-retry-then-write rule); Codex validates in the batch of 2026-09-22",
+  "produced_at": "2026-09-19T11:12:26Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0101/driven.json",
+          "detail": "2 rows (1 driven): the guard registry is exactly the nine R39 boundaries of the authority contract; over an intact snapshot (policy, scope, decision, a dependency and its indirectly read prerequisite, the actor's membership) every person-admitting boundary allows a person and every service-admitting boundary allows the service while a boundary admitting no person refuses and records a denial; for each record kind a SEPARATE PROCESS commits a change after the snapshot and every boundary refuses with the named reason (stale_read naming the record, dependency_withdrawn for the withdrawn prerequisite, stale_read for a membership change) and records a denial. DRIVEN: the indirect prerequisite left out of the snapshot and its never-read check removed in a copy of the organ lets a claim proceed after another process withdrew the prerequisite (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0101/gate-implementation.log",
+          "detail": "Complete canonical gate at c4b485fc433a680f3ea88e7c6e1b84a9d5259025 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5399 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0101/driven.json",
+          "detail": "2 rows (1 driven): a receiver PROCESS accepting an effect before the revocation leaves it accepted, the revocation marks it in flight with a journaled stop obligation and closure is not effective; a receiver process accepting after the revocation is refused inside the transaction and no new effect exists; two processes racing acceptance and revocation end in one of the two consistent orders with the loser's retry refused as revoked; an outcome outside stopped, completed, failed is refused and the stop evidence makes closure effective; the revoking process SIGKILLed after its commit leaves both stop obligations, which the reopened store and a replay of the signed journal with real verification against the authority's key both rebuild. DRIVEN: revocation reported as effective closure in a copy of the organ while the receiver's effect is still in flight (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0101/gate-implementation.log",
+          "detail": "Complete canonical gate at c4b485fc433a680f3ea88e7c6e1b84a9d5259025 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5399 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0101/driven.json",
+          "detail": "3 rows (1 driven): outputs submitted before and after the revocation are retained with their digests and neither satisfies the obligation (output_is_evidence_only plus reauthorization_required); a reauthorization naming a stale revocation version is refused, a fresh one bound to the current version makes the output acceptable, and a further revocation makes it stale again; with the denial journal's commit faulted the refusal of a revoked actor is a stand-down that permits no dispatch, the same through a read-only handle, and after restart the refusal is recorded and dispatch is still not permitted. DRIVEN: an unrecorded refusal treated as allowance in a copy of the organ dispatches the revoked actor after the denial write fails (the declared falsifier)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0101/gate-implementation.log",
+          "detail": "Complete canonical gate at c4b485fc433a680f3ea88e7c6e1b84a9d5259025 in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5399 passed, 0 failed, every required check passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "c4b485fc433a680f3ea88e7c6e1b84a9d5259025",
+      "ref": "proof/VELDO-0101/gate-implementation.log",
+      "detail": "GATE GREEN; selftest 5399 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0101/driven.json",
+    "proof/VELDO-0101/drive.py",
+    "proof/VELDO-0101/gate-implementation.log",
+    "proof/VELDO-0101/log-redactions.json",
+    "proof/VELDO-0101/README.md"
+  ],
+  "rollback": "Remove the capsule brief from the review script and stop invoking the runner; saved capsules remain readable and the proof bundles of earlier items are untouched.",
+  "review": "Codex is out of quota until 2026-09-21, so by Dmitry's standing rule (2026-09-14, restated 2026-09-19) the author tested this item: suite 40 with every declared falsifier driven, and the canonical gate. Codex validates the item in its batch review of 2026-09-22; that review and any fixes will be recorded in this bundle. Dmitry's approval of the landing is recorded in approval-dmitry.json."
+}
