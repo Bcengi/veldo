@@ -386,6 +386,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/fix_assessor.py by path (and mutated copies of it under a temporary directory) and drives it with a FAKE harness, a child process of the same interpreter that records its stdin and environment and prints a verdict envelope, so no model call is made and nothing is spent; it writes only under that temporary directory."
   },
   {
+   "name": "42_veldo_0102_fixval",
+   "file": "42_veldo_0102_fixval.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "42_veldo_0102_fixval"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/fix_validation.py by path (and mutated copies of it, each beside a copy of .veldo/capsule.py, under a temporary directory), builds a real two-commit git repository with the suite layout under that directory (standing down by name when git or tar is absent), and produces the four results there as child processes with deadlines, one of them a capsule that outlives its deadline with a helper; it writes only under that temporary directory and checks by digest that the repository it built is unchanged."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"

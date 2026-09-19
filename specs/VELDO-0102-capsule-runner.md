@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0102
 title: Capsule runner - reproductions and pinned rows against the reviewed and the fixed candidate
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

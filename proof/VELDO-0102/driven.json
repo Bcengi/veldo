@@ -1,0 +1,77 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0102",
+  "commit": "8c6bdf2f7bd72826715e72385f517f43c5416c13",
+  "taken_at": "2026-09-19T11:35:41Z",
+  "fragment": "scripts/suites/42_veldo_0102_fixval.py",
+  "fragment_sha256": "889c7bf401fcb2114b2a1f784bb6651f3d7f9e175d5e7a13fe57e71994c8f6b6",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy of .veldo/fix_validation.py (beside a copy of .veldo/capsule.py), runs the same real two-commit repository and requires the named row red while the unmutated copy passes it; every row drives the organ with a fake harness child process of the same interpreter, so no model call is made and nothing is spent.",
+  "rows_total": 6,
+  "rows_passed": 6,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0102 AC1 fixval/four-results-required DRIVEN (the declared falsifier): a finding whose capsule never reproduced the defect is open on the original (capsule_reviewed failed) and closed on the copy that skips that run and reports it passed",
+    "VELDO-0102 AC2 fixval/never-in-the-worktree DRIVEN (the declared falsifier): with the inside-the-worktree refusal removed in a copy, a run directory inside the worktree is accepted on the copy and refused by the original",
+    "VELDO-0102 AC3 fixval/invalid-mutation-not-covered DRIVEN (the declared falsifier): with a mutant that does not apply treated as covered in a copy, both findings are closed on the copy and neither on the original"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "fixval/four-results-required DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "fixval/never-in-the-worktree DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "fixval/invalid-mutation-not-covered DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 2,
+      "passed": 2,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 2,
+      "passed": 2,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 2,
+      "passed": 2,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0102 AC1 fixval/four-results-required: for the fixed finding all four results are passed and it is closed (capsule reproduces on the reviewed copy, not on the fixed copy, the pinned row reds with the mutant and is green fresh); for the unfixed finding the capsule still reproduces on the fixed copy and it stays open; for the finding without a capsule the two capsule results are missing, never passed, and it stays open",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0102 AC1 fixval/four-results-required DRIVEN (the declared falsifier): a finding whose capsule never reproduced the defect is open on the original (capsule_reviewed failed) and closed on the copy that skips that run and reports it passed",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0102 AC2 fixval/never-in-the-worktree: a run directory inside the worktree is refused before anything runs, the worktree's digest is identical before and after a full validation, no .capsule mount exists in it, and a capsule that outlives the deadline (with a grandchild process) is recorded as deadline, not passed, and the whole validation returns well before the sleep would have ended",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0102 AC2 fixval/never-in-the-worktree DRIVEN (the declared falsifier): with the inside-the-worktree refusal removed in a copy, a run directory inside the worktree is accepted on the copy and refused by the original",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0102 AC3 fixval/invalid-mutation-not-covered: a declared mutant whose anchor matches zero times and one whose anchor matches twice are each INVALID_MUTATION naming the file and the anchor with its match count, neither finding is closed although every other result passed, and the runner did not fall back to another anchor",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0102 AC3 fixval/invalid-mutation-not-covered DRIVEN (the declared falsifier): with a mutant that does not apply treated as covered in a copy, both findings are closed on the copy and neither on the original",
+      "passed": true
+    }
+  ]
+}

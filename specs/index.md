@@ -18,6 +18,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | VELDO-0015 | Liveness stands down on clock disagreement - a heartbeat from the future is answered | ready | high | dmitry | not_required | VELDO-0015-liveness-stands-down-on-clock-disagreement.md |
 | VELDO-0099 | Install-and-run observations resolve git metadata in either checkout shape | ready | standard | dmitry | not_required | VELDO-0099-worktree-git-shape.md |
+| VELDO-0102 | Capsule runner - reproductions and pinned rows against the reviewed and the fixed candidate | ready | high | dmitry | required | VELDO-0102-capsule-runner.md |
 | VELDO-0103 | Assessor - a fresh headless Claude Code run reads the whole fix diff and answers per finding | ready | high | dmitry | required | VELDO-0103-fresh-assessor-run.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
@@ -115,7 +116,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
-| VELDO-0102 | Capsule runner - reproductions and pinned rows against the reviewed and the fixed candidate | draft | high | dmitry | required | VELDO-0102-capsule-runner.md |
 | VELDO-0104 | validation.json in the proof bundle, the two-round cap, and the proof check refusing unvalidated fixes | draft | critical | dmitry | required | VELDO-0104-proof-check-refuses-unvalidated-fixes.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
@@ -714,7 +714,7 @@ Ready frontier: VELDO-0102 (W2), VELDO-0103 (W3).
 | Item | Spec | Title | Depends on | State |
 |---|---|---|---|---|
 | W1 | VELDO-0101 | Codex review contract saves a reproduction capsule per confirmed defect | - | shipped |
-| W2 | VELDO-0102 | Capsule runner - reproduction against reviewed and fixed candidates, pinned row and mutant, one process per capsule | VELDO-0101 | draft (frontier) |
+| W2 | VELDO-0102 | Capsule runner - reproduction against reviewed and fixed candidates, pinned row and mutant, one process per capsule | VELDO-0101 | ready (frontier) |
 | W3 | VELDO-0103 | Assessor as a fresh headless Claude Code run - fix diff plus findings in, per-finding verdict out, provenance recorded | - | ready (frontier) |
 | W4 | VELDO-0104 | validation.json in the proof bundle, round cap, and the proof check refusing unvalidated fixes | VELDO-0102, VELDO-0103 | waiting: VELDO-0102, VELDO-0103 |
 
