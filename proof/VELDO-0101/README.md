@@ -17,8 +17,8 @@ review and harvests the capsules beside the report.
 
 ## Driven
 
-`drive.py` records one run of suite 40 as `driven.json`: 7 rows, 7 passed, 3 DRIVEN rows, the three
-declared falsifiers among them, each applied to a copy of the module and required to turn its named row
+`drive.py` records one run of suite 40 as `driven.json`: 9 rows, 9 passed, 4 DRIVEN rows, the three
+declared falsifiers among them plus the deadline-kills-the-group falsifier added by the fix commit, each applied to a copy of the module and required to turn its named row
 red while the unmutated module passes it. The runner rows build a real two-commit git repository under a
 temporary directory and run the saved command as a child process with a deadline.
 
@@ -27,3 +27,12 @@ temporary directory and run the saved command as a child process with a deadline
 VELDO-0101 is a high-risk item with no protected paths; the spec asks for the owner's approval before
 landing. The approval, when recorded, is `approval-dmitry.json` in this directory, attributed to the
 channel it arrived on.
+
+## Review
+
+Author-tested under the Codex-out rule (Dmitry, 2026-09-14, restated 2026-09-19): Codex was out of quota until 2026-09-21,
+so the author drove suite 40 with every declared falsifier and ran the canonical gate; Dmitry approved the landing
+(approval-dmitry.json). The author's own review after landing found one defect, fixed in the commit that adds the
+row capsule/deadline-kills-the-group: the deadline killed only the command, not the process group it started, so a
+reproduction that spawned a helper left it running. Codex reviews this item in its batch of 2026-09-22; that review,
+its findings and any fixes are recorded here when they land.

@@ -167,6 +167,60 @@ else:
            and CAP101.run_capsule(_v101_make_capsule(_v101_tmp / "c_sleep", "import time\ntime.sleep(5)\nprint('DEFECT')\n", commit=_v101_reviewed),
                                   _v101_repo, _v101_reviewed, timeout=1, workdir=_v101_tmp / "run_sleep")["reproduced"] is False)
 
+
+    # A command that spawns a helper and outlives the deadline: the deadline must kill the whole process
+    # group, or the helper survives as a stray process after the runner has returned.
+    _v101_pidfile = _v101_tmp / "helper.pid"
+    _v101_c_grp = _v101_make_capsule(_v101_tmp / "c_grp",
+                                     "import subprocess, sys, time\n"
+                                     "subprocess.Popen([sys.executable, '-c', 'import os, sys, time; open(sys.argv[1], \"w\").write(str(os.getpid())); time.sleep(90)', "
+                                     + repr(str(_v101_pidfile)) + "], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n"
+                                     "time.sleep(90)\nprint('DEFECT')\n", commit=_v101_reviewed)
+
+    def _v101_helper_alive(pidfile, wait=3.0):
+        """True while the helper named in the pidfile is running, polled for up to wait seconds for it to
+        go away; None when the helper never wrote its pid."""
+        import time as _t
+        end = _t.monotonic() + wait
+        while True:
+            try:
+                pid = int(pidfile.read_text())
+            except (OSError, ValueError):
+                pid = None
+            if pid is not None:
+                try:
+                    _v101_os.kill(pid, 0)
+                    alive = True
+                except ProcessLookupError:
+                    return False
+                except PermissionError:
+                    alive = True
+                if not alive or _t.monotonic() > end:
+                    return alive
+            elif _t.monotonic() > end:
+                return None
+            _t.sleep(0.1)
+
+    _v101_r_grp = CAP101.run_capsule(_v101_c_grp, _v101_repo, _v101_reviewed, timeout=2, workdir=_v101_tmp / "run_grp")
+    _v101_grp_alive = _v101_helper_alive(_v101_pidfile)
+    expect("VELDO-0101 AC3 capsule/deadline-kills-the-group: a command that spawns a helper and outlives the deadline is "
+           "recorded timed out and not reproduced, the runner returns at the deadline rather than when the helper ends, and "
+           "the helper is dead afterwards because the deadline killed the whole process group",
+           _v101_r_grp["timed_out"] is True and _v101_r_grp["reproduced"] is False and _v101_r_grp["duration_seconds"] < 30
+           and _v101_grp_alive is False)
+
+    _v101_m_grp = _v101_mutant([("            os.killpg(p.pid, signal.SIGKILL)\n", "            p.kill()\n")], "childonly")
+    _v101_pidfile.unlink(missing_ok=True)
+    _v101_r_grp_m = _v101_m_grp.run_capsule(_v101_c_grp, _v101_repo, _v101_reviewed, timeout=2, workdir=_v101_tmp / "run_grp_m")
+    _v101_grp_m_alive = _v101_helper_alive(_v101_pidfile, wait=1.0)
+    try:
+        _v101_os.kill(int(_v101_pidfile.read_text()), 9)   # clean up the stray the mutant left behind
+    except (OSError, ValueError):
+        pass
+    expect("VELDO-0101 AC3 capsule/deadline-kills-the-group DRIVEN: with a copy of the runner that kills only the command on "
+           "the deadline, the helper is still alive after the copy returns and dead after the original returns",
+           _v101_r_grp_m["timed_out"] is True and _v101_grp_m_alive is True and _v101_grp_alive is False)
+
     # The declared falsifier: a runner that rewrites the reviewer's script into an assertion before running it.
     _v101_m3 = _v101_mutant([("    mount = tree / MOUNT\n    shutil.copytree(capsule_dir, mount)\n",
                               "    mount = tree / MOUNT\n    shutil.copytree(capsule_dir, mount)\n"

@@ -1,17 +1,18 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0101",
-  "commit": "a703efaa78c1290fb973c16a087e394c1ad4680d",
-  "taken_at": "2026-09-19T11:12:26Z",
+  "commit": "8009c861b1ab0f9d3f75984182e3fd6874e89a23",
+  "taken_at": "2026-09-19T11:25:21Z",
   "fragment": "scripts/suites/40_veldo_0101_capsules.py",
-  "fragment_sha256": "485c5a679ce82f0cc1034958cb09c0cfec1a69fdf64a45442bb5eac20a85c373",
+  "fragment_sha256": "3f418489e967b23847e94b30fbcfa59a9a4cb829b4e338a51f39a016196d1373",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy of .veldo/capsule.py, runs the same harness and requires the named row red while the unmutated copy passes it; the runner rows build a real two-commit git repository under a temporary directory and run the saved command as a child process with a deadline.",
-  "rows_total": 7,
-  "rows_passed": 7,
+  "rows_total": 9,
+  "rows_passed": 9,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0101 AC1 capsule/brief-requires-capsule DRIVEN (the declared falsifier): with the unconfirmed rule removed from the brief in a copy of the organ, the row's own check fails on that copy and passes on the original",
     "VELDO-0101 AC2 capsule/tampered-bytes-refused DRIVEN (the declared falsifier): with the digest comparison skipped in a copy of the loader, the tampered capsule loads on the copy and is refused by the original",
+    "VELDO-0101 AC3 capsule/deadline-kills-the-group DRIVEN: with a copy of the runner that kills only the command on the deadline, the helper is still alive after the copy returns and dead after the original returns",
     "VELDO-0101 AC3 capsule/reviewer-bytes-preserved DRIVEN (the declared falsifier): with a copy of the runner that rewrites the script to an assertion before running it, the reviewer's digests change and the copy's own after-run check raises, so the preservation the row asserts is broken on the copy and holds on the original"
   ],
   "declared_falsifiers": {
@@ -43,9 +44,9 @@
       "driven": 1
     },
     "AC3": {
-      "rows": 3,
-      "passed": 3,
-      "driven": 1
+      "rows": 5,
+      "passed": 5,
+      "driven": 2
     }
   },
   "rows": [
@@ -71,6 +72,14 @@
     },
     {
       "label": "VELDO-0101 AC3 capsule/run-record: the run record names the finding, the commit, the command, the exit code, the duration and a digest of the capsule, and a timed-out run is recorded as not reproduced rather than as passed",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0101 AC3 capsule/deadline-kills-the-group: a command that spawns a helper and outlives the deadline is recorded timed out and not reproduced, the runner returns at the deadline rather than when the helper ends, and the helper is dead afterwards because the deadline killed the whole process group",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0101 AC3 capsule/deadline-kills-the-group DRIVEN: with a copy of the runner that kills only the command on the deadline, the helper is still alive after the copy returns and dead after the original returns",
       "passed": true
     },
     {

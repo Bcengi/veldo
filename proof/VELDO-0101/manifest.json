@@ -71,7 +71,8 @@
     "proof/VELDO-0101/drive.py",
     "proof/VELDO-0101/gate-implementation.log",
     "proof/VELDO-0101/log-redactions.json",
-    "proof/VELDO-0101/README.md"
+    "proof/VELDO-0101/README.md",
+    "proof/VELDO-0101/approval-dmitry.json"
   ],
   "rollback": "Remove the capsule brief from the review script and stop invoking the runner; saved capsules remain readable and the proof bundles of earlier items are untouched.",
   "review": "Codex is out of quota until 2026-09-21, so by Dmitry's standing rule (2026-09-14, restated 2026-09-19) the author tested this item: suite 40 with every declared falsifier driven, and the canonical gate. Codex validates the item in its batch review of 2026-09-22; that review and any fixes will be recorded in this bundle. Dmitry's approval of the landing is recorded in approval-dmitry.json."

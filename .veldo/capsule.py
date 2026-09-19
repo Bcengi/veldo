@@ -25,6 +25,7 @@ import hashlib
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -190,13 +191,21 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
     import time
     t0 = time.monotonic()
     timed_out = False
+    # The command runs as the leader of a new process group. On the deadline the WHOLE group is killed,
+    # not only the command: a reproduction that spawned helpers must leave nothing running behind it,
+    # and a helper holding the output pipe must not keep the runner waiting after the command is dead.
+    p = subprocess.Popen(m["command"], cwd=str(tree), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
     try:
-        p = subprocess.run(m["command"], cwd=str(tree), env=env, capture_output=True, timeout=timeout, start_new_session=True)
-        exit_code, out, err = p.returncode, p.stdout.decode("utf-8", "replace"), p.stderr.decode("utf-8", "replace")
-    except subprocess.TimeoutExpired as e:
+        out_b, err_b = p.communicate(timeout=timeout)
+        exit_code = p.returncode
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(p.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        out_b, err_b = p.communicate()
         timed_out, exit_code = True, None
-        out = (e.stdout or b"").decode("utf-8", "replace") if isinstance(e.stdout, bytes) else ""
-        err = (e.stderr or b"").decode("utf-8", "replace") if isinstance(e.stderr, bytes) else ""
+    out, err = out_b.decode("utf-8", "replace"), err_b.decode("utf-8", "replace")
     duration = time.monotonic() - t0
     files_present = {}
     fe = m["expected"].get("value") if m["expected"].get("kind") == "file_exists" else None
