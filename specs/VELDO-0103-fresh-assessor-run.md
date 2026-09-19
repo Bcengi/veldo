@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0103
 title: Assessor - a fresh headless Claude Code run reads the whole fix diff and answers per finding
-status: ready
+status: shipped
 risk: high
 owner: dmitry
 human_approval: required
