@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0101-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0101",
+    "commit": "c4b485fc433a680f3ea88e7c6e1b84a9d5259025",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0101 (risk high, human_approval required, no protected paths) over Telegram on 2026-09-19T11:11:55Z (message 28108, 'Approve 0101'), answering an ask that described the item: the Codex review brief requires a saved reproduction capsule per confirmed defect, the loader refuses tampered or undigested capsule files, and the runner executes the reviewer's command in a fresh copy of a commit without rewriting the reviewer's files. The commit bound here is the implementation commit. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-19T11:11:55Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
