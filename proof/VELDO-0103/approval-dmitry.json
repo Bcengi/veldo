@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0103-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0103",
+    "commit": "1276da58323c422b408376b73a47fecbba185482",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0103 (risk high, human_approval required, no protected paths) over Telegram on 2026-09-19T11:37:36Z (message 28113, 'Approve'), answering an ask that described the item: a fresh headless Claude Code run as the second reader of every fix, briefed only from the findings, the capsule results and the diff, verdict per finding, nothing closed without provenance. The commit bound here is the implementation commit. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-19T11:37:36Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
