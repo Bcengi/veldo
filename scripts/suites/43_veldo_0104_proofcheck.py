@@ -7,7 +7,7 @@ prerequisite closure is ITSELF ALONE:
 
   python3 scripts/selftest.py --suite 43_veldo_0104_proofcheck
 
-WHAT IS UNDER TEST. The record and the rule in .veldo/fix_validation.py (write_record, fix_rounds,
+WHAT IS UNDER TEST. The record and the rule in .veldo/fix_validation_record.py (write_record, fix_rounds,
 round_count, review_evidence, check_bundle, flag_from_policy, read_flag) over a REAL git repository
 built under a temporary directory with a spec, a review commit with saved capsules, fix commits, a
 gate stamp, a proof commit and a ship commit; and the ONE call site in .veldo/validate.py, exercised
@@ -38,16 +38,18 @@ def _v104_load(name, path):
 
 
 def _v104_organ(tag, edits=()):
-    """A copy of the organ with its siblings beside it, so a mutant is the organ alone and nothing else."""
+    """A copy of the record-and-check organ with its siblings beside it, so a mutant is that organ alone
+    and nothing else. The runner and the capsule module travel with it because it loads both by path."""
     d = _v104_tmp / ("organ_" + tag)
     d.mkdir()
     _v104_shutil.copy2(ROOT / ".veldo" / "capsule.py", d / "capsule.py")
-    src = (ROOT / ".veldo" / "fix_validation.py").read_text()
+    _v104_shutil.copy2(ROOT / ".veldo" / "fix_validation.py", d / "fix_validation.py")
+    src = (ROOT / ".veldo" / "fix_validation_record.py").read_text()
     for old, new in edits:
         assert src.count(old) == 1, (old[:70], src.count(old))
         src = src.replace(old, new)
-    (d / "fix_validation.py").write_text(src)
-    return _v104_load("v104_fixval_" + tag, d / "fix_validation.py")
+    (d / "fix_validation_record.py").write_text(src)
+    return _v104_load("v104_record_" + tag, d / "fix_validation_record.py")
 
 
 MISSING_LINE_104 = '    missing = [c for c in (reviewed, commit) if not _commit_exists(repo, c)]'
@@ -361,8 +363,8 @@ else:
 
     _v104_a_closed, _v104_brief_seen = _v104_assess("closed", "closed")
     _v104_a_open, _ = _v104_assess("not_closed", "open")
-    _v104_erec = _v104_FV.write_record(_v104_runner, _v104_a_closed, "VELDO-9999", _v104_erepo, _v104_ebundle)
-    _v104_erec_open = _v104_FV.write_record(_v104_runner, _v104_a_open, "VELDO-9999", _v104_erepo, _v104_ebundle)
+    _v104_erec = FV104.write_record(_v104_runner, _v104_a_closed, "VELDO-9999", _v104_erepo, _v104_ebundle)
+    _v104_erec_open = FV104.write_record(_v104_runner, _v104_a_open, "VELDO-9999", _v104_erepo, _v104_ebundle)
     _v104_eman = {"schema": "veldo.proof/v1", "spec_id": "VELDO-9999", "commit": _v104_eF}
     _v104_echeck = FV104.check_bundle(_v104_eman, _v104_erec, _v104_erepo, _v104_ebundle, True, "proven")
     _v104_echeck_open = FV104.check_bundle(_v104_eman, _v104_erec_open, _v104_erepo, _v104_ebundle, True, "proven")
@@ -376,7 +378,7 @@ else:
            "check accepts the bundle; the SAME run with the reader saying not_closed is refused by name although all four "
            "mechanical results passed, and with no record at all it is refused as having none; DRIVEN: a copy of the check that "
            "does not consult the reader's verdict accepts the bundle the reader rejected",
-           all(_v104_runner["findings"][0]["results"][k]["status"] == "passed" for k in _v104_FV.RESULT_KEYS)
+           all(_v104_runner["findings"][0]["results"][k]["status"] == "passed" for k in FV104.RESULT_KEYS)
            and _v104_runner["closes_findings"] is False and _v104_runner["all_results_passed"] == ["F-1"]
            and "exit_code_changed" in _v104_brief_seen and _v104_a_closed["closed"] == ["F-1"]
            and _v104_a_closed["provenance_missing"] is False

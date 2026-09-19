@@ -223,6 +223,7 @@ _observability_module = functools.partial(_organ, "observability", ROOT / ".veld
 _decision_module = functools.partial(_organ, "decision", ROOT / ".veldo" / "decision.py")
 _behavior_floor_module = functools.partial(_organ, "behavior_floor", ROOT / ".veldo" / "behavior_floor.py")
 _decision_review_module = functools.partial(_organ, "decision_review", ROOT / ".veldo" / "decision_review.py")
+_fix_validation_record_module = functools.partial(_organ, "fix_validation_record", ROOT / ".veldo" / "fix_validation_record.py")
 _tripwire_module = functools.partial(_organ, "tripwire", ROOT / ".veldo" / "tripwire.py")
 _security_review_module = functools.partial(_organ, "security_review", ROOT / ".veldo" / "security_review.py")
 _shape_review_module = functools.partial(_organ, "shape_review", ROOT / ".veldo" / "shape_review.py")

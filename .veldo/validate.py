@@ -231,61 +231,6 @@ def check_criteria_coverage(spec_path, proof_path):
 import hashlib as _hashlib
 
 
-def check_fix_validation(path, manifest):
-    """VELDO-0104 (PLAN-0020 W4): a proof bundle whose item was fixed after its review must carry
-    validation.json, written by .veldo/fix_validation.py from the runner's and the assessor's records,
-    naming both commits, covering every finding the review's own evidence names and closing each on all
-    four runner results and the assessor's verdict; and the fix rounds must not exceed the cap. Whether
-    the rule applies is DERIVED by the organ from the reviewer's evidence in the bundle, never from a
-    field the author writes into the manifest. The rule lives in fix_validation.py; this is its ONE
-    call site, reached by `validate.py proof` and by `validate.py all` through check_json. The owner
-    flag fix_validation.required in .veldo/policy.yaml (a protected path) decides refusal or warning,
-    and its state is printed with every proof check, applicable or not."""
-    fv_path = Path(__file__).resolve().parent / "fix_validation.py"
-    if not fv_path.is_file():
-        return 0
-    spec_ = importlib.util.spec_from_file_location("veldo_fix_validation", fv_path)
-    fv = importlib.util.module_from_spec(spec_)
-    spec_.loader.exec_module(fv)
-    policy_path = ROOT / ".veldo" / "policy.yaml"
-    required = fv.flag_from_policy(parse_yamlish(policy_path.read_text()) if policy_path.is_file() else {})
-    state = "required" if required else "advisory"
-    proof_dir = Path(path).parent
-    record_path = proof_dir / fv.RECORD_FILE
-    record = None
-    if record_path.is_file():
-        try:
-            record = json.loads(record_path.read_text())
-        except Exception as e:  # noqa: BLE001 - an unreadable record is no record, named as such
-            print(f"  {path}: {fv.RECORD_FILE} is unreadable ({e}); treated as absent")
-    status = None
-    sid = manifest.get("spec_id")
-    for sp in sorted((ROOT / "specs").glob(f"{sid}-*.md")) if sid else []:
-        status = (front_matter(sp.read_text()) or {}).get("status")
-        break
-    try:
-        res = fv.check_bundle(manifest, record, ROOT, proof_dir, required, status)
-    except fv.ValidationError as e:
-        print(f"  {path}: fix validation {state}; could not read the commits it needs: {e}")
-        return 0 if not required else fail(path, f"fix validation could not read the commits it needs: {e}")
-    if not res["applicable"]:
-        why = ("the review evidence names commit(s) this repository does not have, so nothing about it can be "
-               f"counted here: {', '.join(c[:12] for c in res['unknown_commits'])}" if res.get("unknown_commits")
-               else "the bundle carries no review evidence taken before its own commit")
-        print(f"  {path}: fix validation {state} (policy fix_validation.required); not applicable: {why}")
-        return 0
-    print(f"  {path}: fix validation {state} (policy fix_validation.required); review evidence "
-          f"{res.get('evidence')} at {str(res.get('reviewed_commit'))[:12]}; fix rounds {res['rounds']}"
-          f"{' - PARKED' if res['parked'] else ''}; {len(res['problems'])} problem(s)")
-    errs = 0
-    for pr in res["problems"]:
-        if res["refuses"]:
-            errs += fail(path, f"{pr['code']}: {pr['text']}")
-        else:
-            print(f"  {path}: warning {pr['code']}: {pr['text']} (advisory: fix_validation.required is off)")
-    return errs
-
-
 def proof_digest(manifest):
     """Stable digest of a proof manifest's substance (spec, criteria, checks).
     Canonical copy; policy_check has an identical one and selftest guards drift."""
@@ -309,10 +254,9 @@ def check_json(path, required, name):
         if field not in data:
             errs += fail(path, f"missing field: {field}")
     if name == "proof":
-        for c in data.get("criteria", []):
-            if c.get("status") == "passed" and not c.get("evidence"):
-                errs += fail(path, f"criterion {c.get('id')} passed without evidence")
-        errs += check_fix_validation(path, data)
+        errs += sum(fail(path, f"criterion {c.get('id')} passed without evidence")
+                    for c in data.get("criteria", []) if c.get("status") == "passed" and not c.get("evidence"))
+        errs += _VC._fix_validation_record_module().check_proof_bundle(path, data, ROOT, parse_yamlish, front_matter, fail)
     if name == "approval" and data.get("decision") not in ("approved", "rejected"):
         errs += fail(path, f"bad approval decision: {data.get('decision')!r} (canonical: approved, rejected) - a near-miss value makes the approval silently inert")
     if name == "verdict":
