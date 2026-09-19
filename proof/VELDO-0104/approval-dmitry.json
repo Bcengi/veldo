@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0104-1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0104",
+    "commit": "0390fda6ed7e75cb9f9516846d089143fe28f78c",
+    "paths": []
+  },
+  "basis": "Dmitry approved the landing of VELDO-0104 (risk critical, human_approval required) over Telegram on 2026-09-19T19:35:57Z (message 28137, 'Approve'), answering an ask that described the item: a fix cannot be part of a landed proof unless the reviewer's saved reproductions behave correctly on both the reviewed and the fixed commit, the pinned row reds without the fix and greens with it, and an independent reader who saw the diff agrees the finding is closed; whether the rule applies is derived from the reviewer's own evidence in the bundle rather than from anything the author writes; a fix loop stops after two rounds. The requirement itself lands OFF as one owner flag in the protected .veldo/policy.yaml, so every problem is a warning until Dmitry turns it on. The commit bound here is the implementation commit. paths is empty because the approval is of the landing.",
+  "recorded_at": "2026-09-19T19:35:57Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
