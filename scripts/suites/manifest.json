@@ -395,6 +395,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/fix_validation.py by path (and mutated copies of it, each beside a copy of .veldo/capsule.py, under a temporary directory), builds a real two-commit git repository with the suite layout under that directory (standing down by name when git or tar is absent), and produces the four results there as child processes with deadlines, one of them a capsule that outlives its deadline with a helper; it writes only under that temporary directory and checks by digest that the repository it built is unchanged."
   },
   {
+   "name": "43_veldo_0104_proofcheck",
+   "file": "43_veldo_0104_proofcheck.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "43_veldo_0104_proofcheck"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/fix_validation.py and .veldo/capsule.py by path (and mutated copies of the first beside a copy of the second, under a temporary directory), builds a real git repository with a spec, a review commit carrying saved capsules, fix commits, a gate stamp, a proof commit and a ship commit under that directory (standing down by name when git is absent), squashes with plumbing so the fixture is untouched, and runs `python3 .veldo/validate.py proof` twice as a child process on bundles it built to show the check is reached from the proof mode; it writes only under that temporary directory."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"
