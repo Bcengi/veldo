@@ -377,6 +377,15 @@
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/capsule.py by path (and mutated copies of it under a temporary directory), builds capsule directories and a REAL two-commit git repository under that temporary directory with the installed git, runs the saved command as a child process of the same interpreter with a deadline (each waited on), and writes only under that temporary directory. Without git or tar the AC3 rows stand down by name."
   },
   {
+   "name": "41_veldo_0103_assessor",
+   "file": "41_veldo_0103_assessor.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "41_veldo_0103_assessor"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/fix_assessor.py by path (and mutated copies of it under a temporary directory) and drives it with a FAKE harness, a child process of the same interpreter that records its stdin and environment and prints a verdict envelope, so no model call is made and nothing is spent; it writes only under that temporary directory."
+  },
+  {
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"
