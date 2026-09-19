@@ -50,6 +50,7 @@ def _v104_organ(tag, edits=()):
     return _v104_load("v104_fixval_" + tag, d / "fix_validation.py")
 
 
+MISSING_LINE_104 = '    missing = [c for c in (reviewed, commit) if not _commit_exists(repo, c)]'
 FV104 = _v104_organ("main")
 CAP104 = _v104_load("v104_capsule", ROOT / ".veldo" / "capsule.py")
 
@@ -385,3 +386,35 @@ else:
            and _v104_echeck_open["refuses"] is True
            and [p["code"] for p in _v104_echeck_none["problems"]] == [FV104.NO_RECORD]
            and _v104_eopen_m["problems"] == [])
+
+    # A bundle can carry a review taken in a repository whose history was frozen and not carried over.
+    # THIS repository carries many: their verdicts name commits that do not exist here. Counting rounds
+    # over a history nobody has is not a question with an answer, and calling it a failure would refuse
+    # the whole landed corpus the moment the owner turned the flag on, which is the same as having no
+    # flag at all.
+    _v104_elsewhere = _v104_tmp / "bundle_from_elsewhere"
+    _v104_elsewhere.mkdir()
+    (_v104_elsewhere / "verdict.json").write_text(_v104_json.dumps({"schema": "veldo.verdict/v1", "commit": "0" * 40, "verdict": "pass"}))
+    _v104_man_elsewhere = {"schema": "veldo.proof/v1", "spec_id": "VELDO-9104", "commit": _v104_eF if _v104_have_git else "1" * 40}
+    _v104_c_elsewhere = FV104.check_bundle(_v104_man_elsewhere, None, _v104_erepo, _v104_elsewhere, True, "proven")
+    _v104_M_nocheck = _v104_organ("commitsanywhere", [(MISSING_LINE_104, "    missing = []")])
+    _v104_nocheck_raised = None
+    try:
+        _v104_M_nocheck.check_bundle(_v104_man_elsewhere, None, _v104_erepo, _v104_elsewhere, True, "proven")
+        _v104_nocheck_raised = "no"
+    except Exception as _v104_e:
+        _v104_nocheck_raised = type(_v104_e).__name__
+    # And the whole landed corpus of this repository, through the real command, with nothing refused.
+    _v104_all = _v104_sp.run([_v104_sys.executable, str(ROOT / ".veldo" / "validate.py"), "all"],
+                             capture_output=True, text=True, cwd=str(ROOT))
+    expect("VELDO-0104 AC3 proofcheck/a-review-from-a-history-nobody-has: a bundle whose review evidence names a commit this "
+           "repository does not have is NOT applicable, and says which commit it could not find, rather than failing to count "
+           "rounds over a history nobody has; run over this repository's own landed corpus the check reports on every bundle "
+           "and refuses none of them, and no git error reaches the output; DRIVEN: a copy that does not ask whether the "
+           "commits are here raises trying to count between them, which with the flag on would refuse every bundle carrying a "
+           "review from the predecessor repository",
+           _v104_c_elsewhere["applicable"] is False and _v104_c_elsewhere.get("unknown_commits") == ["0" * 40]
+           and _v104_c_elsewhere["problems"] == []
+           and _v104_nocheck_raised == "ValidationError"
+           and _v104_all.returncode == 0 and "separate paths from revisions" not in (_v104_all.stdout + _v104_all.stderr)
+           and "does not have" in _v104_all.stdout)

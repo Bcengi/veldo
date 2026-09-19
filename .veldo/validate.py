@@ -269,8 +269,10 @@ def check_fix_validation(path, manifest):
         print(f"  {path}: fix validation {state}; could not read the commits it needs: {e}")
         return 0 if not required else fail(path, f"fix validation could not read the commits it needs: {e}")
     if not res["applicable"]:
-        print(f"  {path}: fix validation {state} (policy fix_validation.required); not applicable: "
-              f"the bundle carries no review evidence taken before its own commit")
+        why = ("the review evidence names commit(s) this repository does not have, so nothing about it can be "
+               f"counted here: {', '.join(c[:12] for c in res['unknown_commits'])}" if res.get("unknown_commits")
+               else "the bundle carries no review evidence taken before its own commit")
+        print(f"  {path}: fix validation {state} (policy fix_validation.required); not applicable: {why}")
         return 0
     print(f"  {path}: fix validation {state} (policy fix_validation.required); review evidence "
           f"{res.get('evidence')} at {str(res.get('reviewed_commit'))[:12]}; fix rounds {res['rounds']}"

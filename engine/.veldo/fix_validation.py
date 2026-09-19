@@ -655,6 +655,14 @@ RECORD_MISMATCH = "validation-record-does-not-match-the-bundle"
 PARKED_SHIPPED = "parked-item-shipped"
 
 
+def _commit_exists(repo, commit: str) -> bool:
+    """Is this commit an object in THIS repository? Asked before anything is counted between two
+    commits, because a range over a history nobody has is not a question with an answer."""
+    r = subprocess.run(["git", "-C", str(repo), "cat-file", "-e", f"{commit}^{{commit}}"],
+                       capture_output=True, timeout=60)
+    return r.returncode == 0
+
+
 def _git(repo, *args: str) -> list:
     r = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, timeout=120)
     if r.returncode != 0:
@@ -874,6 +882,16 @@ def check_bundle(manifest: dict, record, repo, proof_dir, required: bool, spec_s
     out = {"applicable": False, "required": bool(required), "rounds": 0, "parked": False, "problems": [],
            "refuses": False, "reviewed_commit": reviewed, "evidence": ev.get("source")}
     if not reviewed or not commit or reviewed == commit:
+        return out
+    # The commits have to be IN THIS REPOSITORY. A bundle can carry a review taken in a predecessor
+    # repository whose history was frozen and not carried over, and this one carries many: their
+    # verdicts name commits that do not exist here. Nothing can be counted about a history nobody has,
+    # so the rule does not apply, and it says which commit it could not find. Treating that as a
+    # failure instead would refuse the whole landed corpus the moment the owner turned the flag on,
+    # which is the same as not having the flag.
+    missing = [c for c in (reviewed, commit) if not _commit_exists(repo, c)]
+    if missing:
+        out["unknown_commits"] = missing
         return out
     out["applicable"] = True
     problems = out["problems"]

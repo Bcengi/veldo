@@ -1,20 +1,21 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0104",
-  "commit": "5ca0d77472a7c80c1924ba601cb75d1b803f3dfc",
-  "taken_at": "2026-09-19T18:55:10Z",
+  "commit": "0390fda6ed7e75cb9f9516846d089143fe28f78c",
+  "taken_at": "2026-09-19T18:56:56Z",
   "fragment": "scripts/suites/43_veldo_0104_proofcheck.py",
-  "fragment_sha256": "ef7d5f04e6bc0196d7bd55382d6cfee15ac9aa1c8e71db5e8a7764c1083da34c",
+  "fragment_sha256": "9b56b6873e5bfc5b134965e96e16557e88e5a9c0ebaa27dc724c3d192dc70e48",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy of .veldo/fix_validation.py (beside a copy of .veldo/capsule.py), runs the same fixture repository and requires the named row red while the unmutated copy passes it; every row drives the organ with a fake harness child process of the same interpreter, so no model call is made and nothing is spent.",
-  "rows_total": 8,
-  "rows_passed": 8,
+  "rows_total": 9,
+  "rows_passed": 9,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0104 AC1 proofcheck/record-binds-commit DRIVEN (the declared falsifier): with the commit comparison removed in a copy, a record naming F1 is accepted for the bundle at F2 on the copy and refused by the original",
     "VELDO-0104 AC1 proofcheck/applicability-is-derived: the bundle is subject to the rule because it carries the reviewer's verified capsules taken at an earlier commit, with no reviewed_commit field in the manifest at all; a bundle carrying no review evidence is not applicable and silent; a bundle whose own commit IS the reviewed one is not applicable; DRIVEN: a copy that takes applicability from the manifest instead lets the same bundle through when the author omits the field, and applies only when the author volunteers it",
     "VELDO-0104 AC2 proofcheck/round-cap-survives-rename DRIVEN (the declared falsifier): with a copy that restarts the round count when the findings carry new names, the renamed record at F3 is not parked on the copy and parked on the original",
     "VELDO-0104 AC3 proofcheck/flag-off-is-a-warning DRIVEN (the declared falsifier): with a copy that refuses whatever the flag says, the missing record refuses on the copy with the flag off and warns on the original",
-    "VELDO-0104 AC1 proofcheck/the-whole-chain: the chain PLAN-0020 describes runs end to end against the real organs with only the model call faked: the reviewer's capsule in the bundle reproduces on the reviewed commit and not on the fix, the author's row reds with its mutant and is green without it, the runner says it closes nothing and hands its evidence to the reader, the reader's verdict and those results compose one validation record, and the proof check accepts the bundle; the SAME run with the reader saying not_closed is refused by name although all four mechanical results passed, and with no record at all it is refused as having none; DRIVEN: a copy of the check that does not consult the reader's verdict accepts the bundle the reader rejected"
+    "VELDO-0104 AC1 proofcheck/the-whole-chain: the chain PLAN-0020 describes runs end to end against the real organs with only the model call faked: the reviewer's capsule in the bundle reproduces on the reviewed commit and not on the fix, the author's row reds with its mutant and is green without it, the runner says it closes nothing and hands its evidence to the reader, the reader's verdict and those results compose one validation record, and the proof check accepts the bundle; the SAME run with the reader saying not_closed is refused by name although all four mechanical results passed, and with no record at all it is refused as having none; DRIVEN: a copy of the check that does not consult the reader's verdict accepts the bundle the reader rejected",
+    "VELDO-0104 AC3 proofcheck/a-review-from-a-history-nobody-has: a bundle whose review evidence names a commit this repository does not have is NOT applicable, and says which commit it could not find, rather than failing to count rounds over a history nobody has; run over this repository's own landed corpus the check reports on every bundle and refuses none of them, and no git error reaches the output; DRIVEN: a copy that does not ask whether the commits are here raises trying to count between them, which with the flag on would refuse every bundle carrying a review from the predecessor repository"
   ],
   "declared_falsifiers": {
     "AC1": {
@@ -45,9 +46,9 @@
       "driven": 1
     },
     "AC3": {
-      "rows": 2,
-      "passed": 2,
-      "driven": 1
+      "rows": 3,
+      "passed": 3,
+      "driven": 2
     }
   },
   "rows": [
@@ -81,6 +82,10 @@
     },
     {
       "label": "VELDO-0104 AC1 proofcheck/the-whole-chain: the chain PLAN-0020 describes runs end to end against the real organs with only the model call faked: the reviewer's capsule in the bundle reproduces on the reviewed commit and not on the fix, the author's row reds with its mutant and is green without it, the runner says it closes nothing and hands its evidence to the reader, the reader's verdict and those results compose one validation record, and the proof check accepts the bundle; the SAME run with the reader saying not_closed is refused by name although all four mechanical results passed, and with no record at all it is refused as having none; DRIVEN: a copy of the check that does not consult the reader's verdict accepts the bundle the reader rejected",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0104 AC3 proofcheck/a-review-from-a-history-nobody-has: a bundle whose review evidence names a commit this repository does not have is NOT applicable, and says which commit it could not find, rather than failing to count rounds over a history nobody has; run over this repository's own landed corpus the check reports on every bundle and refuses none of them, and no git error reaches the output; DRIVEN: a copy that does not ask whether the commits are here raises trying to count between them, which with the flag on would refuse every bundle carrying a review from the predecessor repository",
       "passed": true
     }
   ]
