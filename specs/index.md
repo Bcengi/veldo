@@ -18,6 +18,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | VELDO-0015 | Liveness stands down on clock disagreement - a heartbeat from the future is answered | ready | high | dmitry | not_required | VELDO-0015-liveness-stands-down-on-clock-disagreement.md |
 | VELDO-0099 | Install-and-run observations resolve git metadata in either checkout shape | ready | standard | dmitry | not_required | VELDO-0099-worktree-git-shape.md |
+| VELDO-0101 | The Codex review saves a reproduction capsule per confirmed defect | ready | high | dmitry | required | VELDO-0101-review-saves-reproductions.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to | ready | high | dmitry | not_required | WARP-0714-compute-once.md |
@@ -114,7 +115,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
-| VELDO-0101 | The Codex review saves a reproduction capsule per confirmed defect | draft | high | dmitry | required | VELDO-0101-review-saves-reproductions.md |
 | VELDO-0102 | Capsule runner - reproductions and pinned rows against the reviewed and the fixed candidate | draft | high | dmitry | required | VELDO-0102-capsule-runner.md |
 | VELDO-0103 | Assessor - a fresh headless Claude Code run reads the whole fix diff and answers per finding | draft | high | dmitry | required | VELDO-0103-fresh-assessor-run.md |
 | VELDO-0104 | validation.json in the proof bundle, the two-round cap, and the proof check refusing unvalidated fixes | draft | critical | dmitry | required | VELDO-0104-proof-check-refuses-unvalidated-fixes.md |
@@ -708,13 +708,13 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 
 ### PLAN-0020 - Fix validation - every fix to a review finding is checked by someone other than its author, and the loop terminates
 
-Status draft, revision 2, owner dmitry. 0/4 work items shipped.
+Status ready, revision 2, owner dmitry. 0/4 work items shipped.
 Ready frontier: VELDO-0101 (W1).
 Open decision D1 blocks: VELDO-0103.
 
 | Item | Spec | Title | Depends on | State |
 |---|---|---|---|---|
-| W1 | VELDO-0101 | Codex review contract saves a reproduction capsule per confirmed defect | - | draft (frontier) |
+| W1 | VELDO-0101 | Codex review contract saves a reproduction capsule per confirmed defect | - | ready (frontier) |
 | W2 | VELDO-0102 | Capsule runner - reproduction against reviewed and fixed candidates, pinned row and mutant, one process per capsule | VELDO-0101 | waiting: VELDO-0101 |
 | W3 | VELDO-0103 | Assessor as a fresh headless Claude Code run - fix diff plus findings in, per-finding verdict out, provenance recorded | - | blocked: decision D1 |
 | W4 | VELDO-0104 | validation.json in the proof bundle, round cap, and the proof check refusing unvalidated fixes | VELDO-0102, VELDO-0103 | waiting: VELDO-0102, VELDO-0103 |

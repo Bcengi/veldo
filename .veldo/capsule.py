@@ -1,0 +1,257 @@
+"""Reproduction capsules: the reviewer's own reproduction of a defect, saved byte for byte and run
+again later against the commit it reviewed and against the commit that claims to fix it (VELDO-0101).
+
+A capsule is a directory. It holds manifest.json and the reviewer's files exactly as the reviewer
+wrote them: the script, its fixtures, the command that runs it, and the observation the reviewer
+made. The manifest carries a SHA-256 digest of every file in the directory. Loading a capsule
+verifies every digest and refuses a directory whose bytes do not match, whose manifest names a file
+that is missing, or which contains a file the manifest does not digest. Running a capsule copies the
+named commit into a fresh temporary directory, places the capsule beside it under .capsule/, runs the
+saved command there with a deadline, and compares what happened against the expected observation in
+a SEPARATE function. The runner never edits the reviewer's files: their digests are checked again
+after the run and a change is an error, not a result.
+
+Standard library only. The review brief that tells the reviewer to save capsules is the text
+brief_text() returns; the review script appends it to its prompt when this file is present in the
+repository under review.
+
+    python3 .veldo/capsule.py brief
+    python3 .veldo/capsule.py check <capsule-dir>
+    python3 .veldo/capsule.py run <capsule-dir> <repo> <commit> [--timeout SECONDS]
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+SCHEMA = "veldo.capsule/v1"
+MANIFEST = "manifest.json"
+CAPSULE_ROOT = ".veldo-review/capsules"     # where the reviewer writes them inside its worktree
+MOUNT = ".capsule"                          # where the runner places the capsule beside the checkout
+EXPECTATION_KINDS = ("exit_code", "stdout_contains", "stderr_contains", "output_contains", "file_exists")
+DEFAULT_TIMEOUT = 300
+
+
+class CapsuleError(Exception):
+    """A capsule that cannot be trusted: bytes changed, a file missing, an undigested file present, a
+    malformed manifest, or a runner that altered the reviewer's files."""
+
+
+# --------------------------------------------------------------------------------------------------
+# The brief. One paragraph the reviewer reads before it writes its first finding.
+# --------------------------------------------------------------------------------------------------
+
+def brief_text() -> str:
+    return (
+        "REPRODUCTIONS ARE SAVED, NOT DESCRIBED. For every defect you confirm, before you write the finding, "
+        f"save the reproduction as files under {CAPSULE_ROOT}/<finding-id>/ inside this worktree: the script "
+        "that exposes the defect, any fixtures it needs, and manifest.json with the fields finding_id, "
+        "reviewed_commit, command (the exact argument list that runs the script from the repository root, with "
+        f"the capsule mounted at {MOUNT}/), expected (one of {', '.join(EXPECTATION_KINDS)} with its value, "
+        "the observation that shows the defect), and observation (what you saw, in one or two sentences). "
+        "Write the files exactly as you ran them; a later runner executes the same command against the same "
+        "commit and against the fix, and it never rewrites your files. A finding without a capsule is reported "
+        "as UNCONFIRMED, not as a finding. Saving the capsule is part of the review, not a follow-up."
+    )
+
+
+# --------------------------------------------------------------------------------------------------
+# Digests and loading
+# --------------------------------------------------------------------------------------------------
+
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _files_under(root: Path):
+    for p in sorted(root.rglob("*")):
+        if p.is_file():
+            yield p.relative_to(root).as_posix()
+
+
+def digest_files(capsule_dir: str | os.PathLike) -> dict:
+    """Digest every file in the directory except the manifest itself."""
+    root = Path(capsule_dir)
+    return {rel: _sha256(root / rel) for rel in _files_under(root) if rel != MANIFEST}
+
+
+def write_manifest(capsule_dir: str | os.PathLike, finding_id: str, reviewed_commit: str, command: list,
+                   expected: dict, observation: str) -> dict:
+    """Write manifest.json for a capsule directory the reviewer has already populated. Used by the
+    reviewer's tooling and by tests; the digests are computed from the bytes on disk."""
+    root = Path(capsule_dir)
+    if not isinstance(command, list) or not command or not all(isinstance(a, str) for a in command):
+        raise CapsuleError("command must be a non-empty list of strings")
+    if not isinstance(expected, dict) or expected.get("kind") not in EXPECTATION_KINDS:
+        raise CapsuleError(f"expected.kind must be one of {EXPECTATION_KINDS}")
+    m = {
+        "schema": SCHEMA,
+        "finding_id": finding_id,
+        "reviewed_commit": reviewed_commit,
+        "command": command,
+        "expected": expected,
+        "observation": observation,
+        "files": digest_files(root),
+    }
+    (root / MANIFEST).write_text(json.dumps(m, indent=1, sort_keys=True) + "\n")
+    return m
+
+
+def load_capsule(capsule_dir: str | os.PathLike) -> dict:
+    """Read and verify a capsule. Every file the manifest names must exist with the digest recorded;
+    every file present must be named. The manifest itself is validated for shape."""
+    root = Path(capsule_dir)
+    mp = root / MANIFEST
+    if not mp.is_file():
+        raise CapsuleError(f"no {MANIFEST} in {root}")
+    try:
+        m = json.loads(mp.read_text())
+    except (OSError, ValueError) as e:
+        raise CapsuleError(f"unreadable manifest: {e}")
+    if not isinstance(m, dict) or m.get("schema") != SCHEMA:
+        raise CapsuleError(f"manifest schema must be {SCHEMA}")
+    for field in ("finding_id", "reviewed_commit", "command", "expected", "observation", "files"):
+        if field not in m:
+            raise CapsuleError(f"manifest lacks {field}")
+    if not isinstance(m["command"], list) or not m["command"] or not all(isinstance(a, str) for a in m["command"]):
+        raise CapsuleError("manifest command must be a non-empty list of strings")
+    if not isinstance(m["expected"], dict) or m["expected"].get("kind") not in EXPECTATION_KINDS:
+        raise CapsuleError(f"manifest expected.kind must be one of {EXPECTATION_KINDS}")
+    if not isinstance(m["files"], dict) or not m["files"]:
+        raise CapsuleError("manifest must digest at least one file")
+    actual = digest_files(root)
+    missing = sorted(set(m["files"]) - set(actual))
+    extra = sorted(set(actual) - set(m["files"]))
+    changed = sorted(rel for rel in set(m["files"]) & set(actual) if m["files"][rel] != actual[rel])
+    if missing or extra or changed:
+        raise CapsuleError(f"capsule {root.name} does not match its manifest: missing={missing} undigested={extra} changed={changed}")
+    return m
+
+
+# --------------------------------------------------------------------------------------------------
+# Running
+# --------------------------------------------------------------------------------------------------
+
+def _checkout(repo: str | os.PathLike, commit: str, dest: Path) -> None:
+    """Copy the tree of <commit> into dest with git archive. The repository itself is never the run
+    directory."""
+    dest.mkdir(parents=True, exist_ok=True)
+    ar = subprocess.run(["git", "-C", str(repo), "archive", "--format=tar", commit], capture_output=True, timeout=120)
+    if ar.returncode != 0:
+        raise CapsuleError(f"git archive {commit} failed: {ar.stderr.decode('utf-8', 'replace')[:300]}")
+    tar = subprocess.run(["tar", "-x", "-C", str(dest)], input=ar.stdout, capture_output=True, timeout=120)
+    if tar.returncode != 0:
+        raise CapsuleError(f"untar failed: {tar.stderr.decode('utf-8', 'replace')[:300]}")
+
+
+def observation_matches(expected: dict, result: dict) -> bool:
+    """The decisive comparison, kept apart from execution so that it can be read and tested alone.
+    'reproduced' means the run showed the defect the reviewer described."""
+    kind, value = expected.get("kind"), expected.get("value")
+    if kind == "exit_code":
+        return result.get("exit_code") == int(value)
+    if kind == "stdout_contains":
+        return str(value) in (result.get("stdout") or "")
+    if kind == "stderr_contains":
+        return str(value) in (result.get("stderr") or "")
+    if kind == "output_contains":
+        return str(value) in ((result.get("stdout") or "") + (result.get("stderr") or ""))
+    if kind == "file_exists":
+        return bool(result.get("files_present", {}).get(str(value)))
+    return False
+
+
+def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit: str, timeout: int = DEFAULT_TIMEOUT,
+                workdir: str | os.PathLike | None = None) -> dict:
+    """Run a verified capsule against <commit> of <repo> in a fresh directory. Returns a result record:
+    reproduced (the observation matched), exit_code, stdout and stderr tails, duration, timed_out, and
+    the digests of the capsule files before and after the run (they must be identical)."""
+    m = load_capsule(capsule_dir)
+    before = digest_files(capsule_dir)
+    root = Path(workdir) if workdir else Path(tempfile.mkdtemp(prefix="capsule-run-"))
+    tree = root / "tree"
+    _checkout(repo, commit, tree)
+    mount = tree / MOUNT
+    shutil.copytree(capsule_dir, mount)
+    # The checkout root goes first on PYTHONPATH so a reproduction can import the code it exposes the
+    # way the reviewer did from the repository root; nothing else about the environment is changed.
+    env = dict(os.environ, VELDO_CAPSULE_DIR=str(mount), VELDO_CAPSULE_COMMIT=commit)
+    env["PYTHONPATH"] = str(tree) + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
+    import time
+    t0 = time.monotonic()
+    timed_out = False
+    try:
+        p = subprocess.run(m["command"], cwd=str(tree), env=env, capture_output=True, timeout=timeout, start_new_session=True)
+        exit_code, out, err = p.returncode, p.stdout.decode("utf-8", "replace"), p.stderr.decode("utf-8", "replace")
+    except subprocess.TimeoutExpired as e:
+        timed_out, exit_code = True, None
+        out = (e.stdout or b"").decode("utf-8", "replace") if isinstance(e.stdout, bytes) else ""
+        err = (e.stderr or b"").decode("utf-8", "replace") if isinstance(e.stderr, bytes) else ""
+    duration = time.monotonic() - t0
+    files_present = {}
+    fe = m["expected"].get("value") if m["expected"].get("kind") == "file_exists" else None
+    if fe:
+        files_present[str(fe)] = (tree / str(fe)).exists()
+    after = digest_files(capsule_dir)
+    if after != before:
+        raise CapsuleError(f"the run changed the reviewer's files: {sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))}")
+    result = {
+        "schema": "veldo.capsule-run/v1",
+        "finding_id": m["finding_id"],
+        "capsule_digest": hashlib.sha256(json.dumps(before, sort_keys=True).encode()).hexdigest(),
+        "commit": commit,
+        "command": m["command"],
+        "exit_code": exit_code,
+        "timed_out": timed_out,
+        "duration_seconds": round(duration, 3),
+        "stdout": out[-4000:],
+        "stderr": err[-4000:],
+        "files_present": files_present,
+    }
+    result["reproduced"] = (not timed_out) and observation_matches(m["expected"], result)
+    return result
+
+
+# --------------------------------------------------------------------------------------------------
+# Command line
+# --------------------------------------------------------------------------------------------------
+
+def main(argv: list) -> int:
+    if len(argv) >= 2 and argv[1] == "brief":
+        print(brief_text())
+        return 0
+    if len(argv) == 3 and argv[1] == "check":
+        try:
+            m = load_capsule(argv[2])
+        except CapsuleError as e:
+            print(f"REFUSED: {e}")
+            return 2
+        print(f"OK {m['finding_id']} reviewed at {m['reviewed_commit']}: {len(m['files'])} file(s) verified")
+        return 0
+    if len(argv) >= 5 and argv[1] == "run":
+        timeout = DEFAULT_TIMEOUT
+        if "--timeout" in argv:
+            timeout = int(argv[argv.index("--timeout") + 1])
+        try:
+            r = run_capsule(argv[2], argv[3], argv[4], timeout=timeout)
+        except CapsuleError as e:
+            print(f"REFUSED: {e}")
+            return 2
+        print(json.dumps(r, indent=1, sort_keys=True))
+        return 0 if r["reproduced"] else 1
+    print(__doc__)
+    return 64
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

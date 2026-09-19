@@ -3,9 +3,11 @@ schema: veldo.plan/v1
 id: PLAN-0020
 title: Fix validation - every fix to a review finding is checked by someone other than its author, and the loop terminates
 kind: iteration
-status: draft
+status: ready
 revision: 2
 owner: dmitry
+approved_by: dmitry
+approved_at: 2026-09-19
 risk: high
 
 outcomes:
