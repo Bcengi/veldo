@@ -22,6 +22,8 @@ footprint:
   - ".veldo/fix_validation_record.py"
   - "engine/.veldo/validate_checks.py"
   - ".veldo/validate_checks.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0104_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"

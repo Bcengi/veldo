@@ -89,6 +89,12 @@ _FILES = [
     # VELDO-0026 (PLAN-0019 W11): the revocation organ, the acceptance guard every boundary invokes;
     # loaded by the suite and by the authority process above it.
     ".veldo/control_revocation.py",
+    # VELDO-0104 (PLAN-0020 W4): the fix-validation record and the rule the proof check applies.
+    # validate_checks registers its loader, so a scaffolded repository without it has no proof stage;
+    # and it loads the runner by path, which loads the capsule module, so all three travel together.
+    ".veldo/fix_validation_record.py",
+    ".veldo/fix_validation.py",
+    ".veldo/capsule.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",
@@ -218,6 +224,12 @@ REQUIRED_SUBSTRATE = [
     ".veldo/contract_loader.py",
     # The proof-corpus enumeration validate.py loads: a scaffolded repository whose validator
     # cannot import it has no contract stage at all, so it is REQUIRED substrate, not optional.
+    # VELDO-0104 (PLAN-0020 W4): the fix-validation record and the rule the proof check applies.
+    # validate_checks registers its loader, so a scaffolded repository without it has no proof stage;
+    # and it loads the runner by path, which loads the capsule module, so all three travel together.
+    ".veldo/fix_validation_record.py",
+    ".veldo/fix_validation.py",
+    ".veldo/capsule.py",
     ".veldo/verdict_corpus.py",
     ".veldo/events.py",
     ".veldo/arch.py",
