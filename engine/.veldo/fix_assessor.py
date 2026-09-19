@@ -203,7 +203,10 @@ def _grants(cmd: list, directory, cwd) -> bool:
     def same(operand) -> bool:
         try:
             return (base / str(operand)).resolve() == (base / str(directory)).resolve()
-        except (OSError, ValueError):
+        except (OSError, ValueError, RuntimeError):
+            # OSError for a path the system rejects, ValueError for a byte no path may hold, and
+            # RuntimeError for a symbolic link that points at itself, which resolve() reports that way
+            # and nothing above here would turn into a refusal.
             return False
 
     for i, arg in enumerate(cmd):

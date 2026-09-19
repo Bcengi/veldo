@@ -421,3 +421,32 @@ expect("VELDO-0103 AC1 assessor/commit-ids-are-case-insensitive: a commit id wri
        "accepting lower case alone refuses a plan the runner would have produced, which is a disagreement between two organs "
        "of the same pipeline rather than a check on anything",
        not _v103_refused(_v103_upper) and _v103_upper_refused_by_copy)
+
+
+# --- a path the system cannot resolve is an answer of no, not an exception ------------------------
+_v103_loopdir = _v103_tmp / "loops"
+_v103_loopdir.mkdir()
+_v103_loop = _v103_loopdir / "self"
+_v103_os.symlink(_v103_loop, _v103_loop)
+_v103_hard = {
+    "a link that points at itself": ["--add-dir", str(_v103_loop)],
+    "a byte no path may hold": ["--add-dir", "has\x00null"],
+    "a name longer than the system allows": ["--add-dir", "n" * 5000],
+}
+_v103_hard_answers = {n: FA103._grants(["claude", "-p"] + c, _v103_loopdir, _v103_loopdir) for n, c in _v103_hard.items()}
+_v103_loop_as_checkout = FA103._grants(["claude", "-p", "--add-dir", str(_v103_loopdir)], _v103_loop, _v103_loopdir)
+_v103_M_narrow = _v103_mutant([("        except (OSError, ValueError, RuntimeError):", "        except OSError:")], "narrowcatch")
+_v103_narrow_raised = None
+try:
+    _v103_M_narrow._grants(["claude", "-p", "--add-dir", str(_v103_loop)], _v103_loopdir, _v103_loopdir)
+    _v103_narrow_raised = "no"
+except Exception as _v103_e:
+    _v103_narrow_raised = type(_v103_e).__name__
+expect("VELDO-0103 AC3 assessor/a-path-that-cannot-be-resolved-is-an-answer: an operand the system cannot resolve, whether it "
+       "is a link pointing at itself, a name holding a byte no path may hold, or a name longer than the system allows, answers "
+       "that the directory is not granted, rather than raising out of a check that runs before the harness starts; the same "
+       "holds when it is the CHECKOUT that cannot be resolved; DRIVEN: a copy catching only the first of those three lets a "
+       "link pointing at itself raise, which resolve reports as a plain runtime error that nothing above would turn into a "
+       "refusal",
+       _v103_hard_answers == {n: False for n in _v103_hard} and _v103_loop_as_checkout is False
+       and _v103_narrow_raised == "RuntimeError")

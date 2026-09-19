@@ -58,10 +58,12 @@ if not _v102_have_git:
 else:
     # A small repository with the suite layout: shared.py binds ROOT and expect; the fragment has rows.
     # The source blocks the mutants below replace, kept here so every row can reach them.
+    DECLARED_STMT_42 = '    out = {"finding_id": fid, "capsule_declared": isinstance(finding, dict) and "capsule" in finding,\n           "results": {k: {"status": "missing"} for k in RESULT_KEYS}}\n'
+    GUARD_LINE_42 = '                             "capsule_declared": "capsule" in f,'
     USABLE_42 = '    try:\n        usable = isinstance(cap_dir, str) and bool(cap_dir) and Path(cap_dir).is_dir()\n    except (OSError, ValueError):\n        usable = False                           # a path the system will not even answer about\n'
-    FALLBACK_DECLARED_42 = '                             "capsule_declared": bool(f.get("capsule")),\n'
+    MINWIDTH_42 = '                    out.append("\\\\u%04x" % ord(ch))'
+    PAIR_LINE_42 = '                    out.append("\\\\u%04x\\\\u%04x" % (0xD800 + (_n >> 10), 0xDC00 + (_n & 0x3FF)))'
     ASTRAL_GUARD_42 = '                elif ord(ch) > 0xFFFF:'
-    DECLARED_42 = '    out = {"finding_id": fid, "capsule_declared": bool(isinstance(finding, dict) and finding.get("capsule")),\n           "results": {k: {"status": "missing"} for k in RESULT_KEYS}}\n'
     FALLBACK_42 = '        return _encode(repr(value))'
     ENC_HEAD_42 = '    def _encode(value):'
     SKIP_LINE_42 = '        if rev.get("status") == "missing" and fix.get("status") == "missing" and not f.get("capsule_declared"):'
@@ -599,7 +601,7 @@ else:
     _v102_M_silent2, _ = _v102_organs("silentmissing", [(SKIP_LINE_42, SKIP_LINE_42.replace(' and not f.get("capsule_declared")', ''))])
     _v102_proj_silent = _v102_M_silent2.assessor_capsule_results(_v102_partial)
     expect("VELDO-0102 AC1 fixval/a-capsule-that-could-not-be-used-is-not-silence: a capsule the plan named and the runner could "
-           "not use, whether its bytes no longer match its manifest or the path is not a directory at all, reaches the reader as "
+           "not use, whether its bytes no longer match its manifest or the path cannot be used as one, reaches the reader as "
            "an entry marked incomplete, while a finding the plan gave no capsule reaches the reader as nothing, because there is "
            "nothing to say about it; DRIVEN: a copy that drops every finding whose capsule results are both missing makes a "
            "tampered capsule and a finding that never had one look identical to the reader",
@@ -698,30 +700,99 @@ else:
     # Whether the plan declared a capsule is recorded before anything can go wrong, so a capsule the
     # system will not even answer about still reaches the reader as an entry rather than as silence.
     _v102_plan_unanswerable = dict(_v102_plan, findings=[
-        {"id": "LONG", "capsule": "/tmp/" + "x" * 5000},
-        {"id": "NUL", "capsule": "/tmp/has\x00null"},
+        {"id": "LONG", "capsule": "/tmp/" + "x" * 5000,
+         "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}},
+        {"id": "bad/id", "capsule": str(_v102_cap_f1)},
+        {"id": "EMPTYOBJ", "capsule": {}},
         {"id": "NONE", "row": {"suite": "50_rows", "label": "guard/never-mutated"}}])
     _v102_unanswerable = FV102.validate(_v102_plan_unanswerable, workdir=_v102_tmp / "run_unanswerable")
     _v102_proj_unanswerable = FV102.assessor_capsule_results(_v102_unanswerable)
-    # The falsifier is the shape this replaced, restored in all three places at once: recorded only
-    # after the capsule has been looked at, with the look able to raise, and nothing recording it on
-    # the path that catches the raise.
-    _v102_M_late_declared, _ = _v102_organs("latedeclared", [
-        (DECLARED_42, '    out = {"finding_id": fid, "results": {k: {"status": "missing"} for k in RESULT_KEYS}}\n'),
-        (USABLE_42, '    usable = isinstance(cap_dir, str) and bool(cap_dir) and Path(cap_dir).is_dir()\n    out["capsule_declared"] = cap_dir not in (None, "")\n'),
-        (FALLBACK_DECLARED_42, "")])
-    _v102_M_late_declared_rec = _v102_M_late_declared.validate(_v102_plan_unanswerable, workdir=_v102_tmp / "run_unanswerable_m")
-    expect("VELDO-0102 AC1 fixval/a-capsule-the-system-will-not-answer-about: a capsule path too long for the system to answer "
-           "about, and one carrying a byte no path may contain, are each recorded as a capsule the plan declared and could not "
-           "be used, and reach the reader as entries marked incomplete, while the finding beside them that declared no capsule "
-           "reaches the reader as nothing; DRIVEN: a copy that records what the plan declared only after trying to use it, with "
-           "the trying able to fail, loses the one the system would not answer about entirely, so a finding whose reproduction "
-           "could not even be looked at is indistinguishable from one that never had a reproduction",
-           sorted(e["finding_id"] for e in _v102_proj_unanswerable) == ["LONG", "NUL"]
+    _v102_by_id = {f["finding_id"]: f for f in _v102_unanswerable["findings"]}
+    # Three separate falsifiers, because the claim has three parts and one combined mutant hid two of
+    # them: each of these alone leaves the others in place, and each costs the reader something
+    # different. The first two were found to be green under the combined mutant by the reviewer.
+    _v102_M_d1, _ = _v102_organs("declaredlate", [(DECLARED_STMT_42, DECLARED_STMT_42.replace('"capsule_declared": isinstance(finding, dict) and "capsule" in finding,\n           ', "")),
+                                                  (USABLE_42, USABLE_42 + '    out["capsule_declared"] = "capsule" in finding\n')])
+    _v102_M_d2, _ = _v102_organs("lookcanraise", [(USABLE_42, '    usable = isinstance(cap_dir, str) and bool(cap_dir) and Path(cap_dir).is_dir()\n')])
+    # The guard only records anything when the look can raise, so this falsifier restores that too and
+    # then takes the guard's own record away: what it costs is the finding the guard catches.
+    _v102_M_d3, _ = _v102_organs("guardforgets", [
+        (USABLE_42, '    usable = isinstance(cap_dir, str) and bool(cap_dir) and Path(cap_dir).is_dir()\n'),
+        (GUARD_LINE_42 + "\n", "")])
+    _v102_d1 = _v102_M_d1.validate(_v102_plan_unanswerable, workdir=_v102_tmp / "run_unans_d1")
+    _v102_d2 = _v102_M_d2.validate(_v102_plan_unanswerable, workdir=_v102_tmp / "run_unans_d2")
+    _v102_d3 = _v102_M_d3.validate(_v102_plan_unanswerable, workdir=_v102_tmp / "run_unans_d3")
+    _v102_d1_ids = [e["finding_id"] for e in _v102_M_d1.assessor_capsule_results(_v102_d1)]
+    _v102_d2_by_id = {f["finding_id"]: f for f in _v102_d2["findings"]}
+    _v102_d3_ids = [e["finding_id"] for e in _v102_M_d3.assessor_capsule_results(_v102_d3)]
+    expect("VELDO-0102 AC1 fixval/declared-means-the-plan-said-so: what the plan DECLARED is recorded from the plan, by "
+           "presence and not by whether the value is useful, so a capsule written as an empty object counts as declared and "
+           "badly written rather than as never declared; it is recorded before any path can return, so a finding whose id is "
+           "refused still carries it; the look at the path cannot raise, so a path too long for the system to answer about "
+           "still leaves the row evidence beside it intact; and the guard that catches anything else records it too. Each of "
+           "the four reaches the reader as an entry marked incomplete, and only the finding that declared nothing is silence. "
+           "DRIVEN three times, one falsifier per part: recording it after the look loses the refused id, letting the look "
+           "raise loses the over-long path and its row results with it, and a guard that forgets it loses whatever the guard "
+           "catches",
+           sorted(e["finding_id"] for e in _v102_proj_unanswerable) == ["EMPTYOBJ", "LONG", "bad/id"]
            and all(e.get("incomplete") is True for e in _v102_proj_unanswerable)
-           and all(f.get("capsule_declared") is True for f in _v102_unanswerable["findings"][:2])
-           and _v102_unanswerable["findings"][2].get("capsule_declared") is False
-           and "LONG" not in [e["finding_id"] for e in _v102_M_late_declared.assessor_capsule_results(_v102_M_late_declared_rec)])
+           and _v102_by_id["EMPTYOBJ"]["capsule_declared"] is True and _v102_by_id["NONE"]["capsule_declared"] is False
+           and _v102_by_id["LONG"]["results"]["row_mutant_red"]["status"] == "passed"
+           and "bad/id" not in _v102_d1_ids
+           and _v102_d2_by_id["LONG"]["results"]["row_mutant_red"]["status"] == "missing"
+           and "LONG" not in _v102_d3_ids)
+
+    # THE ROW THAT SHOULD HAVE COME FIRST. The runner encodes its record with fifteen lines of its own
+    # rather than json.dumps, for a reason that is sound: json.dumps reaches into its module when it is
+    # called, and the fragment shares that module. But replacing a library function means being right
+    # about the whole domain, and the first version of these lines was not: it wrote a character above
+    # the basic plane with more hexadecimal digits than JSON reads, and the parser returned a DIFFERENT
+    # STRING without complaining, which no gate and no row of mine noticed. So the encoder is compared
+    # against the one it replaced, over every boundary of the format and over random strings drawn from
+    # the whole of Unicode, and the two must agree exactly.
+    _v102_random = __import__("random").Random(20260919)
+    _v102_encoder_cases = [chr(cp) for cp in (0, 1, 0x1f, 0x20, 0x7e, 0x7f, 0x80, 0x9f, 0xa0, 0xff, 0x7ff,
+                                              0x800, 0xd7ff, 0xe000, 0xfffd, 0xffff, 0x10000, 0x10001,
+                                              0x1f600, 0x2ffff, 0xfffff, 0x10fffe, 0x10ffff)]
+    _v102_encoder_cases += ["", '"', chr(92), 'a\nb\tc\rd', "\x00", "line\u2028separator", "\ud800", "\udfff",
+                            "\udc80", "x" * 5000, "mixed \U0001F600 \u00e9 end"]
+    _v102_encoder_cases += ["".join(chr(_v102_random.randrange(0x110000)) for _ in range(40)) for _ in range(200)]
+
+    def _v102_encoder_of(module):
+        """The encoder as the child defines it, lifted out of the runner script so it can be compared
+        against json directly rather than through a whole validation run."""
+        text = module.ROW_RUNNER
+        a = text.index("    def _encode(value):")
+        b = text.index("    _write, _exit, _list")
+        ns = {}
+        exec(compile("\n".join(l[4:] for l in text[a:b].rstrip().splitlines()), "encoder", "exec"), ns)
+        return ns["_encode"]
+
+    def _v102_disagreements(encode):
+        out = []
+        for case in _v102_encoder_cases:
+            record = {"marker": "m", "status": "ok", "rows": [{"label": case, "passed": True}]}
+            try:
+                back = _v102_json.loads(encode(record))["rows"][0]["label"]
+            except Exception as e:  # noqa: BLE001 - anything that is not readable JSON is a disagreement
+                out.append((case, "unreadable: %s" % e))
+                continue
+            if back != case:
+                out.append((case, back))
+        return out
+
+    _v102_enc_disagree = _v102_disagreements(_v102_encoder_of(FV102))
+    _v102_M_minwidth, _ = _v102_organs("minimumwidth", [(PAIR_LINE_42, MINWIDTH_42)])
+    _v102_enc_disagree_m = _v102_disagreements(_v102_encoder_of(_v102_M_minwidth))
+    _v102_astral_only = all(any(ord(ch) > 0xFFFF for ch in case) for case, _ in _v102_enc_disagree_m)
+    expect("VELDO-0102 AC1 fixval/the-encoder-agrees-with-the-one-it-replaced: the runner's own encoder is compared against the "
+           "standard library over every boundary of the format, the empty string, quotes, backslashes, control characters, lone "
+           "surrogates, a very long string and two hundred random strings drawn from the whole of Unicode, and every one comes "
+           "back through json identical to the label the fragment passed; DRIVEN: the version that wrote a code point as one "
+           "escape of minimum width disagrees, and disagrees ONLY on the strings holding a character above the basic plane, "
+           "which is why nothing noticed it",
+           _v102_enc_disagree == [] and len(_v102_encoder_cases) > 200
+           and _v102_enc_disagree_m != [] and _v102_astral_only)
 
     # The RUNS never happen inside a worktree; the RECORD may be written into the proof bundle.
     _v102_out = _v102_repo / "proof" / "VELDO-9102" / "validation"
@@ -744,5 +815,5 @@ else:
                                              '                out["results"]["row_mutant_red"] = {**{k: v for k, v in applied.items() if k != "applied"}, "status": "passed"}')])
     _v102_m3_inv = _v102_M3.validate(_v102_plan_inv, workdir=_v102_tmp / "run_inv_m")
     expect("VELDO-0102 AC3 fixval/invalid-mutation-not-covered DRIVEN (the declared falsifier): with a mutant that does not "
-           "apply treated as covered in a copy, both findings are closed on the copy and neither on the original",
+           "apply treated as covered in a copy, both findings pass all four of the runner's results on the copy and neither does on the original",
            _v102_m3_inv["all_results_passed"] == ["Z", "T"] and _v102_inv["all_results_passed"] == [])

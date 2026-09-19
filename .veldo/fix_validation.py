@@ -432,7 +432,9 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
     fid = raw_id if isinstance(raw_id, str) else f"<finding {id(finding):x}>"
     # Recorded FIRST, before anything can return: it is what tells the reader apart a finding that
     # never had a reproduction from one whose reproduction could not be looked at.
-    out = {"finding_id": fid, "capsule_declared": bool(isinstance(finding, dict) and finding.get("capsule")),
+    # PRESENCE, not truthiness: a plan that writes "capsule": {} or [] or 0 has declared one, badly,
+    # and saying it declared none would be a false statement about the plan in the record.
+    out = {"finding_id": fid, "capsule_declared": isinstance(finding, dict) and "capsule" in finding,
            "results": {k: {"status": "missing"} for k in RESULT_KEYS}}
     if not isinstance(raw_id, str) or not FINDING_ID.fullmatch(raw_id):
         for k in RESULT_KEYS:
@@ -576,7 +578,7 @@ def validate(plan: dict, workdir: str | os.PathLike | None = None) -> dict:
             findings.append(validate_finding(f, repo, plan["reviewed_commit"], plan["fixed_commit"], wd, capsule_mod, deadline, row_deadline))
         except Exception as e:  # noqa: BLE001 - one finding that cannot be validated is not the others' problem
             findings.append({"finding_id": str(f.get("id")), "all_results_passed": False,
-                             "capsule_declared": bool(f.get("capsule")),
+                             "capsule_declared": "capsule" in f,
                              "results": {k: {"status": "missing", "reason": f"the finding could not be validated: {type(e).__name__}: {e}"} for k in RESULT_KEYS}})
     after = _tree_digest(worktree)
     return {
