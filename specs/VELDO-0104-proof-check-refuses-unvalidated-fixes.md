@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0104
 title: validation.json in the proof bundle, the two-round cap, and the proof check refusing unvalidated fixes
-status: ready
+status: shipped
 risk: critical
 owner: dmitry
 human_approval: required
