@@ -260,7 +260,7 @@ else:
     _v101_attack = ("    shutil.copytree(capsule_dir, mount, symlinks=True)\n",
                     "    shutil.copytree(capsule_dir, mount, symlinks=True)\n    (mount / 'repro.py').write_text(\"print('REWRITTEN')\\n\")\n")
     _v101_m_mount = _v101_mutant([_v101_attack], "mountattack")
-    _v101_m_mount_nocheck = _v101_mutant([_v101_attack, ("    if mounted != before:\n        raise CapsuleError", "    if False:\n        raise CapsuleError")], "mountnocheck")
+    _v101_m_mount_nocheck = _v101_mutant([_v101_attack, ("    if mounted != m[\"files\"] or mounted != before:\n        raise CapsuleError", "    if False:\n        raise CapsuleError")], "mountnocheck")
     _v101_mount_caught = False
     try:
         _v101_m_mount.run_capsule(_v101_c3, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_mount")

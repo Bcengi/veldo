@@ -206,7 +206,9 @@ else:
            and _v102_esc["closed"] == [] and _v102_canary_after == "UNTOUCHED-CANARY\n"
            and _v102_canary_after_m == "TOUCHED-CANARY\n")
 
-    # A reproduction that crashed on the fixed commit has not shown that the defect is gone.
+    # A capsule that ran cleanly while the defect was there and then failed to run cleanly on the fix
+    # stopped early; that is not evidence the defect is gone. A capsule that ALREADY exited non-zero on
+    # the reviewed commit is judged by its observation alone, because non-zero is how it reports.
     _v102_cap_crash = _v102_capsule(_v102_tmp / "cap_C", "import organ\n"
                                     "if organ.guard('authority:ledger') == 'refused':\n"
                                     "    import module_that_does_not_exist_after_the_fix\n"
@@ -215,17 +217,35 @@ else:
     _v102_plan_crash = dict(_v102_plan, findings=[{"id": "C", "capsule": _v102_cap_crash,
                                                    "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}}])
     _v102_crash = FV102.validate(_v102_plan_crash, workdir=_v102_tmp / "run_crash")
-    _v102_M_crash, _ = _v102_organs("crashpasses", [('        if not want_reproduced and r.get("exit_code") not in (0, None) and r.get("expected_kind") != "exit_code":', '        if False:')])
+    _v102_M_crash, _ = _v102_organs("crashpasses", [('        if (not want_reproduced) and reviewed_exit_code == 0 and r.get("exit_code") not in (0, None):', '        if False:')])
     _v102_crash_m = _v102_M_crash.validate(_v102_plan_crash, workdir=_v102_tmp / "run_crash_m")
     _v102_cr = _v102_crash["findings"][0]["results"]
-    expect("VELDO-0102 AC1 fixval/a-crash-is-not-a-pass: a reproduction that reproduces on the reviewed commit but CRASHES on the "
-           "fixed one (the branch it takes there imports a module that is not present) is recorded missing with the exit code and "
-           "the reason, not passed, so the finding stays open although its two row results passed; DRIVEN: a copy that judges the "
-           "fixed run by the marker alone closes the finding",
+
+    # The counterexample the guard must NOT refuse: a capsule that reports through its exit status and
+    # its standard error. It raises TypeError while the defect is there, and a clean ValueError after
+    # the fix; both runs exit 1, and the fix is CORRECT.
+    _v102_cap_err = _v102_capsule(_v102_tmp / "cap_E", "import organ\n"
+                                  "if organ.guard('authority:ledger') == 'accepted':\n"
+                                  "    raise TypeError('the ledger id was accepted')\n"
+                                  "raise ValueError('refused cleanly')\n",
+                                  {"kind": "stderr_contains", "value": "TypeError"})
+    _v102_plan_err = dict(_v102_plan, findings=[{"id": "E", "capsule": _v102_cap_err,
+                                                 "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}}])
+    _v102_err = FV102.validate(_v102_plan_err, workdir=_v102_tmp / "run_err")
+    _v102_er = _v102_err["findings"][0]["results"]
+    expect("VELDO-0102 AC1 fixval/a-crash-is-not-a-pass: a reproduction that ran cleanly while the defect was present and then "
+           "CRASHED on the fixed commit is recorded missing with its exit code and the reason it stopped early, not passed, so "
+           "the finding stays open although both row results passed; while a reproduction that ALREADY exited non-zero on the "
+           "reviewed commit, and reports through its standard error, is judged by its observation alone and CLOSES on a correct "
+           "fix that also exits non-zero, because refusing that would refuse a correct fix with no way to override; DRIVEN: a "
+           "copy without the early-stop rule closes the crashing one too",
            _v102_cr["capsule_reviewed"]["status"] == "passed" and _v102_cr["capsule_fixed"]["status"] == "missing"
-           and _v102_cr["capsule_fixed"]["exit_code"] not in (0, None) and "did not run to completion" in _v102_cr["capsule_fixed"]["reason"]
+           and _v102_cr["capsule_fixed"]["exit_code"] not in (0, None) and "stopped early" in _v102_cr["capsule_fixed"]["reason"]
            and _v102_cr["row_fresh_green"]["status"] == "passed" and _v102_cr["row_mutant_red"]["status"] == "passed"
-           and _v102_crash["closed"] == [] and _v102_crash_m["closed"] == ["C"])
+           and _v102_crash["closed"] == [] and _v102_crash_m["closed"] == ["C"]
+           and _v102_er["capsule_reviewed"]["status"] == "passed" and _v102_er["capsule_reviewed"]["exit_code"] == 1
+           and _v102_er["capsule_fixed"]["status"] == "passed" and _v102_er["capsule_fixed"]["exit_code"] == 1
+           and _v102_err["closed"] == ["E"])
 
     # An error while producing one result is that result, recorded as missing; the other findings still run.
     _v102_cap_nobin = _v102_tmp / "cap_N"
@@ -237,41 +257,94 @@ else:
         {"id": "N", "capsule": str(_v102_cap_nobin)},
         {"id": "F-1", "capsule": _v102_cap_f1, "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}}])
     _v102_nobin = FV102.validate(_v102_plan_nobin, workdir=_v102_tmp / "run_nobin")
-    _v102_M_abort, _ = _v102_organs("abort", [('            except Exception as e:  # noqa: BLE001 - a result that could not be produced is missing, by name\n                out["results"][key] = {"status": "missing", "reason": f"could not run the capsule: {type(e).__name__}: {e}"}\n', '')])
+    _v102_M_abort, _ = _v102_organs("abort", [
+        ('            except Exception as e:  # noqa: BLE001 - a result that could not be produced is missing, by name\n                out["results"][key] = {"status": "missing", "reason": f"could not run the capsule: {type(e).__name__}: {e}"}\n', ''),
+        ('        except Exception as e:  # noqa: BLE001 - one finding that cannot be validated is not the others\' problem\n', '        except ValidationError as e:\n')])
     _v102_aborted = False
     try:
         _v102_M_abort.validate(_v102_plan_nobin, workdir=_v102_tmp / "run_nobin_m")
     except Exception:
         _v102_aborted = True
-    expect("VELDO-0102 AC1 fixval/an-error-is-a-missing-result: a capsule whose command names a binary that is not installed makes "
-           "its two capsule results missing, naming the error, and the NEXT finding in the same plan still gets all four results "
-           "and closes; DRIVEN: a copy that lets anything but a capsule error escape aborts the whole validation, so no record is "
-           "produced for any finding",
+    _v102_plan_shapes = dict(_v102_plan, findings=[
+        {"id": "S1", "row": "50_rows"},
+        {"id": "S2", "capsule": {"dir": "x"}},
+        "not an object at all",
+        {"capsule": _v102_cap_f1},
+        {"id": "F-1", "capsule": _v102_cap_f1, "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}}])
+    _v102_shapes = FV102.validate(_v102_plan_shapes, workdir=_v102_tmp / "run_shapes")
+    expect("VELDO-0102 AC1 fixval/an-error-is-a-missing-result: a capsule whose command names a binary that is not installed "
+           "makes its two capsule results missing, naming the error, and the NEXT finding in the same plan still gets all four "
+           "results and closes; a plan whose entries are the wrong SHAPE (a row given as a string, a capsule given as an "
+           "object, an entry that is not an object, a finding with no id) produces four missing results each, naming what is "
+           "wrong, and the well-formed finding beside them still closes; DRIVEN: a copy that lets anything but a validation "
+           "error escape either guard aborts the whole run, so no record is produced for any finding",
            _v102_nobin["findings"][0]["results"]["capsule_reviewed"]["status"] == "missing"
            and "FileNotFoundError" in _v102_nobin["findings"][0]["results"]["capsule_reviewed"]["reason"]
-           and _v102_nobin["closed"] == ["F-1"] and _v102_aborted)
+           and _v102_nobin["closed"] == ["F-1"] and _v102_aborted
+           and len(_v102_shapes["findings"]) == 5 and _v102_shapes["closed"] == ["F-1"]
+           and all(_v102_shapes["findings"][i]["results"][k]["status"] == "missing"
+                   for i in range(4) for k in FV102.RESULT_KEYS))
 
-    # The pin names exactly one row, and the record read is the runner's own last line.
+    # The pin names exactly one row, and the record does not travel on the fragment's stdout, where the
+    # fragment could write it. The forging fragment below uses the three ways a fragment can speak:
+    # it prints a marked record on stdout, it rebinds the recorder's own globals, and it registers a
+    # handler to speak at exit. Its row is honestly false and must read failed through all of them.
     (_v102_repo / "scripts" / "suites" / "51_forge.py").write_text(
-        'print("FIXVAL-ROWS " + \'[{"label": "ROW forge/claims-green", "passed": true}]\')\n'
-        "expect('ROW forge/claims-green: the row the fragment forges a passing record for', False)\n")
+        "import atexit, json\n"
+        "FORGED = [{'label': 'ROW forge/claims-green', 'passed': True}]\n"
+        "print(json.dumps({'marker': 'veldo.fixval-rows/v1', 'status': 'ok', 'rows': FORGED}))\n"
+        "expect('ROW forge/claims-green: the row the fragment forges a passing record for', False)\n"
+        "try:\n"
+        "    expect.__globals__['rows'] = FORGED\n"
+        "except Exception:\n"
+        "    pass\n"
+        "atexit.register(lambda: print(json.dumps({'marker': 'veldo.fixval-rows/v1', 'status': 'ok', 'rows': FORGED})))\n")
     _v102_git("add", "-A"); _v102_git("commit", "-q", "-m", "forge")
     _v102_forged = _v102_git("rev-parse", "HEAD")
     _v102_plan_pin = dict(_v102_plan, fixed_commit=_v102_forged, findings=[
         {"id": "AMB", "row": {"suite": "50_rows", "label": "guard/", "mutant": _v102_mutant_ok}},
-        {"id": "FORGE", "row": {"suite": "51_forge", "label": "forge/claims-green"}}])
+        {"id": "FORGE", "row": {"suite": "51_forge", "label": "forge/claims-green"}},
+        {"id": "GONE", "row": {"suite": "50_rows", "label": "guard/no-such-row"}}])
     _v102_pin = FV102.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin")
-    _v102_M_first, _ = _v102_organs("firstline", [('    record = None\n    for line in runner_output.splitlines():\n        if line.startswith("FIXVAL-ROWS "):\n            record = line[len("FIXVAL-ROWS "):]\n',
-                                                   '    record = None\n    for line in runner_output.splitlines():\n        if line.startswith("FIXVAL-ROWS ") and record is None:\n            record = line[len("FIXVAL-ROWS "):]\n')])
-    _v102_pin_m = _v102_M_first.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin_m")
-    expect("VELDO-0102 AC1 fixval/the-pin-names-one-row: a label fragment matching three rows of the fragment is ambiguous and "
-           "recorded missing rather than passed, and a fragment that PRINTS a forged record line claiming its own row green does "
-           "not fool the reader, which takes the runner's record printed after the fragment finished, so the row reads failed; "
-           "DRIVEN: a copy reading the first record line instead of the last reads the forgery and calls the row green",
+    _v102_M_stdout, _ = _v102_organs("readsstdout", [
+        ('    return {**r, "row": row_label_fragment, "suite": suite, **read_record(blob.decode("utf-8", "replace"), row_label_fragment)}',
+         '    return {**r, "row": row_label_fragment, "suite": suite, **read_record(r["stdout"], row_label_fragment)}')])
+    _v102_pin_m = _v102_M_stdout.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin_m")
+    expect("VELDO-0102 AC1 fixval/the-pin-names-one-row: a label fragment matching three rows is ambiguous and recorded missing, "
+           "one matching none is absent and recorded missing, and a fragment that forges a passing record three ways (printing "
+           "a marked record on its standard output, rebinding the recorder's globals, and registering a handler to speak at "
+           "exit) does not fool the reader, because the record travels on a channel of the runner's own and the runner ends the "
+           "process before anything registered at exit can run, so the row reads failed; DRIVEN: a copy that reads the record "
+           "off the fragment's standard output reads the forgery and calls the row green",
            _v102_pin["findings"][0]["results"]["row_fresh_green"]["status"] == "missing"
            and _v102_pin["findings"][0]["results"]["row_fresh_green"]["row_status"] == "ambiguous"
+           and _v102_pin["findings"][2]["results"]["row_fresh_green"]["status"] == "missing"
+           and _v102_pin["findings"][2]["results"]["row_fresh_green"]["row_status"] == "absent"
            and _v102_pin["findings"][1]["results"]["row_fresh_green"]["status"] == "failed"
            and _v102_pin_m["findings"][1]["results"]["row_fresh_green"]["status"] == "passed")
+
+    # A row run gets its OWN budget: a suite fragment is not a few-line capsule, and the deadline for it
+    # is never a number measured from one.
+    (_v102_repo / "scripts" / "suites" / "52_slow.py").write_text("import time\ntime.sleep(3)\nexpect('ROW slow/finishes: the row a slow fragment reaches', True)\n")
+    _v102_git("add", "-A"); _v102_git("commit", "-q", "-m", "slow")
+    _v102_slow_commit = _v102_git("rev-parse", "HEAD")
+    _v102_cap_quick = _v102_capsule(_v102_tmp / "cap_Q", "print('quick')\n", {"kind": "stdout_contains", "value": "quick"})
+    _v102_plan_slow = {"repo": str(_v102_repo), "worktree": str(_v102_repo), "reviewed_commit": _v102_reviewed,
+                       "fixed_commit": _v102_slow_commit, "row_deadline_seconds": 60,
+                       "findings": [{"id": "Q", "capsule": _v102_cap_quick, "row": {"suite": "52_slow", "label": "slow/finishes"}}]}
+    _v102_slow = FV102.validate(_v102_plan_slow, workdir=_v102_tmp / "run_slow")
+    _v102_M_rowdl, _ = _v102_organs("rowfromcapsule", [
+        ('    row_deadline = row_deadline_seconds or deadline or DEFAULT_ROW_DEADLINE', '    row_deadline = 1')])
+    _v102_slow_m = _v102_M_rowdl.validate(_v102_plan_slow, workdir=_v102_tmp / "run_slow_m")
+    expect("VELDO-0102 AC2 fixval/row-runs-have-their-own-budget: with no deadline_seconds in the plan the capsule's first run "
+           "gets the default and the record says how the rest are derived, while a row run takes the plan's row budget and a "
+           "fragment that sleeps for three seconds finishes green; DRIVEN: a copy whose row budget comes from the capsule's own "
+           "duration kills the same fragment as a deadline",
+           _v102_slow["findings"][0]["results"]["row_fresh_green"]["status"] == "passed"
+           and _v102_slow["deadline_seconds"] is None and _v102_slow["row_deadline_seconds"] == 60
+           and isinstance(_v102_slow["deadline_derivation"], str)
+           and _v102_slow["findings"][0]["results"]["capsule_reviewed"]["deadline_seconds"] == FV102.DEFAULT_DEADLINE
+           and _v102_slow_m["findings"][0]["results"]["row_fresh_green"]["status"] == "deadline")
 
     # The RUNS never happen inside a worktree; the RECORD may be written into the proof bundle.
     _v102_out = _v102_repo / "proof" / "VELDO-9102" / "validation"

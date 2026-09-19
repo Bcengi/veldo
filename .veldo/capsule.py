@@ -211,7 +211,7 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
         raise CapsuleError(f"the commit already carries {MOUNT} at its root; the capsule cannot be mounted there")
     shutil.copytree(capsule_dir, mount, symlinks=True)
     mounted = digest_files(mount)
-    if mounted != before:
+    if mounted != m["files"] or mounted != before:
         raise CapsuleError(f"the mounted copy does not match the reviewer's files: {sorted(k for k in set(before) | set(mounted) if before.get(k) != mounted.get(k))}")
     # The checkout root goes first on PYTHONPATH so a reproduction can import the code it exposes the
     # way the reviewer did from the repository root; nothing else about the environment is changed.
@@ -252,7 +252,17 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
     files_present = {}
     fe = m["expected"].get("value") if m["expected"].get("kind") == "file_exists" else None
     if fe:
-        files_present[str(fe)] = (tree / str(fe)).exists()
+        # The path a capsule names is confined to the checkout the same way a plan's paths are: an
+        # absolute path or one through .. would ask about a file outside the copy, and the answer to
+        # that question is never evidence about this commit.
+        rel = str(fe)
+        inside = not rel.startswith(("/", "\\")) and ".." not in Path(rel).parts
+        target = (tree / rel) if inside else None
+        try:
+            inside = inside and target.resolve().relative_to(tree.resolve()) is not None
+        except ValueError:
+            inside = False
+        files_present[rel] = bool(inside and target.exists())
     after = digest_files(capsule_dir)
     if after != before:
         raise CapsuleError(f"the run changed the reviewer's files: {sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))}")

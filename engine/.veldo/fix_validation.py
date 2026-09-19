@@ -36,8 +36,10 @@ from pathlib import Path
 
 SCHEMA = "veldo.fix-validation/v1"
 RESULT_KEYS = ("capsule_reviewed", "capsule_fixed", "row_mutant_red", "row_fresh_green")
-DEFAULT_DEADLINE = 900      # for the first run (the capsule on the reviewed commit) when the plan sets none
-MIN_DERIVED_DEADLINE = 60   # the other three runs get twice the reviewed run's duration, never less than this
+DEFAULT_DEADLINE = 900        # the capsule's first run (on the reviewed commit) when the plan sets none
+MIN_DERIVED_DEADLINE = 60     # the capsule's SECOND run gets twice the first's duration, never less than this
+DEFAULT_ROW_DEADLINE = 1800   # a row run execs a whole suite fragment, so it gets its own budget, never
+                              # a number measured from a few-line capsule (plan: row_deadline_seconds)
 KILL_WAIT = 5               # seconds to wait for the killed group's pipes before recording a survivor
 INVALID_MUTATION = "INVALID_MUTATION"
 FINDING_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}")
@@ -65,14 +67,15 @@ def _checkout(repo: str | os.PathLike, commit: str, dest: Path) -> None:
         raise ValidationError(f"untar failed: {tar.stderr.decode('utf-8', 'replace')[:300]}")
 
 
-def _run(cmd: list, cwd: Path, deadline: int, env: dict | None = None) -> dict:
+def _run(cmd: list, cwd: Path, deadline: int, env: dict | None = None, pass_fds=()) -> dict:
     """One subprocess in its own process group. On the deadline the whole group is killed; the wait for
     the group's pipes after the kill is bounded, and a helper that escaped the group and still holds
     them is recorded as children_left_running rather than waited for."""
     t0 = time.monotonic()
     e = dict(os.environ) if env is None else dict(env)
     e.pop("PWD", None)
-    p = subprocess.Popen(cmd, cwd=str(cwd), env=e, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    p = subprocess.Popen(cmd, cwd=str(cwd), env=e, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         start_new_session=True, pass_fds=pass_fds)
     survivors = False
     try:
         out, err = p.communicate(timeout=deadline)
@@ -151,45 +154,76 @@ def apply_mutant(tree: Path, mutant: dict) -> dict:
 # Rows: run the suite in the copy and read the named row
 # --------------------------------------------------------------------------------------------------
 
+# The record leaves the child on a PRIVATE channel, not on its stdout, and the child ends with
+# os._exit so that nothing registered to run at exit can speak after it. The rows live in a closure
+# cell rather than a module global, so rebinding a name in the recorder's globals does not reach them.
+# WHAT THIS DOES NOT DEFEND AGAINST, said plainly: the fragment is arbitrary code in this process and
+# can find the inherited descriptor and write to it. The pin is evidence about a row an author wrote
+# carelessly, not a guarantee against an author who forges deliberately; that one is caught by the
+# fragment being a committed file a reviewer reads.
+RECORD_MARKER = "veldo.fixval-rows/v1"
+
 ROW_RUNNER = r"""
-import json, sys, types
+import json, os, sys, types
 from pathlib import Path
-suites = Path(sys.argv[1]); fragment = Path(sys.argv[2])
-shared = types.ModuleType("fixval_shared")
-shared.__dict__["__file__"] = str(suites / "shared.py")
-exec(compile((suites / "shared.py").read_text(), str(suites / "shared.py"), "exec"), shared.__dict__)
-rows = []
-def expect(name, condition):
-    rows.append({"label": name, "passed": bool(condition)})
-shared.__dict__["expect"] = expect
-shared.__dict__["__suite_file__"] = str(fragment)
-exec(compile(fragment.read_text(), str(fragment), "exec"), shared.__dict__)
-print("FIXVAL-ROWS " + json.dumps(rows))
-"""
+
+RECORD_MARKER = "veldo.fixval-rows/v1"
 
 
-def row_status(runner_output: str, row_label_fragment: str) -> str:
-    """passed, failed, absent or ambiguous for the pinned row, read from the row runner's record of one
-    run of the fragment (every row recorded, none counted). The record is the LAST FIXVAL-ROWS line,
-    which the runner prints after the fragment has finished, so a line the fragment itself prints
-    earlier is not read. The fragment must match exactly ONE row: none is absent, more than one is
-    ambiguous, and neither is ever passed."""
-    record = None
-    for line in runner_output.splitlines():
-        if line.startswith("FIXVAL-ROWS "):
-            record = line[len("FIXVAL-ROWS "):]
-    if record is None:
-        return "absent"
+def _main():
+    suites = Path(sys.argv[1]); fragment = Path(sys.argv[2]); channel = int(sys.argv[3])
+    rows = []                                    # a cell, not a module global
+    def expect(name, condition):
+        rows.append({"label": name, "passed": bool(condition)})
+    shared = types.ModuleType("fixval_shared")
+    shared.__dict__["__file__"] = str(suites / "shared.py")
+    exec(compile((suites / "shared.py").read_text(), str(suites / "shared.py"), "exec"), shared.__dict__)
+    shared.__dict__["expect"] = expect
+    shared.__dict__["__suite_file__"] = str(fragment)
+    status = "ok"
     try:
-        rows = json.loads(record)
-    except ValueError:
-        return "absent"
-    hits = [r for r in rows if isinstance(r, dict) and row_label_fragment in str(r.get("label", ""))]
+        exec(compile(fragment.read_text(), str(fragment), "exec"), shared.__dict__)
+    except BaseException as e:                   # the fragment raised: the rows it reached still stand
+        status = f"{type(e).__name__}: {e}"[:400]
+    os.write(channel, (json.dumps({"marker": RECORD_MARKER, "status": status, "rows": rows}) + "\n").encode())
+    os.close(channel)
+    sys.stdout.flush(); sys.stderr.flush()
+    os._exit(0)                                  # nothing at exit gets to speak after the record
+
+_main()
+"""
+# The child script carries its own copy of the marker, because it runs as a file of its own; the two
+# must be the same string or every record would be discarded as unmarked.
+assert f'RECORD_MARKER = "{RECORD_MARKER}"' in ROW_RUNNER
+
+
+def read_record(blob: str, row_label_fragment: str) -> dict:
+    """The pinned row's outcome, read from the child's private channel. The record taken is the LAST
+    well-formed one carrying the marker, because the runner writes its own after the fragment has
+    finished and then ends the process. The pin must match exactly ONE row: none is absent, more than
+    one is ambiguous, and neither is ever passed. A fragment that RAISED reports the rows it reached,
+    and a pinned row it never reached is absent, not passed."""
+    record = None
+    for line in (blob or "").splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            obj = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(obj, dict) and obj.get("marker") == RECORD_MARKER and isinstance(obj.get("rows"), list):
+            record = obj
+    if record is None:
+        return {"row_status": "absent", "reason": "the row runner produced no record"}
+    hits = [r for r in record["rows"] if isinstance(r, dict) and row_label_fragment in str(r.get("label", ""))]
     if not hits:
-        return "absent"
+        return {"row_status": "absent", "fragment_status": record.get("status"),
+                "reason": f"the label fragment matched none of the {len(record['rows'])} row(s) the fragment produced"}
     if len(hits) > 1:
-        return "ambiguous"
-    return "passed" if hits[0].get("passed") else "failed"
+        return {"row_status": "ambiguous", "fragment_status": record.get("status"),
+                "reason": f"the label fragment matched {len(hits)} rows; the pin must name exactly one"}
+    return {"row_status": "passed" if hits[0].get("passed") else "failed", "fragment_status": record.get("status")}
 
 
 def run_row(tree: Path, suite: str, row_label_fragment: str, deadline: int) -> dict:
@@ -199,11 +233,28 @@ def run_row(tree: Path, suite: str, row_label_fragment: str, deadline: int) -> d
     fragment = _confined(suites, suite if suite.endswith(".py") else suite + ".py")
     if fragment is None:
         return {"row": row_label_fragment, "suite": suite, "row_status": "absent", "reason": "suite name is not a path inside scripts/suites"}
+    if not fragment.is_file():
+        return {"row": row_label_fragment, "suite": suite, "row_status": "absent", "reason": f"{suite} is not a fragment of this commit"}
     runner = tree.parent / (tree.name + ".row_runner.py")   # beside the copy, not inside it
     runner.write_text(ROW_RUNNER)
-    r = _run([sys.executable, str(runner), str(suites), str(fragment)], tree, deadline)
-    st = "deadline" if r["timed_out"] else ("absent" if not fragment.is_file() else row_status(r["stdout"], row_label_fragment))
-    return {**r, "row": row_label_fragment, "suite": suite, "row_status": st}
+    read_fd, write_fd = os.pipe()
+    try:
+        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(write_fd)], tree, deadline, pass_fds=(write_fd,))
+        os.close(write_fd)
+        write_fd = None
+        blob = b""
+        while True:
+            chunk = os.read(read_fd, 65536)
+            if not chunk:
+                break
+            blob += chunk
+    finally:
+        if write_fd is not None:
+            os.close(write_fd)
+        os.close(read_fd)
+    if r["timed_out"]:
+        return {**r, "row": row_label_fragment, "suite": suite, "row_status": "deadline"}
+    return {**r, "row": row_label_fragment, "suite": suite, **read_record(blob.decode("utf-8", "replace"), row_label_fragment)}
 
 
 # --------------------------------------------------------------------------------------------------
@@ -213,64 +264,77 @@ def run_row(tree: Path, suite: str, row_label_fragment: str, deadline: int) -> d
 def _row_result(r: dict, want: str) -> dict:
     """A row run turned into a result: want is the row status that counts as passed ("passed" for the
     fresh copy, "failed" for the mutant copy). A row that was not found (absent), matched more than one
-    row (ambiguous) or hit the deadline is never passed; absent and ambiguous are missing, named."""
+    row (ambiguous) or hit the deadline is never passed; absent and ambiguous are missing, named. A
+    deadline carries children_left_running when the kill left a process behind."""
     st = r.get("row_status")
     if st == "deadline":
         status = "deadline"
     elif st in ("absent", "ambiguous"):
         status = "missing"
-    elif r.get("children_left_running"):
-        status = "failed"
     else:
         status = "passed" if st == want else "failed"
     out = {"status": status, "row_status": st, "duration_seconds": r.get("duration_seconds")}
-    if st in ("absent", "ambiguous"):
-        out["reason"] = r.get("reason") or (f"the label fragment matched no row" if st == "absent" else "the label fragment matched more than one row; the pin must name exactly one")
+    if r.get("reason"):
+        out["reason"] = r["reason"]
+    if r.get("fragment_status") and r["fragment_status"] != "ok":
+        out["fragment_status"] = r["fragment_status"]
     if r.get("children_left_running"):
         out["children_left_running"] = True
     return out
 
 
-def _capsule_result(r: dict, want_reproduced: bool) -> dict:
+def _capsule_result(r: dict, want_reproduced: bool, reviewed_exit_code=None) -> dict:
     """A capsule run turned into a result. On the reviewed commit the defect must reproduce; on the
-    fixed commit it must not, AND the reproduction must have run to completion: a script that crashed
-    (non-zero exit with no observation) has not shown that the defect is gone, so that result is
-    missing, never passed. A run that left processes behind is failed."""
+    fixed commit it must not.
+
+    A capsule that ran CLEANLY while the defect was there (exit 0) and then failed to run cleanly on the
+    fix has not shown the defect is gone: it stopped early, and stopping early is not evidence. That one
+    case is missing, named, never passed. A capsule that already exited non-zero on the reviewed commit
+    is judged by its observation alone on both, because non-zero is simply how it reports: this is the
+    ordinary shape of a capsule whose expectation is stderr_contains or exit_code, and refusing it
+    would refuse a CORRECT fix with no way to override, which is worse than the hole it closes.
+
+    A run whose deadline passed is deadline, and it carries children_left_running when the kill left a
+    process behind; neither ever passes."""
     base = {"reproduced": r.get("reproduced"), "exit_code": r.get("exit_code"), "duration_seconds": r.get("duration_seconds")}
+    if r.get("children_left_running"):
+        base["children_left_running"] = True
     if r.get("timed_out"):
         return {"status": "deadline", **base}
-    if r.get("children_left_running"):
-        return {"status": "failed", "reason": "child-processes-left-running", **base}
     if r.get("reproduced") is want_reproduced:
-        if not want_reproduced and r.get("exit_code") not in (0, None) and r.get("expected_kind") != "exit_code":
-            return {"status": "missing", "reason": f"the reproduction did not run to completion on the fixed commit (exit {r.get('exit_code')}); a crash is not a pass", **base}
+        if (not want_reproduced) and reviewed_exit_code == 0 and r.get("exit_code") not in (0, None):
+            return {"status": "missing", "reason": f"the capsule exited 0 while the defect was present and exited {r.get('exit_code')} on the fix; it stopped early rather than showing the defect gone", **base}
         return {"status": "passed", **base}
     return {"status": "failed", **base}
 
 
-def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixed: str, workdir: Path, capsule_mod, deadline) -> dict:
+def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixed: str, workdir: Path, capsule_mod, deadline, row_deadline_seconds=None) -> dict:
     """The four results for one finding. Nothing here touches the repository or the worktree: every
     run happens in a copy under workdir. Any error while producing a result is that result, recorded as
     missing with its reason; nothing here aborts the validation of the other findings."""
-    fid = str(finding.get("id"))
+    raw_id = finding.get("id") if isinstance(finding, dict) else None
+    fid = raw_id if isinstance(raw_id, str) else f"<finding {id(finding):x}>"
     out = {"finding_id": fid, "results": {k: {"status": "missing"} for k in RESULT_KEYS}}
-    if not FINDING_ID.fullmatch(fid):
+    if not isinstance(raw_id, str) or not FINDING_ID.fullmatch(raw_id):
         for k in RESULT_KEYS:
-            out["results"][k] = {"status": "missing", "reason": "finding id is not a plain name (letters, digits, . _ -); it names run directories and may not leave them"}
+            out["results"][k] = {"status": "missing", "reason": "a finding needs an id that is a plain name (letters, digits, . _ -); it names run directories and may not leave them"}
         out["closed"] = False
         return out
     first_deadline = deadline or DEFAULT_DEADLINE
     rest_deadline = deadline
+    row_deadline = row_deadline_seconds or deadline or DEFAULT_ROW_DEADLINE
+    reviewed_exit = None
     cap_dir = finding.get("capsule")
-    if cap_dir and Path(cap_dir).is_dir():
+    if isinstance(cap_dir, str) and cap_dir and Path(cap_dir).is_dir():
         for key, commit, want in (("capsule_reviewed", reviewed, True), ("capsule_fixed", fixed, False)):
             dl = first_deadline if key == "capsule_reviewed" else (rest_deadline or MIN_DERIVED_DEADLINE)
             try:
                 r = capsule_mod.run_capsule(cap_dir, repo, commit, timeout=dl, workdir=workdir / f"{fid}_{key}")
-                r["expected_kind"] = capsule_mod.load_capsule(cap_dir)["expected"].get("kind")
-                out["results"][key] = {**_capsule_result(r, want), "deadline_seconds": dl}
-                if key == "capsule_reviewed" and rest_deadline is None:
-                    rest_deadline = max(MIN_DERIVED_DEADLINE, int(2 * (r.get("duration_seconds") or 0)) + 1)
+                out["results"][key] = {**_capsule_result(r, want, reviewed_exit), "deadline_seconds": dl}
+                if key == "capsule_reviewed":
+                    reviewed_exit = r.get("exit_code")
+                    if rest_deadline is None:
+                        rest_deadline = max(MIN_DERIVED_DEADLINE, int(2 * (r.get("duration_seconds") or 0)) + 1)
             except capsule_mod.CapsuleError as e:
                 out["results"][key] = {"status": "missing", "reason": f"capsule refused: {e}"}
             except Exception as e:  # noqa: BLE001 - a result that could not be produced is missing, by name
@@ -278,8 +342,7 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
     else:
         for key in ("capsule_reviewed", "capsule_fixed"):
             out["results"][key] = {"status": "missing", "reason": "no capsule for this finding"}
-    row_deadline = rest_deadline or MIN_DERIVED_DEADLINE
-    row = finding.get("row") or {}
+    row = finding.get("row") if isinstance(finding.get("row"), dict) else {}
     suite, label, mutant = row.get("suite"), row.get("label"), row.get("mutant")
     if suite and label and isinstance(suite, str) and isinstance(label, str):
         try:
@@ -319,14 +382,30 @@ def validate(plan: dict, workdir: str | os.PathLike | None = None) -> dict:
     deadline = int(plan["deadline_seconds"]) if plan.get("deadline_seconds") else None   # None: derived per finding
     capsule_mod = _load("fixval_capsule", Path(__file__).resolve().parent / "capsule.py")
     before = _tree_digest(worktree)
-    findings = [validate_finding(f, repo, plan["reviewed_commit"], plan["fixed_commit"], wd, capsule_mod, deadline) for f in plan["findings"]]
+    declared = plan.get("findings")
+    if not isinstance(declared, list):
+        raise ValidationError("the plan's findings must be a list of objects")
+    row_deadline = int(plan["row_deadline_seconds"]) if plan.get("row_deadline_seconds") else None
+    findings = []
+    for f in declared:
+        if not isinstance(f, dict):
+            findings.append({"finding_id": f"<not an object: {type(f).__name__}>", "closed": False,
+                             "results": {k: {"status": "missing", "reason": "the plan entry is not an object"} for k in RESULT_KEYS}})
+            continue
+        try:
+            findings.append(validate_finding(f, repo, plan["reviewed_commit"], plan["fixed_commit"], wd, capsule_mod, deadline, row_deadline))
+        except Exception as e:  # noqa: BLE001 - one finding that cannot be validated is not the others' problem
+            findings.append({"finding_id": str(f.get("id")), "closed": False,
+                             "results": {k: {"status": "missing", "reason": f"the finding could not be validated: {type(e).__name__}: {e}"} for k in RESULT_KEYS}})
     after = _tree_digest(worktree)
     return {
         "schema": SCHEMA,
         "repo": str(repo),
         "reviewed_commit": plan["reviewed_commit"],
         "fixed_commit": plan["fixed_commit"],
-        "deadline_seconds": deadline if deadline is not None else f"derived: {DEFAULT_DEADLINE} for the reviewed run, then twice its duration, at least {MIN_DERIVED_DEADLINE}",
+        "deadline_seconds": deadline,
+        "deadline_derivation": None if deadline is not None else f"the reviewed run gets {DEFAULT_DEADLINE}s, the second twice its duration and at least {MIN_DERIVED_DEADLINE}s; rows get {DEFAULT_ROW_DEADLINE}s",
+        "row_deadline_seconds": row_deadline,
         "run_directory": str(wd),
         "worktree_unchanged": before == after,
         "findings": findings,
@@ -362,7 +441,16 @@ def main(argv: list) -> int:
             rec = validate(plan, workdir=runs)
         except ValidationError as e:
             print(f"REFUSED: {e}")
+            shutil.rmtree(runs, ignore_errors=True)
             return 2
+        # The checkouts are several copies of the repository per finding and the record carries what
+        # anyone reads afterwards, so they go. They are KEPT when a result is missing, deadline or an
+        # invalid mutation, because then someone has to look; the record names the directory either way.
+        looked_at = {"missing", "deadline", INVALID_MUTATION}
+        needs_looking = any(f["results"][k].get("status") in looked_at for f in rec["findings"] for k in RESULT_KEYS)
+        if not needs_looking:
+            shutil.rmtree(runs, ignore_errors=True)
+            rec["run_directory_removed"] = True
         (out / "fix-validation.json").write_text(json.dumps(rec, indent=1, sort_keys=True) + "\n")
         print(json.dumps({"closed": rec["closed"], "open": rec["open"], "worktree_unchanged": rec["worktree_unchanged"]}))
         return 0 if not rec["open"] else 1

@@ -14,13 +14,14 @@ Standard library only. The real harness command is `claude -p` with read-only to
 fake harness through the `harness` argument so that nothing is spent and the contract is what is
 checked.
 
-    python3 .veldo/fix_assessor.py run <inputs.json> <out-dir> [--harness CMD...]
+    python3 .veldo/fix_assessor.py run <inputs.json> <out-dir> [--checkout <fixed-checkout>] [--harness CMD...]
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -38,6 +39,7 @@ API_KEY_VARIABLES = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BAS
                      "GOOGLE_APPLICATION_CREDENTIALS", "ANTHROPIC_VERTEX_PROJECT_ID")
 KILL_WAIT = 5
 CAPSULE_RESULT_KEYS = {"finding_id", "reviewed", "fixed", "reviewed_exit_code", "fixed_exit_code"}
+COMMIT_ISH = re.compile(r"[0-9a-f]{7,40}")
 DEFAULT_TIMEOUT = 1800
 
 VERDICT_SCHEMA = {
@@ -81,6 +83,9 @@ def assemble_brief(inputs: dict) -> dict:
     for k in BRIEF_INPUTS:
         if k not in inputs:
             raise AssessorError(f"brief input missing: {k}")
+    for k in ("reviewed_commit", "fixed_commit"):
+        if not isinstance(inputs[k], str) or not COMMIT_ISH.fullmatch(inputs[k]):
+            raise AssessorError(f"{k} must be a commit id (7 to 40 hex characters), not free text: {str(inputs[k])[:60]!r}")
     findings = inputs["findings"]
     if not isinstance(findings, list) or not findings or not all(isinstance(f, dict) and f.get("id") and f.get("text") for f in findings):
         raise AssessorError("findings must be a non-empty list of {id, text}")
@@ -148,16 +153,21 @@ def brief_text(brief: dict) -> str:
 # The harness: a separate headless Claude Code process, read-only, clean context, no API key
 # --------------------------------------------------------------------------------------------------
 
-def harness_command(schema: dict | None = None) -> list:
+def harness_command(schema: dict | None = None, checkout: str | os.PathLike | None = None) -> list:
     """The real command: the logged-in Claude Code subscription in print mode, a fresh session with no
     persistence, JSON output constrained to the verdict schema (passed INLINE: --json-schema takes the
     schema text, not a path), restricted mode (no command-running tools, no user or project settings
     files), no MCP servers at all (an empty inline config with --strict-mcp-config), read-only tools
     allowed and every writing or fetching tool disallowed."""
-    return ["claude", "-p", "--output-format", "json", "--json-schema", json.dumps(schema or VERDICT_SCHEMA, sort_keys=True),
-            "--no-session-persistence", "--restricted",
-            "--strict-mcp-config", "--mcp-config", json.dumps({"mcpServers": {}}),
-            "--allowedTools", "Read,Grep,Glob", "--disallowedTools", "Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch"]
+    cmd = ["claude", "-p", "--output-format", "json", "--json-schema", json.dumps(schema or VERDICT_SCHEMA, sort_keys=True),
+           "--no-session-persistence", "--restricted",
+           "--strict-mcp-config", "--mcp-config", json.dumps({"mcpServers": {}})]
+    if checkout:
+        # Restricted mode confines the file tools to the working directories. The assessor is asked to
+        # read the code it is judging, so the checkout of the fixed commit is named as one; without
+        # this the read-only tools can reach nothing but the directory the record is written in.
+        cmd += ["--add-dir", str(checkout)]
+    return cmd + ["--allowedTools", "Read,Grep,Glob", "--disallowedTools", "Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch"]
 
 
 def clean_environment(env: dict | None = None) -> dict:
@@ -168,12 +178,15 @@ def clean_environment(env: dict | None = None) -> dict:
     return base
 
 
-def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = None, timeout: int = DEFAULT_TIMEOUT) -> dict:
-    """Start the harness as a separate process in the fixed checkout, feed it the brief on stdin, and
-    return what it printed together with what the controller measured (wall time, exit code)."""
+def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = None, timeout: int = DEFAULT_TIMEOUT,
+                checkout: str | os.PathLike | None = None) -> dict:
+    """Start the harness as a separate process, feed it the brief on stdin, and return what it printed
+    together with what the controller measured (wall time, exit code). It runs in the work directory,
+    where the schema and the record live; the checkout of the fixed commit, when one is given, is named
+    to the harness as a directory its read-only tools may reach."""
     wd = Path(workdir)
     (wd / ".assessor-verdict-schema.json").write_text(json.dumps(VERDICT_SCHEMA))   # kept beside the record for the reader
-    cmd = list(harness) if harness else harness_command(VERDICT_SCHEMA)
+    cmd = list(harness) if harness else harness_command(VERDICT_SCHEMA, checkout)
     env = clean_environment()
     env.pop("PWD", None)
     t0 = time.monotonic()
@@ -321,9 +334,10 @@ def assessment_record(brief: dict, run: dict) -> dict:
     }
 
 
-def assess(inputs: dict, workdir: str | os.PathLike, harness: list | None = None, timeout: int = DEFAULT_TIMEOUT) -> dict:
+def assess(inputs: dict, workdir: str | os.PathLike, harness: list | None = None, timeout: int = DEFAULT_TIMEOUT,
+           checkout: str | os.PathLike | None = None) -> dict:
     brief = assemble_brief(inputs)
-    run = run_harness(brief, workdir, harness=harness, timeout=timeout)
+    run = run_harness(brief, workdir, harness=harness, timeout=timeout, checkout=checkout)
     return assessment_record(brief, run)
 
 
@@ -332,8 +346,9 @@ def main(argv: list) -> int:
         inputs = json.loads(Path(argv[2]).read_text())
         out = Path(argv[3]); out.mkdir(parents=True, exist_ok=True)
         harness = argv[argv.index("--harness") + 1:] if "--harness" in argv else None
+        checkout = argv[argv.index("--checkout") + 1] if "--checkout" in argv else None
         try:
-            rec = assess(inputs, out, harness=harness)
+            rec = assess(inputs, out, harness=harness, checkout=checkout)
         except AssessorError as e:
             print(f"REFUSED: {e}")
             return 2
