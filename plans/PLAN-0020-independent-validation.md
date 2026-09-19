@@ -4,7 +4,7 @@ id: PLAN-0020
 title: Fix validation - every fix to a review finding is checked by someone other than its author, and the loop terminates
 kind: iteration
 status: ready
-revision: 2
+revision: 3
 owner: dmitry
 approved_by: dmitry
 approved_at: 2026-09-19
@@ -107,10 +107,14 @@ release:
   observation:
     duration: The first three landings after activation, including the batch validation of the fix commits landed since the quota ruling.
 
-open_decisions:
+open_decisions: []
+
+resolved_decisions:
   - id: D1
     text: Whether the fresh headless Claude Code run is enough separation from the author session for the assessor, or whether the assessor waits for Codex quota on the 22nd for the first batch only. Owner decides before VELDO-0103 starts.
-    blocks: [VELDO-0103]
+    resolved: true
+    resolved_at: 2026-09-19
+    resolution: The fresh headless Claude Code run is the assessor and does not wait for Codex. Dmitry approved the plan with VELDO-0103 defined that way (Telegram 28104, 2026-09-19), ruled that the author tests while Codex is out (28106), and that Codex validates everything in one batch when its quota returns (28109), so the Codex batch of 2026-09-22 is a second validation on top of the assessor, not a precondition for it.
 ---
 
 ## Intent
@@ -122,3 +126,9 @@ open_decisions:
 ## Ordered delivery rationale
 
 The Codex contract (W1) ships first so the next review already saves capsules. The runner (W2) and the assessor call (W3) are independent and can be built in parallel. The proof check (W4) needs both and is the switch that makes the rule bind.
+
+## Revision history
+
+Revision 2 (2026-09-19): approved by Dmitry (Telegram 28104) as the SIMPLE version: no separate operating-system identity, no landing service, no hooks, no receipts, no paid model API.
+
+Revision 3 (2026-09-19): open decision D1 resolved by Dmitry: the fresh headless Claude Code run is the assessor (VELDO-0103) and does not wait for Codex; the Codex batch of 2026-09-22 validates the author-tested items on top of it. D1 moves to resolved_decisions; VELDO-0103 is unblocked. Specs VELDO-0102, VELDO-0103 and VELDO-0104 re-pulled to this revision.

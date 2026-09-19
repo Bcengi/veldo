@@ -708,14 +708,13 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 
 ### PLAN-0020 - Fix validation - every fix to a review finding is checked by someone other than its author, and the loop terminates
 
-Status ready, revision 2, owner dmitry. 1/4 work items shipped.
-Ready frontier: VELDO-0102 (W2).
-Open decision D1 blocks: VELDO-0103.
+Status ready, revision 3, owner dmitry. 1/4 work items shipped.
+Ready frontier: VELDO-0102 (W2), VELDO-0103 (W3).
 
 | Item | Spec | Title | Depends on | State |
 |---|---|---|---|---|
 | W1 | VELDO-0101 | Codex review contract saves a reproduction capsule per confirmed defect | - | shipped |
 | W2 | VELDO-0102 | Capsule runner - reproduction against reviewed and fixed candidates, pinned row and mutant, one process per capsule | VELDO-0101 | draft (frontier) |
-| W3 | VELDO-0103 | Assessor as a fresh headless Claude Code run - fix diff plus findings in, per-finding verdict out, provenance recorded | - | blocked: decision D1 |
+| W3 | VELDO-0103 | Assessor as a fresh headless Claude Code run - fix diff plus findings in, per-finding verdict out, provenance recorded | - | ready (frontier) |
 | W4 | VELDO-0104 | validation.json in the proof bundle, round cap, and the proof check refusing unvalidated fixes | VELDO-0102, VELDO-0103 | waiting: VELDO-0102, VELDO-0103 |
 
