@@ -190,11 +190,12 @@ def apply_mutant(tree: Path, mutant: dict) -> dict:
 #
 # What this arrangement IS for is honest fragments and ordinary bugs, which is what the runner meets.
 # The record does not travel on the fragment's standard output, so printing is never mistaken for
-# recording. The channel is unlinked at open, so no path collides with it. The encoder and the marker
-# are this runner's own, so a fragment that replaces a module attribute for its own reasons does not
-# corrupt the record. The write cannot raise out of the runner, so one unencodable label does not
-# discard every row. And the process ends at the record rather than returning, so an ordinary atexit
-# handler does not append to it.
+# recording. The channel is unlinked at open, so no path collides with it. The marker and the ENCODER
+# ITSELF are written here rather than borrowed from a module the fragment shares, so a fragment that
+# replaces something in json for its own reasons does not corrupt the record. The write cannot raise
+# out of the runner, and a label that is not a string is turned into one where it is recorded, so one
+# odd row costs its own label and not every row. And the process ends at the record rather than
+# returning, so an ordinary handler registered at exit does not append to it.
 RECORD_MARKER = "veldo.fixval-rows/v1"
 
 ROW_RUNNER = r"""
@@ -210,10 +211,33 @@ def _main():
     # fragment shares these module objects and can replace their attributes, and a reference taken
     # after it ran would be the fragment's. The MARKER is captured too: it lives in this module's
     # globals, this module is __main__, and a fragment can assign to it through sys.modules.
-    # An encoder of this runner's own, not json.dumps, which looks up the module's shared default
-    # encoder when it is called. Everything else the record needs is bound here too, before any
-    # fragment code runs.
-    _encode = json.JSONEncoder(sort_keys=True).encode
+    # An encoder written out here rather than borrowed. json.dumps looks up the module's default
+    # encoder when it is called, and json.JSONEncoder().encode reaches into json.encoder's globals for
+    # the C encoder and the string escaper when IT is called, so binding either one early buys nothing.
+    # The record holds strings, booleans, lists and dicts of those, and encoding them is this:
+    def _encode(value):
+        if value is True:
+            return "true"
+        if value is False:
+            return "false"
+        if isinstance(value, str):
+            out = ['"']
+            for ch in value:
+                if ch == '"':
+                    out.append('\\"')
+                elif ch == "\\":
+                    out.append("\\\\")
+                elif " " <= ch <= "~":
+                    out.append(ch)
+                else:
+                    out.append("\\u%04x" % ord(ch))
+            out.append('"')
+            return "".join(out)
+        if isinstance(value, (list, tuple)):
+            return "[" + ",".join(_encode(v) for v in value) + "]"
+        if isinstance(value, dict):
+            return "{" + ",".join(_encode(str(k)) + ":" + _encode(v) for k, v in value.items()) + "}"
+        return _encode(repr(value))
     _write, _exit, _list = os.write, os._exit, list
     _marker = RECORD_MARKER
     _flush = (sys.stdout.flush, sys.stderr.flush)
@@ -410,6 +434,7 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
     row_deadline = row_deadline_seconds or deadline or DEFAULT_ROW_DEADLINE
     reviewed_exit = None
     cap_dir = finding.get("capsule")
+    out["capsule_declared"] = cap_dir not in (None, "")
     if isinstance(cap_dir, str) and cap_dir and Path(cap_dir).is_dir():
         for key, commit, want in (("capsule_reviewed", reviewed, True), ("capsule_fixed", fixed, False)):
             dl = first_deadline if key == "capsule_reviewed" else (rest_deadline or MIN_DERIVED_DEADLINE)
@@ -474,8 +499,14 @@ def assessor_capsule_results(record: dict) -> list:
     for f in record.get("findings") or []:
         rev = (f.get("results") or {}).get("capsule_reviewed") or {}
         fix = (f.get("results") or {}).get("capsule_fixed") or {}
+        if rev.get("status") == "missing" and fix.get("status") == "missing" and not f.get("capsule_declared"):
+            continue                                     # the plan named no capsule here: nothing to say
         if rev.get("status") == "missing" and fix.get("status") == "missing":
-            continue                                     # no capsule for this finding: nothing to say
+            # A capsule was named and could not be used: refused by its own digests, not a directory,
+            # unreadable. That is not silence, and it must not read to the reader as a finding that
+            # never had a reproduction.
+            out.append({"finding_id": f["finding_id"], "incomplete": True})
+            continue
         entry = {"finding_id": f["finding_id"]}
         # Whether the evidence is COMPLETE, which an entry of facts about what the runs showed does not
         # otherwise say. A run that hit its deadline, left a process behind, or could not happen at all
@@ -575,7 +606,11 @@ def _tree_digest(worktree: Path) -> str:
 
 def main(argv: list) -> int:
     if len(argv) >= 4 and argv[1] == "run":
-        plan = json.loads(Path(argv[2]).read_text())
+        try:
+            plan = json.loads(Path(argv[2]).read_text())
+        except (OSError, ValueError) as e:
+            print(f"REFUSED: {argv[2]} cannot be read as the plan JSON: {e}")
+            return 2
         out = Path(argv[3]); out.mkdir(parents=True, exist_ok=True)
         # The RUNS happen in a temporary directory outside every worktree; only the RECORD is written to
         # <out-dir>, which may be the proof bundle's validation directory inside the repository.

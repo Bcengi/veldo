@@ -25,6 +25,8 @@ import tempfile as _v101_tf
 from pathlib import Path as _v101_Path
 
 _v101_tmp = _v101_Path(_v101_tf.mkdtemp(prefix="v101"))
+WRITE_IN_101 = '    if not isinstance(reviewed_commit, str) or not COMMIT_ISH.fullmatch(reviewed_commit):'
+WRITE_OUT_101 = '    if not isinstance(m["reviewed_commit"], str) or not COMMIT_ISH.fullmatch(m["reviewed_commit"]):'
 _v101_have_git = _v101_shutil.which("git") is not None and _v101_shutil.which("tar") is not None
 
 
@@ -123,6 +125,46 @@ expect("VELDO-0101 AC2 capsule/tampered-bytes-refused DRIVEN (the declared falsi
        (not _v101_m2_refuses(_v101_tampered)) and _v101_refuses(_v101_tampered))
 
 # --- AC3: the runner against a real repository ---------------------------------------------------
+
+# The commit a capsule names goes into a git argument list in every consumer of that capsule, and git
+# reads a name beginning with a dash as an option. It is a commit id at both ends of the file.
+_v101_bad_commits = ("--output=/tmp/nothing-here", "HEAD", "main", "", "not hex at all")
+_v101_write_refused = []
+for _v101_bad in _v101_bad_commits:
+    _v101_d = _v101_tmp / ("commit_" + str(abs(hash(_v101_bad)))[:8])
+    _v101_d.mkdir()
+    (_v101_d / "repro.py").write_text("print('DEFECT')\n")
+    try:
+        CAP101.write_manifest(_v101_d, "F-01", _v101_bad, ["python3", CAP101.MOUNT + "/repro.py"],
+                              {"kind": "stdout_contains", "value": "DEFECT"}, "obs")
+        _v101_write_refused.append((_v101_bad, "ACCEPTED"))
+    except CAP101.CapsuleError:
+        pass
+_v101_good = _v101_make_capsule(_v101_tmp / "commit_good", "print('DEFECT')\n", commit="0123abcdef0123abcdef")
+_v101_hand = _v101_tmp / "commit_hand"
+_v101_hand.mkdir()
+(_v101_hand / "repro.py").write_text("print('DEFECT')\n")
+CAP101.write_manifest(_v101_hand, "F-01", "0123abc", ["python3", CAP101.MOUNT + "/repro.py"],
+                      {"kind": "stdout_contains", "value": "DEFECT"}, "obs")
+_v101_m = _v101_json.loads((_v101_hand / CAP101.MANIFEST).read_text())
+_v101_m["reviewed_commit"] = "--output=/tmp/nothing-here"
+(_v101_hand / CAP101.MANIFEST).write_text(_v101_json.dumps(_v101_m, indent=1, sort_keys=True) + "\n")
+_v101_load_refused = False
+try:
+    CAP101.load_capsule(_v101_hand)
+except CAP101.CapsuleError as _v101_e:
+    _v101_load_refused = "commit id" in str(_v101_e)
+_v101_m_commit = _v101_mutant([(WRITE_IN_101, "    if False:"), (WRITE_OUT_101, "    if False:")], "anycommitcapsule")
+_v101_m_loaded = _v101_m_commit.load_capsule(_v101_hand)["reviewed_commit"]
+expect("VELDO-0101 AC2 capsule/a-capsules-commit-is-a-commit-id: the commit a capsule names must be seven to forty hexadecimal "
+       "characters, checked when the manifest is written and again when it is read back, because a capsule read off disk was "
+       "written by something else and every consumer puts that string into a git argument list, where a leading dash is an "
+       "option; an option-shaped value, a branch name, a symbolic name, an empty string and plain text are each refused at both "
+       "ends while a real commit id is accepted, and the review brief says so; DRIVEN: a copy without either check hands the "
+       "option-shaped value back to its caller",
+       _v101_write_refused == [] and _v101_good.is_dir() and _v101_load_refused
+       and _v101_m_loaded == "--output=/tmp/nothing-here"
+       and "COMMIT ID you read" in CAP101.brief_text())
 
 if not _v101_have_git:
     expect("VELDO-0101 AC3 STOOD DOWN by name - git or tar is not installed here, so the real-checkout rows cannot run", True)

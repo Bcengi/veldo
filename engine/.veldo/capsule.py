@@ -35,6 +35,10 @@ SCHEMA = "veldo.capsule/v1"
 MANIFEST = "manifest.json"
 CAPSULE_ROOT = ".veldo-review/capsules"     # where the reviewer writes them inside its worktree
 MOUNT = ".capsule"                          # where the runner places the capsule beside the checkout
+# A capsule names the commit it was taken at, and every consumer of a capsule puts that string into a
+# git argument list. Git reads a leading dash as an option, so this is a commit id and nothing else:
+# the same rule the plan's own commit fields follow, at the other place a commit enters this system.
+COMMIT_ISH = __import__("re").compile(r"[0-9a-fA-F]{7,40}")
 EXPECTATION_KINDS = ("exit_code", "stdout_contains", "stderr_contains", "output_contains", "file_exists")
 KILL_WAIT = 5  # seconds the runner waits for the killed group's pipes to close before recording a survivor
 DEFAULT_TIMEOUT = 300
@@ -59,7 +63,9 @@ def brief_text() -> str:
         "the observation that shows the defect), and observation (what you saw, in one or two sentences). "
         "Write the files exactly as you ran them; a later runner executes the same command against the same "
         "commit and against the fix, and it never rewrites your files. A finding without a capsule is reported "
-        "as UNCONFIRMED, not as a finding. Saving the capsule is part of the review, not a follow-up."
+        "as UNCONFIRMED, not as a finding. Saving the capsule is part of the review, not a follow-up. "
+        "reviewed_commit is the COMMIT ID you read, seven to forty hexadecimal characters, not HEAD or a branch "
+        "name: a later runner passes it to git as an argument, and git reads a name beginning with a dash as an option."
     )
 
 
@@ -116,6 +122,8 @@ def write_manifest(capsule_dir: str | os.PathLike, finding_id: str, reviewed_com
         raise CapsuleError("command must be a non-empty list of strings")
     if not isinstance(expected, dict) or expected.get("kind") not in EXPECTATION_KINDS:
         raise CapsuleError(f"expected.kind must be one of {EXPECTATION_KINDS}")
+    if not isinstance(reviewed_commit, str) or not COMMIT_ISH.fullmatch(reviewed_commit):
+        raise CapsuleError(f"reviewed_commit must be a commit id, 7 to 40 hexadecimal characters, not {str(reviewed_commit)[:80]!r}")
     m = {
         "schema": SCHEMA,
         "finding_id": finding_id,
@@ -147,6 +155,10 @@ def load_capsule(capsule_dir: str | os.PathLike) -> dict:
             raise CapsuleError(f"manifest lacks {field}")
     if not isinstance(m["command"], list) or not m["command"] or not all(isinstance(a, str) for a in m["command"]):
         raise CapsuleError("manifest command must be a non-empty list of strings")
+    if not isinstance(m["reviewed_commit"], str) or not COMMIT_ISH.fullmatch(m["reviewed_commit"]):
+        # Checked on the way IN and again on the way OUT: the first stops a mistake, the second stops a
+        # file that was written by something else, which is what a capsule read off disk always is.
+        raise CapsuleError(f"manifest reviewed_commit must be a commit id, not {str(m['reviewed_commit'])[:80]!r}")
     if not isinstance(m["expected"], dict) or m["expected"].get("kind") not in EXPECTATION_KINDS:
         raise CapsuleError(f"manifest expected.kind must be one of {EXPECTATION_KINDS}")
     if not isinstance(m["files"], dict) or not m["files"]:

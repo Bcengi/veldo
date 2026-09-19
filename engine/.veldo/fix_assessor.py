@@ -44,7 +44,7 @@ KILL_WAIT = 5
 # way twice" without pretending to decide what it means. Deciding is what the reader is for.
 CAPSULE_RESULT_KEYS = {"finding_id", "reviewed", "fixed", "reviewed_exit_code", "fixed_exit_code",
                        "exit_code_changed", "incomplete"}
-COMMIT_ISH = re.compile(r"[0-9a-f]{7,40}")
+COMMIT_ISH = re.compile(r"[0-9a-fA-F]{7,40}")
 # A finding id names a finding. It is rendered into the brief the second reader follows, so it is a
 # plain name and nothing else: free text in an id is a message to that reader from the author.
 FINDING_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._\-]{0,79}")
@@ -192,22 +192,33 @@ def harness_command(schema: dict | None = None, checkout: str | os.PathLike | No
     return cmd + ["--allowedTools", "Read,Grep,Glob", "--disallowedTools", "Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch"]
 
 
-def _grants(cmd: list, directory) -> bool:
-    """Does this command line grant the harness access to THIS directory? --add-dir takes one or more
-    operands, so the answer is whether the directory is among the operands that follow it, up to the
-    next flag. The presence of the flag alone answers nothing."""
-    want = str(Path(directory).resolve())
+def _grants(cmd: list, directory, cwd) -> bool:
+    """Does this command line grant the harness access to THIS directory? Three things have to be right
+    and each of them was wrong once. The flag takes one or more OPERANDS, so its presence alone answers
+    nothing. A relative operand is resolved by the harness against ITS OWN working directory, not
+    against this process's, so that is the directory the comparison uses. And the flag has two
+    spellings, `--add-dir DIR` and `--add-dir=DIR`, so both are read."""
+    base = Path(cwd)
+
+    def same(operand) -> bool:
+        try:
+            return (base / str(operand)).resolve() == (base / str(directory)).resolve()
+        except OSError:
+            return False
+
     for i, arg in enumerate(cmd):
+        arg = str(arg)
+        if arg.startswith("--add-dir="):
+            if same(arg[len("--add-dir="):]):
+                return True
+            continue
         if arg != "--add-dir":
             continue
         for operand in cmd[i + 1:]:
             if str(operand).startswith("-"):
                 break
-            try:
-                if str(Path(operand).resolve()) == want:
-                    return True
-            except OSError:
-                continue
+            if same(operand):
+                return True
     return False
 
 
@@ -227,8 +238,12 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
     to the harness as a directory its read-only tools may reach."""
     # Refused before anything is written or started: a run pointed at a checkout that is not there
     # would only fail later, in the harness, where the reason is harder to see.
-    if checkout is not None and not Path(checkout).is_dir():
-        raise AssessorError(f"the checkout named for the assessor is not a directory: {checkout}")
+    if checkout is not None:
+        # Made absolute HERE, once, so that what is checked, what is granted, what the brief names and
+        # what the record keeps are all the same directory, whatever the caller typed.
+        checkout = Path(checkout).resolve()
+        if not checkout.is_dir():
+            raise AssessorError(f"the checkout named for the assessor is not a directory: {checkout}")
     wd = Path(workdir)
     (wd / ".assessor-verdict-schema.json").write_text(json.dumps(VERDICT_SCHEMA))   # kept beside the record for the reader
     cmd = list(harness) if harness else harness_command(VERDICT_SCHEMA, checkout)
@@ -236,7 +251,7 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
     # takes operands, and its presence somewhere in a command line says nothing about which directory.
     # Telling a reader to open a directory its tools cannot reach is the same defect as granting one it
     # is never told about.
-    granted = checkout if (checkout is not None and _grants(cmd, checkout)) else None
+    granted = checkout if (checkout is not None and _grants(cmd, checkout, wd)) else None
     env = clean_environment()
     env.pop("PWD", None)
     t0 = time.monotonic()

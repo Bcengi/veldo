@@ -24,6 +24,7 @@ import tempfile as _v103_tf
 from pathlib import Path as _v103_Path
 
 _v103_tmp = _v103_Path(_v103_tf.mkdtemp(prefix="v103"))
+BASE_LINE_41 = '    base = Path(cwd)'
 
 
 def _v103_load(name, path):
@@ -263,7 +264,7 @@ except FA103.AssessorError as _v103_e:
     _v103_missing_ck = "not a directory" in str(_v103_e)
 except OSError:
     _v103_missing_ck = False
-_v103_M_nock = _v103_mutant([('    if checkout is not None and not Path(checkout).is_dir():', '    if False:')], "nocheckdir")
+_v103_M_nock = _v103_mutant([('        if not checkout.is_dir():', '        if False:')], "nocheckdir")
 _v103_M_nock_ok = False
 try:
     _v103_os.environ["V103_RECORD"] = str(_v103_tmp / "rec_nock.json")
@@ -272,7 +273,7 @@ try:
     _v103_M_nock_ok = True
 except _v103_M_nock.AssessorError:
     _v103_M_nock_ok = False
-_v103_M_alwaysname = _v103_mutant([('    granted = checkout if (checkout is not None and _grants(cmd, checkout)) else None', '    granted = checkout')], "alwaysname")
+_v103_M_alwaysname = _v103_mutant([('    granted = checkout if (checkout is not None and _grants(cmd, checkout, wd)) else None', '    granted = checkout')], "alwaysname")
 _v103_an_wd = _v103_tmp / "wd_alwaysname"
 _v103_an_wd.mkdir()
 _v103_os.environ["V103_RECORD"] = str(_v103_an_wd / "record.json")
@@ -374,3 +375,34 @@ expect("VELDO-0103 AC1 assessor/partial-evidence-is-admitted: the brief admits t
        _v103_partial_seen is not None and "incomplete" in _v103_partial_seen["stdin"]
        and "not as evidence of a fix" in _v103_partial_seen["stdin"]
        and _v103_refused(_v103_partial_bad) and _v103_nopartial_refused)
+
+
+# --- granted means THIS directory, however the caller spelled it ----------------------------------
+_v103_gdir = _v103_tmp / "grant"
+_v103_gdir.mkdir()
+(_v103_gdir / "fixed").mkdir()
+(_v103_gdir / "other").mkdir()
+_v103_abs_fixed = _v103_gdir / "fixed"
+_v103_cases = {
+    "exact": ["--add-dir", str(_v103_abs_fixed)],
+    "equals": ["--add-dir=" + str(_v103_abs_fixed)],
+    "unrelated": ["--add-dir", str(_v103_gdir / "other")],
+    "relative_from_the_harness_cwd": ["--add-dir", "fixed"],
+    "relative_from_somewhere_else": ["--add-dir", "../fixed"],
+    "flag_alone": ["--add-dir"],
+    "none": [],
+}
+_v103_grants = {n: FA103._grants(["claude", "-p"] + c, _v103_abs_fixed, _v103_gdir) for n, c in _v103_cases.items()}
+_v103_M_token = _v103_mutant([(BASE_LINE_41, BASE_LINE_41 + '\n    return "--add-dir" in [str(a) for a in cmd]')], "tokenonly")
+_v103_M_ourcwd = _v103_mutant([(BASE_LINE_41, '    base = Path(".")')], "ourcwd")
+_v103_token = {n: _v103_M_token._grants(["claude", "-p"] + c, _v103_abs_fixed, _v103_gdir) for n, c in _v103_cases.items()}
+_v103_ourcwd = _v103_M_ourcwd._grants(["claude", "-p", "--add-dir", "fixed"], _v103_abs_fixed, _v103_gdir)
+expect("VELDO-0103 AC3 assessor/granted-means-this-directory: the command grants the checkout when the flag's operand IS that "
+       "directory, written absolutely, after an equals sign, or relatively from the directory the HARNESS will run in; and it "
+       "does not grant it for an unrelated directory, for a relative name that points somewhere else, for the flag with nothing "
+       "after it, or for no flag at all; DRIVEN twice: a copy that only looks for the flag grants the unrelated directory, and "
+       "a copy resolving operands against this process's own directory instead of the harness's gets the relative one wrong",
+       _v103_grants == {"exact": True, "equals": True, "unrelated": False, "relative_from_the_harness_cwd": True,
+                        "relative_from_somewhere_else": False, "flag_alone": False, "none": False}
+       and _v103_token["unrelated"] is True and _v103_token["flag_alone"] is True
+       and _v103_ourcwd is False)

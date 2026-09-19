@@ -8,12 +8,12 @@ prerequisite closure is ITSELF ALONE:
 
 WHAT IS UNDER TEST. .veldo/fix_validation.py over .veldo/capsule.py against a REAL two-commit git
 repository built under a temporary directory with the repository's own suite layout (scripts/suites/
-shared.py and a fragment): for a fixed finding all four results hold and the finding is closed, for
-an unfixed finding the capsule still reproduces and the finding stays open, and a result that could
-not be produced is missing, never passed (AC1); every run is one child process in a copy under the
+shared.py and a fragment): for a fixed finding all four of the runner's results hold, which closes nothing
+by itself; for an unfixed finding the capsule still reproduces and the finding stays open; and a result
+that could not be produced is missing, never passed (AC1); every run is one child process in a copy under the
 run directory with a deadline that kills the process group, a run directory inside the worktree is
 refused, and the worktree is unchanged by digest (AC2); a declared mutant whose anchor matches zero
-or two times is INVALID_MUTATION with the file and anchor named, the finding is not closed, and no
+or two times is INVALID_MUTATION with the file and anchor named, that result does not pass, and no
 other anchor is searched for (AC3). The three declared falsifiers are applied to COPIES of the organ
 and required to turn their named row red while the unmutated organ passes it.
 """
@@ -58,6 +58,9 @@ if not _v102_have_git:
 else:
     # A small repository with the suite layout: shared.py binds ROOT and expect; the fragment has rows.
     # The source blocks the mutants below replace, kept here so every row can reach them.
+    FALLBACK_42 = '        return _encode(repr(value))'
+    ENC_HEAD_42 = '    def _encode(value):'
+    SKIP_LINE_42 = '        if rev.get("status") == "missing" and fix.get("status") == "missing" and not f.get("capsule_declared"):'
     COMMIT_GUARD_42 = '        if not isinstance(value, str) or not COMMIT_ISH.fullmatch(value):'
     PIPE_BLOCK_42 = '    channel_fd, channel_path = tempfile.mkstemp(prefix="fixval-rows-")\n    os.unlink(channel_path)\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))\n        os.lseek(channel_fd, 0, os.SEEK_SET)\n        blob = b""\n        while True:\n            chunk = os.read(channel_fd, 65536)\n            if not chunk:\n                break\n            blob += chunk\n    finally:\n        os.close(channel_fd)\n'
     PIPE_MUTANT_42 = '    read_fd, write_fd = os.pipe()\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(write_fd)], tree, deadline, pass_fds=(write_fd,))\n        os.close(write_fd)\n        write_fd = None\n        blob = b""\n        while True:\n            chunk = os.read(read_fd, 65536)\n            if not chunk:\n                break\n            blob += chunk\n    finally:\n        if write_fd is not None:\n            os.close(write_fd)\n        os.close(read_fd)\n'
@@ -109,7 +112,7 @@ else:
     _v102_r1 = _v102_rec["findings"][0]["results"]; _v102_r2 = _v102_rec["findings"][1]["results"]; _v102_r3 = _v102_rec["findings"][2]["results"]
 
     # --- AC1 -------------------------------------------------------------------------------------
-    expect("VELDO-0102 AC1 fixval/four-results-required: for the fixed finding all four results are passed and it is closed "
+    expect("VELDO-0102 AC1 fixval/four-results-required: for the fixed finding all four of the runner's results pass "
            "(capsule reproduces on the reviewed copy, not on the fixed copy, the pinned row reds with the mutant and is green "
            "fresh); for the unfixed finding the capsule still reproduces on the fixed copy and it stays open; for the finding "
            "without a capsule the two capsule results are missing, never passed, and it stays open",
@@ -178,7 +181,7 @@ else:
     _v102_z = _v102_inv["findings"][0]["results"]["row_mutant_red"]; _v102_t = _v102_inv["findings"][1]["results"]["row_mutant_red"]
     expect("VELDO-0102 AC3 fixval/invalid-mutation-not-covered: a declared mutant whose anchor matches zero times and one whose "
            "anchor matches twice are each INVALID_MUTATION naming the file and the anchor with its match count, neither "
-           "finding is closed although every other result passed, and the runner did not fall back to another anchor",
+           "finding has all four results passing although every other one did, and the runner did not fall back to another anchor",
            _v102_z["status"] == FV102.INVALID_MUTATION and _v102_z.get("matches") == 0 and _v102_z.get("file") == "organ.py"
            and _v102_t["status"] == FV102.INVALID_MUTATION and _v102_t.get("matches") == 2 and _v102_t.get("anchor") == "return" and _v102_t.get("file") == "organ.py"
            and _v102_inv["all_results_passed"] == [] and _v102_inv["findings"][0]["results"]["capsule_reviewed"]["status"] == "passed")
@@ -578,6 +581,74 @@ else:
            _v102_rrr["row_mutant_red"]["status"] == "passed" and _v102_rrr["row_mutant_red"].get("fragment_status")
            and _v102_rrr["row_fresh_green"]["status"] == "missing"
            and _v102_redraise_m["findings"][0]["results"]["row_mutant_red"]["status"] == "missing")
+
+    # A capsule the plan NAMED and the runner could not use is not the same as a finding that never had
+    # one, and the reader must be able to tell them apart.
+    _v102_tampered = _v102_capsule(_v102_tmp / "cap_T", "print('DEFECT')\n", {"kind": "stdout_contains", "value": "DEFECT"})
+    (_v102_Path(_v102_tampered) / "repro.py").write_text("print('rewritten after the manifest was written')\n")
+    _v102_plan_partial = dict(_v102_plan, findings=[
+        {"id": "TAMPERED", "capsule": _v102_tampered},
+        {"id": "NOTADIR", "capsule": str(_v102_cap_f1) + "/repro.py"},
+        {"id": "NOCAPSULE", "row": {"suite": "50_rows", "label": "guard/never-mutated"}}])
+    _v102_partial = FV102.validate(_v102_plan_partial, workdir=_v102_tmp / "run_partial")
+    _v102_proj_partial = FV102.assessor_capsule_results(_v102_partial)
+    _v102_M_silent2, _ = _v102_organs("silentmissing", [(SKIP_LINE_42, SKIP_LINE_42.replace(' and not f.get("capsule_declared")', ''))])
+    _v102_proj_silent = _v102_M_silent2.assessor_capsule_results(_v102_partial)
+    expect("VELDO-0102 AC1 fixval/a-capsule-that-could-not-be-used-is-not-silence: a capsule the plan named and the runner could "
+           "not use, whether its bytes no longer match its manifest or the path is not a directory at all, reaches the reader as "
+           "an entry marked incomplete, while a finding the plan gave no capsule reaches the reader as nothing, because there is "
+           "nothing to say about it; DRIVEN: a copy that drops every finding whose capsule results are both missing makes a "
+           "tampered capsule and a finding that never had one look identical to the reader",
+           sorted(e["finding_id"] for e in _v102_proj_partial) == ["NOTADIR", "TAMPERED"]
+           and all(e.get("incomplete") is True for e in _v102_proj_partial)
+           and _v102_proj_silent == []
+           and "does not match its manifest" in _v102_partial["findings"][0]["results"]["capsule_reviewed"]["reason"]
+           and "not a directory" in _v102_partial["findings"][1]["results"]["capsule_reviewed"]["reason"])
+
+    # The record's encoder is written in the runner, not borrowed from a module the fragment shares.
+    (_v102_repo / "scripts" / "suites" / "57_encoder.py").write_text(
+        "import json.encoder\n"
+        "expect('ROW enc/the-pinned-one: an honest row', False)\n"
+        "expect(object(), True)\n"
+        "json.encoder.encode_basestring_ascii = lambda s: '\"FORGED\"'\n"
+        "json.encoder.c_make_encoder = None\n")
+    _v102_git("add", "-A"); _v102_git("commit", "-q", "-m", "encoder")
+    _v102_enc_commit = _v102_git("rev-parse", "HEAD")
+    _v102_plan_enc = {"repo": str(_v102_repo), "worktree": str(_v102_repo), "reviewed_commit": _v102_reviewed,
+                      "fixed_commit": _v102_enc_commit, "row_deadline_seconds": 60,
+                      "findings": [{"id": "ENC", "row": {"suite": "57_encoder", "label": "enc/the-pinned-one"}}]}
+    _v102_enc = FV102.validate(_v102_plan_enc, workdir=_v102_tmp / "run_enc")
+    _v102_M_borrow, _ = _v102_organs("borrowedencoder", [(ENC_HEAD_42, '    _encode = json.JSONEncoder(sort_keys=True).encode\n    def _unused_encode(value):')])
+    _v102_enc_m = _v102_M_borrow.validate(_v102_plan_enc, workdir=_v102_tmp / "run_enc_m")
+    _v102_M_strict, _ = _v102_organs("strictencoder", [(FALLBACK_42, '        raise TypeError("not encodable")'),
+                                                        ('        rows.append({"label": name if type(name) is str else repr(name), "passed": bool(condition)})', '        rows.append({"label": name, "passed": bool(condition)})')])
+    _v102_enc_strict = _v102_M_strict.validate(_v102_plan_enc, workdir=_v102_tmp / "run_enc_strict")
+    expect("VELDO-0102 AC1 fixval/the-encoder-is-the-runners-own: a fragment that replaces the string escaper and the C encoder "
+           "inside the json module, and calls expect with something that is not a string, does not stop the runner reading its "
+           "honest row: the record is encoded by the runner's own encoder, which turns an unexpected label into text rather "
+           "than refusing it, having first turned it into text where the row is recorded; DRIVEN twice: a copy borrowing the "
+           "standard library's encoder reads a corrupted record, and a copy that neither turns the label into text nor "
+           "encodes an unexpected value loses every row of that fragment rather than one label",
+           _v102_enc["findings"][0]["results"]["row_fresh_green"]["status"] == "failed"
+           and _v102_enc_m["findings"][0]["results"]["row_fresh_green"]["status"] == "missing"
+           and _v102_enc_strict["findings"][0]["results"]["row_fresh_green"]["status"] == "missing")
+
+    # The two smaller ones of round five, which reached the tree with nothing noticing them.
+    _v102_plan_badrow = dict(_v102_plan, findings=[{"id": "BR", "row": "50_rows"}])
+    _v102_badrow = FV102.validate(_v102_plan_badrow, workdir=_v102_tmp / "run_badrow")
+    _v102_nodir_refused, _v102_leaked = False, None
+    _v102_before_tmp = set(_v102_Path(_v102_tf.gettempdir()).glob("fixval-*"))
+    try:
+        FV102.validate(dict(_v102_plan, worktree=str(_v102_tmp / "no_such_worktree")))
+    except FV102.ValidationError as _v102_e:
+        _v102_nodir_refused = "is not a directory" in str(_v102_e)
+    _v102_leaked = set(_v102_Path(_v102_tf.gettempdir()).glob("fixval-*")) - _v102_before_tmp
+    expect("VELDO-0102 AC2 fixval/the-plan-is-refused-before-anything-is-made: a plan whose row is a string says that the row is "
+           "not an object with a suite and a label, rather than reporting a finding that named no row; and a plan whose worktree "
+           "is not a directory is refused before the run directory is created, so a refusal leaves nothing behind in the "
+           "system's temporary space",
+           "not an object" in _v102_badrow["findings"][0]["results"]["row_fresh_green"]["reason"]
+           and _v102_nodir_refused and _v102_leaked == set())
 
     # The RUNS never happen inside a worktree; the RECORD may be written into the proof bundle.
     _v102_out = _v102_repo / "proof" / "VELDO-9102" / "validation"
