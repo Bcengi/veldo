@@ -1,8 +1,8 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0104",
-  "commit": "59f984b12800ab18724af6d4801f65d0db713bf4",
-  "taken_at": "2026-09-19T19:13:48Z",
+  "commit": "6c2c1ee80f85ebce7d30a267122173a5833392df",
+  "taken_at": "2026-09-19T19:36:30Z",
   "fragment": "scripts/suites/43_veldo_0104_proofcheck.py",
   "fragment_sha256": "bf841e5bb5aec703decf24cf4a219df9097a0e821bbbdf06f6255dddb7ec1bbb",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy of .veldo/fix_validation.py (beside a copy of .veldo/capsule.py), runs the same fixture repository and requires the named row red while the unmutated copy passes it; every row drives the organ with a fake harness child process of the same interpreter, so no model call is made and nothing is spent.",

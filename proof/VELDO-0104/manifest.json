@@ -1,0 +1,79 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0104",
+  "commit": "0390fda6ed7e75cb9f9516846d089143fe28f78c",
+  "producer": "Ava (Claude) implementing agent, writing because Codex is out of quota until 2026-09-21 (Dmitry's one-retry-then-write rule); Codex validates in the batch of 2026-09-22",
+  "produced_at": "2026-09-19T19:36:30Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0104/driven.json",
+          "detail": "4 rows (3 driven): validation.json is composed from the runner's and the assessor's records and kept per fix commit, an assessment of another fix is refused, and over one bundle the rule accepts a complete record and names no-validation-record, finding-not-closed, validation-record-does-not-name-this-commit and finding-not-covered for the others, with applicability derived from the reviewer's verified capsules rather than any manifest field; the declared falsifier (the commit comparison removed in a copy) is driven, and so is the derived applicability"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0104/gate-implementation.log",
+          "detail": "Complete canonical gate at 0390fda6ed7e75cb9f9516846d089143fe28f78c in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5460 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0104/driven.json",
+          "detail": "2 rows (1 driven): a round is a commit changing code or suites, so the gate stamp, the proof commit and the ship commit do not count and the spec's own footprint does not filter it, two rounds are not parked and three are, renaming every finding changes nothing, a parked item that says shipped is refused by name, and a squashed history still counts the rounds the bundle's kept records name; the declared falsifier (the count reset on a rename in a copy) is driven"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0104/gate-implementation.log",
+          "detail": "Complete canonical gate at 0390fda6ed7e75cb9f9516846d089143fe28f78c in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5460 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0104/driven.json",
+          "detail": "3 rows (2 driven): the flag reads true from an inline map or a block, with a trailing comment or quotes, and false when absent, false or the file is missing, with a hash inside a string read as text; off, the same bundles report the same problems and refuse nothing, on, they refuse; the proof mode prints the flag state for an applicable bundle and for one that is not; the declared falsifier (refusing whatever the flag says, in a copy) is driven"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0104/gate-implementation.log",
+          "detail": "Complete canonical gate at 0390fda6ed7e75cb9f9516846d089143fe28f78c in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5460 passed, 0 failed, every required check passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "0390fda6ed7e75cb9f9516846d089143fe28f78c",
+      "ref": "proof/VELDO-0104/gate-implementation.log",
+      "detail": "GATE GREEN; selftest 5460 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0104/driven.json",
+    "proof/VELDO-0104/drive.py",
+    "proof/VELDO-0104/gate-implementation.log",
+    "proof/VELDO-0104/log-redactions.json",
+    "proof/VELDO-0104/README.md",
+    "proof/VELDO-0104/approval-dmitry.json"
+  ],
+  "rollback": "Turn the owner flag off; bundles, capsules and records stay in place and are read as warnings.",
+  "review": "Codex is out of quota until 2026-09-21, so by Dmitry's standing rule (2026-09-14, restated 2026-09-19) the author tested this item: suite 43 with every declared falsifier driven, and the canonical gate. Codex validates the item in its batch review of 2026-09-22; that review and any fixes will be recorded in this bundle. Dmitry's approval of the landing is recorded in approval-dmitry.json."
+}
