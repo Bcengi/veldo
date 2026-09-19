@@ -203,7 +203,7 @@ def _grants(cmd: list, directory, cwd) -> bool:
     def same(operand) -> bool:
         try:
             return (base / str(operand)).resolve() == (base / str(directory)).resolve()
-        except OSError:
+        except (OSError, ValueError):
             return False
 
     for i, arg in enumerate(cmd):

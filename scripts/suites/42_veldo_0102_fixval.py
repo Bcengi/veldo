@@ -58,6 +58,10 @@ if not _v102_have_git:
 else:
     # A small repository with the suite layout: shared.py binds ROOT and expect; the fragment has rows.
     # The source blocks the mutants below replace, kept here so every row can reach them.
+    USABLE_42 = '    try:\n        usable = isinstance(cap_dir, str) and bool(cap_dir) and Path(cap_dir).is_dir()\n    except (OSError, ValueError):\n        usable = False                           # a path the system will not even answer about\n'
+    FALLBACK_DECLARED_42 = '                             "capsule_declared": bool(f.get("capsule")),\n'
+    ASTRAL_GUARD_42 = '                elif ord(ch) > 0xFFFF:'
+    DECLARED_42 = '    out = {"finding_id": fid, "capsule_declared": bool(isinstance(finding, dict) and finding.get("capsule")),\n           "results": {k: {"status": "missing"} for k in RESULT_KEYS}}\n'
     FALLBACK_42 = '        return _encode(repr(value))'
     ENC_HEAD_42 = '    def _encode(value):'
     SKIP_LINE_42 = '        if rev.get("status") == "missing" and fix.get("status") == "missing" and not f.get("capsule_declared"):'
@@ -126,13 +130,13 @@ else:
     _v102_M1, _ = _v102_organs("skiprev", [('        for key, commit, want in (("capsule_reviewed", reviewed, True), ("capsule_fixed", fixed, False)):',
                                             '        out["results"]["capsule_reviewed"] = {"status": "passed", "skipped": True}\n        for key, commit, want in (("capsule_fixed", fixed, False),):')])
     # The falsifier is applied where it decides: a finding whose capsule never reproduces the defect, so only the
-    # skipped run on the reviewed commit stands between it and closure.
+    # skipped run on the reviewed commit stands between it and four passing results.
     _v102_cap_f3 = _v102_capsule(_v102_tmp / "cap_F-3", "print('nothing to see')\n", {"kind": "stdout_contains", "value": "DEFECT"})
     _v102_plan3 = dict(_v102_plan, findings=[{"id": "F-3", "capsule": _v102_cap_f3, "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}}])
     _v102_o3 = FV102.validate(_v102_plan3, workdir=_v102_tmp / "run_o3")
     _v102_m3 = _v102_M1.validate(_v102_plan3, workdir=_v102_tmp / "run_m3")
     expect("VELDO-0102 AC1 fixval/four-results-required DRIVEN (the declared falsifier): a finding whose capsule "
-           "never reproduced the defect is open on the original (capsule_reviewed failed) and closed on the copy that skips "
+           "never reproduced the defect is open on the original (capsule_reviewed failed) and has four passes on the copy that skips "
            "that run and reports it passed",
            _v102_o3["findings"][0]["all_results_passed"] is False and _v102_o3["findings"][0]["results"]["capsule_reviewed"]["status"] == "failed"
            and _v102_m3["findings"][0]["all_results_passed"] is True)
@@ -283,9 +287,9 @@ else:
     _v102_shapes = FV102.validate(_v102_plan_shapes, workdir=_v102_tmp / "run_shapes")
     expect("VELDO-0102 AC1 fixval/an-error-is-a-missing-result: a capsule whose command names a binary that is not installed "
            "makes its two capsule results missing, naming the error, and the NEXT finding in the same plan still gets all four "
-           "results and closes; a plan whose entries are the wrong SHAPE (a row given as a string, a capsule given as an "
+           "results and passes them all; a plan whose entries are the wrong SHAPE (a row given as a string, a capsule given as an "
            "object, an entry that is not an object, a finding with no id) produces four missing results each, naming what is "
-           "wrong, and the well-formed finding beside them still closes; DRIVEN: a copy that lets anything but a validation "
+           "wrong, and the well-formed finding beside them still passes all four; DRIVEN: a copy that lets anything but a validation "
            "error escape either guard aborts the whole run, so no record is produced for any finding",
            _v102_nobin["findings"][0]["results"]["capsule_reviewed"]["status"] == "missing"
            and "FileNotFoundError" in _v102_nobin["findings"][0]["results"]["capsule_reviewed"]["reason"]
@@ -527,13 +531,13 @@ else:
     expect("VELDO-0102 AC1 fixval/partial-evidence-says-so: a capsule run that hit its deadline is projected to the assessor "
            "marked incomplete, while a pair of runs that both finished is not marked at all, so a reader cannot mistake less "
            "evidence for a clean result; the real assessor accepts the marked entry and its brief explains what the mark means; "
-           "and a plan naming a capsule that is not a directory says THAT, rather than reporting the finding as one that never "
+           "and a plan naming a capsule that cannot be used as one says THAT, rather than reporting the finding as one that never "
            "had a capsule; DRIVEN: a copy that leaves the mark out projects the hung run as though both runs had finished",
            _v102_proj_deadline and _v102_proj_deadline[0].get("incomplete") is True
            and all("incomplete" not in e for e in _v102_proj)
            and "incomplete true means" in _v102_FA.brief_text(_v102_brief_partial)
            and all("incomplete" not in e for e in _v102_proj_flat)
-           and "not a directory" in _v102_nocap["findings"][0]["results"]["capsule_reviewed"]["reason"])
+           and "cannot be used as one" in _v102_nocap["findings"][0]["results"]["capsule_reviewed"]["reason"])
 
     # A commit reaches git as an argument and git reads a leading dash as an OPTION. This is the one
     # place where a plan could make the runner write outside every directory it promises to write in.
@@ -603,7 +607,7 @@ else:
            and all(e.get("incomplete") is True for e in _v102_proj_partial)
            and _v102_proj_silent == []
            and "does not match its manifest" in _v102_partial["findings"][0]["results"]["capsule_reviewed"]["reason"]
-           and "not a directory" in _v102_partial["findings"][1]["results"]["capsule_reviewed"]["reason"])
+           and "cannot be used as one" in _v102_partial["findings"][1]["results"]["capsule_reviewed"]["reason"])
 
     # The record's encoder is written in the runner, not borrowed from a module the fragment shares.
     (_v102_repo / "scripts" / "suites" / "57_encoder.py").write_text(
@@ -636,19 +640,88 @@ else:
     # The two smaller ones of round five, which reached the tree with nothing noticing them.
     _v102_plan_badrow = dict(_v102_plan, findings=[{"id": "BR", "row": "50_rows"}])
     _v102_badrow = FV102.validate(_v102_plan_badrow, workdir=_v102_tmp / "run_badrow")
-    _v102_nodir_refused, _v102_leaked = False, None
-    _v102_before_tmp = set(_v102_Path(_v102_tf.gettempdir()).glob("fixval-*"))
-    try:
-        FV102.validate(dict(_v102_plan, worktree=str(_v102_tmp / "no_such_worktree")))
-    except FV102.ValidationError as _v102_e:
-        _v102_nodir_refused = "is not a directory" in str(_v102_e)
-    _v102_leaked = set(_v102_Path(_v102_tf.gettempdir()).glob("fixval-*")) - _v102_before_tmp
+    _v102_private_tmp = _v102_tmp / "private_temp"
+    _v102_private_tmp.mkdir()
+    _v102_saved_tempdir = _v102_tf.tempdir
+
+    def _v102_refuse_without_workdir(module):
+        """Refuse a plan whose worktree is not a directory, with the system's temporary space pointed at
+        one this row owns, so what is counted afterwards is only what this call left behind."""
+        _v102_tf.tempdir = str(_v102_private_tmp)
+        try:
+            module.validate(dict(_v102_plan, worktree=str(_v102_tmp / "no_such_worktree")))
+            return "ACCEPTED"
+        except module.ValidationError as e:
+            return "is not a directory" in str(e)
+        finally:
+            _v102_tf.tempdir = _v102_saved_tempdir
+
+    _v102_nodir_refused = _v102_refuse_without_workdir(FV102)
+    _v102_left_by_original = sorted(p.name for p in _v102_private_tmp.iterdir())
+    _v102_M_latecheck, _ = _v102_organs("latedircheck", [
+        ('    if not worktree.is_dir():\n        raise ValidationError(f"the worktree {worktree} is not a directory")\n    wd = Path(workdir) if workdir else Path(tempfile.mkdtemp(prefix="fixval-"))',
+         '    wd = Path(workdir) if workdir else Path(tempfile.mkdtemp(prefix="fixval-"))\n    if not worktree.is_dir():\n        raise ValidationError(f"the worktree {worktree} is not a directory")')])
+    _v102_nodir_refused_m = _v102_refuse_without_workdir(_v102_M_latecheck)
+    _v102_left_by_mutant = sorted(p.name for p in _v102_private_tmp.iterdir())
     expect("VELDO-0102 AC2 fixval/the-plan-is-refused-before-anything-is-made: a plan whose row is a string says that the row is "
            "not an object with a suite and a label, rather than reporting a finding that named no row; and a plan whose worktree "
-           "is not a directory is refused before the run directory is created, so a refusal leaves nothing behind in the "
-           "system's temporary space",
+           "is not a directory is refused before the run directory is created, so the refusal leaves nothing behind in the "
+           "temporary space this row gave it; DRIVEN: a copy that makes the run directory before checking the worktree refuses "
+           "the same plan and leaves a directory behind every time it does",
            "not an object" in _v102_badrow["findings"][0]["results"]["row_fresh_green"]["reason"]
-           and _v102_nodir_refused and _v102_leaked == set())
+           and _v102_nodir_refused is True and _v102_left_by_original == []
+           and _v102_nodir_refused_m is True and len(_v102_left_by_mutant) == 1)
+
+    # A label is the label. The encoder writes JSON for the parent to read, and JSON reads exactly four
+    # hexadecimal digits after a backslash-u, so a character above the basic plane has to be written as
+    # the surrogate pair. Writing it as five or six digits parses without complaint into a DIFFERENT
+    # string, which is the worst shape a bug can take: nothing fails anywhere.
+    _v102_astral = "ROW astral/\U0001F600-pinned: a label with an emoji in it"
+    (_v102_repo / "scripts" / "suites" / "58_astral.py").write_text(
+        "expect(%r, True)\n" % _v102_astral + "expect('ROW astral/plain: a label beside it', True)\n")
+    _v102_git("add", "-A"); _v102_git("commit", "-q", "-m", "astral")
+    _v102_astral_commit = _v102_git("rev-parse", "HEAD")
+    _v102_plan_astral = {"repo": str(_v102_repo), "worktree": str(_v102_repo), "reviewed_commit": _v102_reviewed,
+                         "fixed_commit": _v102_astral_commit, "row_deadline_seconds": 60,
+                         "findings": [{"id": "AST", "row": {"suite": "58_astral", "label": "astral/\U0001F600-pinned"}}]}
+    _v102_ast = FV102.validate(_v102_plan_astral, workdir=_v102_tmp / "run_astral")
+    _v102_M_wide, _ = _v102_organs("widecodepoint", [(ASTRAL_GUARD_42, "                elif False:")])
+    _v102_ast_m = _v102_M_wide.validate(_v102_plan_astral, workdir=_v102_tmp / "run_astral_m")
+    expect("VELDO-0102 AC1 fixval/a-label-is-the-label: a row whose label carries a character above the basic plane is found and "
+           "read, because the encoder writes it as the surrogate pair JSON defines; DRIVEN: a copy writing its code point as "
+           "one escape emits more hexadecimal digits than JSON reads, the parent parses it without complaint into a different "
+           "string, and the row can no longer be found at all",
+           _v102_ast["findings"][0]["results"]["row_fresh_green"]["status"] == "passed"
+           and _v102_ast_m["findings"][0]["results"]["row_fresh_green"]["status"] == "missing"
+           and _v102_ast_m["findings"][0]["results"]["row_fresh_green"]["row_status"] == "absent")
+
+    # Whether the plan declared a capsule is recorded before anything can go wrong, so a capsule the
+    # system will not even answer about still reaches the reader as an entry rather than as silence.
+    _v102_plan_unanswerable = dict(_v102_plan, findings=[
+        {"id": "LONG", "capsule": "/tmp/" + "x" * 5000},
+        {"id": "NUL", "capsule": "/tmp/has\x00null"},
+        {"id": "NONE", "row": {"suite": "50_rows", "label": "guard/never-mutated"}}])
+    _v102_unanswerable = FV102.validate(_v102_plan_unanswerable, workdir=_v102_tmp / "run_unanswerable")
+    _v102_proj_unanswerable = FV102.assessor_capsule_results(_v102_unanswerable)
+    # The falsifier is the shape this replaced, restored in all three places at once: recorded only
+    # after the capsule has been looked at, with the look able to raise, and nothing recording it on
+    # the path that catches the raise.
+    _v102_M_late_declared, _ = _v102_organs("latedeclared", [
+        (DECLARED_42, '    out = {"finding_id": fid, "results": {k: {"status": "missing"} for k in RESULT_KEYS}}\n'),
+        (USABLE_42, '    usable = isinstance(cap_dir, str) and bool(cap_dir) and Path(cap_dir).is_dir()\n    out["capsule_declared"] = cap_dir not in (None, "")\n'),
+        (FALLBACK_DECLARED_42, "")])
+    _v102_M_late_declared_rec = _v102_M_late_declared.validate(_v102_plan_unanswerable, workdir=_v102_tmp / "run_unanswerable_m")
+    expect("VELDO-0102 AC1 fixval/a-capsule-the-system-will-not-answer-about: a capsule path too long for the system to answer "
+           "about, and one carrying a byte no path may contain, are each recorded as a capsule the plan declared and could not "
+           "be used, and reach the reader as entries marked incomplete, while the finding beside them that declared no capsule "
+           "reaches the reader as nothing; DRIVEN: a copy that records what the plan declared only after trying to use it, with "
+           "the trying able to fail, loses the one the system would not answer about entirely, so a finding whose reproduction "
+           "could not even be looked at is indistinguishable from one that never had a reproduction",
+           sorted(e["finding_id"] for e in _v102_proj_unanswerable) == ["LONG", "NUL"]
+           and all(e.get("incomplete") is True for e in _v102_proj_unanswerable)
+           and all(f.get("capsule_declared") is True for f in _v102_unanswerable["findings"][:2])
+           and _v102_unanswerable["findings"][2].get("capsule_declared") is False
+           and "LONG" not in [e["finding_id"] for e in _v102_M_late_declared.assessor_capsule_results(_v102_M_late_declared_rec)])
 
     # The RUNS never happen inside a worktree; the RECORD may be written into the proof bundle.
     _v102_out = _v102_repo / "proof" / "VELDO-9102" / "validation"

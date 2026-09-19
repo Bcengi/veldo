@@ -406,3 +406,18 @@ expect("VELDO-0103 AC3 assessor/granted-means-this-directory: the command grants
                         "relative_from_somewhere_else": False, "flag_alone": False, "none": False}
        and _v103_token["unrelated"] is True and _v103_token["flag_alone"] is True
        and _v103_ourcwd is False)
+
+
+# --- git writes an abbreviated hash in either case, and so may a plan -----------------------------
+_v103_upper = dict(_v103_inputs, reviewed_commit="40B22CE", fixed_commit="AD8B1F5")
+_v103_M_lower = _v103_mutant([('COMMIT_ISH = re.compile(r"[0-9a-fA-F]{7,40}")', 'COMMIT_ISH = re.compile(r"[0-9a-f]{7,40}")')], "loweronly")
+_v103_upper_refused_by_copy = False
+try:
+    _v103_M_lower.assemble_brief(_v103_upper)
+except _v103_M_lower.AssessorError:
+    _v103_upper_refused_by_copy = True
+expect("VELDO-0103 AC1 assessor/commit-ids-are-case-insensitive: a commit id written in upper case is accepted, because git "
+       "writes abbreviated hashes in either case and the runner that produces these inputs accepts both; DRIVEN: a copy "
+       "accepting lower case alone refuses a plan the runner would have produced, which is a disagreement between two organs "
+       "of the same pipeline rather than a check on anything",
+       not _v103_refused(_v103_upper) and _v103_upper_refused_by_copy)

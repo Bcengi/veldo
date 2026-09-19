@@ -229,6 +229,13 @@ def _main():
                     out.append("\\\\")
                 elif " " <= ch <= "~":
                     out.append(ch)
+                elif ord(ch) > 0xFFFF:
+                    # JSON reads EXACTLY four hex digits after \\u, and "%04x" is a minimum width, not a
+                    # maximum: a character above U+FFFF written that way is read back as a different
+                    # character followed by stray digits, with nothing failing anywhere. It is written
+                    # as the surrogate pair JSON uses for it.
+                    _n = ord(ch) - 0x10000
+                    out.append("\\u%04x\\u%04x" % (0xD800 + (_n >> 10), 0xDC00 + (_n & 0x3FF)))
                 else:
                     out.append("\\u%04x" % ord(ch))
             out.append('"')
@@ -423,7 +430,10 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
     missing with its reason; nothing here aborts the validation of the other findings."""
     raw_id = finding.get("id") if isinstance(finding, dict) else None
     fid = raw_id if isinstance(raw_id, str) else f"<finding {id(finding):x}>"
-    out = {"finding_id": fid, "results": {k: {"status": "missing"} for k in RESULT_KEYS}}
+    # Recorded FIRST, before anything can return: it is what tells the reader apart a finding that
+    # never had a reproduction from one whose reproduction could not be looked at.
+    out = {"finding_id": fid, "capsule_declared": bool(isinstance(finding, dict) and finding.get("capsule")),
+           "results": {k: {"status": "missing"} for k in RESULT_KEYS}}
     if not isinstance(raw_id, str) or not FINDING_ID.fullmatch(raw_id):
         for k in RESULT_KEYS:
             out["results"][k] = {"status": "missing", "reason": "a finding needs an id that is a plain name (letters, digits, . _ -); it names run directories and may not leave them"}
@@ -434,8 +444,11 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
     row_deadline = row_deadline_seconds or deadline or DEFAULT_ROW_DEADLINE
     reviewed_exit = None
     cap_dir = finding.get("capsule")
-    out["capsule_declared"] = cap_dir not in (None, "")
-    if isinstance(cap_dir, str) and cap_dir and Path(cap_dir).is_dir():
+    try:
+        usable = isinstance(cap_dir, str) and bool(cap_dir) and Path(cap_dir).is_dir()
+    except (OSError, ValueError):
+        usable = False                           # a path the system will not even answer about
+    if usable:
         for key, commit, want in (("capsule_reviewed", reviewed, True), ("capsule_fixed", fixed, False)):
             dl = first_deadline if key == "capsule_reviewed" else (rest_deadline or MIN_DERIVED_DEADLINE)
             try:
@@ -450,8 +463,8 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
             except Exception as e:  # noqa: BLE001 - a result that could not be produced is missing, by name
                 out["results"][key] = {"status": "missing", "reason": f"could not run the capsule: {type(e).__name__}: {e}"}
     else:
-        reason = ("no capsule for this finding" if cap_dir in (None, "")
-                  else f"the plan names a capsule at {str(cap_dir)[:120]!r}, which is not a directory")
+        reason = ("no capsule for this finding" if not out["capsule_declared"]
+                  else f"the plan names a capsule at {str(cap_dir)[:120]!r}, which cannot be used as one")
         for key in ("capsule_reviewed", "capsule_fixed"):
             out["results"][key] = {"status": "missing", "reason": reason}
     declared_row = finding.get("row")
@@ -556,13 +569,14 @@ def validate(plan: dict, workdir: str | os.PathLike | None = None) -> dict:
     findings = []
     for f in declared:
         if not isinstance(f, dict):
-            findings.append({"finding_id": f"<not an object: {type(f).__name__}>", "all_results_passed": False,
+            findings.append({"finding_id": f"<not an object: {type(f).__name__}>", "all_results_passed": False, "capsule_declared": False,
                              "results": {k: {"status": "missing", "reason": "the plan entry is not an object"} for k in RESULT_KEYS}})
             continue
         try:
             findings.append(validate_finding(f, repo, plan["reviewed_commit"], plan["fixed_commit"], wd, capsule_mod, deadline, row_deadline))
         except Exception as e:  # noqa: BLE001 - one finding that cannot be validated is not the others' problem
             findings.append({"finding_id": str(f.get("id")), "all_results_passed": False,
+                             "capsule_declared": bool(f.get("capsule")),
                              "results": {k: {"status": "missing", "reason": f"the finding could not be validated: {type(e).__name__}: {e}"} for k in RESULT_KEYS}})
     after = _tree_digest(worktree)
     return {
@@ -621,8 +635,9 @@ def main(argv: list) -> int:
             print(f"REFUSED: {e}")
             shutil.rmtree(runs, ignore_errors=True)
             return 2
-        # The checkouts are kept. They are the evidence behind every result, the closures most of all,
-        # and a record naming a directory that has been deleted is worth less than the disk it saved.
+        # The checkouts are kept. They are the evidence behind every result, and most of all behind a
+        # finding whose four results all passed, which is the one someone will want to look at again.
+        # A record naming a directory that has been deleted is worth less than the disk it saved.
         # The record names the directory; whoever runs this removes it when they are done with it.
         (out / "fix-validation.json").write_text(json.dumps(rec, indent=1, sort_keys=True) + "\n")
         print(json.dumps({"all_results_passed": rec["all_results_passed"], "open": rec["open"],
