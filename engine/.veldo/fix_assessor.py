@@ -38,7 +38,11 @@ API_KEY_VARIABLES = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BAS
                      "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE",
                      "GOOGLE_APPLICATION_CREDENTIALS", "ANTHROPIC_VERTEX_PROJECT_ID")
 KILL_WAIT = 5
-CAPSULE_RESULT_KEYS = {"finding_id", "reviewed", "fixed", "reviewed_exit_code", "fixed_exit_code"}
+# What a capsule result may say. Facts the runner measured, and nothing anyone wrote: whether the
+# reproduction showed the defect on each commit, the exit status of each run, and whether that status
+# changed between them, which is the runner's way of saying "this reproduction may not have run the same
+# way twice" without pretending to decide what it means. Deciding is what the reader is for.
+CAPSULE_RESULT_KEYS = {"finding_id", "reviewed", "fixed", "reviewed_exit_code", "fixed_exit_code", "exit_code_changed"}
 COMMIT_ISH = re.compile(r"[0-9a-f]{7,40}")
 # A finding id names a finding. It is rendered into the brief the second reader follows, so it is a
 # plain name and nothing else: free text in an id is a message to that reader from the author.
@@ -111,7 +115,7 @@ def assemble_brief(inputs: dict) -> dict:
         extra = sorted(set(r) - CAPSULE_RESULT_KEYS)
         if extra:
             raise AssessorError(f"capsule result for {r['finding_id']} carries fields outside {sorted(CAPSULE_RESULT_KEYS)}: {extra}; free text has no place in the brief")
-        for k in ("reviewed", "fixed"):
+        for k in ("reviewed", "fixed", "exit_code_changed"):
             if k in r and not isinstance(r[k], bool):
                 raise AssessorError(f"capsule result for {r['finding_id']}: {k} must be true or false")
         for k in ("reviewed_exit_code", "fixed_exit_code"):
@@ -149,7 +153,9 @@ def brief_text(brief: dict, checkout=None) -> str:
     ]
     for f in brief["findings"]:
         lines.append(f"- {f['id']}: {f['text']}")
-    lines += ["", "CAPSULE RESULTS (the reviewer's reproduction run against both commits by a runner, not by the author):"]
+    lines += ["", "CAPSULE RESULTS (the reviewer's reproduction run against both commits by a runner, not by the author).",
+              "exit_code_changed true means the reproduction ended differently on the two commits: it may have been fixed, or it",
+              "may have stopped before it could observe anything. Deciding which is yours; the runner does not decide it."]
     for r in brief["capsule_results"]:
         lines.append(f"- {json.dumps(r, sort_keys=True)}")
     lines += ["", "QUESTIONS:"]
@@ -197,11 +203,17 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
     together with what the controller measured (wall time, exit code). It runs in the work directory,
     where the schema and the record live; the checkout of the fixed commit, when one is given, is named
     to the harness as a directory its read-only tools may reach."""
-    wd = Path(workdir)
-    (wd / ".assessor-verdict-schema.json").write_text(json.dumps(VERDICT_SCHEMA))   # kept beside the record for the reader
+    # Refused before anything is written or started: a run pointed at a checkout that is not there
+    # would only fail later, in the harness, where the reason is harder to see.
     if checkout is not None and not Path(checkout).is_dir():
         raise AssessorError(f"the checkout named for the assessor is not a directory: {checkout}")
+    wd = Path(workdir)
+    (wd / ".assessor-verdict-schema.json").write_text(json.dumps(VERDICT_SCHEMA))   # kept beside the record for the reader
     cmd = list(harness) if harness else harness_command(VERDICT_SCHEMA, checkout)
+    # The brief tells the reader about a checkout only when the COMMAND grants it. With a command given
+    # from outside, the grant is whatever that command carries, and telling a reader to open a directory
+    # its tools cannot reach is the same defect as granting one it is never told about.
+    granted = checkout if (checkout is not None and "--add-dir" in cmd) else None
     env = clean_environment()
     env.pop("PWD", None)
     t0 = time.monotonic()
@@ -213,7 +225,7 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
         raise AssessorError(f"harness not available: {e}")
     survivors = False
     try:
-        out, err = p.communicate(input=brief_text(brief, checkout), timeout=timeout)
+        out, err = p.communicate(input=brief_text(brief, granted), timeout=timeout)
         timed_out, exit_code = False, p.returncode
     except subprocess.TimeoutExpired:
         try:
@@ -233,7 +245,8 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
         err = (err or "") + "\ntimed out"
     return {"stdout": out or "", "stderr": err or "", "exit_code": exit_code, "wall_seconds": round(time.monotonic() - t0, 3),
             "command": cmd, "timed_out": timed_out, "children_left_running": survivors,
-            "checkout": str(checkout) if checkout else None}
+            "checkout": str(granted) if granted else None,
+            "checkout_named_but_not_granted": str(checkout) if (checkout and not granted) else None}
 
 
 # --------------------------------------------------------------------------------------------------
@@ -347,6 +360,7 @@ def assessment_record(brief: dict, run: dict) -> dict:
         "timed_out": bool(run.get("timed_out")),
         "exit_code": run.get("exit_code"),
         "checkout": run.get("checkout"),
+        "checkout_named_but_not_granted": run.get("checkout_named_but_not_granted"),
         "closed": [fid for fid, v in per.items() if v["status"] == "closed"],
     }
 
@@ -360,18 +374,23 @@ def assess(inputs: dict, workdir: str | os.PathLike, harness: list | None = None
 
 def main(argv: list) -> int:
     if len(argv) >= 4 and argv[1] == "run":
-        inputs = json.loads(Path(argv[2]).read_text())
-        out = Path(argv[3]); out.mkdir(parents=True, exist_ok=True)
-        # --harness takes the REST of the argument list, so anything else is read from what precedes it.
+        # The arguments are read BEFORE anything is opened: a flag where a path belongs would otherwise
+        # be opened as a file and fail with an error about a name nobody typed as a filename.
+        # --harness takes the REST of the list, so everything else is read from what precedes it.
         head = argv[:argv.index("--harness")] if "--harness" in argv else argv
+        if len(head) < 4 or head[2].startswith("-") or head[3].startswith("-"):
+            print("REFUSED: usage: run <inputs.json> <out-dir> [--checkout <dir>] [--harness <command>...]")
+            return 2
         harness = argv[argv.index("--harness") + 1:] if "--harness" in argv else None
         checkout = None
         if "--checkout" in head:
             i = head.index("--checkout")
-            if i + 1 >= len(head):
+            if i + 1 >= len(head) or head[i + 1].startswith("-"):
                 print("REFUSED: --checkout needs a directory")
                 return 2
             checkout = head[i + 1]
+        inputs = json.loads(Path(argv[2]).read_text())
+        out = Path(argv[3]); out.mkdir(parents=True, exist_ok=True)
         try:
             rec = assess(inputs, out, harness=harness, checkout=checkout)
         except AssessorError as e:

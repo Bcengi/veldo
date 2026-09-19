@@ -107,12 +107,12 @@ else:
            "(capsule reproduces on the reviewed copy, not on the fixed copy, the pinned row reds with the mutant and is green "
            "fresh); for the unfixed finding the capsule still reproduces on the fixed copy and it stays open; for the finding "
            "without a capsule the two capsule results are missing, never passed, and it stays open",
-           _v102_rec["findings"][0]["closed"] is True and all(_v102_r1[k]["status"] == "passed" for k in FV102.RESULT_KEYS)
-           and _v102_rec["findings"][1]["closed"] is False and _v102_r2["capsule_fixed"]["status"] == "failed" and _v102_r2["capsule_reviewed"]["status"] == "passed"
-           and _v102_rec["findings"][2]["closed"] is False and _v102_r3["capsule_reviewed"]["status"] == "missing"
+           _v102_rec["findings"][0]["all_results_passed"] is True and all(_v102_r1[k]["status"] == "passed" for k in FV102.RESULT_KEYS)
+           and _v102_rec["findings"][1]["all_results_passed"] is False and _v102_r2["capsule_fixed"]["status"] == "failed" and _v102_r2["capsule_reviewed"]["status"] == "passed"
+           and _v102_rec["findings"][2]["all_results_passed"] is False and _v102_r3["capsule_reviewed"]["status"] == "missing"
            and _v102_r3["capsule_fixed"]["status"] == "missing" and _v102_r3["row_fresh_green"]["status"] == "passed"
            and _v102_r3["row_mutant_red"]["status"] == "missing"
-           and _v102_rec["closed"] == ["F-1"] and _v102_rec["open"] == ["F-2", "F-3"])
+           and _v102_rec["all_results_passed"] == ["F-1"] and _v102_rec["open"] == ["F-2", "F-3"] and _v102_rec["closes_findings"] is False)
 
     _v102_M1, _ = _v102_organs("skiprev", [('        for key, commit, want in (("capsule_reviewed", reviewed, True), ("capsule_fixed", fixed, False)):',
                                             '        out["results"]["capsule_reviewed"] = {"status": "passed", "skipped": True}\n        for key, commit, want in (("capsule_fixed", fixed, False),):')])
@@ -125,8 +125,8 @@ else:
     expect("VELDO-0102 AC1 fixval/four-results-required DRIVEN (the declared falsifier): a finding whose capsule "
            "never reproduced the defect is open on the original (capsule_reviewed failed) and closed on the copy that skips "
            "that run and reports it passed",
-           _v102_o3["findings"][0]["closed"] is False and _v102_o3["findings"][0]["results"]["capsule_reviewed"]["status"] == "failed"
-           and _v102_m3["findings"][0]["closed"] is True)
+           _v102_o3["findings"][0]["all_results_passed"] is False and _v102_o3["findings"][0]["results"]["capsule_reviewed"]["status"] == "failed"
+           and _v102_m3["findings"][0]["all_results_passed"] is True)
 
     # --- AC2 -------------------------------------------------------------------------------------
     _v102_after = FV102._tree_digest(_v102_repo)
@@ -175,7 +175,7 @@ else:
            "finding is closed although every other result passed, and the runner did not fall back to another anchor",
            _v102_z["status"] == FV102.INVALID_MUTATION and _v102_z.get("matches") == 0 and _v102_z.get("file") == "organ.py"
            and _v102_t["status"] == FV102.INVALID_MUTATION and _v102_t.get("matches") == 2 and _v102_t.get("anchor") == "return" and _v102_t.get("file") == "organ.py"
-           and _v102_inv["closed"] == [] and _v102_inv["findings"][0]["results"]["capsule_reviewed"]["status"] == "passed")
+           and _v102_inv["all_results_passed"] == [] and _v102_inv["findings"][0]["results"]["capsule_reviewed"]["status"] == "passed")
 
 
     # --- fixes after the author's review (2026-09-19) ------------------------------------------------
@@ -203,7 +203,7 @@ else:
            and "inside the copy" in _v102_esc["findings"][0]["results"]["row_mutant_red"]["reason"]
            and _v102_esc["findings"][1]["results"]["row_mutant_red"]["status"] == FV102.INVALID_MUTATION
            and all(_v102_esc["findings"][2]["results"][k]["status"] == "missing" for k in FV102.RESULT_KEYS)
-           and _v102_esc["closed"] == [] and _v102_canary_after == "UNTOUCHED-CANARY\n"
+           and _v102_esc["all_results_passed"] == [] and _v102_canary_after == "UNTOUCHED-CANARY\n"
            and _v102_canary_after_m == "TOUCHED-CANARY\n")
 
     # Whether a reproduction exercised the fix or died before it could is NOT decidable from an exit
@@ -244,7 +244,7 @@ else:
            and _v102_cr["capsule_fixed"]["status"] == "passed" and _v102_cr["capsule_fixed"]["exit_code"] not in (0, None)
            and _v102_cr["capsule_fixed"]["reviewed_exit_code"] == 0 and _v102_cr["capsule_fixed"]["exit_code_changed"] is True
            and _v102_er["capsule_reviewed"]["exit_code"] == 1 and _v102_er["capsule_fixed"]["exit_code"] == 1
-           and _v102_er["capsule_fixed"]["exit_code_changed"] is False and _v102_err["closed"] == ["E"]
+           and _v102_er["capsule_fixed"]["exit_code_changed"] is False and _v102_err["all_results_passed"] == ["E"]
            and _v102_crash_silent["findings"][0]["results"]["capsule_fixed"]["exit_code_changed"] is False)
 
     # An error while producing one result is that result, recorded as missing; the other findings still run.
@@ -280,8 +280,8 @@ else:
            "error escape either guard aborts the whole run, so no record is produced for any finding",
            _v102_nobin["findings"][0]["results"]["capsule_reviewed"]["status"] == "missing"
            and "FileNotFoundError" in _v102_nobin["findings"][0]["results"]["capsule_reviewed"]["reason"]
-           and _v102_nobin["closed"] == ["F-1"] and _v102_aborted
-           and len(_v102_shapes["findings"]) == 5 and _v102_shapes["closed"] == ["F-1"]
+           and _v102_nobin["all_results_passed"] == ["F-1"] and _v102_aborted
+           and len(_v102_shapes["findings"]) == 5 and _v102_shapes["all_results_passed"] == ["F-1"]
            and all(_v102_shapes["findings"][i]["results"][k]["status"] == "missing"
                    for i in range(4) for k in FV102.RESULT_KEYS))
 
@@ -309,7 +309,16 @@ else:
         "def _fake_write(fd, data):\n"
         "    return _real_write(fd, _real_dumps(RECORD).encode() + b'\\n')\n"
         "os.write = _fake_write\n"
-        "atexit.register(lambda: print(json.dumps(RECORD)))\n")
+        "atexit.register(lambda: print(json.dumps(RECORD)))\n"
+        "import sys\n"
+        "try:\n"
+        "    sys.modules['__main__'].RECORD_MARKER = 'not-the-marker'\n"   # unmark the runner's own record
+        "except Exception:\n"
+        "    pass\n"
+        "_named = os.path.join(os.path.dirname(os.getcwd()), os.path.basename(os.getcwd()) + '.row_record')\n"
+        "open(_named, 'w').write(_real_dumps(RECORD) + '\\n')\n"          # the channel's old name
+        "atexit.register(lambda: os.write(int(sys.argv[3]), (_real_dumps(RECORD) + '\\n').encode()))\n"
+        "sys.stdout = None\n")
     _v102_git("add", "-A"); _v102_git("commit", "-q", "-m", "forge")
     _v102_forged = _v102_git("rev-parse", "HEAD")
     _v102_plan_pin = dict(_v102_plan, fixed_commit=_v102_forged, findings=[
@@ -321,7 +330,7 @@ else:
         ('    return {**r, "row": row_label_fragment, "suite": suite, "deadline_seconds": deadline,\n            **read_record(blob.decode("utf-8", "replace"), row_label_fragment)}',
          '    return {**r, "row": row_label_fragment, "suite": suite, "deadline_seconds": deadline,\n            **read_record(r["stdout"], row_label_fragment)}')])
     _v102_M_late, _ = _v102_organs("latecapture", [
-        ('    _write(channel, (_dumps({"marker": RECORD_MARKER, "status": status, "rows": _list(rows)}) + "\\n").encode())',
+        ('    _write(channel, (_dumps({"marker": _marker, "status": status, "rows": _list(rows)}) + "\\n").encode())',
          '    os.write(channel, (json.dumps({"marker": RECORD_MARKER, "status": status, "rows": rows}) + "\\n").encode())')])
     _v102_pin_late = _v102_M_late.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin_late")
     _v102_pin_m = _v102_M_stdout.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin_m")
@@ -360,7 +369,7 @@ else:
            "row green",
            _v102_rr["status"] == "missing" and _v102_rr["row_status"] == "passed"
            and "RuntimeError" in _v102_rr["fragment_status"] and "did not run to its end" in _v102_rr["reason"]
-           and _v102_raise["closed"] == []
+           and _v102_raise["all_results_passed"] == []
            and _v102_raise_m["findings"][0]["results"]["row_fresh_green"]["status"] == "passed")
 
     # A row run's budget is its own: it does not move when the capsule's duration moves. The two plans
@@ -404,7 +413,7 @@ else:
            and FV102.MIN_DERIVED_DEADLINE * 10 < FV102.DEFAULT_ROW_DEADLINE)
 
     _v102_refused_numbers = []
-    for _v102_bad in (0, -5, "abc", [1], True, 2.5):
+    for _v102_bad in (0, -5, "abc", [1], True, 2.5, float("inf"), float("-inf"), float("nan"), None if False else 1e400):
         for _v102_key in ("deadline_seconds", "row_deadline_seconds"):
             try:
                 FV102.validate({**_v102_pq, _v102_key: _v102_bad}, workdir=_v102_tmp / "run_never")
@@ -416,15 +425,16 @@ else:
     _v102_M_nocheck, _ = _v102_organs("nonumbercheck", [
         ('    raw = plan.get(key)\n    if raw is None:\n        return None', '    raw = plan.get(key)\n    if True:\n        return raw')])
     _v102_neg = _v102_M_nocheck.validate({**_v102_pq, "row_deadline_seconds": -5}, workdir=_v102_tmp / "run_neg_m")
-    expect("VELDO-0102 AC2 fixval/every-number-in-a-plan-is-checked: zero, a negative, a text value, a list, a boolean and a "
-           "fraction are each refused as a validation error for both budget fields, before anything runs and without a "
+    expect("VELDO-0102 AC2 fixval/every-number-in-a-plan-is-checked: zero, a negative, a text value, a list, a boolean, a "
+           "fraction, and the infinities and not-a-number that JSON carries by default are each refused as a validation error for both budget fields, before anything runs and without a "
            "traceback escaping; DRIVEN: a copy that passes the value straight through accepts a negative budget, which reaches "
            "the wait and turns the row into an instant deadline",
            _v102_refused_numbers == []
            and _v102_neg["findings"][0]["results"]["row_fresh_green"]["status"] == "deadline")
 
-    PIPE_BLOCK_42 = '    channel_path = tree.parent / (tree.name + ".row_record")\n    channel_fd = os.open(channel_path, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0o600)\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))\n        blob = channel_path.read_bytes()\n    finally:\n        os.close(channel_fd)\n'
+    PIPE_BLOCK_42 = '    channel_fd, channel_path = tempfile.mkstemp(prefix="fixval-rows-")\n    os.unlink(channel_path)\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))\n        os.lseek(channel_fd, 0, os.SEEK_SET)\n        blob = b""\n        while True:\n            chunk = os.read(channel_fd, 65536)\n            if not chunk:\n                break\n            blob += chunk\n    finally:\n        os.close(channel_fd)\n'
     PIPE_MUTANT_42 = '    read_fd, write_fd = os.pipe()\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(write_fd)], tree, deadline, pass_fds=(write_fd,))\n        os.close(write_fd)\n        write_fd = None\n        blob = b""\n        while True:\n            chunk = os.read(read_fd, 65536)\n            if not chunk:\n                break\n            blob += chunk\n    finally:\n        if write_fd is not None:\n            os.close(write_fd)\n        os.close(read_fd)\n'
+    NAMED_CHANNEL_42 = '    channel_path = tree.parent / (tree.name + ".row_record")\n    channel_fd = os.open(channel_path, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0o600)\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))\n        blob = channel_path.read_bytes()\n    finally:\n        os.close(channel_fd)\n'
     _v102_many = "".join(
         "expect('ROW bulk/row-%04d: a row with a label long enough that two thousand of them outgrow any pipe buffer', True)\n" % i
         for i in range(2000))
@@ -462,6 +472,32 @@ else:
            and _v102_det_seconds < 60
            and _v102_bulk_m["findings"][0]["results"]["row_fresh_green"]["status"] == "deadline")
 
+    # The runner stops short of judging whether a reproduction exercised the fix and hands that to the
+    # assessor. That is only true if the assessor is TOLD, so the projection is checked against the
+    # CONSUMER: the real .veldo/fix_assessor.py assembles a brief from it and the brief must carry it.
+    _v102_FA = _v102_load("v102_assessor", ROOT / ".veldo" / "fix_assessor.py")
+    _v102_proj = FV102.assessor_capsule_results(_v102_crash)
+    _v102_proj_err = FV102.assessor_capsule_results(_v102_err)
+    _v102_proj_norow = FV102.assessor_capsule_results(_v102_raise)
+    _v102_brief = _v102_FA.assemble_brief({"reviewed_commit": _v102_reviewed[:12], "fixed_commit": _v102_fixed[:12],
+                                           "findings": [{"id": "C", "text": "the ledger id is accepted"}],
+                                           "capsule_results": _v102_proj, "diff": "diff --git a/x b/x\n"})
+    _v102_brief_text = _v102_FA.brief_text(_v102_brief)
+    _v102_M_hide, _ = _v102_organs("hideexit", [
+        ('        if fix.get("exit_code_changed") is not None:\n            entry["exit_code_changed"] = bool(fix["exit_code_changed"])\n', '')])
+    _v102_proj_hidden = _v102_M_hide.assessor_capsule_results(_v102_crash)
+    expect("VELDO-0102 AC1 fixval/evidence-reaches-the-judge: the runner projects its own results into the shape the assessor's "
+           "brief admits, carrying whether the reproduction showed the defect on each commit, both exit codes and whether they "
+           "changed; a finding with no capsule is left out rather than reported as nothing; and the projection is checked "
+           "against the CONSUMER, the real assessor module, which accepts it and renders the changed exit status into the brief "
+           "a reader follows; DRIVEN: a copy that leaves the flag out of the projection produces a brief that never mentions it, "
+           "so the judgment the runner declined to make is handed to a reader who cannot make it either",
+           _v102_proj[0]["finding_id"] == "C" and _v102_proj[0]["exit_code_changed"] is True
+           and _v102_proj[0]["reviewed_exit_code"] == 0 and _v102_proj[0]["fixed_exit_code"] not in (0, None)
+           and _v102_proj_err[0]["exit_code_changed"] is False and _v102_proj_norow == []
+           and "exit_code_changed" in _v102_brief_text and "true" in _v102_brief_text
+           and all("exit_code_changed" not in e for e in _v102_proj_hidden))
+
     # The RUNS never happen inside a worktree; the RECORD may be written into the proof bundle.
     _v102_out = _v102_repo / "proof" / "VELDO-9102" / "validation"
     _v102_plan_file = _v102_tmp / "plan.json"
@@ -473,9 +509,10 @@ else:
     _v102_rc_m = _v102_M_runs.main(["fix_validation.py", "run", str(_v102_plan_file), str(_v102_out / "m")])
     expect("VELDO-0102 AC2 fixval/record-inside-runs-outside: the command writes its record into a directory inside the repository "
            "(a proof bundle's validation directory, as the spec's rollback describes) while the runs themselves happen outside "
-           "every worktree, and the record names that outside run directory; DRIVEN: a copy that runs where it writes is REFUSED "
+           "every worktree, the record names that outside run directory and the directory is STILL THERE afterwards, because it is the evidence behind every result and a record naming a directory that has been deleted is worth less than the disk it saved; DRIVEN: a copy that runs where it writes is REFUSED "
            "and writes no record at all",
            _v102_rc == 0 and _v102_written and not _v102_run_dir.startswith(str(_v102_repo))
+           and _v102_Path(_v102_run_dir).is_dir()
            and _v102_rc_m == 2 and not (_v102_out / "m" / "fix-validation.json").exists())
 
     _v102_M3, _ = _v102_organs("covered", [('                out["results"]["row_mutant_red"] = {"status": INVALID_MUTATION, **{k: v for k, v in applied.items() if k != "applied"}}',
@@ -483,4 +520,4 @@ else:
     _v102_m3_inv = _v102_M3.validate(_v102_plan_inv, workdir=_v102_tmp / "run_inv_m")
     expect("VELDO-0102 AC3 fixval/invalid-mutation-not-covered DRIVEN (the declared falsifier): with a mutant that does not "
            "apply treated as covered in a copy, both findings are closed on the copy and neither on the original",
-           _v102_m3_inv["closed"] == ["Z", "T"] and _v102_inv["closed"] == [])
+           _v102_m3_inv["all_results_passed"] == ["Z", "T"] and _v102_inv["all_results_passed"] == [])

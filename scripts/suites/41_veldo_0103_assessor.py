@@ -242,30 +242,111 @@ expect("VELDO-0103 AC1 assessor/ids-are-plain-names: a finding id and a capsule 
 
 _v103_checkout = _v103_tmp / "fixed_checkout"
 _v103_checkout.mkdir()
-_v103_ck_rec, _v103_ck_seen = None, None
-_v103_wd_ck = _v103_tmp / "wd_checkout"
-_v103_wd_ck.mkdir()
-_v103_os.environ["V103_RECORD"] = str(_v103_wd_ck / "record.json")
-_v103_os.environ["V103_MODE"] = "full"
-_v103_ck_rec = FA103.assess(_v103_inputs, _v103_wd_ck, harness=[_v103_sys.executable, str(_v103_fake)], timeout=60, checkout=_v103_checkout)
-_v103_ck_seen = _v103_json.loads((_v103_wd_ck / "record.json").read_text())
+_v103_fake_cmd = [_v103_sys.executable, str(_v103_fake)]
+
+
+def _v103_assess_with(cmd, checkout, tag):
+    wd = _v103_tmp / ("wd_" + tag)
+    wd.mkdir()
+    _v103_os.environ["V103_RECORD"] = str(wd / "record.json")
+    _v103_os.environ["V103_MODE"] = "full"
+    rec = FA103.assess(_v103_inputs, wd, harness=cmd, timeout=60, checkout=checkout)
+    return rec, _v103_json.loads((wd / "record.json").read_text())
+
+
+_v103_ng_rec, _v103_ng_seen = _v103_assess_with(_v103_fake_cmd, _v103_checkout, "named_not_granted")
+_v103_gr_rec, _v103_gr_seen = _v103_assess_with(_v103_fake_cmd + ["--add-dir", str(_v103_checkout)], _v103_checkout, "granted")
 _v103_missing_ck = False
 try:
-    FA103.assess(_v103_inputs, _v103_tmp, harness=[_v103_sys.executable, str(_v103_fake)], timeout=60, checkout=_v103_tmp / "no_such_checkout")
+    FA103.assess(_v103_inputs, _v103_tmp, harness=_v103_fake_cmd, timeout=60, checkout=_v103_tmp / "no_such_checkout")
 except FA103.AssessorError as _v103_e:
     _v103_missing_ck = "not a directory" in str(_v103_e)
+except OSError:
+    _v103_missing_ck = False
 _v103_M_nock = _v103_mutant([('    if checkout is not None and not Path(checkout).is_dir():', '    if False:')], "nocheckdir")
 _v103_M_nock_ok = False
 try:
     _v103_os.environ["V103_RECORD"] = str(_v103_tmp / "rec_nock.json")
-    _v103_M_nock.assess(_v103_inputs, _v103_wd_ck, harness=[_v103_sys.executable, str(_v103_fake)], timeout=60, checkout=_v103_tmp / "no_such_checkout")
+    (_v103_tmp / "wd_nock").mkdir()
+    _v103_M_nock.assess(_v103_inputs, _v103_tmp / "wd_nock", harness=_v103_fake_cmd, timeout=60, checkout=_v103_tmp / "no_such_checkout")
     _v103_M_nock_ok = True
 except _v103_M_nock.AssessorError:
     _v103_M_nock_ok = False
+_v103_M_alwaysname = _v103_mutant([('    granted = checkout if (checkout is not None and "--add-dir" in cmd) else None', '    granted = checkout')], "alwaysname")
+_v103_an_wd = _v103_tmp / "wd_alwaysname"
+_v103_an_wd.mkdir()
+_v103_os.environ["V103_RECORD"] = str(_v103_an_wd / "record.json")
+_v103_M_alwaysname.assess(_v103_inputs, _v103_an_wd, harness=_v103_fake_cmd, timeout=60, checkout=_v103_checkout)
+_v103_an_seen = _v103_json.loads((_v103_an_wd / "record.json").read_text())
 expect("VELDO-0103 AC3 assessor/the-checkout-is-named-checked-and-recorded: a checkout that does not exist is refused before "
-       "the harness starts, a real one is NAMED in the brief the reader follows (a directory it may open but is never told "
-       "about is one it will not open) and recorded in the assessment, and with no checkout the brief says so instead; DRIVEN: "
-       "a copy that does not check the directory starts a run whose reader is pointed at nothing",
+       "the harness starts; a checkout the COMMAND grants is named in the brief the reader follows and recorded in the "
+       "assessment, because a directory a reader may open but is never told about is one it will not open; and a checkout the "
+       "command does NOT grant is not named to the reader at all, because telling a reader to open what its tools cannot reach "
+       "is the same defect the other way round, and the assessment records that it was named but not granted; DRIVEN twice: a "
+       "copy that does not check the directory starts a run whose reader is pointed at nothing, and a copy that names the "
+       "checkout whatever the command carries tells the reader to open a directory it was never granted",
        _v103_missing_ck and _v103_M_nock_ok
-       and str(_v103_checkout) in _v103_ck_seen["stdin"] and _v103_ck_rec["checkout"] == str(_v103_checkout)
-       and _v103_rec["checkout"] is None and "no checkout to read" in FA103.brief_text(_v103_brief))
+       and str(_v103_checkout) in _v103_gr_seen["stdin"] and _v103_gr_rec["checkout"] == str(_v103_checkout)
+       and _v103_gr_rec["checkout_named_but_not_granted"] is None
+       and str(_v103_checkout) not in _v103_ng_seen["stdin"] and _v103_ng_rec["checkout"] is None
+       and _v103_ng_rec["checkout_named_but_not_granted"] == str(_v103_checkout)
+       and _v103_rec["checkout"] is None and "no checkout to read" in FA103.brief_text(_v103_brief)
+       and str(_v103_checkout) in _v103_an_seen["stdin"])
+
+
+# --- the runner's exit-status evidence is admitted, and only as a fact ----------------------------
+_v103_with_flag = dict(_v103_inputs, capsule_results=[{"finding_id": "F-1", "reviewed": True, "fixed": False,
+                                                       "reviewed_exit_code": 0, "fixed_exit_code": 1, "exit_code_changed": True}])
+_v103_flag_not_bool = dict(_v103_inputs, capsule_results=[{"finding_id": "F-1", "exit_code_changed": "probably"}])
+_v103_flag_rec, _v103_flag_seen = _v103_run(FA103, _v103_with_flag, "full", "flag")
+_v103_M_noflag = _v103_mutant([('"reviewed_exit_code", "fixed_exit_code", "exit_code_changed"}', '"reviewed_exit_code", "fixed_exit_code"}')], "noflag")
+_v103_noflag_refused = False
+try:
+    _v103_M_noflag.assemble_brief(_v103_with_flag)
+except _v103_M_noflag.AssessorError:
+    _v103_noflag_refused = True
+expect("VELDO-0103 AC1 assessor/the-flag-is-admitted: the brief admits the runner's exit-status evidence, including whether the "
+       "reproduction ended differently on the two commits, renders it for the reader and says in words that deciding what it "
+       "means is the reader's job and not the runner's; a value that is not true or false is refused like any other; DRIVEN: a "
+       "copy whose allowlist lacks the flag refuses the runner's own projection, so the evidence could not be handed over at all",
+       _v103_flag_seen is not None and "exit_code_changed" in _v103_flag_seen["stdin"]
+       and "Deciding which is yours" in _v103_flag_seen["stdin"]
+       and _v103_refused(_v103_flag_not_bool) and _v103_noflag_refused)
+
+
+# --- the command line itself, driven through main -------------------------------------------------
+_v103_cli_inputs = _v103_tmp / "cli_inputs.json"
+_v103_cli_inputs.write_text(_v103_json.dumps(_v103_inputs))
+_v103_cli_ck = _v103_tmp / "cli_checkout"
+_v103_cli_ck.mkdir()
+
+
+def _v103_main(args, tag):
+    out = _v103_tmp / ("cli_out_" + tag)
+    _v103_os.environ["V103_RECORD"] = str(_v103_tmp / ("cli_rec_" + tag + ".json"))
+    _v103_os.environ["V103_MODE"] = "full"
+    rc = FA103.main(["fix_assessor.py", "run"] + [a.replace("<in>", str(_v103_cli_inputs)).replace("<out>", str(out)).replace("<ck>", str(_v103_cli_ck)) for a in args])
+    rec = out / "assessment.json"
+    return rc, (_v103_json.loads(rec.read_text()) if rec.is_file() else None)
+
+
+_v103_rc_ok, _v103_cli_ok = _v103_main(["<in>", "<out>", "--checkout", "<ck>", "--harness", _v103_sys.executable, str(_v103_fake), "--add-dir", "<ck>"], "ok")
+_v103_rc_flagfirst, _ = _v103_main(["--checkout", "<ck>", "<in>", "<out>", "--harness", _v103_sys.executable, str(_v103_fake)], "flagfirst")
+_v103_rc_dangling, _ = _v103_main(["<in>", "<out>", "--checkout"], "dangling")
+_v103_M_nopos = _v103_mutant([('        if len(head) < 4 or head[2].startswith("-") or head[3].startswith("-"):', '        if False:')], "nopos")
+_v103_m_raised = None
+try:
+    _v103_os.environ["V103_RECORD"] = str(_v103_tmp / "cli_rec_m.json")
+    _v103_M_nopos.main(["fix_assessor.py", "run", "--checkout", str(_v103_cli_ck), str(_v103_cli_inputs), str(_v103_tmp / "cli_out_m"),
+                        "--harness", _v103_sys.executable, str(_v103_fake)])
+    _v103_m_raised = "no"
+except Exception as _v103_e:
+    _v103_m_raised = type(_v103_e).__name__
+expect("VELDO-0103 AC3 assessor/the-command-line-refuses: the command line is driven through main itself, not only through the "
+       "function beneath it: with the arguments in order it runs and writes an assessment naming the checkout it was granted; "
+       "with the flag put before the two positional arguments it REFUSES by name rather than reading a flag as a file; and a "
+       "trailing --checkout with nothing after it refuses too; DRIVEN: a copy without the positional check raises a file error "
+       "out of main instead of refusing",
+       _v103_rc_ok == 0 and _v103_cli_ok is not None and _v103_cli_ok["checkout"] == str(_v103_cli_ck)
+       and _v103_rc_flagfirst == 2 and _v103_rc_dangling == 2
+       and _v103_m_raised == "FileNotFoundError")

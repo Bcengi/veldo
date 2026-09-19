@@ -108,7 +108,10 @@ def _positive_seconds(plan: dict, key: str):
     raw = plan.get(key)
     if raw is None:
         return None
-    if isinstance(raw, bool) or not isinstance(raw, (int, float)) or isinstance(raw, float) and raw != int(raw):
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        raise ValidationError(f"{key} must be a whole number of seconds, not {raw!r}")
+    if isinstance(raw, float) and (raw != raw or raw in (float("inf"), float("-inf")) or raw != int(raw)):
+        # JSON carries Infinity and NaN by default, and int() raises on both before any refusal could.
         raise ValidationError(f"{key} must be a whole number of seconds, not {raw!r}")
     seconds = int(raw)
     if seconds <= 0:
@@ -173,14 +176,19 @@ def apply_mutant(tree: Path, mutant: dict) -> dict:
 # The record leaves the child on a PRIVATE channel, not on its stdout, and the child ends with
 # os._exit so that nothing registered to run at exit can speak after it. The rows live in a closure
 # cell rather than a module global, so rebinding a name in the recorder's globals does not reach them.
-# WHAT THIS DOES NOT DEFEND AGAINST, said plainly: the fragment is arbitrary code in the same process.
-# It can enumerate the open descriptors, find the channel and write its own record there, and nothing
-# in a process can stop code in that process. The pin is evidence about a row an author wrote
-# carelessly, not a guarantee against an author who forges deliberately; that one is caught by the
-# fragment being a committed file a reviewer reads. What IS closed is every accident and every cheap
-# route: the fragment's own output is not the channel, the rows are not a global it can rebind, the
-# record is built from references taken before it ran, and the process ends before anything registered
-# at exit can speak.
+# WHAT THIS DOES NOT DEFEND AGAINST, said as precisely as it can be said. The fragment is arbitrary
+# code in the same process, so EVERYTHING in that process is reachable by it: the inherited descriptor
+# through the open descriptor list, and the recorded rows themselves through the very expect it is
+# handed, whose closure cell is one attribute away. No arrangement of code in a process can stop code
+# in that process, and this one does not claim to. The pin is evidence about a row an author wrote
+# carelessly; a row an author forges deliberately is caught by the fragment being a committed file a
+# reviewer reads, and by nothing here.
+#
+# What IS closed is the set of accidents and near-accidents: the fragment's own standard output is not
+# the channel, so printing cannot be mistaken for recording; the channel has no name in the filesystem
+# once it is open, so nothing can reach it by path; the record is built from references captured before
+# the fragment ran, the marker among them, so replacing a module attribute does not reach it; and the
+# process ends at the record, so nothing registered to run at exit speaks after it.
 RECORD_MARKER = "veldo.fixval-rows/v1"
 
 ROW_RUNNER = r"""
@@ -194,8 +202,11 @@ def _main():
     suites = Path(sys.argv[1]); fragment = Path(sys.argv[2]); channel = int(sys.argv[3])
     # Everything the record is built with is captured HERE, before any fragment code runs: the
     # fragment shares these module objects and can replace their attributes, and a reference taken
-    # after it ran would be the fragment's. The rows live in a cell, not a module global.
+    # after it ran would be the fragment's. The MARKER is captured too: it lives in this module's
+    # globals, this module is __main__, and a fragment can assign to it through sys.modules.
     _dumps, _write, _exit, _list = json.dumps, os.write, os._exit, list
+    _marker = RECORD_MARKER
+    _flush = (sys.stdout.flush, sys.stderr.flush)
     rows = []
     def expect(name, condition):
         rows.append({"label": name, "passed": bool(condition)})
@@ -209,8 +220,15 @@ def _main():
         exec(compile(fragment.read_text(), str(fragment), "exec"), shared.__dict__)
     except BaseException as e:                   # the fragment raised: the rows it reached still stand
         status = f"{type(e).__name__}: {e}"[:400]
-    _write(channel, (_dumps({"marker": RECORD_MARKER, "status": status, "rows": _list(rows)}) + "\n").encode())
-    sys.stdout.flush(); sys.stderr.flush()
+    _write(channel, (_dumps({"marker": _marker, "status": status, "rows": _list(rows)}) + "\n").encode())
+    # The flushes are a courtesy to whoever reads the child's output, and the exit is not. A fragment
+    # that breaks sys.stdout would otherwise raise here, the interpreter would run what is registered
+    # at exit, and that would get to speak after the record.
+    for _f in _flush:
+        try:
+            _f()
+        except BaseException:
+            pass
     _exit(0)                                     # nothing at exit gets to speak after the record
 
 _main()
@@ -263,13 +281,22 @@ def run_row(tree: Path, suite: str, row_label_fragment: str, deadline: int) -> d
     # The channel is a FILE, never a pipe. The parent drains the child's output while it runs but reads
     # this channel only after it has exited, and a pipe holds about 64KB: a fragment with enough rows
     # would fill it and block in its write, and a process that inherited the descriptor and outlived
-    # the runner would hold the parent's read open with no deadline over it. A file has neither
-    # problem. It lives beside the copy, never inside it.
-    channel_path = tree.parent / (tree.name + ".row_record")
-    channel_fd = os.open(channel_path, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0o600)
+    # the runner would hold the parent's read open with no deadline over it. A file has neither problem.
+    # It is UNLINKED as soon as it is open, so it has no name anything can reach: the fragment runs with
+    # the copy as its working directory and could otherwise compute the path, unlink it and leave its
+    # own file there, or close the descriptor so the honest write fails and only its file remains. With
+    # no name, the descriptor is the only way to it.
+    channel_fd, channel_path = tempfile.mkstemp(prefix="fixval-rows-")
+    os.unlink(channel_path)
     try:
         r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))
-        blob = channel_path.read_bytes()
+        os.lseek(channel_fd, 0, os.SEEK_SET)
+        blob = b""
+        while True:
+            chunk = os.read(channel_fd, 65536)
+            if not chunk:
+                break
+            blob += chunk
     finally:
         os.close(channel_fd)
     if r["timed_out"]:
@@ -293,11 +320,16 @@ def _row_result(r: dict, want: str) -> dict:
         status = "deadline"
     elif st in ("absent", "ambiguous"):
         status = "missing"
-    elif raised:
-        # The fragment stopped before its end. The rows it reached are recorded for the reader, but a
-        # fragment that blew up is not evidence that the pinned row is green on a clean copy, nor that
-        # the mutant is what turned it red. Stopping early is not evidence, here as for a capsule.
+    elif raised and want == "passed":
+        # A fragment that blew up is not evidence that the pinned row is GREEN on a clean copy: the run
+        # did not reach its end, and stopping early is not evidence, here as for a capsule.
         status = "missing"
+    elif raised:
+        # Looking for RED is the other way round. The pinned row was recorded by the fragment's own
+        # expect before the exception, so a mutant that reddens the row and then breaks the rest of the
+        # fragment has still shown the row is sensitive, which is the whole question. The exception is
+        # kept in the result so a reader can see the mutant did more than it was asked to.
+        status = "passed" if st == want else "missing"
     else:
         status = "passed" if st == want else "failed"
     out = {"status": status, "row_status": st, "duration_seconds": r.get("duration_seconds"),
@@ -351,7 +383,7 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
     if not isinstance(raw_id, str) or not FINDING_ID.fullmatch(raw_id):
         for k in RESULT_KEYS:
             out["results"][k] = {"status": "missing", "reason": "a finding needs an id that is a plain name (letters, digits, . _ -); it names run directories and may not leave them"}
-        out["closed"] = False
+        out["all_results_passed"] = False
         return out
     first_deadline = deadline or DEFAULT_DEADLINE
     rest_deadline = deadline
@@ -400,16 +432,53 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
     else:
         for key in ("row_fresh_green", "row_mutant_red"):
             out["results"][key] = {"status": "missing", "reason": "no pinned row for this finding"}
-    out["closed"] = all(out["results"][k]["status"] == "passed" for k in RESULT_KEYS)
+    out["all_results_passed"] = all(out["results"][k]["status"] == "passed" for k in RESULT_KEYS)
+    return out
+
+
+def assessor_capsule_results(record: dict) -> list:
+    """The runner's own results, projected into the shape the assessor's brief admits (see
+    fix_assessor.CAPSULE_RESULT_KEYS): per finding, whether the capsule showed the defect on each
+    commit, the exit status of each run, and whether that status changed.
+
+    This exists because the runner deliberately stops short of judging whether a reproduction exercised
+    the fix, and hands that judgment to the assessor. A judgment handed to a reader who is never shown
+    the evidence is not handed anywhere, so the projection lives HERE, beside the results, rather than
+    being reassembled by whoever wires the two together."""
+    out = []
+    for f in record.get("findings") or []:
+        rev = (f.get("results") or {}).get("capsule_reviewed") or {}
+        fix = (f.get("results") or {}).get("capsule_fixed") or {}
+        if rev.get("status") == "missing" and fix.get("status") == "missing":
+            continue                                     # no capsule for this finding: nothing to say
+        entry = {"finding_id": f["finding_id"]}
+        if rev.get("reproduced") is not None:
+            entry["reviewed"] = bool(rev["reproduced"])
+        if fix.get("reproduced") is not None:
+            entry["fixed"] = bool(fix["reproduced"])
+        if rev.get("exit_code") is not None:
+            entry["reviewed_exit_code"] = int(rev["exit_code"])
+        if fix.get("exit_code") is not None:
+            entry["fixed_exit_code"] = int(fix["exit_code"])
+        if fix.get("exit_code_changed") is not None:
+            entry["exit_code_changed"] = bool(fix["exit_code_changed"])
+        out.append(entry)
     return out
 
 
 def validate(plan: dict, workdir: str | os.PathLike | None = None) -> dict:
     """plan: {repo, worktree, reviewed_commit, fixed_commit, findings: [{id, capsule, row: {suite, label,
     mutant: {file, edits}}}], deadline_seconds}. The run directory must lie outside the worktree."""
+    for key in ("repo", "reviewed_commit", "fixed_commit"):
+        if not isinstance(plan.get(key), str) or not plan[key].strip():
+            raise ValidationError(f"the plan needs {key} as a non-empty string, not {plan.get(key)!r}")
+    if plan.get("worktree") is not None and not isinstance(plan["worktree"], str):
+        raise ValidationError(f"worktree, when given, must be a path as a string, not {plan['worktree']!r}")
     repo = plan["repo"]
     worktree = Path(plan.get("worktree") or repo)
     wd = Path(workdir) if workdir else Path(tempfile.mkdtemp(prefix="fixval-"))
+    if not worktree.is_dir():
+        raise ValidationError(f"the worktree {worktree} is not a directory")
     if _inside(wd, worktree):
         raise ValidationError(f"run directory {wd} lies inside the worktree {worktree}; refusing")
     deadline = _positive_seconds(plan, "deadline_seconds")        # None: derived per finding
@@ -422,13 +491,13 @@ def validate(plan: dict, workdir: str | os.PathLike | None = None) -> dict:
     findings = []
     for f in declared:
         if not isinstance(f, dict):
-            findings.append({"finding_id": f"<not an object: {type(f).__name__}>", "closed": False,
+            findings.append({"finding_id": f"<not an object: {type(f).__name__}>", "all_results_passed": False,
                              "results": {k: {"status": "missing", "reason": "the plan entry is not an object"} for k in RESULT_KEYS}})
             continue
         try:
             findings.append(validate_finding(f, repo, plan["reviewed_commit"], plan["fixed_commit"], wd, capsule_mod, deadline, row_deadline))
         except Exception as e:  # noqa: BLE001 - one finding that cannot be validated is not the others' problem
-            findings.append({"finding_id": str(f.get("id")), "closed": False,
+            findings.append({"finding_id": str(f.get("id")), "all_results_passed": False,
                              "results": {k: {"status": "missing", "reason": f"the finding could not be validated: {type(e).__name__}: {e}"} for k in RESULT_KEYS}})
     after = _tree_digest(worktree)
     return {
@@ -442,8 +511,15 @@ def validate(plan: dict, workdir: str | os.PathLike | None = None) -> dict:
         "run_directory": str(wd),
         "worktree_unchanged": before == after,
         "findings": findings,
-        "closed": [f["finding_id"] for f in findings if f["closed"]],
-        "open": [f["finding_id"] for f in findings if not f["closed"]],
+        # NOT "closed". These four results are mechanical: they say the reproduction behaved as the
+        # reviewer's capsule describes and the author's row is sensitive to the defect. Whether the fix
+        # is right is a judgment this runner deliberately does not make (see _capsule_result), and a
+        # finding is closed only when a reader's verdict agrees with these results, which is VELDO-0104's
+        # rule. Until that item ships, NOTHING in this repository turns these results into a closure,
+        # and this record must not be read as one.
+        "all_results_passed": [f["finding_id"] for f in findings if f["all_results_passed"]],
+        "open": [f["finding_id"] for f in findings if not f["all_results_passed"]],
+        "closes_findings": False,
     }
 
 
@@ -480,7 +556,8 @@ def main(argv: list) -> int:
         # and a record naming a directory that has been deleted is worth less than the disk it saved.
         # The record names the directory; whoever runs this removes it when they are done with it.
         (out / "fix-validation.json").write_text(json.dumps(rec, indent=1, sort_keys=True) + "\n")
-        print(json.dumps({"closed": rec["closed"], "open": rec["open"], "worktree_unchanged": rec["worktree_unchanged"]}))
+        print(json.dumps({"all_results_passed": rec["all_results_passed"], "open": rec["open"],
+                          "worktree_unchanged": rec["worktree_unchanged"], "closes_findings": False}))
         return 0 if not rec["open"] else 1
     print(__doc__)
     return 64
