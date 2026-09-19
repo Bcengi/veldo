@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0101
 title: The Codex review saves a reproduction capsule per confirmed defect
-status: ready
+status: shipped
 risk: high
 owner: dmitry
 human_approval: required

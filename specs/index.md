@@ -18,7 +18,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | VELDO-0015 | Liveness stands down on clock disagreement - a heartbeat from the future is answered | ready | high | dmitry | not_required | VELDO-0015-liveness-stands-down-on-clock-disagreement.md |
 | VELDO-0099 | Install-and-run observations resolve git metadata in either checkout shape | ready | standard | dmitry | not_required | VELDO-0099-worktree-git-shape.md |
-| VELDO-0101 | The Codex review saves a reproduction capsule per confirmed defect | ready | high | dmitry | required | VELDO-0101-review-saves-reproductions.md |
 | VELDO-0103 | Assessor - a fresh headless Claude Code run reads the whole fix diff and answers per finding | ready | high | dmitry | required | VELDO-0103-fresh-assessor-run.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
@@ -133,6 +132,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0024 | Signed Git replication and off-host acknowledgement | shipped | critical | dmitry | required | VELDO-0024-signed-git-replication.md |
 | VELDO-0025 | Authenticated membership and scoped delegation | shipped | critical | dmitry | required | VELDO-0025-membership-and-delegation.md |
 | VELDO-0026 | Revocation and authorization rechecks | shipped | critical | dmitry | required | VELDO-0026-authorization-rechecks.md |
+| VELDO-0101 | The Codex review saves a reproduction capsule per confirmed defect | shipped | high | dmitry | required | VELDO-0101-review-saves-reproductions.md |
 | WARP-0100 | Adopt VELDO in the VELDO home repository | shipped | high | dmitry | required | WARP-0100-adopt-veldo.md |
 | WARP-0101 | Product Plan contract, validator, and plan index (W1 of PLAN-0001) | shipped | standard | dmitry | not_required | WARP-0101-plan-contract.md |
 | WARP-0102 | /veldo:plan skill, spec lane fields, and the promotion rule (W2 of PLAN-0001) | shipped | standard | dmitry | not_required | WARP-0102-plan-skill-and-lanes.md |
@@ -708,14 +708,14 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 
 ### PLAN-0020 - Fix validation - every fix to a review finding is checked by someone other than its author, and the loop terminates
 
-Status ready, revision 2, owner dmitry. 0/4 work items shipped.
-Ready frontier: VELDO-0101 (W1).
+Status ready, revision 2, owner dmitry. 1/4 work items shipped.
+Ready frontier: VELDO-0102 (W2).
 Open decision D1 blocks: VELDO-0103.
 
 | Item | Spec | Title | Depends on | State |
 |---|---|---|---|---|
-| W1 | VELDO-0101 | Codex review contract saves a reproduction capsule per confirmed defect | - | ready (frontier) |
-| W2 | VELDO-0102 | Capsule runner - reproduction against reviewed and fixed candidates, pinned row and mutant, one process per capsule | VELDO-0101 | waiting: VELDO-0101 |
+| W1 | VELDO-0101 | Codex review contract saves a reproduction capsule per confirmed defect | - | shipped |
+| W2 | VELDO-0102 | Capsule runner - reproduction against reviewed and fixed candidates, pinned row and mutant, one process per capsule | VELDO-0101 | draft (frontier) |
 | W3 | VELDO-0103 | Assessor as a fresh headless Claude Code run - fix diff plus findings in, per-finding verdict out, provenance recorded | - | blocked: decision D1 |
 | W4 | VELDO-0104 | validation.json in the proof bundle, round cap, and the proof check refusing unvalidated fixes | VELDO-0102, VELDO-0103 | waiting: VELDO-0102, VELDO-0103 |
 
