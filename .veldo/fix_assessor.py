@@ -21,6 +21,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -29,7 +30,14 @@ from pathlib import Path
 SCHEMA_BRIEF = "veldo.assessor-brief/v1"
 SCHEMA_RECORD = "veldo.assessment/v1"
 STATUSES = ("closed", "not_closed", "new_defect")
-API_KEY_VARIABLES = ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+# Every variable that would route the run to a paid or foreign endpoint instead of the logged-in
+# subscription: direct API keys, proxy base URLs, and the cloud-provider switches with their credentials.
+API_KEY_VARIABLES = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "OPENAI_API_KEY",
+                     "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY",
+                     "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE",
+                     "GOOGLE_APPLICATION_CREDENTIALS", "ANTHROPIC_VERTEX_PROJECT_ID")
+KILL_WAIT = 5
+CAPSULE_RESULT_KEYS = {"finding_id", "reviewed", "fixed", "reviewed_exit_code", "fixed_exit_code"}
 DEFAULT_TIMEOUT = 1800
 
 VERDICT_SCHEMA = {
@@ -76,6 +84,25 @@ def assemble_brief(inputs: dict) -> dict:
     findings = inputs["findings"]
     if not isinstance(findings, list) or not findings or not all(isinstance(f, dict) and f.get("id") and f.get("text") for f in findings):
         raise AssessorError("findings must be a non-empty list of {id, text}")
+    for f in findings:
+        extra = sorted(set(f) - {"id", "text"})
+        if extra or not isinstance(f["id"], str) or not isinstance(f["text"], str):
+            raise AssessorError(f"finding {f.get('id')!r} carries fields outside {{id, text}}: {extra}; only the reviewer's finding text travels")
+    results = inputs["capsule_results"]
+    if not isinstance(results, list):
+        raise AssessorError("capsule_results must be a list of the runner's results")
+    for r in results:
+        if not isinstance(r, dict) or not isinstance(r.get("finding_id"), str):
+            raise AssessorError("every capsule result must be an object with a finding_id")
+        extra = sorted(set(r) - CAPSULE_RESULT_KEYS)
+        if extra:
+            raise AssessorError(f"capsule result for {r['finding_id']} carries fields outside {sorted(CAPSULE_RESULT_KEYS)}: {extra}; free text has no place in the brief")
+        for k in ("reviewed", "fixed"):
+            if k in r and not isinstance(r[k], bool):
+                raise AssessorError(f"capsule result for {r['finding_id']}: {k} must be true or false")
+        for k in ("reviewed_exit_code", "fixed_exit_code"):
+            if k in r and r[k] is not None and not isinstance(r[k], int):
+                raise AssessorError(f"capsule result for {r['finding_id']}: {k} must be an integer or null")
     diff = inputs["diff"]
     if not isinstance(diff, str) or not diff.strip():
         raise AssessorError("diff must be the non-empty text of git diff reviewed..fixed")
@@ -121,11 +148,16 @@ def brief_text(brief: dict) -> str:
 # The harness: a separate headless Claude Code process, read-only, clean context, no API key
 # --------------------------------------------------------------------------------------------------
 
-def harness_command(schema_path: str) -> list:
-    """The real command. A fresh session (no persistence), print mode, JSON output constrained to the
-    verdict schema, read-only tools only."""
-    return ["claude", "-p", "--output-format", "json", "--json-schema", schema_path,
-            "--no-session-persistence", "--allowedTools", "Read,Grep,Glob", "--disallowedTools", "Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch"]
+def harness_command(schema: dict | None = None) -> list:
+    """The real command: the logged-in Claude Code subscription in print mode, a fresh session with no
+    persistence, JSON output constrained to the verdict schema (passed INLINE: --json-schema takes the
+    schema text, not a path), restricted mode (no command-running tools, no user or project settings
+    files), no MCP servers at all (an empty inline config with --strict-mcp-config), read-only tools
+    allowed and every writing or fetching tool disallowed."""
+    return ["claude", "-p", "--output-format", "json", "--json-schema", json.dumps(schema or VERDICT_SCHEMA, sort_keys=True),
+            "--no-session-persistence", "--restricted",
+            "--strict-mcp-config", "--mcp-config", json.dumps({"mcpServers": {}}),
+            "--allowedTools", "Read,Grep,Glob", "--disallowedTools", "Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch"]
 
 
 def clean_environment(env: dict | None = None) -> dict:
@@ -140,18 +172,39 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
     """Start the harness as a separate process in the fixed checkout, feed it the brief on stdin, and
     return what it printed together with what the controller measured (wall time, exit code)."""
     wd = Path(workdir)
-    schema_path = wd / ".assessor-verdict-schema.json"
-    schema_path.write_text(json.dumps(VERDICT_SCHEMA))
-    cmd = list(harness) if harness else harness_command(str(schema_path))
+    (wd / ".assessor-verdict-schema.json").write_text(json.dumps(VERDICT_SCHEMA))   # kept beside the record for the reader
+    cmd = list(harness) if harness else harness_command(VERDICT_SCHEMA)
     env = clean_environment()
+    env.pop("PWD", None)
     t0 = time.monotonic()
     try:
-        p = subprocess.run(cmd, input=brief_text(brief), cwd=str(wd), env=env, capture_output=True, text=True, timeout=timeout)
+        # A process-group leader, so the deadline kills everything the harness started, and the wait
+        # after the kill is bounded: a child that escaped the group and holds the pipes is recorded.
+        p = subprocess.Popen(cmd, cwd=str(wd), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
     except FileNotFoundError as e:
         raise AssessorError(f"harness not available: {e}")
+    survivors = False
+    try:
+        out, err = p.communicate(input=brief_text(brief), timeout=timeout)
+        timed_out, exit_code = False, p.returncode
     except subprocess.TimeoutExpired:
-        return {"stdout": "", "stderr": "timed out", "exit_code": None, "wall_seconds": round(time.monotonic() - t0, 3), "command": cmd, "timed_out": True}
-    return {"stdout": p.stdout, "stderr": p.stderr, "exit_code": p.returncode, "wall_seconds": round(time.monotonic() - t0, 3), "command": cmd, "timed_out": False}
+        try:
+            os.killpg(p.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        try:
+            out, err = p.communicate(timeout=KILL_WAIT)
+        except subprocess.TimeoutExpired:
+            survivors, out, err = True, "", ""
+            p.kill()
+            try:
+                p.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                pass
+        timed_out, exit_code = True, None
+        err = (err or "") + "\ntimed out"
+    return {"stdout": out or "", "stderr": err or "", "exit_code": exit_code, "wall_seconds": round(time.monotonic() - t0, 3),
+            "command": cmd, "timed_out": timed_out, "children_left_running": survivors}
 
 
 # --------------------------------------------------------------------------------------------------
@@ -211,10 +264,17 @@ def extract_provenance(run: dict) -> dict:
     """The harness reports the model it used and its token count in its JSON envelope (print mode);
     the controller measured the wall time. Fields the run did not report are absent, not guessed."""
     prov = {"harness": "claude-code-headless", "wall_seconds": run.get("wall_seconds")}
+    text = (run.get("stdout") or "").strip()
     try:
-        obj = json.loads((run.get("stdout") or "").strip())
+        obj = json.loads(text)
     except ValueError:
-        obj = None
+        # The envelope may be surrounded by stray lines; the verdict reader tolerates that, and so
+        # does the provenance reader, from the same outermost object.
+        start, end = text.find("{"), text.rfind("}")
+        try:
+            obj = json.loads(text[start:end + 1]) if 0 <= start < end else None
+        except ValueError:
+            obj = None
     if isinstance(obj, dict):
         model = obj.get("model") or (obj.get("modelUsage") and next(iter(obj["modelUsage"]), None))
         usage = obj.get("usage") or {}

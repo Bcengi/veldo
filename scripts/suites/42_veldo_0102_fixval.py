@@ -177,6 +177,118 @@ else:
            and _v102_t["status"] == FV102.INVALID_MUTATION and _v102_t.get("matches") == 2 and _v102_t.get("anchor") == "return" and _v102_t.get("file") == "organ.py"
            and _v102_inv["closed"] == [] and _v102_inv["findings"][0]["results"]["capsule_reviewed"]["status"] == "passed")
 
+
+    # --- fixes after the author's review (2026-09-19) ------------------------------------------------
+    # Nothing a plan names may reach outside the copy it is meant for: not a mutant's file, not a
+    # finding's id (which names the run directories).
+    _v102_canary = _v102_tmp / "canary.txt"
+    _v102_canary.write_text("UNTOUCHED-CANARY\n")
+    _v102_mut_abs = {"file": str(_v102_canary), "edits": [["UNTOUCHED-CANARY", "TOUCHED-CANARY"]]}
+    _v102_mut_dotdot = {"file": "../../organ.py", "edits": [["def guard", "def x"]]}
+    _v102_plan_esc = dict(_v102_plan, findings=[
+        {"id": "A", "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mut_abs}},
+        {"id": "B", "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mut_dotdot}},
+        {"id": "../../../escaped", "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}}])
+    _v102_esc = FV102.validate(_v102_plan_esc, workdir=_v102_tmp / "run_esc")
+    _v102_canary_after = _v102_canary.read_text()
+    _v102_M_conf, _ = _v102_organs("unconfined", [("    target = _confined(tree, rel)\n    if target is None:", "    target = tree / rel\n    if False:")])
+    _v102_M_conf.validate(dict(_v102_plan_esc, findings=_v102_plan_esc["findings"][:1]), workdir=_v102_tmp / "run_esc_m")
+    _v102_canary_after_m = _v102_canary.read_text()
+    _v102_canary.write_text("UNTOUCHED-CANARY\n")
+    expect("VELDO-0102 AC2 fixval/paths-confined-to-the-copy: a mutant naming an absolute path outside the copy and one naming a "
+           "path through .. are each INVALID_MUTATION saying the path is not inside the copy, a finding whose id would climb out "
+           "of the run directory gets four missing results and is not closed, and the file outside is byte-identical afterwards; "
+           "DRIVEN: a copy without the confinement rewrites that outside file",
+           _v102_esc["findings"][0]["results"]["row_mutant_red"]["status"] == FV102.INVALID_MUTATION
+           and "inside the copy" in _v102_esc["findings"][0]["results"]["row_mutant_red"]["reason"]
+           and _v102_esc["findings"][1]["results"]["row_mutant_red"]["status"] == FV102.INVALID_MUTATION
+           and all(_v102_esc["findings"][2]["results"][k]["status"] == "missing" for k in FV102.RESULT_KEYS)
+           and _v102_esc["closed"] == [] and _v102_canary_after == "UNTOUCHED-CANARY\n"
+           and _v102_canary_after_m == "TOUCHED-CANARY\n")
+
+    # A reproduction that crashed on the fixed commit has not shown that the defect is gone.
+    _v102_cap_crash = _v102_capsule(_v102_tmp / "cap_C", "import organ\n"
+                                    "if organ.guard('authority:ledger') == 'refused':\n"
+                                    "    import module_that_does_not_exist_after_the_fix\n"
+                                    "print('ledger id -> accepted')\n",
+                                    {"kind": "stdout_contains", "value": "ledger id -> accepted"})
+    _v102_plan_crash = dict(_v102_plan, findings=[{"id": "C", "capsule": _v102_cap_crash,
+                                                   "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}}])
+    _v102_crash = FV102.validate(_v102_plan_crash, workdir=_v102_tmp / "run_crash")
+    _v102_M_crash, _ = _v102_organs("crashpasses", [('        if not want_reproduced and r.get("exit_code") not in (0, None) and r.get("expected_kind") != "exit_code":', '        if False:')])
+    _v102_crash_m = _v102_M_crash.validate(_v102_plan_crash, workdir=_v102_tmp / "run_crash_m")
+    _v102_cr = _v102_crash["findings"][0]["results"]
+    expect("VELDO-0102 AC1 fixval/a-crash-is-not-a-pass: a reproduction that reproduces on the reviewed commit but CRASHES on the "
+           "fixed one (the branch it takes there imports a module that is not present) is recorded missing with the exit code and "
+           "the reason, not passed, so the finding stays open although its two row results passed; DRIVEN: a copy that judges the "
+           "fixed run by the marker alone closes the finding",
+           _v102_cr["capsule_reviewed"]["status"] == "passed" and _v102_cr["capsule_fixed"]["status"] == "missing"
+           and _v102_cr["capsule_fixed"]["exit_code"] not in (0, None) and "did not run to completion" in _v102_cr["capsule_fixed"]["reason"]
+           and _v102_cr["row_fresh_green"]["status"] == "passed" and _v102_cr["row_mutant_red"]["status"] == "passed"
+           and _v102_crash["closed"] == [] and _v102_crash_m["closed"] == ["C"])
+
+    # An error while producing one result is that result, recorded as missing; the other findings still run.
+    _v102_cap_nobin = _v102_tmp / "cap_N"
+    _v102_cap_nobin.mkdir()
+    (_v102_cap_nobin / "repro.py").write_text("print('DEFECT')\n")
+    CAP102.write_manifest(_v102_cap_nobin, "N", _v102_reviewed, ["no-such-binary-veldo-0102"],
+                          {"kind": "stdout_contains", "value": "DEFECT"}, "reviewer's observation")
+    _v102_plan_nobin = dict(_v102_plan, findings=[
+        {"id": "N", "capsule": str(_v102_cap_nobin)},
+        {"id": "F-1", "capsule": _v102_cap_f1, "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id", "mutant": _v102_mutant_ok}}])
+    _v102_nobin = FV102.validate(_v102_plan_nobin, workdir=_v102_tmp / "run_nobin")
+    _v102_M_abort, _ = _v102_organs("abort", [('            except Exception as e:  # noqa: BLE001 - a result that could not be produced is missing, by name\n                out["results"][key] = {"status": "missing", "reason": f"could not run the capsule: {type(e).__name__}: {e}"}\n', '')])
+    _v102_aborted = False
+    try:
+        _v102_M_abort.validate(_v102_plan_nobin, workdir=_v102_tmp / "run_nobin_m")
+    except Exception:
+        _v102_aborted = True
+    expect("VELDO-0102 AC1 fixval/an-error-is-a-missing-result: a capsule whose command names a binary that is not installed makes "
+           "its two capsule results missing, naming the error, and the NEXT finding in the same plan still gets all four results "
+           "and closes; DRIVEN: a copy that lets anything but a capsule error escape aborts the whole validation, so no record is "
+           "produced for any finding",
+           _v102_nobin["findings"][0]["results"]["capsule_reviewed"]["status"] == "missing"
+           and "FileNotFoundError" in _v102_nobin["findings"][0]["results"]["capsule_reviewed"]["reason"]
+           and _v102_nobin["closed"] == ["F-1"] and _v102_aborted)
+
+    # The pin names exactly one row, and the record read is the runner's own last line.
+    (_v102_repo / "scripts" / "suites" / "51_forge.py").write_text(
+        'print("FIXVAL-ROWS " + \'[{"label": "ROW forge/claims-green", "passed": true}]\')\n'
+        "expect('ROW forge/claims-green: the row the fragment forges a passing record for', False)\n")
+    _v102_git("add", "-A"); _v102_git("commit", "-q", "-m", "forge")
+    _v102_forged = _v102_git("rev-parse", "HEAD")
+    _v102_plan_pin = dict(_v102_plan, fixed_commit=_v102_forged, findings=[
+        {"id": "AMB", "row": {"suite": "50_rows", "label": "guard/", "mutant": _v102_mutant_ok}},
+        {"id": "FORGE", "row": {"suite": "51_forge", "label": "forge/claims-green"}}])
+    _v102_pin = FV102.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin")
+    _v102_M_first, _ = _v102_organs("firstline", [('    record = None\n    for line in runner_output.splitlines():\n        if line.startswith("FIXVAL-ROWS "):\n            record = line[len("FIXVAL-ROWS "):]\n',
+                                                   '    record = None\n    for line in runner_output.splitlines():\n        if line.startswith("FIXVAL-ROWS ") and record is None:\n            record = line[len("FIXVAL-ROWS "):]\n')])
+    _v102_pin_m = _v102_M_first.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin_m")
+    expect("VELDO-0102 AC1 fixval/the-pin-names-one-row: a label fragment matching three rows of the fragment is ambiguous and "
+           "recorded missing rather than passed, and a fragment that PRINTS a forged record line claiming its own row green does "
+           "not fool the reader, which takes the runner's record printed after the fragment finished, so the row reads failed; "
+           "DRIVEN: a copy reading the first record line instead of the last reads the forgery and calls the row green",
+           _v102_pin["findings"][0]["results"]["row_fresh_green"]["status"] == "missing"
+           and _v102_pin["findings"][0]["results"]["row_fresh_green"]["row_status"] == "ambiguous"
+           and _v102_pin["findings"][1]["results"]["row_fresh_green"]["status"] == "failed"
+           and _v102_pin_m["findings"][1]["results"]["row_fresh_green"]["status"] == "passed")
+
+    # The RUNS never happen inside a worktree; the RECORD may be written into the proof bundle.
+    _v102_out = _v102_repo / "proof" / "VELDO-9102" / "validation"
+    _v102_plan_file = _v102_tmp / "plan.json"
+    _v102_plan_file.write_text(_v102_json.dumps(dict(_v102_plan, findings=[_v102_plan["findings"][0]])))
+    _v102_rc = FV102.main(["fix_validation.py", "run", str(_v102_plan_file), str(_v102_out)])
+    _v102_written = (_v102_out / "fix-validation.json").is_file()
+    _v102_run_dir = _v102_json.loads((_v102_out / "fix-validation.json").read_text())["run_directory"] if _v102_written else ""
+    _v102_M_runs, _ = _v102_organs("runsinside", [('        runs = Path(tempfile.mkdtemp(prefix="fixval-runs-"))', '        runs = out / "runs"')])
+    _v102_rc_m = _v102_M_runs.main(["fix_validation.py", "run", str(_v102_plan_file), str(_v102_out / "m")])
+    expect("VELDO-0102 AC2 fixval/record-inside-runs-outside: the command writes its record into a directory inside the repository "
+           "(a proof bundle's validation directory, as the spec's rollback describes) while the runs themselves happen outside "
+           "every worktree, and the record names that outside run directory; DRIVEN: a copy that runs where it writes is REFUSED "
+           "and writes no record at all",
+           _v102_rc == 0 and _v102_written and not _v102_run_dir.startswith(str(_v102_repo))
+           and _v102_rc_m == 2 and not (_v102_out / "m" / "fix-validation.json").exists())
+
     _v102_M3, _ = _v102_organs("covered", [('                out["results"]["row_mutant_red"] = {"status": INVALID_MUTATION, **{k: v for k, v in applied.items() if k != "applied"}}',
                                              '                out["results"]["row_mutant_red"] = {**{k: v for k, v in applied.items() if k != "applied"}, "status": "passed"}')])
     _v102_m3_inv = _v102_M3.validate(_v102_plan_inv, workdir=_v102_tmp / "run_inv_m")

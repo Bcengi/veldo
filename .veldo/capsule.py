@@ -36,6 +36,7 @@ MANIFEST = "manifest.json"
 CAPSULE_ROOT = ".veldo-review/capsules"     # where the reviewer writes them inside its worktree
 MOUNT = ".capsule"                          # where the runner places the capsule beside the checkout
 EXPECTATION_KINDS = ("exit_code", "stdout_contains", "stderr_contains", "output_contains", "file_exists")
+KILL_WAIT = 5  # seconds the runner waits for the killed group's pipes to close before recording a survivor
 DEFAULT_TIMEOUT = 300
 
 
@@ -76,8 +77,28 @@ def _sha256(path: Path) -> str:
 
 def _files_under(root: Path):
     for p in sorted(root.rglob("*")):
-        if p.is_file():
+        if p.is_file() and not p.is_symlink():
             yield p.relative_to(root).as_posix()
+
+
+def _symlinks_under(root: Path) -> list:
+    """Every symbolic link below root (file or directory), by relative path. rglob does not descend into
+    a linked directory and is_file() is false for it, so a link is neither digested nor counted as an
+    extra file unless it is looked for by name; a capsule may not carry one."""
+    out = []
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        for name in dirnames + filenames:
+            p = Path(dirpath) / name
+            if p.is_symlink():
+                out.append(p.relative_to(root).as_posix())
+    return sorted(out)
+
+
+def capsule_digest(manifest: dict) -> str:
+    """One digest for the whole capsule as it will run: the file digests AND the command and the expected
+    observation from the manifest, which are the only bytes the file digests do not cover."""
+    blob = json.dumps({"files": manifest.get("files"), "command": manifest.get("command"), "expected": manifest.get("expected")}, sort_keys=True)
+    return hashlib.sha256(blob.encode()).hexdigest()
 
 
 def digest_files(capsule_dir: str | os.PathLike) -> dict:
@@ -130,6 +151,9 @@ def load_capsule(capsule_dir: str | os.PathLike) -> dict:
         raise CapsuleError(f"manifest expected.kind must be one of {EXPECTATION_KINDS}")
     if not isinstance(m["files"], dict) or not m["files"]:
         raise CapsuleError("manifest must digest at least one file")
+    links = _symlinks_under(root)
+    if links:
+        raise CapsuleError(f"capsule {root.name} carries symbolic links, which the digests cannot cover: {links}")
     actual = digest_files(root)
     missing = sorted(set(m["files"]) - set(actual))
     extra = sorted(set(actual) - set(m["files"]))
@@ -183,10 +207,16 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
     tree = root / "tree"
     _checkout(repo, commit, tree)
     mount = tree / MOUNT
-    shutil.copytree(capsule_dir, mount)
+    if mount.exists():
+        raise CapsuleError(f"the commit already carries {MOUNT} at its root; the capsule cannot be mounted there")
+    shutil.copytree(capsule_dir, mount, symlinks=True)
+    mounted = digest_files(mount)
+    if mounted != before:
+        raise CapsuleError(f"the mounted copy does not match the reviewer's files: {sorted(k for k in set(before) | set(mounted) if before.get(k) != mounted.get(k))}")
     # The checkout root goes first on PYTHONPATH so a reproduction can import the code it exposes the
     # way the reviewer did from the repository root; nothing else about the environment is changed.
     env = dict(os.environ, VELDO_CAPSULE_DIR=str(mount), VELDO_CAPSULE_COMMIT=commit)
+    env.pop("PWD", None)
     env["PYTHONPATH"] = str(tree) + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
     import time
     t0 = time.monotonic()
@@ -195,6 +225,7 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
     # not only the command: a reproduction that spawned helpers must leave nothing running behind it,
     # and a helper holding the output pipe must not keep the runner waiting after the command is dead.
     p = subprocess.Popen(m["command"], cwd=str(tree), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    children_left_running = False
     try:
         out_b, err_b = p.communicate(timeout=timeout)
         exit_code = p.returncode
@@ -203,7 +234,18 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
             os.killpg(p.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
-        out_b, err_b = p.communicate()
+        # A helper that left the process group and still holds the output pipe would keep this wait
+        # open forever; the wait after the kill is bounded and such a survivor is recorded by name.
+        try:
+            out_b, err_b = p.communicate(timeout=KILL_WAIT)
+        except subprocess.TimeoutExpired:
+            children_left_running = True
+            p.kill()
+            out_b, err_b = b"", b""
+            try:
+                p.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                pass
         timed_out, exit_code = True, None
     out, err = out_b.decode("utf-8", "replace"), err_b.decode("utf-8", "replace")
     duration = time.monotonic() - t0
@@ -217,17 +259,21 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
     result = {
         "schema": "veldo.capsule-run/v1",
         "finding_id": m["finding_id"],
-        "capsule_digest": hashlib.sha256(json.dumps(before, sort_keys=True).encode()).hexdigest(),
+        "capsule_digest": capsule_digest(m),
         "commit": commit,
         "command": m["command"],
         "exit_code": exit_code,
         "timed_out": timed_out,
+        "children_left_running": children_left_running,
         "duration_seconds": round(duration, 3),
-        "stdout": out[-4000:],
-        "stderr": err[-4000:],
+        "stdout": out,
+        "stderr": err,
         "files_present": files_present,
     }
+    # The observation is judged over the WHOLE output; only the record keeps a tail.
     result["reproduced"] = (not timed_out) and observation_matches(m["expected"], result)
+    result["stdout"], result["stderr"] = out[-4000:], err[-4000:]
+    result["output_truncated"] = len(out) > 4000 or len(err) > 4000
     return result
 
 

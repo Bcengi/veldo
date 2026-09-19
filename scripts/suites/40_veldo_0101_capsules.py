@@ -221,9 +221,99 @@ else:
            "the deadline, the helper is still alive after the copy returns and dead after the original returns",
            _v101_r_grp_m["timed_out"] is True and _v101_grp_m_alive is True and _v101_grp_alive is False)
 
+
+    # --- fixes after the author's review (2026-09-19) ------------------------------------------------
+    # The observation is judged over the WHOLE output, not the 4000-character tail the record keeps.
+    _v101_c_long = _v101_make_capsule(_v101_tmp / "c_long", "import organ\nprint('answer is', organ.answer())\nprint('x' * 6000)\n",
+                                      expected={"kind": "stdout_contains", "value": "answer is DEFECT"}, commit=_v101_reviewed)
+    _v101_r_long = CAP101.run_capsule(_v101_c_long, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_long")
+    _v101_m_tail = _v101_mutant([('    result["reproduced"] = (not timed_out) and observation_matches(m["expected"], result)\n'
+                                  '    result["stdout"], result["stderr"] = out[-4000:], err[-4000:]\n',
+                                  '    result["stdout"], result["stderr"] = out[-4000:], err[-4000:]\n'
+                                  '    result["reproduced"] = (not timed_out) and observation_matches(m["expected"], result)\n')], "tail")
+    _v101_r_long_m = _v101_m_tail.run_capsule(_v101_c_long, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_long_m")
+    expect("VELDO-0101 AC3 capsule/whole-output-judged: a reproduction that prints the defect marker and then 6000 characters "
+           "of log is judged reproduced (the whole output is compared, the record keeps a tail and says it is truncated); "
+           "DRIVEN: a copy that trims the output before judging it reports not reproduced",
+           _v101_r_long["reproduced"] is True and _v101_r_long["output_truncated"] is True and len(_v101_r_long["stdout"]) <= 4000
+           and _v101_r_long_m["reproduced"] is False)
+
+    # A capsule may not carry symbolic links: the digests cannot cover what a link points at.
+    _v101_c_link = _v101_make_capsule(_v101_tmp / "c_link", "print('DEFECT')\n", commit=_v101_reviewed)
+    (_v101_tmp / "c_link" / "helpers").symlink_to(_v101_tmp)
+    _v101_link_refused = False
+    try:
+        CAP101.load_capsule(_v101_c_link)
+    except CAP101.CapsuleError as e:
+        _v101_link_refused = "symbolic link" in str(e)
+    _v101_m_link = _v101_mutant([("    if links:\n        raise CapsuleError", "    if False:\n        raise CapsuleError")], "links")
+    _v101_link_loaded_m = False
+    try:
+        _v101_m_link.load_capsule(_v101_c_link); _v101_link_loaded_m = True
+    except _v101_m_link.CapsuleError:
+        pass
+    expect("VELDO-0101 AC2 capsule/symlinks-refused: a capsule with a symbolic link beside its digested files is refused by name; "
+           "DRIVEN: a copy without the link check loads it as if every file were digested",
+           _v101_link_refused and _v101_link_loaded_m)
+
+    # The mounted copy is digested too: a runner that rewrites the mount, not the source, is caught.
+    _v101_attack = ("    shutil.copytree(capsule_dir, mount, symlinks=True)\n",
+                    "    shutil.copytree(capsule_dir, mount, symlinks=True)\n    (mount / 'repro.py').write_text(\"print('REWRITTEN')\\n\")\n")
+    _v101_m_mount = _v101_mutant([_v101_attack], "mountattack")
+    _v101_m_mount_nocheck = _v101_mutant([_v101_attack, ("    if mounted != before:\n        raise CapsuleError", "    if False:\n        raise CapsuleError")], "mountnocheck")
+    _v101_mount_caught = False
+    try:
+        _v101_m_mount.run_capsule(_v101_c3, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_mount")
+    except _v101_m_mount.CapsuleError as e:
+        _v101_mount_caught = "mounted copy" in str(e)
+    _v101_r_nocheck = _v101_m_mount_nocheck.run_capsule(_v101_c3, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_mount_nc")
+    expect("VELDO-0101 AC3 capsule/mount-digested: a runner copy that rewrites the mounted script before running it is refused by the "
+           "mount digest check; DRIVEN: the same rewrite with the mount check removed runs the rewritten script unnoticed",
+           _v101_mount_caught and "REWRITTEN" in _v101_r_nocheck["stdout"] and _v101_r_nocheck["reproduced"] is False
+           and CAP101.digest_files(_v101_c3) == _v101_before)
+
+    # The capsule digest covers the command and the expected observation, the two manifest fields no file digest covers.
+    _v101_m_a = CAP101.load_capsule(_v101_c3)
+    _v101_m_b = dict(_v101_m_a, expected={"kind": "stdout_contains", "value": "answer is"})
+    _v101_m_digestfiles = _v101_mutant([('    blob = json.dumps({"files": manifest.get("files"), "command": manifest.get("command"), "expected": manifest.get("expected")}, sort_keys=True)',
+                                        '    blob = json.dumps({"files": manifest.get("files")}, sort_keys=True)')], "digestfiles")
+    expect("VELDO-0101 AC3 capsule/digest-covers-manifest: two capsules with the same files but a different expected observation have "
+           "different capsule digests, and the run record carries that digest; DRIVEN: a copy digesting the files alone gives them the same digest",
+           CAP101.capsule_digest(_v101_m_a) != CAP101.capsule_digest(_v101_m_b) and _v101_r_rev["capsule_digest"] == CAP101.capsule_digest(_v101_m_a)
+           and _v101_m_digestfiles.capsule_digest(_v101_m_a) == _v101_m_digestfiles.capsule_digest(_v101_m_b))
+
+    # After the deadline kill, the wait for the group's pipes is bounded: a helper that left the group and holds stdout
+    # is recorded as children_left_running instead of holding the runner until it exits.
+    _v101_pid2 = _v101_tmp / "escaped.pid"
+    _v101_c_esc = _v101_make_capsule(_v101_tmp / "c_esc",
+                                     "import subprocess, sys, time\n"
+                                     "subprocess.Popen([sys.executable, '-c', 'import os, sys, time; open(sys.argv[1], \"w\").write(str(os.getpid())); time.sleep(14)', "
+                                     + repr(str(_v101_pid2)) + "], start_new_session=True)\n"
+                                     "time.sleep(90)\nprint('DEFECT')\n", commit=_v101_reviewed)
+    _v101_r_esc = CAP101.run_capsule(_v101_c_esc, _v101_repo, _v101_reviewed, timeout=2, workdir=_v101_tmp / "run_esc")
+    _v101_esc_alive_after_original = _v101_helper_alive(_v101_pid2, wait=0.2)
+    _v101_m_wait = _v101_mutant([("            out_b, err_b = p.communicate(timeout=KILL_WAIT)\n", "            out_b, err_b = p.communicate()\n")], "unboundedwait")
+    _v101_pid2.unlink(missing_ok=True)
+    try:
+        _v101_os.kill(int(open(str(_v101_pid2)).read()), 9)
+    except (OSError, ValueError):
+        pass
+    _v101_r_esc_m = _v101_m_wait.run_capsule(_v101_c_esc, _v101_repo, _v101_reviewed, timeout=2, workdir=_v101_tmp / "run_esc_m")
+    try:
+        _v101_os.kill(int(_v101_pid2.read_text()), 9)
+    except (OSError, ValueError, ProcessLookupError):
+        pass
+    expect("VELDO-0101 AC3 capsule/post-kill-wait-bounded: with a helper that left the process group and holds the output pipe, "
+           "the runner returns within the deadline plus the bounded wait, records timed out, not reproduced and children_left_running, "
+           "and the escaped helper is indeed still alive at that moment; DRIVEN: a copy whose post-kill wait is unbounded returns only "
+           "when the helper exits and records no survivor",
+           _v101_r_esc["timed_out"] is True and _v101_r_esc["reproduced"] is False and _v101_r_esc["children_left_running"] is True
+           and _v101_r_esc["duration_seconds"] < 2 + CAP101.KILL_WAIT + 4 and _v101_esc_alive_after_original is True
+           and _v101_r_esc_m["timed_out"] is True and _v101_r_esc_m["children_left_running"] is False and _v101_r_esc_m["duration_seconds"] > 10)
+
     # The declared falsifier: a runner that rewrites the reviewer's script into an assertion before running it.
-    _v101_m3 = _v101_mutant([("    mount = tree / MOUNT\n    shutil.copytree(capsule_dir, mount)\n",
-                              "    mount = tree / MOUNT\n    shutil.copytree(capsule_dir, mount)\n"
+    _v101_m3 = _v101_mutant([("    shutil.copytree(capsule_dir, mount, symlinks=True)\n",
+                              "    shutil.copytree(capsule_dir, mount, symlinks=True)\n"
                               "    _s = Path(capsule_dir) / 'repro.py'\n"
                               "    if _s.exists():\n        _s.write_text(_s.read_text() + '\\nassert True\\n')\n"
                               "    shutil.copy2(_s, mount / 'repro.py')\n")], "rewrite")
