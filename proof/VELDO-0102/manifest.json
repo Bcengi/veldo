@@ -1,0 +1,79 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0102",
+  "commit": "7614c8b3acbc95e025ba3bf211887c848ee0720a",
+  "producer": "Ava (Claude) implementing agent, writing because Codex is out of quota until 2026-09-21 (Dmitry's one-retry-then-write rule); Codex validates in the batch of 2026-09-22",
+  "produced_at": "2026-09-19T11:54:05Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0102/driven.json",
+          "detail": "2 rows (1 driven): for the fixed finding all four results are passed and it is closed, for the unfixed finding the capsule still reproduces on the fixed copy and it stays open, for a finding without a capsule the capsule results are missing and never passed; the declared falsifier (the reviewed-commit run skipped and reported passed in a copy) is driven"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0102/gate-implementation.log",
+          "detail": "Complete canonical gate at 7614c8b3acbc95e025ba3bf211887c848ee0720a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5414 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0102/driven.json",
+          "detail": "2 rows (1 driven): a run directory inside the worktree is refused, the worktree digest is identical before and after, no mount is left in it, and a capsule that outlives its deadline with a helper process is recorded deadline with the whole group killed; the declared falsifier (the inside-the-worktree refusal removed in a copy) is driven"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0102/gate-implementation.log",
+          "detail": "Complete canonical gate at 7614c8b3acbc95e025ba3bf211887c848ee0720a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5414 passed, 0 failed, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0102/driven.json",
+          "detail": "2 rows (1 driven): a mutant whose anchor matches zero times and one matching twice are each INVALID_MUTATION naming the file, the anchor and the count, neither finding is closed, and no other anchor is searched for; the declared falsifier (a non-applying mutant treated as covered in a copy) is driven"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0102/gate-implementation.log",
+          "detail": "Complete canonical gate at 7614c8b3acbc95e025ba3bf211887c848ee0720a in the plan-0019 branch worktree: GATE GREEN, exit 0, selftest 5414 passed, 0 failed, every required check passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "7614c8b3acbc95e025ba3bf211887c848ee0720a",
+      "ref": "proof/VELDO-0102/gate-implementation.log",
+      "detail": "GATE GREEN; selftest 5414 passed, 0 failed; run in the branch worktree's linked checkout (valid since VELDO-0099)."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0102/driven.json",
+    "proof/VELDO-0102/drive.py",
+    "proof/VELDO-0102/gate-implementation.log",
+    "proof/VELDO-0102/log-redactions.json",
+    "proof/VELDO-0102/README.md",
+    "proof/VELDO-0102/approval-dmitry.json"
+  ],
+  "rollback": "The runner writes only into its run directory and the proof bundle's validation directory; deleting that directory returns the bundle to its pre-validation state.",
+  "review": "Codex is out of quota until 2026-09-21, so by Dmitry's standing rule (2026-09-14, restated 2026-09-19) the author tested this item: suite 42 with every declared falsifier driven, and the canonical gate. Codex validates the item in its batch review of 2026-09-22; that review and any fixes will be recorded in this bundle. Dmitry's approval of the landing is recorded in approval-dmitry.json."
+}
