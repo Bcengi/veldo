@@ -1,0 +1,81 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0103",
+  "commit": "29ed578441c864ae7b3a0b6e26c37a5c1b8febb1",
+  "taken_at": "2026-09-19T11:42:23Z",
+  "fragment": "scripts/suites/41_veldo_0103_assessor.py",
+  "fragment_sha256": "f4ab862deb453414897f03bddca24773125b7b718adcf415d623af521b692083",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy of .veldo/fix_assessor.py, runs the same harness and requires the named row red while the unmutated copy passes it; every row drives the organ with a fake harness child process of the same interpreter, so no model call is made and nothing is spent.",
+  "rows_total": 7,
+  "rows_passed": 7,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0103 AC1 assessor/no-author-conclusions DRIVEN (the declared falsifier): with the author's summary admitted to the brief in a copy of the organ, the harness sees 'trust me' on the copy and never on the original",
+    "VELDO-0103 AC2 assessor/missing-verdict-is-not-closed DRIVEN (the declared falsifier): with a missing finding defaulted to closed in a copy, F-3 is closed on the copy and not_closed on the original",
+    "VELDO-0103 AC3 assessor/provenance-required DRIVEN (the declared falsifier): with the provenance requirement dropped in a copy, the run without provenance closes F-1 and F-3 on the copy and closes nothing on the original"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "assessor/no-author-conclusions DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "assessor/missing-verdict-is-not-closed DRIVEN",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "assessor/provenance-required DRIVEN",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 3,
+      "passed": 3,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 2,
+      "passed": 2,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 2,
+      "passed": 2,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0103 AC1 assessor/no-author-conclusions: the fake harness ran as a separate process in the work directory, received a brief carrying every finding id and the diff digest, saw no API key variable in its environment, and an attempt to hand the brief the author's 'closed' summary is refused as an input outside the allowlist",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0103 AC1 assessor/no-author-conclusions DRIVEN (the declared falsifier): with the author's summary admitted to the brief in a copy of the organ, the harness sees 'trust me' on the copy and never on the original",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0103 AC2 assessor/missing-verdict-is-not-closed: a verdict answering two of three findings records the third as not_closed with the reason that it is missing, the two answered keep their statuses and reasons, and unparseable output is recorded as unparseable and closes nothing",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0103 AC2 assessor/missing-verdict-is-not-closed DRIVEN (the declared falsifier): with a missing finding defaulted to closed in a copy, F-3 is closed on the copy and not_closed on the original",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0103 AC3 assessor/provenance-required: the record names the harness, the model the run reported, the wall time the controller measured and the token count, taken from the process output and not from free text; a run that reports no model and no tokens is recorded provenance_missing and closes nothing even though its verdict said closed",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0103 AC3 assessor/provenance-required DRIVEN (the declared falsifier): with the provenance requirement dropped in a copy, the run without provenance closes F-1 and F-3 on the copy and closes nothing on the original",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0103 AC1 assessor/real-harness-shape: the real harness command is the subscription's command line in print mode with JSON output constrained to the verdict schema, no session persistence, read-only tools allowed and every writing or fetching tool disallowed; the environment builder strips every API key variable",
+      "passed": true
+    }
+  ]
+}
