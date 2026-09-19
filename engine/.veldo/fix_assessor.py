@@ -40,6 +40,9 @@ API_KEY_VARIABLES = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BAS
 KILL_WAIT = 5
 CAPSULE_RESULT_KEYS = {"finding_id", "reviewed", "fixed", "reviewed_exit_code", "fixed_exit_code"}
 COMMIT_ISH = re.compile(r"[0-9a-f]{7,40}")
+# A finding id names a finding. It is rendered into the brief the second reader follows, so it is a
+# plain name and nothing else: free text in an id is a message to that reader from the author.
+FINDING_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._\-]{0,79}")
 DEFAULT_TIMEOUT = 1800
 
 VERDICT_SCHEMA = {
@@ -93,12 +96,18 @@ def assemble_brief(inputs: dict) -> dict:
         extra = sorted(set(f) - {"id", "text"})
         if extra or not isinstance(f["id"], str) or not isinstance(f["text"], str):
             raise AssessorError(f"finding {f.get('id')!r} carries fields outside {{id, text}}: {extra}; only the reviewer's finding text travels")
+        if not FINDING_ID.fullmatch(f["id"]):
+            raise AssessorError(f"finding id must be a plain name (letters, digits, . _ -), not {f['id'][:60]!r}")
     results = inputs["capsule_results"]
     if not isinstance(results, list):
         raise AssessorError("capsule_results must be a list of the runner's results")
     for r in results:
         if not isinstance(r, dict) or not isinstance(r.get("finding_id"), str):
             raise AssessorError("every capsule result must be an object with a finding_id")
+        if not FINDING_ID.fullmatch(r["finding_id"]):
+            raise AssessorError(f"capsule result finding_id must be a plain name, not {r['finding_id'][:60]!r}")
+        if r["finding_id"] not in {f["id"] for f in findings}:
+            raise AssessorError(f"capsule result names {r['finding_id']!r}, which is not one of the findings")
         extra = sorted(set(r) - CAPSULE_RESULT_KEYS)
         if extra:
             raise AssessorError(f"capsule result for {r['finding_id']} carries fields outside {sorted(CAPSULE_RESULT_KEYS)}: {extra}; free text has no place in the brief")
@@ -123,11 +132,15 @@ def assemble_brief(inputs: dict) -> dict:
     }
 
 
-def brief_text(brief: dict) -> str:
-    """Render the brief the harness reads. Every finding id and the diff digest appear verbatim."""
+def brief_text(brief: dict, checkout=None) -> str:
+    """Render the brief the harness reads. Every finding id and the diff digest appear verbatim, and
+    when a checkout of the fixed commit is reachable the brief NAMES it, because a directory the reader
+    is allowed to open but never told about is a directory it will not open."""
     lines = [
         "You are the second reader of a fix. You did not write it and you have not seen the author's account of it.",
         "Read the whole diff from the reviewed commit to the fixed commit, then answer per finding.",
+        (f"The fixed commit is checked out at {checkout}; you may read files there." if checkout else
+         "You have the diff below and no checkout to read; judge from the diff alone."),
         f"Reviewed commit: {brief['reviewed_commit']}",
         f"Fixed commit: {brief['fixed_commit']}",
         f"Diff digest (sha256): {brief['diff_sha256']}",
@@ -186,6 +199,8 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
     to the harness as a directory its read-only tools may reach."""
     wd = Path(workdir)
     (wd / ".assessor-verdict-schema.json").write_text(json.dumps(VERDICT_SCHEMA))   # kept beside the record for the reader
+    if checkout is not None and not Path(checkout).is_dir():
+        raise AssessorError(f"the checkout named for the assessor is not a directory: {checkout}")
     cmd = list(harness) if harness else harness_command(VERDICT_SCHEMA, checkout)
     env = clean_environment()
     env.pop("PWD", None)
@@ -193,12 +208,12 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
     try:
         # A process-group leader, so the deadline kills everything the harness started, and the wait
         # after the kill is bounded: a child that escaped the group and holds the pipes is recorded.
-        p = subprocess.Popen(cmd, cwd=str(wd), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
+        p = subprocess.Popen(cmd, cwd=str(wd), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)  # noqa: E501
     except FileNotFoundError as e:
         raise AssessorError(f"harness not available: {e}")
     survivors = False
     try:
-        out, err = p.communicate(input=brief_text(brief), timeout=timeout)
+        out, err = p.communicate(input=brief_text(brief, checkout), timeout=timeout)
         timed_out, exit_code = False, p.returncode
     except subprocess.TimeoutExpired:
         try:
@@ -217,7 +232,8 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
         timed_out, exit_code = True, None
         err = (err or "") + "\ntimed out"
     return {"stdout": out or "", "stderr": err or "", "exit_code": exit_code, "wall_seconds": round(time.monotonic() - t0, 3),
-            "command": cmd, "timed_out": timed_out, "children_left_running": survivors}
+            "command": cmd, "timed_out": timed_out, "children_left_running": survivors,
+            "checkout": str(checkout) if checkout else None}
 
 
 # --------------------------------------------------------------------------------------------------
@@ -330,6 +346,7 @@ def assessment_record(brief: dict, run: dict) -> dict:
         "provenance_missing": not provenance_complete(prov),
         "timed_out": bool(run.get("timed_out")),
         "exit_code": run.get("exit_code"),
+        "checkout": run.get("checkout"),
         "closed": [fid for fid, v in per.items() if v["status"] == "closed"],
     }
 
@@ -345,8 +362,16 @@ def main(argv: list) -> int:
     if len(argv) >= 4 and argv[1] == "run":
         inputs = json.loads(Path(argv[2]).read_text())
         out = Path(argv[3]); out.mkdir(parents=True, exist_ok=True)
+        # --harness takes the REST of the argument list, so anything else is read from what precedes it.
+        head = argv[:argv.index("--harness")] if "--harness" in argv else argv
         harness = argv[argv.index("--harness") + 1:] if "--harness" in argv else None
-        checkout = argv[argv.index("--checkout") + 1] if "--checkout" in argv else None
+        checkout = None
+        if "--checkout" in head:
+            i = head.index("--checkout")
+            if i + 1 >= len(head):
+                print("REFUSED: --checkout needs a directory")
+                return 2
+            checkout = head[i + 1]
         try:
             rec = assess(inputs, out, harness=harness, checkout=checkout)
         except AssessorError as e:

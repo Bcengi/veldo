@@ -202,7 +202,10 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
     reproduced (the observation matched), exit_code, stdout and stderr tails, duration, timed_out, and
     the digests of the capsule files before and after the run (they must be identical)."""
     m = load_capsule(capsule_dir)
-    before = digest_files(capsule_dir)
+    # The reference for every later comparison is the MANIFEST's digests, which load_capsule has just
+    # verified against the bytes on disk. Re-reading the directory here would open a window in which a
+    # byte could change and every comparison would still agree, each with the changed bytes.
+    before = m["files"]
     root = Path(workdir) if workdir else Path(tempfile.mkdtemp(prefix="capsule-run-"))
     tree = root / "tree"
     _checkout(repo, commit, tree)
@@ -211,8 +214,8 @@ def run_capsule(capsule_dir: str | os.PathLike, repo: str | os.PathLike, commit:
         raise CapsuleError(f"the commit already carries {MOUNT} at its root; the capsule cannot be mounted there")
     shutil.copytree(capsule_dir, mount, symlinks=True)
     mounted = digest_files(mount)
-    if mounted != m["files"] or mounted != before:
-        raise CapsuleError(f"the mounted copy does not match the reviewer's files: {sorted(k for k in set(before) | set(mounted) if before.get(k) != mounted.get(k))}")
+    if mounted != before:
+        raise CapsuleError(f"the mounted copy does not match the manifest: {sorted(k for k in set(before) | set(mounted) if before.get(k) != mounted.get(k))}")
     # The checkout root goes first on PYTHONPATH so a reproduction can import the code it exposes the
     # way the reviewer did from the repository root; nothing else about the environment is changed.
     env = dict(os.environ, VELDO_CAPSULE_DIR=str(mount), VELDO_CAPSULE_COMMIT=commit)

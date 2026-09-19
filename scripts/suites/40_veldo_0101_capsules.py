@@ -260,7 +260,7 @@ else:
     _v101_attack = ("    shutil.copytree(capsule_dir, mount, symlinks=True)\n",
                     "    shutil.copytree(capsule_dir, mount, symlinks=True)\n    (mount / 'repro.py').write_text(\"print('REWRITTEN')\\n\")\n")
     _v101_m_mount = _v101_mutant([_v101_attack], "mountattack")
-    _v101_m_mount_nocheck = _v101_mutant([_v101_attack, ("    if mounted != m[\"files\"] or mounted != before:\n        raise CapsuleError", "    if False:\n        raise CapsuleError")], "mountnocheck")
+    _v101_m_mount_nocheck = _v101_mutant([_v101_attack, ("    if mounted != before:\n        raise CapsuleError", "    if False:\n        raise CapsuleError")], "mountnocheck")
     _v101_mount_caught = False
     try:
         _v101_m_mount.run_capsule(_v101_c3, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_mount")
@@ -310,6 +310,31 @@ else:
            _v101_r_esc["timed_out"] is True and _v101_r_esc["reproduced"] is False and _v101_r_esc["children_left_running"] is True
            and _v101_r_esc["duration_seconds"] < 2 + CAP101.KILL_WAIT + 4 and _v101_esc_alive_after_original is True
            and _v101_r_esc_m["timed_out"] is True and _v101_r_esc_m["children_left_running"] is False and _v101_r_esc_m["duration_seconds"] > 10)
+
+
+    # The path a capsule names for a file_exists expectation is confined to the checkout the same way a
+    # plan's paths are: a file outside the copy answers a question about this machine, not this commit.
+    _v101_c_out = _v101_make_capsule(_v101_tmp / "c_out", "print('nothing')\n",
+                                     expected={"kind": "file_exists", "value": "/etc/hostname"}, commit=_v101_reviewed)
+    _v101_c_up = _v101_make_capsule(_v101_tmp / "c_up", "print('nothing')\n",
+                                    expected={"kind": "file_exists", "value": "../../etc/hostname"}, commit=_v101_reviewed)
+    _v101_c_in = _v101_make_capsule(_v101_tmp / "c_in", "print('nothing')\n",
+                                    expected={"kind": "file_exists", "value": "organ.py"}, commit=_v101_reviewed)
+    _v101_r_out = CAP101.run_capsule(_v101_c_out, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_out")
+    _v101_r_up = CAP101.run_capsule(_v101_c_up, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_up")
+    _v101_r_in = CAP101.run_capsule(_v101_c_in, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_in")
+    # Both guards have to go: the first refuses the shape of the path, the second refuses a path that
+    # resolves outside the copy, and either alone still answers about the copy.
+    _v101_m_out = _v101_mutant([('        inside = not rel.startswith(("/", "\\\\")) and ".." not in Path(rel).parts', "        inside = True"),
+                                ('            inside = inside and target.resolve().relative_to(tree.resolve()) is not None', "            pass")], "unconfinedfile")
+    _v101_r_out_m = _v101_m_out.run_capsule(_v101_c_out, _v101_repo, _v101_reviewed, timeout=60, workdir=_v101_tmp / "run_out_m")
+    expect("VELDO-0101 AC3 capsule/named-file-stays-inside: a file_exists expectation naming an absolute path outside the copy, "
+           "and one naming a path through .., each answer that the file is not present and do not reproduce, while one naming a "
+           "file of the commit answers that it is; DRIVEN: a copy without the confinement answers about the machine's own file "
+           "and reproduces",
+           _v101_r_out["files_present"]["/etc/hostname"] is False and _v101_r_out["reproduced"] is False
+           and _v101_r_up["reproduced"] is False and _v101_r_in["reproduced"] is True
+           and _v101_r_out_m["files_present"]["/etc/hostname"] is True and _v101_r_out_m["reproduced"] is True)
 
     # The declared falsifier: a runner that rewrites the reviewer's script into an assertion before running it.
     _v101_m3 = _v101_mutant([("    shutil.copytree(capsule_dir, mount, symlinks=True)\n",
