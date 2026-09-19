@@ -272,7 +272,7 @@ try:
     _v103_M_nock_ok = True
 except _v103_M_nock.AssessorError:
     _v103_M_nock_ok = False
-_v103_M_alwaysname = _v103_mutant([('    granted = checkout if (checkout is not None and "--add-dir" in cmd) else None', '    granted = checkout')], "alwaysname")
+_v103_M_alwaysname = _v103_mutant([('    granted = checkout if (checkout is not None and _grants(cmd, checkout)) else None', '    granted = checkout')], "alwaysname")
 _v103_an_wd = _v103_tmp / "wd_alwaysname"
 _v103_an_wd.mkdir()
 _v103_os.environ["V103_RECORD"] = str(_v103_an_wd / "record.json")
@@ -299,7 +299,7 @@ _v103_with_flag = dict(_v103_inputs, capsule_results=[{"finding_id": "F-1", "rev
                                                        "reviewed_exit_code": 0, "fixed_exit_code": 1, "exit_code_changed": True}])
 _v103_flag_not_bool = dict(_v103_inputs, capsule_results=[{"finding_id": "F-1", "exit_code_changed": "probably"}])
 _v103_flag_rec, _v103_flag_seen = _v103_run(FA103, _v103_with_flag, "full", "flag")
-_v103_M_noflag = _v103_mutant([('"reviewed_exit_code", "fixed_exit_code", "exit_code_changed"}', '"reviewed_exit_code", "fixed_exit_code"}')], "noflag")
+_v103_M_noflag = _v103_mutant([('                       "exit_code_changed", "incomplete"}', '                       }')], "noflag")
 _v103_noflag_refused = False
 try:
     _v103_M_noflag.assemble_brief(_v103_with_flag)
@@ -334,19 +334,43 @@ _v103_rc_ok, _v103_cli_ok = _v103_main(["<in>", "<out>", "--checkout", "<ck>", "
 _v103_rc_flagfirst, _ = _v103_main(["--checkout", "<ck>", "<in>", "<out>", "--harness", _v103_sys.executable, str(_v103_fake)], "flagfirst")
 _v103_rc_dangling, _ = _v103_main(["<in>", "<out>", "--checkout"], "dangling")
 _v103_M_nopos = _v103_mutant([('        if len(head) < 4 or head[2].startswith("-") or head[3].startswith("-"):', '        if False:')], "nopos")
-_v103_m_raised = None
-try:
-    _v103_os.environ["V103_RECORD"] = str(_v103_tmp / "cli_rec_m.json")
-    _v103_M_nopos.main(["fix_assessor.py", "run", "--checkout", str(_v103_cli_ck), str(_v103_cli_inputs), str(_v103_tmp / "cli_out_m"),
-                        "--harness", _v103_sys.executable, str(_v103_fake)])
-    _v103_m_raised = "no"
-except Exception as _v103_e:
-    _v103_m_raised = type(_v103_e).__name__
+_v103_io = __import__("io")
+_v103_buf = _v103_io.StringIO()
+_v103_ctx = __import__("contextlib")
+with _v103_ctx.redirect_stdout(_v103_buf):
+    _v103_rc_m = _v103_M_nopos.main(["fix_assessor.py", "run", "--checkout", str(_v103_cli_ck), str(_v103_cli_inputs),
+                                     str(_v103_tmp / "cli_out_m"), "--harness", _v103_sys.executable, str(_v103_fake)])
+_v103_m_said = _v103_buf.getvalue()
+_v103_buf_ok = _v103_io.StringIO()
+with _v103_ctx.redirect_stdout(_v103_buf_ok):
+    _v103_rc_flagfirst2 = FA103.main(["fix_assessor.py", "run", "--checkout", str(_v103_cli_ck), str(_v103_cli_inputs),
+                                      str(_v103_tmp / "cli_out_ff2"), "--harness", _v103_sys.executable, str(_v103_fake)])
+_v103_said = _v103_buf_ok.getvalue()
 expect("VELDO-0103 AC3 assessor/the-command-line-refuses: the command line is driven through main itself, not only through the "
        "function beneath it: with the arguments in order it runs and writes an assessment naming the checkout it was granted; "
-       "with the flag put before the two positional arguments it REFUSES by name rather than reading a flag as a file; and a "
-       "trailing --checkout with nothing after it refuses too; DRIVEN: a copy without the positional check raises a file error "
-       "out of main instead of refusing",
+       "with the flag put before the two positional arguments it REFUSES with the usage, rather than reading a flag as a file; "
+       "and a trailing --checkout with nothing after it refuses too; DRIVEN: a copy without the positional check gets as far as "
+       "trying to READ the flag as the inputs file, and says so",
        _v103_rc_ok == 0 and _v103_cli_ok is not None and _v103_cli_ok["checkout"] == str(_v103_cli_ck)
        and _v103_rc_flagfirst == 2 and _v103_rc_dangling == 2
-       and _v103_m_raised == "FileNotFoundError")
+       and _v103_rc_flagfirst2 == 2 and "usage:" in _v103_said and "--checkout" not in _v103_said.split("usage:")[0]
+       and _v103_rc_m == 2 and "cannot be read as the inputs JSON" in _v103_m_said and "--checkout" in _v103_m_said)
+
+
+# --- the mark for partial evidence is admitted, and only as a fact --------------------------------
+_v103_partial = dict(_v103_inputs, capsule_results=[{"finding_id": "F-1", "reviewed": True, "incomplete": True}])
+_v103_partial_bad = dict(_v103_inputs, capsule_results=[{"finding_id": "F-1", "incomplete": "a bit"}])
+_v103_partial_rec, _v103_partial_seen = _v103_run(FA103, _v103_partial, "full", "partial")
+_v103_M_nopartial = _v103_mutant([('"exit_code_changed", "incomplete"}', '"exit_code_changed"}')], "nopartial")
+_v103_nopartial_refused = False
+try:
+    _v103_M_nopartial.assemble_brief(_v103_partial)
+except _v103_M_nopartial.AssessorError:
+    _v103_nopartial_refused = True
+expect("VELDO-0103 AC1 assessor/partial-evidence-is-admitted: the brief admits the runner's mark for a run that did not "
+       "finish, renders it, and says in words that such an entry is less evidence rather than evidence of a fix; a value that "
+       "is not true or false is refused like any other; DRIVEN: a copy whose allowlist lacks the mark refuses the runner's own "
+       "projection of a hung run, so the reader would have been handed the entry with nothing to distinguish it",
+       _v103_partial_seen is not None and "incomplete" in _v103_partial_seen["stdin"]
+       and "not as evidence of a fix" in _v103_partial_seen["stdin"]
+       and _v103_refused(_v103_partial_bad) and _v103_nopartial_refused)

@@ -42,7 +42,8 @@ KILL_WAIT = 5
 # reproduction showed the defect on each commit, the exit status of each run, and whether that status
 # changed between them, which is the runner's way of saying "this reproduction may not have run the same
 # way twice" without pretending to decide what it means. Deciding is what the reader is for.
-CAPSULE_RESULT_KEYS = {"finding_id", "reviewed", "fixed", "reviewed_exit_code", "fixed_exit_code", "exit_code_changed"}
+CAPSULE_RESULT_KEYS = {"finding_id", "reviewed", "fixed", "reviewed_exit_code", "fixed_exit_code",
+                       "exit_code_changed", "incomplete"}
 COMMIT_ISH = re.compile(r"[0-9a-f]{7,40}")
 # A finding id names a finding. It is rendered into the brief the second reader follows, so it is a
 # plain name and nothing else: free text in an id is a message to that reader from the author.
@@ -115,7 +116,7 @@ def assemble_brief(inputs: dict) -> dict:
         extra = sorted(set(r) - CAPSULE_RESULT_KEYS)
         if extra:
             raise AssessorError(f"capsule result for {r['finding_id']} carries fields outside {sorted(CAPSULE_RESULT_KEYS)}: {extra}; free text has no place in the brief")
-        for k in ("reviewed", "fixed", "exit_code_changed"):
+        for k in ("reviewed", "fixed", "exit_code_changed", "incomplete"):
             if k in r and not isinstance(r[k], bool):
                 raise AssessorError(f"capsule result for {r['finding_id']}: {k} must be true or false")
         for k in ("reviewed_exit_code", "fixed_exit_code"):
@@ -155,7 +156,9 @@ def brief_text(brief: dict, checkout=None) -> str:
         lines.append(f"- {f['id']}: {f['text']}")
     lines += ["", "CAPSULE RESULTS (the reviewer's reproduction run against both commits by a runner, not by the author).",
               "exit_code_changed true means the reproduction ended differently on the two commits: it may have been fixed, or it",
-              "may have stopped before it could observe anything. Deciding which is yours; the runner does not decide it."]
+              "may have stopped before it could observe anything. Deciding which is yours; the runner does not decide it.",
+              "incomplete true means one of the two runs did not finish: it hit its deadline, left a process behind, or could",
+              "not be run at all. Treat that entry as less evidence than the others, not as evidence of a fix."]
     for r in brief["capsule_results"]:
         lines.append(f"- {json.dumps(r, sort_keys=True)}")
     lines += ["", "QUESTIONS:"]
@@ -189,6 +192,25 @@ def harness_command(schema: dict | None = None, checkout: str | os.PathLike | No
     return cmd + ["--allowedTools", "Read,Grep,Glob", "--disallowedTools", "Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch"]
 
 
+def _grants(cmd: list, directory) -> bool:
+    """Does this command line grant the harness access to THIS directory? --add-dir takes one or more
+    operands, so the answer is whether the directory is among the operands that follow it, up to the
+    next flag. The presence of the flag alone answers nothing."""
+    want = str(Path(directory).resolve())
+    for i, arg in enumerate(cmd):
+        if arg != "--add-dir":
+            continue
+        for operand in cmd[i + 1:]:
+            if str(operand).startswith("-"):
+                break
+            try:
+                if str(Path(operand).resolve()) == want:
+                    return True
+            except OSError:
+                continue
+    return False
+
+
 def clean_environment(env: dict | None = None) -> dict:
     """The environment the harness gets: the current one without any API key variable."""
     base = dict(os.environ if env is None else env)
@@ -210,10 +232,11 @@ def run_harness(brief: dict, workdir: str | os.PathLike, harness: list | None = 
     wd = Path(workdir)
     (wd / ".assessor-verdict-schema.json").write_text(json.dumps(VERDICT_SCHEMA))   # kept beside the record for the reader
     cmd = list(harness) if harness else harness_command(VERDICT_SCHEMA, checkout)
-    # The brief tells the reader about a checkout only when the COMMAND grants it. With a command given
-    # from outside, the grant is whatever that command carries, and telling a reader to open a directory
-    # its tools cannot reach is the same defect as granting one it is never told about.
-    granted = checkout if (checkout is not None and "--add-dir" in cmd) else None
+    # The brief tells the reader about a checkout only when the COMMAND grants THIS directory: the flag
+    # takes operands, and its presence somewhere in a command line says nothing about which directory.
+    # Telling a reader to open a directory its tools cannot reach is the same defect as granting one it
+    # is never told about.
+    granted = checkout if (checkout is not None and _grants(cmd, checkout)) else None
     env = clean_environment()
     env.pop("PWD", None)
     t0 = time.monotonic()
@@ -389,7 +412,11 @@ def main(argv: list) -> int:
                 print("REFUSED: --checkout needs a directory")
                 return 2
             checkout = head[i + 1]
-        inputs = json.loads(Path(argv[2]).read_text())
+        try:
+            inputs = json.loads(Path(argv[2]).read_text())
+        except (OSError, ValueError) as e:
+            print(f"REFUSED: {argv[2]} cannot be read as the inputs JSON: {e}")
+            return 2
         out = Path(argv[3]); out.mkdir(parents=True, exist_ok=True)
         try:
             rec = assess(inputs, out, harness=harness, checkout=checkout)

@@ -14,7 +14,7 @@ A result that could not be produced is recorded as missing, never as passed. A d
 anchor does not match exactly once in the fixed commit is INVALID_MUTATION and the finding is not
 closed; the runner never searches for another anchor. Every run is one subprocess in its own
 temporary copy with a deadline; on the deadline the process group is killed and the result is
-deadline. A finding is closed only when all four results hold.
+deadline. All four results holding is what this runner reports; it is NOT a closure. See validate().
 
 Standard library only.
 
@@ -43,6 +43,10 @@ DEFAULT_ROW_DEADLINE = 1800   # a row run execs a whole suite fragment, so it ge
 KILL_WAIT = 5               # seconds to wait for the killed group's pipes before recording a survivor
 INVALID_MUTATION = "INVALID_MUTATION"
 FINDING_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}")
+# A commit reaches `git archive` as an argument, and git reads anything starting with a dash as an
+# OPTION: a plan naming --output=/some/path made git create and truncate that file, outside the copy
+# and outside everything this runner promises about where it writes. A commit id and nothing else.
+COMMIT_ISH = re.compile(r"[0-9a-fA-F]{7,40}")
 
 
 class ValidationError(Exception):
@@ -176,19 +180,21 @@ def apply_mutant(tree: Path, mutant: dict) -> dict:
 # The record leaves the child on a PRIVATE channel, not on its stdout, and the child ends with
 # os._exit so that nothing registered to run at exit can speak after it. The rows live in a closure
 # cell rather than a module global, so rebinding a name in the recorder's globals does not reach them.
-# WHAT THIS DOES NOT DEFEND AGAINST, said as precisely as it can be said. The fragment is arbitrary
-# code in the same process, so EVERYTHING in that process is reachable by it: the inherited descriptor
-# through the open descriptor list, and the recorded rows themselves through the very expect it is
-# handed, whose closure cell is one attribute away. No arrangement of code in a process can stop code
-# in that process, and this one does not claim to. The pin is evidence about a row an author wrote
-# carelessly; a row an author forges deliberately is caught by the fragment being a committed file a
-# reviewer reads, and by nothing here.
+# WHERE THE TRUST COMES FROM, and where it does not. This record is written by the process that runs
+# the fragment, and the fragment is arbitrary code in that process. It can reach the descriptor, the
+# recorded rows through the expect it is handed, the encoder, and anything else here; three reviewers
+# found three different lines that do it, and there will be a fourth. NO ARRANGEMENT OF CODE IN A
+# PROCESS CAN STOP CODE IN THAT PROCESS, so this runner does not claim to, and no sentence here should
+# ever be read as claiming it. A fragment that lies about its own rows is caught by the fragment being
+# a committed file that a person reviews, and by nothing in this file.
 #
-# What IS closed is the set of accidents and near-accidents: the fragment's own standard output is not
-# the channel, so printing cannot be mistaken for recording; the channel has no name in the filesystem
-# once it is open, so nothing can reach it by path; the record is built from references captured before
-# the fragment ran, the marker among them, so replacing a module attribute does not reach it; and the
-# process ends at the record, so nothing registered to run at exit speaks after it.
+# What this arrangement IS for is honest fragments and ordinary bugs, which is what the runner meets.
+# The record does not travel on the fragment's standard output, so printing is never mistaken for
+# recording. The channel is unlinked at open, so no path collides with it. The encoder and the marker
+# are this runner's own, so a fragment that replaces a module attribute for its own reasons does not
+# corrupt the record. The write cannot raise out of the runner, so one unencodable label does not
+# discard every row. And the process ends at the record rather than returning, so an ordinary atexit
+# handler does not append to it.
 RECORD_MARKER = "veldo.fixval-rows/v1"
 
 ROW_RUNNER = r"""
@@ -204,12 +210,18 @@ def _main():
     # fragment shares these module objects and can replace their attributes, and a reference taken
     # after it ran would be the fragment's. The MARKER is captured too: it lives in this module's
     # globals, this module is __main__, and a fragment can assign to it through sys.modules.
-    _dumps, _write, _exit, _list = json.dumps, os.write, os._exit, list
+    # An encoder of this runner's own, not json.dumps, which looks up the module's shared default
+    # encoder when it is called. Everything else the record needs is bound here too, before any
+    # fragment code runs.
+    _encode = json.JSONEncoder(sort_keys=True).encode
+    _write, _exit, _list = os.write, os._exit, list
     _marker = RECORD_MARKER
     _flush = (sys.stdout.flush, sys.stderr.flush)
     rows = []
     def expect(name, condition):
-        rows.append({"label": name, "passed": bool(condition)})
+        # The label is coerced here, not at record time: a fragment calling expect with something that
+        # is not a string is an ordinary bug, and it must cost that row's label, never every row.
+        rows.append({"label": name if type(name) is str else repr(name), "passed": bool(condition)})
     shared = types.ModuleType("fixval_shared")
     shared.__dict__["__file__"] = str(suites / "shared.py")
     exec(compile((suites / "shared.py").read_text(), str(suites / "shared.py"), "exec"), shared.__dict__)
@@ -220,16 +232,24 @@ def _main():
         exec(compile(fragment.read_text(), str(fragment), "exec"), shared.__dict__)
     except BaseException as e:                   # the fragment raised: the rows it reached still stand
         status = f"{type(e).__name__}: {e}"[:400]
-    _write(channel, (_dumps({"marker": _marker, "status": status, "rows": _list(rows)}) + "\n").encode())
-    # The flushes are a courtesy to whoever reads the child's output, and the exit is not. A fragment
-    # that breaks sys.stdout would otherwise raise here, the interpreter would run what is registered
-    # at exit, and that would get to speak after the record.
-    for _f in _flush:
+    # Writing the record is the last thing this process does and it cannot be the thing that stops it
+    # happening. A fragment with an ordinary bug can make the encoding raise (a row label that is not a
+    # string is enough), and losing every recorded row to one bad label, or handing the interpreter a
+    # chance to run what is registered at exit, are both worse than an unreadable row.
+    try:
+        _write(channel, (_encode({"marker": _marker, "status": status, "rows": _list(rows)}) + "\n").encode())
+    except BaseException as _e:
+        try:
+            _write(channel, (_encode({"marker": _marker, "status": f"the record could not be written: {type(_e).__name__}",
+                                      "rows": []}) + "\n").encode())
+        except BaseException:
+            pass
+    for _f in _flush:                            # a courtesy to whoever reads the child's output
         try:
             _f()
         except BaseException:
             pass
-    _exit(0)                                     # nothing at exit gets to speak after the record
+    _exit(0)
 
 _main()
 """
@@ -405,9 +425,12 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
             except Exception as e:  # noqa: BLE001 - a result that could not be produced is missing, by name
                 out["results"][key] = {"status": "missing", "reason": f"could not run the capsule: {type(e).__name__}: {e}"}
     else:
+        reason = ("no capsule for this finding" if cap_dir in (None, "")
+                  else f"the plan names a capsule at {str(cap_dir)[:120]!r}, which is not a directory")
         for key in ("capsule_reviewed", "capsule_fixed"):
-            out["results"][key] = {"status": "missing", "reason": "no capsule for this finding"}
-    row = finding.get("row") if isinstance(finding.get("row"), dict) else {}
+            out["results"][key] = {"status": "missing", "reason": reason}
+    declared_row = finding.get("row")
+    row = declared_row if isinstance(declared_row, dict) else {}
     suite, label, mutant = row.get("suite"), row.get("label"), row.get("mutant")
     if suite and label and isinstance(suite, str) and isinstance(label, str):
         try:
@@ -430,8 +453,10 @@ def validate_finding(finding: dict, repo: str | os.PathLike, reviewed: str, fixe
         else:
             out["results"]["row_mutant_red"] = {"status": "missing", "reason": "no declared mutant for this finding"}
     else:
+        reason = ("no pinned row for this finding" if declared_row in (None, {})
+                  else f"the plan names a row as {type(declared_row).__name__}, which is not an object with a suite and a label")
         for key in ("row_fresh_green", "row_mutant_red"):
-            out["results"][key] = {"status": "missing", "reason": "no pinned row for this finding"}
+            out["results"][key] = {"status": "missing", "reason": reason}
     out["all_results_passed"] = all(out["results"][k]["status"] == "passed" for k in RESULT_KEYS)
     return out
 
@@ -452,6 +477,12 @@ def assessor_capsule_results(record: dict) -> list:
         if rev.get("status") == "missing" and fix.get("status") == "missing":
             continue                                     # no capsule for this finding: nothing to say
         entry = {"finding_id": f["finding_id"]}
+        # Whether the evidence is COMPLETE, which an entry of facts about what the runs showed does not
+        # otherwise say. A run that hit its deadline, left a process behind, or could not happen at all
+        # produces an entry that looks like the others; the reader has to know it is looking at less.
+        if any((r or {}).get("status") not in ("passed", "failed") or (r or {}).get("children_left_running")
+               for r in (rev, fix)):
+            entry["incomplete"] = True
         if rev.get("reproduced") is not None:
             entry["reviewed"] = bool(rev["reproduced"])
         if fix.get("reproduced") is not None:
@@ -469,16 +500,19 @@ def assessor_capsule_results(record: dict) -> list:
 def validate(plan: dict, workdir: str | os.PathLike | None = None) -> dict:
     """plan: {repo, worktree, reviewed_commit, fixed_commit, findings: [{id, capsule, row: {suite, label,
     mutant: {file, edits}}}], deadline_seconds}. The run directory must lie outside the worktree."""
-    for key in ("repo", "reviewed_commit", "fixed_commit"):
-        if not isinstance(plan.get(key), str) or not plan[key].strip():
-            raise ValidationError(f"the plan needs {key} as a non-empty string, not {plan.get(key)!r}")
-    if plan.get("worktree") is not None and not isinstance(plan["worktree"], str):
-        raise ValidationError(f"worktree, when given, must be a path as a string, not {plan['worktree']!r}")
+    if not isinstance(plan.get("repo"), str) or not plan["repo"].strip():
+        raise ValidationError(f"the plan needs repo as a non-empty string, not {plan.get('repo')!r}")
+    for key in ("reviewed_commit", "fixed_commit"):
+        value = plan.get(key)
+        if not isinstance(value, str) or not COMMIT_ISH.fullmatch(value):
+            raise ValidationError(f"{key} must be a commit id, 7 to 40 hexadecimal characters, not {str(value)[:80]!r}")
+    if plan.get("worktree") is not None and (not isinstance(plan["worktree"], str) or not plan["worktree"].strip()):
+        raise ValidationError(f"worktree, when given, must be a non-empty path as a string, not {plan.get('worktree')!r}")
     repo = plan["repo"]
     worktree = Path(plan.get("worktree") or repo)
-    wd = Path(workdir) if workdir else Path(tempfile.mkdtemp(prefix="fixval-"))
     if not worktree.is_dir():
         raise ValidationError(f"the worktree {worktree} is not a directory")
+    wd = Path(workdir) if workdir else Path(tempfile.mkdtemp(prefix="fixval-"))
     if _inside(wd, worktree):
         raise ValidationError(f"run directory {wd} lies inside the worktree {worktree}; refusing")
     deadline = _positive_seconds(plan, "deadline_seconds")        # None: derived per finding
@@ -558,6 +592,8 @@ def main(argv: list) -> int:
         (out / "fix-validation.json").write_text(json.dumps(rec, indent=1, sort_keys=True) + "\n")
         print(json.dumps({"all_results_passed": rec["all_results_passed"], "open": rec["open"],
                           "worktree_unchanged": rec["worktree_unchanged"], "closes_findings": False}))
+        # Zero means every finding's four mechanical results passed. It does not mean anything closed:
+        # that needs a reader's verdict, which this command does not obtain and does not wait for.
         return 0 if not rec["open"] else 1
     print(__doc__)
     return 64

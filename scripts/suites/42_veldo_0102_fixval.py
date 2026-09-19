@@ -57,6 +57,12 @@ if not _v102_have_git:
     expect("VELDO-0102 STOOD DOWN by name - git or tar is not installed here, so the real-checkout rows cannot run", True)
 else:
     # A small repository with the suite layout: shared.py binds ROOT and expect; the fragment has rows.
+    # The source blocks the mutants below replace, kept here so every row can reach them.
+    COMMIT_GUARD_42 = '        if not isinstance(value, str) or not COMMIT_ISH.fullmatch(value):'
+    PIPE_BLOCK_42 = '    channel_fd, channel_path = tempfile.mkstemp(prefix="fixval-rows-")\n    os.unlink(channel_path)\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))\n        os.lseek(channel_fd, 0, os.SEEK_SET)\n        blob = b""\n        while True:\n            chunk = os.read(channel_fd, 65536)\n            if not chunk:\n                break\n            blob += chunk\n    finally:\n        os.close(channel_fd)\n'
+    PIPE_MUTANT_42 = '    read_fd, write_fd = os.pipe()\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(write_fd)], tree, deadline, pass_fds=(write_fd,))\n        os.close(write_fd)\n        write_fd = None\n        blob = b""\n        while True:\n            chunk = os.read(read_fd, 65536)\n            if not chunk:\n                break\n            blob += chunk\n    finally:\n        if write_fd is not None:\n            os.close(write_fd)\n        os.close(read_fd)\n'
+    NAMED_CHANNEL_42 = '    channel_path = tree.parent / (tree.name + ".row_record")\n    channel_fd = os.open(channel_path, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0o600)\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))\n        blob = channel_path.read_bytes()\n    finally:\n        os.close(channel_fd)\n'
+
     _v102_repo = _v102_tmp / "repo"
     (_v102_repo / "scripts" / "suites").mkdir(parents=True)
     _v102_env = dict(_v102_os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@t")
@@ -316,7 +322,11 @@ else:
         "except Exception:\n"
         "    pass\n"
         "_named = os.path.join(os.path.dirname(os.getcwd()), os.path.basename(os.getcwd()) + '.row_record')\n"
-        "open(_named, 'w').write(_real_dumps(RECORD) + '\\n')\n"          # the channel's old name
+        "try:\n"
+        "    os.unlink(_named)\n"                                          # replace the file at the channel's old name
+        "except Exception:\n"
+        "    pass\n"
+        "open(_named, 'w').write(_real_dumps(RECORD) + '\\n')\n"
         "atexit.register(lambda: os.write(int(sys.argv[3]), (_real_dumps(RECORD) + '\\n').encode()))\n"
         "sys.stdout = None\n")
     _v102_git("add", "-A"); _v102_git("commit", "-q", "-m", "forge")
@@ -330,25 +340,29 @@ else:
         ('    return {**r, "row": row_label_fragment, "suite": suite, "deadline_seconds": deadline,\n            **read_record(blob.decode("utf-8", "replace"), row_label_fragment)}',
          '    return {**r, "row": row_label_fragment, "suite": suite, "deadline_seconds": deadline,\n            **read_record(r["stdout"], row_label_fragment)}')])
     _v102_M_late, _ = _v102_organs("latecapture", [
-        ('    _write(channel, (_dumps({"marker": _marker, "status": status, "rows": _list(rows)}) + "\\n").encode())',
-         '    os.write(channel, (json.dumps({"marker": RECORD_MARKER, "status": status, "rows": rows}) + "\\n").encode())')])
+        ('        _write(channel, (_encode({"marker": _marker, "status": status, "rows": _list(rows)}) + "\\n").encode())',
+         '        os.write(channel, (json.dumps({"marker": RECORD_MARKER, "status": status, "rows": rows}) + "\\n").encode())')])
     _v102_pin_late = _v102_M_late.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin_late")
     _v102_pin_m = _v102_M_stdout.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin_m")
+    _v102_M_named, _ = _v102_organs("namedchannel", [(PIPE_BLOCK_42, NAMED_CHANNEL_42)])
+    _v102_pin_named = _v102_M_named.validate(_v102_plan_pin, workdir=_v102_tmp / "run_pin_named")
     expect("VELDO-0102 AC1 fixval/the-pin-names-one-row: a label fragment matching three rows is ambiguous and recorded missing, "
-           "one matching none is absent and recorded missing, and a fragment that forges a passing record five ways (printing a "
-           "marked record, rebinding the recorder's globals, replacing json.dumps and os.write in the modules the runner shares "
-           "with it, and registering a handler to speak at exit) does not fool the reader, because the record travels on a "
-           "channel of the runner's own, is built from references taken before the fragment ran, and the process ends before "
-           "anything registered at exit can speak, so the row reads failed; DRIVEN twice: a copy reading the record off the "
-           "fragment's standard output takes the forgery, and so does a copy that reaches for json.dumps and os.write at record "
-           "time instead of capturing them first",
+           "one matching none is absent and recorded missing, and a fragment that behaves like a fragment with a bug does not "
+           "corrupt the reading: it prints a record on its own output, replaces json.dumps for its own reasons, replaces the file "
+           "at the name the channel used to have, and registers a handler that speaks at exit, and the row still reads failed, "
+           "because the record does not travel on the fragment's output, the channel has no name, the encoder is the runner's "
+           "own and the process ends at the record. This is NOT a claim that a fragment cannot forge its rows deliberately: it "
+           "can, it is code in the same process, and the organ says so. DRIVEN three times: a copy reading the record off the "
+           "fragment's output takes the printed one, a copy reaching for json.dumps at record time takes the replaced one, and "
+           "a copy whose channel is the named file takes the file the fragment left there",
            _v102_pin["findings"][0]["results"]["row_fresh_green"]["status"] == "missing"
            and _v102_pin["findings"][0]["results"]["row_fresh_green"]["row_status"] == "ambiguous"
            and _v102_pin["findings"][2]["results"]["row_fresh_green"]["status"] == "missing"
            and _v102_pin["findings"][2]["results"]["row_fresh_green"]["row_status"] == "absent"
            and _v102_pin["findings"][1]["results"]["row_fresh_green"]["status"] == "failed"
            and _v102_pin_m["findings"][1]["results"]["row_fresh_green"]["status"] == "passed"
-           and _v102_pin_late["findings"][1]["results"]["row_fresh_green"]["status"] == "passed")
+           and _v102_pin_late["findings"][1]["results"]["row_fresh_green"]["status"] == "passed"
+           and _v102_pin_named["findings"][1]["results"]["row_fresh_green"]["status"] == "passed")
 
     # A fragment that stopped before its end is not evidence about the row the pin names, green or red.
     (_v102_repo / "scripts" / "suites" / "54_raises.py").write_text(
@@ -432,9 +446,6 @@ else:
            _v102_refused_numbers == []
            and _v102_neg["findings"][0]["results"]["row_fresh_green"]["status"] == "deadline")
 
-    PIPE_BLOCK_42 = '    channel_fd, channel_path = tempfile.mkstemp(prefix="fixval-rows-")\n    os.unlink(channel_path)\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))\n        os.lseek(channel_fd, 0, os.SEEK_SET)\n        blob = b""\n        while True:\n            chunk = os.read(channel_fd, 65536)\n            if not chunk:\n                break\n            blob += chunk\n    finally:\n        os.close(channel_fd)\n'
-    PIPE_MUTANT_42 = '    read_fd, write_fd = os.pipe()\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(write_fd)], tree, deadline, pass_fds=(write_fd,))\n        os.close(write_fd)\n        write_fd = None\n        blob = b""\n        while True:\n            chunk = os.read(read_fd, 65536)\n            if not chunk:\n                break\n            blob += chunk\n    finally:\n        if write_fd is not None:\n            os.close(write_fd)\n        os.close(read_fd)\n'
-    NAMED_CHANNEL_42 = '    channel_path = tree.parent / (tree.name + ".row_record")\n    channel_fd = os.open(channel_path, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0o600)\n    try:\n        r = _run([sys.executable, str(runner), str(suites), str(fragment), str(channel_fd)], tree, deadline, pass_fds=(channel_fd,))\n        blob = channel_path.read_bytes()\n    finally:\n        os.close(channel_fd)\n'
     _v102_many = "".join(
         "expect('ROW bulk/row-%04d: a row with a label long enough that two thousand of them outgrow any pipe buffer', True)\n" % i
         for i in range(2000))
@@ -497,6 +508,76 @@ else:
            and _v102_proj_err[0]["exit_code_changed"] is False and _v102_proj_norow == []
            and "exit_code_changed" in _v102_brief_text and "true" in _v102_brief_text
            and all("exit_code_changed" not in e for e in _v102_proj_hidden))
+
+    # An entry of facts about what the runs showed does not say whether they FINISHED. A run that hit
+    # its deadline, left a process behind, or could not happen produces an entry shaped like the others.
+    _v102_proj_deadline = FV102.assessor_capsule_results(_v102_srec)
+    _v102_plan_nocap = dict(_v102_plan, findings=[{"id": "NC", "capsule": str(_v102_cap_f1) + "/repro.py",
+                                                   "row": {"suite": "50_rows", "label": "guard/rejects-ledger-id"}}])
+    _v102_nocap = FV102.validate(_v102_plan_nocap, workdir=_v102_tmp / "run_nocap")
+    _v102_M_flat, _ = _v102_organs("noincomplete", [
+        ('        if any((r or {}).get("status") not in ("passed", "failed") or (r or {}).get("children_left_running")\n               for r in (rev, fix)):\n            entry["incomplete"] = True\n', '')])
+    _v102_proj_flat = _v102_M_flat.assessor_capsule_results(_v102_srec)
+    _v102_brief_partial = _v102_FA.assemble_brief({"reviewed_commit": _v102_reviewed[:12], "fixed_commit": _v102_fixed[:12],
+                                                   "findings": [{"id": "S", "text": "a finding whose reproduction hung"}],
+                                                   "capsule_results": _v102_proj_deadline, "diff": "diff --git a/x b/x\n"})
+    expect("VELDO-0102 AC1 fixval/partial-evidence-says-so: a capsule run that hit its deadline is projected to the assessor "
+           "marked incomplete, while a pair of runs that both finished is not marked at all, so a reader cannot mistake less "
+           "evidence for a clean result; the real assessor accepts the marked entry and its brief explains what the mark means; "
+           "and a plan naming a capsule that is not a directory says THAT, rather than reporting the finding as one that never "
+           "had a capsule; DRIVEN: a copy that leaves the mark out projects the hung run as though both runs had finished",
+           _v102_proj_deadline and _v102_proj_deadline[0].get("incomplete") is True
+           and all("incomplete" not in e for e in _v102_proj)
+           and "incomplete true means" in _v102_FA.brief_text(_v102_brief_partial)
+           and all("incomplete" not in e for e in _v102_proj_flat)
+           and "not a directory" in _v102_nocap["findings"][0]["results"]["capsule_reviewed"]["reason"])
+
+    # A commit reaches git as an argument and git reads a leading dash as an OPTION. This is the one
+    # place where a plan could make the runner write outside every directory it promises to write in.
+    _v102_outside = _v102_tmp / "outside.txt"
+    _v102_outside.write_text("IMPORTANT DATA\n")
+    _v102_plan_dash = dict(_v102_plan, fixed_commit="--output=" + str(_v102_outside))
+    _v102_dash_refused = False
+    try:
+        FV102.validate(_v102_plan_dash, workdir=_v102_tmp / "run_dash")
+    except FV102.ValidationError as _v102_e:
+        _v102_dash_refused = "commit id" in str(_v102_e)
+    _v102_after_original = _v102_outside.read_text()
+    _v102_M_anycommit, _ = _v102_organs("anycommit", [(COMMIT_GUARD_42, '        if not isinstance(value, str) or not value.strip():')])
+    _v102_M_anycommit.validate(_v102_plan_dash, workdir=_v102_tmp / "run_dash_m")
+    _v102_after_mutant = _v102_outside.read_text()
+    expect("VELDO-0102 AC2 fixval/a-commit-is-a-commit-id: a plan whose commit field is not a commit id is refused by name "
+           "before anything runs, because that field reaches git as an argument and git reads a leading dash as an option: a "
+           "file outside the copy, outside the run directory and outside the worktree is untouched by the original; DRIVEN: a "
+           "copy that asks only for a non-empty string lets git create and truncate that file, so a plan reaches a path nothing "
+           "in this runner ever promised to write to",
+           _v102_dash_refused and _v102_after_original == "IMPORTANT DATA\n" and _v102_after_mutant == "")
+
+    # Looking for RED, a mutant that reddens the row and then breaks the rest of the fragment has still
+    # shown the row is sensitive. Looking for GREEN, the same fragment is not evidence. Both, one plan.
+    (_v102_repo / "scripts" / "suites" / "56_red_then_raises.py").write_text(
+        "import importlib.util as ilu\n"
+        "s = ilu.spec_from_file_location('organ', ROOT / 'organ.py'); organ = ilu.module_from_spec(s); s.loader.exec_module(organ)\n"
+        "expect('ROW red/the-pinned-one: the guard refuses the reserved id', organ.guard('authority:ledger') == 'refused')\n"
+        "organ.no_such_attribute_after_the_mutant()\n")
+    _v102_git("add", "-A"); _v102_git("commit", "-q", "-m", "red then raises")
+    _v102_redraise_commit = _v102_git("rev-parse", "HEAD")
+    _v102_plan_redraise = {"repo": str(_v102_repo), "worktree": str(_v102_repo), "reviewed_commit": _v102_reviewed,
+                           "fixed_commit": _v102_redraise_commit, "row_deadline_seconds": 60,
+                           "findings": [{"id": "RR", "row": {"suite": "56_red_then_raises", "label": "red/the-pinned-one",
+                                                             "mutant": _v102_mutant_ok}}]}
+    _v102_redraise = FV102.validate(_v102_plan_redraise, workdir=_v102_tmp / "run_redraise")
+    _v102_M_noredraise, _ = _v102_organs("noredraise", [('    elif raised and want == "passed":', '    elif raised:')])
+    _v102_redraise_m = _v102_M_noredraise.validate(_v102_plan_redraise, workdir=_v102_tmp / "run_redraise_m")
+    _v102_rrr = _v102_redraise["findings"][0]["results"]
+    expect("VELDO-0102 AC1 fixval/a-raise-after-red-is-still-red: one fragment that reddens the pinned row under the mutant and "
+           "then blows up gives row_mutant_red passed, carrying the exception so a reader can see the mutant did more than it "
+           "was asked to, while the same fragment on a clean copy gives row_fresh_green missing, because a fragment that "
+           "stopped early is not evidence that a row is GREEN; DRIVEN: a copy that treats any raise as no evidence at all makes "
+           "the mutant result missing too, which would make the ordinary shape of an honest mutant unusable",
+           _v102_rrr["row_mutant_red"]["status"] == "passed" and _v102_rrr["row_mutant_red"].get("fragment_status")
+           and _v102_rrr["row_fresh_green"]["status"] == "missing"
+           and _v102_redraise_m["findings"][0]["results"]["row_mutant_red"]["status"] == "missing")
 
     # The RUNS never happen inside a worktree; the RECORD may be written into the proof bundle.
     _v102_out = _v102_repo / "proof" / "VELDO-9102" / "validation"
