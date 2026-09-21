@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0106",
-  "commit": "PENDING",
+  "commit": "7b4469f02f6811bd6dbfa7618fde692a50ed7661",
   "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; an unbriefed Codex review was run over this work before it landed",
-  "produced_at": "2026-09-21T17:06:50Z",
+  "produced_at": "2026-09-21T17:31:37Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -54,12 +54,12 @@
   "checks": [
     {
       "name": "gate-implementation",
-      "status": "PENDING",
+      "status": "passed",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "PENDING",
+      "commit": "7b4469f02f6811bd6dbfa7618fde692a50ed7661",
       "ref": "proof/VELDO-0106/gate-implementation.log",
-      "detail": "GATE GREEN at 2e5750041de5; run against a clean tree. Recorded here WITH the caveat that matters for this item: the gate was equally green at d1809f1, while both of the bypasses the review found were live. It is a check that the tree is consistent, never evidence that the code is right."
+      "detail": "GATE GREEN at 7b4469f02f68; run against a clean tree. Recorded WITH the caveat this item earned: the gate was equally green at d1809f1 and at 2e57500, while eleven demonstrated bypasses were live across those two commits. It checks that the tree is consistent. It is not evidence that the code is right."
     }
   ],
   "artifacts": [
