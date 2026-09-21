@@ -64,5 +64,5 @@
     "proof/VELDO-0108/log-redactions.json"
   ],
   "rollback": "Remove the relay's entry from authorized_keys. Remote clients lose access, local clients are unaffected, and no state is lost. Nothing in the repository depends on the relay yet.",
-  "review": "NOT A CLAIM YET. The item is DRAFT, so by the methodology's own ready-boundary rule this bundle is held as manifest.draft.json and is not a proof: a specification must be READY before it is built and proven, and .veldo/policy_check.py refuses a tree where a draft spec carries a manifest.json. It becomes manifest.json when Dmitry promotes VELDO-0108 to ready, and the landing approval is a separate act after that. The drive found THREE faults in the SUITE rather than in the code, all recorded in driven.json under suite_faults_the_drive_found: a helper that could hang the gate, an unguarded index that killed a run mid-suite, and a negative control asserting literals."
+  "review": "The ready boundary is CLEARED: Dmitry marked the specification ready on 2026-09-21 over Telegram (message 28587, answering the ask in 28586), so this bundle is presented as a proof rather than held as a draft. What it is NOT is a landing approval: the specification is ready, not shipped, and the landing is a separate act. Codex validates the item in the batch of 2026-09-22."
 }

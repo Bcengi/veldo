@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0027
 title: Protected signing and key lifecycle
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

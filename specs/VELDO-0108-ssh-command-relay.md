@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0108
 title: Remote clients reach the same endpoint through an authenticated SSH command relay, not a second server
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

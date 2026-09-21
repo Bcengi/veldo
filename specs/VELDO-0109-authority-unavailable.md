@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0109
 title: An unreachable authority stops mutation and admission, and never becomes a local one
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

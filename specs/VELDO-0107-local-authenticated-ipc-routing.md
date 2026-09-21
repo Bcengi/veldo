@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0107
 title: Local clients reach the authority over authenticated IPC carrying explicit workspace coordinates
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

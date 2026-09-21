@@ -1,0 +1,21 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-READY-2026-09-21",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0029",
+    "commit": "8a9d0b2",
+    "paths": [
+      "specs/VELDO-0027-protected-signing.md",
+      "specs/VELDO-0029-repository-enrollment.md",
+      "specs/VELDO-0107-local-authenticated-ipc-routing.md",
+      "specs/VELDO-0108-ssh-command-relay.md",
+      "specs/VELDO-0109-authority-unavailable.md"
+    ]
+  },
+  "basis": "THE READY TRANSITION FOR FIVE SPECIFICATIONS, and nothing else. Dmitry approved over Telegram on 2026-09-21 (message 28587, 'yes', answering 28586). The ask was deliberately two lines after he said an earlier message was too long, and it named both questions: push 45 commits to the public repository, and mark five specs ready. The longer ask he had already read (28583) said what the yes covers: that these five are the right SHAPE to build against, not that the code is good; that four of them are already built with their evidence held as draft files waiting for this promotion; that VELDO-0027 is not built; that approving ready is not approving the landings, each of which is a separate act; and that Codex reviews all of it in the batch of 2026-09-22 either way. All five passed `validate.py ready` before the flip. WHAT THIS DOES NOT GRANT: no landing, no shipped status, no protected-path change. VELDO-0027 in particular states that adding `.veldo/keys/allowed_signers` to protected_paths is part of landing it and is a separate owner act with its own approval; this record is not that.",
+  "recorded_at": "2026-09-21T19:32:32Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
