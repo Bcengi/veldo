@@ -51,7 +51,10 @@ def main():
     by_ac = {}
     for r in rows:
         for ac in ("AC1", "AC2", "AC3", "AC4"):
-            if " %s " % ac in r["label"]:
+            # Matched at the label's HEAD, not anywhere in it. A row whose prose names another
+            # criterion - the oracle row explains that agreeing with YAML on a leading zero would be
+            # the defect AC2 exists to prevent - was being counted against that one as well.
+            if r["label"].startswith("VELDO-0106 %s " % ac):
                 by_ac.setdefault(ac, {"rows": 0, "passed": 0, "driven": 0})
                 by_ac[ac]["rows"] += 1
                 by_ac[ac]["passed"] += int(r["passed"])
@@ -73,31 +76,35 @@ def main():
                         "rather than only against copies: see external_drives below. No model is called and nothing is "
                         "spent."),
         "external_drives": [
-            {"falsifier": "AC1 policyread/a-comment-does-not-disarm-the-rule",
-             "mutation": ".veldo/fix_validation_record.py: _strip_comment returns the line unchanged, so "
-                         "read_policy stops stripping trailing comments",
-             "result": "AC1 RED, the other four rows pass"},
-            {"falsifier": "AC1, rebuilding the PRE-FIX code the review broke",
-             "mutation": ".veldo/fix_validation_record.py: the inline mapping split back to "
-                         'rest.strip("{}").split(","), the naive comma split Codex F-001 bypassed',
-             "result": "AC1 RED, the other four rows pass"},
-            {"falsifier": "AC1, rebuilding the PRE-FIX code the review broke",
-             "mutation": ".veldo/fix_validation_record.py: the key match back to raw.startswith, the "
-                         "column-zero anchor Codex F-002 bypassed by indenting the document",
-             "result": "AC1 RED, the other four rows pass"},
+            {"falsifier": "AC1, rebuilding the PRE-FIX code of a demonstrated bypass",
+             "mutation": ".veldo/fix_validation_record.py: _scan_scalar enters quote mode at a quote "
+                         "ANYWHERE in the text rather than only at the scalar's first character, which is "
+                         "how {note: don't relax, required: true} lost its setting",
+             "result": "AC1 and the oracle row both RED, four rows pass"},
+            {"falsifier": "AC1, rebuilding the PRE-FIX code of a demonstrated bypass",
+             "mutation": ".veldo/fix_validation_record.py: _policy_lines back to str.splitlines(), which "
+                         "also breaks on U+2028 and five more characters YAML treats as content",
+             "result": "AC1 and the oracle row both RED, four rows pass"},
+            {"falsifier": "AC1, rebuilding the PRE-FIX code of a demonstrated bypass",
+             "mutation": ".veldo/fix_validation_record.py: _root_keys treats every key as top level, so "
+                         "the key is read out of another key's block scalar or out of a nested mapping",
+             "result": "AC1 and the oracle row both RED, four rows pass"},
+            {"falsifier": "AC1, and the oracle beside it",
+             "mutation": ".veldo/fix_validation_record.py: the file decoded as utf-8 rather than "
+                         "utf-8-sig, so a byte order mark hides the key",
+             "result": "AC1 and the oracle row both RED, four rows pass"},
             {"falsifier": "AC2 policyread/a-branch-is-not-a-start-line",
              "mutation": '.veldo/fix_validation_record.py: _FULL_COMMIT_ID becomes re.compile(r".*"), so '
                          "the shape gate accepts every value",
-             "result": "AC2 RED, the other four rows pass"},
+             "result": "AC2 RED, five rows pass"},
             {"falsifier": "AC3 policyread/the-shared-parser-is-left-alone",
              "mutation": ".veldo/validate.py: _scalar strips a trailing comment, so the SHIPPED shared "
                          "parser is the stripping one",
-             "result": "AC3 RED, and AC1 red with it because the general parser then agrees with the "
-                       "reader; three rows pass"},
+             "result": "AC3 RED, five rows pass"},
             {"falsifier": "AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent",
-             "mutation": ".veldo/fix_validation_record.py: read_policy catches its own ValidationError and "
-                         "answers with an empty policy, so an unparsable block reads as advisory again",
-             "result": "AC4 RED, the other four rows pass"},
+             "mutation": ".veldo/fix_validation_record.py: read_policy catches its own ValidationError "
+                         "and answers with an empty policy, so an unreadable block reads as advisory",
+             "result": "AC4 RED, five rows pass"},
         ],
         "rows_total": len(rows),
         "rows_passed": sum(1 for r in rows if r["passed"]),

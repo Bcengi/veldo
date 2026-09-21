@@ -1,50 +1,55 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0106",
-  "commit": "7eaac97065d91ee237fa0d97f3ce18ec62fbb802",
-  "taken_at": "2026-09-21T16:57:18Z",
+  "commit": "c2632af145b0f9a265fa437aee0477af8e6982db",
+  "taken_at": "2026-09-21T17:22:41Z",
   "fragment": "scripts/suites/45_veldo_0106_policyread.py",
-  "fragment_sha256": "e77df58756238519e098c4d1cbcde490f1b14b898d9be26cf00b288f3f5850d8",
+  "fragment_sha256": "09f999c57ff81905bf1e2760f8fd4bd1a32305971b3674ad234dd7febfce470d",
   "description": "One run of the spec's suite fragment with every row recorded. The DRIVEN rows mutate a copy of .veldo/fix_validation_record.py (beside copies of its two siblings) or a copy of .veldo/validate.py (taken with the whole of .veldo beside it, because validate.py resolves its siblings from its own location), run the same real git fixture and the same real corpus, and require the named row red while the unmutated copy passes it. One row is the negative control: a copy carrying only an added comment, required to agree with the original on every case the other rows turn on. The three falsifiers were ALSO driven against the repository's own files rather than only against copies: see external_drives below. No model is called and nothing is spent.",
   "external_drives": [
     {
-      "falsifier": "AC1 policyread/a-comment-does-not-disarm-the-rule",
-      "mutation": ".veldo/fix_validation_record.py: _strip_comment returns the line unchanged, so read_policy stops stripping trailing comments",
-      "result": "AC1 RED, the other four rows pass"
+      "falsifier": "AC1, rebuilding the PRE-FIX code of a demonstrated bypass",
+      "mutation": ".veldo/fix_validation_record.py: _scan_scalar enters quote mode at a quote ANYWHERE in the text rather than only at the scalar's first character, which is how {note: don't relax, required: true} lost its setting",
+      "result": "AC1 and the oracle row both RED, four rows pass"
     },
     {
-      "falsifier": "AC1, rebuilding the PRE-FIX code the review broke",
-      "mutation": ".veldo/fix_validation_record.py: the inline mapping split back to rest.strip(\"{}\").split(\",\"), the naive comma split Codex F-001 bypassed",
-      "result": "AC1 RED, the other four rows pass"
+      "falsifier": "AC1, rebuilding the PRE-FIX code of a demonstrated bypass",
+      "mutation": ".veldo/fix_validation_record.py: _policy_lines back to str.splitlines(), which also breaks on U+2028 and five more characters YAML treats as content",
+      "result": "AC1 and the oracle row both RED, four rows pass"
     },
     {
-      "falsifier": "AC1, rebuilding the PRE-FIX code the review broke",
-      "mutation": ".veldo/fix_validation_record.py: the key match back to raw.startswith, the column-zero anchor Codex F-002 bypassed by indenting the document",
-      "result": "AC1 RED, the other four rows pass"
+      "falsifier": "AC1, rebuilding the PRE-FIX code of a demonstrated bypass",
+      "mutation": ".veldo/fix_validation_record.py: _root_keys treats every key as top level, so the key is read out of another key's block scalar or out of a nested mapping",
+      "result": "AC1 and the oracle row both RED, four rows pass"
+    },
+    {
+      "falsifier": "AC1, and the oracle beside it",
+      "mutation": ".veldo/fix_validation_record.py: the file decoded as utf-8 rather than utf-8-sig, so a byte order mark hides the key",
+      "result": "AC1 and the oracle row both RED, four rows pass"
     },
     {
       "falsifier": "AC2 policyread/a-branch-is-not-a-start-line",
       "mutation": ".veldo/fix_validation_record.py: _FULL_COMMIT_ID becomes re.compile(r\".*\"), so the shape gate accepts every value",
-      "result": "AC2 RED, the other four rows pass"
+      "result": "AC2 RED, five rows pass"
     },
     {
       "falsifier": "AC3 policyread/the-shared-parser-is-left-alone",
       "mutation": ".veldo/validate.py: _scalar strips a trailing comment, so the SHIPPED shared parser is the stripping one",
-      "result": "AC3 RED, and AC1 red with it because the general parser then agrees with the reader; three rows pass"
+      "result": "AC3 RED, five rows pass"
     },
     {
       "falsifier": "AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent",
-      "mutation": ".veldo/fix_validation_record.py: read_policy catches its own ValidationError and answers with an empty policy, so an unparsable block reads as advisory again",
-      "result": "AC4 RED, the other four rows pass"
+      "mutation": ".veldo/fix_validation_record.py: read_policy catches its own ValidationError and answers with an empty policy, so an unreadable block reads as advisory",
+      "result": "AC4 RED, five rows pass"
     }
   ],
-  "rows_total": 5,
-  "rows_passed": 5,
+  "rows_total": 6,
+  "rows_passed": 6,
   "rows_failed": [],
   "driven_rows": [
-    "VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all nine shapes the owner's file can take - block and inline, with and without a trailing comment, with quoted values and a hash inside a string, with a leading-zero value a general parser would coerce, with the whole document indented, with a quoted value that carries a comma AND the text of the opposite setting, and with a member whose own value is a deeper block carrying the opposite setting - the call site reads the flag as REQUIRED and the start line exactly as written, and refuses the bundle. The last three are the two bypasses an unbriefed Codex review found on the first landing plus the nesting case beside them: each one made the armed rule read as OFF with nothing failing anywhere. The general parser's answer is computed beside it on the same text and disagrees on at least four, which is the silent return to advisory this item exists to stop; DRIVEN: a copy whose call site reads the policy with that general parser answers differently on those same shapes",
+    "VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all seventeen shapes the owner's file can take, the call site reads the flag as REQUIRED and the start line exactly as written, and refuses the bundle. Eleven of those shapes are bypasses three separate reviews DEMONSTRATED against earlier versions of this reader, each of which made the armed rule read as OFF with nothing failing anywhere, and one of which moved the start line forward to a later commit and silently exempted every bundle between the two. The general parser's answer is computed beside the reader's on the same text and disagrees on at least four, which is the silent return to advisory this item exists to stop; DRIVEN: a copy whose call site reads the policy with that general parser answers differently on those same shapes",
     "VELDO-0106 AC2 policyread/a-branch-is-not-a-start-line: an abbreviated id, a branch name and a tag that both really resolve here, and a leading-zero numeric value are each REFUSED for their shape before anything is resolved, the reason names the value it was given, and every bundle stays in scope, because a mistyped line must not exempt anything; a full forty-character id resolves and an empty one is no line at all; DRIVEN: a copy without the shape gate accepts the branch and the tag, so the owner's line would follow a ref that moves without the owner",
-    "VELDO-0106 AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent: a fix_validation block written as a scalar, as an unclosed inline mapping, or as a key with nothing under it is REFUSED by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and says why - both moves in the strict direction, so a malformed policy on a protected path can only make the gate harder to pass, never switch it off. A file with no fix_validation key at all stays advisory, because a repository that never adopted the rule is not a repository with a typo; DRIVEN: a copy that swallows the refusal and reads an empty policy instead goes advisory on all three and passes the bundle with zero errors",
+    "VELDO-0106 AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent: thirteen ways of writing a fix_validation block this reader cannot read EXACTLY - a scalar where a mapping belongs, an unclosed inline mapping, a key with nothing under it, the key twice at the top level, a nested flow mapping or sequence, a quote that never closes, a member whose value is on the next line or absent, a required value that is neither true nor false, a block carrying neither setting, indentation that is neither the block's nor a member's, and a file that is not valid UTF-8 - are each REFUSED by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and says why - both moves in the strict direction, so a malformed policy on a protected path can only make the gate harder to pass, never switch it off. A file with no fix_validation key at all stays advisory, because a repository that never adopted the rule is not a repository with a typo; DRIVEN: a copy that swallows the refusal and reads an empty policy instead goes advisory on all three and passes the bundle with zero errors",
     "VELDO-0106 AC3 policyread/the-shared-parser-is-left-alone: the shipped shared parser still keeps a trailing comment in a scalar, and over this repository's own corpus of specifications and plans a copy that strips them parses a non-empty set of documents differently, concentrated in acceptance-criteria text; that is the measured reason the obvious repair was not made, and the count and the fields are printed above rather than pinned, because the corpus grows; DRIVEN: with the stripping copy AS the shipped parser the claim is false, so the row is not true by construction"
   ],
   "declared_falsifiers": {
@@ -71,8 +76,8 @@
   },
   "per_criterion": {
     "AC1": {
-      "rows": 1,
-      "passed": 1,
+      "rows": 2,
+      "passed": 2,
       "driven": 1
     },
     "AC2": {
@@ -93,7 +98,11 @@
   },
   "rows": [
     {
-      "label": "VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all nine shapes the owner's file can take - block and inline, with and without a trailing comment, with quoted values and a hash inside a string, with a leading-zero value a general parser would coerce, with the whole document indented, with a quoted value that carries a comma AND the text of the opposite setting, and with a member whose own value is a deeper block carrying the opposite setting - the call site reads the flag as REQUIRED and the start line exactly as written, and refuses the bundle. The last three are the two bypasses an unbriefed Codex review found on the first landing plus the nesting case beside them: each one made the armed rule read as OFF with nothing failing anywhere. The general parser's answer is computed beside it on the same text and disagrees on at least four, which is the silent return to advisory this item exists to stop; DRIVEN: a copy whose call site reads the policy with that general parser answers differently on those same shapes",
+      "label": "VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all seventeen shapes the owner's file can take, the call site reads the flag as REQUIRED and the start line exactly as written, and refuses the bundle. Eleven of those shapes are bypasses three separate reviews DEMONSTRATED against earlier versions of this reader, each of which made the armed rule read as OFF with nothing failing anywhere, and one of which moved the start line forward to a later commit and silently exempted every bundle between the two. The general parser's answer is computed beside the reader's on the same text and disagrees on at least four, which is the silent return to advisory this item exists to stop; DRIVEN: a copy whose call site reads the policy with that general parser answers differently on those same shapes",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0106 AC1 policyread/a-real-yaml-parser-is-the-oracle: every shape above is parsed by PyYAML and the two answers compared, because a list of shapes I thought of is not a domain and eleven bypasses in a row were shapes nobody had listed. The reader agrees with a complete implementation of the language on all of them but ONE, which is excluded by name and for a reason: YAML 1.1 reads a leading-zero digit string as octal, and keeping that value a string is the defect AC2 exists to prevent, so agreeing there would be wrong. STANDS DOWN by name where PyYAML is not installed, because the shipped reader is standard library only and the gate must run without it",
       "passed": true
     },
     {
@@ -101,7 +110,7 @@
       "passed": true
     },
     {
-      "label": "VELDO-0106 AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent: a fix_validation block written as a scalar, as an unclosed inline mapping, or as a key with nothing under it is REFUSED by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and says why - both moves in the strict direction, so a malformed policy on a protected path can only make the gate harder to pass, never switch it off. A file with no fix_validation key at all stays advisory, because a repository that never adopted the rule is not a repository with a typo; DRIVEN: a copy that swallows the refusal and reads an empty policy instead goes advisory on all three and passes the bundle with zero errors",
+      "label": "VELDO-0106 AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent: thirteen ways of writing a fix_validation block this reader cannot read EXACTLY - a scalar where a mapping belongs, an unclosed inline mapping, a key with nothing under it, the key twice at the top level, a nested flow mapping or sequence, a quote that never closes, a member whose value is on the next line or absent, a required value that is neither true nor false, a block carrying neither setting, indentation that is neither the block's nor a member's, and a file that is not valid UTF-8 - are each REFUSED by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and says why - both moves in the strict direction, so a malformed policy on a protected path can only make the gate harder to pass, never switch it off. A file with no fix_validation key at all stays advisory, because a repository that never adopted the rule is not a repository with a typo; DRIVEN: a copy that swallows the refusal and reads an empty policy instead goes advisory on all three and passes the bundle with zero errors",
       "passed": true
     },
     {

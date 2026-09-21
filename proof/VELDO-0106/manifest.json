@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0106",
-  "commit": "2e5750041de5d179f63c1faa5b50fab5c4acb2da",
+  "commit": "PENDING",
   "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; an unbriefed Codex review was run over this work before it landed",
   "produced_at": "2026-09-21T17:06:50Z",
   "veldo_version": "3.10.1",
@@ -13,7 +13,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0106/driven.json",
-          "detail": "1 row over a real git repository with a trunk, a tag and a committed proof bundle. The policy is a REAL FILE in each of the NINE shapes it can take - block and inline, with and without a trailing comment, with quoted values and a hash inside a string, with a leading-zero value a general parser would coerce, with the whole document indented, with a quoted value carrying a comma AND the text of the opposite setting, and with a member whose own value is a deeper block carrying the opposite setting - read through the real call site rather than a hand-built dictionary. In every shape the flag reads REQUIRED and the start line reads exactly as written, and the bundle is refused. The general parser's answer is computed beside the reader's on the same text and disagrees on at least four. DRIVEN four times: inside the suite, a copy whose call site reads the policy with the general parser; and against the repository's own file, three separate mutations, two of which rebuild the EXACT pre-fix code an unbriefed Codex review bypassed - the naive comma split (F-001) and the column-zero anchor (F-002) - each reddening this row while the other four pass."
+          "detail": "2 rows over a real git repository with a trunk, a tag and a committed proof bundle. The policy is a REAL FILE in each of the SEVENTEEN shapes it can take, read through the real call site rather than a hand-built dictionary; in every one the flag reads REQUIRED, the start line reads exactly as written, and the bundle is refused. ELEVEN of those shapes are bypasses three separate reviews demonstrated against earlier versions of this reader - a byte order mark, a space before the colon, an apostrophe or an inch mark in a plain value, a backslash-escaped quote, a U+2028 inside a note, a nested flow mapping, the key written as prose inside another key's block scalar, the key nested under an unrelated mapping, a quoted comma, an indented document, and a YAML 1.1 'yes' - each of which read as advisory. One of them did not disarm the flag at all: it moved the start line forward to a later commit, silently exempting every bundle between the two. The SECOND row is the oracle: every shape is parsed by PyYAML and the two answers compared, because a list of shapes the author thought of is not a domain and eleven bypasses in a row were every one of them a shape nobody had listed; it stands down by name where PyYAML is absent and excludes by name the one deliberate divergence, YAML 1.1 reading a leading-zero digit string as octal. DRIVEN five times: inside the suite by a copy reading the policy with the general parser, and against the repository's own file by four mutations, three of which REBUILD the exact pre-fix code of a demonstrated bypass."
         }
       ]
     },
@@ -46,7 +46,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0106/driven.json",
-          "detail": "1 row: a fix_validation block written as a scalar, as an unclosed inline mapping, or as a key with nothing under it is refused by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and prints why, so a malformed policy on a protected path can only make the gate harder to pass. A file with no fix_validation key at all stays advisory and is IN THE SET, so the row cannot be satisfied by refusing everything. DRIVEN twice: a copy that swallows the refusal goes advisory on all three and passes the bundle with zero errors; and against the repository's own file, read_policy catching its own ValidationError reds this row while the other four pass."
+          "detail": "1 row: THIRTEEN unreadable shapes - a scalar where a mapping belongs, an unclosed inline mapping, a key with nothing under it, the key twice at the top level, a nested flow mapping, a nested flow sequence, a quote that never closes, a member whose value is on the next line, a member with no value, a required value that is neither true nor false, a block carrying neither setting, indentation that is neither the block's nor a member's, and a file that is not valid UTF-8 - are each refused by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and prints why. A file with no fix_validation key at all stays advisory and is IN THE SET, so the row cannot be satisfied by refusing everything. DRIVEN twice: a copy that swallows the refusal goes advisory and passes the bundle with zero errors, inside the suite and against the repository's own file."
         }
       ]
     }
@@ -54,10 +54,10 @@
   "checks": [
     {
       "name": "gate-implementation",
-      "status": "passed",
+      "status": "PENDING",
       "command": "bash scripts/verify.sh",
       "exit_code": 0,
-      "commit": "2e5750041de5d179f63c1faa5b50fab5c4acb2da",
+      "commit": "PENDING",
       "ref": "proof/VELDO-0106/gate-implementation.log",
       "detail": "GATE GREEN at 2e5750041de5; run against a clean tree. Recorded here WITH the caveat that matters for this item: the gate was equally green at d1809f1, while both of the bypasses the review found were live. It is a check that the tree is consistent, never evidence that the code is right."
     }
@@ -70,5 +70,5 @@
     "proof/VELDO-0106/README.md"
   ],
   "rollback": "Point the call site back at the general parser and drop the shape check. The rule returns to the behaviour VELDO-0105 shipped, and no evidence is invalidated.",
-  "review": "An unbriefed Codex review (research/codex-reviews/review-20260921-124814.md, run over d1809f1 against base 694a856) found two confirmed bypasses with a reproducing capsule each, both of which made the armed rule read as OFF with the gate GREEN and the suite's four rows passing. Both are fixed in this bundle's commit, both pre-fix shapes are now rows, and the gap underneath them is AC4. Codex validates the fixed item in the batch of 2026-09-22."
+  "review": "THREE reviews, and the reader was rebuilt because of what they showed together. An unbriefed Codex review (research/codex-reviews/review-20260921-124814.md, over d1809f1) found two bypasses with a reproducing capsule each. A review briefed at that class found eight more. A third, told nothing, found three, TWO OF WHICH WERE REGRESSIONS introduced by the fix for the first two. Every one is now a row. The gate was GREEN throughout. Codex validates the rebuilt reader in the batch of 2026-09-22."
 }

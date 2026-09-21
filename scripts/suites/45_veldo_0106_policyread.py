@@ -289,9 +289,15 @@ else:
             if _v106_name in _v106_ORACLE_EXCLUDES:
                 continue
             (_v106_repo / ".veldo" / "policy.yaml").write_text(_v106_text)
-            _v106_parsed = FV106.read_policy(_v106_repo / ".veldo" / "policy.yaml")
-            _v106_mine = (FV106.flag_from_policy(_v106_parsed),
-                          FV106.start_line_from_policy(_v106_parsed))
+            try:
+                _v106_parsed = FV106.read_policy(_v106_repo / ".veldo" / "policy.yaml")
+                _v106_mine = (FV106.flag_from_policy(_v106_parsed),
+                              FV106.start_line_from_policy(_v106_parsed))
+            except FV106.ValidationError:
+                # A refusal is an ANSWER, and on a shape YAML reads perfectly well it is the WRONG
+                # one. Recorded as a disagreement rather than allowed to end the run, so a mutant
+                # that turns a readable shape into a refusal reds this row instead of killing it.
+                _v106_mine = ("REFUSED", "")
             _v106_oracle_rows.append((_v106_name, _v106_mine == _v106_oracle(_v106_text)))
 
     expect("VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all seventeen shapes the owner's "
