@@ -17,6 +17,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0011 | The release contract and its registry - a release is a typed, ordered group of plans with the | ready | standard | dmitry | not_required | VELDO-0011-release-contract-and-registry.md |
 | VELDO-0012 | The behaviour floor contract - an existing codebase's current behaviour becomes a recorded | ready | high | dmitry | required | VELDO-0012-behaviour-floor-contract.md |
 | VELDO-0015 | Liveness stands down on clock disagreement - a heartbeat from the future is answered | ready | high | dmitry | not_required | VELDO-0015-liveness-stands-down-on-clock-disagreement.md |
+| VELDO-0027 | Protected signing and key lifecycle | ready | critical | dmitry | required | VELDO-0027-protected-signing.md |
 | VELDO-0099 | Install-and-run observations resolve git metadata in either checkout shape | ready | standard | dmitry | not_required | VELDO-0099-worktree-git-shape.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
@@ -41,7 +42,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | WARP-0620 | The live-sandbox proof of the inbound edge - execute the codified path against a real board for | blocked | high | dmitry | required | WARP-0620-live-sandbox-proof.md |
 | VELDO-0013 | A declared falsification is DRIVEN once per item and recorded against the commit it was driven | draft | standard | dmitry | not_required | VELDO-0013-a-declared-falsification-is-driven-and-recorded.md |
 | VELDO-0014 | What a criterion may assert about the live repository - a stated rule that a check describes a | draft | standard | dmitry | not_required | VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md |
-| VELDO-0027 | Protected signing and key lifecycle | draft | critical | dmitry | required | VELDO-0027-protected-signing.md |
 | VELDO-0028 | Protected effect execution and atomic nonce consumption | draft | critical | dmitry | required | VELDO-0028-protected-effects.md |
 | VELDO-0029 | Explicit repository enrollment and authority routing | draft | critical | dmitry | required | VELDO-0029-repository-enrollment.md |
 | VELDO-0030 | Exclusive leadership and authority-generation fencing | draft | critical | dmitry | required | VELDO-0030-authority-generation-fencing.md |
@@ -633,7 +633,7 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W9 | VELDO-0024 | Signed Git replication and off-host acknowledgement | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023 | shipped |
 | W10 | VELDO-0025 | Authenticated membership and scoped delegation | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023 | shipped |
 | W11 | VELDO-0026 | Revocation and authorization rechecks | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0025 | shipped |
-| W12 | VELDO-0027 | Protected signing and key lifecycle | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0025 | draft (frontier) |
+| W12 | VELDO-0027 | Protected signing and key lifecycle | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0025 | ready (frontier) |
 | W13 | VELDO-0028 | Protected effect execution and atomic nonce consumption | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0026, VELDO-0027 | waiting: VELDO-0027 |
 | W14 | VELDO-0029 | Explicit repository enrollment and authority routing | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025 | draft (frontier) |
 | W15 | VELDO-0030 | Exclusive leadership and authority-generation fencing | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0029 | waiting: VELDO-0029 |

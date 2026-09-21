@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0027
 title: Protected signing and key lifecycle
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -14,12 +14,14 @@ depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0
 placement: [engine, contracts, distribution]
 protected_paths: []
 footprint:
-  - "engine/.veldo/control_signer*.py"
-  - ".veldo/control_signer*.py"
-  - "packs/*/.veldo/control_signer*.py"
-  - "engine/.veldo/control_keys*.py"
-  - ".veldo/control_keys*.py"
-  - "packs/*/.veldo/control_keys*.py"
+  - "engine/.veldo/control_signer.py"
+  - ".veldo/control_signer.py"
+  - "packs/*/.veldo/control_signer.py"
+  - "engine/.veldo/control_keys.py"
+  - ".veldo/control_keys.py"
+  - "packs/*/.veldo/control_keys.py"
+  - "engine/.veldo/architecture.yaml"
+  - ".veldo/architecture.yaml"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -50,14 +52,18 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: A protected signer independently validates purpose and delegation and never exposes
-      private keys to repository, sandbox, build, transcript, or model processes. Set: Evidence
-      and per-channel signing purposes, using real Ed25519 keys outside a disposable repository
-      and an OS-separated signer process. Completeness: Drive each registered purpose through its
-      authenticated IPC path; a real worker process attempts key reads, arbitrary-byte signing,
-      cross-channel signing, and membership-command signing with an edge key. Inspect output and
-      artifact bytes for fixture key leakage and require exact purpose refusals. Falsifier: Remove
-      the channel-purpose restriction and ask one edge key to sign another channel assertion;
-      signing/cross-channel must fail.
+      private keys to repository, sandbox, build, transcript, or model processes, and it holds no
+      resident process: every signature is produced by a short-lived child that exits with the
+      call. Set: Evidence and per-channel signing purposes, using real Ed25519 keys held outside a
+      disposable repository, readable only by the signing account, invoked through one fixed
+      command. Completeness: Drive each registered purpose through that command; a real worker
+      process attempts key reads, arbitrary-byte signing, cross-channel signing, and
+      membership-command signing with an edge key. Inspect output and artifact bytes for fixture
+      key leakage and require exact purpose refusals. Count the signer processes alive before and
+      after a signature and require the counts to be equal, and require no socket, no pid file and
+      no listener to be created anywhere in the run. Falsifier: Remove the channel-purpose
+      restriction and ask one edge key to sign another channel assertion; signing/cross-channel
+      must fail.
     falsified_by: >
       Remove the channel-purpose restriction and ask one edge key to sign another channel
       assertion; signing/cross-channel must fail.
@@ -90,6 +96,19 @@ acceptance_criteria:
     falsified_by: >
       Accept an edge request containing only chat text after removing canonical message identity;
       signing/text-only must refuse to issue a signature.
+  - id: AC4
+    text: >
+      Claim: Custody is the operating-system account, not the caller's good behaviour: the private
+      key is unreadable by the repository account, and the signer is reached only through the one
+      fixed command, which refuses a request that names a key path instead of a purpose. Set: The
+      repository account, the signing account, a real key file with its real mode and owner, and
+      requests naming a purpose and naming a path. Completeness: Read the key directly as the
+      repository account and require the read to fail on permissions; run the fixed command as the
+      repository account and require a signature for a registered purpose; ask the same command
+      for an arbitrary path and require refusal. Do all three against the real filesystem, never a
+      mock. Falsifier: Make the key world-readable; signing/custody-mode must fail.
+    falsified_by: >
+      Make the key world-readable; signing/custody-mode must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new signatures under the affected purpose, retain historical public keys and signed
@@ -106,7 +125,13 @@ Package B, W12 of PLAN-0019 revision 1. The controlling [design](../docs/design/
 
 Unrestricted signing or compromised key custody could fabricate authority and trusted observations. The declared risk floor is critical. Required approval must bind the eventual change and proof; this field does not record approval.
 
-Implementation belongs in engine/ with byte-identical repository and pack copies. Resolve proposed module globs and their area mapping before ready; register each new asset in the distribution inventory and scaffolder as applicable. Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+Implementation belongs in engine/ with byte-identical repository and pack copies, and register each new asset in the distribution inventory and scaffolder as applicable.
+
+**Two modules, both in the engine area.** `.veldo/control_signer.py` decides: whether this principal, under this delegation, may sign this purpose for this channel, plus the canonical envelope and its verification. `.veldo/control_keys.py` holds the lifecycle: accepted rotation, retirement and revocation transitions, the `allowed_signers` projection, and verification of historical receipts by retired keys. They are safety-core decision organs in the same sense as `.veldo/authorization.py` and `.veldo/control_membership*.py`, which is where the engine area already puts that work, so this item adds both globs to that area's includes. That is the amendment precedent this contract already set for VELDO-0011, VELDO-0023 and VELDO-0025: one entry inside an ordinary item, contract version unchanged.
+
+**The signer is a short-lived child, not a resident process.** Dmitry decided this on 2026-09-21 over Telegram (message 28437, answering the ask 28435), choosing it over a signer daemon under its own account with an authenticated socket. The custody requirement is that private keys never enter a repository, a sandbox, a model context, a transcript or a build, and an account boundary plus one fixed command buys exactly that; a resident process earns its keep only across several machines and several authorities, which is not where this is. It also leaves the `no_detached_processes` invariant standing as written: that rule has one scoped exception, for the project runner, and the daemon would have needed a second.
+
+Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
 
 ## Out of scope
 

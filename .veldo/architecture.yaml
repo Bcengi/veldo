@@ -37,7 +37,13 @@ areas:
     title: The safety-core decision engine, the pure functions that decide whether a human decision is authorized
     # ADDED 2026-09-18 (VELDO-0025, PLAN-0019 W10): the membership organ, the administrative command
     # path whose committed membership the authorization decisions are judged with.
-    includes: [".veldo/authorization.py", ".veldo/control_membership*.py"]
+    # ADDED 2026-09-21 (VELDO-0027, PLAN-0019 W12): signing authority. control_signer decides whether
+    # a principal may sign a purpose under a delegation and owns the canonical envelope;
+    # control_keys holds the accepted rotation, retirement and revocation transitions and the
+    # allowed_signers projection. Both are safety-core decisions in the same sense as the two
+    # modules beside them, so they belong here rather than in a new area; same amendment precedent
+    # as VELDO-0011, VELDO-0023 and VELDO-0025, contract version unchanged.
+    includes: [".veldo/authorization.py", ".veldo/control_membership*.py", ".veldo/control_signer*.py", ".veldo/control_keys*.py"]
   - id: enforcement
     title: The gate and the push guard, the one command that decides done
     includes: ["scripts/verify.sh", "scripts/veldo-guard.sh", "scripts/check_docs.sh", "scripts/check_lint.sh", "scripts/check_generated.sh", "scripts/check_template_sync.sh", "scripts/check_pack_drift.py", "scripts/check_runner_catalog.py", ".veldo/policy_check.py"]
