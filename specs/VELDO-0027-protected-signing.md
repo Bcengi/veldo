@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0027
 title: Protected signing and key lifecycle
-status: ready
+status: draft
 risk: critical
 owner: dmitry
 human_approval: required
@@ -132,6 +132,38 @@ Implementation belongs in engine/ with byte-identical repository and pack copies
 **The signer is a short-lived child, not a resident process.** Dmitry decided this on 2026-09-21 over Telegram (message 28437, answering the ask 28435), choosing it over a signer daemon under its own account with an authenticated socket. The custody requirement is that private keys never enter a repository, a sandbox, a model context, a transcript or a build, and an account boundary plus one fixed command buys exactly that; a resident process earns its keep only across several machines and several authorities, which is not where this is. It also leaves the `no_detached_processes` invariant standing as written: that rule has one scoped exception, for the project runner, and the daemon would have needed a second.
 
 Proof must compare the declared test universe with executable registrations, drive each falsified_by mutation to its named failing row, retain the applied diff, and revert the mutation. Only model responses may be faked; the named store, processes, signatures, files, and Git operations are real.
+
+## Back to draft, 2026-09-21: what an adversarial read found before the build
+
+This spec was moved to ready and approved, and an independent review then found three things that
+make it unbuildable as written. It is draft again and the build has not started. None of this is a
+wording problem.
+
+**"Purpose" is not a word the accepted contract has.** AC1 drives "each registered purpose", AC4
+refuses a request naming a path "instead of a purpose", and the metrics and the taxonomy both count
+purpose mismatches. The word appears nowhere in the design document, nowhere in VELDO-0020, and
+nowhere in `.veldo/authority_contract.py`, whose actual dimensions are channel, assertion kind and
+authority scope. Either purpose is another name for assertion kind, and this spec must say so, or it
+is new contract vocabulary being introduced by an implementation item, which Package A forbids.
+Nobody can enumerate "each registered purpose" until that is settled.
+
+**AC4 claims a deployment property that its own footprint cannot produce.** It says the key is
+unreadable by the repository account and the signer is reached only through one fixed command. The
+footprint ships two Python modules, a public key file, the scaffolder and the suites. There is no
+command, no installer, no account, nothing that sets a file mode. A builder handed this footprint
+can only write a test that asserts facts about its own fixture. Its falsifier makes the key
+world-readable, which mutates the fixture rather than the implementation, so deleting every line of
+custody logic leaves the row green.
+
+**The light design has a consequence this spec does not follow through.** With no resident process,
+the caller composes the whole request: principal, channel, delegation, attribution. R38 requires that
+the signer independently checks those and that an edge cannot impersonate another channel, but the
+channel is decided by an `edge_key_id` the calling account writes. Where the child gets committed
+membership, delegation and revocation versions from is not stated either, and the two possible
+answers, from the caller or from a store the caller owns, are both weaker than the clause. This is a
+design question about the option that was chosen, and it is the owner's to settle, not mine.
+
+Until those three are answered the ready transition is premature whatever the validator says.
 
 ## Out of scope
 
