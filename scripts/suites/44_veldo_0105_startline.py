@@ -215,6 +215,26 @@ else:
     # The thing that made this item exist: with the flag on and no line, thirteen shipped bundles go
     # red. With the line recorded, the same command over the same corpus refuses none of them.
     _v105_pol_backup = (ROOT / ".veldo" / "policy.yaml").read_text()
+
+    def _v105_without_fix_validation(text):
+        """The policy with any fix_validation block removed, so this row COMPOSES the policy it wants
+        rather than appending to whatever is there. Appending was enough only while the repository's
+        own policy had no such block, which is a fact about today and not an invariant: the moment
+        the owner set the flag and the line, a second block appeared below the first, the parser
+        took the first, and this row's no-line case silently stopped being a no-line case."""
+        out, skipping = [], False
+        for line in text.splitlines(keepends=True):
+            if line.startswith("fix_validation:"):
+                skipping = True
+                continue
+            if skipping:
+                if line.strip() == "" or line.startswith((" ", "\t")):
+                    continue
+                skipping = False
+            out.append(line)
+        return "".join(out)
+
+    _v105_pol_clean = _v105_without_fix_validation(_v105_pol_backup)
     _v105_head = _v105_sp.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"],
                               capture_output=True, text=True).stdout.strip()
     _v105_corpus = {}
@@ -222,7 +242,7 @@ else:
         for _v105_tag, _v105_block in (
                 ("no_line", "fix_validation:\n  required: true\n"),
                 ("with_line", f"fix_validation:\n  required: true\n  from_commit: {_v105_head}\n")):
-            (ROOT / ".veldo" / "policy.yaml").write_text(_v105_pol_backup + _v105_block)
+            (ROOT / ".veldo" / "policy.yaml").write_text(_v105_pol_clean + _v105_block)
             _v105_corpus[_v105_tag] = _v105_sp.run(
                 ["python3", str(ROOT / ".veldo" / "validate.py"), "all"],
                 capture_output=True, text=True, cwd=str(ROOT))
@@ -237,4 +257,5 @@ else:
            and _v105_corpus["with_line"].returncode == 0
            and "before the start line" in _v105_corpus["with_line"].stdout
            and f"from {_v105_head[:12]}" in _v105_corpus["with_line"].stdout
+           and "fix_validation" not in _v105_pol_clean
            and (ROOT / ".veldo" / "policy.yaml").read_text() == _v105_pol_backup)

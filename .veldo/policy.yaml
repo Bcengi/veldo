@@ -49,6 +49,23 @@ protected_paths:
 # repository that has a contract and depends on it. A repository that never adopted a contract
 # leaves the line out (or says optional) and is unaffected.
 architecture_contract: required
+# VELDO-0104 and VELDO-0105, set by Dmitry on 2026-09-21 over Telegram: the flag (message 28433,
+# answering 28432) and the start line (28436, answering 28434, and the landing approval 28449).
+#
+# required: the proof check REFUSES a bundle whose item was fixed after its review and carries no
+# validation record, or whose validation does not close every finding on all four runner results and
+# the assessor's verdict, or whose fix rounds exceed the cap. Off, every one of those is a warning.
+#
+# from_commit: where the rule STARTS. It is the commit that landed VELDO-0105, so the first bundle it
+# binds is the next one after that, and the thirteen bundles that shipped before the runner and the
+# assessor existed are not re-judged. Absence fails CLOSED: remove this line and every bundle is in
+# scope again, which is the behaviour VELDO-0104 shipped.
+#
+# This file is a protected path, so only the owner sets either of these and no agent can exempt
+# itself from the rule it is being gated by.
+fix_validation:
+  required: true
+  from_commit: 5c6473325b19604b9b1d28b8af8eb488a4a64e8c
 merge_rule: >
   Auto-merge if and only if: the specification is ready and valid; every
   acceptance criterion is passed in a valid proof manifest for this exact
