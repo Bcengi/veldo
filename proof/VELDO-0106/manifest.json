@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0106",
-  "commit": "PENDING",
+  "commit": "2e5750041de5d179f63c1faa5b50fab5c4acb2da",
   "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; an unbriefed Codex review was run over this work before it landed",
-  "produced_at": "PENDING",
+  "produced_at": "2026-09-21T17:06:50Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -54,18 +54,19 @@
   "checks": [
     {
       "name": "gate-implementation",
-      "status": "PENDING",
+      "status": "passed",
       "command": "bash scripts/verify.sh",
-      "exit_code": "PENDING",
-      "commit": "PENDING",
+      "exit_code": 0,
+      "commit": "2e5750041de5d179f63c1faa5b50fab5c4acb2da",
       "ref": "proof/VELDO-0106/gate-implementation.log",
-      "detail": "PENDING"
+      "detail": "GATE GREEN at 2e5750041de5; run against a clean tree. Recorded here WITH the caveat that matters for this item: the gate was equally green at d1809f1, while both of the bypasses the review found were live. It is a check that the tree is consistent, never evidence that the code is right."
     }
   ],
   "artifacts": [
     "proof/VELDO-0106/driven.json",
     "proof/VELDO-0106/drive.py",
     "proof/VELDO-0106/gate-implementation.log",
+    "proof/VELDO-0106/log-redactions.json",
     "proof/VELDO-0106/README.md"
   ],
   "rollback": "Point the call site back at the general parser and drop the shape check. The rule returns to the behaviour VELDO-0105 shipped, and no evidence is invalidated.",
