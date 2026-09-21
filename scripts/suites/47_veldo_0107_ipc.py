@@ -290,6 +290,12 @@ else:
             # ---- AC3: the address follows the binding -------------------------------------------
             _v107_src107 = (ROOT / ".veldo" / "control_client.py").read_text()
             _v107_addr_from_binding = CC107.socket_path_for(_v107_bind_A)
+            # This row measures ITS OWN delta. It used to compare against a snapshot taken before
+            # AC1's forgery, which made it red under AC1's mutant as well: the accepted forgery added
+            # a row to A's log and the arithmetic moved. A falsifier that reds a row it was not
+            # pointed at is noise that reads like proof, so each row counts from its own baseline.
+            _v107_base_A = _v107_applied(_v107_cfgA)
+            _v107_base_B = _v107_applied(_v107_cfgB)
             _v107_before = _v107_os.getcwd()
             _v107_os.chdir(str(_v107_B))
             _v107_os.environ["VELDO_CONTROL_SOCKET"] = CC107.socket_path_for(_v107_bind_B)
@@ -317,8 +323,8 @@ else:
                    "at all and contains no os.getcwd and no __file__. DRIVEN: a copy that prefers an "
                    "environment variable for the address reaches the other authority's socket",
                    _v107_under_ambient.get("accepted") is True
-                   and len(_v107_log_A_amb) == len(_v107_log_A) + 1
-                   and _v107_log_B_amb == _v107_log_B
+                   and len(_v107_log_A_amb) == len(_v107_base_A) + 1
+                   and _v107_log_B_amb == _v107_base_B
                    and "os.environ" not in _v107_src107 and "os.getcwd" not in _v107_src107
                    and "__file__" not in _v107_src107
                    and _v107_ambient_mut == CC107.socket_path_for(_v107_bind_B)
@@ -329,16 +335,24 @@ else:
                 ("import socket\nimport struct", "# additive no-op control\nimport socket\nimport struct")])
             _v107_auth_noop = _v107_M_noop.Authority(
                 _v107_ST_A, _v107_DOM_A, _v107_PATH_A, EN107, _v107_verify, HOST107, lambda c: {"ok": True})
+            # Compared against THE ORIGINAL's answers in this same run, never against literals. A
+            # control that re-asserts the expected behaviour reds under every mutation of the organ,
+            # which makes it a second copy of the other rows rather than a control: its one job is to
+            # show that COPYING changes nothing, so it must stay green even when the original is
+            # wrong.
             _v107_control = [
-                (_v107_auth_noop.judge(_v107_good_req, _v107_os.getuid()).get("accepted"), True),
+                (_v107_auth_noop.judge(_v107_good_req, _v107_os.getuid()).get("accepted"),
+                 _v107_r_valid.get("accepted")),
                 (_v107_auth_noop.judge(_v107_bad_sig, _v107_os.getuid()).get("reason"),
-                 "command_signature_invalid"),
+                 _v107_r_badsig.get("reason")),
                 (_v107_auth_noop.judge(_v107_good_req, _v107_os.getuid() + 1).get("reason"),
-                 "peer_not_authorized"),
+                 _v107_r_foreign.get("reason")),
+                (_v107_auth_noop.judge(_v107_good_req, None).get("reason"),
+                 _v107_r_nouid.get("reason")),
                 (_v107_M_noop.socket_path_for(_v107_bind_A), _v107_addr_from_binding),
             ]
             expect("VELDO-0107 control ipc/copying-is-not-what-changes-it: a copy of the organ carrying only "
-                   "an added comment answers exactly as the original does on all four cases the rows above "
+                   "an added comment answers exactly as the original does on all five cases the rows above "
                    "turn on, so the difference each DRIVEN mutant shows is the mutation and not the copying",
                    all(a == b for a, b in _v107_control))
         finally:

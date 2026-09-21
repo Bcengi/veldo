@@ -1,0 +1,63 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0107",
+  "commit": "PENDING",
+  "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; Codex validates this item in the batch of 2026-09-22",
+  "produced_at": "PENDING",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0107/driven.json",
+          "detail": "1 row against TWO REAL AUTHORITY CHILD PROCESSES on real AF_UNIX sockets, over two real enrolled git clones. A client in each workspace is accepted and its command is applied to ITS OWN store and to no other, compared in both applied logs. Then the attack: a request naming workspace B with A's domain and store uuids FORGED into it, correctly signed, sent over the socket to A's authority. A refuses it as coordinate_not_served and applies nothing, because it resolved B's OWN binding rather than believing the uuids the request declared. DRIVEN: a copy whose coordinate check keeps only the declared-uuid comparison accepts the forgery, which is a signed command committing into a repository it does not belong to."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0107/driven.json",
+          "detail": "1 row. Over a REAL connection the uid the module uses is the one the kernel reports through SO_PEERCRED and equals this process's own, and the socket is 0600 inside a 0700 directory. Against the same real authority object: a valid request accepted; a valid peer with a broken signature refused as command_signature_invalid; a foreign uid refused as peer_not_authorized even with a perfect signature; a uid the platform will not report refused as peer_identity_unavailable rather than passed, because a check that is unavailable must not become a check that succeeded. DRIVEN: a copy whose peer branch stops refusing accepts the foreign uid. HONEST LIMIT, stated in the row itself: a connection from a genuinely different OS account is NOT tested and cannot be, because this design has one account by intent; the claim is split into the two halves above and neither is the whole of it."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0107/driven.json",
+          "detail": "1 row. With the process standing in the OTHER repository and VELDO_CONTROL_SOCKET and VELDO_CONTROL_DB both naming the other RUNNING authority, a client in the first workspace still reaches the first authority and the other's log does not grow; the other authority is real and running, so the row fails if the answer is right only because the alternative was absent. The shipped module reads no environment variable at all and contains no os.getcwd and no __file__. DRIVEN: a copy that prefers VELDO_CONTROL_SOCKET reaches the other authority's socket."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "PENDING",
+      "command": "bash scripts/verify.sh",
+      "exit_code": "PENDING",
+      "commit": "PENDING",
+      "ref": "proof/VELDO-0107/gate-implementation.log",
+      "detail": "PENDING"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0107/driven.json",
+    "proof/VELDO-0107/drive.py",
+    "proof/VELDO-0107/gate-implementation.log",
+    "proof/VELDO-0107/log-redactions.json",
+    "proof/VELDO-0107/README.md"
+  ],
+  "rollback": "Stop the authority process and stop calling send(). control_store continues to use control_db_path exactly as before; nothing in the repository depends on this transport yet.",
+  "review": "PENDING. The item is DRAFT and this bundle is not a landing claim: VELDO-0107 needs its own ready transition and its own landing approval. The drive found two faults in the SUITE rather than in the code, both recorded in driven.json under suite_faults_the_drive_found: a row that counted from another row's baseline, and a negative control that asserted literals and therefore reddened under every mutation instead of proving only that copying is neutral."
+}

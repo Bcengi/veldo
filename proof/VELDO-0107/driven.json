@@ -1,0 +1,90 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0107",
+  "commit": "d88a97bf3db07cd980d58abdbe6274577f8c043d",
+  "taken_at": "2026-09-21T18:01:39Z",
+  "fragment": "scripts/suites/47_veldo_0107_ipc.py",
+  "fragment_sha256": "e67b06a8416a375f77801cf1ecc0a19185668c7a9a0c729ec800cd3051c641dc",
+  "description": "One run of the spec's suite fragment with every row recorded. The rows run against TWO REAL AUTHORITY CHILD PROCESSES on real AF_UNIX sockets, over two real enrolled git clones, with each store's applied log compared after every call so a write to the wrong store is visible rather than merely unasserted. Every DRIVEN row mutates a copy of .veldo/control_client.py and requires the named row red while the unmutated copy passes it. The last row is the negative control, and it compares a no-op copy against THE ORIGINAL's answers in the same run rather than against literals, so it stays green under every mutation of the organ: its one job is to show that copying changes nothing. The signer is an HMAC the suite supplies, because the module holds no key material. No model is called and nothing is spent.",
+  "external_drives": [
+    {
+      "falsifier": "AC1 ipc/the-coordinate-comes-from-the-request",
+      "mutation": ".veldo/control_client.py: the coordinate check drops the resolved store and keeps only the comparison against the uuids the REQUEST declares, which is what a design that believes the request's own labels looks like",
+      "result": "AC1 RED, the other three rows pass"
+    },
+    {
+      "falsifier": "AC2 ipc/transport-and-command-are-checked-separately",
+      "mutation": ".veldo/control_client.py: the peer branch stops refusing, so a foreign uid falls through to the signature check and a perfect signature carries it",
+      "result": "AC2 RED, the other three rows pass"
+    },
+    {
+      "falsifier": "AC3 ipc/the-socket-follows-the-binding",
+      "mutation": ".veldo/control_client.py: socket_path_for prefers VELDO_CONTROL_SOCKET over the address the binding implies",
+      "result": "AC3 RED, the other three rows pass"
+    }
+  ],
+  "suite_faults_the_drive_found": [
+    "AC3 compared against a log snapshot taken before AC1's forgery, so AC1's mutant reddened AC3 as well: an accepted forgery added a row and the arithmetic moved. A falsifier that reds a row it was not pointed at is noise that reads like proof, so each row now counts from its own baseline.",
+    "The negative control asserted LITERAL expected values, so it went red under every mutation of the organ, which made it a second copy of the other rows rather than a control. It now compares the no-op copy against the original's answers in the same run."
+  ],
+  "rows_total": 4,
+  "rows_passed": 4,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request: two authorities run as real child processes on real sockets, each serving its own store; a client in each enrolled workspace is accepted and its command is applied to ITS OWN store and to no other, compared in both logs. Then the attack: a request naming workspace B with A's domain and store uuids FORGED into it, correctly signed, sent to A's socket. A refuses it as coordinate_not_served and applies nothing, because it resolved B's OWN binding rather than believing the uuids the request declared. DRIVEN: a copy whose authority takes the store from itself instead of resolving the request's workspace accepts the forgery, which is a signed command committing into a repository it does not belong to",
+    "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately: over a REAL connection the uid the module uses is the one the KERNEL reports through SO_PEERCRED and equals this process's own, and the socket is 0600 inside a 0700 directory. Against the same real authority object: a valid request is accepted; a valid peer carrying a broken signature is refused as command_signature_invalid; a foreign uid is refused as peer_not_authorized even though its signature is perfect; and a uid the platform will not report is refused as peer_identity_unavailable rather than passed, because a check that is unavailable must not become a check that succeeded. HONEST LIMIT, and it is why the claim is split: this design has ONE account by intent, so there is no second uid to connect from and the foreign-uid rule is exercised by handing the real rule a foreign uid rather than by a real foreign connection. DRIVEN: a copy without the peer comparison accepts the foreign uid",
+    "VELDO-0107 AC3 ipc/the-socket-follows-the-binding: the address is derived from the store path the binding records, so with the process standing in the OTHER repository and with VELDO_CONTROL_SOCKET and VELDO_CONTROL_DB both naming the other RUNNING authority, a client in the first workspace still reaches the first authority and the other's log does not grow. The other authority is real and running, so the row fails if the answer is right only because the alternative was absent. The shipped module reads no environment variable at all and contains no os.getcwd and no __file__. DRIVEN: a copy that prefers an environment variable for the address reaches the other authority's socket"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "ipc/the-coordinate-comes-from-the-request",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "ipc/transport-and-command-are-checked-separately",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "ipc/the-socket-follows-the-binding",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request: two authorities run as real child processes on real sockets, each serving its own store; a client in each enrolled workspace is accepted and its command is applied to ITS OWN store and to no other, compared in both logs. Then the attack: a request naming workspace B with A's domain and store uuids FORGED into it, correctly signed, sent to A's socket. A refuses it as coordinate_not_served and applies nothing, because it resolved B's OWN binding rather than believing the uuids the request declared. DRIVEN: a copy whose authority takes the store from itself instead of resolving the request's workspace accepts the forgery, which is a signed command committing into a repository it does not belong to",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately: over a REAL connection the uid the module uses is the one the KERNEL reports through SO_PEERCRED and equals this process's own, and the socket is 0600 inside a 0700 directory. Against the same real authority object: a valid request is accepted; a valid peer carrying a broken signature is refused as command_signature_invalid; a foreign uid is refused as peer_not_authorized even though its signature is perfect; and a uid the platform will not report is refused as peer_identity_unavailable rather than passed, because a check that is unavailable must not become a check that succeeded. HONEST LIMIT, and it is why the claim is split: this design has ONE account by intent, so there is no second uid to connect from and the foreign-uid rule is exercised by handing the real rule a foreign uid rather than by a real foreign connection. DRIVEN: a copy without the peer comparison accepts the foreign uid",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0107 AC3 ipc/the-socket-follows-the-binding: the address is derived from the store path the binding records, so with the process standing in the OTHER repository and with VELDO_CONTROL_SOCKET and VELDO_CONTROL_DB both naming the other RUNNING authority, a client in the first workspace still reaches the first authority and the other's log does not grow. The other authority is real and running, so the row fails if the answer is right only because the alternative was absent. The shipped module reads no environment variable at all and contains no os.getcwd and no __file__. DRIVEN: a copy that prefers an environment variable for the address reaches the other authority's socket",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0107 control ipc/copying-is-not-what-changes-it: a copy of the organ carrying only an added comment answers exactly as the original does on all five cases the rows above turn on, so the difference each DRIVEN mutant shows is the mutation and not the copying",
+      "passed": true
+    }
+  ]
+}
