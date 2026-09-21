@@ -38,12 +38,17 @@ acceptance_criteria:
     text: >
       Claim: The owner's two settings are read from .veldo/policy.yaml by the reader that handles
       the whole of its syntax, so a trailing comment on either line, on the block form or the
-      inline form, changes neither the flag nor the start line, and a hash inside a quoted string
-      is text rather than a comment. Set: The six shapes the file can take, each written to a real
-      file and read through the real call site rather than a hand-built dictionary. Completeness:
-      The general parser's answer is computed beside the reader's for every shape, so the row fails
-      if the call site is ever pointed back at the general parser. Falsifier: Read the policy with
-      the general parser at the call site; policyread/a-comment-does-not-disarm-the-rule must fail.
+      inline form, changes neither the flag nor the start line; a hash inside a quoted string is
+      text rather than a comment; a comma inside a quoted string does not begin a new setting; the
+      block is found at any indentation; and only the block's direct members are its settings.
+      Set: The nine shapes the file can take, each written to a real file and read through the real
+      call site rather than a hand-built dictionary. Three of them are bypasses found after the
+      first landing: the whole document indented, a quoted value carrying a comma and the text of
+      the opposite setting, and a member whose own value is a deeper block carrying the opposite
+      setting. Completeness: The general parser's answer is computed beside the reader's for every
+      shape, so the row fails if the call site is ever pointed back at the general parser.
+      Falsifier: Read the policy with the general parser at the call site;
+      policyread/a-comment-does-not-disarm-the-rule must fail.
     falsified_by: >
       Read the policy with the general parser at the call site;
       policyread/a-comment-does-not-disarm-the-rule must fail.
@@ -70,6 +75,20 @@ acceptance_criteria:
     falsified_by: >
       Make the shared parser strip trailing comments; policyread/the-shared-parser-is-left-alone
       must fail.
+  - id: AC4
+    text: >
+      Claim: A fix_validation block that is present and cannot be read is REFUSED by the reader,
+      and the call site then treats the rule as required with every bundle in scope and says why.
+      A policy file with no fix_validation key at all stays advisory, because a repository that
+      never adopted the rule is not a repository with a typo. Set: A scalar where a mapping
+      belongs, an unclosed inline mapping, a key with nothing under it, and a file with no such
+      key. Completeness: The never-adopted file is in the set, so the row fails if the reader
+      simply refuses everything it does not like the look of. Falsifier: Swallow the refusal and
+      read an empty policy instead;
+      policyread/a-setting-the-owner-wrote-never-reads-as-absent must fail.
+    falsified_by: >
+      Swallow the refusal and read an empty policy instead;
+      policyread/a-setting-the-owner-wrote-never-reads-as-absent must fail.
 required_evidence: [unit]
 rollback: >
   Point the call site back at the general parser and drop the shape check. The rule returns to the
@@ -90,7 +109,11 @@ All three come from the general parser: it strips whole-line comments but not tr
 
 **Why the obvious repair is not the repair.** The general parser could learn to strip trailing comments, which is what YAML does and what the fix-validation module's own reader already does, and the repository has a `reuse_one_parser` pattern that argues for it. That change was measured against the corpus before being attempted: **55 of its 328 specifications and plans parse differently under it**, 49 of them in `acceptance_criteria` text and the rest in `risk`, `constraints` and `status` fields containing a hash. AC3's row recomputes that count on every run and prints it, rather than pinning a number the corpus will move. It would silently truncate the text of specifications that have already shipped, to fix a flag nobody had yet tripped, and the gate would go green on it because nothing compares a specification's text across a parser change. The measurement is kept as AC3 so a later reader does not try it again.
 
-So the fix is narrow. The fix-validation module already carries `read_policy`, which handles all six shapes correctly, and the call site uses it instead of the parser the validator hands in. That parser is still handed in and still used for the spec front matter beside it; only the policy read changes.
+So the fix is narrow. The fix-validation module already carries `read_policy`, and the call site uses it instead of the parser the validator hands in. That parser is still handed in and still used for the spec front matter beside it; only the policy read changes.
+
+**What the first landing got wrong, and how it was found.** `read_policy` handled the six shapes this item was written for and two it was not, and an unbriefed Codex review found both by building a working bypass for each. It split an inline mapping at every comma, including commas inside quotes, so `{required: true, note: "leave this, required: false"}` made the tail of the note a second `required` pair that overwrote the owner's own setting. And it looked for `fix_validation:` only at column zero, so indenting the document, which the general parser reads perfectly well, made it answer "no such key". Both landed on the same answer, advisory, with nothing failing anywhere: exactly the shape of defect this item exists to remove, reintroduced by the fix for it. The reader now splits outside quotes, finds the block at any indentation, and takes only the block's direct members as its settings.
+
+That is also why AC4 exists. The reader had one way of saying "no settings" and it meant two different things: a repository that never adopted the rule, and a setting the owner wrote that could not be parsed. The first is properly advisory. The second must never be. A `fix_validation` key that is present and yields nothing now raises, and the call site turns that into required with every bundle in scope, so every way of failing here lands on the strict side.
 
 **Why the start line must be a full commit id.** Two of the three symptoms are really one: a value that is not an object id. A branch name resolves, and resolves to something different tomorrow, and the ref namespace is not a protected path, so the owner's line could move without the owner. An abbreviated id can become ambiguous as history grows. A leading-zero value is the parser's coercion showing through. Requiring forty hex characters refuses all three by shape, before anything is resolved, and says what it was given.
 

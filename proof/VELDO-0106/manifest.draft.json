@@ -1,0 +1,62 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0106",
+  "commit": "PENDING",
+  "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; an unbriefed Codex review was run over this work before it landed",
+  "produced_at": "PENDING",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0106/driven.json",
+          "detail": "1 row over a real git repository with a trunk, a tag and a committed proof bundle. The policy is a REAL FILE in each of the six shapes it can take - block and inline, with and without a trailing comment, with quoted values and a hash inside a string, and with a leading-zero value a general parser would coerce - read through the real call site rather than a hand-built dictionary. In every shape the flag reads REQUIRED and the start line reads exactly as written, and the bundle is refused. The general parser's answer is computed beside the reader's on the same text and disagrees on four of the six. DRIVEN twice: inside the suite, a copy whose call site reads the policy with the general parser answers differently on those same shapes; and against the repository's own file, _strip_comment returning the line unchanged reds this row while the other three pass."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0106/driven.json",
+          "detail": "1 row: an abbreviated id, a branch name and a tag that BOTH REALLY RESOLVE in the fixture repository, and a leading-zero numeric value are each refused for their shape before anything is resolved, the reason names the value, and every bundle stays in scope; a full forty-character id resolves and an empty one is no line at all. The branch and the tag resolving is the completeness clause: the row fails if resolvability rather than shape is what is being tested. DRIVEN twice: a copy without the shape gate accepts the branch and the tag; and against the repository's own file, _FULL_COMMIT_ID as re.compile(r'.*') reds this row while the other three pass."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0106/driven.json",
+          "detail": "1 row over THIS repository's own corpus of 328 specifications and plans, not a fixture: the shipped shared parser still keeps a trailing comment in a scalar, and a copy that strips them parses 55 of those documents differently, 49 in acceptance-criteria text and the rest in risk, constraints and status fields containing a hash. The count and the fields are printed on every run rather than pinned, because the corpus grows. DRIVEN twice: with the stripping copy AS the shipped parser the claim is false, so the row is not true by construction; and against the repository's own file, _scalar in validate.py stripping a trailing comment reds this row and AC1 with it."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "PENDING",
+      "command": "bash scripts/verify.sh",
+      "exit_code": "PENDING",
+      "commit": "PENDING",
+      "ref": "proof/VELDO-0106/gate-implementation.log",
+      "detail": "PENDING"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0106/driven.json",
+    "proof/VELDO-0106/drive.py",
+    "proof/VELDO-0106/gate-implementation.log",
+    "proof/VELDO-0106/README.md"
+  ],
+  "rollback": "Point the call site back at the general parser and drop the shape check. The rule returns to the behaviour VELDO-0105 shipped, and no evidence is invalidated.",
+  "review": "PENDING"
+}

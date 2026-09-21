@@ -141,6 +141,28 @@ else:
             "fix_validation:\n"
             "  required: true\n"
             "  from_commit: " + _v106_ZERO + "\n", _v106_ZERO),
+        # The whole document indented. The general parser reads this perfectly well; the reader
+        # anchored on column zero and answered "no such key", and no such key reads as advisory, so
+        # the owner's armed rule switched itself off over whitespace.
+        "indented_document": (
+            "  schema: veldo.policy/v1\n"
+            "  fix_validation:\n"
+            "    required: true\n"
+            "    from_commit: " + _v106_LINE + "\n", _v106_LINE),
+        # A quoted value carrying a comma AND the text of the opposite setting. The naive comma
+        # split made the tail of the note a second `required` pair that overwrote the owner's own,
+        # so the armed rule read as OFF and every bundle it should have refused passed.
+        "quoted_comma_carrying_the_opposite": (
+            "fix_validation: {required: true, from_commit: " + _v106_LINE
+            + ", note: \"do not change this, required: false\"}\n", _v106_LINE),
+        # A member whose own value is a deeper block containing the opposite setting. Only the
+        # block's direct members are its settings.
+        "nested_member_value": (
+            "fix_validation:\n"
+            "  required: true\n"
+            "  meta:\n"
+            "    required: false\n"
+            "  from_commit: " + _v106_LINE + "\n", _v106_LINE),
     }
 
     def _v106_at_call_site(organ, text):
@@ -180,13 +202,17 @@ else:
     (_v106_repo / ".veldo" / "policy.yaml").write_text(_v106_SHAPES["quoted_and_a_hash_in_a_string"][0])
     _v106_note = FV106.read_policy(_v106_repo / ".veldo" / "policy.yaml").get("fix_validation", {}).get("note", "")
 
-    expect("VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all six shapes the owner's file "
+    expect("VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all nine shapes the owner's file "
            "can take - block and inline, with and without a trailing comment, with quoted values and a hash "
-           "inside a string, and with a leading-zero value a general parser would coerce - the call site reads "
-           "the flag as REQUIRED and the start line exactly as written, and refuses the bundle. The general "
-           "parser's answer is computed beside it on the same text and disagrees on four of the six, which is "
-           "the silent return to advisory this item exists to stop; DRIVEN: a copy whose call site reads the "
-           "policy with that general parser answers differently on those same shapes",
+           "inside a string, with a leading-zero value a general parser would coerce, with the whole document "
+           "indented, with a quoted value that carries a comma AND the text of the opposite setting, and with a "
+           "member whose own value is a deeper block carrying the opposite setting - the call site reads the "
+           "flag as REQUIRED and the start line exactly as written, and refuses the bundle. The last three are "
+           "the two bypasses an unbriefed Codex review found on the first landing plus the nesting case beside "
+           "them: each one made the armed rule read as OFF with nothing failing anywhere. The general parser's "
+           "answer is computed beside it on the same text and disagrees on at least four, which is the silent "
+           "return to advisory this item exists to stop; DRIVEN: a copy whose call site reads the policy with "
+           "that general parser answers differently on those same shapes",
            all(ok for _, ok in _v106_read_ok)
            and sum(1 for _, d in _v106_general_disagrees if d) >= 4
            and sum(1 for _, d in _v106_mutant_differs if d) >= 4
@@ -225,6 +251,38 @@ else:
            and _v106_scope["empty"]["reason"] == "no start line recorded"
            and all("is not a commit id" not in _v106_scope_mut[k]["reason"] for k in ("branch", "tag")))
 
+    # ---- AC4: a fix_validation block that cannot be read is REQUIRED, never quietly advisory ------
+    _v106_UNREADABLE = {
+        "a_scalar_not_a_mapping": "fix_validation: true\n",
+        "an_unclosed_inline_mapping": "fix_validation: {required: true\n",
+        "a_key_with_no_settings_under_it": "fix_validation:\nversion: 1\n",
+    }
+    _v106_M_swallow = _v106_organ("swallow", [
+        ('        parsed = {FLAG_KEY: {"required": "true"}}', "        parsed = {}")])
+    _v106_closed, _v106_open = [], []
+    for _v106_name, _v106_text in _v106_UNREADABLE.items():
+        _v106_o, _v106_e = _v106_at_call_site(FV106, _v106_text)
+        _v106_closed.append((_v106_name, "could not be read" in _v106_o
+                             and "fix validation required," in _v106_o and _v106_e >= 1))
+        _v106_mo, _v106_me = _v106_at_call_site(_v106_M_swallow, _v106_text)
+        _v106_open.append((_v106_name, "fix validation advisory," in _v106_mo and _v106_me == 0))
+    # A file with NO fix_validation key at all is a different thing: a repository that never adopted
+    # the rule is advisory, and that is correct. This is the case the row must NOT catch.
+    _v106_never_adopted, _v106_na_errs = _v106_at_call_site(
+        FV106, "schema: veldo.policy/v1\nversion: 1\n")
+
+    expect("VELDO-0106 AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent: a fix_validation block "
+           "written as a scalar, as an unclosed inline mapping, or as a key with nothing under it is REFUSED "
+           "by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and "
+           "says why - both moves in the strict direction, so a malformed policy on a protected path can only "
+           "make the gate harder to pass, never switch it off. A file with no fix_validation key at all stays "
+           "advisory, because a repository that never adopted the rule is not a repository with a typo; "
+           "DRIVEN: a copy that swallows the refusal and reads an empty policy instead goes advisory on all "
+           "three and passes the bundle with zero errors",
+           all(ok for _, ok in _v106_closed)
+           and all(ok for _, ok in _v106_open)
+           and "fix validation advisory," in _v106_never_adopted and _v106_na_errs == 0)
+
     # ---- the negative control: the copying is not what changes the behaviour ---------------------
     _v106_M_noop = _v106_organ("noop", [('import subprocess', '# additive no-op control\nimport subprocess')])
     _v106_control = [
@@ -234,9 +292,11 @@ else:
          _v106_scope["branch"]),
         (_v106_M_noop.start_line_scope(_v106_repo, _v106_LINE, _v106_FIX),
          _v106_scope["full_id"]),
+        (_v106_at_call_site(_v106_M_noop, _v106_UNREADABLE["a_scalar_not_a_mapping"]),
+         _v106_at_call_site(FV106, _v106_UNREADABLE["a_scalar_not_a_mapping"])),
     ]
     expect("VELDO-0106 control policyread/copying-is-not-what-changes-it: a copy of the organ carrying only an "
-           "added comment answers exactly as the original does on the three cases the rows above turn on, so "
+           "added comment answers exactly as the original does on the four cases the rows above turn on, so "
            "the difference each DRIVEN mutant shows is the mutation and not the copying",
            all(a == b for a, b in _v106_control))
 

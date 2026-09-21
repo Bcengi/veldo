@@ -201,40 +201,97 @@ def _strip_comment(line: str) -> str:
     return "".join(out).rstrip()
 
 
+def _split_unquoted(text: str, sep: str, maxsplit: int = -1) -> list:
+    """Split on SEP, ignoring any separator inside single or double quotes.
+
+    The naive split was a BYPASS, not a tidiness problem. `{required: true, note: "leave this,
+    required: false"}` split at the comma inside the note, the fragment after it parsed as a second
+    `required` pair, and it overwrote the owner's own setting: the armed rule read as OFF and every
+    bundle it should have refused passed with zero errors. A quoted string is one value."""
+    out, cur, quote = [], [], None
+    for ch in text:
+        if quote:
+            cur.append(ch)
+            if ch == quote:
+                quote = None
+            continue
+        if ch in "\"'":
+            quote = ch
+            cur.append(ch)
+            continue
+        if ch == sep and (maxsplit < 0 or len(out) < maxsplit):
+            out.append("".join(cur))
+            cur = []
+            continue
+        cur.append(ch)
+    out.append("".join(cur))
+    return out
+
+
 def read_policy(policy_path) -> dict:
     """The fix_validation block of the policy file, as a mapping. A deliberately small reader for the
-    ONE key this organ owns: the block written inline ({required: true}) or as indented lines, with a
-    trailing comment or quotes in either form. The AUTHORITY on the flag is flag_from_policy, which
-    takes an already-parsed mapping; THIS reader is what produces that mapping everywhere the owner's
-    two settings are read - the proof-bundle check in this module, the command line and the rows.
+    ONE key this organ owns: the block written inline ({required: true}) or as indented lines, at any
+    indentation, with a trailing comment or quotes in either form. The AUTHORITY on the flag is
+    flag_from_policy, which takes an already-parsed mapping; THIS reader is what produces that
+    mapping everywhere the owner's two settings are read - the proof-bundle check in this module, the
+    command line and the rows.
+
     The validator's general front-matter parser must NOT be used for this file: it strips a
     whole-line comment and not a trailing one, so `required: true  # armed` reads as false, and it
     coerces a digit-only value to an integer, so a start line of 0123456 loses its leading zero. It
     is not taught to do better because 55 of this repository's 328 specifications and plans parse
-    differently under that change, measured by VELDO-0106's own row rather than pinned here. An unreadable or absent policy is an empty mapping, which reads as advisory."""
+    differently under that change, measured by VELDO-0106's own row rather than pinned here.
+
+    THREE ANSWERS. No policy file, or a file with no fix_validation key at all, is an empty mapping:
+    a repository that never adopted the rule is advisory and that is correct. A block this reader can
+    read is that block. A fix_validation key that is PRESENT and yields nothing raises, because the
+    one answer this reader must never give is a quiet "off" for a setting the owner did write: every
+    way of failing here has to land on the strict side."""
     try:
         lines = Path(policy_path).read_text().splitlines()
     except OSError:
         return {}
     for i, raw in enumerate(lines):
-        if not raw.startswith(FLAG_KEY + ":"):
+        stripped = raw.lstrip()
+        # AT ANY INDENTATION. Anchoring on column zero meant that indenting the document - which the
+        # general parser reads perfectly well - made this reader answer "no such key", and no such
+        # key reads as advisory. The owner's armed rule switched itself off over whitespace.
+        if not stripped.startswith(FLAG_KEY + ":"):
             continue
-        rest = _strip_comment(raw[len(FLAG_KEY) + 1:]).strip()
+        indent = len(raw) - len(stripped)
+        rest = _strip_comment(stripped[len(FLAG_KEY) + 1:]).strip()
         pairs = []
         if rest.startswith("{"):
-            pairs = [p for p in rest.strip("{}").split(",") if p.strip()]
+            if not rest.endswith("}"):
+                raise ValidationError(
+                    f"{policy_path}: the {FLAG_KEY} inline mapping is not closed: {rest!r}")
+            pairs = [p for p in _split_unquoted(rest[1:-1], ",") if p.strip()]
+        elif rest:
+            raise ValidationError(
+                f"{policy_path}: {FLAG_KEY} must be a mapping, written inline or as indented lines; "
+                f"it carries the scalar {rest!r}")
         else:
+            member_indent = None
             for nxt in lines[i + 1:]:
                 if not nxt.strip() or nxt.lstrip().startswith("#"):
                     continue
-                if not nxt.startswith((" ", "\t")):
+                nind = len(nxt) - len(nxt.lstrip())
+                if nind <= indent:
                     break
+                if member_indent is None:
+                    member_indent = nind
+                if nind != member_indent:
+                    continue  # deeper: part of a member's own value, not a member of this block
                 pairs.append(_strip_comment(nxt).strip())
         block = {}
         for pair in pairs:
-            k, sep, v = pair.partition(":")
-            if sep:
-                block[k.strip()] = v.strip()
+            parts = _split_unquoted(pair, ":", 1)
+            if len(parts) == 2:
+                block[parts[0].strip()] = parts[1].strip()
+        if not block:
+            raise ValidationError(
+                f"{policy_path}: {FLAG_KEY} is present but this reader parsed no settings from it; "
+                "a setting the owner wrote must never read as absent")
         return {FLAG_KEY: block}
     return {}
 
@@ -462,11 +519,24 @@ def check_proof_bundle(path, manifest, root, parse_yamlish, front_matter, fail) 
     # under it, 49 of them in acceptance-criteria text and the rest in risk, constraints and status
     # fields containing a hash. It would truncate shipped specifications to fix a flag nobody had
     # tripped. VELDO-0106's AC3 row recomputes the count each run rather than pinning it.
-    parsed = read_policy(policy) if policy.is_file() else {}
+    unreadable = ""
+    try:
+        parsed = read_policy(policy) if policy.is_file() else {}
+    except ValidationError as e:
+        # FAIL CLOSED, LOUDLY. A fix_validation block the owner wrote and this reader cannot parse is
+        # the one case where answering "advisory" would be a lie with consequences: it switches the
+        # rule off over a typo, on a protected path, with nothing failing anywhere. So the rule is
+        # REQUIRED and the start line is empty, which puts every bundle back in scope. Both moves are
+        # in the strict direction, so a malformed policy can only ever make the gate harder to pass.
+        unreadable = str(e)
+        parsed = {FLAG_KEY: {"required": "true"}}
     required = flag_from_policy(parsed)
     start_line = start_line_from_policy(parsed)
     state = "required" if required else "advisory"
     line_state = f"from {start_line[:12]}" if start_line else "no start line"
+    if unreadable:
+        print(f"  {path}: the policy could not be read ({unreadable}); the rule is treated as REQUIRED "
+              "with every bundle in scope, because a setting the owner wrote must never read as absent")
     proof_dir = Path(path).parent
     record = None
     rp = proof_dir / RECORD_FILE
