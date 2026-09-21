@@ -16,7 +16,6 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_relay.py"
   - ".veldo/control_relay.py"
-  - "packs/*/.veldo/control_relay.py"
   - "scripts/suites/*_veldo_0108_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"

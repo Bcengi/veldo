@@ -16,7 +16,6 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_client.py"
   - ".veldo/control_client.py"
-  - "packs/*/.veldo/control_client.py"
   - "scripts/suites/*_veldo_0107_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"

@@ -16,7 +16,6 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_enrollment.py"
   - ".veldo/control_enrollment.py"
-  - "packs/*/.veldo/control_enrollment.py"
   - "scripts/suites/*_veldo_0029_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -113,5 +112,11 @@ Nothing today runs the authority as a service or across clones, so the two have 
 This item decides WHICH store. Reaching it is three separate items: the authenticated local IPC client is VELDO-0107, the authenticated SSH command relay is VELDO-0108, and what happens when the authority is unreachable is VELDO-0109. Service installation is W32 and worker clone provisioning is W27.
 
 ## Notes
+
+**The footprint names two copies, not nine.** `scripts/publish.py` composes every pack from `engine/`
+at publication, so the private repository keeps one base and no copies; a pack's own file wins where
+it has one, and no pack carries a `control_` module. Listing `packs/*/.veldo/` in the footprint would
+have asked for seven files in git that the release builds anyway, which is seven things to drift.
+
 
 This item was W14 in revision 1 as a single specification carrying the binding, both transports and the unavailable case. Dmitry split it on 2026-09-21: four criteria that each needed their own set, their own falsifier and their own fixture do not belong in one item, and an item that cannot close is not a smaller risk than four that can.
