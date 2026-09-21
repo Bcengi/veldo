@@ -1,8 +1,8 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0106",
-  "commit": "a7b9e8a14e2bed5623b45a24726e4cb3fe995032",
-  "taken_at": "2026-09-21T16:38:38Z",
+  "commit": "02d5b9cbac3e2b69e79bb260d67c4d741283dc73",
+  "taken_at": "2026-09-21T16:38:59Z",
   "fragment": "scripts/suites/45_veldo_0106_policyread.py",
   "fragment_sha256": "34e7537e8cdc16c5fbfe47b34191caed0673d7ed47c16db219e33b1e56176305",
   "description": "One run of the spec's suite fragment with every row recorded. The DRIVEN rows mutate a copy of .veldo/fix_validation_record.py (beside copies of its two siblings) or a copy of .veldo/validate.py (taken with the whole of .veldo beside it, because validate.py resolves its siblings from its own location), run the same real git fixture and the same real corpus, and require the named row red while the unmutated copy passes it. One row is the negative control: a copy carrying only an added comment, required to agree with the original on every case the other rows turn on. The three falsifiers were ALSO driven against the repository's own files rather than only against copies: see external_drives below. No model is called and nothing is spent.",

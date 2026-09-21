@@ -1,1 +1,1 @@
-{"commit":"2ea839f58d4d0363cfd5cfa56d3be2957d0a0671","status":"green","at":"2026-09-21T13:30:37Z","checks_run":8,"checks_na":15,"veldo_version":"3.10.1","tree":"clean"}
+{"commit":"02d5b9cbac3e2b69e79bb260d67c4d741283dc73","status":"red","at":"2026-09-21T16:47:03Z","checks_run":8,"checks_na":15,"veldo_version":"3.10.1","tree":"2 dirty path(s)"}
