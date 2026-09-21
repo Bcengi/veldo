@@ -434,6 +434,15 @@
     "46_veldo_0029_enrollment"
    ],
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_enrollment.py by path, and mutated copies of it under a temporary directory. It builds two real git repositories there, a linked worktree of the first, two clones of them at fresh paths and a directory that is not a repository at all, and enrolls them through the real call with an HMAC signer the suite supplies (the module holds no key material and takes signing and verification as callables). It writes ONLY under that temporary directory, and it changes the process's current directory and three environment variables for one row, restoring both in a finally block, because that row's whole point is that those things decide nothing. It stands down by name when git is absent."
+  },
+  {
+   "name": "47_veldo_0107_ipc",
+   "file": "47_veldo_0107_ipc.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "47_veldo_0107_ipc"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the client under a temporary directory. It builds two real git repositories there, enrolls them against two different stores, and starts TWO REAL AUTHORITY CHILD PROCESSES on real AF_UNIX sockets through scripts/suites/support/v107_authority_runner.py, each stopped by a flag file in a finally block and killed if it does not stop. It writes only under that temporary directory, and it changes the process's current directory and two environment variables for one row, restoring both in a finally block, because that row's whole point is that those things decide nothing. It stands down by name when git is absent or when the platform does not report SO_PEERCRED, and again by name if the runner script is missing."
   }
  ]
 }
