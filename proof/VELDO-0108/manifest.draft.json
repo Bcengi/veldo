@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0108",
-  "commit": "PENDING",
+  "commit": "5ec4793d3b500a803c6d321c2d166e89bbfae952",
   "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; Codex validates this item in the batch of 2026-09-22",
-  "produced_at": "PENDING",
+  "produced_at": "2026-09-21T18:43:30Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -48,18 +48,20 @@
   "checks": [
     {
       "name": "gate-implementation",
-      "status": "PENDING",
+      "status": "passed",
       "command": "bash scripts/verify.sh",
-      "exit_code": "PENDING",
-      "commit": "PENDING",
+      "exit_code": 0,
+      "commit": "5ec4793d3b500a803c6d321c2d166e89bbfae952",
       "ref": "proof/VELDO-0108/gate-implementation.log",
-      "detail": "PENDING"
+      "detail": "GATE GREEN at 5ec4793d3b50 against a clean tree, with this item and the two beside it in the tree. The run before it was RED on the repository's non-ASCII sweep, because VELDO-0108's byte-exactness row carried two payloads as literal characters; the gate was right, and the reason is the row's own subject, since a source file holding those bytes is one a careless editor can silently re-encode. A green gate here means the tree is consistent; it is not evidence that the code is right, and this item's own history says why."
     }
   ],
   "artifacts": [
     "proof/VELDO-0108/driven.json",
     "proof/VELDO-0108/drive.py",
-    "proof/VELDO-0108/README.md"
+    "proof/VELDO-0108/README.md",
+    "proof/VELDO-0108/gate-implementation.log",
+    "proof/VELDO-0108/log-redactions.json"
   ],
   "rollback": "Remove the relay's entry from authorized_keys. Remote clients lose access, local clients are unaffected, and no state is lost. Nothing in the repository depends on the relay yet.",
   "review": "NOT A CLAIM YET. The item is DRAFT, so by the methodology's own ready-boundary rule this bundle is held as manifest.draft.json and is not a proof: a specification must be READY before it is built and proven, and .veldo/policy_check.py refuses a tree where a draft spec carries a manifest.json. It becomes manifest.json when Dmitry promotes VELDO-0108 to ready, and the landing approval is a separate act after that. The drive found THREE faults in the SUITE rather than in the code, all recorded in driven.json under suite_faults_the_drive_found: a helper that could hang the gate, an unguarded index that killed a run mid-suite, and a negative control asserting literals."

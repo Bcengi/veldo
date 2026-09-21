@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0107",
-  "commit": "PENDING",
+  "commit": "5ec4793d3b500a803c6d321c2d166e89bbfae952",
   "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; Codex validates this item in the batch of 2026-09-22",
-  "produced_at": "PENDING",
+  "produced_at": "2026-09-21T18:43:30Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -43,12 +43,12 @@
   "checks": [
     {
       "name": "gate-implementation",
-      "status": "PENDING",
+      "status": "passed",
       "command": "bash scripts/verify.sh",
-      "exit_code": "PENDING",
-      "commit": "PENDING",
+      "exit_code": 0,
+      "commit": "5ec4793d3b500a803c6d321c2d166e89bbfae952",
       "ref": "proof/VELDO-0107/gate-implementation.log",
-      "detail": "PENDING"
+      "detail": "GATE GREEN at 5ec4793d3b50 against a clean tree, with this item and the two beside it in the tree. The run before it was RED on the repository's non-ASCII sweep, because VELDO-0108's byte-exactness row carried two payloads as literal characters; the gate was right, and the reason is the row's own subject, since a source file holding those bytes is one a careless editor can silently re-encode. A green gate here means the tree is consistent; it is not evidence that the code is right, and this item's own history says why."
     }
   ],
   "artifacts": [
