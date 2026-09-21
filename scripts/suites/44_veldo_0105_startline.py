@@ -45,7 +45,9 @@ def _v105_organ(tag, edits=()):
     return _v105_load("v105_record_" + tag, d / "fix_validation_record.py")
 
 
-ANCESTRY_105 = '    if _is_ancestor(repo, start, commit):'
+ANCESTRY_105 = '        answers[name] = _is_ancestor(repo, start, c)'
+UNANSWERABLE_105 = '    if any(a is None for a in answers.values()) or not answers:'
+POSITIONS_105 = '    for name, c in (("manifest", commit), ("history", landed)):'
 UNRESOLVED_105 = '''    if not _commit_exists(repo, start):
         return {"recorded": start, "resolved": False, "excluded": False,
                 "reason": f"the recorded start line {start[:12]} is not a commit in this repository"}'''
@@ -130,18 +132,20 @@ else:
     _v105_at_line = _v105_check(FV105, _v105_b_new, _v105_LINE, _v105_LINE)
     _v105_after = _v105_check(FV105, _v105_b_new, _v105_NEW_F, _v105_LINE)
     _v105_branch = _v105_check(FV105, _v105_b_br, _v105_BR_F, _v105_LINE)
-    _v105_M_inverted = _v105_organ("inverted", [(ANCESTRY_105, '    if not _is_ancestor(repo, start, commit):')])
+    _v105_M_inverted = _v105_organ("inverted", [(ANCESTRY_105, '        answers[name] = not _is_ancestor(repo, start, c)')])
     _v105_old_under_mutant = _v105_check(_v105_M_inverted, _v105_b_old, _v105_OLD_F, _v105_LINE)
 
     expect("VELDO-0105 AC1 proofcheck/start-line-excludes-history: a bundle that landed before the recorded start "
            "line is not applicable and says so, and is never refused for a missing validation record; one at the "
-           "line and one after it are both in scope and both refused; a bundle on a branch that never contains "
+           "line itself and one after it are both in scope and both refused, so the commit the owner names is "
+           "bound rather than skipped; a bundle on a branch that never contains "
            "the line is excluded too, which is the case a naive comparison gets wrong; DRIVEN: a copy with the "
            "ancestry test inverted judges the bundle that predates the line",
            _v105_old_excluded["applicable"] is False
            and _v105_old_excluded["start_line"]["excluded"] is True
            and "before the start line" in _v105_old_excluded["start_line"]["reason"]
            and _v105_old_excluded["problems"] == [] and _v105_old_excluded["refuses"] is False
+           and _v105_at_line["applicable"] is True and _v105_at_line["refuses"] is True
            and _v105_after["applicable"] is True and _v105_after["refuses"] is True
            and [p["code"] for p in _v105_after["problems"]] == [FV105.NO_RECORD]
            and _v105_branch["applicable"] is False and _v105_branch["start_line"]["excluded"] is True
@@ -170,29 +174,99 @@ else:
            and _v105_unknown_under_mutant["refuses"] is False)
 
     # ---- AC3: nothing the author writes can move the line ---------------------------------------
-    # The manifest and the validation record both carry a well-formed later line. They are present
-    # and correct in shape, so this row fails if they are read AT ALL rather than merely absent.
-    _v105_author_man = {"schema": "veldo.proof/v1", "spec_id": "VELDO-9105", "commit": _v105_OLD_F,
-                        "fix_validation": {"from_commit": _v105_OLD_R}, "from_commit": _v105_OLD_R}
+    # The manifest and the validation record both carry a well-formed start line of their own,
+    # LATER than the policy's, which is the direction that would exempt the bundle. They are present
+    # and correct in shape, so this row fails if they are read at all rather than merely absent.
+    _v105_author_man = {"schema": "veldo.proof/v1", "spec_id": "VELDO-9105", "commit": _v105_NEW_F,
+                        "fix_validation": {"from_commit": _v105_NEW_F}, "from_commit": _v105_NEW_F}
     _v105_author_rec = {"schema": FV105.RECORD_SCHEMA, "spec_id": "VELDO-9105",
-                        "reviewed_commit": _v105_OLD_R, "fixed_commit": _v105_OLD_F,
-                        "from_commit": _v105_OLD_R, "fix_validation": {"from_commit": _v105_OLD_R},
+                        "reviewed_commit": _v105_NEW_R, "fixed_commit": _v105_NEW_F,
+                        "from_commit": _v105_NEW_F, "fix_validation": {"from_commit": _v105_NEW_F},
                         "findings": []}
-    _v105_author = FV105.check_bundle(_v105_author_man, _v105_author_rec, _v105_repo, _v105_b_old,
+    _v105_author = FV105.check_bundle(_v105_author_man, _v105_author_rec, _v105_repo, _v105_b_new,
                                       True, "proven", start_line=_v105_LINE)
+    # The mutant reads the author's value INSTEAD of the owner's, under the same call. Its line is
+    # the bundle's own commit, so under it the bundle is at its own start line and stays in scope
+    # while the owner's line would have put it there too; the difference the row turns on is the
+    # RECORDED line, which is what the author must not be able to move.
     _v105_M_manifest = _v105_organ("frommanifest", [
-        ('    scope = start_line_scope(repo, start_line or "", commit)',
-         '    scope = start_line_scope(repo, start_line or (manifest.get("from_commit") or ""), commit)')])
+        ('    scope = start_line_scope(repo, start_line or "", commit, bundle_landed_at(repo, proof_dir))',
+         '    scope = start_line_scope(repo, manifest.get("from_commit") or start_line or "", commit, '
+         'bundle_landed_at(repo, proof_dir))')])
     _v105_author_under_mutant = _v105_M_manifest.check_bundle(
-        _v105_author_man, _v105_author_rec, _v105_repo, _v105_b_old, True, "proven", start_line="")
+        _v105_author_man, _v105_author_rec, _v105_repo, _v105_b_new, True, "proven",
+        start_line=_v105_LINE)
 
-    expect("VELDO-0105 AC3 proofcheck/start-line-not-author-writable: a bundle whose manifest and whose validation "
-           "record both carry a well-formed start line of their own is still judged against the owner's line in the "
-           "policy, so the author's values change nothing and the bundle stays excluded; DRIVEN: a copy that falls "
-           "back to the manifest's value when the policy names none reads the author's line and puts the bundle "
-           "back in scope on the author's say-so",
-           _v105_author["applicable"] is False and _v105_author["start_line"]["recorded"] == _v105_LINE
-           and _v105_author_under_mutant["applicable"] is True)
+    expect("VELDO-0105 AC3 proofcheck/start-line-not-author-writable: a bundle whose manifest and whose "
+           "validation record both carry a well-formed start line of their own, later than the owner's, is "
+           "still judged against the owner's line, and the recorded line in the result is the owner's; DRIVEN: "
+           "a copy that prefers the manifest's value reads the author's and records that one instead, under "
+           "the identical call",
+           _v105_author["start_line"]["recorded"] == _v105_LINE
+           and _v105_author_under_mutant["start_line"]["recorded"] == _v105_NEW_F
+           and _v105_author_under_mutant["start_line"]["recorded"] != _v105_author["start_line"]["recorded"])
+
+    # ---- the two defects an adversarial read found after the landing ----------------------------
+    # F1: the manifest's commit is a field the AUTHOR writes, so backdating it exempted the bundle.
+    # The bundle's position is now also asked of git, and either position being in scope keeps it in.
+    _v105_backdated = dict(_v105_author_man, commit=_v105_OLD_F)
+    _v105_bundle_in_repo = _v105_repo / "proof" / "VELDO-9105"
+    (_v105_bundle_in_repo / "capsules" / "F-1").mkdir(parents=True)
+    (_v105_bundle_in_repo / "capsules" / "F-1" / "repro.py").write_text("print('reproduction for F-1')\n")
+    CAP105.write_manifest(_v105_bundle_in_repo / "capsules" / "F-1", "F-1", _v105_NEW_R,
+                          ["python3", CAP105.MOUNT + "/repro.py"],
+                          {"kind": "stdout_contains", "value": "reproduction"}, "the reviewer's observation")
+    _v105_git("add", "-A")
+    _v105_git("commit", "-q", "-m", "the bundle lands, after the line")
+    _v105_honest = FV105.check_bundle(_v105_author_man, None, _v105_repo, _v105_bundle_in_repo, True, "proven",
+                                      start_line=_v105_LINE)
+    _v105_lied = FV105.check_bundle(_v105_backdated, None, _v105_repo, _v105_bundle_in_repo, True, "proven",
+                                    start_line=_v105_LINE)
+    _v105_M_manifest_only = _v105_organ("manifestonly", [
+        (POSITIONS_105, '    for name, c in (("manifest", commit),):')])
+    _v105_lied_under_mutant = _v105_M_manifest_only.check_bundle(
+        _v105_backdated, None, _v105_repo, _v105_bundle_in_repo, True, "proven", start_line=_v105_LINE)
+
+    expect("VELDO-0105 AC3 proofcheck/backdating-the-manifest-buys-nothing: a bundle committed after the start "
+           "line is in scope and refused whether its manifest names its real commit or one from before the "
+           "line, because git is asked where the bundle actually landed and either position being in scope "
+           "keeps it there; DRIVEN: a copy that asks only the manifest lets the backdated claim exempt the "
+           "bundle, which is the author editing his way out of the rule that gates him",
+           _v105_honest["applicable"] is True and _v105_honest["refuses"] is True
+           and _v105_lied["applicable"] is True and _v105_lied["refuses"] is True
+           and _v105_lied["start_line"]["positions"].get("history") is True
+           and _v105_lied_under_mutant["applicable"] is False
+           and _v105_lied_under_mutant["refuses"] is False)
+
+    # F3: git answers "not an ancestor" and "I cannot answer" with different codes, and treating the
+    # second as the first excluded the bundle, which is the fail-OPEN direction. A shallow clone is
+    # the ordinary way to meet it.
+    _v105_M_collapse = _v105_organ("collapse", [
+        ('    if r.returncode in (0, 1):\n        return r.returncode == 0\n    return None',
+         '    return r.returncode == 0')])
+    # The shape an ordinary CI checkout has: a shallow clone of the tip, plus the base commit
+    # fetched by name. Both objects are then present and the history between them is not, which is
+    # the one case where git answers neither yes nor no.
+    _v105_shallow = _v105_tmp / "shallow"
+    _v105_sp.run(["git", "-C", str(_v105_repo), "config", "uploadpack.allowReachableSHA1InWant", "true"],
+                 capture_output=True, text=True, env=_v105_env)
+    _v105_sp.run(["git", "clone", "-q", "--depth", "1", "--branch", "trunk",
+                  "file://" + str(_v105_repo), str(_v105_shallow)], capture_output=True, text=True,
+                 env=_v105_env)
+    _v105_sp.run(["git", "-C", str(_v105_shallow), "fetch", "-q", "--depth", "1", "origin", _v105_LINE],
+                 capture_output=True, text=True, env=_v105_env)
+    _v105_shallow_ok = (_v105_shallow / ".git").exists() and FV105._commit_exists(_v105_shallow, _v105_LINE)
+    if _v105_shallow_ok:
+        _v105_sh_fixed = FV105.start_line_scope(_v105_shallow, _v105_LINE, _v105_NEW_F)
+        _v105_sh_broken = _v105_M_collapse.start_line_scope(_v105_shallow, _v105_LINE, _v105_NEW_F)
+    expect("VELDO-0105 AC2 proofcheck/unanswerable-ancestry-fails-closed: in a shallow clone, where both "
+           "commits exist as objects but the history between them does not, git answers neither yes nor no; "
+           "the bundle is KEPT IN SCOPE and the reason says git cannot tell, rather than being excluded on a "
+           "false statement about history; DRIVEN: a copy collapsing that third answer into no excludes the "
+           "bundle, which switches the whole rule off on an ordinary shallow checkout",
+           (not _v105_shallow_ok) or (
+               _v105_sh_fixed["excluded"] is False and "cannot say" in _v105_sh_fixed["reason"]
+               and _v105_sh_broken["excluded"] is True))
 
     # ---- the negative control: the mutant machinery itself --------------------------------------
     # Every row above proves its point by showing a MUTATED copy behaving differently. That argument
@@ -211,51 +285,47 @@ else:
            "difference each DRIVEN mutant shows is the mutation and not the copying",
            all(a == b for a, b in _v105_control))
 
-    # ---- the whole landed corpus, through the real command, with the line set at HEAD ------------
-    # The thing that made this item exist: with the flag on and no line, thirteen shipped bundles go
-    # red. With the line recorded, the same command over the same corpus refuses none of them.
-    _v105_pol_backup = (ROOT / ".veldo" / "policy.yaml").read_text()
-
-    def _v105_without_fix_validation(text):
-        """The policy with any fix_validation block removed, so this row COMPOSES the policy it wants
-        rather than appending to whatever is there. Appending was enough only while the repository's
-        own policy had no such block, which is a fact about today and not an invariant: the moment
-        the owner set the flag and the line, a second block appeared below the first, the parser
-        took the first, and this row's no-line case silently stopped being a no-line case."""
-        out, skipping = [], False
-        for line in text.splitlines(keepends=True):
-            if line.startswith("fix_validation:"):
-                skipping = True
-                continue
-            if skipping:
-                if line.strip() == "" or line.startswith((" ", "\t")):
-                    continue
-                skipping = False
-            out.append(line)
-        return "".join(out)
-
-    _v105_pol_clean = _v105_without_fix_validation(_v105_pol_backup)
+    # ---- the whole landed corpus, over the real bundles, without touching a shared file ----------
+    # The thing this item exists for: with the flag on and no line, bundles that shipped before the
+    # runner and the assessor existed are refused; with the line recorded, none of them are.
+    #
+    # An earlier version of this row answered that by writing the repository's REAL policy file and
+    # restoring it in a finally block. That is a shared, protected file, and a nested selftest child
+    # reads it while this row holds it rewritten, which turned two unrelated suites red; a kill
+    # between the write and the restore would also have left the owner's start line deleted. So the
+    # corpus is read the way the check reads it, in this process, with the setting passed as an
+    # argument and nothing on disk touched.
     _v105_head = _v105_sp.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"],
                               capture_output=True, text=True).stdout.strip()
-    _v105_corpus = {}
-    try:
-        for _v105_tag, _v105_block in (
-                ("no_line", "fix_validation:\n  required: true\n"),
-                ("with_line", f"fix_validation:\n  required: true\n  from_commit: {_v105_head}\n")):
-            (ROOT / ".veldo" / "policy.yaml").write_text(_v105_pol_clean + _v105_block)
-            _v105_corpus[_v105_tag] = _v105_sp.run(
-                ["python3", str(ROOT / ".veldo" / "validate.py"), "all"],
-                capture_output=True, text=True, cwd=str(ROOT))
-    finally:
-        (ROOT / ".veldo" / "policy.yaml").write_text(_v105_pol_backup)
+    _v105_bundles = sorted((ROOT / "proof").glob("*/manifest.json"))
 
-    expect("VELDO-0105 AC1 proofcheck/the-corpus-this-item-exists-for: running the real validator over this "
-           "repository's own landed corpus with the flag on and NO line recorded refuses bundles that shipped "
-           "before the machinery existed, and the same run with the line recorded at HEAD refuses none of them "
-           "and names the line in every result; the policy file is restored either way",
-           _v105_corpus["no_line"].returncode != 0
-           and _v105_corpus["with_line"].returncode == 0
-           and "before the start line" in _v105_corpus["with_line"].stdout
-           and f"from {_v105_head[:12]}" in _v105_corpus["with_line"].stdout
-           and "fix_validation" not in _v105_pol_clean
-           and (ROOT / ".veldo" / "policy.yaml").read_text() == _v105_pol_backup)
+    def _v105_over_corpus(line):
+        refused = []
+        for _v105_mp in _v105_bundles:
+            try:
+                _v105_man = _v105_json.loads(_v105_mp.read_text())
+            except Exception:  # noqa: BLE001 - an unreadable manifest is another check's problem
+                continue
+            _v105_rp = _v105_mp.parent / FV105.RECORD_FILE
+            _v105_rec = None
+            if _v105_rp.is_file():
+                try:
+                    _v105_rec = _v105_json.loads(_v105_rp.read_text())
+                except Exception:  # noqa: BLE001
+                    pass
+            res = FV105.check_bundle(_v105_man, _v105_rec, ROOT, _v105_mp.parent, True, None,
+                                     start_line=line)
+            if res["refuses"]:
+                refused.append(_v105_mp.parent.name)
+        return refused
+
+    _v105_no_line_refused = _v105_over_corpus("")
+    _v105_with_line_refused = _v105_over_corpus(_v105_head)
+
+    expect("VELDO-0105 AC1 proofcheck/the-corpus-this-item-exists-for: over this repository's own landed proof "
+           "bundles, with the rule required and NO start line, bundles that shipped before the runner and the "
+           "assessor existed are refused; with the line recorded at HEAD, not one of them is. Read in this "
+           "process against the real bundles: no shared file is written, so a nested run cannot see a rewritten "
+           "policy and a kill cannot leave the owner's line deleted",
+           len(_v105_bundles) > 100 and len(_v105_no_line_refused) > 0
+           and _v105_with_line_refused == [])

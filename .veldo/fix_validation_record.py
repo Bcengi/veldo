@@ -105,14 +105,37 @@ def start_line_from_policy(policy: dict) -> str:
     return ""
 
 
-def _is_ancestor(repo, older: str, newer: str) -> bool:
-    """Did `newer` come after `older` in THIS repository's history? Git answers it, not the bundle."""
+def _is_ancestor(repo, older: str, newer: str):
+    """Did `newer` come after `older` in THIS repository's history?
+
+    THREE ANSWERS, NOT TWO. git returns 0 for yes, 1 for no, and anything else, usually 128, for
+    "I cannot answer": the commonest cause is a shallow clone, where the objects exist but the
+    history between them does not. Collapsing that third answer into "no" excluded the bundle,
+    which is the fail-OPEN direction, and on an ordinary shallow CI checkout it switched the whole
+    rule off while printing a false statement about history. None means unanswerable, and the
+    caller keeps the bundle in scope."""
     r = subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", older, newer],
                        capture_output=True, timeout=60)
-    return r.returncode == 0
+    if r.returncode in (0, 1):
+        return r.returncode == 0
+    return None
 
 
-def start_line_scope(repo, start: str, commit: str) -> dict:
+def bundle_landed_at(repo, proof_dir):
+    """The commit that last changed this bundle, as THIS repository's history records it.
+
+    The manifest's own `commit` field is written by the author of the fix, and the rule the start
+    line serves exists to gate that author. Left to the manifest alone, backdating one field
+    exempted the bundle: name a commit from before the line and the rule stops applying. So the
+    bundle's position is also asked of git, which the author cannot edit from inside the bundle.
+    None when the bundle is not committed yet, which is the ordinary case while it is being built."""
+    r = subprocess.run(["git", "-C", str(repo), "log", "-1", "--format=%H", "--", str(proof_dir)],
+                       capture_output=True, text=True, timeout=60)
+    out = (r.stdout or "").strip()
+    return out if r.returncode == 0 and out else None
+
+
+def start_line_scope(repo, start: str, commit: str, landed=None) -> dict:
     """Whether this bundle is on the near side of the start line, and why.
 
     FAILS CLOSED, in both directions that matter. No line recorded leaves every bundle in scope,
@@ -125,10 +148,24 @@ def start_line_scope(repo, start: str, commit: str) -> dict:
     if not _commit_exists(repo, start):
         return {"recorded": start, "resolved": False, "excluded": False,
                 "reason": f"the recorded start line {start[:12]} is not a commit in this repository"}
-    if _is_ancestor(repo, start, commit):
-        return {"recorded": start, "resolved": True, "excluded": False,
-                "reason": f"at or after the start line {start[:12]}"}
-    return {"recorded": start, "resolved": True, "excluded": True,
+    # EVERY position this bundle can be said to occupy is asked, and ANY of them being at or after
+    # the line keeps it in scope. The manifest's commit is the author's claim; the commit that last
+    # touched the bundle is the repository's. Taking the union means backdating the claim buys
+    # nothing, and it is the fail-closed direction when the two disagree.
+    answers = {}
+    for name, c in (("manifest", commit), ("history", landed)):
+        if not c:
+            continue
+        answers[name] = _is_ancestor(repo, start, c)
+    if any(a is True for a in answers.values()):
+        where = ", ".join(n for n, a in answers.items() if a is True)
+        return {"recorded": start, "resolved": True, "excluded": False, "positions": answers,
+                "reason": f"at or after the start line {start[:12]} (by {where})"}
+    if any(a is None for a in answers.values()) or not answers:
+        return {"recorded": start, "resolved": True, "excluded": False, "positions": answers,
+                "reason": (f"git cannot say whether this bundle is after the start line {start[:12]}, "
+                           "usually a shallow clone; kept in scope")}
+    return {"recorded": start, "resolved": True, "excluded": True, "positions": answers,
             "reason": f"the bundle landed at {str(commit)[:12]}, before the start line {start[:12]}"}
 
 
@@ -345,7 +382,7 @@ def check_bundle(manifest: dict, record, repo, proof_dir, required: bool, spec_s
     # WHERE THE RULE BEGINS (VELDO-0105). A gate binds the work that comes after it, not the work
     # that shipped before it existed. Turning the flag on without this reddened thirteen bundles
     # that landed months before the runner and the assessor that produce a validation record.
-    scope = start_line_scope(repo, start_line or "", commit)
+    scope = start_line_scope(repo, start_line or "", commit, bundle_landed_at(repo, proof_dir))
     out["start_line"] = scope
     if scope["excluded"]:
         return out

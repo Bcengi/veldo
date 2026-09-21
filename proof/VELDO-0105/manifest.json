@@ -62,7 +62,8 @@
     "proof/VELDO-0105/gate-implementation.log",
     "proof/VELDO-0105/log-redactions.json",
     "proof/VELDO-0105/README.md",
-    "proof/VELDO-0105/approval-dmitry.json"
+    "proof/VELDO-0105/approval-dmitry.json",
+    "proof/VELDO-0105/approval-policy-path.json"
   ],
   "rollback": "Remove the recorded start line. The rule returns to judging every bundle, which is the behaviour VELDO-0104 shipped, and no evidence is invalidated.",
   "review": "Codex is out of quota until the batch of 2026-09-22, so by Dmitry's standing rule the author tested this item: suite 44 with all three declared falsifiers driven and a negative control showing the copying is not what changes the answer, plus the canonical gate. Codex validates the item in that batch; the review and any fixes will be recorded in this bundle. This item is itself the start line's implementation, so the rule it adds does not yet bind anything: the owner records the flag and the line after it lands."

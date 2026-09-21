@@ -1,0 +1,18 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0105-2",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0105",
+    "commit": "737794af784cfe041b057f5714bd1af2854d0bc2",
+    "paths": [
+      ".veldo/policy.yaml"
+    ],
+    "proof": "proof/VELDO-0105/manifest.json"
+  },
+  "basis": "The PROTECTED PATH approval, separate from the landing approval beside it, because changing .veldo/policy.yaml is its own act: that file is on the protected list and the agent being gated by what it says cannot be the one who decides it. Two settings are added by the commit bound here and nothing else is: fix_validation.required: true, which turns the fix-validation rule from warning to refusing, and fix_validation.from_commit, which records where the rule starts so that bundles which shipped before the runner and the assessor existed are not re-judged. ASKED AND ANSWERED over Telegram on 2026-09-21: the flag in message 28433 ('Also appoved'), answering an ask that said plainly that with it on a landing whose fix has no validation record stops passing; and the start line in 28436 ('Start line'), answering an ask that named all three options, including leaving the rule advisory and back-filling thirteen records that cannot be written honestly. WHAT THIS DOES NOT COVER: only those two keys in that one file. It authorises no other protected-path change, it is not a standing grant, and a later change to either value needs its own approval. HONEST ON SEQUENCE: the permission preceded the edit in both cases, but this record was written after the commit, when the gate correctly refused a protected-path change carrying no path-scoped approval. Nothing was pushed in between.",
+  "recorded_at": "2026-09-21T16:20:00Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approvals; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
