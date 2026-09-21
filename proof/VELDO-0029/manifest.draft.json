@@ -71,5 +71,5 @@
     "proof/VELDO-0029/approval-plan-split.json"
   ],
   "rollback": "Stop calling the resolver. Nothing else reads the binding yet: control_store still uses control_db_path, and pointing its callers here is VELDO-0107's work. A binding left on disk is inert.",
-  "review": "PENDING. The item is DRAFT and this bundle is not a landing claim: VELDO-0029 needs its own ready transition and its own landing approval, neither of which the plan-split approval grants, and it says so in its own text."
+  "review": "NOT A CLAIM YET, and the repository was right to say so. .veldo/policy_check.py refused this tree with 'a draft spec has a proof manifest (ready-boundary): VELDO-0029', which is the methodology's own rule that a specification must be READY before it is built and proven. The evidence was produced before the ready transition, so it is held as manifest.draft.json rather than presented as a proof: the work is real, the claim is premature. It becomes manifest.json when Dmitry promotes VELDO-0029 to ready, which needs his approval because the item is risk critical with human_approval required. `validate.py ready` on the specification already passes, so his approval is the only thing outstanding. Codex validates the item in the batch of 2026-09-22."
 }
