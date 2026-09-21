@@ -1,20 +1,30 @@
 {
   "schema": "veldo.driven/v1",
   "spec_id": "VELDO-0029",
-  "commit": "3a6ddb9ccb2a6ab2a60ba343d5a57d96d4f9967a",
-  "taken_at": "2026-09-21T17:38:28Z",
+  "commit": "2a3a929e43502c887345e8190c84e59c409881fa",
+  "taken_at": "2026-09-21T18:56:28Z",
   "fragment": "scripts/suites/46_veldo_0029_enrollment.py",
-  "fragment_sha256": "f1ecb8dc9505a743b8b824c3b8893741c87cd6d3bd9540d79fae8e31369625c5",
+  "fragment_sha256": "18bbdca0c4544478ba2046fbe838f80532348976febd610e9719c47da22ca9e2",
   "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy of .veldo/control_enrollment.py, runs the same real git fixtures - two clones of different repositories, a linked worktree, a directory swapped for a clone of another repository, a fresh clone of the same one, and a directory that is not a repository - and requires the named row red while the unmutated copy passes it. One row is the negative control: a copy carrying only an added comment, required to agree with the original on every case the other rows turn on. The signer is an HMAC the suite supplies, because the module holds no key material and takes signing and verification as callables; what the rows turn on is that the signature is CHECKED. No model is called and nothing is spent.",
   "external_drives": [
+    {
+      "falsifier": "AC2 enrollment/the-ambient-store-resolver-is-closed",
+      "mutation": ".veldo/control_store.py: control_db_path derives from VELDO_CONTROL_DB and then from `git rev-parse --git-common-dir` in the process's current directory again, which is the exact code that was closed",
+      "result": "the named row RED, the other five pass"
+    },
+    {
+      "falsifier": "AC2 enrollment/the-ambient-store-resolver-is-closed, the subtle shape",
+      "mutation": ".veldo/control_store.py: it refuses without a path as it should, but the environment still WINS when a path is given",
+      "result": "the named row RED, the other five pass"
+    },
     {
       "falsifier": "AC2 enrollment/ambient-sources-decide-nothing",
       "mutation": ".veldo/control_enrollment.py: _git stops stripping the GIT_ environment, which is the state the row CAUGHT before this item landed: GIT_DIR overrides `git -C`, so `git -C repoA rev-list --max-parents=0 HEAD` answered repoB's root commit while believing it had named repoA, and the identity check compared the wrong repository against the binding",
       "result": "AC2 RED, the other four rows pass"
     }
   ],
-  "rows_total": 5,
-  "rows_passed": 5,
+  "rows_total": 6,
+  "rows_passed": 6,
   "rows_failed": [],
   "driven_rows": [
     "VELDO-0029 AC1 enrollment/an-unsigned-binding-is-not-a-binding: two clones of DIFFERENT repositories, each enrolled by the real call, resolve to their own store and not to each other's; a linked worktree resolves to the same store as the clone it belongs to, because separate working copies of one clone are one enrolled clone; and a binding edited after signing is REFUSED as signature_invalid rather than obeyed. DRIVEN: a copy that skips the signature check hands back the edited binding's store, which is the whole record reduced to a file anyone can write",
@@ -51,8 +61,8 @@
       "driven": 1
     },
     "AC2": {
-      "rows": 1,
-      "passed": 1,
+      "rows": 2,
+      "passed": 2,
       "driven": 1
     },
     "AC3": {
@@ -73,6 +83,10 @@
     },
     {
       "label": "VELDO-0029 AC2 enrollment/ambient-sources-decide-nothing: with the process standing inside the OTHER enrolled repository, with VELDO_CONTROL_DB naming the other store and with GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR and GIT_OBJECT_DIRECTORY all naming the other repository, resolving the first workspace still answers the first store and reading its identity still reads its own root commits. Those four are the point: each OVERRIDES `git -C`, so passing the workspace explicitly was NOT enough and the first version of this module failed here. It now reads the environment in exactly one place and only to strip every GIT_ variable from it by prefix, never to take a value, and contains no os.getcwd and no __file__ at all. DRIVEN: a copy that resolves from the process's current directory when an explicit workspace was given answers the other store, which is what the shipped control_db_path does today",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0029 AC2 enrollment/the-ambient-store-resolver-is-closed: control_store.control_db_path REFUSES without an explicit path instead of deriving one, answers the path it is given, and answers that same path with the process standing in the other repository and VELDO_CONTROL_DB naming the other store. The module no longer contains either derivation. It had no callers, so nothing was reaching the wrong database; what existed was the means to, where the next person to want a default would find it, and this row is the guard that stops it coming back",
       "passed": true
     },
     {

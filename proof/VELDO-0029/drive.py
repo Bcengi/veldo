@@ -77,6 +77,15 @@ def main():
                         "verification as callables; what the rows turn on is that the signature is CHECKED. "
                         "No model is called and nothing is spent."),
         "external_drives": [
+            {"falsifier": "AC2 enrollment/the-ambient-store-resolver-is-closed",
+             "mutation": ".veldo/control_store.py: control_db_path derives from VELDO_CONTROL_DB and then "
+                         "from `git rev-parse --git-common-dir` in the process's current directory again, "
+                         "which is the exact code that was closed",
+             "result": "the named row RED, the other five pass"},
+            {"falsifier": "AC2 enrollment/the-ambient-store-resolver-is-closed, the subtle shape",
+             "mutation": ".veldo/control_store.py: it refuses without a path as it should, but the "
+                         "environment still WINS when a path is given",
+             "result": "the named row RED, the other five pass"},
             {"falsifier": "AC2 enrollment/ambient-sources-decide-nothing",
              "mutation": ".veldo/control_enrollment.py: _git stops stripping the GIT_ environment, which is "
                          "the state the row CAUGHT before this item landed: GIT_DIR overrides `git -C`, so "

@@ -16,6 +16,8 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_enrollment.py"
   - ".veldo/control_enrollment.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
   - "scripts/suites/*_veldo_0029_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -55,11 +57,16 @@ acceptance_criteria:
       Claim: Resolution reads the workspace it is GIVEN and nothing ambient. The process's current
       directory, VELDO_CONTROL_DB and any other environment variable, and the importing module's
       own location are each pointed at a second real repository enrolled against a second store,
-      and the answer does not move. Set: Two enrolled clones and every public routing call, run
-      with each ambient source pointed at the other one in turn. Completeness: The second
-      repository is REAL and REALLY enrolled, so the row fails if the answer is right only because
-      the alternative did not exist. Falsifier: Resolve from the current directory when an explicit
-      workspace was given; enrollment/ambient-sources-decide-nothing must fail.
+      Set: Two enrolled clones and every public routing call, run
+      with each ambient source pointed at the other one in turn; and separately
+      control_store.control_db_path, which is where the ambient resolution this item exists to
+      remove actually lived. Completeness: The second repository is REAL and REALLY enrolled, so
+      the row fails if the answer is right only because the alternative did not exist; and the
+      ambient resolver is asserted CLOSED rather than merely unused, because it had no callers and
+      an unused means is still a means. Falsifier: Resolve from the current directory when an
+      explicit workspace was given; enrollment/ambient-sources-decide-nothing must fail. And:
+      derive a store path from the environment or the current directory again;
+      enrollment/the-ambient-store-resolver-is-closed must fail.
     falsified_by: >
       Resolve from the current directory when an explicit workspace was given;
       enrollment/ambient-sources-decide-nothing must fail.
@@ -103,7 +110,7 @@ PLAN-0019 W14, revision 2. The controlling [design](../docs/design/PLAN-0019-dar
 
 **The defect this exists to remove is in shipped code and was measured.** `control_store.control_db_path` decides which database to open by reading `VELDO_CONTROL_DB` from the environment, and otherwise by running `git rev-parse --git-common-dir` in whatever directory the process is in. Two throwaway repositories and one call demonstrate it: standing in the first it answers the first repository's database, standing in the second it answers the second's, and with the environment variable set it answers neither. A command carries the repository it means, it is signed, and the signature verifies; then this decides where to write, from the caller's position rather than from the command. A correctly signed command naming one repository can commit into another and nothing in the chain notices, because nothing in the chain ever compares the two.
 
-Nothing today runs the authority as a service or across clones, so the two have never disagreed in practice. It is a loaded gun rather than a wound, and it is the reason this item is first.
+Nothing today runs the authority as a service or across clones, so the two have never disagreed in practice, and `control_db_path` has NO CALLERS at all: every place that opens the store passes an explicit path. It was a loaded gun on a shelf rather than one in anyone's hand, and it is the reason this item is first. This item CLOSES it: it now requires an explicit path and derives nothing, because an unused means is still a means, sitting exactly where the next person to want a default would find it.
 
 **What identity means here, and why a path is not one.** The binding records two things a swapped directory cannot carry over: the repository's root commits, which a different repository does not share, and a per-clone UUID written into that clone's own git common directory at enrollment, which a fresh clone of the same repository does not have. A directory replaced at the same path fails one of the two. The absolute path is recorded for diagnosis and is never an input to the decision.
 
