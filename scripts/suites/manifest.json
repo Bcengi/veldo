@@ -407,6 +407,15 @@
    "name": "shared",
    "file": "shared.py",
    "regions": "preamble and every crossing binding"
+  },
+  {
+   "name": "44_veldo_0105_startline",
+   "file": "44_veldo_0105_startline.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "44_veldo_0105_startline"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/fix_validation_record.py, .veldo/fix_validation.py and .veldo/capsule.py by path (and mutated copies under a temporary directory), builds a real git repository with a trunk carrying the start line partway along it and a branch that forks before the line and never contains it (standing down by name when git is absent), and runs `python3 .veldo/validate.py all` twice as a child process over this repository's own landed corpus with the owner flag on, once with no start line and once with one; it writes the real .veldo/policy.yaml for the duration of those two runs and restores it in a finally block, and the restoration is asserted by the row itself."
   }
  ]
 }

@@ -93,6 +93,45 @@ def flag_from_policy(policy: dict) -> bool:
     return False
 
 
+def start_line_from_policy(policy: dict) -> str:
+    """WHERE THE RULE BEGINS, as the owner recorded it: fix_validation.from_commit in the policy, or
+    empty when none is recorded. Read from the policy and NOWHERE ELSE, for the same reason the flag
+    is: a check that works out whether it applies from a field the author writes binds only the
+    authors who volunteer it, and the party this rule gates is the author of a fix. The policy file
+    is a protected path, so the owner sets the line and the gated party cannot move it."""
+    block = (policy or {}).get(FLAG_KEY)
+    if isinstance(block, dict):
+        return str(block.get("from_commit", "")).strip().strip("'\"")
+    return ""
+
+
+def _is_ancestor(repo, older: str, newer: str) -> bool:
+    """Did `newer` come after `older` in THIS repository's history? Git answers it, not the bundle."""
+    r = subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", older, newer],
+                       capture_output=True, timeout=60)
+    return r.returncode == 0
+
+
+def start_line_scope(repo, start: str, commit: str) -> dict:
+    """Whether this bundle is on the near side of the start line, and why.
+
+    FAILS CLOSED, in both directions that matter. No line recorded leaves every bundle in scope,
+    which is the behaviour VELDO-0104 shipped. A line this repository cannot resolve, from a typo or
+    from a history nobody has, ALSO leaves every bundle in scope and says so. The dangerous
+    direction is the other one: a single wrong character in a commit id quietly exempting the whole
+    corpus, which would look exactly like a rule that works."""
+    if not start:
+        return {"recorded": "", "resolved": False, "excluded": False, "reason": "no start line recorded"}
+    if not _commit_exists(repo, start):
+        return {"recorded": start, "resolved": False, "excluded": False,
+                "reason": f"the recorded start line {start[:12]} is not a commit in this repository"}
+    if _is_ancestor(repo, start, commit):
+        return {"recorded": start, "resolved": True, "excluded": False,
+                "reason": f"at or after the start line {start[:12]}"}
+    return {"recorded": start, "resolved": True, "excluded": True,
+            "reason": f"the bundle landed at {str(commit)[:12]}, before the start line {start[:12]}"}
+
+
 def _strip_comment(line: str) -> str:
     """The line without a trailing comment. A # inside quotes is text, not a comment."""
     out, quote = [], None
@@ -279,7 +318,7 @@ def write_record(runner_record: dict, assessment_record: dict, spec_id: str, rep
 
 # --- the rule over one bundle ---------------------------------------------------------------------
 
-def check_bundle(manifest: dict, record, repo, proof_dir, required: bool, spec_status=None, capsule_mod=None) -> dict:
+def check_bundle(manifest: dict, record, repo, proof_dir, required: bool, spec_status=None, capsule_mod=None, start_line=None) -> dict:
     """The rule over one proof bundle. APPLICABILITY IS DERIVED, never declared: the bundle is subject
     to this rule when it carries the reviewer's own evidence (verified capsules, or a recorded verdict)
     taken at a commit earlier than the bundle's own. An author who writes no field and an author who
@@ -302,6 +341,13 @@ def check_bundle(manifest: dict, record, repo, proof_dir, required: bool, spec_s
     missing = [c for c in (reviewed, commit) if not _commit_exists(repo, c)]
     if missing:
         out["unknown_commits"] = missing
+        return out
+    # WHERE THE RULE BEGINS (VELDO-0105). A gate binds the work that comes after it, not the work
+    # that shipped before it existed. Turning the flag on without this reddened thirteen bundles
+    # that landed months before the runner and the assessor that produce a validation record.
+    scope = start_line_scope(repo, start_line or "", commit)
+    out["start_line"] = scope
+    if scope["excluded"]:
         return out
     out["applicable"] = True
     problems = out["problems"]
@@ -350,8 +396,11 @@ def check_proof_bundle(path, manifest, root, parse_yamlish, front_matter, fail) 
     validator hands in its own reader of front matter and its own way of reporting a failure, so this
     module never has to know how that validator is put together."""
     policy = Path(root) / ".veldo" / "policy.yaml"
-    required = flag_from_policy(parse_yamlish(policy.read_text()) if policy.is_file() else {})
+    parsed = parse_yamlish(policy.read_text()) if policy.is_file() else {}
+    required = flag_from_policy(parsed)
+    start_line = start_line_from_policy(parsed)
     state = "required" if required else "advisory"
+    line_state = f"from {start_line[:12]}" if start_line else "no start line"
     proof_dir = Path(path).parent
     record = None
     rp = proof_dir / RECORD_FILE
@@ -365,17 +414,22 @@ def check_proof_bundle(path, manifest, root, parse_yamlish, front_matter, fail) 
         status = (front_matter(sp.read_text()) or {}).get("status")
         break
     try:
-        res = check_bundle(manifest, record, root, proof_dir, required, status)
+        res = check_bundle(manifest, record, root, proof_dir, required, status, start_line=start_line)
     except ValidationError as e:
         print(f"  {path}: fix validation {state}; could not read the commits it needs: {e}")
         return fail(path, f"fix validation could not read the commits it needs: {e}") if required else 0
     if not res["applicable"]:
-        why = ("the review evidence names commit(s) this repository does not have, so nothing about it can be "
-               f"counted here: {', '.join(c[:12] for c in res['unknown_commits'])}" if res.get("unknown_commits")
-               else "the bundle carries no review evidence taken before its own commit")
-        print(f"  {path}: fix validation {state} (policy fix_validation.required); not applicable: {why}")
+        scope = res.get("start_line") or {}
+        if scope.get("excluded"):
+            why = scope["reason"]
+        elif res.get("unknown_commits"):
+            why = ("the review evidence names commit(s) this repository does not have, so nothing about "
+                   f"it can be counted here: {', '.join(c[:12] for c in res['unknown_commits'])}")
+        else:
+            why = "the bundle carries no review evidence taken before its own commit"
+        print(f"  {path}: fix validation {state}, {line_state} (policy fix_validation); not applicable: {why}")
         return 0
-    print(f"  {path}: fix validation {state} (policy fix_validation.required); review evidence "
+    print(f"  {path}: fix validation {state}, {line_state} (policy fix_validation); review evidence "
           f"{res.get('evidence')} at {str(res.get('reviewed_commit'))[:12]}; fix rounds {res['rounds']}"
           f"{' - PARKED' if res['parked'] else ''}; {len(res['problems'])} problem(s)")
     errs = 0
