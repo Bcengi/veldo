@@ -93,6 +93,9 @@ def flag_from_policy(policy: dict) -> bool:
     return False
 
 
+_FULL_COMMIT_ID = re.compile(r"[0-9a-fA-F]{40}")
+
+
 def start_line_from_policy(policy: dict) -> str:
     """WHERE THE RULE BEGINS, as the owner recorded it: fix_validation.from_commit in the policy, or
     empty when none is recorded. Read from the policy and NOWHERE ELSE, for the same reason the flag
@@ -145,6 +148,16 @@ def start_line_scope(repo, start: str, commit: str, landed=None) -> dict:
     corpus, which would look exactly like a rule that works."""
     if not start:
         return {"recorded": "", "resolved": False, "excluded": False, "reason": "no start line recorded"}
+    # A COMMIT ID, by shape, before anything is resolved. A branch or tag name resolves today and
+    # to something else tomorrow, and the ref namespace is not a protected path, so the owner's
+    # line could move without the owner. An abbreviated id becomes ambiguous as history grows. And
+    # a value like 0123456 is a general parser's integer coercion showing through, which silently
+    # drops the leading zero and names a different commit. All three are refused here, and refused
+    # is IN SCOPE: a mistyped line must not exempt anything.
+    if not _FULL_COMMIT_ID.fullmatch(start):
+        return {"recorded": start, "resolved": False, "excluded": False,
+                "reason": (f"the recorded start line {start!r} is not a commit id; it must be forty "
+                           "hexadecimal characters, not a branch, a tag or an abbreviation")}
     if not _commit_exists(repo, start):
         return {"recorded": start, "resolved": False, "excluded": False,
                 "reason": f"the recorded start line {start[:12]} is not a commit in this repository"}
@@ -192,9 +205,13 @@ def read_policy(policy_path) -> dict:
     """The fix_validation block of the policy file, as a mapping. A deliberately small reader for the
     ONE key this organ owns: the block written inline ({required: true}) or as indented lines, with a
     trailing comment or quotes in either form. The AUTHORITY on the flag is flag_from_policy, which
-    takes an already-parsed mapping; validate.py, the one call site, parses the file with this
-    repository's own front-matter parser and calls that. This reader serves the command line and the
-    rows. An unreadable or absent policy is an empty mapping, which reads as advisory."""
+    takes an already-parsed mapping; THIS reader is what produces that mapping everywhere the owner's
+    two settings are read - the proof-bundle check in this module, the command line and the rows.
+    The validator's general front-matter parser must NOT be used for this file: it strips a
+    whole-line comment and not a trailing one, so `required: true  # armed` reads as false, and it
+    coerces a digit-only value to an integer, so a start line of 0123456 loses its leading zero. It
+    is not taught to do better because 55 of this repository's 328 specifications and plans parse
+    differently under that change, measured by VELDO-0106's own row rather than pinned here. An unreadable or absent policy is an empty mapping, which reads as advisory."""
     try:
         lines = Path(policy_path).read_text().splitlines()
     except OSError:
@@ -433,7 +450,19 @@ def check_proof_bundle(path, manifest, root, parse_yamlish, front_matter, fail) 
     validator hands in its own reader of front matter and its own way of reporting a failure, so this
     module never has to know how that validator is put together."""
     policy = Path(root) / ".veldo" / "policy.yaml"
-    parsed = parse_yamlish(policy.read_text()) if policy.is_file() else {}
+    # READ BY read_policy, NOT by the parser the validator hands in. The handed-in parser strips a
+    # whole-line comment and not a trailing one, so `required: true  # armed` read as FALSE and the
+    # rule the owner had just armed returned to advisory in silence. read_policy already handles
+    # every shape this file takes, and it is not a second parser written here: it predates this
+    # item and VELDO-0104's suite already tests it. The handed-in parser is still used for the spec
+    # front matter below, which is what it is for.
+    #
+    # The general parser is deliberately NOT taught to strip trailing comments. That was measured
+    # over this repository's corpus first: 55 of its 328 specifications and plans parse differently
+    # under it, 49 of them in acceptance-criteria text and the rest in risk, constraints and status
+    # fields containing a hash. It would truncate shipped specifications to fix a flag nobody had
+    # tripped. VELDO-0106's AC3 row recomputes the count each run rather than pinning it.
+    parsed = read_policy(policy) if policy.is_file() else {}
     required = flag_from_policy(parsed)
     start_line = start_line_from_policy(parsed)
     state = "required" if required else "advisory"

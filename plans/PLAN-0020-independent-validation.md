@@ -4,7 +4,7 @@ id: PLAN-0020
 title: Fix validation - every fix to a review finding is checked by someone other than its author, and the loop terminates
 kind: iteration
 status: ready
-revision: 4
+revision: 5
 owner: dmitry
 approved_by: dmitry
 approved_at: 2026-09-19
@@ -88,6 +88,12 @@ work:
     feature_refs: [F3]
     depends_on: [VELDO-0104]
     order: 50
+  - item: W6
+    spec: VELDO-0106
+    title: The owner's two settings are read exactly as written - the policy reader, and a start line that must be a commit id
+    feature_refs: [F3]
+    depends_on: [VELDO-0105]
+    order: 60
 
 regression:
   journeys:
@@ -136,6 +142,8 @@ The Codex contract (W1) ships first so the next review already saves capsules. T
 ## Revision history
 
 Revision 2 (2026-09-19): approved by Dmitry (Telegram 28104) as the SIMPLE version: no separate operating-system identity, no landing service, no hooks, no receipts, no paid model API.
+
+Revision 5 (2026-09-21): W6 added. An adversarial read of the W5 landing found that the two settings the owner records are not read the way he writes them. A trailing comment on the required line makes the flag read false, so the rule silently returns to advisory; the same comment on the inline form loses the start line as well; and a from_commit with a leading zero is coerced to an integer and comes back as a different commit id. Three readers of that file exist and they do not agree. The obvious repair, teaching the shared parser to strip trailing comments, was measured against the corpus before being attempted and would have changed the parse of 56 of 329 documents, truncating acceptance-criteria text in shipped specifications; it is not the fix. W6 is the narrow one.
 
 Revision 4 (2026-09-21): W5 added. Turning the owner flag on was tried against the whole corpus before it was committed, and it reddened thirteen proof bundles that shipped months ago: they carry a review and fix commits after it, which is exactly what the rule refuses, and no validation record, because the machinery that produces one did not exist when they landed. VELDO-0012 showed eight fix rounds against a cap of two and parked retroactively. The rule was doing what its specification says; what the specification never said is where it starts. Dmitry chose the start line over leaving the rule advisory and over back-filling records that cannot be written honestly (Telegram 28436, answering the ask 28434). The flag stays off until W5 ships.
 
