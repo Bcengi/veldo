@@ -1,0 +1,61 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0109",
+  "commit": "PENDING",
+  "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; Codex validates this item in the batch of 2026-09-22",
+  "produced_at": "PENDING",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0109/driven.json",
+          "detail": "1 row against a real authority child process on a real AF_UNIX socket that is then STOPPED. While it is up a command is accepted, carries the authority's own WATERMARK, and the clone records it. With it stopped the same command REFUSES as authority_unavailable and the refusal carries the service it could not reach and the last watermark it was sure of. Nothing NEW appears in EITHER directory a fallback could write into, the authority's and the clone's own control directory, and nothing is bound at the address in the kernel's own table. The record on disk does not turn the refusal into a success, which is the property that matters and is asserted behaviourally rather than as a claim about the source. DRIVEN twice: a copy that answers from the record, and a copy whose refusal stops naming the service."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0109/driven.json",
+          "detail": "1 row. Inspection still ANSWERS while the authority is gone, because refusing to answer a question about the past helps nobody, and every answer carries `stale` explicitly: live it is false with the authority's own watermark, and stopped it is true and carries the watermark, the service, the moment last sure of, the last state, and why. An unlabelled answer fails the row, so silence about staleness is a failure and not a missing nicety. DRIVEN: a copy that returns the recorded state with stale false hands a caller old state that looks current."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0109/driven.json",
+          "detail": "1 row, two shapes. With the authority never started, and again with a DEAD SOCKET FILE left where a socket used to be, which is what a crash leaves behind and the case a careless client treats as 'it is there', the client refuses and nothing ends up bound at that address in the kernel's own table. DRIVEN: a copy that binds the address itself when it cannot connect leaves a listener there, which the kernel's table shows and the row refuses."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "PENDING",
+      "command": "bash scripts/verify.sh",
+      "exit_code": "PENDING",
+      "commit": "PENDING",
+      "ref": "proof/VELDO-0109/gate-implementation.log",
+      "detail": "PENDING"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0109/driven.json",
+    "proof/VELDO-0109/drive.py",
+    "proof/VELDO-0109/README.md"
+  ],
+  "rollback": "Remove inspect() and the last-seen record. send() returns to refusing without naming the watermark, which is the behaviour VELDO-0107 shipped. Nothing in the repository depends on either yet.",
+  "review": "NOT A CLAIM YET. The item is DRAFT, so this bundle is held as manifest.draft.json by the methodology's own ready boundary. The drive found TWO DESIGN FAULTS before landing, both recorded in driven.json: the last-seen record was written beside the store, where a remote clone cannot write and should not, and a comment claimed a source-level property that was false. It also found two SUITE faults: a negative control that crashed instead of reporting, and a mutant handle that was a directory rather than a module."
+}

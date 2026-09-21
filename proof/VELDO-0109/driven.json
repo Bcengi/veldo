@@ -1,0 +1,97 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0109",
+  "commit": "365d55d3d974ec13f462fc595bb99dedc4c797e9",
+  "taken_at": "2026-09-21T18:45:25Z",
+  "fragment": "scripts/suites/49_veldo_0109_unavailable.py",
+  "fragment_sha256": "ef4f6dd2b32ea5d4bdef26997b9fbe124f00f6cefa32133d30fc5fd4ac1532ed",
+  "description": "One run of the spec's suite fragment with every row recorded, against a real authority child process on a real AF_UNIX socket that is then STOPPED. Every DRIVEN row mutates a copy of .veldo/control_client.py. The last row is the negative control and compares a no-op copy against THE ORIGINAL's answers in the same run. No model is called and nothing is spent.",
+  "how_nothing_appeared_is_asked": [
+    "NEW files only, in BOTH directories a fallback could write into: the authority's, and the clone's own control directory where the last-seen record lives. Comparing a whole listing measures the SHUTDOWN, because the socket file disappears with the authority.",
+    "The kernel, not a string. /proc/net/unix is asked whether anything is bound at the address, because a process census matched by name matches the command doing the matching: the first version of that check found its own shell, whose command line contained the word it was searching for."
+  ],
+  "external_drives": [
+    {
+      "falsifier": "AC1 unavailable/no-local-authority-appears",
+      "mutation": ".veldo/control_client.py: send() answers from the last-seen record instead of refusing, reporting the command applied locally",
+      "result": "AC1 RED, and AC2 with it, because a fallback also makes inspect() see an accepted response and report stale false. A genuine consequence of the same mutation"
+    },
+    {
+      "falsifier": "AC1, the refusal's naming",
+      "mutation": ".veldo/control_client.py: the refusal stops carrying the service it could not reach",
+      "result": "AC1 RED, and AC2 with it, because the stale answer takes its service from that same refusal"
+    },
+    {
+      "falsifier": "AC2 unavailable/a-stale-read-says-so",
+      "mutation": ".veldo/control_client.py: a stale answer reports stale false",
+      "result": "AC2 RED, the other three rows pass"
+    }
+  ],
+  "design_faults_found_before_landing": [
+    "The last-seen record was first written BESIDE THE STORE. That is wrong in exactly the case this package exists for: the store lives on the authority's machine, so a remote clone reaching it through the SSH relay cannot write there and should not. It is the clone's knowledge, not a fact about the store, and putting it there made a client a writer into the authority's own directory. It now lives in the clone's own control directory beside its enrollment binding.",
+    "A comment claimed the record is read-only by construction and that send never touches it. False: send reads it inside the unavailable branch to put the watermark in the refusal. It is read to DESCRIBE a failure and never to decide one, and the row asserts the behaviour rather than the easier source-level claim that would have been a lie."
+  ],
+  "suite_faults_the_drive_found": [
+    "The negative control compared the refusal's .reason attribute directly and CRASHED under the fallback mutant, whose copy answers with a mapping rather than raising. A control that raises instead of reporting tells a reader nothing about whether copying changed anything; it is now shape-agnostic.",
+    "A mutant handle was the organ's DIRECTORY rather than the module, which raised an AttributeError deep inside a helper instead of reddening a row."
+  ],
+  "rows_total": 4,
+  "rows_passed": 4,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0109 AC2 unavailable/a-stale-read-says-so: inspection still ANSWERS while the authority is gone, because refusing to answer a question about the past helps nobody, and every answer carries `stale` explicitly: live it is False with the authority's own watermark, and with the authority stopped it is True and carries the watermark, the service, the moment it was last sure of, the last state, and why. An unlabelled answer fails this row, so silence about staleness is a failure and not a missing nicety. DRIVEN: a copy that returns the recorded state with stale False hands a caller old state that looks current",
+    "VELDO-0109 AC3 unavailable/no-client-starts-the-authority: with the authority never started, and again with a DEAD socket file left where a socket used to be, which is what a crash leaves behind, the client refuses as authority_unavailable and nothing ends up bound at that address in the kernel's own table. Starting the authority is an operator's act; a client that starts services on first use turns one stopped authority into two. DRIVEN: a copy that binds the address itself when it cannot connect leaves a listener there, which the kernel's table shows and this row refuses"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "unavailable/no-local-authority-appears",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "unavailable/a-stale-read-says-so",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "unavailable/no-client-starts-the-authority",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0109 AC1 unavailable/no-local-authority-appears: while the authority is up a command is accepted and carries a WATERMARK, and the clone records it. With the authority stopped the same command REFUSES by name as authority_unavailable, and the refusal carries the service it could not reach and the last watermark it was sure of, because 'routing failed' cannot be acted on. Nothing NEW appears under the store directory - asked as new files only, because the socket disappears with the authority and comparing the whole listing measures the shutdown instead - and nothing is bound at the address in the kernel's own table, and the same is asked of the CLONE's own control directory where the last-seen record lives, because a fallback would write there rather than into the authority's. The record on disk does NOT turn the refusal into a success, which is the property that matters. DRIVEN: a copy that falls back to that record reports the command APPLIED LOCALLY, which is a second authority created at the moment nobody is watching",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0109 AC2 unavailable/a-stale-read-says-so: inspection still ANSWERS while the authority is gone, because refusing to answer a question about the past helps nobody, and every answer carries `stale` explicitly: live it is False with the authority's own watermark, and with the authority stopped it is True and carries the watermark, the service, the moment it was last sure of, the last state, and why. An unlabelled answer fails this row, so silence about staleness is a failure and not a missing nicety. DRIVEN: a copy that returns the recorded state with stale False hands a caller old state that looks current",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0109 AC3 unavailable/no-client-starts-the-authority: with the authority never started, and again with a DEAD socket file left where a socket used to be, which is what a crash leaves behind, the client refuses as authority_unavailable and nothing ends up bound at that address in the kernel's own table. Starting the authority is an operator's act; a client that starts services on first use turns one stopped authority into two. DRIVEN: a copy that binds the address itself when it cannot connect leaves a listener there, which the kernel's table shows and this row refuses",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0109 control unavailable/copying-is-not-what-changes-it: a copy of the organ carrying only an added comment answers exactly as the original does, on the refused mutation and on the stale inspection, so the difference each DRIVEN mutant shows is the mutation and not the copying",
+      "passed": true
+    }
+  ]
+}

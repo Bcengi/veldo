@@ -283,6 +283,15 @@ else:
                    and _v109_bound_after_mut != [])
 
             # ---- the negative control -----------------------------------------------------------
+            def _v109_reason(answer):
+                """The refusal reason, or None when the answer is not a refusal.
+
+                Shape-agnostic on purpose. The control compared `.reason` directly and CRASHED under
+                the fallback mutant, because a copy carrying that mutation answers with a mapping
+                rather than raising. A control that raises instead of reporting tells a reader
+                nothing about whether copying changed anything."""
+                return getattr(answer, "reason", None)
+
             _v109_NOOP, _v109_noop = _v109_organ("noop", [
                 ("import socket\nimport struct", "# additive no-op control\nimport socket\nimport struct")])
             _v109_c1 = _v109_mutate(_v109_noop, at="2026-09-21T10:03:00Z")
@@ -291,7 +300,8 @@ else:
                    "carrying only an added comment answers exactly as the original does, on the refused "
                    "mutation and on the stale inspection, so the difference each DRIVEN mutant shows is the "
                    "mutation and not the copying",
-                   _v109_c1[0] == _v109_down[0] and _v109_c1[1].reason == _v109_down[1].reason
+                   _v109_c1[0] == _v109_down[0]
+                   and _v109_reason(_v109_c1[1]) == _v109_reason(_v109_down[1])
                    and _v109_c2["stale"] == _v109_stale["stale"]
                    and _v109_c2["watermark"] == _v109_stale["watermark"])
         finally:
