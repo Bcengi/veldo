@@ -1,0 +1,20 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-PLAN-0019-R2",
+  "subject": "PLAN-0019 revision 2: VELDO-0029 split into four work items",
+  "approved_by": "dmitry",
+  "approved_at": "2026-09-21T17:32:34Z",
+  "channel": "telegram",
+  "request_message_id": 28553,
+  "approval_message_id": 28554,
+  "approval_text": "split",
+  "what_was_asked": "VELDO-0029 as written was four items in one: the signed enrollment binding, local socket routing, the SSH relay, and what happens when the authority is unreachable. Each has its own set, its own falsifier and its own fixture. The ask named the recommendation (split, build in that order) and named the cost (PLAN-0019 to revision 2, which is a plan change and therefore the owner's).",
+  "what_changed": {
+    "plan": "PLAN-0019 revision 1 -> 2",
+    "W14": "VELDO-0029, narrowed to the signed binding and the resolution that reads it",
+    "W84": "VELDO-0107, local authenticated IPC routing (new, draft)",
+    "W85": "VELDO-0108, the authenticated SSH command relay (new, draft)",
+    "W86": "VELDO-0109, the unreachable authority (new, draft)"
+  },
+  "not_granted": "This approval covers the SPLIT. It is not an approval to land any of the four: each still needs its own ready transition and its own landing approval, and all four are draft."
+}

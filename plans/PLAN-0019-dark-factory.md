@@ -4,7 +4,7 @@ id: PLAN-0019
 title: Dark Factory project coordination inside Veldo
 kind: mvp
 status: ready
-revision: 1
+revision: 2
 owner: dmitry
 approved_by: dmitry
 approved_at: 2026-09-17
@@ -260,9 +260,27 @@ work:
     order: 213
   - item: W14
     spec: VELDO-0029
-    title: Explicit repository enrollment and authority routing
+    title: One signed enrollment binding decides which authority a clone writes to, and nothing ambient does
     feature_refs: [F2]
     depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025]
+    order: 214
+  - item: W84
+    spec: VELDO-0107
+    title: Local clients reach the authority over authenticated IPC carrying explicit workspace coordinates
+    feature_refs: [F2]
+    depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025, VELDO-0029]
+    order: 214
+  - item: W85
+    spec: VELDO-0108
+    title: Remote clients reach the same endpoint through an authenticated SSH command relay, not a second server
+    feature_refs: [F2]
+    depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025, VELDO-0029, VELDO-0107]
+    order: 214
+  - item: W86
+    spec: VELDO-0109
+    title: An unreachable authority stops mutation and admission, and never becomes a local one
+    feature_refs: [F2]
+    depends_on: [VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025, VELDO-0029, VELDO-0107, VELDO-0108]
     order: 214
   - item: W15
     spec: VELDO-0030
