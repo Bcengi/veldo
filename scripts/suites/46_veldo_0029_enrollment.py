@@ -187,6 +187,44 @@ else:
            and 'if not k.startswith("GIT_")' in _v29_src29
            and _v29_under_ambient_mut == ("store", _v29_STORE_Bp))
 
+    # ---- AC2, second row: the ambient resolver in control_store is CLOSED -----------------------
+    # The defect this whole item exists to remove lived in control_store.control_db_path, which
+    # derived a database from VELDO_CONTROL_DB or from `git rev-parse --git-common-dir` in the
+    # process's current directory. It had NO CALLERS, so nothing was reaching the wrong database;
+    # what existed was the means to, sitting where the next person to need a default would find it.
+    # This row is the guard on that: it refuses without an explicit path, and the module derives
+    # nothing.
+    _v29_CS = _v29_load("v29_control_store", ROOT / ".veldo" / "control_store.py")
+    _v29_cs_src = (ROOT / ".veldo" / "control_store.py").read_text()
+    try:
+        _v29_CS.control_db_path(None)
+        _v29_no_arg = "answered"
+    except Exception as e:  # noqa: BLE001 - the refusal's TYPE is asserted below, not caught by it
+        _v29_no_arg = type(e).__name__
+    _v29_explicit = _v29_CS.control_db_path(str(_v29_tmp / "explicit" / "control.sqlite3"))
+    _v29_before_cwd2 = _v29_os.getcwd()
+    _v29_os.chdir(str(_v29_B))
+    _v29_os.environ["VELDO_CONTROL_DB"] = _v29_STORE_Bp
+    try:
+        _v29_under_ambient2 = _v29_CS.control_db_path(
+            str(_v29_tmp / "explicit" / "control.sqlite3"))
+    finally:
+        _v29_os.chdir(_v29_before_cwd2)
+        _v29_os.environ.pop("VELDO_CONTROL_DB", None)
+    _v29_derives = ("os.environ.get(\"VELDO_CONTROL_DB\")" in _v29_cs_src
+                    or "rev-parse\", \"--git-common-dir" in _v29_cs_src)
+
+    expect("VELDO-0029 AC2 enrollment/the-ambient-store-resolver-is-closed: control_store.control_db_path "
+           "REFUSES without an explicit path instead of deriving one, answers the path it is given, and "
+           "answers that same path with the process standing in the other repository and VELDO_CONTROL_DB "
+           "naming the other store. The module no longer contains either derivation. It had no callers, so "
+           "nothing was reaching the wrong database; what existed was the means to, where the next person to "
+           "want a default would find it, and this row is the guard that stops it coming back",
+           _v29_no_arg == "StoreRefused"
+           and _v29_explicit == _v29_under_ambient2
+           and _v29_explicit.endswith("explicit/control.sqlite3")
+           and not _v29_derives)
+
     # ---- AC3: a directory replaced under the same path is not the clone that enrolled ------------
     # Case one: the path now holds a DIFFERENT repository, with the old binding restored into it,
     # which is the shape of someone putting their configuration back after re-cloning.

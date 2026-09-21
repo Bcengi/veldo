@@ -78,7 +78,10 @@ report for another account. Neither half is the whole claim.
 verification as callables and holds no key material. The rows turn on the signature being checked and
 on what it covers, not on how strong it is. Key lifecycle is VELDO-0027.
 
-**Still not wired.** `control_store` continues to use `control_db_path`. This item builds the road;
+**Still not wired, and less was wired than I first wrote.** `control_db_path` had NO CALLERS: every
+place that opens the store already passes an explicit path, so nothing in the repository was reaching
+a database chosen by the caller's position. It is now closed and derives nothing. This item builds the
+road;
 pointing the existing callers down it is the last step of this group, and it is deliberately not
 folded in here, because a change that both introduces a transport and re-points every caller is two
 items again.

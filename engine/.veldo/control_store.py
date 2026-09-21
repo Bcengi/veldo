@@ -54,7 +54,7 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
-            "read_only_handle", "publication_backfill_required")
+            "read_only_handle", "publication_backfill_required", "no_explicit_store_path")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
 _DDL = (
@@ -111,14 +111,40 @@ def command_digest(command):
 # Placement and qualification (R21).
 # ---------------------------------------------------------------------------------------------
 
-def control_db_path(override=None):
-    """<git-common-dir>/veldo/control/control.sqlite3, shared across worktrees, or an explicit
-    override (VELDO_CONTROL_DB or the argument) for tests."""
-    root = override or os.environ.get("VELDO_CONTROL_DB")
-    if root:
-        return os.path.abspath(root)
-    common = subprocess.check_output(["git", "rev-parse", "--git-common-dir"], text=True).strip()
-    return os.path.join(os.path.abspath(common), DB_RELATIVE)
+def control_db_path(path):
+    """The authority's database at an EXPLICIT path. It derives nothing, and that is the point.
+
+    WHAT IT USED TO DO, and why that was a loaded gun. It answered from VELDO_CONTROL_DB in the
+    environment, and failing that by running `git rev-parse --git-common-dir` in whatever directory
+    the process happened to be in. Two throwaway repositories and one call showed it: standing in
+    the first it answered the first repository's database, standing in the second it answered the
+    second's, and with the variable set it answered neither. A command carries the repository it
+    means and is signed; a resolver that answers from the caller's position rather than from the
+    command lets a correctly signed command commit into another repository with nothing in the chain
+    comparing the two. R20 says the coordinate comes from the command.
+
+    It had NO CALLERS. Every place that opens the store passes a path. So nothing was reaching the
+    wrong database; what existed was the means to, sitting where the next person to need a default
+    would find it. This closes that rather than waiting for them.
+
+    WHERE A PATH SHOULD COME FROM: control_enrollment.resolve_store(workspace, ...), which reads the
+    workspace's own signed enrollment binding and refuses by name when it cannot. This module
+    deliberately does not call it. control_store imports no other Veldo organ, which is a property
+    its own docstring states and the shape gate checks, and a store that reached into enrollment to
+    find itself would be the same circularity in the other direction.
+
+    DB_RELATIVE below still records the conventional layout, <git-common-dir>/veldo/control, which is
+    what an enrollment writes into a binding. Recording a convention is not the same as deriving
+    from it."""
+    if not path:
+        raise StoreRefused(
+            "no_explicit_store_path",
+            "control_db_path requires an explicit store path: it no longer derives one from the "
+            "environment or from the process's current directory, because a database chosen by "
+            "where the caller was standing is not the database the command named. Resolve it with "
+            "control_enrollment.resolve_store(workspace, ...), which reads the workspace's signed "
+            "binding.")
+    return os.path.abspath(path)
 
 
 def filesystem_type(path, mounts_text=None):

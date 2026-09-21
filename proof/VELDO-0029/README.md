@@ -81,9 +81,15 @@ The fifth row is the negative control: a copy carrying only an added comment, re
 the original on all four cases the other rows turn on.
 
 **What this is NOT.** It is not evidence that anything reaches the authority. This item answers WHICH
-store and stops there. `control_db_path` is still what `control_store` uses; pointing its callers at
-this resolver is VELDO-0107's work, because the client is what has to carry the coordinate. The local
-socket is VELDO-0107, the SSH relay VELDO-0108, and the unreachable authority VELDO-0109.
+store and stops there. The local socket is VELDO-0107, the SSH relay VELDO-0108, and the unreachable
+authority VELDO-0109.
+
+**And a correction to an earlier reading of the danger.** `control_db_path` had NO CALLERS anywhere in
+the repository: every place that opens the store passes an explicit path. So nothing was reaching the
+wrong database. What existed was the means to, sitting where the next person to need a default would
+find it. It is now closed: it requires an explicit path and derives nothing. An earlier version of
+this file said `control_db_path` is still what `control_store` uses, which was wrong, and evidence
+that overstates a danger is as bad as evidence that understates it.
 
 **And the signer is a fixture.** The suite supplies an HMAC because the module holds no key material
 and takes signing and verification as callables. The rows turn on the signature being CHECKED, not on

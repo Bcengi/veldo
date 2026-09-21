@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0109",
-  "commit": "PENDING",
+  "commit": "38c90ceedcc4e9103a92bf4731b96feea658355d",
   "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; Codex validates this item in the batch of 2026-09-22",
-  "produced_at": "PENDING",
+  "produced_at": "2026-09-21T18:54:26Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -43,18 +43,20 @@
   "checks": [
     {
       "name": "gate-implementation",
-      "status": "PENDING",
+      "status": "passed",
       "command": "bash scripts/verify.sh",
-      "exit_code": "PENDING",
-      "commit": "PENDING",
+      "exit_code": 0,
+      "commit": "38c90ceedcc4e9103a92bf4731b96feea658355d",
       "ref": "proof/VELDO-0109/gate-implementation.log",
-      "detail": "PENDING"
+      "detail": "GATE GREEN at 38c90ceedcc4 against a clean tree, with all four items of the PLAN-0019 W14 split in it. A green gate here means the tree is consistent. It is not evidence that the code is right: the gate was equally green on two commits today while eleven demonstrated bypasses were live in VELDO-0106's reader."
     }
   ],
   "artifacts": [
     "proof/VELDO-0109/driven.json",
     "proof/VELDO-0109/drive.py",
-    "proof/VELDO-0109/README.md"
+    "proof/VELDO-0109/README.md",
+    "proof/VELDO-0109/gate-implementation.log",
+    "proof/VELDO-0109/log-redactions.json"
   ],
   "rollback": "Remove inspect() and the last-seen record. send() returns to refusing without naming the watermark, which is the behaviour VELDO-0107 shipped. Nothing in the repository depends on either yet.",
   "review": "NOT A CLAIM YET. The item is DRAFT, so this bundle is held as manifest.draft.json by the methodology's own ready boundary. The drive found TWO DESIGN FAULTS before landing, both recorded in driven.json: the last-seen record was written beside the store, where a remote clone cannot write and should not, and a comment claimed a source-level property that was false. It also found two SUITE faults: a negative control that crashed instead of reporting, and a mutant handle that was a directory rather than a module."
