@@ -93,8 +93,19 @@ _v108_echo_srv.bind(_v108_echo_addr)
 _v108_echo_srv.listen(8)
 
 
+_v108_echo_srv.settimeout(10)
+
+
 def _v108_echo_once():
-    conn, _ = _v108_echo_srv.accept()
+    """Echo one connection, and GIVE UP rather than wait forever.
+
+    A mutant that makes the relay answer without connecting leaves this thread waiting on accept(),
+    and a suite thread that never returns hangs the whole gate instead of reporting a red row. The
+    row reads the timeout as a payload that never arrived, which is exactly what it is."""
+    try:
+        conn, _ = _v108_echo_srv.accept()
+    except OSError:
+        return
     data = b""
     while True:
         chunk = conn.recv(65536)
@@ -114,10 +125,13 @@ _v108_PAYLOADS = {
 }
 _v108_byte_rows = []
 for _v108_name, _v108_payload in _v108_PAYLOADS.items():
-    _v108_t = _v108_threading.Thread(target=_v108_echo_once)
+    _v108_t = _v108_threading.Thread(target=_v108_echo_once, daemon=True)
     _v108_t.start()
-    _v108_got = RL108.forward(_v108_echo_addr, _v108_payload)
-    _v108_t.join()
+    try:
+        _v108_got = RL108.forward(_v108_echo_addr, _v108_payload)
+    except OSError:
+        _v108_got = None
+    _v108_t.join(timeout=15)
     _v108_byte_rows.append((_v108_name, _v108_got == _v108_payload))
 _v108_echo_srv.close()
 
@@ -309,7 +323,10 @@ else:
                                                      _v108_sign)).encode())
             _v108_after = _v108_unix_paths(str(_v108_tmp))
             _v108_log = _v108_applied(_v108_cA)
-            _v108_same_two = _v108_log[-2] == _v108_log[-1]
+            # Guarded, because a mutant that stops the relay forwarding leaves this log EMPTY, and a
+            # suite that raises IndexError there hangs the row instead of reporting it red. An
+            # absent pair is a failed comparison, which is the honest reading.
+            _v108_same_two = len(_v108_log) >= 2 and _v108_log[-2] == _v108_log[-1]
             _v108_nobind = "bind(" not in _v108_relay_src and ".listen(" not in _v108_relay_src
             # The endpoint is an ARGUMENT. Pointing the environment at the other RUNNING authority
             # changes nothing, because nothing reads it.
@@ -358,11 +375,17 @@ else:
             # ---- the negative control ----------------------------------------------------------
             _v108_NOOP, _ = _v108_organ("noop", [
                 ("import os\nimport socket", "# additive no-op control\nimport os\nimport socket")])
-            _v108_t = _v108_threading.Thread(target=None)
+            # Compared against THE ORIGINAL's answers in this same run, never against literals. A
+            # control that re-asserts the expected behaviour reds under every mutation of the organ,
+            # which makes it a second copy of the other rows rather than a control: its one job is
+            # to show that COPYING changes nothing, so it must stay green even when the original is
+            # wrong.
+            _v108_orig_down = _v108_relay(_v108_MAIN, _v108_ADDR_A, _v108_raw)
+            _v108_orig_other = _v108_relay(_v108_MAIN, _v108_ADDR_B, _v108_raw)
             _v108_control = [
-                (_v108_relay(_v108_NOOP, _v108_ADDR_A, _v108_raw)[0], _v108_rc_down),
+                (_v108_relay(_v108_NOOP, _v108_ADDR_A, _v108_raw)[0], _v108_orig_down[0]),
                 (_v108_relay(_v108_NOOP, _v108_ADDR_B, _v108_raw)[1].get("reason"),
-                 "coordinate_not_served"),
+                 _v108_orig_other[1].get("reason")),
             ]
             expect("VELDO-0108 control relay/copying-is-not-what-changes-it: a copy of the relay carrying only "
                    "an added comment answers exactly as the original does, both against the stopped authority "

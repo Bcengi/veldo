@@ -1,0 +1,103 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0108",
+  "commit": "661eb8ec349d7654c8fd36441cb8638699b11dfb",
+  "taken_at": "2026-09-21T18:24:57Z",
+  "fragment": "scripts/suites/48_veldo_0108_relay.py",
+  "fragment_sha256": "5abaf8d9d1eec978e114be0c99d5f9928ef5d6fe9e5a5a03c57a89efbb6415d6",
+  "description": "One run of the spec's suite fragment with every row recorded. The relay is run as a REAL CHILD PROCESS with the request on its standard input, exactly as sshd runs it, against real authority child processes on real AF_UNIX sockets; its carrying promise is measured separately against a bare echo socket, byte for byte. Every DRIVEN row mutates a copy of .veldo/control_relay.py. The last row is the negative control and it compares a no-op copy against THE ORIGINAL's answers in the same run rather than against literals, so it stays green under every mutation. No model is called and nothing is spent.",
+  "stood_down_by_name": [
+    "The leg where sshd authenticates the remote principal and refuses an unknown one is NOT exercised: there is no SSH server installed on this machine. That leg is sshd's, not this program's. Every decision this program makes is covered, including that SSH's own environment with a principal in it changes nothing about the answer."
+  ],
+  "external_drives": [
+    {
+      "falsifier": "AC1 relay/the-authority-judges-not-the-relay",
+      "mutation": ".veldo/control_relay.py: the relay forwards the request but REPLACES the authority's answer with an accepted one of its own. Deliberately sharper than a relay that never connects: the command still reaches the authority, so the rest of the fixture stays alive and the row turns on the answer rather than on everything breaking at once",
+      "result": "AC1 RED, and AC2 and AC3 with it: a relay that answers for the authority also makes an unsigned command look accepted and makes the relayed answer differ from the local one. Both are genuine consequences of the same mutation, not noise"
+    },
+    {
+      "falsifier": "AC1, the carrying promise",
+      "mutation": ".veldo/control_relay.py: forward() re-encodes what it carries through a lossy utf-8 round trip, which is invisible on ordinary JSON and destroys a payload containing bytes that are not valid utf-8",
+      "result": "AC1 RED, the other four rows pass"
+    },
+    {
+      "falsifier": "AC2 relay/ssh-is-transport-not-authority",
+      "mutation": ".veldo/control_relay.py: the relay answers accepted whenever a principal is present in the environment, which is the collapse of transport into authority",
+      "result": "AC2 RED, the other four rows pass"
+    },
+    {
+      "falsifier": "AC3 relay/one-endpoint-one-judgement",
+      "mutation": ".veldo/control_relay.py: the endpoint is taken from VELDO_CONTROL_SOCKET instead of the argument it was installed with",
+      "result": "AC3 RED, and AC2 with it, because AC2 also asserts that the relay reads no environment variable at all and this mutation makes it read one"
+    }
+  ],
+  "suite_faults_the_drive_found": [
+    "The echo-socket helper waited on accept() in a thread with no timeout, so a mutant that stopped the relay connecting hung the whole gate instead of reporting a red row. It now gives up and the row reads the timeout as a payload that never arrived, which is what it is.",
+    "AC3 indexed the applied log at [-2] without checking its length, so a mutant that stopped the relay forwarding raised IndexError and killed the run mid-suite. An absent pair is now a failed comparison.",
+    "The negative control asserted a LITERAL refusal reason, so it reddened under mutations instead of proving only that copying is neutral. It now compares against the original's answers."
+  ],
+  "rows_total": 5,
+  "rows_passed": 5,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0108 AC1 relay/the-authority-judges-not-the-relay: the relay is run as a REAL CHILD PROCESS with the request on its standard input, exactly as sshd runs it, against a real authority on a real socket. A valid command is accepted and ARRIVES UNCHANGED, compared against what was sent; a command tampered with in transit and a command signed by a key the authority does not know are both refused AT THE AUTHORITY on the signature, not at the relay. The carrying promise is measured separately against a bare echo socket, byte for byte, on a NUL byte, text that is not valid UTF-8, half a megabyte and an empty payload, because a relay that quietly re-encodes what it carries breaks signatures for reasons nobody can find. DRIVEN: a copy that answers the client itself instead of forwarding reports the TAMPERED command as accepted, which is the relay deciding",
+    "VELDO-0108 AC2 relay/ssh-is-transport-not-authority: with SSH's own environment set, SSH_CONNECTION, SSH_ORIGINAL_COMMAND, SSH_CLIENT and a principal, an UNSIGNED command is refused, and a correctly signed command with NO ssh environment at all is accepted: the signature authorises and SSH's presence neither adds nor is needed. The relay reads no environment variable and performs no verification, asserted in its source. STOOD DOWN BY NAME, and this is the honest half: there is no SSH server on this machine, so the leg where sshd refuses an unknown principal is NOT exercised here; that leg is sshd's and not this program's, and every decision this program does make is above. DRIVEN: a copy that accepts because a principal is present passes the unsigned command, which makes every host with relay access an authority",
+    "VELDO-0108 AC3 relay/one-endpoint-one-judgement: the same command sent locally and through the relay produces the same judgement and the same entry in the authority's applied log, so a relayed command is not a second code path. The relay opens no listener: the kernel's own table of unix sockets under the fixture is identical before and after, and the source carries no bind and no listen, because sshd is the network service and this is a command it runs. The endpoint is an ARGUMENT: with the environment pointed at the other RUNNING authority the relay still reaches the one it was given and the other's log does not grow. DRIVEN: a copy that prefers an environment variable for the endpoint reaches the other authority, which is the routing decision moved out of the signed binding to the one place the binding is not read"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "relay/the-authority-judges-not-the-relay",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "relay/ssh-is-transport-not-authority",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "relay/one-endpoint-one-judgement",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 2,
+      "passed": 2,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0108 AC1 relay/the-authority-judges-not-the-relay: the relay is run as a REAL CHILD PROCESS with the request on its standard input, exactly as sshd runs it, against a real authority on a real socket. A valid command is accepted and ARRIVES UNCHANGED, compared against what was sent; a command tampered with in transit and a command signed by a key the authority does not know are both refused AT THE AUTHORITY on the signature, not at the relay. The carrying promise is measured separately against a bare echo socket, byte for byte, on a NUL byte, text that is not valid UTF-8, half a megabyte and an empty payload, because a relay that quietly re-encodes what it carries breaks signatures for reasons nobody can find. DRIVEN: a copy that answers the client itself instead of forwarding reports the TAMPERED command as accepted, which is the relay deciding",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0108 AC2 relay/ssh-is-transport-not-authority: with SSH's own environment set, SSH_CONNECTION, SSH_ORIGINAL_COMMAND, SSH_CLIENT and a principal, an UNSIGNED command is refused, and a correctly signed command with NO ssh environment at all is accepted: the signature authorises and SSH's presence neither adds nor is needed. The relay reads no environment variable and performs no verification, asserted in its source. STOOD DOWN BY NAME, and this is the honest half: there is no SSH server on this machine, so the leg where sshd refuses an unknown principal is NOT exercised here; that leg is sshd's and not this program's, and every decision this program does make is above. DRIVEN: a copy that accepts because a principal is present passes the unsigned command, which makes every host with relay access an authority",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0108 AC3 relay/one-endpoint-one-judgement: the same command sent locally and through the relay produces the same judgement and the same entry in the authority's applied log, so a relayed command is not a second code path. The relay opens no listener: the kernel's own table of unix sockets under the fixture is identical before and after, and the source carries no bind and no listen, because sshd is the network service and this is a command it runs. The endpoint is an ARGUMENT: with the environment pointed at the other RUNNING authority the relay still reaches the one it was given and the other's log does not grow. DRIVEN: a copy that prefers an environment variable for the endpoint reaches the other authority, which is the routing decision moved out of the signed binding to the one place the binding is not read",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered: with the authority stopped, the relay exits 3, writes NOTHING to its standard output, names the endpoint on its standard error, and applies nothing. It does not invent an answer, which would be the local fallback VELDO-0109 exists to forbid arriving one layer lower down",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0108 control relay/copying-is-not-what-changes-it: a copy of the relay carrying only an added comment answers exactly as the original does, both against the stopped authority and against the other running one, so the difference each DRIVEN mutant shows is the mutation and not the copying",
+      "passed": true
+    }
+  ]
+}

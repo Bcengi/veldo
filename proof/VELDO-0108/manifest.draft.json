@@ -1,0 +1,66 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0108",
+  "commit": "PENDING",
+  "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; Codex validates this item in the batch of 2026-09-22",
+  "produced_at": "PENDING",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0108/driven.json",
+          "detail": "2 rows. The relay runs as a REAL CHILD PROCESS with the request on its standard input, exactly as sshd runs it, against real authority child processes on real AF_UNIX sockets: a valid command arrives UNCHANGED and is accepted, compared against what was sent; a command tampered with in transit and one signed by a key the authority does not know are both refused AT THE AUTHORITY on the signature, not at the relay. With the authority stopped the relay exits 3, writes nothing to stdout and names the endpoint on stderr rather than inventing an answer. DRIVEN twice: a copy that replaces the authority's answer with its own, and a copy whose forward() re-encodes what it carries through a lossy utf-8 round trip."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0108/driven.json",
+          "detail": "The carrying promise measured against a bare echo socket, byte for byte, on a NUL byte, text that is valid utf-8 but awkward, bytes that are NOT valid utf-8, half a megabyte, and an empty payload. A relay that quietly re-encodes what it carries breaks signatures for reasons nobody can find, and the lossy round trip is invisible on ordinary JSON."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0108/driven.json",
+          "detail": "1 row. With SSH's own environment set, SSH_CONNECTION, SSH_ORIGINAL_COMMAND, SSH_CLIENT and a principal, an UNSIGNED command is refused; and a correctly signed command with NO ssh environment at all is accepted. The signature authorises; SSH's presence is neither sufficient nor required. The relay reads no environment variable and performs no verification, asserted in its source. DRIVEN: a copy that answers accepted whenever a principal is present. STOOD DOWN BY NAME: the leg where sshd refuses an unknown remote principal is NOT exercised, because no SSH server is installed on this machine; that leg is sshd's and not this program's."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0108/driven.json",
+          "detail": "1 row. The same command sent locally and through the relay produces the same judgement and the same entry in the authority's applied log, so a relayed command is not a second code path. The relay opens no listener: the kernel's own table of unix sockets under the fixture is identical before and after, and the source carries no bind and no listen. The endpoint is an ARGUMENT: with the environment pointed at the other RUNNING authority the relay still reaches the one it was given and the other's log does not grow. DRIVEN: a copy that prefers VELDO_CONTROL_SOCKET reaches the other authority."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "PENDING",
+      "command": "bash scripts/verify.sh",
+      "exit_code": "PENDING",
+      "commit": "PENDING",
+      "ref": "proof/VELDO-0108/gate-implementation.log",
+      "detail": "PENDING"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0108/driven.json",
+    "proof/VELDO-0108/drive.py",
+    "proof/VELDO-0108/README.md"
+  ],
+  "rollback": "Remove the relay's entry from authorized_keys. Remote clients lose access, local clients are unaffected, and no state is lost. Nothing in the repository depends on the relay yet.",
+  "review": "NOT A CLAIM YET. The item is DRAFT, so by the methodology's own ready-boundary rule this bundle is held as manifest.draft.json and is not a proof: a specification must be READY before it is built and proven, and .veldo/policy_check.py refuses a tree where a draft spec carries a manifest.json. It becomes manifest.json when Dmitry promotes VELDO-0108 to ready, and the landing approval is a separate act after that. The drive found THREE faults in the SUITE rather than in the code, all recorded in driven.json under suite_faults_the_drive_found: a helper that could hang the gate, an unguarded index that killed a run mid-suite, and a negative control asserting literals."
+}
