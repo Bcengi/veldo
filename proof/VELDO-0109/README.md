@@ -1,0 +1,85 @@
+# VELDO-0109 proof
+
+PLAN-0019 W86, revision 2. Author: Ava (Claude), under Dmitry's rule that when Codex is out the
+author writes and Codex validates. Codex validates this item in the batch of 2026-09-22.
+
+**NOT A CLAIM YET.** The specification is DRAFT, so by the methodology's own ready boundary this
+bundle is held as `manifest.draft.json` and is not a proof. The work is real; the claim would be
+premature.
+
+## The dangerous behaviour here is the helpful-looking one
+
+A client that cannot reach the authority and writes locally "until it comes back" has created a
+**second authority**, and the two will disagree about work that was already accepted. Every recovery
+rule in the design assumes one history. A local fallback breaks that assumption silently, at exactly
+the moment nobody is watching, and it looks like resilience while it does it.
+
+So the whole of this item is three refusals and one honest answer.
+
+## What landed
+
+Additions to `.veldo/control_client.py`, mirrored into `engine/.veldo/`.
+
+An accepted response now carries the authority's own **watermark**, supplied as a callable so this
+module never reaches into the store. The client records it, with the state and the moment, beside the
+store.
+
+A mutating call against a stopped authority refuses as **`authority_unavailable`** and names the
+service it could not reach and the watermark it was last sure of. "Routing failed" cannot be acted
+on; an operator needs to know which authority to look at and how far behind the world may have moved.
+
+`inspect()` answers **live if it can and explicitly stale if it cannot**. Refusing to answer a
+question about the past helps nobody. Answering it without saying the answer is old is the failure, so
+every answer carries `stale`, and a stale one carries the watermark, the moment, the last state and
+why. There is no shape in which a caller gets state and has to guess how fresh it is.
+
+Nothing starts the authority. Starting it is an operator's act, and a client that starts services on
+first use turns one stopped authority into two.
+
+## One sentence I had to correct in my own comment
+
+The first draft said the record is "read-only by construction" and that `send` never touches it. That
+is false: `send` does read it, in one place, inside the `authority_unavailable` branch, to put the
+watermark in the refusal. It is read to **describe** a failure and never to decide one.
+
+A source-level claim that `send` never touches the record would have been easier to check and would
+have been a lie, so it is not the claim. The claim is behavioural and the row asserts it that way:
+with the authority down and a full record on disk, a mutating call still refuses, does not return the
+recorded state, does not report success, and writes nothing.
+
+## How "nothing appeared" is asked, because two obvious ways are wrong
+
+Both were measured, both passed for the wrong reason first.
+
+Comparing the whole directory listing before and after measures the **shutdown**, not the refusal:
+the socket file disappears with the authority, so the directory shrinks. The row asks for **new files
+only**.
+
+Grepping this account's process list for the authority's name matches **the command doing the
+grepping**: the shell's own command line contained the word being searched for, so the check passed
+because of itself. The row now asks the kernel three questions that cannot match a string. Does the
+socket file exist. Is anything bound at that address in `/proc/net/unix`. Did the child this fixture
+started actually die with a return code.
+
+## What the evidence is
+
+Four rows in `scripts/suites/49_veldo_0109_unavailable.py`, against a real authority child process on
+a real AF_UNIX socket that is then stopped.
+
+| falsifier | mutation | result |
+|---|---|---|
+| AC1 | `send` falls back to the recorded state and reports the command applied locally | the mutation "succeeds", which is the second authority |
+| AC2 | `inspect` returns the recorded state with `stale` false | old state that looks current |
+| AC3 | the client binds the address itself when it cannot connect | a listener appears, which the kernel's table shows |
+
+AC3's shapes include a **dead socket file left where a socket used to be**, which is what a crash
+leaves behind and the case a careless client treats as "it is there". The fourth row is the negative
+control, comparing a no-op copy against the original's answers in the same run rather than against
+literals.
+
+## What this is not
+
+Recovery, replay and reconciliation after the authority returns are later items under R26. This item
+covers only the window in which it is gone. And the watermark here is whatever the authority reports;
+that it is monotonic and survives a restart is the store's property, not this module's, and is not
+claimed.

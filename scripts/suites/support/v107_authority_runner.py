@@ -35,7 +35,8 @@ def main():
         return {"applied": True, "operation": command.get("operation")}
 
     authority = CC.Authority(cfg["store_uuid"], cfg["domain_uuid"], cfg["store_path"], EN, verify,
-                             cfg["host_identity"], apply)
+                             cfg["host_identity"], apply,
+                             watermark=lambda: len(applied) + int(cfg.get("watermark_base", 0)))
     srv = CC.bind(cfg["address"])
     srv.settimeout(0.25)
     open(cfg["ready_flag"], "w").write("ready\n")

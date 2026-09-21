@@ -45,7 +45,7 @@ REQUEST_FIELDS = ("schema", "workspace", "domain_uuid", "store_uuid", "command",
 MAX_REQUEST_BYTES = 1 << 20
 
 REFUSALS = ("malformed_request", "peer_not_authorized", "command_signature_invalid",
-            "coordinate_not_served", "unenrolled_workspace", "authority_unreachable",
+            "coordinate_not_served", "unenrolled_workspace", "authority_unavailable",
             "peer_identity_unavailable")
 
 
@@ -83,6 +83,75 @@ def peer_uid(conn):
         return None
     _pid, uid, _gid = struct.unpack("3i", raw)
     return uid
+
+
+# ---------------------------------------------------------------------------------------------
+# What this clone last knew, and the one thing it may be used for
+# ---------------------------------------------------------------------------------------------
+#
+# WHAT IT IS FOR, PRECISELY, because the loose version of this sentence is wrong. This record exists
+# so that an unreachable authority can be REPORTED precisely, with the service it was trying to reach
+# and the watermark it was last sure of, and so that a question about the PAST can still be answered
+# while the authority is gone.
+#
+# `send` does read it, in one place: inside the authority_unavailable branch, to put the watermark in
+# the refusal's message and coordinates. It is read to DESCRIBE a failure and never to decide one.
+# The property that matters is behavioural and the row asserts it that way: with the authority down
+# and a full record on disk, a mutating call still REFUSES. It does not return the recorded state, it
+# does not report success, and it writes nothing. A source-level claim that send never touches the
+# record would be easier to check and would be false, so it is not the claim.
+#
+# WHY THAT MATTERS MORE THAN IT LOOKS. A client that cannot reach the authority and writes locally
+# "until it comes back" has created a SECOND authority, and the two will disagree about work that
+# was accepted. Every recovery rule assumes one history. A local fallback breaks that assumption
+# silently, at exactly the moment nobody is watching.
+
+SEEN_NAME = "last_seen.json"
+SEEN_SCHEMA = "veldo.control_last_seen/v1"
+
+
+def seen_path(enrollment, workspace):
+    """In THE CLONE's own control directory, beside its enrollment binding.
+
+    NOT beside the store, which was the first design and was wrong in a way that only shows up on
+    the case this package exists for. The store lives on the authority's machine. A remote clone
+    reaching that authority through the SSH relay cannot write there, and should not: this record is
+    what THIS CLONE last knew, not a fact about the store. Putting it beside the store also made a
+    client a writer into the authority's own directory, which is the boundary the whole item is
+    about."""
+    return os.path.join(enrollment.git_common_dir(workspace), "veldo", "control", SEEN_NAME)
+
+
+def record_seen(enrollment, workspace, binding, response, at):
+    """Remember the watermark and the snapshot the authority just gave us.
+
+    Written only after an ACCEPTED response, so it never records a state the authority refused."""
+    path = seen_path(enrollment, workspace)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    record = {"schema": SEEN_SCHEMA, "store_uuid": binding["store_uuid"],
+              "domain_uuid": binding["domain_uuid"], "watermark": response.get("watermark"),
+              "at": at, "state": response.get("result")}
+    tmp = path + ".new"
+    with open(tmp, "w") as fh:
+        json.dump(record, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    os.replace(tmp, path)
+    return record
+
+
+def last_seen(enrollment, workspace, binding):
+    """What this clone last knew, or None. A record for another store is None: a file left behind by
+    a different enrollment is not knowledge about this one."""
+    try:
+        with open(seen_path(enrollment, workspace)) as fh:
+            record = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(record, dict) or record.get("schema") != SEEN_SCHEMA:
+        return None
+    if record.get("store_uuid") != binding["store_uuid"]:
+        return None
+    return record
 
 
 # ---------------------------------------------------------------------------------------------
@@ -132,7 +201,8 @@ def build_request(workspace, binding, command, sign):
 # The client
 # ---------------------------------------------------------------------------------------------
 
-def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30.0):
+def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30.0,
+         seen_at=None):
     """Send one command to the authority of THIS workspace and return its response.
 
     `workspace` is required and is the only coordinate. The binding is read from it, the address is
@@ -153,10 +223,21 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30
         try:
             conn.connect(address)
         except OSError as e:
-            raise RoutingRefused("authority_unreachable",
-                                 "the authority for store %s is not answering at %s: %s"
-                                 % (binding["store_uuid"], address, e),
-                                 {"workspace": str(workspace), "address": address, "store": store})
+            # NAMED, not just refused. "routing failed" cannot be acted on; the service identity and
+            # the watermark this clone was last sure of tell an operator which authority to look at
+            # and how far behind the world may have moved. The watermark is READ here and used for
+            # nothing else: it is in the message, never in a decision.
+            seen = last_seen(enrollment, workspace, binding)
+            raise RoutingRefused("authority_unavailable",
+                                 "the authority for store %s is not answering at %s (last watermark "
+                                 "seen: %s, at %s): %s"
+                                 % (binding["store_uuid"], address,
+                                    "none" if not seen else seen.get("watermark"),
+                                    "never" if not seen else seen.get("at"), e),
+                                 {"workspace": str(workspace), "address": address, "store": store,
+                                  "service": binding["store_uuid"],
+                                  "last_watermark": None if not seen else seen.get("watermark"),
+                                  "as_of": None if not seen else seen.get("at")})
         conn.sendall(payload)
         conn.shutdown(socket.SHUT_WR)
         chunks, total = [], 0
@@ -172,10 +253,44 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30
     finally:
         conn.close()
     try:
-        return json.loads(b"".join(chunks).decode("utf-8"))
+        answer = json.loads(b"".join(chunks).decode("utf-8"))
     except ValueError as e:
         raise RoutingRefused("malformed_request", "the authority's response is not JSON: %s" % e,
                              {"address": address})
+    if answer.get("accepted") and seen_at is not None:
+        record_seen(enrollment, workspace, binding, answer, seen_at)
+    return answer
+
+
+def inspect(workspace, enrollment, verify, sign, host_identity, now=None, timeout=30.0):
+    """A question about state, answered LIVE if the authority is there and EXPLICITLY STALE if not.
+
+    Refusing to answer a question about the past helps nobody, so an unreachable authority does not
+    make inspection fail. Answering it WITHOUT SAYING THE ANSWER IS OLD is the failure: every answer
+    from this function carries `stale`, and a stale one carries the watermark and the moment it was
+    last sure of. There is no shape in which a caller gets state and has to guess how fresh it is.
+
+    This is the ONLY function that reads the last-seen record. It starts nothing: a client that
+    cannot reach the authority does not launch one, because starting the authority is an operator's
+    act and a client that starts services on first use turns a stopped authority into two."""
+    binding = enrollment.read_binding(workspace)
+    try:
+        response = send(workspace, {"operation": "inspect"}, enrollment, verify, sign,
+                        host_identity, timeout=timeout, seen_at=now)
+    except RoutingRefused as e:
+        if e.reason != "authority_unavailable":
+            raise
+        seen = last_seen(enrollment, workspace, binding) if binding else None
+        return {"stale": True, "service": e.coordinates.get("service"),
+                "watermark": None if not seen else seen.get("watermark"),
+                "as_of": None if not seen else seen.get("at"),
+                "state": None if not seen else seen.get("state"),
+                "why": e.message}
+    if response.get("accepted") and now is not None:
+        record_seen(enrollment, workspace, binding, response, now)
+    return {"stale": False, "service": response.get("store_uuid"),
+            "watermark": response.get("watermark"), "as_of": now,
+            "state": response.get("result"), "why": None}
 
 
 # ---------------------------------------------------------------------------------------------
@@ -185,7 +300,8 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30
 class Authority:
     """Serves ONE store. Every request is judged against the store this instance serves."""
 
-    def __init__(self, store_uuid, domain_uuid, store_path, enrollment, verify, host_identity, apply):
+    def __init__(self, store_uuid, domain_uuid, store_path, enrollment, verify, host_identity, apply,
+                 watermark=None):
         self.store_uuid = store_uuid
         self.domain_uuid = domain_uuid
         self.store_path = os.path.realpath(os.path.abspath(store_path))
@@ -193,6 +309,10 @@ class Authority:
         self.verify = verify
         self.host_identity = host_identity
         self.apply = apply
+        # HOW FAR THE AUTHORITY HAS GOT, as the authority itself reports it. Supplied as a callable
+        # so this module never reaches into the store; absent, an accepted response simply carries
+        # no watermark and a client says "none" rather than inventing one.
+        self.watermark = watermark
 
     def judge(self, request, uid):
         """The whole rule, as a response mapping. Both checks, in order, each named separately.
@@ -234,9 +354,11 @@ class Authority:
                             "this authority serves store %s at %s; the request names store %s "
                             "resolving to %s" % (self.store_uuid, self.store_path,
                                                  request["store_uuid"], store))
+        result = self.apply(request["command"])
         return {"schema": RESPONSE_SCHEMA, "accepted": True,
                 "store_uuid": self.store_uuid, "store_path": self.store_path,
-                "result": self.apply(request["command"])}
+                "watermark": None if self.watermark is None else self.watermark(),
+                "result": result}
 
     def _no(self, reason, message):
         assert reason in REFUSALS, reason

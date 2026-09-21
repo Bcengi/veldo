@@ -452,6 +452,15 @@
     "48_veldo_0108_relay"
    ],
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_relay.py, .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the relay under a temporary directory. It runs the relay as a REAL CHILD PROCESS with the request on its standard input, which is how sshd runs it, against real authority child processes started through scripts/suites/support/v107_authority_runner.py and stopped by a flag file in a finally block. It also binds one bare echo socket of its own under the temporary directory to measure the relay's carrying promise byte for byte, and reads /proc/net/unix to show the relay opens no listener. It writes only under that temporary directory and sets environment variables only in the child it starts, never in this process. The rows that need a real repository stand down by name when git is absent; the carrying promise does not need one and runs anyway. The leg where sshd authenticates a remote principal STANDS DOWN BY NAME because no SSH server is installed on this machine, and the row says so rather than passing silently."
+  },
+  {
+   "name": "49_veldo_0109_unavailable",
+   "file": "49_veldo_0109_unavailable.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "49_veldo_0109_unavailable"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the client under a temporary directory. It builds real git repositories there, starts a real authority child process through scripts/suites/support/v107_authority_runner.py, STOPS it, and measures what happens after. It reads /proc/net/unix to ask the kernel whether anything is bound at an address, because a process census matched by name matches the command doing the matching. One mutant binds a socket of its own under the temporary directory and the row closes it. Everything is written under that temporary directory; no environment variable and no current directory is changed. It stands down by name when git is absent or the runner script is missing."
   }
  ]
 }
