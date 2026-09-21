@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0029",
-  "commit": "PENDING",
+  "commit": "9520fa273b878d2543d3fb4ff5c69120eba299ed",
   "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; Codex validates this item in the batch of 2026-09-22",
-  "produced_at": "PENDING",
+  "produced_at": "2026-09-21T17:58:35Z",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -54,12 +54,12 @@
   "checks": [
     {
       "name": "gate-implementation",
-      "status": "PENDING",
+      "status": "passed",
       "command": "bash scripts/verify.sh",
-      "exit_code": "PENDING",
-      "commit": "PENDING",
+      "exit_code": 0,
+      "commit": "9520fa273b878d2543d3fb4ff5c69120eba299ed",
       "ref": "proof/VELDO-0029/gate-implementation.log",
-      "detail": "PENDING"
+      "detail": "GATE GREEN at 9520fa273b87; run against a clean tree. The run before it was RED and every reason was the author's, not the code's: an approval record written to invented field names, which the validator read as decision None and named as a near-miss value making the approval silently inert; the two corpus rows that failed because of it; and a stale spec index. Recorded here because a bundle that shows only the green run hides what the gate actually did."
     }
   ],
   "artifacts": [
