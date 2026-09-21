@@ -19,7 +19,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0015 | Liveness stands down on clock disagreement - a heartbeat from the future is answered | ready | high | dmitry | not_required | VELDO-0015-liveness-stands-down-on-clock-disagreement.md |
 | VELDO-0027 | Protected signing and key lifecycle | ready | critical | dmitry | required | VELDO-0027-protected-signing.md |
 | VELDO-0099 | Install-and-run observations resolve git metadata in either checkout shape | ready | standard | dmitry | not_required | VELDO-0099-worktree-git-shape.md |
-| VELDO-0105 | The fix-validation rule has a start line - the owner records the commit it binds from, and history is not re-judged | ready | high | dmitry | required | VELDO-0105-fix-validation-start-line.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to | ready | high | dmitry | not_required | WARP-0714-compute-once.md |
@@ -134,6 +133,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0102 | Capsule runner - reproductions and pinned rows against the reviewed and the fixed candidate | shipped | high | dmitry | required | VELDO-0102-capsule-runner.md |
 | VELDO-0103 | Assessor - a fresh headless Claude Code run reads the whole fix diff and answers per finding | shipped | high | dmitry | required | VELDO-0103-fresh-assessor-run.md |
 | VELDO-0104 | validation.json in the proof bundle, the two-round cap, and the proof check refusing unvalidated fixes | shipped | critical | dmitry | required | VELDO-0104-proof-check-refuses-unvalidated-fixes.md |
+| VELDO-0105 | The fix-validation rule has a start line - the owner records the commit it binds from, and history is not re-judged | shipped | high | dmitry | required | VELDO-0105-fix-validation-start-line.md |
 | WARP-0100 | Adopt VELDO in the VELDO home repository | shipped | high | dmitry | required | WARP-0100-adopt-veldo.md |
 | WARP-0101 | Product Plan contract, validator, and plan index (W1 of PLAN-0001) | shipped | standard | dmitry | not_required | WARP-0101-plan-contract.md |
 | WARP-0102 | /veldo:plan skill, spec lane fields, and the promotion rule (W2 of PLAN-0001) | shipped | standard | dmitry | not_required | WARP-0102-plan-skill-and-lanes.md |
@@ -709,8 +709,7 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 
 ### PLAN-0020 - Fix validation - every fix to a review finding is checked by someone other than its author, and the loop terminates
 
-Status ready, revision 4, owner dmitry. 4/5 work items shipped.
-Ready frontier: VELDO-0105 (W5).
+Status ready, revision 4, owner dmitry. 5/5 work items shipped.
 
 | Item | Spec | Title | Depends on | State |
 |---|---|---|---|---|
@@ -718,5 +717,5 @@ Ready frontier: VELDO-0105 (W5).
 | W2 | VELDO-0102 | Capsule runner - reproduction against reviewed and fixed candidates, pinned row and mutant, one process per capsule | VELDO-0101 | shipped |
 | W3 | VELDO-0103 | Assessor as a fresh headless Claude Code run - fix diff plus findings in, per-finding verdict out, provenance recorded | - | shipped |
 | W4 | VELDO-0104 | validation.json in the proof bundle, round cap, and the proof check refusing unvalidated fixes | VELDO-0102, VELDO-0103 | shipped |
-| W5 | VELDO-0105 | The rule has a start line - the owner records the commit it binds from, and history is not re-judged | VELDO-0104 | ready (frontier) |
+| W5 | VELDO-0105 | The rule has a start line - the owner records the commit it binds from, and history is not re-judged | VELDO-0104 | shipped |
 

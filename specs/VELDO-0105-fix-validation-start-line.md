@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0105
 title: The fix-validation rule has a start line - the owner records the commit it binds from, and history is not re-judged
-status: ready
+status: shipped
 risk: high
 owner: dmitry
 human_approval: required
