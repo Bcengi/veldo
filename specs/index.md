@@ -44,7 +44,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0014 | What a criterion may assert about the live repository - a stated rule that a check describes a | draft | standard | dmitry | not_required | VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md |
 | VELDO-0027 | Protected signing and key lifecycle | draft | critical | dmitry | required | VELDO-0027-protected-signing.md |
 | VELDO-0028 | Protected effect execution and atomic nonce consumption | draft | critical | dmitry | required | VELDO-0028-protected-effects.md |
-| VELDO-0029 | Explicit repository enrollment and authority routing | draft | critical | dmitry | required | VELDO-0029-repository-enrollment.md |
+| VELDO-0029 | One signed enrollment binding decides which authority a clone writes to, and nothing ambient does | draft | critical | dmitry | required | VELDO-0029-repository-enrollment.md |
 | VELDO-0030 | Exclusive leadership and authority-generation fencing | draft | critical | dmitry | required | VELDO-0030-authority-generation-fencing.md |
 | VELDO-0031 | Authority-backed claims and claim-generation fencing | draft | critical | dmitry | required | VELDO-0031-authority-backed-claims.md |
 | VELDO-0032 | Clock uncertainty in task reporting | draft | high | dmitry | required | VELDO-0032-clock-task-reporting.md |
@@ -115,6 +115,9 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
+| VELDO-0107 | Local clients reach the authority over authenticated IPC carrying explicit workspace coordinates | draft | critical | dmitry | required | VELDO-0107-local-authenticated-ipc-routing.md |
+| VELDO-0108 | Remote clients reach the same endpoint through an authenticated SSH command relay, not a second server | draft | critical | dmitry | required | VELDO-0108-ssh-command-relay.md |
+| VELDO-0109 | An unreachable authority stops mutation and admission, and never becomes a local one | draft | critical | dmitry | required | VELDO-0109-authority-unavailable.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
@@ -619,7 +622,7 @@ Open decision D4 blocks: VELDO-0007.
 
 ### PLAN-0019 - Dark Factory project coordination inside Veldo
 
-Status ready, revision 1, owner dmitry. 11/83 work items shipped.
+Status ready, revision 2, owner dmitry. 11/86 work items shipped.
 Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036 (W21), VELDO-0037 (W22), VELDO-0046 (W31).
 
 | Item | Spec | Title | Depends on | State |
@@ -637,7 +640,10 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W11 | VELDO-0026 | Revocation and authorization rechecks | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0025 | shipped |
 | W12 | VELDO-0027 | Protected signing and key lifecycle | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0025 | draft (frontier) |
 | W13 | VELDO-0028 | Protected effect execution and atomic nonce consumption | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0026, VELDO-0027 | waiting: VELDO-0027 |
-| W14 | VELDO-0029 | Explicit repository enrollment and authority routing | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025 | draft (frontier) |
+| W14 | VELDO-0029 | One signed enrollment binding decides which authority a clone writes to, and nothing ambient does | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025 | draft (frontier) |
+| W84 | VELDO-0107 | Local clients reach the authority over authenticated IPC carrying explicit workspace coordinates | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025, VELDO-0029 | waiting: VELDO-0029 |
+| W85 | VELDO-0108 | Remote clients reach the same endpoint through an authenticated SSH command relay, not a second server | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025, VELDO-0029, VELDO-0107 | waiting: VELDO-0029, VELDO-0107 |
+| W86 | VELDO-0109 | An unreachable authority stops mutation and admission, and never becomes a local one | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0025, VELDO-0029, VELDO-0107, VELDO-0108 | waiting: VELDO-0029, VELDO-0107, VELDO-0108 |
 | W15 | VELDO-0030 | Exclusive leadership and authority-generation fencing | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0023, VELDO-0029 | waiting: VELDO-0029 |
 | W16 | VELDO-0031 | Authority-backed claims and claim-generation fencing | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0030 | waiting: VELDO-0030 |
 | W17 | VELDO-0032 | Clock uncertainty in task reporting | VELDO-0016, VELDO-0017, VELDO-0018, VELDO-0019, VELDO-0020, VELDO-0021, VELDO-0022, VELDO-0031 | waiting: VELDO-0031 |

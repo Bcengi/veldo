@@ -1,0 +1,91 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0029",
+  "commit": "3a6ddb9ccb2a6ab2a60ba343d5a57d96d4f9967a",
+  "taken_at": "2026-09-21T17:38:28Z",
+  "fragment": "scripts/suites/46_veldo_0029_enrollment.py",
+  "fragment_sha256": "f1ecb8dc9505a743b8b824c3b8893741c87cd6d3bd9540d79fae8e31369625c5",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy of .veldo/control_enrollment.py, runs the same real git fixtures - two clones of different repositories, a linked worktree, a directory swapped for a clone of another repository, a fresh clone of the same one, and a directory that is not a repository - and requires the named row red while the unmutated copy passes it. One row is the negative control: a copy carrying only an added comment, required to agree with the original on every case the other rows turn on. The signer is an HMAC the suite supplies, because the module holds no key material and takes signing and verification as callables; what the rows turn on is that the signature is CHECKED. No model is called and nothing is spent.",
+  "external_drives": [
+    {
+      "falsifier": "AC2 enrollment/ambient-sources-decide-nothing",
+      "mutation": ".veldo/control_enrollment.py: _git stops stripping the GIT_ environment, which is the state the row CAUGHT before this item landed: GIT_DIR overrides `git -C`, so `git -C repoA rev-list --max-parents=0 HEAD` answered repoB's root commit while believing it had named repoA, and the identity check compared the wrong repository against the binding",
+      "result": "AC2 RED, the other four rows pass"
+    }
+  ],
+  "rows_total": 5,
+  "rows_passed": 5,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0029 AC1 enrollment/an-unsigned-binding-is-not-a-binding: two clones of DIFFERENT repositories, each enrolled by the real call, resolve to their own store and not to each other's; a linked worktree resolves to the same store as the clone it belongs to, because separate working copies of one clone are one enrolled clone; and a binding edited after signing is REFUSED as signature_invalid rather than obeyed. DRIVEN: a copy that skips the signature check hands back the edited binding's store, which is the whole record reduced to a file anyone can write",
+    "VELDO-0029 AC2 enrollment/ambient-sources-decide-nothing: with the process standing inside the OTHER enrolled repository, with VELDO_CONTROL_DB naming the other store and with GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR and GIT_OBJECT_DIRECTORY all naming the other repository, resolving the first workspace still answers the first store and reading its identity still reads its own root commits. Those four are the point: each OVERRIDES `git -C`, so passing the workspace explicitly was NOT enough and the first version of this module failed here. It now reads the environment in exactly one place and only to strip every GIT_ variable from it by prefix, never to take a value, and contains no os.getcwd and no __file__ at all. DRIVEN: a copy that resolves from the process's current directory when an explicit workspace was given answers the other store, which is what the shipped control_db_path does today",
+    "VELDO-0029 AC3 enrollment/a-replaced-clone-must-enroll-again: a directory replaced under the same path is refused in BOTH shapes, with the old binding restored into it either way. A different repository fails on root commits; a FRESH CLONE OF THE SAME REPOSITORY has the same root commits and is still refused, because the clone uuid git never tracked did not come with it. That second case is why identity is two things rather than one. The refusal creates no store and no ledger. DRIVEN: a copy that skips the repository identity check accepts the swapped directory and hands back the authority of a repository that is no longer there",
+    "VELDO-0029 AC4 enrollment/a-refusal-hands-back-no-path: every one of the ten reasons in the module's own closed list is produced by a REAL binding and a real workspace rather than a hand-built record, each refusal names its own reason, and the list is EXHAUSTED, so a reason added later without a case fails this row. The refusal carries the workspace and the binding path it judged and the value it objected to. DRIVEN: a copy that returns the store alongside the problems hands a caller a path it may not use, which is worse than no answer because it looks like one"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "enrollment/an-unsigned-binding-is-not-a-binding",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "enrollment/ambient-sources-decide-nothing",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "enrollment/a-replaced-clone-must-enroll-again",
+      "present": true,
+      "passed": true
+    },
+    "AC4": {
+      "row_contains": "enrollment/a-refusal-hands-back-no-path",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC1": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    },
+    "AC3": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    },
+    "AC4": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0029 AC1 enrollment/an-unsigned-binding-is-not-a-binding: two clones of DIFFERENT repositories, each enrolled by the real call, resolve to their own store and not to each other's; a linked worktree resolves to the same store as the clone it belongs to, because separate working copies of one clone are one enrolled clone; and a binding edited after signing is REFUSED as signature_invalid rather than obeyed. DRIVEN: a copy that skips the signature check hands back the edited binding's store, which is the whole record reduced to a file anyone can write",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0029 AC2 enrollment/ambient-sources-decide-nothing: with the process standing inside the OTHER enrolled repository, with VELDO_CONTROL_DB naming the other store and with GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR and GIT_OBJECT_DIRECTORY all naming the other repository, resolving the first workspace still answers the first store and reading its identity still reads its own root commits. Those four are the point: each OVERRIDES `git -C`, so passing the workspace explicitly was NOT enough and the first version of this module failed here. It now reads the environment in exactly one place and only to strip every GIT_ variable from it by prefix, never to take a value, and contains no os.getcwd and no __file__ at all. DRIVEN: a copy that resolves from the process's current directory when an explicit workspace was given answers the other store, which is what the shipped control_db_path does today",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0029 AC3 enrollment/a-replaced-clone-must-enroll-again: a directory replaced under the same path is refused in BOTH shapes, with the old binding restored into it either way. A different repository fails on root commits; a FRESH CLONE OF THE SAME REPOSITORY has the same root commits and is still refused, because the clone uuid git never tracked did not come with it. That second case is why identity is two things rather than one. The refusal creates no store and no ledger. DRIVEN: a copy that skips the repository identity check accepts the swapped directory and hands back the authority of a repository that is no longer there",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0029 AC4 enrollment/a-refusal-hands-back-no-path: every one of the ten reasons in the module's own closed list is produced by a REAL binding and a real workspace rather than a hand-built record, each refusal names its own reason, and the list is EXHAUSTED, so a reason added later without a case fails this row. The refusal carries the workspace and the binding path it judged and the value it objected to. DRIVEN: a copy that returns the store alongside the problems hands a caller a path it may not use, which is worse than no answer because it looks like one",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0029 control enrollment/copying-is-not-what-changes-it: a copy of the organ carrying only an added comment answers exactly as the original does on all four cases the rows above turn on, so the difference each DRIVEN mutant shows is the mutation and not the copying",
+      "passed": true
+    }
+  ]
+}

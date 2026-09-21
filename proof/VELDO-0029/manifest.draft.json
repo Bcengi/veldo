@@ -1,0 +1,75 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0029",
+  "commit": "PENDING",
+  "producer": "Ava (Claude) implementing agent, under Dmitry's rule that when Codex is out the author writes and Codex validates; Codex validates this item in the batch of 2026-09-22",
+  "produced_at": "PENDING",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0029/driven.json",
+          "detail": "1 row over real git repositories: two clones of DIFFERENT repositories, each enrolled through the real call, resolve to their own store and not to each other's; a linked worktree resolves to the same store as the clone it belongs to, because separate working copies of one clone are one enrolled clone; and a binding edited after signing is refused as signature_invalid. DRIVEN: a copy with the signature check skipped hands back the edited binding's store, which reduces the whole record to a file anyone can write."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0029/driven.json",
+          "detail": "1 row with every ambient source pointed at a second repository that is REAL and REALLY enrolled against a second store: the process standing inside it, VELDO_CONTROL_DB naming its store, and GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR and GIT_OBJECT_DIRECTORY all naming it. Those four are the point, and this row CAUGHT A DEFECT IN THIS ITEM BEFORE IT LANDED: each of them overrides `git -C`, so the module's own `git -C repoA rev-list --max-parents=0 HEAD` answered repoB's root commit while believing it had named repoA, and the identity check compared the wrong repository against the binding. _git now strips every GIT_ variable by PREFIX, and the row asserts the source reads the environment in exactly one place and only to take values away. DRIVEN twice: a copy resolving from the process's current directory, and against the repository's own file, _git no longer stripping the environment."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0029/driven.json",
+          "detail": "1 row, both replacement shapes, with the old binding restored into the new directory either way. A clone of a DIFFERENT repository fails on root commits. A FRESH CLONE OF THE SAME repository has the same root commits and is still refused, because the clone uuid git never tracked did not come with it; that case is why identity is two things rather than one. The refusal creates no store and no ledger, asserted by listing the directory afterwards. DRIVEN: a copy with the repository identity check skipped accepts the swapped directory and hands back the authority of a repository that is no longer there."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0029/driven.json",
+          "detail": "1 row: all TEN reasons in the module's own closed list are produced by a real binding and a real workspace rather than a hand-built record, each refusal names its own reason, and the row asserts the list is EXHAUSTED so a reason added later without a case fails it. The refusal carries the workspace, the binding path and the value it objected to. DRIVEN: a copy that returns the store alongside the problems hands a caller a path it may not use, which is worse than no answer because it looks like one."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "PENDING",
+      "command": "bash scripts/verify.sh",
+      "exit_code": "PENDING",
+      "commit": "PENDING",
+      "ref": "proof/VELDO-0029/gate-implementation.log",
+      "detail": "PENDING"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0029/driven.json",
+    "proof/VELDO-0029/drive.py",
+    "proof/VELDO-0029/gate-implementation.log",
+    "proof/VELDO-0029/log-redactions.json",
+    "proof/VELDO-0029/README.md",
+    "proof/VELDO-0029/approval-plan-split.json"
+  ],
+  "rollback": "Stop calling the resolver. Nothing else reads the binding yet: control_store still uses control_db_path, and pointing its callers here is VELDO-0107's work. A binding left on disk is inert.",
+  "review": "PENDING. The item is DRAFT and this bundle is not a landing claim: VELDO-0029 needs its own ready transition and its own landing approval, neither of which the plan-split approval grants, and it says so in its own text."
+}
