@@ -314,7 +314,7 @@ _v106_ok, _v106_differ, _v106_fields = _v106_ac3(VAL106, _v106_M_strip)
 _v106_ok_mut, _, _ = _v106_ac3(_v106_M_strip, _v106_M_strip)
 print(f"  VELDO-0106 AC3: {len(_v106_differ)} of {len(_v106_CORPUS)} documents parse differently if the "
       f"shared parser strips trailing comments; fields: "
-      f"{', '.join(f'{k} x{v}' for k, v in sorted(_v106_fields.items(), key=lambda kv: -kv[1])[:6])}")
+      f"{', '.join(f'{k} x{v}' for k, v in sorted(_v106_fields.items(), key=lambda kv: (-kv[1], kv[0]))[:6])}")
 
 expect("VELDO-0106 AC3 policyread/the-shared-parser-is-left-alone: the shipped shared parser still keeps a "
        "trailing comment in a scalar, and over this repository's own corpus of specifications and plans a copy "
