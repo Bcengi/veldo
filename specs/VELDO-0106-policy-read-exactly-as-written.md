@@ -41,12 +41,16 @@ acceptance_criteria:
       inline form, changes neither the flag nor the start line; a hash inside a quoted string is
       text rather than a comment; a comma inside a quoted string does not begin a new setting; the
       block is found at any indentation; and only the block's direct members are its settings.
-      Set: The nine shapes the file can take, each written to a real file and read through the real
-      call site rather than a hand-built dictionary. Three of them are bypasses found after the
-      first landing: the whole document indented, a quoted value carrying a comma and the text of
-      the opposite setting, and a member whose own value is a deeper block carrying the opposite
-      setting. Completeness: The general parser's answer is computed beside the reader's for every
-      shape, so the row fails if the call site is ever pointed back at the general parser.
+      Set: The seventeen shapes the file can take, each written to a real file and read through the
+      real call site rather than a hand-built dictionary. Eleven of them are bypasses three separate
+      reviews demonstrated against earlier versions of this reader, including one that moved the
+      start line forward and silently exempted every bundle between the owner's commit and it.
+      Completeness: two independent checks. The general parser's answer is computed beside the
+      reader's for every shape, so the row fails if the call site is ever pointed back at it. And
+      every shape is parsed by a REAL YAML PARSER and the two answers compared, because a list of
+      shapes the author thought of is not a domain and eleven bypasses in a row were all shapes
+      nobody had listed; that row stands down by name where PyYAML is absent, and excludes by name
+      the one deliberate divergence, YAML 1.1 reading a leading-zero digit string as octal.
       Falsifier: Read the policy with the general parser at the call site;
       policyread/a-comment-does-not-disarm-the-rule must fail.
     falsified_by: >
@@ -77,14 +81,18 @@ acceptance_criteria:
       must fail.
   - id: AC4
     text: >
-      Claim: A fix_validation block that is present and cannot be read is REFUSED by the reader,
-      and the call site then treats the rule as required with every bundle in scope and says why.
-      A policy file with no fix_validation key at all stays advisory, because a repository that
-      never adopted the rule is not a repository with a typo. Set: A scalar where a mapping
-      belongs, an unclosed inline mapping, a key with nothing under it, and a file with no such
-      key. Completeness: The never-adopted file is in the set, so the row fails if the reader
-      simply refuses everything it does not like the look of. Falsifier: Swallow the refusal and
-      read an empty policy instead;
+      Claim: The reader has exactly three answers and no fourth. A file that is absent or carries no
+      fix_validation key is advisory. A block it can read EXACTLY is that block. Everything else is
+      REFUSED, and the call site turns a refusal into required with every bundle in scope and says
+      why. There is no answer in which the reader guesses. Set: Thirteen unreadable shapes - a
+      scalar where a mapping belongs, an unclosed inline mapping, a key with nothing under it, the
+      key twice at the top level, a nested flow mapping, a nested flow sequence, a quote that never
+      closes, a member whose value is on the next line, a member with no value, a required value
+      that is neither true nor false, a block carrying neither setting, indentation that is neither
+      the block's nor a member's, and a file that is not valid UTF-8 - plus a file with no such key.
+      Completeness: The never-adopted file is in the set, so the row fails if the reader simply
+      refuses everything it does not like the look of. Falsifier: Swallow the refusal and read an
+      empty policy instead;
       policyread/a-setting-the-owner-wrote-never-reads-as-absent must fail.
     falsified_by: >
       Swallow the refusal and read an empty policy instead;
@@ -111,9 +119,15 @@ All three come from the general parser: it strips whole-line comments but not tr
 
 So the fix is narrow. The fix-validation module already carries `read_policy`, and the call site uses it instead of the parser the validator hands in. That parser is still handed in and still used for the spec front matter beside it; only the policy read changes.
 
-**What the first landing got wrong, and how it was found.** `read_policy` handled the six shapes this item was written for and two it was not, and an unbriefed Codex review found both by building a working bypass for each. It split an inline mapping at every comma, including commas inside quotes, so `{required: true, note: "leave this, required: false"}` made the tail of the note a second `required` pair that overwrote the owner's own setting. And it looked for `fix_validation:` only at column zero, so indenting the document, which the general parser reads perfectly well, made it answer "no such key". Both landed on the same answer, advisory, with nothing failing anywhere: exactly the shape of defect this item exists to remove, reintroduced by the fix for it. The reader now splits outside quotes, finds the block at any indentation, and takes only the block's direct members as its settings.
+**Three rounds of review, eleven bypasses, and why the reader was rebuilt rather than patched.** The first landing handled the six shapes it was written for and answered advisory for everything else. An unbriefed Codex review found two ways through it. A second review, briefed at that class, found eight more. A third, told nothing, found three, and two of those three were REGRESSIONS introduced by the fix for the first two: the quote-aware comma split written to stop `{required: true, note: "leave this, required: false"}` broke `{note: don't relax, required: true}`, which the version before it had parsed correctly.
 
-That is also why AC4 exists. The reader had one way of saying "no settings" and it meant two different things: a repository that never adopted the rule, and a setting the owner wrote that could not be parsed. The first is properly advisory. The second must never be. A `fix_validation` key that is present and yields nothing now raises, and the call site turns that into required with every bundle in scope, so every way of failing here lands on the strict side.
+The eleven are one defect wearing eleven hats. A byte order mark, a space before the colon, an apostrophe or an inch mark in a plain value, a backslash-escaped quote, a U+2028 inside a note, a nested `{}` or `[]`, the key written as prose inside another key's block scalar, the key nested under an unrelated mapping, the key twice, a member whose value sits on the next line. Every one parsed to something non-empty and WRONG, so the rule read as off and nothing failed anywhere. The worst did not disarm the flag at all: it moved the start line forward to a later commit, which silently exempts every bundle between the two and prints as a tidy "not applicable".
+
+A subset reader cannot be patched into a YAML reader. Each patch closed the shape it was shown and left the next one, and twice it opened one. So the reader was rebuilt around a different contract: **return exactly what the owner wrote, or refuse.** It reads one root-level key of one small file, it knows enough structure to tell a real key from text inside someone else's block scalar, and every shape it is not certain it reads the way YAML reads it raises. The call site turns a raise into required with every bundle in scope, so an unreadable policy makes the gate harder to pass and can never switch it off.
+
+That contract is AC4, and it is why the reader now has three answers instead of two. It used to have one way of saying "no settings" and it meant two different things: a repository that never adopted the rule, and a setting the owner wrote that could not be parsed. Every bypass came out of that shared answer.
+
+**The oracle.** AC1's shape list is now checked against a real YAML parser rather than only against itself, because the lesson of eleven bypasses is that a list of shapes the author thought of is not a domain. PyYAML is not a dependency of the shipped reader, which is standard library only; the row stands down by name where it is absent.
 
 **Why the start line must be a full commit id.** Two of the three symptoms are really one: a value that is not an object id. A branch name resolves, and resolves to something different tomorrow, and the ref namespace is not a protected path, so the owner's line could move without the owner. An abbreviated id can become ambiguous as history grows. A leading-zero value is the parser's coercion showing through. Requiring forty hex characters refuses all three by shape, before anything is resolved, and says what it was given.
 

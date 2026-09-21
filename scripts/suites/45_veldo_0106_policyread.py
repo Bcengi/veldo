@@ -141,27 +141,75 @@ else:
             "fix_validation:\n"
             "  required: true\n"
             "  from_commit: " + _v106_ZERO + "\n", _v106_ZERO),
-        # The whole document indented. The general parser reads this perfectly well; the reader
-        # anchored on column zero and answered "no such key", and no such key reads as advisory, so
-        # the owner's armed rule switched itself off over whitespace.
+        # ---- every shape below is a bypass a review DEMONSTRATED, each one reading as advisory ----
+        # The whole document indented. A general parser reads it; a reader anchored on column zero
+        # answered "no such key", and no such key reads as advisory.
         "indented_document": (
             "  schema: veldo.policy/v1\n"
             "  fix_validation:\n"
             "    required: true\n"
             "    from_commit: " + _v106_LINE + "\n", _v106_LINE),
-        # A quoted value carrying a comma AND the text of the opposite setting. The naive comma
-        # split made the tail of the note a second `required` pair that overwrote the owner's own,
-        # so the armed rule read as OFF and every bundle it should have refused passed.
+        # A quoted value carrying a comma and the text of the opposite setting.
         "quoted_comma_carrying_the_opposite": (
             "fix_validation: {required: true, from_commit: " + _v106_LINE
             + ", note: \"do not change this, required: false\"}\n", _v106_LINE),
-        # A member whose own value is a deeper block containing the opposite setting. Only the
-        # block's direct members are its settings.
-        "nested_member_value": (
+        # An apostrophe in a PLAIN value. YAML opens a quote only at a scalar's first character; a
+        # reader that opened one anywhere swallowed the settings behind it. This one is the
+        # cautionary tale of the set: the FIRST version of this reader got it right, and the
+        # quote-aware split written to close a different bypass broke it.
+        "apostrophe_in_a_plain_value": (
+            "fix_validation: {note: don't relax, required: true, from_commit: "
+            + _v106_LINE + "}\n", _v106_LINE),
+        "inch_mark_in_a_plain_value": (
+            "fix_validation: {note: 5\" pipe, required: true, from_commit: "
+            + _v106_LINE + "}\n", _v106_LINE),
+        # THE WORST ONE. A backslash-escaped quote inside a note flipped the reader's idea of where
+        # the value ended, and the injected from_commit became the start line: a LATER commit, which
+        # silently exempts every bundle between the owner's line and it. Not a disarmed flag, a
+        # moved boundary, and it prints as a tidy "not applicable".
+        "escaped_quote_carrying_a_later_start_line": (
+            "fix_validation: {required: true, from_commit: " + _v106_LINE
+            + ", note: \"a \\\" b, from_commit: " + _v106_FIX + "\"}\n", _v106_LINE),
+        # A byte order mark is not whitespace, so lstrip leaves it and the key vanishes.
+        "byte_order_mark": (
+            "\ufefffix_validation:\n"
+            "  required: true\n"
+            "  from_commit: " + _v106_LINE + "\n", _v106_LINE),
+        # YAML allows a space before the colon.
+        "space_before_the_colon": (
+            "fix_validation :\n"
+            "  required: true\n"
+            "  from_commit: " + _v106_LINE + "\n", _v106_LINE),
+        # str.splitlines() also breaks on U+2028, U+2029, U+0085 and three more, which are CONTENT.
+        # Splitting there cut a note in two and the tail parsed as a second setting.
+        "a_line_separator_inside_a_note": (
             "fix_validation:\n"
             "  required: true\n"
-            "  meta:\n"
-            "    required: false\n"
+            "  from_commit: " + _v106_LINE + "\n"
+            "  note: \"ok\u2028  required: false\"\n", _v106_LINE),
+        # The key written as PROSE inside another key's block scalar, which is exactly what a policy
+        # file documenting its own rule looks like.
+        "the_key_quoted_inside_a_block_scalar_above": (
+            "merge_rule: >\n"
+            "  To stand the rule down write\n"
+            "  fix_validation: {required: false}\n"
+            "fix_validation:\n"
+            "  required: true\n"
+            "  from_commit: " + _v106_LINE + "\n", _v106_LINE),
+        # The key nested under an unrelated mapping, with the real key below it.
+        "the_key_nested_under_another_mapping": (
+            "templates:\n"
+            "  default:\n"
+            "    fix_validation:\n"
+            "      required: false\n"
+            "fix_validation:\n"
+            "  required: true\n"
+            "  from_commit: " + _v106_LINE + "\n", _v106_LINE),
+        # YAML 1.1 spells a boolean six ways. Reading an unrecognised one as FALSE is the direction
+        # this module exists to remove.
+        "yaml_one_one_yes": (
+            "fix_validation:\n"
+            "  required: yes\n"
             "  from_commit: " + _v106_LINE + "\n", _v106_LINE),
     }
 
@@ -170,9 +218,14 @@ else:
         handed in exactly as validate.py hands it in."""
         (_v106_repo / ".veldo" / "policy.yaml").write_text(text)
         buf = _v106_io.StringIO()
-        with _v106_ctx.redirect_stdout(buf):
-            errs = organ.check_proof_bundle(_v106_mpath, _v106_manifest, _v106_repo,
-                                            VAL106.parse_yamlish, VAL106.front_matter, VAL106.fail)
+        try:
+            with _v106_ctx.redirect_stdout(buf):
+                errs = organ.check_proof_bundle(_v106_mpath, _v106_manifest, _v106_repo,
+                                                VAL106.parse_yamlish, VAL106.front_matter, VAL106.fail)
+        except Exception as e:  # noqa: BLE001 - a call site that DIES is an answer, and a different
+            # one from every other. A mutant is allowed to crash and that still counts as differing;
+            # the shipped organ is required to return, which is what the read rows assert.
+            return buf.getvalue() + "\nRAISED %s: %s" % (type(e).__name__, e), -1
         return buf.getvalue(), errs
 
     def _v106_by_general_parser(text):
@@ -202,21 +255,68 @@ else:
     (_v106_repo / ".veldo" / "policy.yaml").write_text(_v106_SHAPES["quoted_and_a_hash_in_a_string"][0])
     _v106_note = FV106.read_policy(_v106_repo / ".veldo" / "policy.yaml").get("fix_validation", {}).get("note", "")
 
-    expect("VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all nine shapes the owner's file "
-           "can take - block and inline, with and without a trailing comment, with quoted values and a hash "
-           "inside a string, with a leading-zero value a general parser would coerce, with the whole document "
-           "indented, with a quoted value that carries a comma AND the text of the opposite setting, and with a "
-           "member whose own value is a deeper block carrying the opposite setting - the call site reads the "
-           "flag as REQUIRED and the start line exactly as written, and refuses the bundle. The last three are "
-           "the two bypasses an unbriefed Codex review found on the first landing plus the nesting case beside "
-           "them: each one made the armed rule read as OFF with nothing failing anywhere. The general parser's "
-           "answer is computed beside it on the same text and disagrees on at least four, which is the silent "
-           "return to advisory this item exists to stop; DRIVEN: a copy whose call site reads the policy with "
-           "that general parser answers differently on those same shapes",
+    # THE ORACLE. The completeness clause of AC1 and the reason the shape list above can be trusted
+    # to be a DOMAIN rather than a list of cases I thought of. Every shape is parsed by a real YAML
+    # parser and the two answers compared. Three rounds of review found eleven bypasses in this
+    # reader and every one of them was a shape nobody had listed; a parser that implements the whole
+    # language is the only thing that knows shapes nobody listed.
+    #
+    # It stands down by name when PyYAML is absent, because the shipped reader is standard library
+    # only and this repository's gate must run where PyYAML is not installed. The row above does not
+    # depend on it: the oracle is the check on the LIST, not on the reader.
+    try:
+        import yaml as _v106_yaml
+    except ImportError:  # noqa: BLE001 - absence is a stand-down, named in the row
+        _v106_yaml = None
+
+    def _v106_oracle(text):
+        doc = _v106_yaml.safe_load(text) or {}
+        block = doc.get("fix_validation") if isinstance(doc, dict) else None
+        if not isinstance(block, dict):
+            return (False, "")
+        req, start = block.get("required"), block.get("from_commit")
+        flag = req is True or str(req).strip().lower() in ("true", "yes", "on")
+        return (flag, "" if start is None else str(start))
+
+    # The ONE place the reader and YAML part company on purpose, named here rather than skipped
+    # silently: YAML 1.1 reads a digit-only value with a leading zero as an OCTAL integer, so
+    # `from_commit: 0111...` comes back a different number. Keeping it a string is the whole of
+    # AC2's leading-zero case, so agreeing with YAML here would be the defect.
+    _v106_ORACLE_EXCLUDES = {"leading_zero_value": "YAML 1.1 reads a leading-zero digit string as octal"}
+    _v106_oracle_rows = []
+    if _v106_yaml is not None:
+        for _v106_name, (_v106_text, _v106_want) in _v106_SHAPES.items():
+            if _v106_name in _v106_ORACLE_EXCLUDES:
+                continue
+            (_v106_repo / ".veldo" / "policy.yaml").write_text(_v106_text)
+            _v106_parsed = FV106.read_policy(_v106_repo / ".veldo" / "policy.yaml")
+            _v106_mine = (FV106.flag_from_policy(_v106_parsed),
+                          FV106.start_line_from_policy(_v106_parsed))
+            _v106_oracle_rows.append((_v106_name, _v106_mine == _v106_oracle(_v106_text)))
+
+    expect("VELDO-0106 AC1 policyread/a-comment-does-not-disarm-the-rule: in all seventeen shapes the owner's "
+           "file can take, the call site reads the flag as REQUIRED and the start line exactly as written, and "
+           "refuses the bundle. Eleven of those shapes are bypasses three separate reviews DEMONSTRATED against "
+           "earlier versions of this reader, each of which made the armed rule read as OFF with nothing failing "
+           "anywhere, and one of which moved the start line forward to a later commit and silently exempted "
+           "every bundle between the two. The general parser's answer is computed beside the reader's on the "
+           "same text and disagrees on at least four, which is the silent return to advisory this item exists "
+           "to stop; DRIVEN: a copy whose call site reads the policy with that general parser answers "
+           "differently on those same shapes",
            all(ok for _, ok in _v106_read_ok)
            and sum(1 for _, d in _v106_general_disagrees if d) >= 4
            and sum(1 for _, d in _v106_mutant_differs if d) >= 4
            and "#" in _v106_note)
+
+    expect("VELDO-0106 AC1 policyread/a-real-yaml-parser-is-the-oracle: every shape above is parsed by PyYAML "
+           "and the two answers compared, because a list of shapes I thought of is not a domain and eleven "
+           "bypasses in a row were shapes nobody had listed. The reader agrees with a complete implementation "
+           "of the language on all of them but ONE, which is excluded by name and for a reason: YAML 1.1 reads "
+           "a leading-zero digit string as octal, and keeping that value a string is the defect AC2 exists to "
+           "prevent, so agreeing there would be wrong. STANDS DOWN by name where PyYAML is not installed, "
+           "because the shipped reader is standard library only and the gate must run without it",
+           (_v106_yaml is None) or (len(_v106_oracle_rows) == len(_v106_SHAPES) - len(_v106_ORACLE_EXCLUDES)
+                                    and all(ok for _, ok in _v106_oracle_rows)))
 
     # ---- AC2: a start line is a commit id, by shape, before anything is resolved ------------------
     _v106_M_noshape = _v106_organ("noshape", [(SHAPE_106, "    pass")])
@@ -253,9 +353,32 @@ else:
 
     # ---- AC4: a fix_validation block that cannot be read is REQUIRED, never quietly advisory ------
     _v106_UNREADABLE = {
-        "a_scalar_not_a_mapping": "fix_validation: true\n",
+        "a_scalar_where_a_mapping_belongs": "fix_validation: true\n",
         "an_unclosed_inline_mapping": "fix_validation: {required: true\n",
         "a_key_with_no_settings_under_it": "fix_validation:\nversion: 1\n",
+        # The key twice at the top level: the first version took the first and YAML takes the last.
+        # Which one binds is not a reader's guess to make.
+        "the_key_twice_at_the_top_level":
+            "fix_validation:\n  required: false\nfix_validation:\n  required: true\n",
+        # A nested flow collection re-enabled the comma split that a nested `required: false`
+        # rode through. Refused rather than parsed: this file has never needed one.
+        "a_nested_flow_mapping":
+            "fix_validation: {required: true, meta: {owner: dmitry, required: false}}\n",
+        "a_nested_flow_sequence":
+            "fix_validation: {required: true, exempt: [legacy, required: false]}\n",
+        # A quote that never closes used to swallow the rest of the mapping and answer advisory.
+        "a_quote_that_does_not_close": "fix_validation:\n  note: \"open\n  required: true\n",
+        # `required:` with its value on the next line is legal YAML and read as EMPTY, which read as
+        # off. The guard that caught an empty BLOCK never looked at an empty SETTING.
+        "a_member_whose_value_is_on_the_next_line":
+            "fix_validation:\n  required:\n    true\n  from_commit: " + _v106_LINE + "\n",
+        "a_member_with_no_value_at_all":
+            "fix_validation:\n  required:\n  from_commit: " + _v106_LINE + "\n",
+        "a_required_value_that_is_neither_true_nor_false":
+            "fix_validation:\n  required: maybe\n  from_commit: " + _v106_LINE + "\n",
+        "a_block_carrying_neither_setting": "fix_validation:\n  note: hello\n",
+        "indentation_that_is_neither_the_blocks_nor_a_members":
+            "fix_validation:\n    note: x\n\trequired: true\n",
     }
     _v106_M_swallow = _v106_organ("swallow", [
         ('        parsed = {FLAG_KEY: {"required": "true"}}', "        parsed = {}")])
@@ -266,14 +389,32 @@ else:
                              and "fix validation required," in _v106_o and _v106_e >= 1))
         _v106_mo, _v106_me = _v106_at_call_site(_v106_M_swallow, _v106_text)
         _v106_open.append((_v106_name, "fix validation advisory," in _v106_mo and _v106_me == 0))
+    # Not valid UTF-8. UnicodeDecodeError is a ValueError, not an OSError, so it used to escape this
+    # module AND the call site's own handler and take the whole validator down, which is neither of
+    # the three answers the reader promises.
+    (_v106_repo / ".veldo" / "policy.yaml").write_bytes(
+        b"# caf\xe9\nfix_validation:\n  required: true\n")
+    _v106_notutf8 = _v106_io.StringIO()
+    with _v106_ctx.redirect_stdout(_v106_notutf8):
+        _v106_nu_errs = FV106.check_proof_bundle(_v106_mpath, _v106_manifest, _v106_repo,
+                                                 VAL106.parse_yamlish, VAL106.front_matter, VAL106.fail)
+    _v106_closed.append(("a_file_that_is_not_utf8",
+                         "could not be read" in _v106_notutf8.getvalue()
+                         and "fix validation required," in _v106_notutf8.getvalue()
+                         and _v106_nu_errs >= 1))
+
     # A file with NO fix_validation key at all is a different thing: a repository that never adopted
     # the rule is advisory, and that is correct. This is the case the row must NOT catch.
     _v106_never_adopted, _v106_na_errs = _v106_at_call_site(
         FV106, "schema: veldo.policy/v1\nversion: 1\n")
 
-    expect("VELDO-0106 AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent: a fix_validation block "
-           "written as a scalar, as an unclosed inline mapping, or as a key with nothing under it is REFUSED "
-           "by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and "
+    expect("VELDO-0106 AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent: thirteen ways of writing "
+           "a fix_validation block this reader cannot read EXACTLY - a scalar where a mapping belongs, an "
+           "unclosed inline mapping, a key with nothing under it, the key twice at the top level, a nested flow "
+           "mapping or sequence, a quote that never closes, a member whose value is on the next line or absent, "
+           "a required value that is neither true nor false, a block carrying neither setting, indentation that "
+           "is neither the block's nor a member's, and a file that is not valid UTF-8 - are each REFUSED by the "
+           "reader, and the call site then treats the rule as REQUIRED with every bundle in scope and "
            "says why - both moves in the strict direction, so a malformed policy on a protected path can only "
            "make the gate harder to pass, never switch it off. A file with no fix_validation key at all stays "
            "advisory, because a repository that never adopted the rule is not a repository with a typo; "
@@ -292,8 +433,8 @@ else:
          _v106_scope["branch"]),
         (_v106_M_noop.start_line_scope(_v106_repo, _v106_LINE, _v106_FIX),
          _v106_scope["full_id"]),
-        (_v106_at_call_site(_v106_M_noop, _v106_UNREADABLE["a_scalar_not_a_mapping"]),
-         _v106_at_call_site(FV106, _v106_UNREADABLE["a_scalar_not_a_mapping"])),
+        (_v106_at_call_site(_v106_M_noop, _v106_UNREADABLE["a_scalar_where_a_mapping_belongs"]),
+         _v106_at_call_site(FV106, _v106_UNREADABLE["a_scalar_where_a_mapping_belongs"])),
     ]
     expect("VELDO-0106 control policyread/copying-is-not-what-changes-it: a copy of the organ carrying only an "
            "added comment answers exactly as the original does on the four cases the rows above turn on, so "
