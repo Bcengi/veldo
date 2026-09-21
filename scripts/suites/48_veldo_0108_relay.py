@@ -118,7 +118,7 @@ def _v108_echo_once():
 
 _v108_PAYLOADS = {
     "a NUL byte and control characters": b'{"a":"\x00\x01\x02\x7f"}',
-    "text that is valid utf-8 but awkward": "dot . slash / 漢字 robot \U0001F916 sep  ".encode("utf-8"),
+    "text that is valid utf-8 but awkward": "dot . slash / \u6f22\u5b57 robot \U0001F916 sep \u2028".encode("utf-8"),
     "bytes that are NOT valid utf-8": b"\xff\xfe\x00binary",
     "half a megabyte": bytes(range(256)) * 2048,
     "nothing at all": b"",
@@ -235,7 +235,7 @@ else:
 
             # ---- AC1: the authority judges, not the relay -------------------------------------
             _v108_cmd = {"operation": "upsert", "id": "relayed",
-                         "payload": {"nested": [1, 2, 3], "text": "unicode: · ok"}}
+                         "payload": {"nested": [1, 2, 3], "text": "unicode: \u00b7 ok"}}
             _v108_req = CC108.build_request(_v108_A, _v108_bA, _v108_cmd, _v108_sign)
             _v108_raw = _v108_json.dumps(_v108_req).encode()
             _v108_rc_ok, _v108_ans_ok, _ = _v108_relay(_v108_MAIN, _v108_ADDR_A, _v108_raw)
