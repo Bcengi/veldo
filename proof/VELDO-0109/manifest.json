@@ -14,6 +14,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0109/driven.json",
           "detail": "1 row against a real authority child process on a real AF_UNIX socket that is then STOPPED. While it is up a command is accepted, carries the authority's own WATERMARK, and the clone records it. With it stopped the same command REFUSES as authority_unavailable and the refusal carries the service it could not reach and the last watermark it was sure of. Nothing NEW appears in EITHER directory a fallback could write into, the authority's and the clone's own control directory, and nothing is bound at the address in the kernel's own table. The record on disk does not turn the refusal into a success, which is the property that matters and is asserted behaviourally rather than as a claim about the source. DRIVEN twice: a copy that answers from the record, and a copy whose refusal stops naming the service."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0109/driven.json",
+          "detail": "The in-process half of the same row: the last-seen record is written only after an accepted response, is read back with its watermark, its state and the moment, and is None for a record belonging to another store, because a file left by a different enrollment is not knowledge about this one. The refusal's own coordinates, the service and the last watermark, are read from the raised exception rather than from a process boundary. Stopping the authority is the integration entry above; this is the part that needs no second process."
         }
       ]
     },

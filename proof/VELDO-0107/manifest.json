@@ -25,6 +25,11 @@
           "type": "integration",
           "ref": "proof/VELDO-0107/driven.json",
           "detail": "1 row. Over a REAL connection the uid the module uses is the one the kernel reports through SO_PEERCRED and equals this process's own, and the socket is 0600 inside a 0700 directory. Against the same real authority object: a valid request accepted; a valid peer with a broken signature refused as command_signature_invalid; a foreign uid refused as peer_not_authorized even with a perfect signature; a uid the platform will not report refused as peer_identity_unavailable rather than passed, because a check that is unavailable must not become a check that succeeded. DRIVEN: a copy whose peer branch stops refusing accepts the foreign uid. HONEST LIMIT, stated in the row itself: a connection from a genuinely different OS account is NOT tested and cannot be, because this design has one account by intent; the claim is split into the two halves above and neither is the whole of it."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0107/driven.json",
+          "detail": "The in-process half of the same row, and it is unit rather than integration because no socket round trip and no child process is involved: Authority.judge is called directly with a valid request, with a broken signature, with a uid the kernel would report for another account, and with no uid at all, and the four answers are compared. The socket half of the row is the integration entry above; the uid it asserts comes from SO_PEERCRED over a real connection, which is why the claim is split across the two kinds rather than labelled as one."
         }
       ]
     },
