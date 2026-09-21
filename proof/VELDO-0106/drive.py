@@ -27,6 +27,7 @@ FALSIFIERS = {
     "AC1": "policyread/a-comment-does-not-disarm-the-rule",
     "AC2": "policyread/a-branch-is-not-a-start-line",
     "AC3": "policyread/the-shared-parser-is-left-alone",
+    "AC4": "policyread/a-setting-the-owner-wrote-never-reads-as-absent",
 }
 
 
@@ -49,7 +50,7 @@ def main():
     driven = [r for r in rows if "DRIVEN" in r["label"] and " control " not in r["label"]]
     by_ac = {}
     for r in rows:
-        for ac in ("AC1", "AC2", "AC3"):
+        for ac in ("AC1", "AC2", "AC3", "AC4"):
             if " %s " % ac in r["label"]:
                 by_ac.setdefault(ac, {"rows": 0, "passed": 0, "driven": 0})
                 by_ac[ac]["rows"] += 1
@@ -73,18 +74,30 @@ def main():
                         "spent."),
         "external_drives": [
             {"falsifier": "AC1 policyread/a-comment-does-not-disarm-the-rule",
-             "mutation": ".veldo/fix_validation_record.py: _strip_comment returns the line unchanged, so read_policy "
-                         "stops stripping trailing comments",
-             "result": "row RED, 3 of 4 rows passed"},
+             "mutation": ".veldo/fix_validation_record.py: _strip_comment returns the line unchanged, so "
+                         "read_policy stops stripping trailing comments",
+             "result": "AC1 RED, the other four rows pass"},
+            {"falsifier": "AC1, rebuilding the PRE-FIX code the review broke",
+             "mutation": ".veldo/fix_validation_record.py: the inline mapping split back to "
+                         'rest.strip("{}").split(","), the naive comma split Codex F-001 bypassed',
+             "result": "AC1 RED, the other four rows pass"},
+            {"falsifier": "AC1, rebuilding the PRE-FIX code the review broke",
+             "mutation": ".veldo/fix_validation_record.py: the key match back to raw.startswith, the "
+                         "column-zero anchor Codex F-002 bypassed by indenting the document",
+             "result": "AC1 RED, the other four rows pass"},
             {"falsifier": "AC2 policyread/a-branch-is-not-a-start-line",
-             "mutation": '.veldo/fix_validation_record.py: _FULL_COMMIT_ID becomes re.compile(r".*"), so the shape '
-                         "gate accepts every value",
-             "result": "row RED, 3 of 4 rows passed"},
+             "mutation": '.veldo/fix_validation_record.py: _FULL_COMMIT_ID becomes re.compile(r".*"), so '
+                         "the shape gate accepts every value",
+             "result": "AC2 RED, the other four rows pass"},
             {"falsifier": "AC3 policyread/the-shared-parser-is-left-alone",
-             "mutation": ".veldo/validate.py: _scalar strips a trailing comment, so the SHIPPED shared parser is the "
-                         "stripping one",
-             "result": "row RED, and AC1 red with it because the general parser then agrees with the reader; 2 of 4 "
-                       "rows passed"},
+             "mutation": ".veldo/validate.py: _scalar strips a trailing comment, so the SHIPPED shared "
+                         "parser is the stripping one",
+             "result": "AC3 RED, and AC1 red with it because the general parser then agrees with the "
+                       "reader; three rows pass"},
+            {"falsifier": "AC4 policyread/a-setting-the-owner-wrote-never-reads-as-absent",
+             "mutation": ".veldo/fix_validation_record.py: read_policy catches its own ValidationError and "
+                         "answers with an empty policy, so an unparsable block reads as advisory again",
+             "result": "AC4 RED, the other four rows pass"},
         ],
         "rows_total": len(rows),
         "rows_passed": sum(1 for r in rows if r["passed"]),

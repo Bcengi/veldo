@@ -52,25 +52,48 @@ pinning it, so a later reader who wants to make the change sees what it costs fi
 
 ## What the evidence is, and what it is not
 
-Four rows in `scripts/suites/45_veldo_0106_policyread.py`. The policy is a REAL FILE in each of the
-six shapes it can take, in a real git repository with a trunk, a tag and a committed proof bundle,
+Five rows in `scripts/suites/45_veldo_0106_policyread.py`. The policy is a REAL FILE in each of the
+nine shapes it can take, in a real git repository with a trunk, a tag and a committed proof bundle,
 read through the real call site rather than a hand-built dictionary. The general parser's answer is
 computed beside the reader's on the same text, so a row fails if the call site is ever pointed back
 at it.
 
-Each of the three declared falsifiers was driven TWICE. Once inside the suite, against copies: the
-call site on the general parser, the shape gate removed, the shared parser stripping comments. And
-once against the repository's own files, which is the check on the check:
+Each declared falsifier was driven twice. Once inside the suite, against copies. And once against the
+repository's own files, which is the check on the check. Two of those six rebuild the exact pre-fix
+code the review broke, rather than something adjacent to it:
 
 | falsifier | mutation to the repository's own file | result |
 |---|---|---|
-| AC1 | `_strip_comment` returns the line unchanged | AC1 red, 3 of 4 rows pass |
-| AC2 | `_FULL_COMMIT_ID` becomes `re.compile(r".*")` | AC2 red, 3 of 4 rows pass |
-| AC3 | `_scalar` in `validate.py` strips a trailing comment | AC3 red, and AC1 red with it, 2 of 4 rows pass |
+| AC1 | `_strip_comment` returns the line unchanged | AC1 red, other four pass |
+| AC1, pre-fix | the inline split back to `rest.strip("{}").split(",")`, the code F-001 bypassed | AC1 red, other four pass |
+| AC1, pre-fix | the key match back to `raw.startswith`, the column-zero anchor F-002 bypassed | AC1 red, other four pass |
+| AC2 | `_FULL_COMMIT_ID` becomes `re.compile(r".*")` | AC2 red, other four pass |
+| AC3 | `_scalar` in `validate.py` strips a trailing comment | AC3 red, and AC1 red with it, three pass |
+| AC4 | `read_policy` catches its own refusal and answers with an empty policy | AC4 red, other four pass |
 
-The fourth row is the negative control: a copy of the organ carrying only an added comment, required
+The fifth row is the negative control: a copy of the organ carrying only an added comment, required
 to agree with the original on every case the other rows turn on, so the difference each driven mutant
 shows is the mutation and not the copying.
+
+## What the first landing got wrong
+
+The gate was GREEN at `d1809f1` and the suite's four rows passed. Codex, given no brief and told
+nothing about where to look, built a working bypass for each of two defects in the reader that
+landing had just installed.
+
+`read_policy` split an inline mapping at every comma, commas inside quotes included, so
+`fix_validation: {required: true, note: "leave this, required: false"}` made the tail of the note a
+second `required` pair that overwrote the owner's own setting. And it looked for `fix_validation:`
+only at column zero, so indenting the document, which the general parser reads perfectly well, made
+it answer "no such key".
+
+Both landed on the same answer, advisory, with nothing failing anywhere. That is the exact shape of
+defect this item exists to remove, reintroduced by the fix for it, and the suite written for the fix
+did not see either one. A green gate finds what a check was written for.
+
+AC4 is the gap underneath both. The reader had one way of saying "no settings" and it meant two
+different things: a repository that never adopted the rule, and a setting the owner wrote that could
+not be parsed. The first is properly advisory. The second must never be.
 
 What this is NOT. It is not evidence that the two settings are read correctly everywhere. The
 repository has other readers of `.veldo/policy.yaml` and consolidating them is not this item; this

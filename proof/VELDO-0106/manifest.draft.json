@@ -13,7 +13,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0106/driven.json",
-          "detail": "1 row over a real git repository with a trunk, a tag and a committed proof bundle. The policy is a REAL FILE in each of the six shapes it can take - block and inline, with and without a trailing comment, with quoted values and a hash inside a string, and with a leading-zero value a general parser would coerce - read through the real call site rather than a hand-built dictionary. In every shape the flag reads REQUIRED and the start line reads exactly as written, and the bundle is refused. The general parser's answer is computed beside the reader's on the same text and disagrees on four of the six. DRIVEN twice: inside the suite, a copy whose call site reads the policy with the general parser answers differently on those same shapes; and against the repository's own file, _strip_comment returning the line unchanged reds this row while the other three pass."
+          "detail": "1 row over a real git repository with a trunk, a tag and a committed proof bundle. The policy is a REAL FILE in each of the NINE shapes it can take - block and inline, with and without a trailing comment, with quoted values and a hash inside a string, with a leading-zero value a general parser would coerce, with the whole document indented, with a quoted value carrying a comma AND the text of the opposite setting, and with a member whose own value is a deeper block carrying the opposite setting - read through the real call site rather than a hand-built dictionary. In every shape the flag reads REQUIRED and the start line reads exactly as written, and the bundle is refused. The general parser's answer is computed beside the reader's on the same text and disagrees on at least four. DRIVEN four times: inside the suite, a copy whose call site reads the policy with the general parser; and against the repository's own file, three separate mutations, two of which rebuild the EXACT pre-fix code an unbriefed Codex review bypassed - the naive comma split (F-001) and the column-zero anchor (F-002) - each reddening this row while the other four pass."
         }
       ]
     },
@@ -38,6 +38,17 @@
           "detail": "1 row over THIS repository's own corpus of 328 specifications and plans, not a fixture: the shipped shared parser still keeps a trailing comment in a scalar, and a copy that strips them parses 55 of those documents differently, 49 in acceptance-criteria text and the rest in risk, constraints and status fields containing a hash. The count and the fields are printed on every run rather than pinned, because the corpus grows. DRIVEN twice: with the stripping copy AS the shipped parser the claim is false, so the row is not true by construction; and against the repository's own file, _scalar in validate.py stripping a trailing comment reds this row and AC1 with it."
         }
       ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0106/driven.json",
+          "detail": "1 row: a fix_validation block written as a scalar, as an unclosed inline mapping, or as a key with nothing under it is refused by the reader, and the call site then treats the rule as REQUIRED with every bundle in scope and prints why, so a malformed policy on a protected path can only make the gate harder to pass. A file with no fix_validation key at all stays advisory and is IN THE SET, so the row cannot be satisfied by refusing everything. DRIVEN twice: a copy that swallows the refusal goes advisory on all three and passes the bundle with zero errors; and against the repository's own file, read_policy catching its own ValidationError reds this row while the other four pass."
+        }
+      ]
     }
   ],
   "checks": [
@@ -58,5 +69,5 @@
     "proof/VELDO-0106/README.md"
   ],
   "rollback": "Point the call site back at the general parser and drop the shape check. The rule returns to the behaviour VELDO-0105 shipped, and no evidence is invalidated.",
-  "review": "PENDING"
+  "review": "An unbriefed Codex review (research/codex-reviews/review-20260921-124814.md, run over d1809f1 against base 694a856) found two confirmed bypasses with a reproducing capsule each, both of which made the armed rule read as OFF with the gate GREEN and the suite's four rows passing. Both are fixed in this bundle's commit, both pre-fix shapes are now rows, and the gap underneath them is AC4. Codex validates the fixed item in the batch of 2026-09-22."
 }
