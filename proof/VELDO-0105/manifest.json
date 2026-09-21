@@ -1,0 +1,68 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0105",
+  "commit": "704d2e16e88688e0d73528f5863b9ac0826e6557",
+  "producer": "Ava (Claude) implementing agent, writing because Codex is out of quota until the batch of 2026-09-22 (Dmitry's one-retry-then-write rule); Codex validates in that batch",
+  "produced_at": "2026-09-21T11:56:21Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0105/driven.json",
+          "detail": "2 rows over a real git repository with a trunk carrying the start line partway along it and a branch that forks before the line: a bundle that landed before the line is not applicable, carries the reason and is never refused; one at the line and one after it are in scope and refused; the branch bundle is excluded too. The second row runs the real validator over this repository's whole landed corpus, refusing bundles with the flag on and no line and refusing none with the line recorded. DRIVEN: a copy with the ancestry test inverted judges the history it should have left alone."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0105/gate-implementation.log",
+          "detail": "Complete canonical gate at 704d2e16e88688e0d73528f5863b9ac0826e6557: GATE GREEN, exit 0, every required check passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0105/driven.json",
+          "detail": "1 row: with no line recorded, with a line naming a commit this repository does not have, and with a malformed line, the bundle the rule would refuse is still in scope and still refused. DRIVEN: a copy treating an unresolvable line as excluding everything lets that bundle through, which is one wrong character in a commit id switching the whole rule off."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0105/driven.json",
+          "detail": "2 rows: the line is read from the parsed policy and nowhere else, with absent, empty, quoted and not-a-block all answered; and a bundle whose manifest AND whose validation record both carry a well-formed start line of their own is still judged against the owner's. DRIVEN: a copy falling back to the manifest reads the author's line and puts the bundle back in scope on the author's say-so."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate-implementation",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "704d2e16e88688e0d73528f5863b9ac0826e6557",
+      "ref": "proof/VELDO-0105/gate-implementation.log",
+      "detail": "GATE GREEN; run against a clean tree."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0105/driven.json",
+    "proof/VELDO-0105/drive.py",
+    "proof/VELDO-0105/gate-implementation.log",
+    "proof/VELDO-0105/log-redactions.json",
+    "proof/VELDO-0105/README.md"
+  ],
+  "rollback": "Remove the recorded start line. The rule returns to judging every bundle, which is the behaviour VELDO-0104 shipped, and no evidence is invalidated.",
+  "review": "Codex is out of quota until the batch of 2026-09-22, so by Dmitry's standing rule the author tested this item: suite 44 with all three declared falsifiers driven and a negative control showing the copying is not what changes the answer, plus the canonical gate. Codex validates the item in that batch; the review and any fixes will be recorded in this bundle. This item is itself the start line's implementation, so the rule it adds does not yet bind anything: the owner records the flag and the line after it lands."
+}

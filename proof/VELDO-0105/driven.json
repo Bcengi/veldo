@@ -1,0 +1,78 @@
+{
+  "schema": "veldo.driven/v1",
+  "spec_id": "VELDO-0105",
+  "commit": "71fbf9328693d9ed6bd4c186153fea172f7a712d",
+  "taken_at": "2026-09-21T11:38:21Z",
+  "fragment": "scripts/suites/44_veldo_0105_startline.py",
+  "fragment_sha256": "61c63073086a0bb637ea4a9f1fce0e6d515e79101a23a9d1f898182f9c961df9",
+  "description": "One run of the spec's suite fragment with every row recorded. Every DRIVEN row applies a mutation to a copy of .veldo/fix_validation_record.py (beside copies of its two siblings), runs the same real git fixture, and requires the named row red while the unmutated copy passes it. One row is the negative control: a copy carrying only an added comment, required to agree with the original on every case the other rows turn on. No model is called and nothing is spent.",
+  "rows_total": 6,
+  "rows_passed": 6,
+  "rows_failed": [],
+  "driven_rows": [
+    "VELDO-0105 AC1 proofcheck/start-line-excludes-history: a bundle that landed before the recorded start line is not applicable and says so, and is never refused for a missing validation record; one at the line and one after it are both in scope and both refused; a bundle on a branch that never contains the line is excluded too, which is the case a naive comparison gets wrong; DRIVEN: a copy with the ancestry test inverted judges the bundle that predates the line",
+    "VELDO-0105 AC2 proofcheck/unresolvable-start-line-fails-closed: with no line recorded, with a line naming a commit this repository does not have, and with a malformed line, the bundle the rule would refuse is still in scope and still refused, and the reason is carried; DRIVEN: a copy that treats an unresolvable line as excluding everything lets that same bundle through, which is one wrong character in a commit id switching the whole rule off",
+    "VELDO-0105 AC3 proofcheck/start-line-not-author-writable: a bundle whose manifest and whose validation record both carry a well-formed start line of their own is still judged against the owner's line in the policy, so the author's values change nothing and the bundle stays excluded; DRIVEN: a copy that falls back to the manifest's value when the policy names none reads the author's line and puts the bundle back in scope on the author's say-so",
+    "VELDO-0105 control startline/copying-is-not-what-changes-it: a copy of the organ carrying only an added comment answers exactly as the original does on all four cases the rows above turn on, so the difference each DRIVEN mutant shows is the mutation and not the copying"
+  ],
+  "declared_falsifiers": {
+    "AC1": {
+      "row_contains": "proofcheck/start-line-excludes-history",
+      "present": true,
+      "passed": true
+    },
+    "AC2": {
+      "row_contains": "proofcheck/unresolvable-start-line-fails-closed",
+      "present": true,
+      "passed": true
+    },
+    "AC3": {
+      "row_contains": "proofcheck/start-line-not-author-writable",
+      "present": true,
+      "passed": true
+    }
+  },
+  "per_criterion": {
+    "AC3": {
+      "rows": 2,
+      "passed": 2,
+      "driven": 1
+    },
+    "AC1": {
+      "rows": 2,
+      "passed": 2,
+      "driven": 1
+    },
+    "AC2": {
+      "rows": 1,
+      "passed": 1,
+      "driven": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "VELDO-0105 AC3 startline/read-only-from-the-policy: the start line is fix_validation.from_commit in the parsed policy and nothing else; absent, empty, and a policy whose fix_validation is not a block all read as no line, and a quoted value reads as the bare commit",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0105 AC1 proofcheck/start-line-excludes-history: a bundle that landed before the recorded start line is not applicable and says so, and is never refused for a missing validation record; one at the line and one after it are both in scope and both refused; a bundle on a branch that never contains the line is excluded too, which is the case a naive comparison gets wrong; DRIVEN: a copy with the ancestry test inverted judges the bundle that predates the line",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0105 AC2 proofcheck/unresolvable-start-line-fails-closed: with no line recorded, with a line naming a commit this repository does not have, and with a malformed line, the bundle the rule would refuse is still in scope and still refused, and the reason is carried; DRIVEN: a copy that treats an unresolvable line as excluding everything lets that same bundle through, which is one wrong character in a commit id switching the whole rule off",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0105 AC3 proofcheck/start-line-not-author-writable: a bundle whose manifest and whose validation record both carry a well-formed start line of their own is still judged against the owner's line in the policy, so the author's values change nothing and the bundle stays excluded; DRIVEN: a copy that falls back to the manifest's value when the policy names none reads the author's line and puts the bundle back in scope on the author's say-so",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0105 control startline/copying-is-not-what-changes-it: a copy of the organ carrying only an added comment answers exactly as the original does on all four cases the rows above turn on, so the difference each DRIVEN mutant shows is the mutation and not the copying",
+      "passed": true
+    },
+    {
+      "label": "VELDO-0105 AC1 proofcheck/the-corpus-this-item-exists-for: running the real validator over this repository's own landed corpus with the flag on and NO line recorded refuses bundles that shipped before the machinery existed, and the same run with the line recorded at HEAD refuses none of them and names the line in every result; the policy file is restored either way",
+      "passed": true
+    }
+  ]
+}
