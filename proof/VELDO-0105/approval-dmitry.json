@@ -5,7 +5,7 @@
   "approver": "dmitry",
   "scope": {
     "spec_id": "VELDO-0105",
-    "commit": "71fbf9328693d9ed6bd4c186153fea172f7a712d",
+    "commit": "704d2e16e88688e0d73528f5863b9ac0826e6557",
     "paths": []
   },
   "basis": "Dmitry approved the landing of VELDO-0105 (risk high, human_approval required) over Telegram on 2026-09-21T15:58:19Z (message 28449, 'approve'), answering an ask that described the item: the fix-validation rule now binds from a commit the owner records in .veldo/policy.yaml, and every bundle that landed before it, including one on a branch that never contains it, is excluded and carries the reason; absence fails CLOSED, so no line recorded, a line naming a commit this repository does not have, and a malformed line all leave every bundle in scope, because one wrong character in a commit id silently exempting the whole corpus would look exactly like a rule that works; the line is read from the policy and nowhere else, so nothing the author of a fix writes into a manifest or a validation record can move it. The ask also stated what the evidence does not show: every row is a check the author wrote, so it shows the scope decision is made in the right place and cannot be moved by the party it gates, and does not show the line is set to the right commit. He had already approved the specification earlier the same day (28440, 'Approved'), and had chosen the start line over leaving the rule advisory and over back-filling records that cannot be written honestly (28436, 'Start line'). The commit bound here is the implementation commit. paths is empty because the approval is of the landing.",
