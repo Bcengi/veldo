@@ -443,6 +443,15 @@
     "47_veldo_0107_ipc"
    ],
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the client under a temporary directory. It builds two real git repositories there, enrolls them against two different stores, and starts TWO REAL AUTHORITY CHILD PROCESSES on real AF_UNIX sockets through scripts/suites/support/v107_authority_runner.py, each stopped by a flag file in a finally block and killed if it does not stop. It writes only under that temporary directory, and it changes the process's current directory and two environment variables for one row, restoring both in a finally block, because that row's whole point is that those things decide nothing. It stands down by name when git is absent or when the platform does not report SO_PEERCRED, and again by name if the runner script is missing."
+  },
+  {
+   "name": "48_veldo_0108_relay",
+   "file": "48_veldo_0108_relay.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "48_veldo_0108_relay"
+   ],
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_relay.py, .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the relay under a temporary directory. It runs the relay as a REAL CHILD PROCESS with the request on its standard input, which is how sshd runs it, against real authority child processes started through scripts/suites/support/v107_authority_runner.py and stopped by a flag file in a finally block. It also binds one bare echo socket of its own under the temporary directory to measure the relay's carrying promise byte for byte, and reads /proc/net/unix to show the relay opens no listener. It writes only under that temporary directory and sets environment variables only in the child it starts, never in this process. The rows that need a real repository stand down by name when git is absent; the carrying promise does not need one and runs anyway. The leg where sshd authenticates a remote principal STANDS DOWN BY NAME because no SSH server is installed on this machine, and the row says so rather than passing silently."
   }
  ]
 }
