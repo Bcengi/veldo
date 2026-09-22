@@ -55,3 +55,12 @@ several tracker/request modules were repository-only. Every Python module change
 by this migration now has a byte-identical engine source copy. The two historical
 tests requiring missing request-module copies instead verify byte equality. These
 source copies do not add tracker configuration or network activity to initialization.
+
+## Final verification
+
+The full `bash scripts/verify.sh` run is GREEN at `e559f39`: 5,539 unit assertions
+passed with zero failures, including successful first-use integration and all
+applicable gate stages. [Verification details](verification.md) identify the exact
+commit and tree; [the complete log](gate.log) records every stage. All 39 changed
+`.veldo` files have byte-identical engine copies. Gate byproducts are restored and
+excluded from commits; this evidence does not claim independent review or merging.
