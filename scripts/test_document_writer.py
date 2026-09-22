@@ -120,13 +120,26 @@ class WriterTests(unittest.TestCase):
                 self.assertEqual(actual, {'title': guarded, 'nested': [{'text': guarded}],
                                           'list': [guarded], 'id': 'real'})
 
+    @unittest.skipIf(yaml is None, 'writer/old-quoting-oracle-control STANDS DOWN: PyYAML unavailable')
     def test_oracle_catches_old_reader_based_quoting(self):
         # Deliberately reproduce the original mutual-agreement defect.
         text = 'value: true\n'
         self.assertEqual(Y.parse(text), {'value': 'true'})
-        if yaml is not None:
-            self.assertTrue(differences(Y.parse(text), yaml.safe_load(text)))
+        self.assertTrue(differences(Y.parse(text), yaml.safe_load(text)))
         self.assertEqual(Y.quote('true'), '"true"')
+
+    def test_missing_oracle_stands_down_by_name(self):
+        from unittest.mock import patch
+        with patch.dict('sys.modules', {'yaml': None}):
+            without = load('writer_without_oracle', ROOT / 'scripts/test_document_writer.py')
+        names = ('test_generated_real_yaml_oracle', 'test_oracle_in_other_direction',
+                 'test_oracle_catches_old_reader_based_quoting')
+        result = unittest.TestResult()
+        unittest.TestSuite(without.WriterTests(name) for name in names).run(result)
+        self.assertEqual(result.testsRun, 3)
+        self.assertEqual(len(result.skipped), 3)
+        self.assertTrue(all('writer/' in reason and 'STANDS DOWN' in reason for _, reason in result.skipped))
+        self.assertFalse(result.errors or result.failures)
 
 
 if __name__ == '__main__':
