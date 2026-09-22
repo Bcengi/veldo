@@ -1,0 +1,53 @@
+{
+  "revision": "veldo.yamlish-grammar/2",
+  "expected_targets": {
+    "production": 22,
+    "lexical": 934,
+    "pair": 132,
+    "boundary": 457
+  },
+  "enumerated_targets": {
+    "production": 22,
+    "lexical": 934,
+    "pair": 132,
+    "boundary": 457
+  },
+  "covered_targets": {
+    "production": 22,
+    "lexical": 934,
+    "pair": 132,
+    "boundary": 457
+  },
+  "missing": {
+    "production": [],
+    "lexical": [],
+    "pair": [],
+    "boundary": []
+  },
+  "unexpected": {
+    "production": [],
+    "lexical": [],
+    "pair": [],
+    "boundary": []
+  },
+  "inputs": {
+    "accepted": 1088,
+    "boundary": 457
+  },
+  "complete": true,
+  "input_digest": "bd847ef2a665cd3cbc1e00ba5f4896e8a21d0c41fe661922d0a201aaa40c9163",
+  "generation_seconds": 1.8684131030458957,
+  "oracle_version": "6.0.1",
+  "oracle_state": "available",
+  "compared": 1545,
+  "disagreements": 35,
+  "accepted_invalid_yaml": 3,
+  "oracle_errors": 0,
+  "total_seconds": 3.7753532289061695,
+  "observation_digest": "c7207cbe010bffc8237ae851414be225fdaa5588f8137e932fdbd7c1fdf3518d",
+  "unobserved": 0,
+  "fixture_sha256": "930eaac00730665518df0cc41fb217f70cc259a8924110928a81cbc031587e4d",
+  "reader_sha256": "f4769f9eef9c810fe2621be8f4e4277f061c008ea04fd3a733bd094cac03ef9a",
+  "gate_invocations_green_path": 2,
+  "measured_added_work_seconds": 7.550706457812339
+}

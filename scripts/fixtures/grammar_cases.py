@@ -395,6 +395,287 @@ def main():
     print(json.dumps(result, sort_keys=True))
     raise SystemExit(0 if result['complete'] else 1)
 
+# Revision 2: coverage construction over the normalized production graph.
+# Legacy exhaustive helpers above remain solely for reproducing recorded evidence.
+def lexical_options(data, production):
+    if production in data['styles']:
+        return [(label, raw, mask) for label, raw, mask in scalar_options(data)
+                if label.split('/')[0] == production]
+    if production.startswith('key-'):
+        style = production[4:]
+        return [(name, raw, 0) for name, raw, _ in data['keys']
+                if ('single' if raw.startswith("'") else 'double' if raw.startswith('"') else 'plain') == style]
+    return []
+
+
+def coverage_targets(data=DATA):
+    """Required identities come from grammar declarations, not emitted witnesses."""
+    graph = data['coverage']['productions']
+    targets = {'production': set(graph), 'lexical': set(), 'pair': set(), 'boundary': set()}
+    sites = [('ROOT', 'root', 'document')]
+    for parent, spec in graph.items():
+        targets['lexical'].update((parent, label) for label, _, _ in lexical_options(data, parent))
+        targets['lexical'].update((parent, 'arity/' + str(n)) for n in spec.get('arities', []))
+        for slot, children in spec['slots'].items():
+            sites.extend((parent, slot, child) for child in children)
+            targets['pair'].update((parent, slot, child) for child in children)
+    for name in data['coverage']['format_alternatives']:
+        targets['lexical'].update(('format/' + name, str(i)) for i in range(len(data[name])))
+    for site in sites:
+        features = set(graph[site[2]]['features'])
+        for rule, predicate in data['coverage']['exclusion_predicates'].items():
+            if features.intersection(predicate):
+                targets['boundary'].add((rule,) + site)
+    return targets
+
+
+def coverage_count(data=DATA):
+    """Independent cardinality arithmetic: no targets, ASTs or rendering calls."""
+    graph = data['coverage']['productions']
+    incoming = Counter({'document': 1})
+    pairs = 0
+    for spec in graph.values():
+        for children in spec['slots'].values():
+            incoming.update(children)
+            pairs += len(children)
+    lexical = sum(scalar_counts(data, False).values()) + len(data['keys'])
+    lexical += sum(len(spec.get('arities', [])) for spec in graph.values())
+    lexical += sum(len(data[name]) for name in data['coverage']['format_alternatives'])
+    boundaries = sum(incoming[p] * sum(any(f in spec['features'] for f in pred)
+                     for pred in data['coverage']['exclusion_predicates'].values())
+                     for p, spec in graph.items())
+    return dict(production=len(graph), lexical=lexical, pair=pairs, boundary=boundaries)
+
+
+def coverage_node(production, data=DATA, lexical=None, arity=1):
+    graph = data['coverage']['productions']
+    node = {'production': production, 'children': []}
+    options = lexical_options(data, production)
+    if options:
+        node['atom'] = next((o for o in options if o[0] == lexical), options[0])
+        return node
+    spec = graph[production]
+    if 'arities' in spec:
+        node['arity'] = arity
+    for i in range(arity if 'arities' in spec else 1):
+        for slot, children in spec['slots'].items():
+            # Shortest terminating completion. No production answers are consulted.
+            child = ('plain' if 'plain' in children else
+                     'key-plain' if 'key-plain' in children else children[0])
+            sub = coverage_node(child, data)
+            if slot == 'key' and i:
+                sub['atom'] = lexical_options(data, child)[1]
+            node['children'].append((slot, sub))
+    return node
+
+
+def coverage_context(node, data=DATA):
+    """Shortest root path in the grammar; recursive edges need no depth bound."""
+    graph = data['coverage']['productions']
+    paths = [('document', [])]
+    seen = set()
+    for current, path in paths:
+        if current == node['production']:
+            for parent, slot, child in reversed(path):
+                wrapper = coverage_node(parent, data)
+                index = next(i for i, (s, _) in enumerate(wrapper['children']) if s == slot)
+                wrapper['children'][index] = (slot, node)
+                node = wrapper
+            return node
+        if current in seen:
+            continue
+        seen.add(current)
+        for slot, children in graph[current]['slots'].items():
+            paths.extend((child, path + [(current, slot, child)]) for child in children)
+    raise ValueError('unreachable production: ' + node['production'])
+
+
+def coverage_site(site, data=DATA):
+    parent, slot, child = site
+    node = coverage_node(child, data)
+    if parent == 'ROOT':
+        return node
+    wrapper = coverage_node(parent, data)
+    index = next(i for i, (s, _) in enumerate(wrapper['children']) if s == slot)
+    wrapper['children'][index] = (slot, node)
+    return coverage_context(wrapper, data)
+
+
+def coverage_render(node, unit=1, comment='', level=0, path=()):
+    """Render the AST and carry exact production spans through composition."""
+    p = node['production']
+    spans = []
+    text = ''
+
+    def emit(child, child_level, child_path):
+        nonlocal text
+        source, records = coverage_render(child, unit, comment, child_level, child_path)
+        offset = len(text)
+        text += source
+        spans.extend(dict(r, start=r['start'] + offset, end=r['end'] + offset) for r in records)
+
+    if 'atom' in node:
+        raw = node['atom'][1]
+        text = raw.replace('\n', '\n' + ' ' * (level + unit))
+    elif p in ('document', 'bom'):
+        text = '\ufeff' if p == 'bom' else ''
+        emit(node['children'][0][1], level, path + (0,))
+        if p == 'document':
+            text += '\n'
+    else:
+        flow = p.startswith(('flow-', 'wrapped-'))
+        mapping = 'map' in p
+        wrapped = p.startswith('wrapped-')
+        text = ('{' if mapping else '[') if flow else ''
+        values = [(i, child) for i, (slot, child) in enumerate(node['children']) if slot == 'value']
+        key_nodes = [(i, child) for i, (slot, child) in enumerate(node['children']) if slot == 'key']
+        for n, (i, child) in enumerate(values):
+            if n:
+                text += (',\n' + ' ' * (level + unit) if wrapped else ', ') if flow else '\n' + ' ' * level
+            if mapping:
+                ki, key = key_nodes[n]
+                emit(key, level, path + (ki,))
+                text += ':'
+            elif not flow:
+                text += '-'
+            child_block = child['production'].startswith('block-')
+            if child_block:
+                text += '\n' + ' ' * (level + unit)
+            elif mapping or not flow:
+                text += ' '
+            # A compact map starts after '- '; its continuation aligns there.
+            child_level = level + unit if child_block else level + 2 if child['production'] == 'compact-map' else level
+            start = len(text)
+            emit(child, child_level, path + (i,))
+            if not flow and not child_block:
+                end = text.find('\n', start)
+                end = len(text) if end < 0 else end
+                text = text[:end] + comment + text[end:]
+                for r in spans:
+                    r['start'] += len(comment) if r['start'] > end else 0
+                    r['end'] += len(comment) if r['end'] > end else 0
+        if flow:
+            text += ',' if p.endswith('trailing') and values else ''
+            if wrapped and values:
+                text += '\n' + ' ' * (level + unit)
+            text += '}' if mapping else ']'
+    spans.append({'path': path, 'production': p, 'start': 0, 'end': len(text), 'level': level})
+    return text, spans
+
+
+def coverage_seen(node, data=DATA, parent='ROOT', slot='root'):
+    p = node['production']
+    result = {'production': {p}, 'lexical': set(), 'pair': set()}
+    if 'atom' in node:
+        result['lexical'].add((p, node['atom'][0]))
+    if 'arity' in node:
+        result['lexical'].add((p, 'arity/' + str(node['arity'])))
+    if parent != 'ROOT':
+        result['pair'].add((parent, slot, p))
+    for s, child in node['children']:
+        for kind, found in coverage_seen(child, data, p, s).items():
+            result[kind].update(found)
+    return result
+
+
+def coverage_accepted(data=DATA):
+    required = coverage_targets(data)
+    # Construct each target; credit is independently collected from the emitted AST.
+    for p in sorted(required['production']):
+        yield ('production', p), coverage_context(coverage_node(p, data), data), {}
+    for p, label in sorted(required['lexical']):
+        if p.startswith('format/'):
+            yield ('lexical', p, label), coverage_node('document', data), {p[7:]: int(label)}
+        else:
+            node = coverage_node(p, data, label, int(label[6:]) if label.startswith('arity/') else 1)
+            yield ('lexical', p, label), coverage_context(node, data), {}
+    for site in sorted(required['pair']):
+        yield ('pair',) + site, coverage_site(site, data), {}
+
+
+def coverage_edit(text, span, rule):
+    a, b, level = span['start'], span['end'], span['level']
+    value = text[a:b]
+    flow = span['production'].startswith(('flow-', 'wrapped-'))
+    if rule in ('duplicate-key', 'merge-key'):
+        member = 'a: b' if rule == 'duplicate-key' else '<<: {}'
+        value = (value[:-1].rstrip().rstrip(',') + ', ' + member + '}') if flow else value + '\n' + ' ' * level + member
+    elif rule == 'bad-indentation':
+        value = '\t' + value
+    elif rule == 'missing-delimiter':
+        value = value[:-1]
+    elif rule == 'directive':
+        value = '%YAML 1.2\n---\n' + value
+    elif rule == 'multiple-documents':
+        value += '---\na: a\n'
+    elif rule == 'invalid-escape':
+        value = '"\\q"'
+    elif rule == 'unterminated-quote':
+        value = value[:-1]
+    elif rule == 'multiline-quote':
+        value = value[:1] + '\n' + value[1:]
+    elif rule == 'indentation-indicator':
+        value = value[:1] + '1' + value[1:]
+    elif rule == 'tag':
+        value = '!thing ' + value
+    elif rule == 'anchor':
+        value = '&thing ' + value
+    elif rule == 'alias':
+        value = '*undefined'
+    else:
+        raise ValueError(rule)
+    return text[:a] + value + text[b:]
+
+
+def coverage_cases(data=DATA):
+    for identity, node, fmt in coverage_accepted(data):
+        options = {name: data[name][fmt.get(name, 0)] for name in data['coverage']['format_alternatives']}
+        text, _ = coverage_render(node, options['indent'], options['comment'])
+        seen = coverage_seen(node, data)
+        seen['lexical'].update(('format/' + name, str(fmt.get(name, 0))) for name in options)
+        yield {'id': identity, 'text': text.replace('\n', options['newline']), 'edit': None,
+               'production': sorted(seen['production']), 'coverage': seen}
+    graph = data['coverage']['productions']
+    for rule, parent, slot, child in sorted(coverage_targets(data)['boundary']):
+        site = (parent, slot, child)
+        node = coverage_site(site, data)
+        text, spans = coverage_render(node)
+        by_path = {r['path']: r for r in spans}
+        span = next(r for r in spans if r['production'] == child and
+                    (not r['path'] and parent == 'ROOT' or r['path'] and
+                     by_path[r['path'][:-1]]['production'] == parent and
+                     # Key and value roles are distinct even with the same parent.
+                     slot == ('key' if child.startswith('key-') else 'root' if parent in ('document', 'bom') else 'value')))
+        assert set(graph[child]['features']).intersection(data['coverage']['exclusion_predicates'][rule])
+        yield {'id': ('boundary', rule) + site, 'text': coverage_edit(text, span, rule),
+               'original': text, 'edit': rule, 'site': site, 'production': [parent, child],
+               'coverage': {'boundary': {(rule,) + site}}}
+
+
+def coverage_inventory(data=DATA, output=None):
+    started = time.monotonic()
+    required = coverage_targets(data)
+    seen = {kind: set() for kind in required}
+    digest = hashlib.sha256()
+    counts = Counter()
+    for case in coverage_cases(data):
+        counts['boundary' if case['edit'] else 'accepted'] += 1
+        for kind, found in case['coverage'].items():
+            seen[kind].update(found)
+        line = encoded([case['id'], case['production'], case['edit'], case['text']]) + '\n'
+        digest.update(line.encode())
+        if output:
+            output.write(line)
+    missing = {k: sorted(required[k] - seen[k]) for k in required}
+    unexpected = {k: sorted(seen[k] - required[k]) for k in required}
+    expected_counts = coverage_count(data)
+    target_counts = {k: len(v) for k, v in required.items()}
+    return {'revision': data['revision'], 'expected_targets': expected_counts,
+            'enumerated_targets': target_counts, 'covered_targets': {k: len(v) for k, v in seen.items()},
+            'missing': missing, 'unexpected': unexpected, 'inputs': dict(counts),
+            'complete': not any(missing.values()) and not any(unexpected.values()) and expected_counts == target_counts,
+            'input_digest': digest.hexdigest(), 'generation_seconds': time.monotonic() - started}
+
 
 if __name__ == '__main__':
     main()

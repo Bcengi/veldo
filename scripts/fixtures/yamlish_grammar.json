@@ -1,5 +1,5 @@
 {
-  "revision": "veldo.yamlish-grammar/1",
+  "revision": "veldo.yamlish-grammar/2",
   "bounds": {
     "nodes": 3,
     "depth": 2,
@@ -299,5 +299,418 @@
         "\n"
       ]
     }
-  ]
+  ],
+  "coverage": {
+    "productions": {
+      "document": {
+        "slots": {
+          "root": [
+            "block-map",
+            "block-sequence",
+            "bom"
+          ]
+        },
+        "features": [
+          "document"
+        ]
+      },
+      "bom": {
+        "slots": {
+          "root": [
+            "block-map",
+            "block-sequence"
+          ]
+        },
+        "features": []
+      },
+      "block-map": {
+        "slots": {
+          "key": [
+            "key-plain",
+            "key-single",
+            "key-double"
+          ],
+          "value": [
+            "empty",
+            "plain",
+            "single",
+            "double",
+            "literal",
+            "folded",
+            "continuation",
+            "escape",
+            "block-map",
+            "block-sequence",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence"
+          ]
+        },
+        "features": [
+          "mapping",
+          "block"
+        ],
+        "arities": [
+          1,
+          2
+        ]
+      },
+      "block-sequence": {
+        "slots": {
+          "value": [
+            "empty",
+            "plain",
+            "single",
+            "double",
+            "literal",
+            "folded",
+            "continuation",
+            "escape",
+            "block-map",
+            "block-sequence",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence",
+            "compact-map"
+          ]
+        },
+        "features": [
+          "block"
+        ],
+        "arities": [
+          1,
+          2
+        ]
+      },
+      "flow-map": {
+        "slots": {
+          "key": [
+            "key-plain",
+            "key-single",
+            "key-double"
+          ],
+          "value": [
+            "empty",
+            "plain",
+            "single",
+            "double",
+            "escape",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence"
+          ]
+        },
+        "features": [
+          "mapping",
+          "flow"
+        ],
+        "arities": [
+          0,
+          1,
+          2
+        ]
+      },
+      "flow-sequence": {
+        "slots": {
+          "value": [
+            "plain",
+            "single",
+            "double",
+            "escape",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence"
+          ]
+        },
+        "features": [
+          "flow"
+        ],
+        "arities": [
+          0,
+          1,
+          2
+        ]
+      },
+      "flow-map-trailing": {
+        "slots": {
+          "key": [
+            "key-plain",
+            "key-single",
+            "key-double"
+          ],
+          "value": [
+            "empty",
+            "plain",
+            "single",
+            "double",
+            "escape",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence"
+          ]
+        },
+        "features": [
+          "mapping",
+          "flow"
+        ],
+        "arities": [
+          1,
+          2
+        ]
+      },
+      "flow-sequence-trailing": {
+        "slots": {
+          "value": [
+            "plain",
+            "single",
+            "double",
+            "escape",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence"
+          ]
+        },
+        "features": [
+          "flow"
+        ],
+        "arities": [
+          1,
+          2
+        ]
+      },
+      "wrapped-map": {
+        "slots": {
+          "key": [
+            "key-plain",
+            "key-single",
+            "key-double"
+          ],
+          "value": [
+            "empty",
+            "plain",
+            "single",
+            "double",
+            "escape",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence"
+          ]
+        },
+        "features": [
+          "mapping",
+          "flow"
+        ],
+        "arities": [
+          0,
+          1,
+          2
+        ]
+      },
+      "wrapped-sequence": {
+        "slots": {
+          "value": [
+            "plain",
+            "single",
+            "double",
+            "escape",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence"
+          ]
+        },
+        "features": [
+          "flow"
+        ],
+        "arities": [
+          0,
+          1,
+          2
+        ]
+      },
+      "compact-map": {
+        "slots": {
+          "key": [
+            "key-plain",
+            "key-single",
+            "key-double"
+          ],
+          "value": [
+            "empty",
+            "plain",
+            "single",
+            "double",
+            "literal",
+            "folded",
+            "continuation",
+            "escape",
+            "block-map",
+            "block-sequence",
+            "flow-map",
+            "flow-sequence",
+            "flow-map-trailing",
+            "flow-sequence-trailing",
+            "wrapped-map",
+            "wrapped-sequence"
+          ]
+        },
+        "features": [
+          "mapping",
+          "block"
+        ],
+        "arities": [
+          1,
+          2
+        ]
+      },
+      "empty": {
+        "slots": {},
+        "features": [
+          "scalar"
+        ]
+      },
+      "plain": {
+        "slots": {},
+        "features": [
+          "scalar"
+        ]
+      },
+      "single": {
+        "slots": {},
+        "features": [
+          "scalar",
+          "quoted"
+        ]
+      },
+      "double": {
+        "slots": {},
+        "features": [
+          "scalar",
+          "quoted"
+        ]
+      },
+      "literal": {
+        "slots": {},
+        "features": [
+          "scalar",
+          "block-scalar",
+          "block"
+        ]
+      },
+      "folded": {
+        "slots": {},
+        "features": [
+          "scalar",
+          "block-scalar",
+          "block"
+        ]
+      },
+      "continuation": {
+        "slots": {},
+        "features": [
+          "scalar",
+          "block"
+        ]
+      },
+      "escape": {
+        "slots": {},
+        "features": [
+          "scalar",
+          "quoted"
+        ]
+      },
+      "key-plain": {
+        "slots": {},
+        "features": [
+          "key"
+        ]
+      },
+      "key-single": {
+        "slots": {},
+        "features": [
+          "key",
+          "quoted"
+        ]
+      },
+      "key-double": {
+        "slots": {},
+        "features": [
+          "key",
+          "quoted"
+        ]
+      }
+    },
+    "exclusion_predicates": {
+      "duplicate-key": [
+        "mapping"
+      ],
+      "bad-indentation": [
+        "block"
+      ],
+      "missing-delimiter": [
+        "flow"
+      ],
+      "invalid-escape": [
+        "quoted"
+      ],
+      "unterminated-quote": [
+        "quoted"
+      ],
+      "tag": [
+        "scalar",
+        "key"
+      ],
+      "anchor": [
+        "scalar",
+        "key"
+      ],
+      "alias": [
+        "scalar",
+        "key"
+      ],
+      "merge-key": [
+        "mapping"
+      ],
+      "directive": [
+        "document"
+      ],
+      "multiple-documents": [
+        "document"
+      ],
+      "multiline-quote": [
+        "quoted"
+      ],
+      "indentation-indicator": [
+        "block-scalar"
+      ]
+    },
+    "format_alternatives": [
+      "indent",
+      "newline",
+      "comment"
+    ]
+  }
 }
