@@ -23,8 +23,7 @@ the leading zero goes, and the line silently names a different commit.
 
 ## What landed
 
-The one call site reads the policy with `read_policy`, which already handled every shape this file
-takes and which VELDO-0104's suite already tests. It is not a second parser written here. The
+The one call site reads the policy with `read_policy`, which handled the regression examples and which VELDO-0104's suite already tests. It is not a second parser written here. The
 validator still hands in its general parser and that parser is still used for the spec front matter
 beside it, which is what it is for.
 
@@ -53,7 +52,7 @@ pinning it, so a later reader who wants to make the change sees what it costs fi
 ## What the evidence is, and what it is not
 
 Six rows in `scripts/suites/45_veldo_0106_policyread.py`. The policy is a REAL FILE in each of the
-seventeen shapes it can take, in a real git repository with a trunk, a tag and a committed proof bundle,
+seventeen regression examples, in a real git repository with a trunk, a tag and a committed proof bundle,
 read through the real call site rather than a hand-built dictionary. The general parser's answer is
 computed beside the reader's on the same text, so a row fails if the call site is ever pointed back
 at it.
@@ -113,6 +112,14 @@ standard library only, so that row stands down by name where PyYAML is absent. O
 excluded by name and with its reason: YAML 1.1 reads a leading-zero digit string as octal, and
 keeping that value a string is the defect AC2 exists to prevent, so agreeing there would be wrong.
 
-What this is NOT. It is not evidence that the two settings are read correctly everywhere. The
+The independent oracle receives those same seventeen inputs; agreement adds no coverage and
+does not establish completeness. AC4 likewise exercises selected refusals, not every input outside
+the accepted syntax. The accepted syntax and its boundaries are written in
+[the strict shared reader's grammar](../../.veldo/yamlish.py), introduced by VELDO-0110;
+policy-specific checks live in read_policy. Exhaustive accepted/refused input coverage is
+INTENDED and NOT YET DEMONSTRATED by these rows.
+
+Historical scope at this item's landing follows; VELDO-0110 subsequently consolidated the readers.
+It is not evidence that the two settings are read correctly everywhere. The
 repository has other readers of `.veldo/policy.yaml` and consolidating them is not this item; this
 item makes the two settings that gate a landing read correctly at the one call site that gates it.

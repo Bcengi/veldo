@@ -41,16 +41,16 @@ acceptance_criteria:
       inline form, changes neither the flag nor the start line; a hash inside a quoted string is
       text rather than a comment; a comma inside a quoted string does not begin a new setting; the
       block is found at any indentation; and only the block's direct members are its settings.
-      Set: The seventeen shapes the file can take, each written to a real file and read through the
+      Set: Seventeen regression examples, each written to a real file and read through the
       real call site rather than a hand-built dictionary. Eleven of them are bypasses three separate
       reviews demonstrated against earlier versions of this reader, including one that moved the
       start line forward and silently exempted every bundle between the owner's commit and it.
-      Completeness: two independent checks. The general parser's answer is computed beside the
-      reader's for every shape, so the row fails if the call site is ever pointed back at it. And
-      every shape is parsed by a REAL YAML PARSER and the two answers compared, because a list of
-      shapes the author thought of is not a domain and eleven bypasses in a row were all shapes
-      nobody had listed; that row stands down by name where PyYAML is absent, and excludes by name
-      the one deliberate divergence, YAML 1.1 reading a leading-zero digit string as octal.
+      Completeness: These examples have an independent PyYAML oracle, not a coverage proof.
+      The oracle receives the same inputs; it adds no cases. It stands down by name when PyYAML
+      is absent and excludes YAML 1.1 octal coercion of leading-zero identifiers.
+      Accepted syntax and refusal boundaries are defined separately by the strict shared reader's
+      written grammar in .veldo/yamlish.py (VELDO-0110), with policy schema checks in read_policy.
+      Exhaustive agreement across that grammar is INTENDED and NOT YET DEMONSTRATED.
       Falsifier: Read the policy with the general parser at the call site;
       policyread/a-comment-does-not-disarm-the-rule must fail.
     falsified_by: >
@@ -90,7 +90,9 @@ acceptance_criteria:
       closes, a member whose value is on the next line, a member with no value, a required value
       that is neither true nor false, a block carrying neither setting, indentation that is neither
       the block's nor a member's, and a file that is not valid UTF-8 - plus a file with no such key.
-      Completeness: The never-adopted file is in the set, so the row fails if the reader simply
+      Completeness: These are selected refusal regressions, not an exhaustive complement of the
+      accepted grammar. Exhaustive refusal outside that grammar is INTENDED and NOT YET
+      DEMONSTRATED. The never-adopted file is in the set, so the row fails if the reader simply
       refuses everything it does not like the look of. Falsifier: Swallow the refusal and read an
       empty policy instead;
       policyread/a-setting-the-owner-wrote-never-reads-as-absent must fail.
