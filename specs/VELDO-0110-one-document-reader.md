@@ -145,4 +145,4 @@ The parser and corpus report were committed first, as that request requires. Thi
 record binds the resulting evidence directory to the repository's spec roster; it
 adds no approval and makes no claim of independent review or shipped status.
 
-2026-09-22 follow-ups: VELDO-0118 (shared written-grammar generator and optional independent oracle fixture).
+2026-09-22 follow-ups: VELDO-0118 (shared written-grammar generator and optional independent oracle fixture); VELDO-0119 (shared-reader agreement and refusal over generated grammar).
