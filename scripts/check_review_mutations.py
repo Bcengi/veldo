@@ -8,6 +8,8 @@ import subprocess
 import sys
 import tempfile
 
+sys.dont_write_bytecode = True
+
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
     '13': ('44_veldo_0105_startline.py', 'fix_validation_record.py',
@@ -33,24 +35,19 @@ CASES = {
 }
 
 
+def cases():
+    return [dict(name=key, finding=key, suite=suite, module=module,
+                 rows=[label], old=old, new=new)
+            for key, (suite, module, label, old, new) in CASES.items()]
+
+
 def worker(case, mutant):
-    suite, module, label, _, _ = CASES[case]
-    shared = ROOT / 'scripts/suites/shared.py'
-    ns = {'__file__': str(shared)}
-    captured = io.StringIO()
-    rows = []
-    with contextlib.redirect_stdout(captured):
-        exec(compile(shared.read_text(), str(shared), 'exec'), ns)
-        ns['expect'] = lambda name, condition: rows.append((name, bool(condition)))
-        source = (ROOT / 'scripts/suites' / suite).read_text()
-        if mutant:
-            source = source.replace('ROOT / ".veldo" / "' + module + '"',
-                                    '__import__("pathlib").Path(' + repr(mutant) + ')')
-        ns['__suite_file__'] = str(ROOT / 'scripts/suites' / suite)
-        exec(compile(source, ns['__suite_file__'], 'exec'), ns)
-    matches = [ok for name, ok in rows if label in name]
-    return {'case': case, 'row': label, 'matched': len(matches),
-            'passed': matches == [True], 'failed_rows': [name for name, ok in rows if not ok]}
+    from check_teeth_mutations import worker as observe
+    definition = next(c for c in cases() if c['name'] == case)
+    result = observe(definition, mutant)
+    matches = result['targets'][definition['rows'][0]]
+    return dict(result, case=case, row=definition['rows'][0],
+                matched=len(matches), passed=matches == [True])
 
 
 def main():

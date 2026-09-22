@@ -5,6 +5,7 @@ Run all findings, or --finding N. Workers run the entire named suite; exceptions
 missing rows and process failures are errors, never successful mutation detections.
 """
 import argparse
+import ast
 import contextlib
 import io
 import json
@@ -12,6 +13,8 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+
+sys.dont_write_bytecode = True
 
 ROOT = Path(__file__).resolve().parent.parent
 SIGNED = '("schema", "workspace", "domain_uuid", "store_uuid", "command") + IDENTITY_FIELDS'
@@ -91,24 +94,30 @@ def cases():
 
 
 def worker(case, mutant=None):
+    """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
-    ns = {'__file__': str(shared)}
     rows = []
+    ns = {'__file__': str(shared),
+          '__observe__': lambda name, condition: rows.append([name.split(':', 1)[0], bool(condition)])}
+    tree = ast.parse(shared.read_text(), str(shared))
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name == 'expect':
+            node.body = ast.parse('__observe__(name, condition)').body
     with contextlib.redirect_stdout(io.StringIO()):
-        exec(compile(shared.read_text(), str(shared), 'exec'), ns)
-        ns['expect'] = lambda name, condition: rows.append((name, bool(condition)))
+        exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         suite = ROOT / 'scripts/suites' / case['suite']
         source = suite.read_text()
         if mutant:
             anchor = 'ROOT / ".veldo" / "' + case['module'] + '"'
-            if anchor not in source:
+            if not source.count(anchor):
                 raise RuntimeError('suite production-copy anchor moved')
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
         ns['__suite_file__'] = str(suite)
         exec(compile(source, str(suite), 'exec'), ns)
-    return {'count': len(rows), 'row_names': [name.split(':', 1)[0] for name, _ in rows],
-            'failed_rows': [name.split(':', 1)[0] for name, ok in rows if not ok],
-            'targets': {label: [ok for name, ok in rows if label + ':' in name]
+    return {'count': len(rows), 'observations': rows,
+            'row_names': [name for name, _ in rows],
+            'failed_rows': [name for name, ok in rows if not ok],
+            'targets': {label: [ok for name, ok in rows if name.split()[-1] == label]
                         for label in case['rows']}}
 
 
