@@ -453,7 +453,7 @@ else:
 
 # The historical disagreement is committed BEFORE migration, never recomputed from migrated inputs.
 # The old "leave the lossy parser alone" invariant is superseded by the one-parser migration.
-_v106_audit = json.loads((ROOT / "proof/one-parser/corpus-before.json").read_text())
+_v106_audit = json.loads((ROOT / "proof/VELDO-0110/corpus-before.json").read_text())
 expect("policyread/corpus-comparison-precedes-migration-and-lists-every-input",
        _v106_audit["baseline"] == "34342c3" and _v106_audit["documents"] == 331
        and len({row["path"] for row in _v106_audit["corpus"]}) == 331

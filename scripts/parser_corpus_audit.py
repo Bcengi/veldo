@@ -114,7 +114,7 @@ def main():
               'documents': len(rows), 'with_front_matter': sum(r['has_front_matter'] for r in rows),
               'different': sum(bool(r['comparisons']) for r in rows), 'corpus': rows,
               'additional_yaml': additional}
-    target = ROOT / 'proof/one-parser/corpus-before.json'
+    target = ROOT / 'proof/VELDO-0110/corpus-before.json'
     target.write_text(json.dumps(report, indent=2, ensure_ascii=True) + '\n')
     refused = [r for r in rows if any(any(d['field'].startswith('$.refusal') for d in ds)
                                     for ds in r['comparisons'].values())]

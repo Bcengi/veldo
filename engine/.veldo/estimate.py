@@ -517,11 +517,11 @@ def _inputs_problems(ins, where):
                 "front-matter subset this record is written in has no spelling for an empty map, "
                 "so the key would be dropped on the way to disk and the record read back would "
                 "not be the record that was validated" % where]
-    key_re = _validate()._KEY_RE
+    key_re = _validate()._yamlish._KEY
     out = []
     for k in sorted(ins, key=repr):
         m = key_re.match("%s:" % (k,)) if isinstance(k, str) else None
-        if m is None or m.group(1) != k:
+        if m is None or m.group(1) != k or not k.isidentifier():
             out.append("%s has key %r, which the ONE front-matter parser cannot read back as a "
                        "key (it reads %s): an input name is a bare identifier, and a name that "
                        "writes a line the parser refuses makes the whole record unreadable"
@@ -556,7 +556,7 @@ def _render_scalar(value, where):
     if value[0] in "[{#-\"'" or value.lstrip().startswith("- "):
         raise ValueError("%s: refusing to render %r: a value opening with %r is structure to "
                          "the parser, not text" % (where, value, value[0]))
-    return value
+    return _validate()._yamlish.quote(value)
 
 
 def render_record(rec):

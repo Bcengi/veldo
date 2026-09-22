@@ -238,6 +238,9 @@
   ],
   "50_git_environment": [
    "50_git_environment"
+  ],
+  "51_parser_boundary": [
+   "51_parser_boundary"
   ]
  }
 }
