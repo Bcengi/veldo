@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""Require the teeth review's named assertions to fail on temporary defective production copies.
+
+Run all findings, or --finding N. Workers run the entire named suite; exceptions, timeouts,
+missing rows and process failures are errors, never successful mutation detections.
+"""
+import argparse
+import contextlib
+import io
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+
+ROOT = Path(__file__).resolve().parent.parent
+SIGNED = '("schema", "workspace", "domain_uuid", "store_uuid", "command") + IDENTITY_FIELDS'
+FIELDS = ('schema', 'workspace', 'domain_uuid', 'store_uuid', 'command',
+          'repository_uuid', 'repository_root_commit', 'clone_uuid',
+          'binding_digest', 'authority_generation')
+
+
+def cases():
+    result = []
+
+    def add(finding, name, suite, module, old, new, rows):
+        result.append(dict(finding=finding, name=name, suite=suite, module=module,
+                           old=old, new=new, rows=rows))
+
+    def signature(name, old, new, rows):
+        add(1, name, '47_veldo_0107_ipc.py', 'control_client.py', old, new, rows)
+
+    signature('command-only', SIGNED, '("command",)',
+              ['ipc/signature-covers/' + f for f in FIELDS if f != 'command'])
+    for field in FIELDS:
+        signature('omit-' + field, SIGNED,
+                  'tuple(k for k in (' + SIGNED + ') if k != ' + repr(field) + ')',
+                  ['ipc/signature-covers/' + field])
+    signature('unsigned-request-field', '    req.update({k: binding[k] for k in IDENTITY_FIELDS})',
+              '    req["extra_coordinate"] = "added"\n'
+              '    req.update({k: binding[k] for k in IDENTITY_FIELDS})',
+              ['ipc/signature-fields-match-request'])
+    signature('signed-nonrequest-field', SIGNED, SIGNED + ' + ("extra_coordinate",)',
+              ['ipc/signature-fields-match-request'])
+    return result
+
+
+def worker(case, mutant=None):
+    shared = ROOT / 'scripts/suites/shared.py'
+    ns = {'__file__': str(shared)}
+    rows = []
+    with contextlib.redirect_stdout(io.StringIO()):
+        exec(compile(shared.read_text(), str(shared), 'exec'), ns)
+        ns['expect'] = lambda name, condition: rows.append((name, bool(condition)))
+        suite = ROOT / 'scripts/suites' / case['suite']
+        source = suite.read_text()
+        if mutant:
+            anchor = 'ROOT / ".veldo" / "' + case['module'] + '"'
+            if anchor not in source:
+                raise RuntimeError('suite production-copy anchor moved')
+            source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
+        ns['__suite_file__'] = str(suite)
+        exec(compile(source, str(suite), 'exec'), ns)
+    return {'count': len(rows), 'row_names': [name.split(':', 1)[0] for name, _ in rows],
+            'failed_rows': [name.split(':', 1)[0] for name, ok in rows if not ok],
+            'targets': {label: [ok for name, ok in rows if label + ':' in name]
+                        for label in case['rows']}}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3))
+    parser.add_argument('--worker')
+    parser.add_argument('--mutant')
+    args = parser.parse_args()
+    selected = [c for c in cases() if args.finding is None or c['finding'] == args.finding]
+    if args.worker:
+        case = next(c for c in selected if c['name'] == args.worker)
+        print(json.dumps(worker(case, args.mutant)))
+        return
+    baselines = {}
+    with tempfile.TemporaryDirectory(prefix='teeth-mutants-') as directory:
+        for case in selected:
+            source = (ROOT / '.veldo' / case['module']).read_text()
+            if source.count(case['old']) != 1:
+                raise RuntimeError((case['name'], 'mutation anchor moved'))
+            mutant = Path(directory) / (case['name'] + '_' + case['module'])
+            mutant.write_text(source.replace(case['old'], case['new']))
+
+            def run(path=None):
+                command = [sys.executable, __file__, '--worker', case['name']]
+                if path:
+                    command += ['--mutant', str(path)]
+                proc = subprocess.run(command, capture_output=True, text=True, timeout=120)
+                if proc.returncode:
+                    raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
+                return json.loads(proc.stdout)
+
+            # Keep each case's baseline target observations, not just the suite's exit code.
+            honest = run()
+            broken = run(mutant)
+            assert not honest['failed_rows'], honest
+            assert set(honest['row_names']) <= set(broken['row_names']), (honest, broken)
+            for label in case['rows']:
+                assert honest['targets'][label] == [True], honest
+                assert broken['targets'][label] == [False], broken
+            baselines[case['suite']] = honest['count']
+            print(json.dumps({'finding': case['finding'], 'mutation': case['name'],
+                              'baseline': 'green', 'assertions': honest['count'],
+                              'red_rows': broken['failed_rows']}), flush=True)
+    print(json.dumps({'mutations_rejected': len(selected), 'green_suites': baselines}))
+
+
+if __name__ == '__main__':
+    main()

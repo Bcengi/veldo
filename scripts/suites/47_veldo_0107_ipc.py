@@ -291,6 +291,67 @@ else:
                    and _v107_r_nouid.get("reason") == "peer_identity_unavailable"
                    and _v107_r_foreign_mut.get("accepted") is True)
 
+            # Enumerate the signed payload itself, and cross-check BOTH request declarations
+            # and constructed requests. Iterate their union so an omitted signature field cannot
+            # make its behavioral row disappear under a mutation.
+            _v107_signed_fields = set(_v107_json.loads(CC107.signed_bytes(_v107_good_req)))
+            _v107_request_fields = set(_v107_good_req) - {"signature"}
+            expect("VELDO-0107 AC2 ipc/signature-fields-match-request: signed_bytes, build_request "
+                   "and REQUEST_FIELDS contain exactly the same fields except the signature",
+                   _v107_signed_fields == _v107_request_fields
+                   == set(CC107.REQUEST_FIELDS) - {"signature"})
+
+            for _v107_field in sorted(_v107_signed_fields | _v107_request_fields):
+                _v107_original = CC107.build_request(
+                    _v107_A, _v107_bind_A, {"operation": "upsert"}, _v107_sign)
+                _v107_changed = dict(_v107_original)
+                _v107_value = _v107_original.get(_v107_field)
+                if isinstance(_v107_value, dict):
+                    _v107_changed[_v107_field] = dict(_v107_value, id="changed")
+                elif isinstance(_v107_value, list):
+                    _v107_changed[_v107_field] = ["f" * 40]
+                elif type(_v107_value) is int:
+                    _v107_changed[_v107_field] = _v107_value + 1
+                else:
+                    _v107_changed[_v107_field] = str(_v107_value) + "-changed"
+
+                # A controlled enrollment seam makes the destination and identity acceptable to
+                # the REAL judge. This isolates signing from enrollment's independent checks.
+                # Re-signing the identical altered request must then accept and apply it.
+                _v107_target_binding = dict(_v107_bind_A)
+                _v107_target_binding.update({k: _v107_changed[k] for k in CC107.IDENTITY_FIELDS})
+                _v107_enrollment = __import__("types").SimpleNamespace(
+                    resolve_store=lambda *a, **kw: _v107_PATH_A,
+                    read_binding=lambda workspace: _v107_target_binding,
+                    binding_digest=lambda binding: binding["binding_digest"])
+                _v107_effects = []
+                _v107_signature_auth = CC107.Authority(
+                    _v107_changed["store_uuid"], _v107_changed["domain_uuid"], _v107_PATH_A,
+                    _v107_enrollment, _v107_verify, HOST107,
+                    lambda command: _v107_effects.append(command) or {"ok": True})
+                _v107_schema = CC107.REQUEST_SCHEMA
+                try:
+                    # Schema has only one allowed value; let the judge accept the altered
+                    # version for this row, without changing the signed request or verifier.
+                    CC107.REQUEST_SCHEMA = _v107_changed["schema"]
+                    _v107_refusal = _v107_signature_auth.judge(_v107_changed, _v107_os.getuid())
+                    _v107_no_effect = not _v107_effects
+                    _v107_resigned = dict(_v107_changed,
+                        signature=_v107_sign(CC107.signed_bytes(_v107_changed)))
+                    _v107_acceptance = _v107_signature_auth.judge(_v107_resigned, _v107_os.getuid())
+                finally:
+                    CC107.REQUEST_SCHEMA = _v107_schema
+                expect("VELDO-0107 AC2 ipc/signature-covers/" + _v107_field +
+                       ": changing only this field without re-signing refuses as "
+                       "command_signature_invalid with no application; the identical request "
+                       "re-signed is accepted by the same judge and enrollment fixture",
+                       _v107_changed[_v107_field] != _v107_original.get(_v107_field)
+                       and _v107_changed["signature"] == _v107_original["signature"]
+                       and _v107_refusal.get("accepted") is False
+                       and _v107_refusal.get("reason") == "command_signature_invalid"
+                       and _v107_no_effect and _v107_acceptance.get("accepted") is True
+                       and _v107_effects == [_v107_changed["command"]])
+
             # ---- AC3: the address follows the binding -------------------------------------------
             _v107_src107 = (ROOT / ".veldo" / "control_client.py").read_text()
             _v107_addr_from_binding = CC107.socket_path_for(_v107_bind_A)

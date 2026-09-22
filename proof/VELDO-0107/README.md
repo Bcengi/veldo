@@ -75,8 +75,16 @@ said. The rule about a foreign uid is asserted by handing the real judging code 
 report for another account. Neither half is the whole claim.
 
 **And the signer is a fixture.** An HMAC the suite supplies, because the module takes signing and
-verification as callables and holds no key material. The rows turn on the signature being checked and
-on what it covers, not on how strong it is. Key lifecycle is VELDO-0027.
+verification as callables and holds no key material. Suite 47's `ipc/signature-covers/<field>` rows change each of schema, workspace,
+domain_uuid, store_uuid, command, repository_uuid, repository_root_commit, clone_uuid,
+binding_digest, and authority_generation without re-signing. Each requires
+command_signature_invalid and no application, then acceptance of the identical request re-signed.
+These rows use the real judge with a controlled enrollment fixture (and the altered schema allowed)
+to isolate signature coverage from coordinate/identity rejection. `ipc/signature-fields-match-request`
+compares the fields emitted by signed_bytes with both build_request and REQUEST_FIELDS, excluding
+signature. This measures coverage and verification with a fixture HMAC, not cryptographic strength.
+`python3 scripts/check_teeth_mutations.py --finding 1` drives command-only signing, omission of
+each individual field, and request/signature field-set drift against temporary production copies. Key lifecycle is VELDO-0027.
 
 **Still not wired, and less was wired than I first wrote.** `control_db_path` had NO CALLERS: every
 place that opens the store already passes an explicit path, so nothing in the repository was reaching
