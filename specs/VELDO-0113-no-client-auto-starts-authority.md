@@ -39,7 +39,7 @@ acceptance_criteria:
     text: >
       Claim: Every registered mutating client refuses rather than spawning an authority when its endpoint is missing or present but dead.
       Set: The VELDO-0112 client/transport inventory crossed with absent endpoint and a dead socket inode left by SIGKILL; observe each entire invocation with VELDO-0111.
-      Completeness: Require exact equality between generated and completed case identities and a complete census for each. Launch envelopes declare only the client's root and necessary transport launches by birth identity and causal parent before the call; authority launches have no exemption.
+      Completeness: Require exact equality between generated and completed case identities and a complete census for each. An unavailable VELDO-0111 mechanism or INCOMPLETE receipt emits unavailable/no-client-starts-the-authority as STANDS DOWN with census_incomplete, never green. Launch envelopes declare only the client's root and necessary transport launches by birth identity and causal parent before the call; authority launches have no exemption.
       Refutation: unavailable/no-client-starts-the-authority is false on any extra process birth, even if it exits before the call returns or uses another name.
     falsified_by: >
       Spawn and immediately reap a fallback authority on connection failure; unavailable/no-client-starts-the-authority must turn red.
@@ -47,7 +47,7 @@ acceptance_criteria:
     text: >
       Claim: A refusing client cannot host a fallback authority inside its own process or any descendant.
       Set: The same registry/state product, with listener observations across all families qualified by VELDO-0111, unrestricted addresses and transient lifetimes.
-      Completeness: Require zero new listening or service-receive bindings attributable to the client scope after excluding only the pre-existing fixture endpoints. The census receipt must certify full interval coverage; missing observations cannot yield a passing row.
+      Completeness: Require zero new listening or service-receive bindings attributable to the client scope after excluding only the pre-existing fixture endpoints. The census receipt must certify full interval coverage; an unavailable mechanism or INCOMPLETE receipt emits unavailable/no-client-hosts-a-listener as STANDS DOWN with census_incomplete, never green.
       Refutation: unavailable/no-client-hosts-a-listener is false on a new service event even when no child is created.
     falsified_by: >
       Bind and close a transient abstract Unix listener inside the connection-refusal handler; unavailable/no-client-hosts-a-listener must turn red.
@@ -55,7 +55,7 @@ acceptance_criteria:
     text: >
       Claim: The former socket snapshot row cannot satisfy the census-backed no-auto-start obligation.
       Set: Every registry case with a healthy observer and with a deliberately unavailable or interrupted observer.
-      Completeness: The row result carries its client inventory digest and complete observation receipt; qualification requires one receipt per case and prohibits the old address-only check from supplying it.
+      Completeness: The row result carries its client inventory digest and complete observation receipt; qualification requires one receipt per case and prohibits the old address-only check from supplying it. Drive unavailable-mechanism faults and require all three consumer row names to remain present as STANDS DOWN with census_incomplete, including unavailable/no-auto-start-needs-census, with zero green consumer rows and qualification incomplete.
       Refutation: unavailable/no-auto-start-needs-census is false when any incomplete census is accepted as evidence.
     falsified_by: >
       Treat an unavailable census as a successful no-auto-start result; unavailable/no-auto-start-needs-census must turn red.
@@ -79,5 +79,7 @@ Building another observer or client registry; filesystem writes and detailed kil
 ## Notes
 
 Use the VELDO-0112 adapters unchanged. Git identity lookups or transport helpers genuinely needed by a client must be declared in the launch envelope and matched to fixture-controlled identities, never waived by executable name. Ordinary schema/refusal checks remain necessary; the three rows here establish only the process/listener side of no-auto-start.
+
+Use VELDO-0111's unprivileged Linux ptrace fixture and capability receipt. On a host where that mechanism is unavailable, the census is INCOMPLETE: unavailable/no-client-starts-the-authority, unavailable/no-client-hosts-a-listener and unavailable/no-auto-start-needs-census each stand down BY NAME, never green or omitted. A successful refusal or equal socket snapshots cannot discharge these obligations. Fault-injection checks may prove that propagation is correct; they do not prove process/listener absence on the unavailable host.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.

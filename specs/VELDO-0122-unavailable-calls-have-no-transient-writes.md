@@ -34,13 +34,13 @@ observability:
   traces: >
     Bind every result to the input identity, implementation digest and fixture version.
   error_taxonomy: >
-    Distinguish forbidden_write, forbidden_metadata_change and filesystem_observation_incomplete.
+    Distinguish forbidden_write, forbidden_metadata_change, filesystem_observation_incomplete and census_incomplete; an unavailable process census prevents complete filesystem qualification.
 acceptance_criteria:
   - id: AC1
     text: >
       Claim: A filesystem observation extension records successful durable-object mutation operations during the whole client interval, including writes subsequently reversed.
       Set: VELDO-0111's measured process scope and all writable filesystem objects it can reach, including existing descriptors, renamed/unlinked files, links and paths outside both state directories; ordinary writes, truncation, creation/deletion, renaming, metadata updates, shared writable mappings and asynchronous I/O.
-      Completeness: Qualify an operation inventory against the kernel mutation interfaces using independent acknowledged probes, including write-and-restore, create-and-unlink, mmap and descriptor-relative operations. Observe object identities and descendants rather than path-prefix snapshots; inability to observe any reachable mutation mechanism makes the result incomplete.
+      Completeness: Qualify an operation inventory against the kernel mutation interfaces using independent acknowledged probes, including write-and-restore, create-and-unlink, mmap and descriptor-relative operations. Observe object identities and descendants rather than path-prefix snapshots; inability to observe any reachable mutation mechanism makes the result incomplete. An unavailable VELDO-0111 mechanism or INCOMPLETE process receipt emits filesystem/transient-and-escaped-writes-are-seen as STANDS DOWN with census_incomplete, never green.
       Refutation: filesystem/transient-and-escaped-writes-are-seen is false if any acknowledged mutation is missing after the final filesystem snapshot has returned to baseline.
     falsified_by: >
       Discard events for objects outside the two state-directory path prefixes; filesystem/transient-and-escaped-writes-are-seen must turn red.
@@ -48,7 +48,7 @@ acceptance_criteria:
     text: >
       Claim: An unavailable mutating call writes no durable object even if it restores the original contents before returning.
       Set: The VELDO-0112 client inventory crossed with absent authority, SIGKILLed authority and relay killed before forwarding while the authority lives, using VELDO-0115/0116 lifecycle controls and fresh command identities.
-      Completeness: Arm after fixture setup and the last successful watermark write, before client invocation; require zero observed mutation operations through return and descendant drain for every inventory cell. Retain recursive snapshots as a complementary check, not the event oracle. A warm read-only runtime setup disables incidental bytecode/cache creation.
+      Completeness: Arm after fixture setup and the last successful watermark write, before client invocation; require zero observed mutation operations through return and descendant drain for every inventory cell. Retain recursive snapshots as a complementary check, not the event oracle. A warm read-only runtime setup disables incidental bytecode/cache creation. An unavailable VELDO-0111 mechanism or INCOMPLETE process receipt emits unavailable/no-transient-write as STANDS DOWN with census_incomplete, never green.
       Refutation: unavailable/no-transient-write is false on any successful filesystem mutation by the refusing client even if all final bytes match.
     falsified_by: >
       Write one byte to last_seen.json and restore its original bytes before returning authority_unavailable; unavailable/no-transient-write must turn red.
@@ -56,15 +56,15 @@ acceptance_criteria:
     text: >
       Claim: No writable path can escape the refusal check by lying outside the enrolled clone or configured authority directory.
       Set: The same refusal product with cwd, temporary directory, home directory and a pre-opened descriptor aimed at independent writable canary locations outside both state directories in an isolated filesystem view.
-      Completeness: The observer uses the inherited process scope and object identities across the complete writable mount inventory. Canary destinations are set up by the fixture before arming; exclude only the explicitly registered stdout/stderr pipes and observer-owned sinks outside the scope, never general tmp/home prefixes.
+      Completeness: The observer uses the inherited process scope and object identities across the complete writable mount inventory. Canary destinations are set up by the fixture before arming; exclude only the explicitly registered stdout/stderr pipes and observer-owned sinks outside the scope, never general tmp/home prefixes. An unavailable VELDO-0111 mechanism or INCOMPLETE process receipt emits unavailable/no-out-of-directory-write as STANDS DOWN with census_incomplete, never green.
       Refutation: unavailable/no-out-of-directory-write is false if a refusing client changes an outside canary or creates and deletes a fallback ledger there.
     falsified_by: >
       Create and unlink a fallback ledger in the configured temporary directory on connection failure; unavailable/no-out-of-directory-write must turn red.
   - id: AC4
     text: >
       Claim: A missing or interrupted filesystem observer cannot be reported as proof of no side effects.
-      Set: All refusal cases with normal capture, denied observation privileges, dropped events, observer death and failure to drain.
-      Completeness: Each matrix result requires its complete loss-free filesystem receipt, sharing VELDO-0111's process interval and observer isolation. Every failure state must yield an incomplete qualification result and zero claims of observed absence.
+      Set: All refusal cases with normal capture, unavailable or interrupted VELDO-0111 process capture, denied observation privileges, dropped events, observer death and failure to drain.
+      Completeness: Each matrix result requires both a complete VELDO-0111 census receipt and its complete loss-free filesystem receipt, sharing the process interval and observer isolation. Every failure state must yield an INCOMPLETE qualification result and zero claims of observed absence. Drive unavailable-mechanism faults and require all four consumer rows to be emitted by name as STANDS DOWN, including unavailable/no-write-needs-complete-observation; report census_incomplete for a missing process census and filesystem_observation_incomplete for missing filesystem coverage, never green.
       Refutation: unavailable/no-write-needs-complete-observation is false if a failed collector falls back to equal final snapshots.
     falsified_by: >
       Accept unchanged final snapshots when the filesystem collector reports event loss; unavailable/no-write-needs-complete-observation must turn red.
@@ -88,5 +88,7 @@ Tracing arbitrary unrelated host processes, counting fixture setup writes, autho
 ## Notes
 
 Use the VELDO-0111 scope and barrier lifecycle rather than rebuilding it. The new filesystem adapter adds only mutation observation. Establish an isolated disposable writable view before arming so negative controls cannot change the developer's actual home or repository; the original call runs inside it with real enrollment and stores. Kernel-generated read atime changes and writes to the registered output pipes are not client-issued durable mutations; explicit metadata updates are. The observer and event sink remain outside what is measured.
+
+The shared process scope comes from VELDO-0111's unprivileged Linux ptrace test apparatus; its receipt alone does not certify filesystem observation, especially shared writable mappings or asynchronous I/O. If that mechanism is unavailable on the host, the census is INCOMPLETE and filesystem/transient-and-escaped-writes-are-seen, unavailable/no-transient-write, unavailable/no-out-of-directory-write and unavailable/no-write-needs-complete-observation each stand down BY NAME, never green or omitted, even if filesystem snapshots match. The filesystem collector is also repository-only test apparatus; consumer receipt validation remains standard-library-only enforcement. Fault-injection checks may establish correct stand-down propagation without establishing absence of writes on the unavailable host.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
