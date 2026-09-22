@@ -37,6 +37,8 @@ import os
 import socket
 import struct
 import sys
+import tempfile
+import time
 
 REQUEST_SCHEMA = "veldo.control_request/v1"
 RESPONSE_SCHEMA = "veldo.control_response/v1"
@@ -133,11 +135,17 @@ def record_seen(enrollment, workspace, binding, response, at):
     record = {"schema": SEEN_SCHEMA, "store_uuid": binding["store_uuid"],
               "domain_uuid": binding["domain_uuid"], "watermark": response.get("watermark"),
               "at": at, "state": response.get("result")}
-    tmp = path + ".new"
-    with open(tmp, "w") as fh:
-        json.dump(record, fh, indent=2, sort_keys=True)
-        fh.write("\n")
-    os.replace(tmp, path)
+    tmp = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", dir=os.path.dirname(path),
+                                         prefix="last_seen-", suffix=".new", delete=False) as fh:
+            tmp = fh.name
+            json.dump(record, fh, indent=2, sort_keys=True)
+            fh.write("\n")
+        os.replace(tmp, path)
+    finally:
+        if tmp is not None and os.path.exists(tmp):
+            os.unlink(tmp)
     return record
 
 
@@ -167,12 +175,18 @@ def request_problems(request):
     if request.get("schema") != REQUEST_SCHEMA:
         problems.append("schema must be %s (got %r)" % (REQUEST_SCHEMA, request.get("schema")))
     for field in REQUEST_FIELDS:
-        if field == "schema":
-            continue
-        if not request.get(field):
-            problems.append("missing or empty required field: %s" % field)
-    if "command" in request and not isinstance(request.get("command"), dict):
-        problems.append("command must be a mapping")
+        value = request.get(field)
+        if field == "command":
+            valid = isinstance(value, dict) and bool(value)
+        elif field == "authority_generation":
+            valid = type(value) is int and value >= 1
+        elif field == "repository_root_commit":
+            valid = isinstance(value, list) and bool(value) and all(
+                isinstance(item, str) and item.strip() for item in value)
+        else:
+            valid = isinstance(value, str) and bool(value.strip())
+        if not valid:
+            problems.append("missing, empty or incorrectly typed required field: %s" % field)
     return problems
 
 
@@ -225,6 +239,20 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30
     try:
         try:
             conn.connect(address)
+            conn.sendall(payload)
+            conn.shutdown(socket.SHUT_WR)
+            chunks, total = [], 0
+            while True:
+                chunk = conn.recv(65536)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > MAX_REQUEST_BYTES:
+                    raise RoutingRefused("malformed_request", "the response exceeded %d bytes"
+                                         % MAX_REQUEST_BYTES, {"address": address})
+                chunks.append(chunk)
+            if not chunks:
+                raise ConnectionError("the authority closed without a response")
         except OSError as e:
             # NAMED, not just refused. "routing failed" cannot be acted on; the service identity and
             # the watermark this clone was last sure of tell an operator which authority to look at
@@ -241,24 +269,15 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30
                                   "service": binding["store_uuid"],
                                   "last_watermark": None if not seen else seen.get("watermark"),
                                   "as_of": None if not seen else seen.get("at")})
-        conn.sendall(payload)
-        conn.shutdown(socket.SHUT_WR)
-        chunks, total = [], 0
-        while True:
-            chunk = conn.recv(65536)
-            if not chunk:
-                break
-            total += len(chunk)
-            if total > MAX_REQUEST_BYTES:
-                raise RoutingRefused("malformed_request", "the response exceeded %d bytes"
-                                     % MAX_REQUEST_BYTES, {"address": address})
-            chunks.append(chunk)
     finally:
         conn.close()
     try:
         answer = json.loads(b"".join(chunks).decode("utf-8"))
     except ValueError as e:
         raise RoutingRefused("malformed_request", "the authority's response is not JSON: %s" % e,
+                             {"address": address})
+    if not isinstance(answer, dict) or type(answer.get("accepted")) is not bool:
+        raise RoutingRefused("malformed_request", "the authority response is not an acceptance or refusal",
                              {"address": address})
     if answer.get("accepted") and seen_at is not None:
         record_seen(enrollment, workspace, binding, answer, seen_at)
@@ -289,8 +308,11 @@ def inspect(workspace, enrollment, verify, sign, host_identity, now=None, timeou
                 "as_of": None if not seen else seen.get("at"),
                 "state": None if not seen else seen.get("state"),
                 "why": e.message}
-    if response.get("accepted") and now is not None:
-        record_seen(enrollment, workspace, binding, response, now)
+    if not response.get("accepted"):
+        reason = response.get("reason")
+        raise RoutingRefused(reason if reason in REFUSALS else "malformed_request",
+                             response.get("message") or "the authority refused inspection",
+                             {"workspace": str(workspace), "service": response.get("store_uuid")})
     return {"stale": False, "service": response.get("store_uuid"),
             "watermark": response.get("watermark"), "as_of": now,
             "state": response.get("result"), "why": None}
@@ -395,24 +417,32 @@ def bind(address):
     return srv
 
 
-def serve_one(srv, authority):
+def serve_one(srv, authority, timeout=1.0):
     """Accept one connection, judge it, answer it, close it. One request per connection."""
     conn, _ = srv.accept()
     try:
         uid = peer_uid(conn)
         chunks, total = [], 0
-        while True:
-            chunk = conn.recv(65536)
-            if not chunk:
-                break
-            total += len(chunk)
-            if total > MAX_REQUEST_BYTES:
-                chunks = None
-                break
-            chunks.append(chunk)
+        deadline = time.monotonic() + timeout
+        try:
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise socket.timeout("request deadline exceeded")
+                conn.settimeout(remaining)
+                chunk = conn.recv(min(65536, MAX_REQUEST_BYTES + 1 - total))
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > MAX_REQUEST_BYTES:
+                    chunks = None
+                    break
+                chunks.append(chunk)
+        except OSError:
+            chunks = None
         if chunks is None:
             response = authority._no("malformed_request",
-                                     "the request exceeded %d bytes" % MAX_REQUEST_BYTES)
+                                     "the request exceeded its time or byte limit (%d bytes)" % MAX_REQUEST_BYTES)
         else:
             try:
                 request = json.loads(b"".join(chunks).decode("utf-8"))
@@ -420,7 +450,11 @@ def serve_one(srv, authority):
                 response = authority._no("malformed_request", "the request is not JSON: %s" % e)
             else:
                 response = authority.judge(request, uid)
-        conn.sendall(json.dumps(response).encode("utf-8"))
+        try:
+            conn.settimeout(timeout)
+            conn.sendall(json.dumps(response).encode("utf-8"))
+        except OSError:
+            pass  # A disconnected client must not stop the serving loop.
     finally:
         conn.close()
     return response

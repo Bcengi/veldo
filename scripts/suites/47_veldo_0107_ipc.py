@@ -396,3 +396,96 @@ if _v107_have_git and _v107_has_peercred:
     expect('ipc/authority-passes-generation-floor-to-enrollment',
            _v107_fenced['accepted'] is False and 'generation' in _v107_fenced['message']
            and _v107_replay_applied == [_v107_current_request['command']])
+
+if _v107_have_git and _v107_has_peercred:
+    import threading as _v107_threading
+    from concurrent.futures import ThreadPoolExecutor as _v107_Pool
+
+    _v107_replay_authority.minimum_generation = 2
+    _v107_type_results = []
+    for _v107_field in CC107.REQUEST_FIELDS:
+        _v107_type_results.append(_v107_replay_authority.judge(
+            dict(_v107_current_request, **{_v107_field: [['wrong type']]}), _v107_os.getuid()))
+    expect('ipc/malformed-field-types-are-refusals-not-verifier-exceptions',
+           all(answer['reason'] == 'malformed_request' for answer in _v107_type_results)
+           and _v107_type_results[CC107.REQUEST_FIELDS.index('signature')]['reason'] == 'malformed_request')
+
+    _v107_deadline_address = str(_v107_tmp / 'deadline.sock')
+    _v107_deadline_srv = CC107.bind(_v107_deadline_address)
+    _v107_deadline_srv.settimeout(2)
+    _v107_deadline_answers = []
+    def _v107_deadline_serve():
+        for _ in range(2):
+            _v107_deadline_answers.append(CC107.serve_one(
+                _v107_deadline_srv, _v107_replay_authority, timeout=0.15))
+    _v107_deadline_thread = _v107_threading.Thread(target=_v107_deadline_serve)
+    _v107_deadline_thread.start()
+    with _v107_socket.socket(_v107_socket.AF_UNIX, _v107_socket.SOCK_STREAM) as _v107_stalled:
+        _v107_stalled.connect(_v107_deadline_address)
+        _v107_stalled.sendall(b'{')
+        with _v107_socket.socket(_v107_socket.AF_UNIX, _v107_socket.SOCK_STREAM) as _v107_next:
+            _v107_next.settimeout(2)
+            _v107_next.connect(_v107_deadline_address)
+            _v107_next.sendall(_v107_json.dumps(_v107_current_request).encode())
+            _v107_next.shutdown(_v107_socket.SHUT_WR)
+            _v107_next_answer = _v107_json.loads(_v107_next.recv(65536))
+    _v107_deadline_thread.join(2)
+    _v107_deadline_srv.close()
+    expect('ipc/stalled-unauthenticated-client-does-not-block-the-next-request',
+           not _v107_deadline_thread.is_alive() and _v107_next_answer['accepted'] is True
+           and _v107_deadline_answers[0]['reason'] == 'malformed_request')
+
+    CC107.record_seen(EN107, _v107_replay_repo, _v107_current_binding,
+                      {'watermark': 7, 'result': {'remembered': True}}, 'before')
+    _v107_exchange_results = []
+    for _v107_failure in ('empty', 'timeout', 'reset', 'refusal'):
+        _v107_exchange_srv = CC107.bind(CC107.socket_path_for(_v107_current_binding))
+        def _v107_exchange_peer(kind=_v107_failure, listener=_v107_exchange_srv):
+            conn, _ = listener.accept()
+            with conn:
+                while conn.recv(65536):
+                    pass
+                if kind == 'timeout':
+                    _v107_time.sleep(0.15)
+                elif kind == 'reset':
+                    import struct
+                    conn.setsockopt(_v107_socket.SOL_SOCKET, _v107_socket.SO_LINGER, struct.pack('ii', 1, 0))
+                elif kind == 'refusal':
+                    conn.sendall(_v107_json.dumps(_v107_replay_authority._no(
+                        'command_signature_invalid', 'inspection signature refused')).encode())
+        _v107_exchange_thread = _v107_threading.Thread(target=_v107_exchange_peer)
+        _v107_exchange_thread.start()
+        try:
+            _v107_exchange_result = CC107.inspect(_v107_replay_repo, EN107, _v107_verify,
+                                                  _v107_sign, HOST107, timeout=0.05)
+        except CC107.RoutingRefused as exc:
+            _v107_exchange_result = {'reason': exc.reason, 'message': exc.message}
+        finally:
+            _v107_exchange_thread.join(2)
+            _v107_exchange_srv.close()
+        _v107_exchange_results.append(_v107_exchange_result)
+    expect('ipc/empty-timed-out-and-reset-responses-return-the-stale-answer',
+           all(answer.get('stale') is True and answer['watermark'] == 7
+               and answer['state'] == {'remembered': True} for answer in _v107_exchange_results[:3]))
+    expect('ipc/inspection-preserves-an-authority-refusal',
+           _v107_exchange_results[3] == {'reason': 'command_signature_invalid',
+                                         'message': 'inspection signature refused'})
+
+    _v107_replace = CC107.os.replace
+    _v107_barrier = _v107_threading.Barrier(2)
+    def _v107_simultaneous_replace(src, dst):
+        _v107_barrier.wait(timeout=2)
+        return _v107_replace(src, dst)
+    CC107.os.replace = _v107_simultaneous_replace
+    try:
+        with _v107_Pool(max_workers=2) as pool:
+            futures = [pool.submit(CC107.record_seen, EN107, _v107_replay_repo,
+                                    _v107_current_binding, {'watermark': n, 'result': n}, 'now')
+                       for n in (8, 9)]
+            _v107_writes = [future.result() for future in futures]
+    finally:
+        CC107.os.replace = _v107_replace
+    expect('ipc/concurrent-last-seen-writers-use-distinct-temporary-files',
+           len(_v107_writes) == 2 and CC107.last_seen(EN107, _v107_replay_repo,
+                                                    _v107_current_binding)['watermark'] in (8, 9)
+           and not list(_v107_Path(CC107.seen_path(EN107, _v107_replay_repo)).parent.glob('*.new')))
