@@ -44,9 +44,10 @@ with tempfile.TemporaryDirectory() as _w_tmp:
     _w_path.write_text('def render(value):\n    return writer.dump(value)\n')
     expect('writer/delegation-is-allowed-control', not _w_boundary.check(_w_root))
 # Both intake entry points are the very same adapter, and the guard's code is frozen.
+# Baseline is e559f39, the last read-side commit, whose tracker_intake.py is the one the writer work started from.
 _w_git = _w_tests.load('writer_git', ROOT / '.veldo/git_process.py')
 import ast as _w_ast
-_w_before = _w_git.check_output(['git', 'show', '23e1a2b:.veldo/tracker_intake.py'], cwd=ROOT, text=True)
+_w_before = _w_git.check_output(['git', 'show', 'e559f39:.veldo/tracker_intake.py'], cwd=ROOT, text=True)
 _w_after = (ROOT / '.veldo/tracker_intake.py').read_text()
 def _w_guard(source):
     node = next(n for n in _w_ast.parse(source).body if isinstance(n, _w_ast.FunctionDef) and n.name == '_fm_safe')

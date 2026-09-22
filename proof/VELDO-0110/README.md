@@ -77,3 +77,24 @@ passed 5,549 assertions with zero failures, but secret inventory flags the exist
 read-side gate log's synthetic guardrail diagnostic in the tree and reachable history.
 [Verification and unresolved finding](writer-verification.md) records the result;
 it does not supersede a red gate with the earlier read-side green result.
+
+## History rewrite before landing
+
+The read-side gate log committed at the old `23e1a2b` reproduced, at line 47, the guardrail
+suite's synthetic negative-control diagnostic, and the secret inventory flagged it in the tree
+and in reachable history. The branch had never been pushed, so the five commits from that point
+were rebuilt with only that line replaced by the same digest-only form the write-side logs
+already use (`sha256:8cd53e2dae3e`). No other byte of any commit changed. No disposition or
+scanner change was made.
+
+| Before | After |
+| --- | --- |
+| 23e1a2b | 53eb03c |
+| 3ff9ffd | f9f1c2c |
+| a0ce83c | 4644223 |
+| c38e8d5 | 8f21876 |
+| d970824 | c16646f |
+
+The records above and in `writer.md`, `writer-verification.md` and `writer-gate.log` are kept as
+they were run, so they name the old commits and trees. Suite 52's frozen tracker-guard baseline
+now reads `e559f39`, which the rewrite did not touch and whose `tracker_intake.py` is identical.
