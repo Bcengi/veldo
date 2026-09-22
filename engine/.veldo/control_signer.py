@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+import shutil
 import subprocess
 import sys
 import time
@@ -84,14 +85,19 @@ def capture(store, conn, identity, argv, provenance, journal_signer):
     Actor/contract provenance is supplied by the trusted invoker. It never comes
     from the process's output. The process's interpretation remains an assertion.
     """
-    child = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    executable = Path(shutil.which(argv[0]) or argv[0]).resolve()
+    executable_digest = 'sha256:' + hashlib.sha256(executable.read_bytes()).hexdigest()
+    child = subprocess.Popen([str(executable), *argv[1:]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
         out, err = child.communicate(timeout=10)
     except subprocess.TimeoutExpired:
         child.kill()
         child.communicate()
         raise K.Refused('capture-timeout')
+    if executable_digest != 'sha256:' + hashlib.sha256(executable.read_bytes()).hexdigest():
+        raise K.Refused('capture-input-changed')
     data = dict(provenance, type='observation', invocation=list(argv), pid=child.pid,
+                executable_digest=executable_digest,
                 exit_code=child.returncode, stdout_digest='sha256:' + hashlib.sha256(out).hexdigest(),
                 stderr_digest='sha256:' + hashlib.sha256(err).hexdigest(),
                 stdout_length=len(out), stderr_length=len(err))
@@ -139,6 +145,8 @@ def _payload(state, request, channel, now):
     fields = AC.CHANNELS[payload['channel']]['attribution']
     if any(not attribution.get(field) for field in fields):
         raise K.Refused('missing-attribution')
+    if any(field.endswith('_verified') and attribution.get(field) is not True for field in fields):
+        raise K.Refused('missing-attribution')
     if payload['channel'] == 'signed_cli':
         source = payload.get('personal_command', {})
         key = AC.active_key(state['keyring'], payload['principal'], now)
@@ -169,16 +177,22 @@ def issue(config, request, challenge, identity, authentication):
     """
     conn = S.open_store(config['store'])
     key = None
+    diagnostic = {'key_id': None, 'assertion_kind': None, 'principal': None, 'delegation_revision': None}
     try:
         conn.execute('BEGIN IMMEDIATE')
         now = time.time()
         state = CM.authority_state(S, conn)
+        diagnostic['delegation_revision'] = state['delegation_version']
+        source = state['entities'].get(request.get('source_id'), {}).get('data', {})
+        diagnostic.update(principal=source.get('principal', source.get('actor')),
+                          assertion_kind=source.get('assertion_kind', source.get('type')))
         channel = authenticate(state, challenge, request, identity, authentication, now)
         if any(f in request for f in ('key_path', 'private_key', 'path')):
             raise K.Refused('key-path')
         if request.get('operation') != 'sign_receipt':
             raise K.Refused('forbidden-arbitrary-signing')
         key = K.select(state, config['allowed_signers'], channel, now)
+        diagnostic['key_id'] = key['key_id']
         if request.get('channel') != channel or request.get('edge_key_id') != key['key_id']:
             raise K.Refused('channel-mismatch')
         payload = _payload(state, request, channel, now)
@@ -197,9 +211,7 @@ def issue(config, request, challenge, identity, authentication):
                 'metrics': {'retained_historical_keys': sum(not K.active(k, now) for k in K.entries(state).values())}}
     except K.Refused as error:
         return {'accepted': False, 'refusal': error.code,
-                'diagnostic': {'key_id': key['key_id'] if key else None,
-                               'assertion_kind': None, 'principal': None, 'delegation_revision': None,
-                               'refusal': error.code},
+                'diagnostic': dict(diagnostic, refusal=error.code),
                 'metrics': {error.code: 1}}
     finally:
         if conn.in_transaction:

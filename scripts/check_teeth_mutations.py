@@ -187,9 +187,8 @@ def cases():
     selection = "        key = K.select(state, config['allowed_signers'], channel, now)"
     signing('signing-request-key', 'control_signer.py', selection,
             selection + "\n        key = K.entries(state).get(request.get('edge_key_id'), key)", 'key-comes-from-the-channel')
-    signing('signing-search-request-key', 'control_signer.py', selection,
-            selection + "\n        key = next((k for k in K.entries(state).values() if k['key_id'] == request.get('edge_key_id')), key)",
-            'key-comes-from-the-channel')
+    signing('signing-ignore-key-crosscheck', 'control_signer.py', restriction,
+            "        if request.get('channel') != channel:", 'key-comes-from-the-channel')
     attribution = "    if any(not attribution.get(field) for field in fields):"
     signing('signing-text-without-identity', 'control_signer.py', attribution,
             '    if False:', 'text-only')
@@ -202,13 +201,11 @@ def cases():
             for k in state['keyring'] for line in body.splitlines()
             if line.split() and line.split()[0] == k['principal']]"""
     signing('signing-branch-projection-authority', 'control_keys.py', accepted, branch_keys, 'branch-key')
-    signing('signing-branch-overrides-accepted', 'control_keys.py', accepted,
-            """    result = [dict(k) for k in state['keyring']]
-    for line in body.splitlines():
-        for key in result:
-            if line.split() and line.split()[0] == key['principal']:
-                key['public_key'] = ' '.join(line.split()[-2:])
-    return result""", 'branch-key')
+    signing('signing-branch-preflight-bypass', 'control_keys.py',
+            "    keyring = administrative_keyring(state, projection_path)",
+            "    if Path(projection_path).read_text() != projection(state):\n"
+            "        return {'committed': True}\n"
+            "    keyring = administrative_keyring(state, projection_path)", 'branch-key')
     return result
 
 

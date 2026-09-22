@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer.py
++++ b/.veldo/control_signer.py
+@@ -146 +146 @@
+-    if any(not attribution.get(field) for field in fields):
++    if not payload.get('text') and any(not attribution.get(field) for field in fields):

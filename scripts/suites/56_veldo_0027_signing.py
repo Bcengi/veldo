@@ -46,7 +46,7 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
     _v27_keydir = _v27_root / 'private'
     _v27_keydir.mkdir()
     _v27_public = {}
-    for _v27_name in ('owner', 'edge-telegram', 'edge-jira', 'edge-cli', 'evidence', 'rotated', 'branch', 'tg-auth', 'jira-auth', 'cli-auth', 'ev-auth', 'race-key', 'race-next'):
+    for _v27_name in ('owner', 'edge-telegram', 'edge-jira', 'edge-cli', 'evidence', 'rotated', 'branch', 'tg-auth', 'jira-auth', 'cli-auth', 'ev-auth', 'race-key', 'race-next', 'kill-rotated'):
         _v27_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'test', '-f', str(_v27_keydir / _v27_name)],
                     check=True, capture_output=True, timeout=10)
         _v27_public[_v27_name] = ' '.join((_v27_keydir / (_v27_name + '.pub')).read_text().split()[:2])
@@ -154,7 +154,19 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
                             try:
                                 target = _v27_os.readlink(fd)
                                 if target.startswith('socket:'):
-                                    _v27_observed_sockets.add(target)
+                                    inode = target[8:-1]
+                                    # Observe endpoints, not libc's short-lived unbound
+                                    # name-service probes inside the system ssh-keygen.
+                                    # Any named UNIX endpoint or listening descriptor fails.
+                                    unix = _v27_Path('/proc/net/unix').read_text().splitlines()[1:]
+                                    for line in unix:
+                                        fields = line.split()
+                                        if fields[6] == inode and (len(fields) > 7 or fields[3] == '00010000'):
+                                            _v27_observed_sockets.add(target)
+                                    for table in ('tcp', 'tcp6', 'udp', 'udp6'):
+                                        for line in _v27_Path('/proc/net', table).read_text().splitlines()[1:]:
+                                            if line.split()[9] == inode:
+                                                _v27_observed_sockets.add(target)
                             except OSError:
                                 pass
                 except OSError:
@@ -263,6 +275,11 @@ conn.close()
                                input=_v27_json.dumps(_v27_receipt), capture_output=True, text=True, timeout=10)
     _v27_expect('signing/captured-observation', _v27_receipt['accepted'] and _v27_capture['exit_code'] == 3
                  and _v27_out == b'observed' and _v27_err == b'' and _v27_verified.returncode == 0 and _v27_json.loads(_v27_verified.stdout) is True)
+    for _v27_field in ('stdout_digest', 'stderr_digest', 'executable_digest', 'invocation', 'exit_code', 'pid'):
+        _v27_corrupt_capture = _v27_copy.deepcopy(_v27_evidence)
+        _v27_corrupt_capture['payload'][_v27_field] = 'corrupt'
+        _v27_expect('signing/observation-bound/' + _v27_field,
+                     _v27_call(_v27_corrupt_capture, 'evidence').get('refusal') == 'provenance-mismatch')
     for _v27_field in _v27_receipt.get('envelope', {}):
         _v27_tampered = _v27_copy.deepcopy(_v27_receipt)
         _v27_tampered['envelope'][_v27_field] = 'changed' if _v27_tampered['envelope'][_v27_field] is None else None
@@ -348,8 +365,27 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
     _v27_evidence['edge_key_id'] = 'race-next'
     _v27_race_after = _v27_call(_v27_evidence, 'evidence')
     _v27_expect('signing/race-new-key', _v27_race_after['accepted'] and _v27_keys.verify(_v27_state(), _v27_race_after))
+    _v27_crash_rotation = _v27_transition_child('rotate_signing_key', {
+        'key_id': 'kill-rotated', 'channel': 'evidence', 'public_key': _v27_public['kill-rotated'],
+        'connection_public_key': _v27_public['ev-auth']}, kill_boundary=True)
+    _v27_crash_rotation.stdin.write('go\n'); _v27_crash_rotation.stdin.flush()
+    _v27_rotation_commit = _v27_json.loads(_v27_crash_rotation.stdout.readline())
+    _v27_rotation_snapshot = _v27_keys.entries(_v27_state())
+    _v27_crash_rotation.kill(); _v27_crash_rotation.communicate(timeout=10)
+    _v27_channels['evidence'] = ('kill-rotated', 'ev-auth')
+    _v27_evidence['edge_key_id'] = 'kill-rotated'
+    _v27_conn.close(); _v27_conn = _v27_store.open_store(str(_v27_db))
+    _v27_unpublished = _v27_call(_v27_evidence, 'evidence')
+    _v27_keys.publish(_v27_store, _v27_conn, _v27_projection)
+    _v27_published = _v27_call(_v27_evidence, 'evidence')
+    _v27_expect('signing/kill-after-rotation', _v27_rotation_commit['committed'] and
+                 _v27_crash_rotation.returncode == -_v27_signal.SIGKILL and
+                 _v27_keys.entries(_v27_state()) == _v27_rotation_snapshot and
+                 _v27_unpublished.get('refusal') == 'projection-mismatch' and _v27_published['accepted'] and
+                 _v27_keys.verify(_v27_state(), _v27_race_after) and not _v27_keys.verify(_v27_state(), _v27_race_after, fresh=True))
+    _v27_race_after = _v27_published
     for _v27_operation in ('retire_signing_key', 'revoke_signing_key'):
-        _v27_crasher = _v27_transition_child(_v27_operation, {'key_id': 'race-next'}, kill_boundary=True)
+        _v27_crasher = _v27_transition_child(_v27_operation, {'key_id': 'kill-rotated'}, kill_boundary=True)
         _v27_crasher.stdin.write('go\n'); _v27_crasher.stdin.flush()
         _v27_committed = _v27_json.loads(_v27_crasher.stdout.readline())
         _v27_at_commit = _v27_keys.entries(_v27_state())
@@ -379,7 +415,9 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
     _v27_expect('signing/no-key-leaks', all(k not in _v27_outputs and all(k not in p.read_bytes() for p in _v27_artifacts) for k in _v27_private_bytes))
     _v27_expect('signing/no-socket-or-pidfile', all(not _v27_stat.S_ISSOCK(p.stat().st_mode) and p.suffix != '.pid' for p in _v27_root.rglob('*')))
     _v27_conn.close()
-    _v27_expect('signing/universe', set(_v27_ac.ASSERTION_KINDS) == {'decision_answer', 'assignment_acceptance', 'review_disposition', 'acknowledgement'}
+    _v27_universe = _v27_json.loads((ROOT / 'proof/VELDO-0027/universe.json').read_text())
+    _v27_declared = {r for rows in _v27_universe['criteria'].values() for r in rows}
+    _v27_expect('signing/universe', set(_v27_rows) == _v27_declared and set(_v27_ac.ASSERTION_KINDS) == {'decision_answer', 'assignment_acceptance', 'review_disposition', 'acknowledgement'}
                  and len(_v27_controls) == 12 and len(_v27_rows) == len(set(_v27_rows)))
 _v27_elapsed = _v27_time.monotonic() - _v27_started
 print('VELDO-0027 suite: %d rows, %.3fs' % (len(_v27_rows), _v27_elapsed))

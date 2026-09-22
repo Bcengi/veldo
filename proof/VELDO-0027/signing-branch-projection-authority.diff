@@ -1,0 +1,9 @@
+--- a/.veldo/control_keys.py
++++ b/.veldo/control_keys.py
+@@ -132,3 +132,3 @@
+-    if body != projection(state):
+-        raise Refused('projection-mismatch')
+-    return state['keyring']
++    return [dict(k, public_key=' '.join(line.split()[-2:]))
++            for k in state['keyring'] for line in body.splitlines()
++            if line.split() and line.split()[0] == k['principal']]

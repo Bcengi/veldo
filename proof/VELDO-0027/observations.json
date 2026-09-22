@@ -1,0 +1,388 @@
+{
+  "rows": [
+    {
+      "row": "signing/kind/telegram_chat/decision_answer",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/telegram_chat/assignment_acceptance",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/telegram_chat/review_disposition",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/telegram_chat/acknowledgement",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/jira/decision_answer",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/jira/assignment_acceptance",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/jira/review_disposition",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/jira/acknowledgement",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/signed_cli/decision_answer",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/signed_cli/assignment_acceptance",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/signed_cli/review_disposition",
+      "passed": true
+    },
+    {
+      "row": "signing/kind/signed_cli/acknowledgement",
+      "passed": true
+    },
+    {
+      "row": "signing/cross-channel",
+      "passed": true
+    },
+    {
+      "row": "signing/channel-comes-from-the-connection",
+      "passed": true
+    },
+    {
+      "row": "signing/key-comes-from-the-channel",
+      "passed": true
+    },
+    {
+      "row": "signing/unauthenticated",
+      "passed": true
+    },
+    {
+      "row": "signing/key-path",
+      "passed": true
+    },
+    {
+      "row": "signing/arbitrary",
+      "passed": true
+    },
+    {
+      "row": "signing/membership",
+      "passed": true
+    },
+    {
+      "row": "signing/unknown-kind",
+      "passed": true
+    },
+    {
+      "row": "signing/delegation/absent",
+      "passed": true
+    },
+    {
+      "row": "signing/delegation/stale",
+      "passed": true
+    },
+    {
+      "row": "signing/delegation/wrong-principal",
+      "passed": true
+    },
+    {
+      "row": "signing/delegation/revoked",
+      "passed": true
+    },
+    {
+      "row": "signing/delegation/valid-control",
+      "passed": true
+    },
+    {
+      "row": "signing/attribution/platform_message_id",
+      "passed": true
+    },
+    {
+      "row": "signing/attribution/sender_id",
+      "passed": true
+    },
+    {
+      "row": "signing/attribution/platform_timestamp",
+      "passed": true
+    },
+    {
+      "row": "signing/text-only",
+      "passed": true
+    },
+    {
+      "row": "signing/attribution/personal-signature",
+      "passed": true
+    },
+    {
+      "row": "signing/bound/contract_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/bound/source_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/bound/presentation_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/bound/actor",
+      "passed": true
+    },
+    {
+      "row": "signing/bound/actor_kind",
+      "passed": true
+    },
+    {
+      "row": "signing/bound/principal",
+      "passed": true
+    },
+    {
+      "row": "signing/captured-observation",
+      "passed": true
+    },
+    {
+      "row": "signing/observation-bound/stdout_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/observation-bound/stderr_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/observation-bound/executable_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/observation-bound/invocation",
+      "passed": true
+    },
+    {
+      "row": "signing/observation-bound/exit_code",
+      "passed": true
+    },
+    {
+      "row": "signing/observation-bound/pid",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/schema",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/channel",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/key_id",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/key_effective_at",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/key_revision",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/signed_at",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/source_id",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/source_digest",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/payload",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/delegation_id",
+      "passed": true
+    },
+    {
+      "row": "signing/receipt-bound/delegation_version",
+      "passed": true
+    },
+    {
+      "row": "signing/assertion-control",
+      "passed": true
+    },
+    {
+      "row": "signing/assertion-relabel",
+      "passed": true
+    },
+    {
+      "row": "signing/branch-key",
+      "passed": true
+    },
+    {
+      "row": "signing/rotation",
+      "passed": true
+    },
+    {
+      "row": "signing/retirement",
+      "passed": true
+    },
+    {
+      "row": "signing/revocation",
+      "passed": true
+    },
+    {
+      "row": "signing/rotation-race",
+      "passed": true
+    },
+    {
+      "row": "signing/race-new-key",
+      "passed": true
+    },
+    {
+      "row": "signing/kill-after-rotation",
+      "passed": true
+    },
+    {
+      "row": "signing/kill-after-retire_signing_key",
+      "passed": true
+    },
+    {
+      "row": "signing/kill-after-revoke_signing_key",
+      "passed": true
+    },
+    {
+      "row": "signing/process-count-and-listeners",
+      "passed": true
+    },
+    {
+      "row": "signing/children-exit",
+      "passed": true
+    },
+    {
+      "row": "signing/no-key-leaks",
+      "passed": true
+    },
+    {
+      "row": "signing/no-socket-or-pidfile",
+      "passed": true
+    },
+    {
+      "row": "signing/universe",
+      "passed": true
+    }
+  ],
+  "suite_seconds": 3.6034328499808908,
+  "public_keys": {
+    "owner": {
+      "sha256": "b4da55fc5805ce6ce1ef08ba1025decf922f59a340d001149414d2533e4b9353"
+    },
+    "edge-telegram": {
+      "sha256": "1ad501e518784aa4841f04b88e9d933fda4076f0ecd6aa545bf889b9da6699b4"
+    },
+    "edge-jira": {
+      "sha256": "7db9b5dbcd7ee10df7007f2461565ff8efaa1593d68fc89b77941b588863305d"
+    },
+    "edge-cli": {
+      "sha256": "3a432e1d7b6b5d365267da962c9d1f521a047ce92be9c285f661686285897787"
+    },
+    "evidence": {
+      "sha256": "c7b502a6983ecb2d8d259b912f3441508baa0b4c977c29d7fd33ba32dbe22507"
+    },
+    "rotated": {
+      "sha256": "dd9b25aa804c47014a34f6fa1cb098116de8522abc92fd9e99cc5701c318d57a"
+    },
+    "branch": {
+      "sha256": "634ca3061e03cc28625f1cd58d096ba67c8a42612a119849817d76e12333aceb"
+    },
+    "tg-auth": {
+      "sha256": "18b5abb0958805945cdc6f5ce05a0b61d25ec58078354fd28d0fc5b516cbac8d"
+    },
+    "jira-auth": {
+      "sha256": "83cbf679c304c85ac3ab85396ffcb0774c696de3c6e58c991a2a65525b0504a9"
+    },
+    "cli-auth": {
+      "sha256": "af494f5ff1211a61e23e97e1fe88263c984d46c80f04acf26e45d6ef5d23d645"
+    },
+    "ev-auth": {
+      "sha256": "3584f8987f81c97b7430b8cce44488ac6046fa959987d9b0ca8cb022ac300f11"
+    },
+    "race-key": {
+      "sha256": "c1516f5c0285efd0185b6aa03541299c344a6be0ea312dffa54c9c76901f330a"
+    },
+    "race-next": {
+      "sha256": "3097f1d3a6fde22e4cc0621b94fc098233de9e4b991e1bd89b2f5cf5447e3212"
+    },
+    "kill-rotated": {
+      "sha256": "eb5190aa252c096a85722f7bbdf50a33a6bc16422af5c3743710716275a4dd14"
+    }
+  },
+  "private_material_retained": false,
+  "receipt_digests": [
+    "d41d6e6bdcaffaf65f64e5d40d0307b5f243f381640613eb5dba75805ef332e8",
+    "ee675dc0913ff86dc15507ef48e570245a4b50db1e260a2f141cfeffadf235d9",
+    "1a166880839e64eb8aecd05e5dc0b9603a3278002bd1aad96a0862e24a4f583d",
+    "c87ac29df6cb287cadadaf76b411ed0169eb492005213ac81d472f1e61351ab6",
+    "7fffc14f33dd508a75d7ab5de1c4ac9028c4ba8bcec8c6d1908486b120470485",
+    "288e622d28f2303fcaaed1579fccb1f8dac27ef3c2bc8553f29f658eb5c2f589",
+    "c5d2ee54518004f63f1831b81263b9592cee3070b5b8830ede2af4c5ecfd97d4",
+    "5597ecc3df2b16b7ef293de8830bb4b8edc80f5dbf1db207cff9206c7102a417",
+    "069a768f272b9439a9b34f16d0e83582087f517163379896dae34cc45705f9d8",
+    "1d89547e545e9e7c4c894600e8444ec383a6f9563aebb48de128b5ff93a6db95",
+    "d22122dc11a4da2bbc87f49ce1e6e23b9777eb9dbced3b34e56dbcdafb01c405",
+    "45a01bc4689297546b50530e9cdff9c710209e9cdaafc2de9dd44f48d02a31e4",
+    "0d3e3ff909ce48a534587335a0d83c289d5fe30fa57d6b12d54259c6c5d99cac",
+    "e15633cab0ca65dfdb49d6f7893cc294f6bc8c5d4470c3d432d3341de977f24c",
+    "fcbaa48f0462bbd0cd25f7c1a66e50a77d9162f5eb460b4d90e4bf36589abde3",
+    "a6f6749b7b38c3fd5003f79e34acabcac64eb26caa2c4d78c6aa26b1618fc36d",
+    "9e64268b001fb3988ae55c41a4e1c2efb35570eec6d977ffed8576300da57255",
+    "5e4ae2839f666d94a80244349fece243239696048962a1fc962268059304c361",
+    "a3944eefa95807f83685da24dd0affbdc5ccea74ad1a5ed2274a99272715db88",
+    "4f9d43b8b5c978518ee030efbaf9036a0c30086e33fc4788124e805f1de2caa8",
+    "306ffe4f80bacfcabd6fb72a97a32052b046cf6f76198b6c207b48df85e2e9c2",
+    "2a347aa5c01ec067a90b4068896cc1993bbc483d43a703645d94266b3cb19bd3",
+    "aa0f7b3e0c24fc3b5e9e623e1b723b0bbe849c0091032181d4e6e1e8b3d164af",
+    "278470549f2d869d83e62c1ddd7dd2af7a70d0cc2b0737250340e42d49b6822c",
+    "d59326dc2ca1a575fe4315ecfdfdcf263b5b08d434bb9b6cbbfa57cc898ef4a0",
+    "6ac98b93eeb3841887df989e86d9a2c5568e5c464eb06152a1361314b46e01a5",
+    "9f6d9e19579099bbd7ba02fe6c9161b32124a4f3435adf07db97bc4f1b3aae42",
+    "5b8c3f57fadb137f09d9e549aaff6c71c3c148b410566bdde11be9f68b9b349c",
+    "2d22074f07f962e814bec49f71f05071cf61995faf7b7b2301dca68ec8c8572f",
+    "8849589bffb8992eb1bc7ef7359a36363c16c217be59cf7d7c9cad0720a92a9c",
+    "03507fea027d3d0496ef90ecb46670be0be16adc8fcec5fa86252b09aa923c90",
+    "5aac152868a45977bdee7145b2f7338976b519c29a3232fea1c1db088b7cfeb5",
+    "14cf42f441425bd8867a4b2a264fc31943e8f6eb0f89306e023b055469a2a70b",
+    "ee5e71da07a725099b7b4245bd1d0da57e2b80529f317a7fe54322b4c3134b3c",
+    "3e2c0042f1a5dac11e9e68e3b2d10440a763ce65f32c03a6c583938724e49533",
+    "9ecc14049a011006b162e820eb71c4f3d5d997a1ccff016d931972e0f83ba684",
+    "8fc85868c694957064358861667263626ce923d15c5907926c56267dbe368786",
+    "52b62e3cac759e1d4689eaa82accd138791f6ae1fa909adf857ff7d14ba27fac",
+    "57784fc9cadfe42e300c7341731ab051826ff5cbafcda5895fd9f61c5c0e5e7a",
+    "f00606b0f2dcbb9f3af1e3f1d8c7ccc1bc6b62636a5c327020668c85cad5acad",
+    "7556eacbfeec69df781b8839f18d17736dba115055070d9ae228548e4aced196",
+    "e7e29116b941eb343958437975f03c7e84c2c27c80694af25bd46411dba3cb15",
+    "dbb90a476b2f410244c18464132b353e8de87170358fe4ba087fcac1d0660d0f",
+    "fea90307dc8f96c6b706928156bccb2d8476d4b4aa0f295465b919aa6dcec041",
+    "98ea30efaf0e5de32a16ac192ee86701f2b51b4563d757beab7f7865e5f2b6e6",
+    "0d88b1411d4baf74c537f49721a967c5ce7ac0b1d2a78b9f2f17aaaa96059acf",
+    "e208bf065d7fbf90a672b49a0a7c6edac854d54d6dd28890c6fb795fbda35e31",
+    "5827d754d8f679e77fb54e3f168eb0e34243a0478f535583f743e5beb994c31d",
+    "9576c534d9498f1513d332acca5624e8cc4347492a18e202f232cab5b84c2018",
+    "88cc9ee5de2daa3f4fda92ccb1b7dfd7ab8f09bc855f027c46792d87a3b71bbc",
+    "b42c9abf82e67e4d72e5621f8d04faaed354159a8b12a4ba6f45e4fcc19fd412",
+    "cf21a07fb17aff4f1874fa35e4531fcdabb255851b3be42d4711f9a92074a547",
+    "c9002d491a3383ee20de921e037c8e8b36b8f9a0932fdb491652826c7863e4f3",
+    "e84d1a59ac1413b41256e4148198f41bb84a5c4d26d2c06ac486e3b4531297a3",
+    "211351bc921b39c847bcab104348bc730204cc895ea625441e882ab6cc786a13"
+  ],
+  "regenerate": "python3 proof/VELDO-0027/drive.py --mutations"
+}
