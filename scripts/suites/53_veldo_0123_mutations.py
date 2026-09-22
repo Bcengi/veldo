@@ -5,6 +5,7 @@ The tiny worker is a deterministic fixture for the coordinator, not a substitute
 is qualified separately against those same real workers by proof/VELDO-0123/drive.py.
 """
 import copy as _m123_copy
+import hashlib as _m123_hashlib
 import importlib.util as _m123_ilu
 import os as _m123_os
 from pathlib import Path as _m123_Path
@@ -16,7 +17,8 @@ import time as _m123_time
 _m123_sys.dont_write_bytecode = True
 
 ROWS = ['gate/both-mutation-drivers-are-required', 'gate/mutation-results-have-teeth',
-        'gate/mutation-stage-budget-is-enforced', 'gate/removed-teeth-redden-the-gate']
+        'gate/mutation-stage-budget-is-enforced', 'gate/removed-teeth-redden-the-gate',
+        'gate/fixture-cases-execute-named-targets']
 
 FIXTURE_DRIVER = '''from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
@@ -57,7 +59,9 @@ def fixture(root, source):
     (root / 'proof').mkdir()
     (root / 'scripts/check_gate_mutations.py').write_bytes(source.read_bytes())
     for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
-        (root / 'scripts' / driver).write_text(FIXTURE_DRIVER)
+        # Keep the real materializer while replacing only the disposable registry/worker.
+        owner = (source.parent / 'check_teeth_mutations.py').read_text() if driver == 'check_teeth_mutations.py' else ''
+        (root / 'scripts' / driver).write_text(owner + '\n' + FIXTURE_DRIVER)
     for path, content in {'.veldo/fixture.py': 'answer = True',
                           'scripts/suites/fixture.py': 'condition',
                           'scripts/suites/shared.py': '# shared'}.items():
@@ -67,6 +71,30 @@ def fixture(root, source):
                GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null')
     for args in (['init', '-q'], ['add', '.'], ['commit', '-qm', 'fixture']):
         _m123_sp.run(['git', '-C', str(root), *args], env=env, check=True, capture_output=True)
+
+
+def register_fixture_case(root, repository):
+    """Use the real teeth worker and materializer; only this disposable registry changes."""
+    case = dict(name='directory-fixture', finding=123, fixture=True,
+                suite='fixture_kind.py', module='fixture.py',
+                old='answer = True', new='answer = False', rows=['fixture/named-target'])
+    owner = (repository / 'scripts/check_teeth_mutations.py').read_text()
+    (root / 'scripts/check_teeth_mutations.py').write_text(
+        owner + '\ndef cases():\n    return ' + repr([case]) + '\n')
+    base = root / 'scripts/fixtures'
+    (base / 'nested').mkdir(parents=True)
+    (base / 'fixture.py').write_bytes(b'# fixture bytes\r\nanswer = True\r\n')
+    (base / 'sibling.txt').write_text('sibling retained')
+    (base / 'nested/control.txt').write_text('nested retained')
+    (root / 'scripts/suites/shared.py').write_text(
+        'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'
+        'def expect(name, condition):\n    assert condition, name\n')
+    (root / 'scripts/suites/fixture_kind.py').write_text('''base = ROOT / "scripts" / "fixtures"
+expect('fixture/named-target', 'answer = True' in (base / 'fixture.py').read_text())
+expect('fixture/sibling', (base / 'sibling.txt').read_text() == 'sibling retained')
+expect('fixture/nested', (base / 'nested/control.txt').read_text() == 'nested retained')
+''')
+    return case
 
 
 def gate_exit(root, gate_source):
@@ -241,6 +269,30 @@ def qualification(module, repository, selected=None):
                     and weakened['worker_invocations'] > 0
                     and baseline_exit == 0
                     and gate_exit(root, repository / 'scripts/verify.sh') != 0)
+            elif row == ROWS[4]:
+                case = register_fixture_case(root, repository)
+                before = {p.relative_to(root): p.read_bytes() for p in root.rglob('*')
+                          if p.is_file() and '.git' not in p.parts}
+                result = run()
+                # Keep the successful per-case evidence for the fixture-kind regression too.
+                records = [r for r in result['results'] if r['case']['name'] == case['name']]
+                detail[:] = [dict(receipt=result, fixture_records=records)]
+                ok = (result['status'] == 'passed'
+                      and result['registered'] == result['executed'] == result['rejected'] == 2
+                      and len(records) == 1)
+                if records:
+                    record = records[0]
+                    original = before[_m123_Path('scripts/fixtures/fixture.py')]
+                    mutated = original.replace(case['old'].encode(), case['new'].encode())
+                    ok &= (record['replacement_count'] == 1
+                           and record['old_digest'] == _m123_hashlib.sha256(original).hexdigest()
+                           and record['new_digest'] == _m123_hashlib.sha256(mutated).hexdigest()
+                           and record['baseline'] == record['noop']
+                           and record['baseline']['failed_rows'] == []
+                           and record['mutant']['failed_rows'] == case['rows']
+                           and record['mutant']['targets']['fixture/named-target'] == [False])
+                ok &= all((root / p).read_bytes() == body for p, body in before.items())
+                answers[row] = bool(ok)
             evidence[row] = detail
     return answers, evidence
 

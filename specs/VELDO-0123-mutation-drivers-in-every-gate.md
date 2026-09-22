@@ -91,4 +91,6 @@ For each declared falsifier, retain the applied diff, require the named row to b
 
 ## History
 
+2026-09-22: Fixed the required stage's hard-coded .veldo module base and single-file materialization, which failed closed on fixture-kind registry entries. The teeth driver now owns source selection, whole-directory fixture copies and actual mutated-file digests for both drivers and the gate. Suite 53 qualifies a disposable fixture-kind registry with a named red target, an unmutated control and two driven regressions, including removal of fixtures from the frozen snapshot.
+
 2026-09-22: Reuse was specified on an unmeasured cost estimate. The cold stage was then measured at 13.8 seconds on this machine. Reuse was removed on the owner's approval: Telegram 28800, "Yes", answering 28798, "can I take the reuse part out?" Status remains ready.

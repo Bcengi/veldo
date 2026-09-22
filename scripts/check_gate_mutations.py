@@ -117,7 +117,7 @@ def git(root, *args):
 
 
 def read_inputs(root):
-    """Coarse input closure; path, mode and bytes include untracked additions and deletions."""
+    """Coarse input closure, including scripts/fixtures and untracked additions/deletions."""
     files = {}
     for directory in ('.veldo', 'scripts', 'proof'):
         for path in sorted((root / directory).rglob('*')):
@@ -257,15 +257,16 @@ class Workers:
 def worker(job):
     case = job['case']
     driver = load(ROOT / 'scripts' / case['driver'])
-    mutant = None
-    if job['mode'] != 'baseline':
-        source = (ROOT / '.veldo' / case['module']).read_text()
-        if source.count(case['old']) != 1:
-            raise Refused('missing_target', case['identity'] + ': mutation anchor moved')
-        mutant = Path(os.environ['TMPDIR']) / case['module']
-        mutant.write_text(source if job['mode'] == 'noop' else source.replace(case['old'], case['new']))
+    owner = load(ROOT / 'scripts/check_teeth_mutations.py')
+    prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)
+    mutant = prepared['mutant']
     argument = case if case['driver'] == DRIVERS[0] else case['name']
-    return driver.worker(argument, str(mutant) if mutant else None)
+    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),
+                **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')})
+
+
+def control_group(case):
+    return (case['suite'] + ':' + case['module'] + ':' + str(case.get('fixture') is True))
 
 
 def snapshot(root, destination, files, head):
@@ -322,7 +323,7 @@ def run_stage(root=ROOT):
                 raise Refused('incomplete_inventory', 'registry changed while snapshotting')
             controls = {}
             for case in cases:
-                group = case['suite'] + ':' + case['module']
+                group = control_group(case)
                 for mode in ('baseline', 'noop'):
                     controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode})
             control_results = workers.run(controls, directory, frozen)
@@ -330,17 +331,14 @@ def run_stage(root=ROOT):
                                           for c in cases}, directory, frozen)
             for case in cases:
                 identity = case['identity']
-                group = case['suite'] + ':' + case['module']
-                source = files['.veldo/' + case['module']][1].decode()
-                count = source.count(case['old'])
-                old_digest = hashlib.sha256(source.encode()).hexdigest()
-                new_digest = hashlib.sha256(source.replace(case['old'], case['new']).encode()).hexdigest()
+                group = control_group(case)
+                prepared = mutant_results[identity]['result']
                 record = {'schema': SCHEMA, 'case': case,
-                          'fixture_version': FIXTURE_VERSION, 'replacement_count': count,
-                          'old_digest': old_digest, 'new_digest': new_digest,
-                          'baseline': control_results[group + ':baseline']['result'],
-                          'noop': control_results[group + ':noop']['result'],
-                          'mutant': mutant_results[identity]['result'],
+                          'fixture_version': FIXTURE_VERSION,
+                          **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')},
+                          'baseline': control_results[group + ':baseline']['result']['observation'],
+                          'noop': control_results[group + ':noop']['result']['observation'],
+                          'mutant': prepared['observation'],
                           'elapsed': mutant_results[identity]['elapsed']}
                 try:
                     validate_result(record, case)

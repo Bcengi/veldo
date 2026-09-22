@@ -68,7 +68,7 @@ def refutations(out):
         "DRIVERS = ('check_review_mutations.py',)")
     add('worker-exit-as-detection', Q.ROWS[1],
         "                    if proc.returncode != 0:\n                        raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])",
-        "                    if proc.returncode != 0:\n                        stdout = canonical({'observations': [['fixture/teeth', False], ['fixture/control', True]], 'count': 2, 'row_names': ['fixture/teeth', 'fixture/control'], 'failed_rows': ['fixture/teeth']})")
+        "                    if proc.returncode != 0:\n                        stdout = canonical({'observation': {'observations': [['fixture/teeth', False], ['fixture/control', True]], 'count': 2, 'row_names': ['fixture/teeth', 'fixture/control'], 'failed_rows': ['fixture/teeth']}, 'replacement_count': 1, 'old_digest': 'old', 'new_digest': 'new'})")
     add('disable-required-stage', Q.ROWS[0],
         'CHECK_extra="required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py"',
         'CHECK_extra="na:disabled mutation stage"', shell=True)
@@ -82,11 +82,18 @@ def refutations(out):
         'echo "   ${name}: FAIL"; FAIL=1; RAN=$((RAN+1))',
         'echo "   ${name}: FAIL"; FAIL=0; RAN=$((RAN+1))', shell=True)
     add('accept-removed-teeth', Q.ROWS[3], "            if after != [False]:", "            if False:")
+    add('restore-hard-coded-production-base', Q.ROWS[4],
+        "owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)",
+        "owner.materialize(dict(case, fixture=False), job['mode'], Path(os.environ['TMPDIR']), root=ROOT)")
+    add('omit-fixtures-from-snapshot', Q.ROWS[4],
+        "            if rel in OUTPUTS or '__pycache__' in path.parts:",
+        "            if rel.startswith('scripts/fixtures/') or rel in OUTPUTS or '__pycache__' in path.parts:")
     results = []
     for index, (name, row, old, new, shell) in enumerate(mutations):
         with tempfile.TemporaryDirectory(prefix='v123-falsifier-') as directory:
             repo = Path(directory)
             (repo / 'scripts').mkdir()
+            shutil.copy2(ROOT / 'scripts/check_teeth_mutations.py', repo / 'scripts/check_teeth_mutations.py')
             shutil.copytree(ROOT / '.veldo', repo / '.veldo', ignore=shutil.ignore_patterns('__pycache__'))
             before = gate_source if shell else source
             # The shell has two catalog arms, both must propagate failure.

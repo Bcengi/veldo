@@ -51,16 +51,15 @@ def worker(case, mutant):
 
 
 def main():
+    from check_teeth_mutations import materialize
     if len(sys.argv) > 1:
         print(json.dumps(worker(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)))
         return
     results = []
     with tempfile.TemporaryDirectory(prefix='review-mutants-') as directory:
-        for case, (_, module, label, old, new) in CASES.items():
-            source = (ROOT / '.veldo' / module).read_text()
-            assert source.count(old) == 1, (case, 'mutation anchor moved')
-            mutant = Path(directory) / (case + '_' + module)
-            mutant.write_text(source.replace(old, new))
+        for definition in cases():
+            case, label, new = definition['name'], definition['rows'][0], definition['new']
+            mutant = materialize(definition, 'mutant', Path(directory) / case)['mutant']
             pair = []
             for args in ([case], [case, str(mutant)]):
                 proc = subprocess.run([sys.executable, __file__, *args],

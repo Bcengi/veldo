@@ -7,9 +7,11 @@ missing rows and process failures are errors, never successful mutation detectio
 import argparse
 import ast
 import contextlib
+import hashlib
 import io
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -93,6 +95,39 @@ def cases():
     return result
 
 
+def materialize(case, mode, directory, root=ROOT):
+    """Own case paths, exact replacement and file/directory copies for every driver.
+
+    Digests describe the actual module bytes, even when the suite receives a directory.
+    Baselines use the original input; no-op and mutant copies never edit that input.
+    """
+    if mode not in ('baseline', 'noop', 'mutant'):
+        raise ValueError('unknown mutation mode: ' + mode)
+    fixture = case.get('fixture') is True
+    base = root / 'scripts/fixtures' if fixture else root / '.veldo'
+    source = base / case['module']
+    before = source.read_bytes()
+    old, new = case['old'].encode(), case['new'].encode()
+    count = before.count(old)
+    if count != 1:
+        raise RuntimeError((case['name'], 'mutation anchor moved', count))
+    mutant = None
+    after = before
+    if mode != 'baseline':
+        destination = Path(directory)
+        destination.mkdir(parents=True, exist_ok=True)
+        mutant = destination / ('fixtures' if fixture else case['module'])
+        if fixture:
+            shutil.copytree(base, mutant)
+        target = mutant / case['module'] if fixture else mutant
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(before if mode == 'noop' else before.replace(old, new))
+        after = target.read_bytes()
+    return dict(source=source, mutant=mutant, replacement_count=count,
+                old_digest=hashlib.sha256(before).hexdigest(),
+                new_digest=hashlib.sha256(after).hexdigest())
+
+
 def worker(case, mutant=None):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
@@ -109,6 +144,8 @@ def worker(case, mutant=None):
         source = suite.read_text()
         if mutant:
             anchor = 'ROOT / ".veldo" / "' + case['module'] + '"'
+            if case.get('fixture') is True:
+                anchor = 'ROOT / "scripts" / "fixtures"'
             if not source.count(anchor):
                 raise RuntimeError('suite production-copy anchor moved')
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
@@ -135,11 +172,7 @@ def main():
     baselines = {}
     with tempfile.TemporaryDirectory(prefix='teeth-mutants-') as directory:
         for case in selected:
-            source = (ROOT / '.veldo' / case['module']).read_text()
-            if source.count(case['old']) != 1:
-                raise RuntimeError((case['name'], 'mutation anchor moved'))
-            mutant = Path(directory) / (case['name'] + '_' + case['module'])
-            mutant.write_text(source.replace(case['old'], case['new']))
+            mutant = materialize(case, 'mutant', Path(directory) / case['name'])['mutant']
 
             def run(path=None):
                 command = [sys.executable, __file__, '--worker', case['name']]
