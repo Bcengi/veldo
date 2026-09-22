@@ -10,13 +10,12 @@ WHAT IS UNDER TEST. The availability behaviour of .veldo/control_client.py again
 child process on a real AF_UNIX socket that is then STOPPED: what a mutating call does, what an
 inspecting call does, and what does NOT appear afterwards.
 
-HOW "NOTHING APPEARED" IS ASKED, because the obvious ways are wrong and both were measured. Comparing
-the whole directory listing before and after measures the SHUTDOWN, since the socket file disappears
-with the authority; the row asks for NEW files only. And grepping this account's process list for the
-authority's name matches the command doing the grepping, which is a check that passes because of
-itself; the row asks the kernel three questions instead, none of which can match a string: whether
-the socket file exists, whether anything is bound at that address in /proc/net/unix, and whether the
-child this fixture started is dead with a return code.
+HOW STATE IS OBSERVED. After shutdown, the row compares recursive snapshots of the authority and
+clone control directories, including each path's mode, nanosecond mtime, regular-file contents and
+symlink target. Existing files as well as new or removed entries are covered. These snapshots do
+not capture transient writes or paths outside those directories. The address-specific /proc/net/unix
+check is separate; it is not a process census. The fixture's wait observes only its own child.
+
 """
 import hashlib as _v109_hashlib
 import hmac as _v109_hmac

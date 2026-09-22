@@ -56,9 +56,18 @@ recorded state, does not report success, and writes nothing.
 
 Both were measured, both passed for the wrong reason first.
 
-Comparing the whole directory listing before and after measures the **shutdown**, not the refusal:
-the socket file disappears with the authority, so the directory shrinks. The row asks for **new files
-only**.
+unavailable/no-local-authority-appears takes its baseline after graceful shutdown and after
+seeding an existing authority-state file. It recursively snapshots both the authority's state
+directory and the clone's Git-common control directory. Each relative path is mapped to its lstat
+mode, nanosecond mtime, regular-file bytes (excluding symlinks), and symlink target where applicable.
+The snapshot after the refused call must equal the baseline, detecting added, removed and changed
+entries, including changes to existing files. It is not limited to new files and does not compare
+across the shutdown itself. These snapshots do not observe temporary writes undone before the
+second snapshot or paths outside those directories; absence of all such side effects is INTENDED
+and NOT YET DEMONSTRATED and would require lifecycle observation.
+
+[The repair evidence, finding 17](../fixes-20260922/README.md) records a production mutant that
+overwrites the existing last-seen file while still refusing; the snapshot assertion turns red.
 
 The address-specific observation reads /proc/net/unix and compares its pathname column to the
 one expected address. The AC3 mutant binds and listens there in the existing client process;
