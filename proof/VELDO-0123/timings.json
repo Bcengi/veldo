@@ -1,0 +1,56 @@
+{
+  "cold": {
+    "seconds": 752.9145822438877,
+    "exit_code": 0,
+    "gate": "GATE: GREEN (409ac130443f44683f6b1ef441a8026bd9057ffb)",
+    "unit": [
+      "selftest: 5573 passed, 0 failed"
+    ],
+    "stage_seconds": 13.776767677860335,
+    "computed": 38,
+    "reused": 0,
+    "worker_invocations": 48,
+    "drivers": {
+      "check_review_mutations.py": {
+        "inventory_digest": "7275f4a0753a0d85301dbc12887ed5102d08c6b9f3a35ec678af9106a7a80b69",
+        "registered": 5,
+        "wall_seconds": 5.377933805109933,
+        "worker_seconds": 8.94079828611575
+      },
+      "check_teeth_mutations.py": {
+        "inventory_digest": "cfbd30aead80e7345ac65a51116666b5b0a554d137ad8f4676c46f6e37565dd4",
+        "registered": 33,
+        "wall_seconds": 6.317725398112088,
+        "worker_seconds": 35.427441109204665
+      }
+    },
+    "input_digest": "b66671f81d31b131aa5181accdfc7b2a24745fee9f9521701695fdf0e447aa32"
+  },
+  "warm": {
+    "seconds": 724.4978663630318,
+    "exit_code": 0,
+    "gate": "GATE: GREEN (409ac130443f44683f6b1ef441a8026bd9057ffb)",
+    "unit": [
+      "selftest: 5573 passed, 0 failed"
+    ],
+    "stage_seconds": 2.4522995250299573,
+    "computed": 0,
+    "reused": 38,
+    "worker_invocations": 0,
+    "drivers": {
+      "check_review_mutations.py": {
+        "inventory_digest": "7275f4a0753a0d85301dbc12887ed5102d08c6b9f3a35ec678af9106a7a80b69",
+        "registered": 5,
+        "wall_seconds": 0,
+        "worker_seconds": 0.0
+      },
+      "check_teeth_mutations.py": {
+        "inventory_digest": "cfbd30aead80e7345ac65a51116666b5b0a554d137ad8f4676c46f6e37565dd4",
+        "registered": 33,
+        "wall_seconds": 0,
+        "worker_seconds": 0.0
+      }
+    },
+    "input_digest": "b66671f81d31b131aa5181accdfc7b2a24745fee9f9521701695fdf0e447aa32"
+  }
+}

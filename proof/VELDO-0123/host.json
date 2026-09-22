@@ -1,0 +1,7 @@
+{
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "os": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "cpu": "Intel(R) Core(TM) Ultra 7 265K",
+  "logical_cpus": 20
+}
