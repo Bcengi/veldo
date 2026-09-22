@@ -77,4 +77,3 @@ A policy-specific YAML grammar/parser/generator, ancestry resolution behavior, w
 The policy envelope adds the schema's required nodes to the fixture's bounded syntax fragment, so its total document size may exceed the base three-node grammar domain. Publish that deterministic construction and its complete count; never discard cases after seeing production answers. Compare syntax-preserved start-line values before commit-resolution checks, keeping lexical correctness distinct from whether an object is present in the repository.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
-

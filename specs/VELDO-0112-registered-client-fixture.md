@@ -83,4 +83,3 @@ Implementing refusal behavior, census collection, authority/store fixtures, or s
 The adapters accept an externally supplied authority/relay fixture; this item owns only client enumeration and invocation. VELDO-0109 is a behavioral prerequisite, not evidence that this inventory already exists. The no-auto-start, unavailable-matrix and write-observation follow-ups will consume this capability.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
-

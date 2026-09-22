@@ -80,4 +80,3 @@ Domain registration conflict policy, unavailable-client semantics, store crash r
 The fixture owns authority startup, real enrollment, signed-command construction, journal/table inspection and explicit stop/kill controls. Later uniqueness and unavailable-client consumers depend on this fixture rather than making their own callback authorities. It may wire the existing apply seam to production store execution; it may not replace production validation or execution with an oracle callback.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
-

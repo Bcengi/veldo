@@ -81,4 +81,3 @@ Building another observer or client registry; filesystem writes and detailed kil
 Use the VELDO-0112 adapters unchanged. Git identity lookups or transport helpers genuinely needed by a client must be declared in the launch envelope and matched to fixture-controlled identities, never waived by executable name. Ordinary schema/refusal checks remain necessary; the three rows here establish only the process/listener side of no-auto-start.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
-

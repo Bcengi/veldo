@@ -76,4 +76,3 @@ Another generator or oracle adapter, policy-schema interpretation, writer covera
 Consume VELDO-0118 verbatim. Report its finite bounds and grammar digest with results; this does not claim all unbounded strings have been checked. If a mismatch reveals a grammar ambiguity, resolve the written contract before altering expected data, rather than letting the implementation redefine the domain.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
-

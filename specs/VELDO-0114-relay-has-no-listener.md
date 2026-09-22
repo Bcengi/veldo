@@ -77,4 +77,3 @@ A new transport protocol, SSH-server authentication qualification, transport fau
 The observable interval starts before the relay executable runs. The authority's already-open listener belongs to setup, while every socket the relay opens belongs to the measurement regardless of path or family. Connecting sockets are permitted; listening or accepting a service binding is not.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
-

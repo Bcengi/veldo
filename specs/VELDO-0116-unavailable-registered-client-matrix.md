@@ -81,4 +81,3 @@ Reimplementing fixture inventories, recovery/reconciliation after uncertain deli
 The uppercase requirement name AUTHORITY_UNAVAILABLE corresponds to the existing wire reason authority_unavailable. Live controls must genuinely succeed before faults are applied; invalid signatures or unenrolled clients cannot provide refusal evidence. Claim/admission adapters expose their actual admission outputs, not only a transport response. Mid-flight transport loss cannot establish that an authority did not commit.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
-
