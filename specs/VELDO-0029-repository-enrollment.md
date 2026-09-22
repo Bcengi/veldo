@@ -131,3 +131,5 @@ have asked for seven files in git that the release builds anyway, which is seven
 
 
 This item was W14 in revision 1 as a single specification carrying the binding, both transports and the unavailable case. Dmitry split it on 2026-09-21: four criteria that each needed their own set, their own falsifier and their own fixture do not belong in one item, and an item that cannot close is not a smaller risk than four that can.
+
+2026-09-22 follow-ups: VELDO-0117 (authority-owned domain-wide store uniqueness).
