@@ -23,6 +23,9 @@ expect('git-boundary/raw-call-mutations-are-rejected', all(_g_boundary.problems(
     'from subprocess import run as invoke\ninvoke(["git", "status"])',
     'cmd = ["git", "status"]\nsubprocess.run(cmd)',
     'subprocess.check_output(["git"] + args)',
+    'subprocess.run("git status", shell=True)',
+    'os.system("git status")',
+    'subprocess.run(["/usr/bin/git", "status"])',
 )))
 with _g_tmp.TemporaryDirectory(prefix='git-boundary-') as _g_d:
     _g_root = _g_Path(_g_d)
@@ -37,11 +40,19 @@ with _g_tmp.TemporaryDirectory(prefix='git-boundary-') as _g_d:
                    identity=('test', 'test@example.invalid'), check=True)
     _g_a, _g_b = _g_repos
     _g_before = _g_enroll.workspace_identity(_g_a)
-    # HOME config hides an ancestor through a real shallow-file override supplied by alias?
-    # core.commitGraph and replacement refs can alter history; an invalid repositoryFormatVersion
-    # gives a deterministic observable global-config effect even without optional Git features.
+    # A malformed global config demonstrably changes raw Git's answer. Disabling
+    # config discovery must work even when no GIT_* selectors are present.
     _g_home = _g_root / 'home'; _g_home.mkdir()
-    (_g_home / '.gitconfig').write_text('[core]\n repositoryFormatVersion = 999\n')
+    (_g_home / '.gitconfig').write_text('this is not git configuration\n')
+    _g_home_env = {key: value for key, value in _g_os.environ.items() if not key.startswith('GIT_')}
+    _g_home_env.update(HOME=str(_g_home), XDG_CONFIG_HOME=str(_g_home))
+    _g_raw_home = subprocess.run(['git', '-C', str(_g_a), 'rev-list', '--max-parents=0', 'HEAD'],
+                                capture_output=True, env=_g_home_env)
+    _g_clean_home = _g_git.run(['git', '-C', str(_g_a), 'rev-list', '--max-parents=0', 'HEAD'],
+                              capture_output=True, text=True, env=_g_home_env)
+    expect('git-boundary/home-configuration-is-neutralized-without-git-selectors',
+           _g_raw_home.returncode != 0 and _g_clean_home.returncode == 0
+           and _g_clean_home.stdout.strip() == _g_before['root_commits'][0])
     _g_env = dict(_g_os.environ)
     try:
         _g_os.environ.update(HOME=str(_g_home), XDG_CONFIG_HOME=str(_g_home),
@@ -50,8 +61,15 @@ with _g_tmp.TemporaryDirectory(prefix='git-boundary-') as _g_d:
         _g_after = _g_enroll.workspace_identity(_g_a)
         _g_commit = _g_before['root_commits'][0]
         _g_history = _g_record.bundle_landed_at(_g_a, 'identity')
-        _g_ar = _g_git.run(['git', '-C', str(_g_a), 'archive', _g_commit], capture_output=True)
+        _g_export = _g_root / 'export'
+        _g_fix._checkout(_g_a, _g_commit, _g_export)
+        _g_ar = (_g_export / 'identity').read_text()
+        _g_exists = _g_record._commit_exists(_g_a, _g_commit)
+        _g_root_read = _g_record._git_root(_g_a)
+        _g_head = _g_record._git(_g_a, 'rev-parse', 'HEAD')
+        _g_ancestry = _g_record._is_ancestor(_g_a, _g_commit, _g_commit)
     finally:
         _g_os.environ.clear(); _g_os.environ.update(_g_env)
     expect('git-boundary/repository-and-config-environment-cannot-redirect-history-or-archive',
-           _g_after == _g_before and _g_history == _g_commit and _g_ar.returncode == 0)
+           _g_after == _g_before and _g_history == _g_commit and _g_ar == 'A'
+           and _g_exists and _g_root_read == _g_a and _g_head == [_g_commit] and _g_ancestry is True)

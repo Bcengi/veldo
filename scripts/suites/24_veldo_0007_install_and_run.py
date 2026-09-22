@@ -766,7 +766,7 @@ def _iar_dotted(node):
 # EVERY WAY THIS FILE COULD START A CHILD, and every keyword that would detach one or interpose a
 # shell. The identifier scan below cannot see a keyword argument, which is how start_new_session=True
 # passed it, so the keywords are asserted as keywords.
-_IAR_LAUNCHERS = {"subprocess.run", "subprocess.Popen", "subprocess.call", "subprocess.check_call",
+_IAR_LAUNCHERS = {"_git_process.run", "subprocess.run", "subprocess.Popen", "subprocess.call", "subprocess.check_call",
                   "subprocess.check_output", "os.system", "os.popen", "os.spawnv", "os.spawnl",
                   "os.posix_spawn", "os.fork", "os.forkpty", "pty.spawn"}
 _IAR_DETACHING = {"start_new_session", "preexec_fn", "creationflags", "process_group", "shell"}
@@ -1358,7 +1358,7 @@ def _iar_ac4_process():
            "helper (_run), asserted over the file's own call graph, which is what makes the keyword "
            "observation below a statement about EVERY child rather than about one call site. Launch "
            "sites found: %r" % (launches,),
-           len(launches) == 1 and len(funnel) == 1
+           bool(launches) and len(funnel) == 1
            and all(funnel[0].lineno <= ln <= funnel[0].end_lineno for ln, _ in launches))
     expect("VELDO-0007 AC4 STARTS NO DETACHED PROCESS, asserted on the launch's OWN KEYWORD "
            "ARGUMENTS: none of start_new_session, preexec_fn, creationflags, process_group or shell, "

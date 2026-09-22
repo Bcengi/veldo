@@ -157,7 +157,7 @@ def _ws_substituted_corpus(d):
     renamed, n = _ws_re.subn(r'(?m)^([A-Z_]*%s) = "([^"]+)"(.*)$' % WS.CORPUS_PATTERN_SUFFIX,
                              r'\1 = "%s\2"\3' % _WS_RENAME_PREFIX, src)
     (vdir / "verdict_corpus.py").write_text(renamed)
-    for name in ("work_state.py", "runlog.py", "executor.py"):
+    for name in ("work_state.py", "runlog.py", "executor.py", "git_process.py"):
         (vdir / name).write_bytes((ROOT / ".veldo" / name).read_bytes())
     return V._VC._organ("verdict_corpus_substituted", vdir / "verdict_corpus.py"), n
 

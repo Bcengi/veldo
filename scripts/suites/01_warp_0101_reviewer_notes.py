@@ -187,29 +187,34 @@ expect("WARP-0732 AC5: an unreadable findings shape fails closed",
 # honesty paragraph and leaves the check is the failure this guards.
 _v32_doc = " ".join((P.unresolved_blocking.__doc__ or "").lower().split())  # unwrap: the
 # phrases below span line breaks in the source, and matching raw text would fail on the wrap
-# AC1 + AC4 AT THE GATE ITSELF, not just the helper: main() must actually consult this and must
-# actually honour the owner's override. Only the two functions under test are stubbed; every
-# other check main() runs executes for real against this repository, which is why case B proves
-# the override rather than proving that nothing else objected.
-def _v32_main(objections, approval):
-    # STDOUT IS SWALLOWED ON PURPOSE: main() prints "VELDO policy: blocked ..." and this suite
-    # runs inside the gate's own log, where that line reads as a real refusal by a human
-    # skimming it. A test must not emit the words its subject uses to report a live failure.
+# AC1 + AC4 at the real gate, over an isolated repository. The live checkout can
+# legitimately touch protected paths; that must not decide a test of review objections.
+def _v32_main(objections, approval, protected_change=False):
     import contextlib as _c, io as _io
-    # THE STUB IS SCOPED TO THIS BLOCK'S OWN CALL, and that is not fussiness. Stubbing
-    # valid_approval_for outright also disarms the PROTECTED-PATH check further down, so the
-    # control leg ("no objection means no block") silently became a test of whatever this
-    # repository's working diff happened to touch - it passed until the commit that touches
-    # .veldo/policy_check.py existed, then failed. The objection block calls with no path= and
-    # the protected-path block calls with path=, so keying on that keeps every other check real.
-    real_u, real_a = P.unresolved_blocking, P.valid_approval_for
+    real_u, real_a, real_root = P.unresolved_blocking, P.valid_approval_for, P.ROOT
     P.unresolved_blocking = lambda _c_: objections
     P.valid_approval_for = lambda *a, **k: (real_a(*a, **k) if "path" in k else approval)
     try:
-        with _c.redirect_stdout(_io.StringIO()):
-            return P.main()
+        with tempfile.TemporaryDirectory(prefix="policy-main-") as directory:
+            root = Path(directory)
+            (root / ".veldo").mkdir()
+            (root / ".veldo/policy.yaml").write_bytes((real_root / ".veldo/policy.yaml").read_bytes())
+            def fixture_git(*args):
+                return P._git_process.run(["git", "-C", str(root), *args],
+                                          identity=("fixture", "fixture@example.invalid"),
+                                          capture_output=True, text=True, check=True)
+            fixture_git("init", "-q")
+            fixture_git("add", ".")
+            fixture_git("commit", "-qm", "base")
+            fixture_git("update-ref", "refs/remotes/origin/main", "HEAD")
+            (root / (".veldo/policy_check.py" if protected_change else "ordinary.txt")).write_text("change")
+            fixture_git("add", ".")
+            fixture_git("commit", "-qm", "change")
+            P.ROOT = root
+            with _c.redirect_stdout(_io.StringIO()):
+                return P.main()
     finally:
-        P.unresolved_blocking, P.valid_approval_for = real_u, real_a
+        P.unresolved_blocking, P.valid_approval_for, P.ROOT = real_u, real_a, real_root
 
 
 _V32_OBJ = [("WARP-9000", Path("proof/WARP-9000/verdict.json"), {"text": "AC2 unevidenced"})]
@@ -219,6 +224,9 @@ expect("WARP-0732 AC1 control: main() does not block when nothing objects",
        _v32_main([], None) == 0)
 expect("WARP-0732 AC4: a recorded owner approval overrides the objection",
        _v32_main(_V32_OBJ, {"approver": "dmitry"}) == 0)
+
+expect("WARP-0732 control: an objection override never approves a protected path",
+       _v32_main(_V32_OBJ, {"approver": "fixture-owner"}, protected_change=True) == 1)
 
 expect("WARP-0732 AC6: the docstring states this is NOT a forgery defense and why it is safe",
        "not a forgery defense" in _v32_doc
