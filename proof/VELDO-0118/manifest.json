@@ -1,57 +1,71 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0118",
-  "commit": "69def368bbf63e2735797df5496efbdcad0b883b",
+  "commit": "1cb0831e3297d8c6374723908aa3fb12717b3e30",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-22T21:12:25.311742+00:00",
+  "produced_at": "2026-09-22T21:50:49.241352+00:00",
   "veldo_version": "3.10.1",
-  "status": "incomplete",
   "criteria": [
     {
       "id": "AC1",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0118/baseline-prefix.json",
-          "detail": "Operational stop: only 2059668 of 510928488 expected derivations generated. Inventory completeness and full written-contract reconciliation remain unproven."
+          "ref": "proof/VELDO-0118/coverage-measurement.json",
+          "detail": "All 22 productions, 934 lexical alternatives and 132 direct parent/child pairs have witnesses. Independently counted, enumerated and witnessed inventories agree; missing/unexpected sets are empty. Indentation witnesses contain actual nested indentation."
         },
         {
           "type": "unit",
           "ref": "proof/VELDO-0118/mutation-controls.jsonl",
-          "detail": "Declared falsifier and a second mutation drove the named row false in completed five-assertion control-domain runs; applied diffs retained."
+          "detail": "Declared falsifier and a second mutation each complete all five current-domain assertions, fail the named target and have an unmutated green control. Applied diffs retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0118/verification.json",
+          "detail": "Canonical gate and its first-use integration run completed from the clean implementation commit."
         }
       ]
     },
     {
       "id": "AC2",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0118/baseline-prefix.json",
-          "detail": "Operational stop: 19756060 of 5013490520 expected boundary edits generated. The two mutation controls for this row both failed their named target normally."
+          "ref": "proof/VELDO-0118/coverage-measurement.json",
+          "detail": "All 457 applicable exclusion rule/site targets have local edits. Independent target counts and exact witness inventory agree. The oracle classifies every generated boundary input; all are refused by the reader."
         },
         {
           "type": "unit",
           "ref": "proof/VELDO-0118/mutation-controls.jsonl",
-          "detail": "Declared falsifier and a second mutation drove the named row false in completed five-assertion control-domain runs; applied diffs retained."
+          "detail": "Declared falsifier and a second mutation each complete all five current-domain assertions, fail the named target and have an unmutated green control. Applied diffs retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0118/verification.json",
+          "detail": "Canonical gate and its first-use integration run completed from the clean implementation commit."
         }
       ]
     },
     {
       "id": "AC3",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
         {
           "type": "integration",
-          "ref": "proof/VELDO-0118/control-comparison.json",
-          "detail": "Independent oracle and defective-reader controls ran; 9604 control-domain observations preserve 192 disagreements. Full baseline observation did not start and is unproven."
+          "ref": "proof/VELDO-0118/coverage-measurement.json",
+          "detail": "All 1545 inputs received independent PyYAML 6.0.1 observations, with zero unobserved inputs and zero oracle errors. The defective-reader and front-matter controls fail the named independence row. All 192 historical and 26 current disagreement records retain bytes, both answers and production; no reader agreement is asserted."
         },
         {
           "type": "unit",
           "ref": "proof/VELDO-0118/mutation-controls.jsonl",
-          "detail": "Declared falsifier and a second mutation drove the named row false in completed five-assertion control-domain runs; applied diffs retained."
+          "detail": "Declared falsifier and a second mutation each complete all five current-domain assertions, fail the named target and have an unmutated green control. Applied diffs retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0118/verification.json",
+          "detail": "Canonical gate and its first-use integration run completed from the clean implementation commit."
         }
       ]
     },
@@ -61,13 +75,18 @@
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0118/capability-controls.json",
-          "detail": "Both consumers exercised installed, absent, import-failure, internal-dependency-failure and runtime-failure outcomes. Absence produced zero compared cases and zero agreements. Both named mutations detected, with green controls."
+          "ref": "proof/VELDO-0118/coverage-absence.json",
+          "detail": "Actual python3 -S absence run names oracle_unavailable for both consumers, with compared=0 and unobserved=1545. Installed, absent, import-failure, missing internal dependency and runtime-failure controls remain distinct. Generation and reader execution still run."
         },
         {
           "type": "unit",
           "ref": "proof/VELDO-0118/mutation-controls.jsonl",
-          "detail": "Declared falsifier and a second mutation drove the named row false in completed five-assertion control-domain runs; applied diffs retained."
+          "detail": "Declared falsifier and a second mutation each complete all five current-domain assertions, fail the named target and have an unmutated green control. Applied diffs retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0118/verification.json",
+          "detail": "Canonical gate and its first-use integration run completed from the clean implementation commit."
         }
       ]
     }
@@ -75,11 +94,11 @@
   "checks": [
     {
       "name": "gate",
-      "status": "failed",
+      "status": "passed",
       "command": "bash scripts/verify.sh",
-      "exit_code": 1,
+      "exit_code": 0,
       "ref": "proof/VELDO-0118/verification.json",
-      "detail": "Started clean. 5569 unit assertions passed and 3 failed; measured gate wall-time increase 463.503151 seconds."
+      "detail": "selftest: 5572 passed, 0 failed; GATE: GREEN (1cb0831e3297d8c6374723908aa3fb12717b3e30)"
     },
     {
       "name": "teeth-mutations",
@@ -87,15 +106,23 @@
       "command": "python3 scripts/check_teeth_mutations.py",
       "exit_code": 0,
       "ref": "proof/VELDO-0118/teeth-all.jsonl",
-      "detail": "41 mutations rejected, including eight VELDO-0118 cases. Run after restoring gate byproducts."
+      "detail": "43 registered mutations rejected. All ten grammar mutations were then re-driven after the final indentation correction."
     },
     {
-      "name": "control-oracle-observations",
+      "name": "final-grammar-mutations",
       "status": "passed",
-      "command": "python3 proof/VELDO-0118/compare_control.py --output-dir proof/VELDO-0118",
+      "command": "python3 scripts/check_teeth_mutations.py --finding 118 --diff-dir proof/VELDO-0118/mutations",
       "exit_code": 0,
-      "ref": "proof/VELDO-0118/control-comparison.json",
-      "detail": "Diagnostic observations obtained, not independent agreement: all 192 disagreements retained in full. This is the explicit control domain, not baseline qualification."
+      "ref": "proof/VELDO-0118/mutation-controls.jsonl",
+      "detail": "Ten mutations rejected, two per named grammar row; every unmutated control green."
+    },
+    {
+      "name": "coverage-observations",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0118/measure_coverage.py --output-dir /tmp/veldo-0118-coverage-final",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0118/coverage-measurement.json",
+      "detail": "Complete target coverage and independent observations; this does not claim reader agreement."
     }
   ],
   "artifacts": [
@@ -105,7 +132,12 @@
     "proof/VELDO-0118/compare_control.py",
     "proof/VELDO-0118/control-comparison.json",
     "proof/VELDO-0118/control-disagreements.jsonl",
+    "proof/VELDO-0118/coverage-absence.json",
+    "proof/VELDO-0118/coverage-disagreements.jsonl",
+    "proof/VELDO-0118/coverage-measurement.json",
+    "proof/VELDO-0118/coverage-targets.json",
     "proof/VELDO-0118/expected-counts.json",
+    "proof/VELDO-0118/measure_coverage.py",
     "proof/VELDO-0118/mutation-controls.jsonl",
     "proof/VELDO-0118/mutations/absence-counts-as-agreement.diff",
     "proof/VELDO-0118/mutations/broken-dependency-counts-as-absence.diff",
@@ -114,11 +146,17 @@
     "proof/VELDO-0118/mutations/omit-duplicate-key.diff",
     "proof/VELDO-0118/mutations/omit-first-derivation.diff",
     "proof/VELDO-0118/mutations/omit-folded-block.diff",
+    "proof/VELDO-0118/mutations/omit-oracle-observation.diff",
+    "proof/VELDO-0118/mutations/omit-recursive-pair.diff",
     "proof/VELDO-0118/mutations/omit-tab-edit.diff",
+    "proof/VELDO-0118/mutations/oracle-runtime-error.diff",
+    "proof/VELDO-0118/preflight-disagreements.jsonl",
+    "proof/VELDO-0118/preflight-measurement.json",
     "proof/VELDO-0118/reproduce_prefix.py",
+    "proof/VELDO-0118/suite-control.json",
     "proof/VELDO-0118/teeth-all.jsonl",
     "proof/VELDO-0118/verification.json"
   ],
-  "rollback": "Revert fixture and consumer wiring together; retain the full qualification gap as open. Do not modify the production reader to settle diagnostic findings in this item.",
-  "review": "No independent review or approval asserted. Implementation stopped under the user-specified measured cost limit."
+  "rollback": "Revert the coverage fixture, contract and consumer wiring together. Preserve the historical disagreements; reader corrections belong to VELDO-0119.",
+  "review": "No independent review, implementation approval, merge or push asserted. Status remains ready. The owner approved the domain change in Telegram 28810, answering 28808 about 28805."
 }

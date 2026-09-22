@@ -20,14 +20,32 @@ not a before/after wall-clock measurement of the entire repository gate.
 The final boundary construction uses tabs in physical indentation. Nine
 preliminary edits put tabs in separator whitespace instead; their complete
 observations remain in `preflight-disagreements.jsonl` for audit, but those
-nine records are fixture mistakes, not reader defects. No target was removed. Final formatting witnesses also use nested documents
+nine records are fixture mistakes, not reader defects. No target was removed.
+Final formatting witnesses also use nested documents
 so both indentation alternatives occur in the emitted bytes; flat documents
 receive no indentation credit.
 `coverage-measurement.json` records the corrected run: generation 1.839771
 seconds, total 3.782810 seconds, or 7.565619 seconds across two invocations.
 The direct suite control took 3.820577 seconds, including its capability and
-independence assertions. The canonical gate result will be recorded after
-running this committed implementation from a clean tree.
+independence assertions. The canonical gate started from clean commit
+`1cb0831e3297d8c6374723908aa3fb12717b3e30` and completed in
+578.943087 seconds:
+
+```
+selftest: 5572 passed, 0 failed
+GATE: GREEN (1cb0831e3297d8c6374723908aa3fb12717b3e30)
+```
+
+Compared with the recorded 569.874720-second pre-fixture
+gate, the full wall-time increase is 9.068366 seconds. This historical
+comparison includes normal timing variation; the isolated added-work
+measurement above is 7.565619 seconds for two invocations.
+
+The gate's own unit invocation measured 3.733583 seconds for
+suite 54. `verification.json` records the gate line, unit and integration
+counts, timing definitions and complete log digest. The historical exhaustive
+gate receipt remains nested there. The two checkout-local gate byproducts
+were restored before the evidence commit; neither is included in this proof.
 
 ## Complete target inventory
 
