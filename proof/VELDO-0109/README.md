@@ -20,9 +20,13 @@ So the whole of this item is three refusals and one honest answer.
 
 Additions to `.veldo/control_client.py`, mirrored into `engine/.veldo/`.
 
-An accepted response now carries the authority's own **watermark**, supplied as a callable so this
-module never reaches into the store. The client records it, with the state and the moment, beside the
-store.
+An accepted response carries the authority's own **watermark**, supplied as a callable so this
+module never reaches into the store. When send receives an accepted response and its caller supplies
+an observation time (seen_at is not None), it records the watermark, state and that time in
+<git-common-dir>/veldo/control/last_seen.json, beside the clone's enrollment binding. The path is
+computed by seen_path from the clone's Git common directory, not from the authority store path.
+inspect passes its now argument as seen_at; a call without an observation time does not update
+the record. Refused responses are not recorded.
 
 A mutating call against a stopped authority refuses as **`authority_unavailable`** and names the
 service it could not reach and the watermark it was last sure of. "Routing failed" cannot be acted
