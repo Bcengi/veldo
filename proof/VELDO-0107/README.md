@@ -55,9 +55,13 @@ allowed, because a check that is unavailable must not become a check that succee
 
 ## What the evidence is, and what it is HONESTLY not
 
-Four rows in `scripts/suites/47_veldo_0107_ipc.py`, against two authorities running as **real child
-processes on real AF_UNIX sockets**, two real enrolled git clones, and the applied log of each store
-compared after every call so a write to the wrong one is visible rather than merely unasserted.
+Suite 47 (`scripts/suites/47_veldo_0107_ipc.py`) runs two authorities as **real child processes
+on real AF_UNIX sockets** with two real enrolled git clones. The routing rows compare per-authority
+callback JSONL logs: the fixture apply callback appends command data and never opens a SQLite store.
+The coordinate row checks the initial dispatches to both authorities and A's unchanged log after
+the forged request; the ambient-routing row checks A's added dispatch and B's unchanged log.
+This demonstrates routing and dispatch. Real mutation of the correct store, with the other store
+unchanged, is INTENDED and NOT YET DEMONSTRATED here; it needs separate store integration evidence.
 
 | falsifier | mutation | result |
 |---|---|---|

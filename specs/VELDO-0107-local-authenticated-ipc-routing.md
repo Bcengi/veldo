@@ -38,8 +38,10 @@ acceptance_criteria:
       Claim: A local client reaches the authority over a real authenticated socket, and the request
       carries the workspace coordinate explicitly; the authority serves the store that coordinate's
       binding names and no other. Set: Two enrolled clones, two authorities, real sockets, every
-      public routing call. Completeness: Both stores are inspected after every call, so a write to
-      the wrong one is visible rather than merely unasserted. Falsifier: Resolve the target from
+      public routing call. Completeness: Suite 47 compares per-authority callback JSONL logs for
+      routing and dispatch. The fixture callback never opens SQLite; these are not store
+      inspections. Actual mutation of the correct store and absence of mutation in the other store
+      remain INTENDED and NOT YET DEMONSTRATED here, requiring separate store integration fixtures. Falsifier: Resolve the target from
       the serving process's own location instead of the request's coordinate;
       ipc/the-coordinate-comes-from-the-request must fail.
     falsified_by: >
