@@ -96,12 +96,12 @@ expect("both capabilities.yaml copies are byte-identical (the repo-only marker l
 expect("capabilities manifest marks the known dogfood entries repo-only (at least the tracker+pack family)",
        _ch_caps.count("scope: repo-only") >= 15)
 
-# TEETH 1: un-marking a repo-only dogfood entry (budget_governance, home .veldo/budget.py, which does
+# TEETH 1: un-marking a repo-only dogfood entry (tracker_request_doorbell, home .veldo/request_doorbell.py, which does
 # NOT land in the shipped engine) makes the honesty check name it as an over-claim.
-_ch_unmarked = _ch_caps.replace("home: .veldo/budget.py, scope: repo-only,", "home: .veldo/budget.py,", 1)
+_ch_unmarked = _ch_caps.replace("home: .veldo/request_doorbell.py, scope: repo-only,", "home: .veldo/request_doorbell.py,", 1)
 expect("TEETH: un-marking a dogfood entry turns the honesty check RED",
        _ch_unmarked != _ch_caps
-       and any("budget_governance" in f and "does not ship" in f for f in _caps_honesty_findings(_ch_unmarked)))
+       and any("tracker_request_doorbell" in f and "does not ship" in f for f in _caps_honesty_findings(_ch_unmarked)))
 
 # TEETH 2: pointing a SHIPPED entry's home at a missing file turns it RED (metrics_dashboard ships and
 # is not repo-only; its home .veldo/dashboard.py appears once).
