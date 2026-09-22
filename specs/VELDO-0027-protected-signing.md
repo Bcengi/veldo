@@ -25,6 +25,7 @@ footprint:
   - "scripts/suites/*_veldo_0027_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0027-protected-signing.md"
   - "specs/index.md"
   - "proof/VELDO-0027/*"
@@ -192,3 +193,7 @@ distinction its claim already made. An agent-authored assertion-only control and
 relabeling hold provenance complete and consistent, so missing attribution cannot mask a type
 failure. The claim text and status are unchanged. This approved item is NOT BUILT; no executable
 row or signer implementation is added.
+
+2026-09-22 (build-veldo-0027): Add scripts/check_teeth_mutations.py to the footprint
+because the required gate mutation stage postdates this specification. Register every
+named falsifier there, with a second distinct mutation and unmutated controls.
