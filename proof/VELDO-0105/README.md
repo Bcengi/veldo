@@ -35,18 +35,26 @@ judged, and the one call site prints the line's state on every result beside the
 
 ## What the evidence is, and what it is not
 
-Six rows in `scripts/suites/44_veldo_0105_startline.py`, over a REAL git repository with a trunk
+Eight rows in `scripts/suites/44_veldo_0105_startline.py`, over a REAL git repository with a trunk
 carrying the line partway along it and a branch that forks before it. Each of the three declared
 falsifiers is driven: the ancestry test inverted judges the history it should have left alone; a copy
 treating an unresolvable line as excluding everything lets through the bundle it should refuse; a copy
-falling back to the manifest reads a start line the author planted there. A seventh row is the
+preferring the manifest over a supplied policy line reads the author's start line.
+The teeth-20260922 extension now also drives the exact declared fallback: with the policy
+line absent, `proofcheck/start-line-not-author-writable` plants a later, resolvable manifest
+line in an older bundle and requires no recorded line, continued applicability, and refusal
+for the missing validation record. `python3 scripts/check_teeth_mutations.py --finding 3`
+drives a top-level manifest fallback, a nested `fix_validation.from_commit` fallback, and
+manifest precedence over a supplied line. Each makes that named row fail its assertion in
+a completed suite run against a temporary production copy. AC3's set was expanded in the
+spec's prose history; its owner-only claim, falsifier, and status are unchanged. A seventh row is the
 negative control, a copy carrying only an added comment, required to agree with the original on every
 case the others turn on, so the difference each mutant shows is the mutation and not the copying.
 
 The last row is the one this item exists for: the real validator over this repository's own landed
 corpus, with the flag on and no line, refusing bundles that shipped before the machinery existed, and
-the same command with the line recorded, refusing none. It writes the real policy file for those two
-runs and restores it in a finally block, and the row asserts the restoration.
+the same library call with the line recorded, refusing none. It passes the line as an argument
+and does not write the policy file.
 
 **What this does not show.** Every row here is a check somebody wrote, so it can only find what a
 check was written for. It shows the scope decision is made where it should be and cannot be moved by

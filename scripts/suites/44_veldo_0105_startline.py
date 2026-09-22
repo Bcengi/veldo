@@ -197,12 +197,31 @@ else:
         _v105_author_man, _v105_author_rec, _v105_repo, _v105_b_new, True, "proven",
         start_line=_v105_LINE)
 
+    # The declared falsifier is a FALLBACK, not just precedence over a supplied
+    # owner line. Plant a valid later commit in the manifest of an older bundle:
+    # using it would exempt this bundle instead of refusing its missing record.
+    _v105_fallback_man = dict(_v105_author_man, commit=_v105_OLD_F)
+    _v105_absent_policy_line = FV105.start_line_from_policy({"fix_validation": {"required": "true"}})
+    _v105_author_absent = FV105.check_bundle(
+        _v105_fallback_man, None, _v105_repo, _v105_b_old, True, "proven",
+        start_line=_v105_absent_policy_line)
+
     expect("VELDO-0105 AC3 proofcheck/start-line-not-author-writable: a bundle whose manifest and whose "
            "validation record both carry a well-formed start line of their own, later than the owner's, is "
-           "still judged against the owner's line, and the recorded line in the result is the owner's; DRIVEN: "
+           "still judged against the owner's line, and the recorded line in the result is the owner's. "
+           "With no policy line, a manifest carrying a real later commit cannot supply one: "
+           "the older bundle remains in scope and refused for its missing validation record, "
+           "with an empty recorded line and the no-start-line reason. DRIVEN: "
            "a copy that prefers the manifest's value reads the author's and records that one instead, under "
            "the identical call",
            _v105_author["start_line"]["recorded"] == _v105_LINE
+           and _v105_absent_policy_line == ""
+           and _v105_author_absent["start_line"]["recorded"] == ""
+           and _v105_author_absent["start_line"]["reason"] == "no start line recorded"
+           and _v105_author_absent["start_line"]["excluded"] is False
+           and _v105_author_absent["applicable"] is True
+           and _v105_author_absent["refuses"] is True
+           and [p["code"] for p in _v105_author_absent["problems"]] == [FV105.NO_RECORD]
            and _v105_author_under_mutant["start_line"]["recorded"] == _v105_NEW_F
            and _v105_author_under_mutant["start_line"]["recorded"] != _v105_author["start_line"]["recorded"])
 

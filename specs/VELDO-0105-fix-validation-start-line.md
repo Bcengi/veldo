@@ -72,8 +72,9 @@ acceptance_criteria:
       Claim: The start line is the owner's and is read only from .veldo/policy.yaml, a protected
       path; nothing an author writes into a manifest, a validation record or a bundle can move it.
       Set: A bundle whose manifest and whose validation record both carry a start line of their own,
-      naming a later commit than the policy's. Completeness: The author-supplied values are present
-      and well formed, so the test fails if they are read at all rather than merely being absent.
+      naming a later commit than the policy's; also a policy with the rule required and no start
+      line, with a manifest start line planted after the bundle's commit. Completeness: The
+      author-supplied values are present and well formed, so the test fails if they are read at all rather than merely being absent.
       Falsifier: Read the start line from the manifest when the policy does not name one;
       proofcheck/start-line-not-author-writable must fail.
     falsified_by: >
@@ -108,3 +109,12 @@ The thirteen historical bundles are not modified, re-reviewed or re-validated, a
 ## Notes
 
 The start line is recorded once the implementation is green, and the value is the commit that lands this item, so the first bundle the rule binds is the next one after it. That recording is an owner act on a protected path, not part of the build.
+
+## Prose history
+
+2026-09-22 (teeth-20260922): Expanded AC3's set to include an absent policy start line
+with a well-formed later manifest line planted. The existing supplied-policy precedence
+case remains. Suite 44's `proofcheck/start-line-not-author-writable` now requires the
+absent-line bundle to remain in scope, refused for its missing validation record, and
+reported with no recorded start line. The declared fallback falsifier and shipped status
+are unchanged; the rows now exercise the fallback as well as precedence.

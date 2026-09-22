@@ -59,6 +59,17 @@ def cases():
         '        return EXIT_UNREACHABLE',
         '        stdout.write(b"{}")\n        return EXIT_UNREACHABLE',
         ['relay/an-unreachable-authority-is-reported-not-answered'])
+    scope = '    scope = start_line_scope(repo, start_line or "", commit, bundle_landed_at(repo, proof_dir))'
+    # Preserve the scope expression: the suite also replaces it for its existing
+    # precedence control. An additive assignment composes with that mutation.
+    for name, assignment in [
+        ('manifest-fallback', 'start_line or manifest.get("from_commit")'),
+        ('nested-manifest-fallback', 'start_line or manifest.get("fix_validation", {}).get("from_commit")'),
+        ('manifest-precedence', 'manifest.get("from_commit") or start_line'),
+    ]:
+        add(3, name, '44_veldo_0105_startline.py', 'fix_validation_record.py', scope,
+            '    start_line = ' + assignment + '\n' + scope,
+            ['proofcheck/start-line-not-author-writable'])
     return result
 
 
