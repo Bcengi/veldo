@@ -250,7 +250,8 @@ class _Document:
             return value.rstrip('\n')
         if indicator.endswith('+'):
             return value
-        return value.rstrip('\n') + ('\n' if value.endswith('\n') else '')
+        # Clip excludes trailing empty lines, including an entirely empty block.
+        return value.rstrip('\n') + ('\n' if any(lines) and value.endswith('\n') else '')
 
     def member(self, text, n):
         if text.startswith(('"', "'")):

@@ -1,0 +1,10 @@
+{
+  "baseline": "b34d17d",
+  "documents": 651,
+  "reader_digests": {
+    ".veldo/yamlish.py": "14a7dfbba15344e27042eddf23d38cdf599161f6cb923423546938e3ec6cf931",
+    "engine/.veldo/yamlish.py": "14a7dfbba15344e27042eddf23d38cdf599161f6cb923423546938e3ec6cf931"
+  },
+  "policy_unchanged": true,
+  "changes": []
+}
