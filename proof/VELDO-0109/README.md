@@ -63,8 +63,16 @@ started actually die with a return code.
 
 ## What the evidence is
 
-Four rows in `scripts/suites/49_veldo_0109_unavailable.py`, against a real authority child process on
-a real AF_UNIX socket that is then stopped.
+Five rows in `scripts/suites/49_veldo_0109_unavailable.py`, against a real authority child process on
+a real AF_UNIX socket. Generic control_client.send upserts are tested after graceful stop and,
+in unavailable/sigkill-refuses-generic-client, after SIGKILL leaves an actual dead socket inode.
+That new row checks the refusal's service and last watermark, unchanged state-directory snapshots,
+the child's -9 exit status, and absence of a binding at the expected socket address.
+The dead-socket-success production mutant returns success for that dead socket and fails the row.
+
+The registered claim, command and dispatch-admission client matrix, and relay killed while the
+authority lives, are INTENDED and NOT YET DEMONSTRATED. They require fleet client and relay lifecycle
+fixtures beyond this generic-client suite.
 
 | falsifier | mutation | result |
 |---|---|---|
@@ -72,8 +80,8 @@ a real AF_UNIX socket that is then stopped.
 | AC2 | `inspect` returns the recorded state with `stale` false | old state that looks current |
 | AC3 | the client binds the address itself when it cannot connect | a listener appears, which the kernel's table shows |
 
-AC3's shapes include a **dead socket file left where a socket used to be**, which is what a crash
-leaves behind and the case a careless client treats as "it is there". The fourth row is the negative
+AC3 uses a missing endpoint and a plain file at the socket path; the added SIGKILL row separately
+exercises a real dead socket inode. The existing fourth row is the negative
 control, comparing a no-op copy against the original's answers in the same run rather than against
 literals.
 

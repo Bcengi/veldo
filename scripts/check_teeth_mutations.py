@@ -75,6 +75,12 @@ def cases():
         '             "problems": [p[0] for p in problems]})\n'
         '    return binding["store_path"] + "." + binding["clone_uuid"]',
         ['enrollment/independent-clones-share-bound-store'])
+    add(6, 'dead-socket-success', '49_veldo_0109_unavailable.py', 'control_client.py',
+        '            seen = last_seen(enrollment, workspace, binding)',
+        '            seen = last_seen(enrollment, workspace, binding)\n'
+        '            if os.path.exists(address) and __import__("stat").S_ISSOCK(os.stat(address).st_mode):\n'
+        '                return {"accepted": True, "watermark": seen.get("watermark") if seen else None}',
+        ['unavailable/sigkill-refuses-generic-client'])
     return result
 
 
@@ -102,7 +108,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6))
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
     args = parser.parse_args()

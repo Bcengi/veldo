@@ -39,9 +39,13 @@ acceptance_criteria:
       AUTHORITY_UNAVAILABLE naming the service and the last watermark, and none of them starts one,
       creates a database, or writes a ledger. Set: Enrolled claim, command and dispatch-admission
       clients, with the authority SIGKILLed after enrollment, and separately the relay killed while
-      the authority lives. Completeness: The filesystem under every clone and the process census
-      are compared before and after, so a file or a process created by the refusal path is visible
-      rather than assumed absent. Falsifier: Fall back to a clone-local ledger after socket loss;
+      the authority lives. Demonstrated subset: generic control_client.send upserts after graceful
+      stop and SIGKILL of the fixture authority (including the dead socket inode), plus a missing
+      endpoint and a plain file at its path. The registered claim/command/dispatch client matrix
+      and killed-relay/live-authority cases are INTENDED and NOT YET DEMONSTRATED; they need fleet
+      client and relay lifecycle fixtures beyond this generic-client suite.
+      Completeness: Recursive state-directory snapshots compare the generic client's refusal path
+      after shutdown. A process census across all clients is INTENDED and NOT YET DEMONSTRATED. Falsifier: Fall back to a clone-local ledger after socket loss;
       unavailable/no-local-authority-appears must fail.
     falsified_by: >
       Fall back to a clone-local ledger after socket loss;

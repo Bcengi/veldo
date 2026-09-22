@@ -309,5 +309,24 @@ else:
                    and _v109_reason(_v109_c1[1]) == _v109_reason(_v109_down[1])
                    and _v109_c2["stale"] == _v109_stale["stale"]
                    and _v109_c2["watermark"] == _v109_stale["watermark"])
+
+            # SIGKILL the same fixture class after observing an accepted command.
+            _v109_kproc, _v109_kcfg = _v109_start("killed", _v109_MAIN, _v109_ADDR, _v109_PA)
+            _v109_kup = _v109_mutate(CC109, at="2026-09-21T11:00:00Z")
+            _v109_kproc.kill()
+            _v109_kproc.wait(timeout=10)
+            _v109_kbefore = _v109_listing()
+            _v109_kdown = _v109_mutate(CC109, at="2026-09-21T11:01:00Z")
+            expect("unavailable/sigkill-refuses-generic-client: after a live accepted upsert, SIGKILL "
+                   "leaves a dead socket inode; send refuses with service and last watermark and "
+                   "changes neither state directory",
+                   _v109_kup[0] == "accepted" and _v109_kproc.returncode == -9
+                   and _v109_Path(_v109_ADDR).is_socket()
+                   and _v109_kdown[0] == "refused"
+                   and getattr(_v109_kdown[1], "reason", None) == "authority_unavailable"
+                   and _v109_kdown[1].coordinates.get("service") == "store-a"
+                   and _v109_kdown[1].coordinates.get("last_watermark") == 1
+                   and _v109_listing() == _v109_kbefore
+                   and _v109_bound_at(_v109_ADDR) == [])
         finally:
             _v109_stop_all()
