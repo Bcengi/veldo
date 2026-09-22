@@ -1,0 +1,303 @@
+{
+  "revision": "veldo.yamlish-grammar/1",
+  "bounds": {
+    "nodes": 3,
+    "depth": 2,
+    "children": 2,
+    "payload_length": 2
+  },
+  "alphabet": [
+    "a",
+    " ",
+    "#",
+    ":",
+    "'",
+    "\""
+  ],
+  "partitions": {
+    "positive": "1",
+    "negative": "-1",
+    "zero": "0",
+    "leading-zero": "01",
+    "boolean-true": "true",
+    "boolean-false": "false",
+    "boolean-yes": "yes",
+    "boolean-no": "no",
+    "boolean-on": "on",
+    "boolean-off": "off",
+    "null-word": "null",
+    "null-tilde": "~",
+    "unicode": "\u00e9",
+    "astral": "\ud83d\ude00",
+    "control-tab": "\t",
+    "control-del": "\u007f"
+  },
+  "escapes": {
+    "0": "\u0000",
+    "a": "\u0007",
+    "b": "\b",
+    "t": "\t",
+    "n": "\n",
+    "v": "\u000b",
+    "f": "\f",
+    "r": "\r",
+    "e": "\u001b",
+    " ": " ",
+    "\"": "\"",
+    "/": "/",
+    "\\": "\\",
+    "N": "\u0085",
+    "_": "\u00a0",
+    "L": "\u2028",
+    "P": "\u2029",
+    "x41": "A",
+    "u0061": "a",
+    "U0001f600": "\ud83d\ude00",
+    "u0000": "\u0000",
+    "u001f": "\u001f",
+    "u007f": "\u007f",
+    "u0080": "\u0080",
+    "ud7ff": "\ud7ff",
+    "ue000": "\ue000",
+    "uffff": "\uffff",
+    "U00010000": "\ud800\udc00",
+    "U0010ffff": "\udbff\udfff"
+  },
+  "keys": [
+    [
+      "identifier-a",
+      "a",
+      "a"
+    ],
+    [
+      "identifier-b",
+      "b",
+      "b"
+    ],
+    [
+      "path-a",
+      ".a/x",
+      ".a/x"
+    ],
+    [
+      "path-b",
+      ".b/x",
+      ".b/x"
+    ],
+    [
+      "single-a",
+      "'a'",
+      "a"
+    ],
+    [
+      "single-b",
+      "'b'",
+      "b"
+    ],
+    [
+      "double-a",
+      "\"a\"",
+      "a"
+    ],
+    [
+      "double-b",
+      "\"b\"",
+      "b"
+    ],
+    [
+      "quoted-punctuation-a",
+      "\"a: #\"",
+      "a: #"
+    ],
+    [
+      "quoted-punctuation-b",
+      "\"b: #\"",
+      "b: #"
+    ]
+  ],
+  "styles": [
+    "empty",
+    "plain",
+    "single",
+    "double",
+    "literal",
+    "folded",
+    "continuation",
+    "escape"
+  ],
+  "chomping": [
+    "",
+    "-",
+    "+"
+  ],
+  "continuations": [
+    1,
+    2
+  ],
+  "indent": [
+    1,
+    2
+  ],
+  "newline": [
+    "\n",
+    "\r\n"
+  ],
+  "comment": [
+    "",
+    " # c"
+  ],
+  "containers": [
+    "block-map",
+    "block-sequence",
+    "flow-map",
+    "flow-sequence",
+    "flow-map-trailing",
+    "flow-sequence-trailing"
+  ],
+  "exclusions": [
+    "duplicate-key",
+    "bad-indentation",
+    "missing-delimiter",
+    "invalid-escape",
+    "unterminated-quote",
+    "tag",
+    "anchor",
+    "alias",
+    "merge-key",
+    "directive",
+    "multiple-documents",
+    "multiline-quote",
+    "indentation-indicator"
+  ],
+  "witnesses": [
+    {
+      "id": "compact-map/shortest",
+      "nodes": 3,
+      "mask": 1,
+      "key": null,
+      "tokens": [
+        "- a: ",
+        {
+          "scalar": "a"
+        },
+        "\n"
+      ]
+    },
+    {
+      "id": "compact-map/continuation",
+      "nodes": 3,
+      "mask": 1,
+      "key": null,
+      "tokens": [
+        "- a: ",
+        {
+          "scalar": "a"
+        },
+        "\n    a\n"
+      ]
+    },
+    {
+      "id": "wrapped-sequence/shortest",
+      "nodes": 3,
+      "mask": 25,
+      "key": "a",
+      "tokens": [
+        "a: ",
+        {
+          "open": "["
+        },
+        {
+          "scalar": "a"
+        },
+        ",\n\t",
+        {
+          "close": "]"
+        },
+        "\n"
+      ]
+    },
+    {
+      "id": "wrapped-sequence/extra",
+      "nodes": 4,
+      "mask": 25,
+      "key": "a",
+      "tokens": [
+        "a: ",
+        {
+          "open": "["
+        },
+        {
+          "scalar": "a"
+        },
+        ",\n\t",
+        {
+          "scalar": "a"
+        },
+        ",\n\t",
+        {
+          "close": "]"
+        },
+        "\n"
+      ]
+    },
+    {
+      "id": "wrapped-map/shortest",
+      "nodes": 3,
+      "mask": 25,
+      "key": "a",
+      "tokens": [
+        "a: ",
+        {
+          "open": "{"
+        },
+        "b: ",
+        {
+          "scalar": "a"
+        },
+        ",\n\t",
+        {
+          "close": "}"
+        },
+        "\n"
+      ]
+    },
+    {
+      "id": "wrapped-map/extra",
+      "nodes": 4,
+      "mask": 25,
+      "key": "a",
+      "tokens": [
+        "a: ",
+        {
+          "open": "{"
+        },
+        "b: ",
+        {
+          "scalar": "a"
+        },
+        ",\n\t c: ",
+        {
+          "scalar": "a"
+        },
+        ",\n\t",
+        {
+          "close": "}"
+        },
+        "\n"
+      ]
+    },
+    {
+      "id": "bom/shortest",
+      "nodes": 2,
+      "mask": 17,
+      "key": "a",
+      "tokens": [
+        "\ufeffa: ",
+        {
+          "scalar": "a"
+        },
+        "\n"
+      ]
+    }
+  ]
+}
