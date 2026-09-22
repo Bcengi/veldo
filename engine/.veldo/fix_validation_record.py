@@ -93,7 +93,7 @@ def flag_from_policy(policy: dict) -> bool:
     rather than a second one written here."""
     block = (policy or {}).get(FLAG_KEY)
     if isinstance(block, dict):
-        return str(block.get(REQUIRED_KEY, "")).strip().strip("'\"").lower() == "true"
+        return str(block.get(REQUIRED_KEY, "")).lower() == "true"
     return False
 
 
@@ -108,23 +108,30 @@ def start_line_from_policy(policy: dict) -> str:
     is a protected path, so the owner sets the line and the gated party cannot move it."""
     block = (policy or {}).get(FLAG_KEY)
     if isinstance(block, dict):
-        return str(block.get(START_KEY, "")).strip().strip("'\"")
+        return str(block.get(START_KEY, ""))
     return ""
 
 
 def _is_ancestor(repo, older: str, newer: str):
     """Did `newer` come after `older` in THIS repository's history?
 
-    THREE ANSWERS, NOT TWO. git returns 0 for yes, 1 for no, and anything else, usually 128, for
-    "I cannot answer": the commonest cause is a shallow clone, where the objects exist but the
-    history between them does not. Collapsing that third answer into "no" excluded the bundle,
-    which is the fail-OPEN direction, and on an ordinary shallow CI checkout it switched the whole
-    rule off while printing a false statement about history. None means unanswerable, and the
-    caller keeps the bundle in scope."""
+    A positive ancestry path is proof even in a shallow clone. A negative answer is
+    conclusive only with complete history: Git returns 1 even when shallow boundaries
+    hide the connecting path. Unknown history keeps the bundle in scope.
+    """
     r = subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", older, newer],
                        capture_output=True, timeout=60)
-    if r.returncode in (0, 1):
-        return r.returncode == 0
+    if r.returncode == 0:
+        return True
+    if r.returncode == 1:
+        shallow = subprocess.run(["git", "-C", str(repo), "rev-parse", "--is-shallow-repository"],
+                                 capture_output=True, text=True, timeout=60)
+        if shallow.returncode == 0 and shallow.stdout.strip() == "false":
+            # Also force traversal: missing objects in a non-shallow repository are unknown.
+            history = subprocess.run(["git", "-C", str(repo), "rev-list", older, newer],
+                                     capture_output=True, timeout=60)
+            if history.returncode == 0:
+                return False
     return None
 
 
@@ -233,7 +240,7 @@ def _scan_scalar(text, i, stops):
     Quote mode is entered ONLY at the scalar's first character, which is what YAML does: an
     apostrophe inside a plain scalar is an apostrophe, not the start of a quoted string. Reading it
     as a quote made `{note: don't relax, required: true}` swallow the setting behind it. Double
-    quotes honour backslash escapes and single quotes honour the doubled '' escape, so neither an
+    quotes decode YAML backslash escapes and single quotes honour the doubled '' escape, so neither an
     escaped quote nor a literal one can flip the parser's idea of where the value ends. A quote that
     does not close on its line is refused rather than run to the end of the text.
 
@@ -246,10 +253,25 @@ def _scan_scalar(text, i, stops):
         quote, i, out = text[i], i + 1, []
         while i < n:
             ch = text[i]
-            if quote == '"' and ch == "\\" and i + 1 < n:
-                out.append(text[i + 1])
-                i += 2
-                continue
+            if quote == '"' and ch == "\\":
+                escapes = {"0": "\0", "a": "\a", "b": "\b", "t": "\t", "n": "\n",
+                           "v": "\v", "f": "\f", "r": "\r", "e": "\x1b", " ": " ",
+                           '"': '"', "/": "/", "\\": "\\", "N": "\x85", "_": "\xa0",
+                           "L": "\u2028", "P": "\u2029"}
+                escape = text[i + 1:i + 2]
+                if escape in escapes:
+                    out.append(escapes[escape])
+                    i += 2
+                    continue
+                width = {"x": 2, "u": 4, "U": 8}.get(escape)
+                digits = text[i + 2:i + 2 + width] if width else ""
+                if width and len(digits) == width and re.fullmatch(r"[0-9a-fA-F]+", digits):
+                    code = int(digits, 16)
+                    if code <= 0x10ffff and not 0xd800 <= code <= 0xdfff:
+                        out.append(chr(code))
+                        i += 2 + width
+                        continue
+                raise ValidationError("invalid YAML escape in quoted value: %r" % text[:120])
             if ch == quote:
                 if quote == "'" and i + 1 < n and text[i + 1] == "'":
                     out.append("'")
@@ -286,7 +308,7 @@ def _root_keys(lines):
     value that opens a quote it does not close on its line continues onto the following lines, which
     are likewise not keys. The document's top level is the SHALLOWEST indentation any key has, not
     column zero, so a uniformly indented file reads the same as an unindented one."""
-    entries, i, n = [], 0, len(lines)
+    entries, unknown, i, n = [], [], 0, len(lines)
     while i < n:
         raw = lines[i]
         if not raw.strip() or raw.lstrip().startswith("#"):
@@ -294,6 +316,7 @@ def _root_keys(lines):
             continue
         m = _KEY_RE.match(raw)
         if not m:
+            unknown.append((i, _indent(raw)))
             i += 1
             continue
         indent, name, rest = len(m.group(1)), m.group(2), m.group(3)
@@ -317,9 +340,10 @@ def _root_keys(lines):
                 i += 1
                 continue
         i += 1
-    if not entries:
-        return []
-    base = min(e[2] for e in entries)
+    base = min([e[2] for e in entries] + [indent for _, indent in unknown], default=0)
+    for at, indent in unknown:
+        if indent == base:
+            raise ValidationError("unrecognized top-level policy line %d: %r" % (at + 1, lines[at]))
     return [e for e in entries if e[2] == base]
 
 

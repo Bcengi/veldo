@@ -359,6 +359,10 @@ else:
 
     # ---- AC4: a fix_validation block that cannot be read is REQUIRED, never quietly advisory ------
     _v106_UNREADABLE = {
+        "double_quoted_root": '\"fix_validation\": {required: true}\n',
+        "single_quoted_root": "'fix_validation': {required: true}\n",
+        "flow_root": "{fix_validation: {required: true}}\n",
+
         "a_scalar_where_a_mapping_belongs": "fix_validation: true\n",
         "an_unclosed_inline_mapping": "fix_validation: {required: true\n",
         "a_key_with_no_settings_under_it": "fix_validation:\nversion: 1\n",
@@ -530,3 +534,16 @@ expect("VELDO-0106 AC3 policyread/the-shared-parser-is-left-alone: the shipped s
        "printed above rather than pinned, because the corpus grows; DRIVEN: with the stripping copy AS the "
        "shipped parser the claim is false, so the row is not true by construction",
        _v106_ok and not _v106_ok_mut)
+
+# Accessors consume decoded values; literal punctuation and whitespace are content.
+expect("policyread/decoded-values-are-not-unquoted-again",
+       FV106.start_line_from_policy({"fix_validation": {"from_commit": "'" + "a" * 40 + "'"}})
+       == "'" + "a" * 40 + "'"
+       and not FV106.flag_from_policy({"fix_validation": {"required": "'true'"}}))
+
+_v106_escape_file = _v106_tmp / "escapes.yaml"
+_v106_escape_file.write_text('fix_validation: {required: true, from_commit: "\\b35081d29672fa1dd4706b69a60cec14f4f1f66a"}\n')
+_v106_decoded = FV106.start_line_from_policy(FV106.read_policy(_v106_escape_file))
+expect("policyread/backslash-b-is-a-backspace-not-a-commit",
+       _v106_decoded == "\b35081d29672fa1dd4706b69a60cec14f4f1f66a"
+       and not FV106._FULL_COMMIT_ID.fullmatch(_v106_decoded))

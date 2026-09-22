@@ -67,10 +67,10 @@ _v105_read = {k: FV105.start_line_from_policy(v) for k, v in _v105_pol.items()}
 
 expect("VELDO-0105 AC3 startline/read-only-from-the-policy: the start line is fix_validation.from_commit in the "
        "parsed policy and nothing else; absent, empty, and a policy whose fix_validation is not a block all read "
-       "as no line, and a quoted value reads as the bare commit",
+       "as no line, and an already decoded value retains literal apostrophes",
        _v105_read["absent"] == "" and _v105_read["flag_only"] == "" and _v105_read["empty_line"] == ""
        and _v105_read["not_a_block"] == "" and _v105_read["with_line"] == "abc123def456"
-       and _v105_read["quoted"] == "abc123def456")
+       and _v105_read["quoted"] == "'abc123def456'")
 
 if not _v105_have_git:
     expect("VELDO-0105 STOOD DOWN by name - git is not installed here, so the repository rows cannot run", True)
@@ -242,8 +242,8 @@ else:
     # second as the first excluded the bundle, which is the fail-OPEN direction. A shallow clone is
     # the ordinary way to meet it.
     _v105_M_collapse = _v105_organ("collapse", [
-        ('    if r.returncode in (0, 1):\n        return r.returncode == 0\n    return None',
-         '    return r.returncode == 0')])
+        ('    if r.returncode == 0:\n        return True',
+         '    return r.returncode == 0\n    if r.returncode == 0:\n        return True')])
     # The shape an ordinary CI checkout has: a shallow clone of the tip, plus the base commit
     # fetched by name. Both objects are then present and the history between them is not, which is
     # the one case where git answers neither yes nor no.
