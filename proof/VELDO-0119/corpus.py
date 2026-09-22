@@ -5,6 +5,7 @@ engine templates and other YAML as a conservative superset of runtime callers.
 Frozen input bytes and full parsed trees are deduplicated and lzma compressed.
 """
 import argparse
+import base64
 import lzma
 import hashlib
 import json
@@ -39,7 +40,7 @@ def main():
     cli.add_argument('--baseline', action='store_true')
     cli.add_argument('--output', type=Path, required=True)
     args = cli.parse_args()
-    frozen = ROOT / 'proof/VELDO-0119/corpus-before.json.xz'
+    frozen = ROOT / 'proof/VELDO-0119/corpus-before.json.xz.b64'
     modules = {p: load(p) for p in COPIES}
     if args.baseline:
         names = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', '-z', 'b34d17d'], cwd=ROOT).decode().split('\0')
@@ -62,10 +63,10 @@ def main():
             digest = hashlib.sha256(encode(payload)).hexdigest()
             result['objects'][digest] = payload
             result['documents'][p] = {'sha256': hashlib.sha256(raw).hexdigest(), 'object': digest}
-        args.output.write_bytes(lzma.compress(encode(result)))
+        args.output.write_bytes(base64.encodebytes(lzma.compress(encode(result))))
         print(json.dumps({'documents': len(paths), 'compressed_bytes': args.output.stat().st_size}))
         return
-    baseline = json.loads(lzma.decompress(frozen.read_bytes()))
+    baseline = json.loads(lzma.decompress(base64.decodebytes(frozen.read_bytes())))
     changes = []
     for p, entry in baseline['documents'].items():
         before = baseline['objects'][entry['object']]

@@ -27,7 +27,7 @@ written rule: only canonical decimal integers become integers; other plain
 words stay strings. The existing style/spelling adapter handles them. They
 are not among the 218 disagreements; retain their raw tags in observations.
 
-The frozen xz records every tracked YAML/YML document and every Markdown
+The frozen xz (ASCII base64 envelope) records every tracked YAML/YML document and every Markdown
 front-matter outcome, including absent metadata and refusals, for both copies.
 This conservative superset includes all specs, plans, manifests, substrate
 records, templates and the owner's policy. It includes parsed source (decoded UTF-8 with optional BOM), input digests

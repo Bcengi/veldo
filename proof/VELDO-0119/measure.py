@@ -1,5 +1,6 @@
 """Regenerate complete observations outside the checkout; retain compact proof only."""
 import argparse
+import base64
 import collections
 import contextlib
 import hashlib
@@ -27,7 +28,7 @@ def main():
     result, consumer = ns['_r_result'], ns['_r_consumer']
     body = ''.join(consumer.encoded(r) + '\n' for r in result['records']).encode()
     (args.output_dir / 'observations.jsonl').write_bytes(body)
-    (args.output_dir / 'observations.jsonl.xz').write_bytes(lzma.compress(body))
+    (args.output_dir / 'observations.jsonl.xz.b64').write_bytes(base64.encodebytes(lzma.compress(body)))
     inventory = ns['_r_inventory']
     targets = ns['_r_cases'].coverage_targets()
     (args.output_dir / 'targets.json').write_text(json.dumps({k: sorted(v) for k, v in targets.items()}, indent=2)+'\n')
