@@ -146,11 +146,16 @@ else:
                 """BOTH directories a fallback could write into: the AUTHORITY's, and the CLONE's own
                 control directory where the last-seen record lives. Watching one of them would miss a
                 fallback that wrote into the other, which is the whole thing this row is about."""
-                out = []
-                for root in (_v109_store_dir, _v109_clone_dir):
+                out = {}
+                for label, root in (("authority", _v109_store_dir), ("clone", _v109_clone_dir)):
                     if root.is_dir():
-                        out += [root.name + "/" + q.name for q in root.iterdir()]
-                return sorted(out)
+                        for q in root.rglob("*"):
+                            st = q.lstat()
+                            content = q.read_bytes() if q.is_file() and not q.is_symlink() else None
+                            out[label + "/" + str(q.relative_to(root))] = (
+                                st.st_mode, st.st_mtime_ns, content,
+                                _v109_os.readlink(q) if q.is_symlink() else None)
+                return out
 
             def _v109_mutate(client, at=None):
                 try:
@@ -164,15 +169,15 @@ else:
             _v109_live = CC109.inspect(_v109_A, EN109, _v109_verify, _v109_sign, _v109_HOST,
                                        now="2026-09-21T10:00:05Z")
             _v109_record = CC109.last_seen(EN109, _v109_A, _v109_b)
-            _v109_before = _v109_listing()
 
             # Now STOP it. Everything below is measured against an authority that is gone.
             _v109_Path(_v109_cfg["stop_flag"]).write_text("stop\n")
             _v109_proc.wait(timeout=10)
+            _v109_Path(_v109_PA).write_bytes(b"existing durable authority state")
+            _v109_before = _v109_listing()
 
             _v109_down = _v109_mutate(CC109, at="2026-09-21T10:01:00Z")
             _v109_after = _v109_listing()
-            _v109_new_files = set(_v109_after) - set(_v109_before)
             _v109_bound = _v109_bound_at(_v109_ADDR)
             _v109_M_fallback, _v109_fb = _v109_organ("fallback", [
                 (FALLBACK_109,
@@ -188,9 +193,9 @@ else:
                    "is accepted and carries a WATERMARK, and the clone records it. With the authority stopped "
                    "the same command REFUSES by name as authority_unavailable, and the refusal carries the "
                    "service it could not reach and the last watermark it was sure of, because 'routing failed' "
-                   "cannot be acted on. Nothing NEW appears under the store directory - asked as new files "
-                   "only, because the socket disappears with the authority and comparing the whole listing "
-                   "measures the shutdown instead - and nothing is bound at the address in the kernel's own "
+                   "cannot be acted on. The recursive contents and metadata of both state directories are "
+                   "unchanged against a snapshot taken AFTER shutdown, including existing files, "
+                   "and nothing is bound at the address in the kernel's own "
                    "table, and the same is asked of the CLONE's own control directory where the last-seen "
                    "record lives, because a fallback would write there rather than into the authority's. The "
                    "record on disk does NOT turn the refusal into a success, which is the property "
@@ -202,7 +207,7 @@ else:
                    and _v109_down[1].reason == "authority_unavailable"
                    and _v109_down[1].coordinates.get("service") == "store-a"
                    and _v109_down[1].coordinates.get("last_watermark") == 2
-                   and _v109_new_files == set() and _v109_bound == []
+                   and _v109_after == _v109_before and _v109_bound == []
                    and _v109_down_mut[0] == "accepted"
                    and _v109_down_mut[1].get("result", {}).get("locally") is True)
 

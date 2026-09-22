@@ -252,19 +252,26 @@ else:
                  capture_output=True, text=True, env=_v105_env)
     _v105_sp.run(["git", "clone", "-q", "--depth", "1", "--branch", "trunk",
                   "file://" + str(_v105_repo), str(_v105_shallow)], capture_output=True, text=True,
-                 env=_v105_env)
+                 env=_v105_env, check=True)
     _v105_sp.run(["git", "-C", str(_v105_shallow), "fetch", "-q", "--depth", "1", "origin", _v105_LINE],
-                 capture_output=True, text=True, env=_v105_env)
-    _v105_shallow_ok = (_v105_shallow / ".git").exists() and FV105._commit_exists(_v105_shallow, _v105_LINE)
+                 capture_output=True, text=True, env=_v105_env, check=True)
+    _v105_tip = _v105_sp.run(["git", "-C", str(_v105_shallow), "rev-parse", "HEAD"],
+                             capture_output=True, text=True, check=True, env=_v105_env).stdout.strip()
+    _v105_raw_ancestry = _v105_sp.run(["git", "-C", str(_v105_shallow), "merge-base",
+                                      "--is-ancestor", _v105_LINE, _v105_tip],
+                                     capture_output=True, env=_v105_env)
+    _v105_shallow_ok = (_v105_shallow / ".git").exists() and (FV105._commit_exists(_v105_shallow, _v105_LINE)
+                          and FV105._commit_exists(_v105_shallow, _v105_tip)
+                          and _v105_raw_ancestry.returncode == 1 and not _v105_raw_ancestry.stderr)
     if _v105_shallow_ok:
-        _v105_sh_fixed = FV105.start_line_scope(_v105_shallow, _v105_LINE, _v105_NEW_F)
-        _v105_sh_broken = _v105_M_collapse.start_line_scope(_v105_shallow, _v105_LINE, _v105_NEW_F)
+        _v105_sh_fixed = FV105.start_line_scope(_v105_shallow, _v105_LINE, _v105_tip)
+        _v105_sh_broken = _v105_M_collapse.start_line_scope(_v105_shallow, _v105_LINE, _v105_tip)
     expect("VELDO-0105 AC2 proofcheck/unanswerable-ancestry-fails-closed: in a shallow clone, where both "
-           "commits exist as objects but the history between them does not, git answers neither yes nor no; "
+           "commits exist as objects but the history between them does not, git returns 1 with empty stderr despite the missing path; "
            "the bundle is KEPT IN SCOPE and the reason says git cannot tell, rather than being excluded on a "
            "false statement about history; DRIVEN: a copy collapsing that third answer into no excludes the "
            "bundle, which switches the whole rule off on an ordinary shallow checkout",
-           (not _v105_shallow_ok) or (
+           _v105_shallow_ok and (
                _v105_sh_fixed["excluded"] is False and "cannot say" in _v105_sh_fixed["reason"]
                and _v105_sh_broken["excluded"] is True))
 

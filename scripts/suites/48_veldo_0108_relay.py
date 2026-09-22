@@ -93,7 +93,7 @@ _v108_echo_srv.bind(_v108_echo_addr)
 _v108_echo_srv.listen(8)
 
 
-_v108_echo_srv.settimeout(10)
+_v108_echo_srv.settimeout(0.5)
 
 
 def _v108_echo_once():
@@ -106,6 +106,7 @@ def _v108_echo_once():
         conn, _ = _v108_echo_srv.accept()
     except OSError:
         return
+    conn.settimeout(2)
     data = b""
     while True:
         chunk = conn.recv(65536)
@@ -122,14 +123,18 @@ _v108_PAYLOADS = {
     "bytes that are NOT valid utf-8": b"\xff\xfe\x00binary",
     "half a megabyte": bytes(range(256)) * 2048,
     "nothing at all": b"",
+    "JSON with significant transport whitespace": b' { "z" : 1, "a" : 2 } \n',
 }
 _v108_byte_rows = []
 for _v108_name, _v108_payload in _v108_PAYLOADS.items():
     _v108_t = _v108_threading.Thread(target=_v108_echo_once, daemon=True)
     _v108_t.start()
     try:
-        _v108_got = RL108.forward(_v108_echo_addr, _v108_payload)
-    except OSError:
+        _v108_exec = _v108_sp.run([_v108_sys.executable,
+                                  str(_v108_MAIN / "control_relay.py"), _v108_echo_addr],
+                                 input=_v108_payload, capture_output=True, timeout=5)
+        _v108_got = _v108_exec.stdout if _v108_exec.returncode == 0 else None
+    except (OSError, _v108_sp.TimeoutExpired):
         _v108_got = None
     _v108_t.join(timeout=15)
     _v108_byte_rows.append((_v108_name, _v108_got == _v108_payload))
@@ -226,9 +231,9 @@ else:
                 e = dict(_v108_os.environ)
                 e.update(extra_env or {})
                 r = _v108_sp.run([_v108_sys.executable, str(relay_dir / "control_relay.py"), address],
-                                 input=payload, capture_output=True, env=e)
+                                 input=payload, capture_output=True, env=e, timeout=10)
                 try:
-                    answer = _v108_json.loads(r.stdout.decode()) if r.stdout else {}
+                    answer = _v108_json.loads(r.stdout.decode()) if r.stdout else None
                 except ValueError:
                     answer = {"unparsable_stdout": r.stdout[:200].decode("utf-8", "replace")}
                 return r.returncode, answer, r.stderr.decode("utf-8", "replace")
@@ -368,7 +373,7 @@ else:
                    "its standard error, and applies nothing. It does not invent an answer, which would be the "
                    "local fallback VELDO-0109 exists to forbid arriving one layer lower down"
                    % RL108.EXIT_UNREACHABLE,
-                   _v108_rc_down == RL108.EXIT_UNREACHABLE and _v108_ans_down == {}
+                   _v108_rc_down == RL108.EXIT_UNREACHABLE and _v108_ans_down is None
                    and "not answering" in _v108_err_down
                    and len(_v108_applied(_v108_cA)) == _v108_count)
 

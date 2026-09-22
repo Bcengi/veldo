@@ -275,7 +275,7 @@ else:
                    "the uid the module uses is the one the KERNEL reports through SO_PEERCRED and equals this "
                    "process's own, and the socket is 0600 inside a 0700 directory. Against the same real "
                    "authority object: a valid request is accepted; a valid peer carrying a broken signature is "
-                   "refused as command_signature_invalid; a foreign uid is refused as peer_not_authorized even "
+                   "refused as command_signature_invalid with no side effect; a foreign uid is refused as peer_not_authorized even "
                    "though its signature is perfect; and a uid the platform will not report is refused as "
                    "peer_identity_unavailable rather than passed, because a check that is unavailable must not "
                    "become a check that succeeded. HONEST LIMIT, and it is why the claim is split: this design "
@@ -285,6 +285,7 @@ else:
                    _v107_kernel_uid == _v107_os.getuid() and _v107_mode == "0o600"
                    and _v107_dirmode == "0o700"
                    and _v107_r_valid.get("accepted") is True
+                   and _v107_applied_direct == [_v107_good_req["command"]]
                    and _v107_r_badsig.get("reason") == "command_signature_invalid"
                    and _v107_r_foreign.get("reason") == "peer_not_authorized"
                    and _v107_r_nouid.get("reason") == "peer_identity_unavailable"
