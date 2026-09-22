@@ -164,6 +164,8 @@ This specification was moved to ready and approved on 2026-09-21, and an indepen
 
 **The light design left the caller composing the whole request.** With no resident process the caller writes the principal, the channel, the delegation and the attribution, and R38 requires the signer to check those independently and forbids an edge impersonating another channel. Settled by the two paragraphs in Context: the channel is derived from the authenticated connection, the key is resolved by that channel from the authority's key file, and the key file becomes a protected path so the lookup cannot be poisoned by the account being gated. AC4 requires the consistent impersonation attempt to be refused even when the other channel and its key are valid.
 
+**AC4's central claim was rewritten after the owner approved the specification.** This is the second return to draft. The earlier claim promised that taking the key from the authority's own key file prevented an edge signing as another channel. It did not: a caller supplying the other channel's name together with that channel's registered key id passes every check that only compares the request against itself. AC4 now replaces that claim, so the previous approval does not carry forward. The specification returns to draft and needs the owner's approval again before it is built.
+
 ## Notes
 
 D1 is inherited through the accepted membership store. The signer core ships here; E qualifies live channel evidence acquisition and per-channel activation. Fixture attribution cannot certify a platform. Public `allowed_signers` is a projection of accepted key transitions, never independent worker-controlled authority. The keys glob names public verification artifacts only.
