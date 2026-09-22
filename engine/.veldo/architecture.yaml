@@ -21,7 +21,8 @@ areas:
     includes: [".veldo/validate.py", ".veldo/arch.py", ".veldo/plan.py", ".veldo/request.py"]
   - id: engine
     title: The safety-core decision engine, the pure functions that decide whether a human decision is authorized
-    includes: [".veldo/authorization.py"]
+    # VELDO-0027: restricted signing and accepted key lifecycle are safety-core decisions.
+    includes: [".veldo/authorization.py", ".veldo/control_signer*.py", ".veldo/control_keys*.py"]
   - id: enforcement
     title: The gate and the push guard, the one command that decides done
     includes: ["scripts/verify.sh", "scripts/veldo-guard.sh", ".veldo/policy_check.py"]

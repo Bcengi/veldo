@@ -511,6 +511,15 @@
    ],
    "regions": "Both shipped readers over the complete unchanged grammar inventory",
    "requires_note": "Uses only shared ROOT, expect and json. Loads both reader copies and independent fixture by path; all oracle capability controls execute the full inventory."
+  },
+  {
+   "name": "56_veldo_0027_signing",
+   "file": "56_veldo_0027_signing.py",
+   "requires": [
+    "56_veldo_0027_signing"
+   ],
+   "regions": "Protected signing, key lifecycle, evidence provenance and authenticated channels",
+   "requires_note": "Uses shared ROOT and expect only. Real Ed25519 keys outside a disposable repository, accepted SQLite transitions and joined child processes."
   }
  ]
 }

@@ -171,6 +171,44 @@ def cases():
               "    if omit is not None:\n        cases = cases[1:]\n        omit = None\n"
               "    required = Counter(identity(case) for case in cases)",
               'agreement-requires-full-oracle-domain', fixture=True)
+    def signing(name, module, old, new, row):
+        add(27, name, '56_veldo_0027_signing.py', module, old, new, ['signing/' + row])
+
+    restriction = "        if request.get('channel') != channel or request.get('edge_key_id') != key['key_id']:"
+    signing('signing-remove-channel-restriction', 'control_signer.py', restriction,
+            '        if False:', 'cross-channel')
+    signing('signing-permit-foreign-channel', 'control_signer.py', restriction,
+            "        if request.get('channel') == channel and request.get('edge_key_id') != key['key_id']:", 'cross-channel')
+    auth = "        channel = authenticate(state, challenge, request, identity, authentication, now)"
+    signing('signing-request-channel', 'control_signer.py', auth,
+            auth + "\n        channel = request['channel']", 'channel-comes-from-the-connection')
+    signing('signing-request-key-channel', 'control_signer.py', auth,
+            auth + "\n        channel = K.entries(state)[request['edge_key_id']]['channel']", 'channel-comes-from-the-connection')
+    selection = "        key = K.select(state, config['allowed_signers'], channel, now)"
+    signing('signing-request-key', 'control_signer.py', selection,
+            selection + "\n        key = K.entries(state).get(request.get('edge_key_id'), key)", 'key-comes-from-the-channel')
+    signing('signing-search-request-key', 'control_signer.py', selection,
+            selection + "\n        key = next((k for k in K.entries(state).values() if k['key_id'] == request.get('edge_key_id')), key)",
+            'key-comes-from-the-channel')
+    attribution = "    if any(not attribution.get(field) for field in fields):"
+    signing('signing-text-without-identity', 'control_signer.py', attribution,
+            '    if False:', 'text-only')
+    signing('signing-text-substitutes-identity', 'control_signer.py', attribution,
+            "    if not payload.get('text') and any(not attribution.get(field) for field in fields):", 'text-only')
+    accepted = """    if body != projection(state):
+        raise Refused('projection-mismatch')
+    return state['keyring']"""
+    branch_keys = """    return [dict(k, public_key=' '.join(line.split()[-2:]))
+            for k in state['keyring'] for line in body.splitlines()
+            if line.split() and line.split()[0] == k['principal']]"""
+    signing('signing-branch-projection-authority', 'control_keys.py', accepted, branch_keys, 'branch-key')
+    signing('signing-branch-overrides-accepted', 'control_keys.py', accepted,
+            """    result = [dict(k) for k in state['keyring']]
+    for line in body.splitlines():
+        for key in result:
+            if line.split() and line.split()[0] == key['principal']:
+                key['public_key'] = ' '.join(line.split()[-2:])
+    return result""", 'branch-key')
     return result
 
 
@@ -241,7 +279,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 118, 119))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 118, 119))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
