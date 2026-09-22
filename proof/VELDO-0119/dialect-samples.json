@@ -1,0 +1,426 @@
+[
+  {
+    "identity": [
+      [
+        "lexical",
+        "plain",
+        "plain/boolean-true"
+      ],
+      "6649649f26a1030bdef3c3f910917bcb27b57921aa2b76d14de3615be18a2719"
+    ],
+    "derivation": [
+      "lexical",
+      "plain",
+      "plain/boolean-true"
+    ],
+    "production": [
+      "block-map",
+      "document",
+      "key-plain",
+      "plain"
+    ],
+    "edit": null,
+    "source": "a: true\n",
+    "raw": {
+      "source": "a: true\n",
+      "input_sha256": "6649649f26a1030bdef3c3f910917bcb27b57921aa2b76d14de3615be18a2719",
+      "oracle_version": "6.0.1",
+      "state": "observed",
+      "syntax": "valid_yaml",
+      "tree": {
+        "kind": "mapping",
+        "tag": "tag:yaml.org,2002:map",
+        "start": {
+          "line": 1,
+          "column": 1,
+          "index": 0
+        },
+        "end": {
+          "line": 2,
+          "column": 1,
+          "index": 8
+        },
+        "spelling": "a: true\n",
+        "pairs": [
+          [
+            {
+              "kind": "scalar",
+              "tag": "tag:yaml.org,2002:str",
+              "start": {
+                "line": 1,
+                "column": 1,
+                "index": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 2,
+                "index": 1
+              },
+              "spelling": "a",
+              "value": "a",
+              "style": ""
+            },
+            {
+              "kind": "scalar",
+              "tag": "tag:yaml.org,2002:bool",
+              "start": {
+                "line": 1,
+                "column": 4,
+                "index": 3
+              },
+              "end": {
+                "line": 1,
+                "column": 8,
+                "index": 7
+              },
+              "spelling": "true",
+              "value": "true",
+              "style": ""
+            }
+          ]
+        ],
+        "flow_style": false
+      }
+    },
+    "expected": {
+      "state": "value",
+      "value": {
+        "a": "true"
+      }
+    },
+    "readers": {
+      "repository": {
+        "state": "value",
+        "value": {
+          "a": "true"
+        }
+      },
+      "engine": {
+        "state": "value",
+        "value": {
+          "a": "true"
+        }
+      }
+    }
+  },
+  {
+    "identity": [
+      [
+        "lexical",
+        "plain",
+        "plain/control-del"
+      ],
+      "4ea1b51f2cfc324c30883762b10e3a8e3b0d3b4179ac2e895e19c779d8f9600b"
+    ],
+    "derivation": [
+      "lexical",
+      "plain",
+      "plain/control-del"
+    ],
+    "production": [
+      "block-map",
+      "document",
+      "key-plain",
+      "plain"
+    ],
+    "edit": null,
+    "source": "a: \u007f\n",
+    "raw": {
+      "source": "a: \u007f\n",
+      "input_sha256": "4ea1b51f2cfc324c30883762b10e3a8e3b0d3b4179ac2e895e19c779d8f9600b",
+      "oracle_version": "6.0.1",
+      "state": "observed",
+      "syntax": "invalid_yaml",
+      "error": "unacceptable character #x007f: control characters are not allowed\n  in \"<unicode string>\", position 3",
+      "error_type": "ReaderError",
+      "literal_del": {
+        "state": "observed",
+        "rule": "literal DEL in plain/continuation styles",
+        "replacement": "\ue000",
+        "source": "a: \ue000\n",
+        "tree": {
+          "kind": "mapping",
+          "tag": "tag:yaml.org,2002:map",
+          "start": {
+            "line": 1,
+            "column": 1,
+            "index": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 1,
+            "index": 5
+          },
+          "spelling": "a: \ue000\n",
+          "pairs": [
+            [
+              {
+                "kind": "scalar",
+                "tag": "tag:yaml.org,2002:str",
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "index": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 2,
+                  "index": 1
+                },
+                "spelling": "a",
+                "value": "a",
+                "style": ""
+              },
+              {
+                "kind": "scalar",
+                "tag": "tag:yaml.org,2002:str",
+                "start": {
+                  "line": 1,
+                  "column": 4,
+                  "index": 3
+                },
+                "end": {
+                  "line": 1,
+                  "column": 5,
+                  "index": 4
+                },
+                "spelling": "\ue000",
+                "value": "\ue000",
+                "style": ""
+              }
+            ]
+          ],
+          "flow_style": false
+        }
+      }
+    },
+    "expected": {
+      "state": "value",
+      "value": {
+        "a": "\u007f"
+      }
+    },
+    "readers": {
+      "repository": {
+        "state": "value",
+        "value": {
+          "a": "\u007f"
+        }
+      },
+      "engine": {
+        "state": "value",
+        "value": {
+          "a": "\u007f"
+        }
+      }
+    }
+  },
+  {
+    "identity": [
+      [
+        "lexical",
+        "plain",
+        "plain/leading-zero"
+      ],
+      "ca8f4b772ebc7ea10a24f4226f438612669fcadd9f93d0295713e5ae51fc7785"
+    ],
+    "derivation": [
+      "lexical",
+      "plain",
+      "plain/leading-zero"
+    ],
+    "production": [
+      "block-map",
+      "document",
+      "key-plain",
+      "plain"
+    ],
+    "edit": null,
+    "source": "a: 01\n",
+    "raw": {
+      "source": "a: 01\n",
+      "input_sha256": "ca8f4b772ebc7ea10a24f4226f438612669fcadd9f93d0295713e5ae51fc7785",
+      "oracle_version": "6.0.1",
+      "state": "observed",
+      "syntax": "valid_yaml",
+      "tree": {
+        "kind": "mapping",
+        "tag": "tag:yaml.org,2002:map",
+        "start": {
+          "line": 1,
+          "column": 1,
+          "index": 0
+        },
+        "end": {
+          "line": 2,
+          "column": 1,
+          "index": 6
+        },
+        "spelling": "a: 01\n",
+        "pairs": [
+          [
+            {
+              "kind": "scalar",
+              "tag": "tag:yaml.org,2002:str",
+              "start": {
+                "line": 1,
+                "column": 1,
+                "index": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 2,
+                "index": 1
+              },
+              "spelling": "a",
+              "value": "a",
+              "style": ""
+            },
+            {
+              "kind": "scalar",
+              "tag": "tag:yaml.org,2002:int",
+              "start": {
+                "line": 1,
+                "column": 4,
+                "index": 3
+              },
+              "end": {
+                "line": 1,
+                "column": 6,
+                "index": 5
+              },
+              "spelling": "01",
+              "value": "01",
+              "style": ""
+            }
+          ]
+        ],
+        "flow_style": false
+      }
+    },
+    "expected": {
+      "state": "value",
+      "value": {
+        "a": "01"
+      }
+    },
+    "readers": {
+      "repository": {
+        "state": "value",
+        "value": {
+          "a": "01"
+        }
+      },
+      "engine": {
+        "state": "value",
+        "value": {
+          "a": "01"
+        }
+      }
+    }
+  },
+  {
+    "identity": [
+      [
+        "lexical",
+        "plain",
+        "plain/null-word"
+      ],
+      "1993ef786683a4339c6bfc85a0dde04652834eb7111bbb54b0e594ef57990e99"
+    ],
+    "derivation": [
+      "lexical",
+      "plain",
+      "plain/null-word"
+    ],
+    "production": [
+      "block-map",
+      "document",
+      "key-plain",
+      "plain"
+    ],
+    "edit": null,
+    "source": "a: null\n",
+    "raw": {
+      "source": "a: null\n",
+      "input_sha256": "1993ef786683a4339c6bfc85a0dde04652834eb7111bbb54b0e594ef57990e99",
+      "oracle_version": "6.0.1",
+      "state": "observed",
+      "syntax": "valid_yaml",
+      "tree": {
+        "kind": "mapping",
+        "tag": "tag:yaml.org,2002:map",
+        "start": {
+          "line": 1,
+          "column": 1,
+          "index": 0
+        },
+        "end": {
+          "line": 2,
+          "column": 1,
+          "index": 8
+        },
+        "spelling": "a: null\n",
+        "pairs": [
+          [
+            {
+              "kind": "scalar",
+              "tag": "tag:yaml.org,2002:str",
+              "start": {
+                "line": 1,
+                "column": 1,
+                "index": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 2,
+                "index": 1
+              },
+              "spelling": "a",
+              "value": "a",
+              "style": ""
+            },
+            {
+              "kind": "scalar",
+              "tag": "tag:yaml.org,2002:null",
+              "start": {
+                "line": 1,
+                "column": 4,
+                "index": 3
+              },
+              "end": {
+                "line": 1,
+                "column": 8,
+                "index": 7
+              },
+              "spelling": "null",
+              "value": "null",
+              "style": ""
+            }
+          ]
+        ],
+        "flow_style": false
+      }
+    },
+    "expected": {
+      "state": "value",
+      "value": {
+        "a": "null"
+      }
+    },
+    "readers": {
+      "repository": {
+        "state": "value",
+        "value": {
+          "a": "null"
+        }
+      },
+      "engine": {
+        "state": "value",
+        "value": {
+          "a": "null"
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,5 @@
+--- a/.veldo/yamlish.py
++++ b/.veldo/yamlish.py
+@@ -299 +299 @@
+-                if key in out:
++                if False:

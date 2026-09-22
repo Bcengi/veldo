@@ -1,0 +1,210 @@
+{
+  "generated": 1545,
+  "read": {
+    "repository": 1545,
+    "engine": 1545
+  },
+  "refused": {
+    "repository": 457,
+    "engine": 457
+  },
+  "compared": 1545,
+  "unobserved": 0,
+  "oracle_errors": 0,
+  "oracle_state": "available",
+  "oracle_version": "6.0.1",
+  "boundary_yaml": {
+    "invalid_yaml": 225,
+    "valid_yaml": 232
+  },
+  "failures": [],
+  "inventory_complete": true,
+  "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+  "executed_digests": {
+    "repository": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+    "engine": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67"
+  },
+  "qualified": true,
+  "coverage": {
+    "revision": "veldo.yamlish-grammar/2",
+    "expected_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "enumerated_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "covered_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "missing": {
+      "production": [],
+      "lexical": [],
+      "pair": [],
+      "boundary": []
+    },
+    "unexpected": {
+      "production": [],
+      "lexical": [],
+      "pair": [],
+      "boundary": []
+    },
+    "inputs": {
+      "accepted": 1088,
+      "boundary": 457
+    },
+    "complete": true,
+    "input_digest": "708592a8d2e43d631023d7b30119cd2be78d534c7f8cb6ccf343df0f456df635",
+    "generation_seconds": 1.8498305450193584
+  },
+  "implementation_digests": {
+    "repository": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+    "engine": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6"
+  },
+  "fixture_version": "veldo.yamlish-grammar/2",
+  "grammar_digest": "4251a3e2891b059b9c92fd7eb49207149fd9be6d8f81b213079bcbf88266e404",
+  "fixture_digest": "f3c9abd76e4d7616892a9512ccc3fbf50f5c5489db5bbd6236451fefd37dd33b",
+  "suite_seconds": 3.915676963981241,
+  "target_inventory_ref": "proof/VELDO-0118/coverage-targets.json",
+  "target_inventory_sha256": "41b4acff96a67a8e500ea3dc24d01fe14528104589841ebcd62ea48769eb8c27",
+  "rows": [
+    [
+      "reader/generated-grammar-agrees",
+      true
+    ],
+    [
+      "reader/generated-boundaries-refuse",
+      true
+    ],
+    [
+      "reader/agreement-requires-full-oracle-domain",
+      true
+    ]
+  ],
+  "elapsed_seconds": 3.9176238339859992,
+  "normal_gate_invocations": 2,
+  "normal_gate_added_seconds": 7.8352476679719985,
+  "raw_observations_sha256": "6797e06f0a9fbeec59841dcadb4ae04ad1e1a3e3f048b3f8a9fa6925e1c5b177",
+  "raw_observations_bytes": 1966061,
+  "historical_records": 218,
+  "historical_failures": [],
+  "controls": {
+    "absent": {
+      "generated": 1545,
+      "read": {
+        "repository": 1545,
+        "engine": 1545
+      },
+      "refused": {
+        "repository": 457,
+        "engine": 457
+      },
+      "compared": 0,
+      "unobserved": 1545,
+      "oracle_errors": 0,
+      "oracle_state": "oracle_unavailable",
+      "oracle_version": null,
+      "boundary_yaml": {
+        "oracle_unavailable": 457
+      },
+      "failures": [],
+      "inventory_complete": true,
+      "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "executed_digests": {
+        "repository": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+        "engine": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67"
+      },
+      "qualified": false
+    },
+    "broken-import": {
+      "generated": 1545,
+      "read": {
+        "repository": 1545,
+        "engine": 1545
+      },
+      "refused": {
+        "repository": 457,
+        "engine": 457
+      },
+      "compared": 0,
+      "unobserved": 1545,
+      "oracle_errors": 1545,
+      "oracle_state": "oracle_error",
+      "oracle_version": null,
+      "boundary_yaml": {
+        "oracle_error": 457
+      },
+      "failures": [],
+      "inventory_complete": true,
+      "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "executed_digests": {
+        "repository": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+        "engine": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67"
+      },
+      "qualified": false
+    },
+    "broken-runtime": {
+      "generated": 1545,
+      "read": {
+        "repository": 1545,
+        "engine": 1545
+      },
+      "refused": {
+        "repository": 457,
+        "engine": 457
+      },
+      "compared": 0,
+      "unobserved": 1545,
+      "oracle_errors": 1545,
+      "oracle_state": "available",
+      "oracle_version": "broken",
+      "boundary_yaml": {
+        "oracle_error": 457
+      },
+      "failures": [],
+      "inventory_complete": true,
+      "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "executed_digests": {
+        "repository": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+        "engine": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67"
+      },
+      "qualified": false
+    },
+    "omitted": {
+      "generated": 1545,
+      "read": {
+        "repository": 1544,
+        "engine": 1544
+      },
+      "refused": {
+        "repository": 457,
+        "engine": 457
+      },
+      "compared": 1544,
+      "unobserved": 1,
+      "oracle_errors": 0,
+      "oracle_state": "available",
+      "oracle_version": "6.0.1",
+      "boundary_yaml": {
+        "invalid_yaml": 225,
+        "valid_yaml": 232
+      },
+      "failures": [],
+      "inventory_complete": false,
+      "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "executed_digests": {
+        "repository": "918d08ecbd8e7b968f570322fa130fc1ccb6bd67d52adbd005275bac5368a5b1",
+        "engine": "918d08ecbd8e7b968f570322fa130fc1ccb6bd67d52adbd005275bac5368a5b1"
+      },
+      "qualified": false
+    }
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "reader/agreement": {
+    "boundary_yaml": {
+      "oracle_unavailable": 457
+    },
+    "compared": 0,
+    "coverage": {
+      "complete": true,
+      "covered_targets": {
+        "boundary": 457,
+        "lexical": 934,
+        "pair": 132,
+        "production": 22
+      },
+      "enumerated_targets": {
+        "boundary": 457,
+        "lexical": 934,
+        "pair": 132,
+        "production": 22
+      },
+      "expected_targets": {
+        "boundary": 457,
+        "lexical": 934,
+        "pair": 132,
+        "production": 22
+      },
+      "generation_seconds": 1.835246758069843,
+      "input_digest": "708592a8d2e43d631023d7b30119cd2be78d534c7f8cb6ccf343df0f456df635",
+      "inputs": {
+        "accepted": 1088,
+        "boundary": 457
+      },
+      "missing": {
+        "boundary": [],
+        "lexical": [],
+        "pair": [],
+        "production": []
+      },
+      "revision": "veldo.yamlish-grammar/2",
+      "unexpected": {
+        "boundary": [],
+        "lexical": [],
+        "pair": [],
+        "production": []
+      }
+    },
+    "executed_digests": {
+      "engine": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "repository": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67"
+    },
+    "failures": [],
+    "fixture_digest": "fc07140515a31dbe4624eecebfaf58ea6d7a4875dbc56422080ebbdd6f2a61f7",
+    "fixture_version": "veldo.yamlish-grammar/2",
+    "generated": 1545,
+    "grammar_digest": "4251a3e2891b059b9c92fd7eb49207149fd9be6d8f81b213079bcbf88266e404",
+    "implementation_digests": {
+      "engine": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+      "repository": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6"
+    },
+    "inventory_complete": true,
+    "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+    "oracle_errors": 0,
+    "oracle_state": "oracle_unavailable",
+    "qualified": false,
+    "read": {
+      "engine": 1545,
+      "repository": 1545
+    },
+    "refused": {
+      "engine": 457,
+      "repository": 457
+    },
+    "suite_seconds": 3.8320715809240937,
+    "unobserved": 1545
+  },
+  "reader/oracle-controls": {
+    "absent": {
+      "boundary_yaml": {
+        "oracle_unavailable": 457
+      },
+      "compared": 0,
+      "executed_digests": {
+        "engine": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+        "repository": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67"
+      },
+      "failures": [],
+      "generated": 1545,
+      "inventory_complete": true,
+      "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "oracle_errors": 0,
+      "oracle_state": "oracle_unavailable",
+      "qualified": false,
+      "read": {
+        "engine": 1545,
+        "repository": 1545
+      },
+      "refused": {
+        "engine": 457,
+        "repository": 457
+      },
+      "unobserved": 1545
+    },
+    "broken-import": {
+      "boundary_yaml": {
+        "oracle_error": 457
+      },
+      "compared": 0,
+      "executed_digests": {
+        "engine": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+        "repository": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67"
+      },
+      "failures": [],
+      "generated": 1545,
+      "inventory_complete": true,
+      "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "oracle_errors": 1545,
+      "oracle_state": "oracle_error",
+      "qualified": false,
+      "read": {
+        "engine": 1545,
+        "repository": 1545
+      },
+      "refused": {
+        "engine": 457,
+        "repository": 457
+      },
+      "unobserved": 1545
+    },
+    "broken-runtime": {
+      "boundary_yaml": {
+        "oracle_error": 457
+      },
+      "compared": 0,
+      "executed_digests": {
+        "engine": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+        "repository": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67"
+      },
+      "failures": [],
+      "generated": 1545,
+      "inventory_complete": true,
+      "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "oracle_errors": 1545,
+      "oracle_state": "available",
+      "qualified": false,
+      "read": {
+        "engine": 1545,
+        "repository": 1545
+      },
+      "refused": {
+        "engine": 457,
+        "repository": 457
+      },
+      "unobserved": 1545
+    },
+    "omitted": {
+      "boundary_yaml": {
+        "oracle_unavailable": 457
+      },
+      "compared": 0,
+      "executed_digests": {
+        "engine": "918d08ecbd8e7b968f570322fa130fc1ccb6bd67d52adbd005275bac5368a5b1",
+        "repository": "918d08ecbd8e7b968f570322fa130fc1ccb6bd67d52adbd005275bac5368a5b1"
+      },
+      "failures": [],
+      "generated": 1545,
+      "inventory_complete": false,
+      "inventory_digest": "ad3b7aecdc54af12e27dee0e9581a264d568f33ba83157f2ccf16a052145fc67",
+      "oracle_errors": 0,
+      "oracle_state": "oracle_unavailable",
+      "qualified": false,
+      "read": {
+        "engine": 1544,
+        "repository": 1544
+      },
+      "refused": {
+        "engine": 457,
+        "repository": 457
+      },
+      "unobserved": 1545
+    }
+  },
+  "stand_down": [
+    "  /tmp/tmp0jvvs7kz: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down",
+    "reader/generated-grammar-agrees: oracle_unavailable STANDS DOWN; provisioned qualification outstanding"
+  ],
+  "summary": "selftest (PARTIAL, 1 of 62 suites): 29 passed, 0 failed in 3.83s",
+  "command": "python3 -S scripts/selftest.py --suite 55_veldo_0119_agreement",
+  "exit_code": 2,
+  "note": "Partial-run exit 2 is mandatory even when all assertions pass; final gate owns evidence."
+}

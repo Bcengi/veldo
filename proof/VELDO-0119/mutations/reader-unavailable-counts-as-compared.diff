@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/reader_agreement.py
++++ b/scripts/fixtures/reader_agreement.py
+@@ -67,0 +68,2 @@
++            if raw['state'] == 'oracle_unavailable':
++                report['compared'] += 1

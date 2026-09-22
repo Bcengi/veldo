@@ -1,0 +1,6 @@
+--- a/scripts/fixtures/reader_agreement.py
++++ b/scripts/fixtures/reader_agreement.py
+@@ -47,0 +48,3 @@
++    if omit is not None:
++        cases = cases[1:]
++        omit = None

@@ -1,0 +1,7 @@
+{"finding": 119, "mutation": "reader-strip-quoted-hash", "baseline": "green", "assertions": 29, "red_rows": ["reader/generated-grammar-agrees", "reader/agreement-requires-full-oracle-domain"]}
+{"finding": 119, "mutation": "reader-coerce-leading-zero", "baseline": "green", "assertions": 29, "red_rows": ["reader/generated-grammar-agrees", "reader/generated-boundaries-refuse", "reader/agreement-requires-full-oracle-domain"]}
+{"finding": 119, "mutation": "reader-overwrite-duplicate", "baseline": "green", "assertions": 29, "red_rows": ["reader/generated-boundaries-refuse", "reader/agreement-requires-full-oracle-domain"]}
+{"finding": 119, "mutation": "reader-accept-unclosed-flow", "baseline": "green", "assertions": 29, "red_rows": ["reader/generated-grammar-agrees", "reader/generated-boundaries-refuse", "reader/agreement-requires-full-oracle-domain"]}
+{"finding": 119, "mutation": "reader-unavailable-counts-as-compared", "baseline": "green", "assertions": 29, "red_rows": ["reader/agreement-requires-full-oracle-domain"]}
+{"finding": 119, "mutation": "reader-omit-from-required-domain", "baseline": "green", "assertions": 29, "red_rows": ["reader/agreement-requires-full-oracle-domain"]}
+{"mutations_rejected": 6, "green_suites": {"55_veldo_0119_agreement.py": 29}}

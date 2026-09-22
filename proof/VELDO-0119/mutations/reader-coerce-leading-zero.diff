@@ -1,0 +1,5 @@
+--- a/.veldo/yamlish.py
++++ b/.veldo/yamlish.py
+@@ -67 +67 @@
+-        return int(word) if _INT.fullmatch(word) else word
++        return int(word) if re.fullmatch(r'-?[0-9]+', word) else word

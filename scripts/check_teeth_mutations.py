@@ -139,6 +139,38 @@ def cases():
             "state = 'oracle_unavailable' if exc.name == 'yaml' else 'oracle_error'",
             "state = 'oracle_unavailable'",
             'missing-oracle-is-unproven')
+    def agreement(name, module, old, new, row, fixture=False):
+        add(119, name, '55_veldo_0119_agreement.py', module, old, new, ['reader/' + row])
+        if fixture:
+            result[-1]['fixture'] = True
+
+    agreement('reader-strip-quoted-hash', 'yamlish.py',
+              "                return ''.join(out)",
+              "                return ''.join(out).split('#', 1)[0]",
+              'generated-grammar-agrees')
+    agreement('reader-coerce-leading-zero', 'yamlish.py',
+              "return int(word) if _INT.fullmatch(word) else word",
+              "return int(word) if re.fullmatch(r'-?[0-9]+', word) else word",
+              'generated-grammar-agrees')
+    agreement('reader-overwrite-duplicate', 'yamlish.py',
+              "                if key in out:\n                    self.error(n, 'duplicate key ' + repr(key))",
+              "                if False:\n                    self.error(n, 'duplicate key ' + repr(key))",
+              'generated-boundaries-refuse')
+    agreement('reader-accept-unclosed-flow', 'yamlish.py',
+              "        self.error('unclosed collection')",
+              "        return out",
+              'generated-boundaries-refuse')
+    agreement('reader-unavailable-counts-as-compared', 'reader_agreement.py',
+              "            report['unobserved'] += 1",
+              "            report['unobserved'] += 1\n"
+              "            if raw['state'] == 'oracle_unavailable':\n"
+              "                report['compared'] += 1",
+              'agreement-requires-full-oracle-domain', fixture=True)
+    agreement('reader-omit-from-required-domain', 'reader_agreement.py',
+              "    required = Counter(identity(case) for case in cases)",
+              "    if omit is not None:\n        cases = cases[1:]\n        omit = None\n"
+              "    required = Counter(identity(case) for case in cases)",
+              'agreement-requires-full-oracle-domain', fixture=True)
     return result
 
 
@@ -209,7 +241,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 118))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 118, 119))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

@@ -119,7 +119,7 @@ def git(root, *args):
 def read_inputs(root):
     """Coarse input closure, including scripts/fixtures and untracked additions/deletions."""
     files = {}
-    for directory in ('.veldo', 'scripts', 'proof'):
+    for directory in ('.veldo', 'engine/.veldo', 'scripts', 'proof'):
         for path in sorted((root / directory).rglob('*')):
             rel = path.relative_to(root).as_posix()
             if rel in OUTPUTS or '__pycache__' in path.parts:
