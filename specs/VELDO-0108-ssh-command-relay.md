@@ -39,7 +39,10 @@ acceptance_criteria:
     text: >
       Claim: A remote client's command reaches the authority unchanged and is judged there, not at
       the relay. Set: A disposable SSH relay to a real endpoint, with commands valid, tampered in
-      transit, and signed by a principal the authority does not know. Completeness: The command the
+      transit, and signed by a principal the authority does not know; bare socket cases with an
+      exactly 1 MiB request and short response, a short request and exactly 1 MiB response,
+      and each direction over 1 MiB. Exactly-at-limit bytes are carried unchanged with exit 0;
+      oversized input or output is refused with exit 4 and zero stdout bytes. Completeness: The command the
       authority received is compared byte for byte with the one sent, so the row fails if the relay
       is rewriting rather than relaying. Falsifier: Have the relay accept a command the authority
       would refuse; relay/the-authority-judges-not-the-relay must fail.

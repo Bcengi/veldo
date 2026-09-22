@@ -12,8 +12,9 @@ is built and proven, and `.veldo/policy_check.py` refuses a tree where a draft s
 
 `.veldo/control_relay.py`, mirrored byte for byte into `engine/.veldo/`. The program sshd runs on the
 authority's machine. It reads one request from its standard input, writes those bytes unchanged to
-the local IPC endpoint, and writes the endpoint's answer unchanged to its standard output. That is
-the whole of it.
+the local IPC endpoint, and writes the endpoint's answer unchanged to its standard output.
+Requests and responses are limited independently to 1 MiB (1,048,576 bytes), inclusive.
+Exceeding either limit returns exit 4 with zero stdout bytes and a diagnostic on stderr.
 
 ## Why it does so little on purpose
 
@@ -40,7 +41,7 @@ observation.
 
 ## What the evidence is
 
-Eight rows in `scripts/suites/48_veldo_0108_relay.py`. The relay runs as a real child process with the
+Ten rows in `scripts/suites/48_veldo_0108_relay.py`. The relay runs as a real child process with the
 request on stdin, against real authority child processes on real sockets. A valid command arrives
 unchanged and is accepted. A command tampered with in transit and one signed by a key the authority
 does not know are both refused **at the authority**. With the authority stopped,
@@ -71,11 +72,19 @@ the mutation that makes it read one belongs to AC2 as well. The first mutation w
 sharpened from "never connect" to "replace the answer" for the same reason: a mutant that breaks the
 whole fixture reds every row and proves nothing about any one of them.
 
+The added relay/exact-limit-request-is-carried and relay/exact-limit-response-is-carried rows
+isolate each inclusive 1 MiB boundary with a short payload in the other direction. A bare socket
+records the request bytes; the child relay must exit 0, preserve the response bytes, and emit no
+stderr. The exclusive-request-limit and exclusive-response-limit temporary production mutations
+change the respective comparison from > to >=; each fails its corresponding new assertion.
+
 ## Stood down by name
 
 There is **no SSH server on this machine**, so the leg where sshd authenticates the remote principal
-and refuses an unknown one is NOT exercised. That leg is sshd's, not this program's. What is
-exercised is every decision this program makes, and the thing that matters about the boundary: the
+and refuses an unknown one is NOT exercised. That leg is sshd's. The rows demonstrate the listed
+carrying, size-boundary, usage and refusal cases, without claiming exhaustive decision coverage.
+Exhaustive coverage is INTENDED and NOT YET DEMONSTRATED; transport failure interleavings need
+additional fixtures. For the authentication boundary, the
 relay is given SSH's own environment, including a principal, and it changes nothing about the answer,
 because the relay never reads it and the authority never sees it. A correctly signed command with no
 SSH environment at all is accepted, which is the mirror: the signature authorises and SSH's presence

@@ -3,7 +3,8 @@
 
 WHAT THIS PROGRAM IS. The thing SSH runs on the authority's machine. It reads one request from its
 standard input, writes those bytes UNCHANGED to the local IPC endpoint, and writes the endpoint's
-answer UNCHANGED to its standard output. That is the whole of it.
+answer UNCHANGED to its standard output, up to 1 MiB inclusive in each direction. Exceeding
+either limit exits 4 with zero stdout bytes and a diagnostic on stderr.
 
   ssh workstation veldo-relay        # sshd runs this, with the client's bytes on stdin
 

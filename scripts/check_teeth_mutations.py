@@ -81,6 +81,12 @@ def cases():
         '            if os.path.exists(address) and __import__("stat").S_ISSOCK(os.stat(address).st_mode):\n'
         '                return {"accepted": True, "watermark": seen.get("watermark") if seen else None}',
         ['unavailable/sigkill-refuses-generic-client'])
+    add(12, 'exclusive-request-limit', '48_veldo_0108_relay.py', 'control_relay.py',
+        '        if total > limit:', '        if total >= limit:',
+        ['relay/exact-limit-request-is-carried'])
+    add(12, 'exclusive-response-limit', '48_veldo_0108_relay.py', 'control_relay.py',
+        '            if total > MAX_BYTES:', '            if total >= MAX_BYTES:',
+        ['relay/exact-limit-response-is-carried'])
     return result
 
 
@@ -108,7 +114,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12))
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
     args = parser.parse_args()

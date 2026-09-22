@@ -14,8 +14,7 @@ nothing at all.
 
 WHAT IS HONESTLY NOT TESTED, AND WHY, and this is named in the row rather than left out. There is no
 SSH SERVER on this machine, so the leg where sshd authenticates the remote principal and refuses an
-unknown one is NOT exercised. That leg is sshd's, not this program's. What IS exercised is every
-decision this program makes, and the thing that matters about the boundary: the relay is given SSH's
+unknown one is NOT exercised. That leg is sshd's, not this program's. The rows exercise the listed carrying, size, usage and refusal cases, and this boundary: the relay is given SSH's
 own environment, including a principal, and it changes nothing about the answer, because the relay
 never reads it and the authority never sees it.
 """
@@ -176,6 +175,42 @@ expect("VELDO-0108 relay/oversized-response-has-zero-stdout: oversized endpoint 
        "with exactly zero stdout bytes",
        not _v108_large_thread.is_alive() and _v108_large_response.returncode == RL108.EXIT_TOO_LARGE
        and _v108_large_response.stdout == b"" and b"response exceeded" in _v108_large_response.stderr)
+# Inclusive 1 MiB boundaries, with each direction isolated from the other's limit.
+def _v108_boundary_exchange(request, response):
+    received = []
+
+    def endpoint():
+        try:
+            conn, _ = _v108_echo_srv.accept()
+            with conn:
+                conn.settimeout(2)
+                chunks = []
+                while True:
+                    chunk = conn.recv(65536)
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                received.append(b"".join(chunks))
+                conn.sendall(response)
+        except OSError:
+            return
+
+    thread = _v108_threading.Thread(target=endpoint, daemon=True)
+    thread.start()
+    result = _v108_sp.run(
+        [_v108_sys.executable, str(_v108_MAIN / "control_relay.py"), _v108_echo_addr],
+        input=request, capture_output=True, timeout=5)
+    thread.join(timeout=5)
+    return (not thread.is_alive() and received == [request]
+            and result.returncode == 0 and result.stdout == response and result.stderr == b"")
+
+
+expect("relay/exact-limit-request-is-carried: exactly 1 MiB reaches the endpoint unchanged "
+       "and its short response is returned with exit zero",
+       _v108_boundary_exchange(bytes(range(256)) * 4096, b"ok"))
+expect("relay/exact-limit-response-is-carried: a short request reaches the endpoint and exactly "
+       "1 MiB of response is returned unchanged with exit zero",
+       _v108_boundary_exchange(b"request", bytes(range(256)) * 4096))
 _v108_echo_srv.close()
 
 if not _v108_have_git:
