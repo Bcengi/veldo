@@ -919,9 +919,9 @@ expect("WARP-0617 AC engine-sync: capabilities.yaml byte-identical across all 6 
        (ROOT / ".veldo/capabilities.yaml").read_bytes() == (ROOT / "engine/.veldo/capabilities.yaml").read_bytes())
 expect("WARP-0617 AC: the tracker_request_projection capability is declared mechanical, repo-only, home .veldo/request_projection.py",
        bool(re.search(r"(?m)^\s{2}tracker_request_projection:\s*\{status:\s*mechanical,\s*home:\s*\.veldo/request_projection\.py,\s*scope:\s*repo-only\b", (ROOT / ".veldo/capabilities.yaml").read_text())))
-expect("WARP-0617 AC: request_projection.py is REPO-ONLY like the tracker family (not synced to engine or packs)",
-       not (ROOT / "engine/.veldo/request_projection.py").exists()
-       and not (ROOT / "engine/.veldo/request_projection.py").exists())
+expect("WARP-0617 AC: request_projection.py has an identical engine source mirror under the one-parser contract",
+       (ROOT / ".veldo/request_projection.py").read_bytes()
+       == (ROOT / "engine/.veldo/request_projection.py").read_bytes())
 
 # --- the request Telegram doorbell (veldo.request/v1 -> a signal-only notice + link, WARP-0618, W4 of
 # PLAN-0016): a concise nudge on a new or updated human touchpoint that NEVER captures a decision,

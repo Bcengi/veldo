@@ -299,9 +299,9 @@ expect("WARP-0619 AC: the tracker_request_reconcile capability is declared mecha
        bool(re.search(r"(?m)^\s{2}tracker_request_reconcile:\s*\{status:\s*mechanical,\s*home:\s*\.veldo/request_reconcile\.py,\s*scope:\s*repo-only\b", (ROOT / ".veldo/capabilities.yaml").read_text())))
 expect("WARP-0619 AC1: the read_changelog seam (base + FakeTracker seed_changelog) is on .veldo/tracker_adapter.py",
        "def read_changelog" in (ROOT / ".veldo/tracker_adapter.py").read_text() and "def seed_changelog" in (ROOT / ".veldo/tracker_adapter.py").read_text())
-expect("WARP-0619 AC: request_reconcile.py is REPO-ONLY like the tracker family (not synced to engine or packs)",
-       not (ROOT / "engine/.veldo/request_reconcile.py").exists()
-       and not (ROOT / "engine/.veldo/request_reconcile.py").exists())
+expect("WARP-0619 AC: request_reconcile.py has an identical engine source mirror under the one-parser contract",
+       (ROOT / ".veldo/request_reconcile.py").read_bytes()
+       == (ROOT / "engine/.veldo/request_reconcile.py").read_bytes())
 expect("WARP-0619 AC3: the frozen safety core is UNCHANGED (no request_reconcile reference added to authorization/two_key/policy_check/decision)",
        all("request_reconcile" not in (ROOT / (".veldo/" + _f)).read_text()
            for _f in ("authorization.py", "two_key.py", "policy_check.py", "decision.py")))

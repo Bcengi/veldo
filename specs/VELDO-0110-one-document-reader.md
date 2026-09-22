@@ -11,6 +11,8 @@ depends_on: []
 placement: [contracts]
 protected_paths: [".veldo/policy_check.py", "engine/.veldo/policy_check.py"]
 footprint:
+  - "engine/.veldo/tracker_intake.py"
+  - "engine/.veldo/budget.py"
   - "engine/.veldo/tracker_mirror.py"
   - "engine/.veldo/request_reconcile.py"
   - ".veldo/request_reconcile.py"

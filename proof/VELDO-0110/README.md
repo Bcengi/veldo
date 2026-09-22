@@ -49,3 +49,9 @@ claim that the modified documents were reviewed in the past.
 The shared reader is in both init lists (laid files and required substrate). All
 changed engine runtime files have matching repository copies. Writer fixes are part
 of the migration: tracker intake and incident drafts must emit readable syntax too.
+
+The repository had exceptions to the stated engine-mirror convention: budget and
+several tracker/request modules were repository-only. Every Python module changed
+by this migration now has a byte-identical engine source copy. The two historical
+tests requiring missing request-module copies instead verify byte equality. These
+source copies do not add tracker configuration or network activity to initialization.
