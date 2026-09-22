@@ -60,7 +60,12 @@ no surrogate or out-of-range escapes. Canonical decimal integers alone
 become integers; boolean and null-like words stay strings; empty values
 are null. The inherited lexical registry permits literal DEL in plain and
 continuation styles; PyYAML reports these three witnesses as invalid YAML.
-That discrepancy is recorded, not removed after observing parser answers.
+That raw discrepancy is retained. The independent adapter handles this
+already-declared extension by composing a second source with literal DEL
+replaced by an absent printable private-use code point, preserving character
+offsets. It reverses that substitution only in plain scalar values (including
+continuations), never keys or styled scalars. Both observations are retained;
+the accepted input inventory and bytes are unchanged.
 
 ## Complete coverage targets
 

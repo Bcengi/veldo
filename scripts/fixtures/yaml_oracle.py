@@ -59,9 +59,46 @@ def observe(text, cap=None):
                       error_type=type(exc).__name__)
         if getattr(exc, 'problem_mark', None):
             result['location'] = mark(exc.problem_mark)
+        if '\x7f' in text:
+            result['literal_del'] = observe_literal_del(text, yaml)
     except Exception as exc:
         result.update(state='oracle_error', error=type(exc).__name__ + ': ' + str(exc))
     return result
+
+
+def observe_literal_del(text, yaml):
+    """Observe the documented plain-DEL extension without consulting a reader.
+
+    A fresh printable code point preserves character offsets and YAML syntax.
+    The original invalid-YAML observation remains the primary observation.
+    Only plain scalar values may carry the substitution; keys and styled
+    scalars are not covered by the written literal-DEL permission.
+    """
+    replacement = next(chr(n) for n in range(0xe000, 0xf900) if chr(n) not in text)
+    translated = text.replace('\x7f', replacement)
+    try:
+        node = yaml.compose(translated, Loader=getattr(yaml, 'CSafeLoader', yaml.SafeLoader))
+        tree = structure(node, translated)
+    except yaml.YAMLError as exc:
+        return {'state': 'refused', 'error': str(exc)}
+    return {'state': 'observed', 'rule': 'literal DEL in plain/continuation styles',
+            'replacement': replacement, 'source': translated, 'tree': tree}
+
+
+def restore_literal_del(node, replacement, key=False):
+    if node is None:
+        return None
+    out = dict(node)
+    if node['kind'] == 'scalar':
+        if replacement in node['value'] and (key or node['style']):
+            raise DialectDifference('literal DEL outside plain scalar value')
+        out['value'] = node['value'].replace(replacement, '\x7f')
+    elif node['kind'] == 'sequence':
+        out['items'] = [restore_literal_del(n, replacement) for n in node['items']]
+    elif node['kind'] == 'mapping':
+        out['pairs'] = [[restore_literal_del(k, replacement, True),
+                         restore_literal_del(v, replacement)] for k, v in node['pairs']]
+    return out
 
 
 class DialectDifference(ValueError):
@@ -99,6 +136,13 @@ def answer(raw):
     if raw['state'] != 'observed':
         return {'state': raw['state']}
     if raw['syntax'] != 'valid_yaml':
+        extension = raw.get('literal_del', {})
+        if extension.get('state') == 'observed':
+            try:
+                tree = restore_literal_del(extension['tree'], extension['replacement'])
+                return {'state': 'value', 'value': adapt_node(tree)}
+            except DialectDifference as exc:
+                return {'state': 'refused', 'reason': str(exc)}
         return {'state': 'refused', 'reason': 'invalid_yaml'}
     try:
         return {'state': 'value', 'value': adapt_node(raw['tree'])}

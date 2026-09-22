@@ -1,0 +1,233 @@
+[
+  {
+    "raw": {
+      "source": "a: \u007f\n \u007f\n",
+      "input_sha256": "5a6a42b905886e5ce0cc76317e821343585f6d6f0c6b9d35d9f08f4f814fd9aa",
+      "oracle_version": "6.0.1",
+      "state": "observed",
+      "syntax": "invalid_yaml",
+      "error": "unacceptable character #x007f: control characters are not allowed\n  in \"<unicode string>\", position 3",
+      "error_type": "ReaderError",
+      "literal_del": {
+        "state": "observed",
+        "rule": "literal DEL in plain/continuation styles",
+        "replacement": "\ue000",
+        "source": "a: \ue000\n \ue000\n",
+        "tree": {
+          "kind": "mapping",
+          "tag": "tag:yaml.org,2002:map",
+          "start": {
+            "line": 1,
+            "column": 1,
+            "index": 0
+          },
+          "end": {
+            "line": 3,
+            "column": 1,
+            "index": 8
+          },
+          "spelling": "a: \ue000\n \ue000\n",
+          "pairs": [
+            [
+              {
+                "kind": "scalar",
+                "tag": "tag:yaml.org,2002:str",
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "index": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 2,
+                  "index": 1
+                },
+                "spelling": "a",
+                "value": "a",
+                "style": ""
+              },
+              {
+                "kind": "scalar",
+                "tag": "tag:yaml.org,2002:str",
+                "start": {
+                  "line": 1,
+                  "column": 4,
+                  "index": 3
+                },
+                "end": {
+                  "line": 2,
+                  "column": 3,
+                  "index": 7
+                },
+                "spelling": "\ue000\n \ue000",
+                "value": "\ue000 \ue000",
+                "style": ""
+              }
+            ]
+          ],
+          "flow_style": false
+        }
+      }
+    },
+    "answer": {
+      "state": "value",
+      "value": {
+        "a": "\u007f \u007f"
+      }
+    }
+  },
+  {
+    "raw": {
+      "source": "a: \u007f\n \u007f\n \u007f\n",
+      "input_sha256": "668366d1a54d61d18c1f75621ba04c947356c92a1ed0c94b3088cbf33e472aef",
+      "oracle_version": "6.0.1",
+      "state": "observed",
+      "syntax": "invalid_yaml",
+      "error": "unacceptable character #x007f: control characters are not allowed\n  in \"<unicode string>\", position 3",
+      "error_type": "ReaderError",
+      "literal_del": {
+        "state": "observed",
+        "rule": "literal DEL in plain/continuation styles",
+        "replacement": "\ue000",
+        "source": "a: \ue000\n \ue000\n \ue000\n",
+        "tree": {
+          "kind": "mapping",
+          "tag": "tag:yaml.org,2002:map",
+          "start": {
+            "line": 1,
+            "column": 1,
+            "index": 0
+          },
+          "end": {
+            "line": 4,
+            "column": 1,
+            "index": 11
+          },
+          "spelling": "a: \ue000\n \ue000\n \ue000\n",
+          "pairs": [
+            [
+              {
+                "kind": "scalar",
+                "tag": "tag:yaml.org,2002:str",
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "index": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 2,
+                  "index": 1
+                },
+                "spelling": "a",
+                "value": "a",
+                "style": ""
+              },
+              {
+                "kind": "scalar",
+                "tag": "tag:yaml.org,2002:str",
+                "start": {
+                  "line": 1,
+                  "column": 4,
+                  "index": 3
+                },
+                "end": {
+                  "line": 3,
+                  "column": 3,
+                  "index": 10
+                },
+                "spelling": "\ue000\n \ue000\n \ue000",
+                "value": "\ue000 \ue000 \ue000",
+                "style": ""
+              }
+            ]
+          ],
+          "flow_style": false
+        }
+      }
+    },
+    "answer": {
+      "state": "value",
+      "value": {
+        "a": "\u007f \u007f \u007f"
+      }
+    }
+  },
+  {
+    "raw": {
+      "source": "a: \u007f\n",
+      "input_sha256": "4ea1b51f2cfc324c30883762b10e3a8e3b0d3b4179ac2e895e19c779d8f9600b",
+      "oracle_version": "6.0.1",
+      "state": "observed",
+      "syntax": "invalid_yaml",
+      "error": "unacceptable character #x007f: control characters are not allowed\n  in \"<unicode string>\", position 3",
+      "error_type": "ReaderError",
+      "literal_del": {
+        "state": "observed",
+        "rule": "literal DEL in plain/continuation styles",
+        "replacement": "\ue000",
+        "source": "a: \ue000\n",
+        "tree": {
+          "kind": "mapping",
+          "tag": "tag:yaml.org,2002:map",
+          "start": {
+            "line": 1,
+            "column": 1,
+            "index": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 1,
+            "index": 5
+          },
+          "spelling": "a: \ue000\n",
+          "pairs": [
+            [
+              {
+                "kind": "scalar",
+                "tag": "tag:yaml.org,2002:str",
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "index": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 2,
+                  "index": 1
+                },
+                "spelling": "a",
+                "value": "a",
+                "style": ""
+              },
+              {
+                "kind": "scalar",
+                "tag": "tag:yaml.org,2002:str",
+                "start": {
+                  "line": 1,
+                  "column": 4,
+                  "index": 3
+                },
+                "end": {
+                  "line": 1,
+                  "column": 5,
+                  "index": 4
+                },
+                "spelling": "\ue000",
+                "value": "\ue000",
+                "style": ""
+              }
+            ]
+          ],
+          "flow_style": false
+        }
+      }
+    },
+    "answer": {
+      "state": "value",
+      "value": {
+        "a": "\u007f"
+      }
+    }
+  }
+]
