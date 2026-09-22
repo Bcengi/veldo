@@ -62,6 +62,7 @@ def import_gate(path):
 def fixture(root, source):
     (root / 'scripts/suites/support').mkdir(parents=True)
     (root / '.veldo').mkdir()
+    (root / '.veldo/git_process.py').write_bytes((source.parent.parent / '.veldo/git_process.py').read_bytes())
     (root / 'proof').mkdir()
     (root / 'scripts/check_gate_mutations.py').write_bytes(source.read_bytes())
     for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):

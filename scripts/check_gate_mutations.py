@@ -100,8 +100,23 @@ def command(args, env):
         proc.wait(timeout=5)
 
 
+# Git's shared environment boundary runs inside our owned group. The outer process
+# keeps setup descendants killable even if the shared subprocess.run call hangs.
+GIT_BRIDGE = """import importlib.util, subprocess, sys
+spec = importlib.util.spec_from_file_location('git_process', sys.argv[1])
+_git_process = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(_git_process)
+result = _git_process.run(['git', *sys.argv[2:]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+sys.stdout.buffer.write(result.stdout)
+sys.stderr.buffer.write(result.stderr)
+sys.exit(result.returncode)
+"""
+
+
 def git(root, *args):
-    return command(['/usr/bin/git', '-C', str(root), *args], fixed_env('/nonexistent')).decode().strip()
+    return command([sys.executable, '-B', '-s', '-c', GIT_BRIDGE,
+                    str(ROOT / '.veldo/git_process.py'), '-C', str(root), *args],
+                   fixed_env('/nonexistent')).decode().strip()
 
 
 def read_inputs(root):
@@ -334,8 +349,7 @@ def worker(job):
 
 
 def snapshot(root, destination, files, head):
-    command(['/usr/bin/git', 'clone', '-q', '--no-checkout', '--no-hardlinks',
-             str(root), str(destination)], fixed_env('/nonexistent'))
+    git(root, 'clone', '-q', '--no-checkout', '--no-hardlinks', str(root), str(destination))
     git(destination, 'checkout', '-q', '--detach', head)
     # Git exists only for corpus/history queries; excluded outputs cannot be read by workers.
     for child in destination.iterdir():
