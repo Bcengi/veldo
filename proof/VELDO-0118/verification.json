@@ -1,0 +1,29 @@
+{
+  "baseline": {
+    "seconds": 569.8747204372194,
+    "returncode": 1
+  },
+  "with_fixture": {
+    "seconds": 1033.3778716798406,
+    "returncode": 1
+  },
+  "measured_added_gate_seconds": 463.50315124262124,
+  "baseline_gate": "GATE: RED (59e6fff1ccaa371e141fd1ea9d147432e28c880c)",
+  "final_gate": "GATE: RED (69def368bbf63e2735797df5496efbdcad0b883b)",
+  "baseline_unit": "selftest: 5567 passed, 0 failed",
+  "final_unit": "selftest: 5569 passed, 3 failed",
+  "integration_observations": [
+    "mutated(spend_recorded) run: 5569 passed, 3 failed (338s)",
+    "baseline run: 5569 passed, 3 failed (339s)"
+  ],
+  "baseline_log_sha256": "086314ec0b79963a4afe644d7bd214e3549c792e92f79afccb5e5b70e6657c20",
+  "final_log_sha256": "f9eca349ecf68014e9db22de84e110d6b1021bde38bda449b3a73d4b5cbb1099",
+  "measurement_note": "Sequential wall-clock gate measurements on this machine; includes first-use retries and ordinary run-to-run variation. Both runs started clean. Cancelled attempt excluded. Full raw gate logs are not committed.",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "baseline_security": "secret inventory: 2 outstanding (2 exposed in reachable history), 88 dispositioned, 36759 advisory, 36849 scanned; posture=enforcing",
+  "final_security": "secret inventory: 0 outstanding (0 exposed in reachable history), 102 dispositioned, 37836 advisory, 37938 scanned; posture=enforcing (reporting, not blocking)",
+  "final_failed_stages": [
+    "unit: FAIL"
+  ]
+}

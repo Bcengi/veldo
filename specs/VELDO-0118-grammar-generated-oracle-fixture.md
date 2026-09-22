@@ -87,3 +87,17 @@ Changing the accepted dialect, replacing the standard-library runtime dependency
 The initial exhaustive domain contains all grammar derivations with at most three value nodes (containers and scalars), nesting depth at most two and at most two children per container. Scalar payloads enumerate length 0..2 over a, space, #, colon, single quote and double quote, plus one representative of every lexical partition: canonical positive/negative/zero integer, leading-zero digits, boolean words, null-like words, each escape, Unicode and control boundaries. Keys use every supported key class, with at most two distinct keys. Enumerate all grammar-permitted scalar styles, block chomping choices, one/two-space indentation units, LF/CRLF and absent/present trailing comments. Multi-line productions get their shortest valid witness and one extra continuation. Partition representatives and bounds are versioned grammar data, never discovered by asking the parser what it accepts. If a production needs a larger minimum derivation, include its shortest witnesses outside the base bound and report them separately. Completeness is exhaustive only over this declared finite domain and its generated neighbors; report limits plainly, preserve regressions, and permit explicit larger qualification domains without sampling or silently reducing the baseline domain. A future grammar revision changes the inventory digest and must regenerate it.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
+
+
+## Implementation checkpoint (2026-09-22)
+
+Stopped under the requested cost limit; status remains ready. The clean-tree
+gate at 69def368bbf63e2735797df5496efbdcad0b883b was RED (5,569 unit assertions
+passed, three failed). Its measured wall-time increase was 463.503151 seconds.
+The direct new suite took 60.001075 seconds and generated 2,059,668 derivations
+and 19,756,060 boundary edits before reporting generation_incomplete; full
+baseline qualification remains unproven. The declared domain was not reduced.
+All eight named mutation drives completed and detected their targets. A
+separate control-domain comparison recorded 192 reader/oracle disagreements
+in full for VELDO-0119; the reader is unchanged. Counts, digests, all findings,
+regeneration commands and the stop record are in `proof/VELDO-0118/README.md`.

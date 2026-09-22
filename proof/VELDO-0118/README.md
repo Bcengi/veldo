@@ -1,44 +1,53 @@
-# Grammar-generated oracle fixture
+# Grammar-generated oracle fixture: stopped at the cost limit
 
-Work in progress on build-veldo-0118, starting at 59e6fff. The reader and its
-engine mirror are unchanged. No push, deployment, merge or independent
-approval is represented by this work.
+Implementation stopped under the requested 60-second rule. The specification
+remains ready, not complete: full derivation generation, boundary coverage and
+oracle observation are UNPROVEN. The baseline domain was not reduced to obtain
+a pass. The production reader and its engine mirror are unchanged.
 
-The generator enumerates syntax derivations without consulting the reader.
-The count in `expected-counts.json` is computed by a separate recursive
-feature polynomial, not measured as generated or compared cases. The full
-qualification retains duplicate-byte derivations and generates every
-applicable registered edit. A 60-second operational stop reports incomplete
-generation as red, never as a smaller passing domain.
+## Measured domain and cost
 
-The assertion controls use an explicitly separate domain: 919 generated
-derivations and 8,685 boundary edits. The baseline remains 510,928,488
-derivations, including 56 separate multiline/BOM witnesses, and
-5,013,490,520 boundary edits. Full qualification has not yet completed.
+| Inventory | Expected | Actually generated in the gate's unit run |
+| --- | ---: | ---: |
+| Base derivations | 510,928,432 | 2,059,668 |
+| Separate multiline/BOM witnesses | 56 | 0 |
+| All derivations | 510,928,488 | 2,059,668 |
+| Boundary edits | 5,013,490,520 | 19,756,060 |
 
-All eight mutation drives completed their five assertions. Each declared
-falsifier and a second mutation made its named row false; every unmutated
-control was green. `mutation-controls.jsonl` records the results and
-`mutations/` retains each applied diff. Reproduce with:
+Generation took **60.000076 seconds**, and the new suite took **60.001075
+seconds** in the direct unit run. It returned normally with
+`generation_incomplete`; the completeness assertions failed. This was not a
+crash, hang, smaller qualification domain, or passing timeout. The full-domain
+oracle phase did not start: compared=0 and unobserved=5,524,419,008. No full-domain
+agreement is claimed.
+
+The separate arithmetic counter, which does not call the scalar or tree
+generator, counts 896 scalar derivations per block value. Two-child root maps
+alone account for 503,196,096 derivations: 78 distinct-key pair derivations,
+898 child choices (including the two empty flow collections), and eight
+formatting choices. These cross-products and their generated boundary neighbors
+drive the cost. These are expected counts, never relabeled as generated counts.
+
+`baseline-prefix.json` records actual counts, production/alternative coverage,
+missing witnesses, grammar revision, implementation/fixture digests and the
+prefix inventory digest. `expected-counts.json` records the independently
+computed totals. Duplicate-byte derivations remain separate records.
+
+The exact recorded prefix digest is:
 
 ```
-python3 scripts/check_teeth_mutations.py --finding 118
+a0ad33c7b088aa0df56b2eb56eee5f143e3c4d6a18af405f10abeef325bee463
 ```
 
-Capability controls exercise both reader and policy consumers with PyYAML
-installed, absent, broken during import, missing an internal dependency,
-and broken at runtime. A separate `python3 -S` drive confirmed actual
-top-level import absence: each consumer generated one case, compared zero,
-reported one unobserved case and zero agreements, with `oracle_unavailable`.
+Regenerate that prefix outside the repository with:
 
-The clean starting-tree gate took 569.874720 seconds and reported
-`selftest: 5567 passed, 0 failed` and
-`GATE: RED (59e6fff1ccaa371e141fd1ea9d147432e28c880c)`.
-Its existing security failure is two undispositioned reachable-history
-entries: `proof/VELDO-0123/gate-cold.log:47@9a83d484` and
-`proof/VELDO-0123/gate-warm.log:47@a6b5f28a`. Neither is changed here.
+```
+python3 proof/VELDO-0118/reproduce_prefix.py --count 2059668 --output /tmp/grammar-prefix.jsonl
+```
 
-Regeneration commands (full inventories belong outside the checkout):
+The reproducer explicitly reports a prefix, never full qualification. Its
+one-derivation smoke check ran; the full prefix was not rerun after the cost
+stop. To request an unlimited inventory and raw oracle observations explicitly:
 
 ```
 python3 scripts/fixtures/grammar_cases.py --count
@@ -46,30 +55,89 @@ python3 scripts/fixtures/grammar_cases.py --inventory --seconds 0 --output /tmp/
 python3 scripts/fixtures/yaml_oracle.py --inventory /tmp/grammar-inputs.jsonl --output /tmp/grammar-oracle.jsonl
 ```
 
-The unlimited commands are explicit qualification requests, not claims that
-the full domain has been executed. Final gate timing and actual generated
-baseline counts will be recorded after the gate run.
+Those unlimited commands were not run. They do not change the baseline bounds.
+The counts and coverage describe only this versioned finite grammar; they do
+not establish coverage of an unbounded language or close AC1's reconciliation.
 
-## Control-domain findings for VELDO-0119
+## Clean-tree gate
 
-`control-comparison.json` records a complete diagnostic comparison of the
-separate control domain: 919 derivations, 8,685 boundary edits, 9,604 oracle
-observations, and 192 disagreements. Every disagreement is retained in
-`control-disagreements.jsonl`, with input bytes, derivation, production,
-reader answer, raw oracle observation and normalized dialect answer.
-All disagreements concern accepted derivations: 180 differing values and
-12 reader refusals. No generated accepted control was invalid general YAML.
-The controls produced 5,588 valid and 4,016 invalid general YAML inputs.
-These observations do not qualify the much larger baseline domain.
+The final gate started from clean commit
+`69def368bbf63e2735797df5496efbdcad0b883b` and reported:
 
+```
+selftest: 5569 passed, 3 failed
+GATE: RED (69def368bbf63e2735797df5496efbdcad0b883b)
+```
+
+The three false rows are `grammar/all-bounded-derivations-exist`,
+`grammar/all-boundary-edits-exist`, and `grammar/oracle-observations-complete`.
+The independence and capability-control rows passed. The integration stage
+completed both its mutated run (338 seconds) and pristine run (339 seconds),
+each with the same 5,569 passed and three failed assertions; it attributed no
+new failure to the spend writer. Unit was the final gate's only failed stage.
+
+The clean starting-tree gate at `59e6fff` took **569.874720 seconds**; the
+clean post-change gate took **1,033.377872 seconds**. The measured difference
+is **463.503151 seconds**, exceeding the requested 60-second limit. This is
+an observed wall-time difference on this machine, including ordinary timing
+variation and the extra pristine comparison caused by the new completeness
+failures. It is not an estimate or a claim of isolated microbenchmark precision.
+
+The starting gate had 5,567 passed and zero failed unit assertions, but was
+RED on two reachable-history secret-inventory entries. The final security
+stage reported zero outstanding entries and passed. Neither history nor
+security policy was changed by this work. `verification.json` retains both
+observations, timings, platform and full-log digests. Raw gate logs are not
+committed. One earlier post-wiring attempt was cancelled before reaching the
+new suite to separate lexical counting from enumeration; it is excluded from
+the timing comparison.
+
+## Every observed disagreement, for VELDO-0119
+
+Before the cost stop, a complete diagnostic comparison ran over the separately
+named mutation-control domain: **919 derivations, 8,685 boundary edits, and
+9,604 oracle observations**, with PyYAML 6.0.1. It found **192 disagreements**.
+All concern accepted derivations: 180 differing values and 12 reader refusals.
+The 192 inputs are distinct. No generated accepted control was invalid general
+YAML. Across accepted inputs and neighbors, the oracle observed 5,588 valid
+and 4,016 invalid general YAML documents.
+
+Every disagreement is retained in `control-disagreements.jsonl`, including
+input bytes, derivation, grammar production, reader answer, raw oracle
+observation and normalized dialect answer. `control-comparison.json` binds
+the run to input/observation digests and the reader and fixture digests.
 For example, `a: |\n \n` yields `{"a": "\n"}` in the reader and
-`{"a": ""}` in the oracle. No reader change is made. Reproduce all findings:
+`{"a": ""}` in the oracle; `a: {a: }\n` is refused by the reader but
+composes to `{"a": {"a": null}}`. No reader defect is fixed here.
+
+Reproduce all diagnostic observations and findings:
 
 ```
 python3 proof/VELDO-0118/compare_control.py --output-dir /tmp/grammar-control
 ```
 
-The scalar count now uses separate arithmetic rather than scalar enumeration.
-An initial post-wiring gate attempt was cancelled before reaching the new
-suite to make that independence correction; it is excluded from timing
-comparisons. The completed clean-tree gate below is the measured run.
+This control domain exercises the fixture and its assertions; it is not a
+replacement for the baseline domain and cannot close full agreement.
+
+## Mutation drives and capability controls
+
+Each declared falsifier and a second distinct mutation ran on a temporary
+fixture copy. Every run completed all five assertions; each named target
+became false, and every unmutated control was green. `mutations/` contains
+the eight applied diffs, and `mutation-controls.jsonl` records the results.
+`capability-controls.json` records installed, absent, import-failure,
+missing-internal-dependency and runtime-failure outcomes for both reader
+and policy fixture consumers. A separate actual `python3 -S` absence drive
+reported, for each consumer, generated=1, compared=0, unobserved=1, agreed=0
+and `oracle_unavailable`.
+
+After the gate, both gate byproducts were restored and the requested full
+`python3 scripts/check_teeth_mutations.py` run exited zero. Its last line was:
+
+```
+{"mutations_rejected": 41, "green_suites": {"47_veldo_0107_ipc.py": 23, "48_veldo_0108_relay.py": 10, "44_veldo_0105_startline.py": 8, "46_veldo_0029_enrollment.py": 7, "49_veldo_0109_unavailable.py": 5, "53_veldo_0118_grammar.py": 5}}
+```
+
+`teeth-all.jsonl` retains the compact complete driver results. No per-case
+inventory dump, gate stamp, or event-log byproduct is committed. No push,
+merge, deployment, or independent approval is represented by this work.

@@ -1,0 +1,92 @@
+{
+  "policy/absent": {
+    "agreed": 0,
+    "compared": 0,
+    "consumer": "policy",
+    "errors": 0,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 3
+  },
+  "policy/dependency-failure": {
+    "agreed": 0,
+    "compared": 0,
+    "consumer": "policy",
+    "errors": 3,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 3
+  },
+  "policy/import-failure": {
+    "agreed": 0,
+    "compared": 0,
+    "consumer": "policy",
+    "errors": 3,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 3
+  },
+  "policy/installed": {
+    "agreed": 0,
+    "compared": 3,
+    "consumer": "policy",
+    "errors": 0,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 0
+  },
+  "policy/runtime-failure": {
+    "agreed": 0,
+    "compared": 0,
+    "consumer": "policy",
+    "errors": 3,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 3
+  },
+  "reader/absent": {
+    "agreed": 0,
+    "compared": 0,
+    "consumer": "reader",
+    "errors": 0,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 3
+  },
+  "reader/dependency-failure": {
+    "agreed": 0,
+    "compared": 0,
+    "consumer": "reader",
+    "errors": 3,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 3
+  },
+  "reader/import-failure": {
+    "agreed": 0,
+    "compared": 0,
+    "consumer": "reader",
+    "errors": 3,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 3
+  },
+  "reader/installed": {
+    "agreed": 0,
+    "compared": 3,
+    "consumer": "reader",
+    "errors": 0,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 0
+  },
+  "reader/runtime-failure": {
+    "agreed": 0,
+    "compared": 0,
+    "consumer": "reader",
+    "errors": 3,
+    "generated": 3,
+    "state": "unproven",
+    "unobserved": 3
+  }
+}

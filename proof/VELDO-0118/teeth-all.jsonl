@@ -1,0 +1,42 @@
+{"finding": 1, "mutation": "command-only", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/authority_generation", "VELDO-0107 AC2 ipc/signature-covers/binding_digest", "VELDO-0107 AC2 ipc/signature-covers/clone_uuid", "VELDO-0107 AC2 ipc/signature-covers/domain_uuid", "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit", "VELDO-0107 AC2 ipc/signature-covers/repository_uuid", "VELDO-0107 AC2 ipc/signature-covers/schema", "VELDO-0107 AC2 ipc/signature-covers/store_uuid", "VELDO-0107 AC2 ipc/signature-covers/workspace"]}
+{"finding": 1, "mutation": "omit-schema", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/schema"]}
+{"finding": 1, "mutation": "omit-workspace", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/workspace"]}
+{"finding": 1, "mutation": "omit-domain_uuid", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/domain_uuid"]}
+{"finding": 1, "mutation": "omit-store_uuid", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/store_uuid"]}
+{"finding": 1, "mutation": "omit-command", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/command"]}
+{"finding": 1, "mutation": "omit-repository_uuid", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/repository_uuid"]}
+{"finding": 1, "mutation": "omit-repository_root_commit", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit"]}
+{"finding": 1, "mutation": "omit-clone_uuid", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/clone_uuid"]}
+{"finding": 1, "mutation": "omit-binding_digest", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/binding_digest"]}
+{"finding": 1, "mutation": "omit-authority_generation", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/authority_generation"]}
+{"finding": 1, "mutation": "unsigned-request-field", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request", "VELDO-0107 AC2 ipc/signature-covers/extra_coordinate"]}
+{"finding": 1, "mutation": "signed-nonrequest-field", "baseline": "green", "assertions": 23, "red_rows": ["VELDO-0107 AC2 ipc/signature-fields-match-request"]}
+{"finding": 2, "mutation": "unreachable-null", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"]}
+{"finding": 2, "mutation": "unreachable-newline", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"]}
+{"finding": 2, "mutation": "unreachable-space", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"]}
+{"finding": 2, "mutation": "usage-null", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/usage-has-zero-stdout"]}
+{"finding": 2, "mutation": "usage-newline", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/usage-has-zero-stdout"]}
+{"finding": 2, "mutation": "usage-space", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/usage-has-zero-stdout"]}
+{"finding": 2, "mutation": "oversized-request-null", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/oversized-request-has-zero-stdout"]}
+{"finding": 2, "mutation": "oversized-request-newline", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/oversized-request-has-zero-stdout"]}
+{"finding": 2, "mutation": "oversized-request-space", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/oversized-request-has-zero-stdout"]}
+{"finding": 2, "mutation": "oversized-response-null", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/oversized-response-has-zero-stdout"]}
+{"finding": 2, "mutation": "oversized-response-newline", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/oversized-response-has-zero-stdout"]}
+{"finding": 2, "mutation": "oversized-response-space", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 relay/oversized-response-has-zero-stdout"]}
+{"finding": 2, "mutation": "unreachable-object", "baseline": "green", "assertions": 10, "red_rows": ["VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered"]}
+{"finding": 3, "mutation": "manifest-fallback", "baseline": "green", "assertions": 8, "red_rows": ["VELDO-0105 AC3 proofcheck/start-line-not-author-writable"]}
+{"finding": 3, "mutation": "nested-manifest-fallback", "baseline": "green", "assertions": 8, "red_rows": ["VELDO-0105 AC3 proofcheck/start-line-not-author-writable"]}
+{"finding": 3, "mutation": "manifest-precedence", "baseline": "green", "assertions": 8, "red_rows": ["VELDO-0105 AC3 proofcheck/start-line-not-author-writable"]}
+{"finding": 5, "mutation": "clone-local-store", "baseline": "green", "assertions": 7, "red_rows": ["VELDO-0029 AC1 enrollment/an-unsigned-binding-is-not-a-binding", "enrollment/independent-clones-share-bound-store", "VELDO-0029 AC2 enrollment/ambient-sources-decide-nothing"]}
+{"finding": 6, "mutation": "dead-socket-success", "baseline": "green", "assertions": 5, "red_rows": ["unavailable/sigkill-refuses-generic-client"]}
+{"finding": 12, "mutation": "exclusive-request-limit", "baseline": "green", "assertions": 10, "red_rows": ["relay/exact-limit-request-is-carried"]}
+{"finding": 12, "mutation": "exclusive-response-limit", "baseline": "green", "assertions": 10, "red_rows": ["relay/exact-limit-response-is-carried"]}
+{"finding": 118, "mutation": "omit-folded-block", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-bounded-derivations-exist", "grammar/all-boundary-edits-exist"]}
+{"finding": 118, "mutation": "omit-first-derivation", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-bounded-derivations-exist", "grammar/all-boundary-edits-exist"]}
+{"finding": 118, "mutation": "omit-duplicate-key", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-boundary-edits-exist"]}
+{"finding": 118, "mutation": "omit-tab-edit", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-boundary-edits-exist"]}
+{"finding": 118, "mutation": "delegate-oracle-to-reader", "baseline": "green", "assertions": 5, "red_rows": ["grammar/oracle-is-independent"]}
+{"finding": 118, "mutation": "delegate-oracle-to-front-matter", "baseline": "green", "assertions": 5, "red_rows": ["grammar/oracle-is-independent"]}
+{"finding": 118, "mutation": "absence-counts-as-agreement", "baseline": "green", "assertions": 5, "red_rows": ["grammar/missing-oracle-is-unproven"]}
+{"finding": 118, "mutation": "broken-dependency-counts-as-absence", "baseline": "green", "assertions": 5, "red_rows": ["grammar/missing-oracle-is-unproven"]}
+{"mutations_rejected": 41, "green_suites": {"47_veldo_0107_ipc.py": 23, "48_veldo_0108_relay.py": 10, "44_veldo_0105_startline.py": 8, "46_veldo_0029_enrollment.py": 7, "49_veldo_0109_unavailable.py": 5, "53_veldo_0118_grammar.py": 5}}
