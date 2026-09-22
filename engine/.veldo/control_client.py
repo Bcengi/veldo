@@ -41,7 +41,9 @@ import sys
 REQUEST_SCHEMA = "veldo.control_request/v1"
 RESPONSE_SCHEMA = "veldo.control_response/v1"
 SOCKET_NAME = "authority.sock"
-REQUEST_FIELDS = ("schema", "workspace", "domain_uuid", "store_uuid", "command", "signature")
+IDENTITY_FIELDS = ("repository_uuid", "repository_root_commit", "clone_uuid",
+                   "binding_digest", "authority_generation")
+REQUEST_FIELDS = ("schema", "workspace", "domain_uuid", "store_uuid", "command", "signature") + IDENTITY_FIELDS
 MAX_REQUEST_BYTES = 1 << 20
 
 REFUSALS = ("malformed_request", "peer_not_authorized", "command_signature_invalid",
@@ -180,7 +182,7 @@ def signed_bytes(request):
     The coordinates are inside the signature on purpose. If only the command were signed, a valid
     command could be re-addressed to another workspace in flight and still verify, which is the
     wrong-repository write this whole package exists to stop, arriving with a good signature on it."""
-    return json.dumps({k: request.get(k) for k in ("workspace", "domain_uuid", "store_uuid", "command")},
+    return json.dumps({k: request.get(k) for k in ("schema", "workspace", "domain_uuid", "store_uuid", "command") + IDENTITY_FIELDS},
                       sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
 
@@ -193,6 +195,7 @@ def build_request(workspace, binding, command, sign):
         "store_uuid": binding["store_uuid"],
         "command": command,
     }
+    req.update({k: binding[k] for k in IDENTITY_FIELDS})
     req["signature"] = sign(signed_bytes(req))
     return req
 
@@ -301,7 +304,7 @@ class Authority:
     """Serves ONE store. Every request is judged against the store this instance serves."""
 
     def __init__(self, store_uuid, domain_uuid, store_path, enrollment, verify, host_identity, apply,
-                 watermark=None):
+                 watermark=None, minimum_generation=1):
         self.store_uuid = store_uuid
         self.domain_uuid = domain_uuid
         self.store_path = os.path.realpath(os.path.abspath(store_path))
@@ -313,6 +316,7 @@ class Authority:
         # so this module never reaches into the store; absent, an accepted response simply carries
         # no watermark and a client says "none" rather than inventing one.
         self.watermark = watermark
+        self.minimum_generation = minimum_generation
 
     def judge(self, request, uid):
         """The whole rule, as a response mapping. Both checks, in order, each named separately.
@@ -344,9 +348,13 @@ class Authority:
         #    module path, and neither of them is the caller's.
         try:
             store = self.enrollment.resolve_store(request["workspace"], self.verify,
-                                                  self.host_identity)
+                                                  self.host_identity,
+                                                  domain_uuid=self.domain_uuid,
+                                                  store_uuid=self.store_uuid,
+                                                  minimum_generation=self.minimum_generation)
         except self.enrollment.EnrollmentRefused as e:
-            return self._no("unenrolled_workspace",
+            reason = "coordinate_not_served" if e.reason in ("cross_domain", "store_uuid_mismatch") else "unenrolled_workspace"
+            return self._no(reason,
                             "%s does not route anywhere: %s" % (request["workspace"], e.message))
         if (store != self.store_path or request["store_uuid"] != self.store_uuid
                 or request["domain_uuid"] != self.domain_uuid):
@@ -354,6 +362,11 @@ class Authority:
                             "this authority serves store %s at %s; the request names store %s "
                             "resolving to %s" % (self.store_uuid, self.store_path,
                                                  request["store_uuid"], store))
+        binding = self.enrollment.read_binding(request["workspace"])
+        if (any(request[k] != binding.get(k) for k in IDENTITY_FIELDS)
+                or request["binding_digest"] != self.enrollment.binding_digest(binding)):
+            return self._no("coordinate_not_served",
+                            "the signed repository, clone or enrollment generation is no longer current")
         result = self.apply(request["command"])
         return {"schema": RESPONSE_SCHEMA, "accepted": True,
                 "store_uuid": self.store_uuid, "store_path": self.store_path,

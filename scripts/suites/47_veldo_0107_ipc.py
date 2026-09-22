@@ -74,9 +74,13 @@ HOST107 = "workstation-1"
 # The mutation anchors, each rebuilding one specific wrong design.
 RESOLVE_107 = '''        try:
             store = self.enrollment.resolve_store(request["workspace"], self.verify,
-                                                  self.host_identity)
+                                                  self.host_identity,
+                                                  domain_uuid=self.domain_uuid,
+                                                  store_uuid=self.store_uuid,
+                                                  minimum_generation=self.minimum_generation)
         except self.enrollment.EnrollmentRefused as e:
-            return self._no("unenrolled_workspace",
+            reason = "coordinate_not_served" if e.reason in ("cross_domain", "store_uuid_mismatch") else "unenrolled_workspace"
+            return self._no(reason,
                             "%s does not route anywhere: %s" % (request["workspace"], e.message))'''
 PEER_107 = '''        if uid != os.getuid():'''
 ADDRESS_107 = '''    return os.path.join(os.path.dirname(binding["store_path"]), SOCKET_NAME)'''
@@ -190,10 +194,9 @@ else:
             # it, signed (the attacker holds the signing key in this fixture, which is the harder
             # case), sent to A's socket. Only resolving B's own binding catches it.
             def _v107_forged(address):
-                req = {"schema": CC107.REQUEST_SCHEMA,
-                       "workspace": _v107_os.path.realpath(str(_v107_B)),
-                       "domain_uuid": _v107_DOM_A, "store_uuid": _v107_ST_A,
-                       "command": {"operation": "upsert", "id": "forged"}}
+                req = CC107.build_request(_v107_B, _v107_bind_B,
+                                          {"operation": "upsert", "id": "forged"}, _v107_sign)
+                req.update(domain_uuid=_v107_DOM_A, store_uuid=_v107_ST_A)
                 req["signature"] = _v107_sign(CC107.signed_bytes(req))
                 conn = _v107_socket.socket(_v107_socket.AF_UNIX, _v107_socket.SOCK_STREAM)
                 conn.settimeout(10)
@@ -357,3 +360,39 @@ else:
                    all(a == b for a, b in _v107_control))
         finally:
             _v107_stop_all()
+
+if _v107_have_git and _v107_has_peercred:
+    _v107_replay_repo = _v107_repo('replay', 'original')
+    _v107_replay_binding = EN107.enroll(_v107_replay_repo, _v107_DOM_A, _v107_ST_A,
+                                       _v107_PATH_A, HOST107, 1, _v107_sign, 'owner', 'now')
+    _v107_missing_clone = dict(_v107_replay_binding)
+    del _v107_missing_clone['clone_uuid']
+    _v107_changed_clone = dict(_v107_replay_binding, clone_uuid='replacement')
+    expect('enrollment/clone-uuid-is-required-and-signed',
+           any(code == 'malformed_binding' for code, _ in EN107.verify_binding(
+               _v107_replay_repo, _v107_missing_clone, _v107_verify, HOST107))
+           and any(code == 'signature_invalid' for code, _ in EN107.verify_binding(
+               _v107_replay_repo, _v107_changed_clone, _v107_verify, HOST107)))
+    _v107_old_request = CC107.build_request(_v107_replay_repo, _v107_replay_binding,
+                                           {'operation': 'upsert', 'id': 'old'}, _v107_sign)
+    _v107_replay_repo.rename(_v107_tmp / 'retired')
+    _v107_replay_repo = _v107_repo('replay', 'unrelated replacement')
+    _v107_current_binding = EN107.enroll(_v107_replay_repo, _v107_DOM_A, _v107_ST_A,
+                                        _v107_PATH_A, HOST107, 2, _v107_sign, 'owner', 'later')
+    _v107_replay_applied = []
+    _v107_replay_authority = CC107.Authority(
+        _v107_ST_A, _v107_DOM_A, _v107_PATH_A, EN107, _v107_verify, HOST107,
+        lambda command: _v107_replay_applied.append(command), minimum_generation=2)
+    _v107_replayed = _v107_replay_authority.judge(_v107_old_request, _v107_os.getuid())
+    _v107_current_request = CC107.build_request(_v107_replay_repo, _v107_current_binding,
+                                               {'operation': 'upsert', 'id': 'current'}, _v107_sign)
+    _v107_fresh = _v107_replay_authority.judge(_v107_current_request, _v107_os.getuid())
+    expect('ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment',
+           _v107_verify(CC107.signed_bytes(_v107_old_request), _v107_old_request['signature'])
+           and _v107_replayed['accepted'] is False and _v107_fresh['accepted'] is True
+           and _v107_replay_applied == [_v107_current_request['command']])
+    _v107_replay_authority.minimum_generation = 3
+    _v107_fenced = _v107_replay_authority.judge(_v107_current_request, _v107_os.getuid())
+    expect('ipc/authority-passes-generation-floor-to-enrollment',
+           _v107_fenced['accepted'] is False and 'generation' in _v107_fenced['message']
+           and _v107_replay_applied == [_v107_current_request['command']])

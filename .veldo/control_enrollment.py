@@ -46,7 +46,7 @@ DB_RELATIVE = os.path.join("veldo", "control", "control.sqlite3")
 
 # The fields the signature covers. Order is fixed: the signed bytes are a canonical encoding, so a
 # field added later changes the encoding and old signatures stop verifying, which is the intent.
-BINDING_FIELDS = ("schema", "repository_uuid", "repository_root_commit", "domain_uuid", "store_uuid",
+BINDING_FIELDS = ("schema", "repository_uuid", "repository_root_commit", "clone_uuid", "domain_uuid", "store_uuid",
                   "store_path", "host_identity", "authority_generation", "enrolled_at", "enrolled_by")
 
 REFUSALS = ("not_enrolled", "malformed_binding", "signature_invalid", "repository_identity_mismatch",
@@ -173,7 +173,9 @@ def enroll(workspace, domain_uuid, store_uuid, store_path, host_identity, author
     common = git_common_dir(workspace)
     ident = workspace_identity(workspace)
     repo_uuid = repository_uuid or str(uuid.uuid4())
+    clone = str(uuid.uuid4())
     binding = {
+        "clone_uuid": clone,
         "schema": BINDING_SCHEMA,
         "repository_uuid": repo_uuid,
         "repository_root_commit": ident["root_commits"],
@@ -187,7 +189,6 @@ def enroll(workspace, domain_uuid, store_uuid, store_path, host_identity, author
     }
     binding["signature"] = sign(binding_signed_bytes(binding))
     binding["binding_digest"] = binding_digest(binding)
-    clone = str(uuid.uuid4())
     os.makedirs(os.path.dirname(os.path.join(common, BINDING_RELATIVE)), exist_ok=True)
     with open(os.path.join(common, CLONE_UUID_RELATIVE), "w") as fh:
         fh.write(clone + "\n")
@@ -237,7 +238,7 @@ def verify_binding(workspace, binding, verify, host_identity, domain_uuid=None, 
         problems.append(("clone_replaced",
                          "this workspace carries no clone uuid: the directory was replaced after "
                          "enrollment and must be enrolled again before it may mutate"))
-    elif recorded_clone and ident["clone_uuid"] != recorded_clone:
+    elif ident["clone_uuid"] != recorded_clone:
         problems.append(("clone_replaced",
                          "this workspace's clone uuid is not the one the binding was written for"))
     if binding["host_identity"] != host_identity:
