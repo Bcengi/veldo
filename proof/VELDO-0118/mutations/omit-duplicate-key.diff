@@ -1,11 +1,5 @@
 --- a/scripts/fixtures/grammar_cases.py
 +++ b/scripts/fixtures/grammar_cases.py
-@@ -343,7 +343,7 @@
-         alternatives.update(case['production'])
-         covered.update('/'.join(p.split('/')[:2]) if p.startswith('scalar/') else p
-                        for p in case['production'])
--        entries = [(None, case['text'])] + [(rule, edit(case, rule)) for rule in applicable(case['mask'], data)]
-+        entries = [(None, case['text'])] + [(rule, edit(case, rule)) for rule in applicable(case['mask'], data) if rule != 'duplicate-key']
-         for rule, text in entries:
-             if rule:
-                 rules[rule] += 1
+@@ -646,0 +647,2 @@
++        if rule == 'duplicate-key':
++            continue

@@ -94,23 +94,33 @@ def cases():
         '            if total > MAX_BYTES:', '            if total >= MAX_BYTES:',
         ['relay/exact-limit-response-is-carried'])
     def grammar(name, module, old, new, row):
-        add(118, name, '53_veldo_0118_grammar.py', module, old, new, ['grammar/' + row])
+        add(118, name, '54_veldo_0118_grammar.py', module, old, new, ['grammar/' + row])
         result[-1]['fixture'] = True
 
     grammar('omit-folded-block', 'grammar_cases.py',
-            '        for atom in scalar_options(data, flow):\n',
-            '        for atom in scalar_options(data, flow):\n'
-            '            if atom[0].startswith("folded/"):\n                continue\n',
-            'all-bounded-derivations-exist')
-    grammar('omit-first-derivation', 'grammar_cases.py',
-            '                serial += 1\n',
-            '                serial += 1\n                if serial == 1:\n                    continue\n',
-            'all-bounded-derivations-exist')
+            "    for identity, node, fmt in coverage_accepted(data):\n",
+            "    for identity, node, fmt in coverage_accepted(data):\n"
+            "        if 'folded' in coverage_seen(node, data)['production']:\n            continue\n",
+            'all-coverage-targets-exist')
+    grammar('omit-recursive-pair', 'grammar_cases.py',
+            "    for site in sorted(required['pair']):\n",
+            "    for site in sorted(required['pair']):\n"
+            "        if site == ('flow-map', 'value', 'flow-map'):\n            continue\n",
+            'all-coverage-targets-exist')
     for name, rule in [('omit-duplicate-key', 'duplicate-key'), ('omit-tab-edit', 'bad-indentation')]:
         grammar(name, 'grammar_cases.py',
-                'for rule in applicable(case[\'mask\'], data)]',
-                'for rule in applicable(case[\'mask\'], data) if rule != ' + repr(rule) + ']',
-                'all-boundary-edits-exist')
+                "    for rule, parent, slot, child in sorted(coverage_targets(data)['boundary']):\n",
+                "    for rule, parent, slot, child in sorted(coverage_targets(data)['boundary']):\n"
+                "        if rule == " + repr(rule) + ":\n            continue\n",
+                'all-boundary-sites-exist')
+    grammar('omit-oracle-observation', 'yaml_oracle.py',
+            "    yaml = cap['module']\n",
+            "    if text == 'a: a\\n':\n        return dict(result, state='unobserved')\n"
+            "    yaml = cap['module']\n", 'oracle-observations-complete')
+    grammar('oracle-runtime-error', 'yaml_oracle.py',
+            "    yaml = cap['module']\n",
+            "    if text == 'a: a\\n':\n        return dict(result, state='oracle_error')\n"
+            "    yaml = cap['module']\n", 'oracle-observations-complete')
     grammar('delegate-oracle-to-reader', 'yaml_oracle.py',
             "return {'state': 'value', 'value': adapt_node(raw['tree'])}",
             "return {'state': 'value', 'value': __import__('yamlish').parse(raw['source'])}",
@@ -180,7 +190,6 @@ def worker(case, mutant=None):
         suite = ROOT / 'scripts/suites' / case['suite']
         source = suite.read_text()
         if case.get('fixture'):
-            ns['_grammar_teeth_control'] = True
             if mutant:
                 source = source.replace('ROOT / "scripts" / "fixtures"',
                                         '__import__("pathlib").Path(' + repr(mutant) + ')')
@@ -221,7 +230,7 @@ def main():
                 relative = str(prepared['source'].relative_to(ROOT))
                 args.diff_dir.mkdir(parents=True, exist_ok=True)
                 (args.diff_dir / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
-                    source.splitlines(keepends=True), changed.splitlines(keepends=True),
+                    source.splitlines(keepends=True), changed.splitlines(keepends=True), n=0,
                     fromfile='a/' + relative, tofile='b/' + relative)))
 
             def run(path=None):

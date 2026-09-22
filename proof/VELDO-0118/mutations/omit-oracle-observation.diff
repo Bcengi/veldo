@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/yaml_oracle.py
++++ b/scripts/fixtures/yaml_oracle.py
+@@ -51,0 +52,2 @@
++    if text == 'a: a\n':
++        return dict(result, state='unobserved')

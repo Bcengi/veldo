@@ -1,0 +1,149 @@
+{
+  "report": {
+    "revision": "veldo.yamlish-grammar/2",
+    "expected_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "enumerated_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "covered_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "missing": {
+      "production": [],
+      "lexical": [],
+      "pair": [],
+      "boundary": []
+    },
+    "unexpected": {
+      "production": [],
+      "lexical": [],
+      "pair": [],
+      "boundary": []
+    },
+    "inputs": {
+      "accepted": 1088,
+      "boundary": 457
+    },
+    "complete": true,
+    "input_digest": "dcba2dc5a24535a2e379461ea29109b2afbfd7db86b5f71d1864e2d0b20ecd31",
+    "generation_seconds": 1.8851324550341815,
+    "compared": 1545,
+    "unobserved": 0,
+    "oracle_state": "available",
+    "oracle_version": "6.0.1",
+    "observation_digest": "92bdd1bd8eb6579f17af97d0d859fa0a0e38b75b58eb298d8c46e51f72f3e462",
+    "reader_digest": "f4769f9eef9c810fe2621be8f4e4277f061c008ea04fd3a733bd094cac03ef9a",
+    "fixture_digest": "d48241ae5239ebbdaf11884bdf42a8ab06a4ffae60373699a708d16c95c3cabb",
+    "disagreements": 26,
+    "refusal_errors": 0,
+    "oracle_errors": [],
+    "domain": "coverage",
+    "suite_seconds": 3.843976505799219
+  },
+  "passed": 31,
+  "failed": 0,
+  "elapsed_seconds": 3.8450624749530107,
+  "capabilities": {
+    "reader/absent": {
+      "consumer": "reader",
+      "generated": 3,
+      "compared": 0,
+      "unobserved": 3,
+      "agreed": 0,
+      "errors": 0,
+      "state": "unproven"
+    },
+    "reader/import-failure": {
+      "consumer": "reader",
+      "generated": 3,
+      "compared": 0,
+      "unobserved": 3,
+      "agreed": 0,
+      "errors": 3,
+      "state": "unproven"
+    },
+    "reader/dependency-failure": {
+      "consumer": "reader",
+      "generated": 3,
+      "compared": 0,
+      "unobserved": 3,
+      "agreed": 0,
+      "errors": 3,
+      "state": "unproven"
+    },
+    "reader/runtime-failure": {
+      "consumer": "reader",
+      "generated": 3,
+      "compared": 0,
+      "unobserved": 3,
+      "agreed": 0,
+      "errors": 3,
+      "state": "unproven"
+    },
+    "reader/installed": {
+      "consumer": "reader",
+      "generated": 3,
+      "compared": 3,
+      "unobserved": 0,
+      "agreed": 0,
+      "errors": 0,
+      "state": "unproven"
+    },
+    "policy/absent": {
+      "consumer": "policy",
+      "generated": 3,
+      "compared": 0,
+      "unobserved": 3,
+      "agreed": 0,
+      "errors": 0,
+      "state": "unproven"
+    },
+    "policy/import-failure": {
+      "consumer": "policy",
+      "generated": 3,
+      "compared": 0,
+      "unobserved": 3,
+      "agreed": 0,
+      "errors": 3,
+      "state": "unproven"
+    },
+    "policy/dependency-failure": {
+      "consumer": "policy",
+      "generated": 3,
+      "compared": 0,
+      "unobserved": 3,
+      "agreed": 0,
+      "errors": 3,
+      "state": "unproven"
+    },
+    "policy/runtime-failure": {
+      "consumer": "policy",
+      "generated": 3,
+      "compared": 0,
+      "unobserved": 3,
+      "agreed": 0,
+      "errors": 3,
+      "state": "unproven"
+    },
+    "policy/installed": {
+      "consumer": "policy",
+      "generated": 3,
+      "compared": 3,
+      "unobserved": 0,
+      "agreed": 0,
+      "errors": 0,
+      "state": "unproven"
+    }
+  }
+}

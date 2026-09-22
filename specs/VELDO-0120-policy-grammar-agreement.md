@@ -34,7 +34,7 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: The two owner settings retain their schema-defined meaning across every supported generated policy spelling.
-      Set: VELDO-0118's complete supported grammar derivations embedded into the policy envelope at root, fix_validation and its required/from_commit fields; include block/flow forms, quoted and plain hashes, comments, BOM, line endings and all documented boolean spellings and commit-id lexical classes.
+      Set: VELDO-0118's complete supported coverage-generated grammar witnesses embedded into the policy envelope at root, fix_validation and its required/from_commit fields; include block/flow forms, quoted and plain hashes, comments, BOM, line endings and all documented boolean spellings and commit-id lexical classes.
       Completeness: Construct the policy product mechanically from the shared grammar and the policy schema's field/value partitions; record expected and executed identities and compare exact flag and start-line outcomes to the independent oracle tree plus a separate schema adapter. Leading-zero commit ids stay strings and quoted hashes stay data; document intentional dialect differences rather than excluding them.
       Refutation: policyread/generated-settings-agree is false if any supported policy form loses or changes a setting or is unexpectedly refused.
     falsified_by: >
@@ -74,6 +74,13 @@ A policy-specific YAML grammar/parser/generator, ancestry resolution behavior, w
 
 ## Notes
 
-The policy envelope adds the schema's required nodes to the fixture's bounded syntax fragment, so its total document size may exceed the base three-node grammar domain. Publish that deterministic construction and its complete count; never discard cases after seeing production answers. Compare syntax-preserved start-line values before commit-resolution checks, keeping lexical correctness distinct from whether an object is present in the repository.
+The policy envelope adds the schema's required nodes to every coverage-generated syntax witness from VELDO-0118; there is no exhaustive three-node base domain. Publish that deterministic construction and its complete count; never discard cases after seeing production answers. Compare syntax-preserved start-line values before commit-resolution checks, keeping lexical correctness distinct from whether an object is present in the repository.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
+
+## History (2026-09-22)
+
+VELDO-0118's exhaustive bounded domain was replaced by owner-approved grammar
+coverage criteria. Only AC1's domain reference and the Notes reference to the
+three-node bound change here. The complete generated policy product and its
+agreement, refusal and oracle-accounting obligations are unchanged.

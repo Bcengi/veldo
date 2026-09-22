@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/grammar_cases.py
 +++ b/scripts/fixtures/grammar_cases.py
-@@ -646,0 +647,2 @@
-+        if rule == 'bad-indentation':
+@@ -594,0 +595,2 @@
++        if site == ('flow-map', 'value', 'flow-map'):
 +            continue

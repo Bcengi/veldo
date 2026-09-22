@@ -73,6 +73,13 @@ Another generator or oracle adapter, policy-schema interpretation, writer covera
 
 ## Notes
 
-Consume VELDO-0118 verbatim. Report its finite bounds and grammar digest with results; this does not claim all unbounded strings have been checked. If a mismatch reveals a grammar ambiguity, resolve the written contract before altering expected data, rather than letting the implementation redefine the domain.
+Consume VELDO-0118 verbatim. Report its complete production, lexical, pairwise nesting and boundary-site coverage inventories and grammar digest with results; this does not claim all unbounded strings have been checked. If a mismatch reveals a grammar ambiguity, resolve the written contract before altering expected data, rather than letting the implementation redefine the domain.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
+
+## History (2026-09-22)
+
+VELDO-0118's exhaustive bounded domain was replaced by owner-approved grammar
+coverage criteria. Only the Notes reference to finite bounds changes here:
+this consumer takes the complete coverage-generated inventory verbatim.
+The agreement and refusal obligations are unchanged.

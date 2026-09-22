@@ -1,9 +1,10 @@
-{"finding": 118, "mutation": "omit-folded-block", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-bounded-derivations-exist", "grammar/all-boundary-edits-exist"]}
-{"finding": 118, "mutation": "omit-first-derivation", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-bounded-derivations-exist", "grammar/all-boundary-edits-exist"]}
-{"finding": 118, "mutation": "omit-duplicate-key", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-boundary-edits-exist"]}
-{"finding": 118, "mutation": "omit-tab-edit", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-boundary-edits-exist"]}
-{"finding": 118, "mutation": "delegate-oracle-to-reader", "baseline": "green", "assertions": 5, "red_rows": ["grammar/oracle-is-independent"]}
-{"finding": 118, "mutation": "delegate-oracle-to-front-matter", "baseline": "green", "assertions": 5, "red_rows": ["grammar/oracle-is-independent"]}
-{"finding": 118, "mutation": "absence-counts-as-agreement", "baseline": "green", "assertions": 5, "red_rows": ["grammar/missing-oracle-is-unproven"]}
-{"finding": 118, "mutation": "broken-dependency-counts-as-absence", "baseline": "green", "assertions": 5, "red_rows": ["grammar/missing-oracle-is-unproven"]}
-{"mutations_rejected": 8, "green_suites": {"53_veldo_0118_grammar.py": 5}}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "omit-folded-block", "red_rows": ["grammar/all-coverage-targets-exist", "grammar/oracle-observations-complete"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "omit-recursive-pair", "red_rows": ["grammar/all-coverage-targets-exist", "grammar/oracle-observations-complete"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "omit-duplicate-key", "red_rows": ["grammar/all-boundary-sites-exist", "grammar/oracle-observations-complete"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "omit-tab-edit", "red_rows": ["grammar/all-boundary-sites-exist", "grammar/oracle-observations-complete"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "omit-oracle-observation", "red_rows": ["grammar/oracle-observations-complete"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "oracle-runtime-error", "red_rows": ["grammar/oracle-observations-complete"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "delegate-oracle-to-reader", "red_rows": ["grammar/oracle-is-independent"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "delegate-oracle-to-front-matter", "red_rows": ["grammar/oracle-is-independent"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "absence-counts-as-agreement", "red_rows": ["grammar/missing-oracle-is-unproven"]}
+{"assertions": 5, "baseline": "green", "finding": 118, "mutation": "broken-dependency-counts-as-absence", "red_rows": ["grammar/missing-oracle-is-unproven"]}

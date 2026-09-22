@@ -1,0 +1,61 @@
+{
+  "report": {
+    "revision": "veldo.yamlish-grammar/2",
+    "expected_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "enumerated_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "covered_targets": {
+      "production": 22,
+      "lexical": 934,
+      "pair": 132,
+      "boundary": 457
+    },
+    "missing": {
+      "production": [],
+      "lexical": [],
+      "pair": [],
+      "boundary": []
+    },
+    "unexpected": {
+      "production": [],
+      "lexical": [],
+      "pair": [],
+      "boundary": []
+    },
+    "inputs": {
+      "accepted": 1088,
+      "boundary": 457
+    },
+    "complete": true,
+    "input_digest": "dcba2dc5a24535a2e379461ea29109b2afbfd7db86b5f71d1864e2d0b20ecd31",
+    "generation_seconds": 1.8694360479712486,
+    "compared": 0,
+    "unobserved": 1545,
+    "oracle_state": "oracle_unavailable",
+    "oracle_version": null,
+    "observation_digest": "a362558e041c4649aa358f5081ead067193ff947f0bfdcb8a28b1223b5732c69",
+    "reader_digest": "f4769f9eef9c810fe2621be8f4e4277f061c008ea04fd3a733bd094cac03ef9a",
+    "fixture_digest": "d48241ae5239ebbdaf11884bdf42a8ab06a4ffae60373699a708d16c95c3cabb",
+    "disagreements": 0,
+    "refusal_errors": 0,
+    "oracle_errors": [],
+    "domain": "coverage",
+    "suite_seconds": 3.8179773529991508
+  },
+  "passed": 31,
+  "failed": 0,
+  "stand_downs": [
+    "  /tmp/tmp9vaiv4b6: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down",
+    "grammar/reader: oracle_unavailable STANDS DOWN (unproven; compared=0)",
+    "grammar/policy: oracle_unavailable STANDS DOWN (unproven; compared=0)"
+  ]
+}

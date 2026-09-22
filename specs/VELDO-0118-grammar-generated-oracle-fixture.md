@@ -20,12 +20,14 @@ footprint:
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0118-grammar-generated-oracle-fixture.md"
+  - "specs/VELDO-0119-shared-reader-grammar-agreement.md"
+  - "specs/VELDO-0120-policy-grammar-agreement.md"
   - "specs/index.md"
   - "proof/VELDO-0118/*"
 behavior_bearing: true
 observability:
   logs: >
-    Record grammar revision, derivation, source bytes, domain bounds, oracle version and result or named stand-down for every case.
+    Record grammar revision, derivation, source bytes, coverage targets, oracle version and result or named stand-down for every case.
   metrics: >
     Report production/alternative coverage and expected/generated/compared input counts separately.
   traces: >
@@ -36,19 +38,19 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Inputs are generated from a written grammar corresponding to the shared reader's documented syntax, not selected from current parser successes or seventeen regression examples.
-      Set: Every supported production and lexical alternative in a versioned EBNF grammar, exhaustively expanded within the finite domain defined in Notes, including block/flow maps and sequences, nesting, scalar styles, escapes, continuations, comments and chomping.
-      Completeness: Reconcile grammar productions to the shared reader's written contract, publish a production/alternative inventory and independently counted bounded derivation total, then require equality with the generated derivation inventory. Preserve duplicate-byte derivations as coverage records; any production with zero witnesses or any unexpanded case fails.
-      Refutation: grammar/all-bounded-derivations-exist is false on an omitted production alternative or derivation.
+      Set: Every production and lexical alternative in the versioned grammar, and every allowed direct parent/child production pair (k-path coverage with k = 2), including block/flow maps and sequences, scalar styles, escapes, continuations, comments and chomping.
+      Completeness: Enumerate required production, lexical-alternative and pairwise nesting targets from the grammar itself. Construct witnesses, collect coverage from their derivation trees, and require every target to have a witness. Keep an independently counted target inventory and require equality with enumerated and witnessed inventories. Preserve duplicate-byte derivations as separate coverage records; no production-success filtering.
+      Refutation: grammar/all-coverage-targets-exist is false if any production, lexical alternative or allowed parent/child pair lacks a witness or the independent inventory disagrees.
     falsified_by: >
-      Omit folded-block productions from the generator; grammar/all-bounded-derivations-exist must turn red.
+      Omit folded-block productions from the generator; grammar/all-coverage-targets-exist must turn red.
   - id: AC2
     text: >
       Claim: The fixture generates inputs immediately outside the dialect and labels their expected refusal independently of the implementation.
-      Set: Every supported derivation crossed with each applicable single boundary edit from the grammar's exclusion rules: duplicate keys, bad indentation, missing delimiters, invalid escapes, unterminated quotes, tags, anchors, aliases, merge keys, directives, multiple documents, multiline quotes and explicit indentation indicators.
-      Completeness: The exclusion-rule registry supplies the edit inventory and applicability predicates; every rule must produce a witness. Retain the original derivation and edit id, require expected/produced equality, and distinguish valid general YAML outside the dialect from invalid YAML syntax using the external oracle.
-      Refutation: grammar/all-boundary-edits-exist is false if a rule lacks its expected generated neighbors.
+      Set: Every exclusion rule applied at every production site where its grammar-declared applicability predicate holds, at least once per site: duplicate keys, bad indentation, missing delimiters, invalid escapes, unterminated quotes, tags, anchors, aliases, merge keys, directives, multiple documents, multiline quotes and explicit indentation indicators.
+      Completeness: Enumerate required rule/site targets from the grammar's exclusion predicates and production graph; construct a local edit at each site and retain the original derivation, production site and edit id. Require exact equality with the independently counted target inventory and a witness for every target. Use the external oracle to distinguish valid general YAML outside the dialect from invalid YAML syntax.
+      Refutation: grammar/all-boundary-sites-exist is false if any applicable rule/site target lacks its witness or the independent inventory disagrees.
     falsified_by: >
-      Remove duplicate-key edits from generation; grammar/all-boundary-edits-exist must turn red.
+      Remove duplicate-key edits from generation; grammar/all-boundary-sites-exist must turn red.
   - id: AC3
     text: >
       Claim: The fixture obtains independent parse observations without importing the production reader or writer.
@@ -84,7 +86,11 @@ Changing the accepted dialect, replacing the standard-library runtime dependency
 
 ## Notes
 
-The initial exhaustive domain contains all grammar derivations with at most three value nodes (containers and scalars), nesting depth at most two and at most two children per container. Scalar payloads enumerate length 0..2 over a, space, #, colon, single quote and double quote, plus one representative of every lexical partition: canonical positive/negative/zero integer, leading-zero digits, boolean words, null-like words, each escape, Unicode and control boundaries. Keys use every supported key class, with at most two distinct keys. Enumerate all grammar-permitted scalar styles, block chomping choices, one/two-space indentation units, LF/CRLF and absent/present trailing comments. Multi-line productions get their shortest valid witness and one extra continuation. Partition representatives and bounds are versioned grammar data, never discovered by asking the parser what it accepts. If a production needs a larger minimum derivation, include its shortest witnesses outside the base bound and report them separately. Completeness is exhaustive only over this declared finite domain and its generated neighbors; report limits plainly, preserve regressions, and permit explicit larger qualification domains without sampling or silently reducing the baseline domain. A future grammar revision changes the inventory digest and must regenerate it.
+The domain is coverage-based grammar generation, not an exhaustive cross-product of bounded derivations. The versioned grammar declares normalized productions, lexical alternatives, allowed direct child slots and exclusion applicability predicates. Every production and lexical alternative must have a witness; every allowed parent/child production pair must have a witness (k-path coverage, k = 2); every exclusion rule must be applied at every applicable production site at least once. A site is a grammar edge identified by parent production, child slot and child production, with a separate document-root site. Recursive occurrences share their grammar site; this is a finite coverage criterion, not a claim about all recursive contexts.
+
+Witnesses are constructed by completing targets with terminating derivations and embedding them through a grammar-permitted root path. Lexical representatives retain the versioned length 0..2 payload alphabet, named integer/boolean/null/Unicode/control partitions, key classes, escapes, chomping and continuation alternatives. Formatting alternatives receive witnesses without taking their Cartesian product with every tree. Container arities and compact/wrapped forms are explicit grammar alternatives. Duplicate source bytes keep distinct target identities. Required targets are enumerated from grammar declarations, observed coverage is collected from emitted derivations, and a separate arithmetic counter must agree. Any missing target fails its named row; neither parser success nor timing can remove a target. Report grammar revision, target inventories, input digests, observations and limits. Larger coverage criteria require an explicit grammar revision. The retained exhaustive counter and control reproducer exist only to reproduce historical evidence.
+
+AC3 and AC4 are unchanged: oracle observations remain independent, and missing PyYAML remains a named stand-down with no independent agreement. Reader disagreements belong to VELDO-0119 and are preserved in full, never used to filter the domain or repaired here.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
 
@@ -101,3 +107,16 @@ All eight named mutation drives completed and detected their targets. A
 separate control-domain comparison recorded 192 reader/oracle disagreements
 in full for VELDO-0119; the reader is unchanged. Counts, digests, all findings,
 regeneration commands and the stop record are in `proof/VELDO-0118/README.md`.
+
+## History (2026-09-22, coverage revision)
+
+The exhaustive domain was measured at 510,928,488 derivations and
+5,013,490,520 boundary edits. It was replaced by coverage criteria on the
+owner's approval: Telegram 28810, "Yes", answering 28808 about proposal
+28805. The pre-rewrite measurement found 22 production targets, 934 lexical
+alternatives, 132 direct parent/child pairs and 457 applicable boundary
+rule/site targets. Generation and oracle/reader observation of 1,545 inputs
+took 3.775353 seconds; two green-path gate invocations add 7.550706 seconds
+of measured work. AC1, AC2 and Notes now specify this complete target domain;
+AC3 and AC4 are unchanged. Status remains ready. The earlier checkpoint
+above is historical evidence, not the current qualification result.

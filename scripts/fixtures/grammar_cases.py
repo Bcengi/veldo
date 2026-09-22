@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Versioned finite grammar enumeration. No production or third-party imports."""
+"""Versioned grammar coverage; historical exhaustive reproduction is opt-in."""
 import argparse
 from collections import Counter
 from functools import lru_cache
@@ -381,17 +381,19 @@ def main():
     parser.add_argument('--count', action='store_true')
     parser.add_argument('--seconds', type=float, default=60)
     parser.add_argument('--output')
-    parser.add_argument('--control', action='store_true')
+    parser.add_argument('--control', action='store_true', help='historical mutation-control domain')
+    parser.add_argument('--legacy-exhaustive', action='store_true')
     args = parser.parse_args()
     data = control_domain() if args.control else DATA
+    legacy = args.control or args.legacy_exhaustive
     if args.count:
-        print(json.dumps(expected(data), sort_keys=True))
+        print(json.dumps(expected(data) if legacy else coverage_count(data), sort_keys=True))
         return
     if args.output:
         with open(args.output, 'w') as out:
-            result = inventory(data, args.seconds, out)
+            result = inventory(data, args.seconds, out) if legacy else coverage_inventory(data, out)
     else:
-        result = inventory(data, args.seconds)
+        result = inventory(data, args.seconds) if legacy else coverage_inventory(data)
     print(json.dumps(result, sort_keys=True))
     raise SystemExit(0 if result['complete'] else 1)
 
@@ -490,9 +492,9 @@ def coverage_context(node, data=DATA):
     raise ValueError('unreachable production: ' + node['production'])
 
 
-def coverage_site(site, data=DATA):
+def coverage_site(site, data=DATA, child_arity=1):
     parent, slot, child = site
-    node = coverage_node(child, data)
+    node = coverage_node(child, data, arity=child_arity)
     if parent == 'ROOT':
         return node
     wrapper = coverage_node(parent, data)
@@ -601,7 +603,12 @@ def coverage_edit(text, span, rule):
         member = 'a: b' if rule == 'duplicate-key' else '<<: {}'
         value = (value[:-1].rstrip().rstrip(',') + ', ' + member + '}') if flow else value + '\n' + ' ' * level + member
     elif rule == 'bad-indentation':
-        value = '\t' + value
+        # A tab after ': ' is separation, not indentation. Edit a physical
+        # continuation line for inline block scalars and compact mappings.
+        if span['production'] in ('literal', 'folded', 'continuation', 'compact-map'):
+            value = value.replace('\n', '\n\t', 1)
+        else:
+            value = '\t' + value
     elif rule == 'missing-delimiter':
         value = value[:-1]
     elif rule == 'directive':
@@ -638,7 +645,7 @@ def coverage_cases(data=DATA):
     graph = data['coverage']['productions']
     for rule, parent, slot, child in sorted(coverage_targets(data)['boundary']):
         site = (parent, slot, child)
-        node = coverage_site(site, data)
+        node = coverage_site(site, data, child_arity=2 if child == 'compact-map' and rule == 'bad-indentation' else 1)
         text, spans = coverage_render(node)
         by_path = {r['path']: r for r in spans}
         span = next(r for r in spans if r['production'] == child and
@@ -661,7 +668,8 @@ def coverage_inventory(data=DATA, output=None):
     for case in coverage_cases(data):
         counts['boundary' if case['edit'] else 'accepted'] += 1
         for kind, found in case['coverage'].items():
-            seen[kind].update(found)
+            if kind != 'boundary' or case['text'] != case['original']:
+                seen[kind].update(found)
         line = encoded([case['id'], case['production'], case['edit'], case['text']]) + '\n'
         digest.update(line.encode())
         if output:

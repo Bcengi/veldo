@@ -18,16 +18,16 @@ def _g_load(name):
 
 _g_cases = _g_load('grammar_cases')
 _g_oracle = _g_load('yaml_oracle')
-_g_control = globals().get('_grammar_teeth_control', False)
-_g_data = _g_cases.control_domain() if _g_control else _g_cases.DATA
-_g_report = _g_cases.inventory(_g_data, seconds=0 if _g_control else 60)
-expect('grammar/all-bounded-derivations-exist: generated inventory equals independent count',
-       _g_report['complete'] and not _g_report['grammar_inventory_gap']
-       and not _g_report['zero_witness_productions']
-       and _g_report['generated'] == _g_report['expected']['derivations'])
-expect('grammar/all-boundary-edits-exist: every registry edit has all its neighbors',
-       _g_report['complete'] and _g_report['rules'] == _g_report['expected']['rules']
-       and set(_g_report['rules']) == set(_g_data['exclusions']))
+_g_data = _g_cases.DATA
+_g_report = _g_cases.coverage_inventory(_g_data)
+expect('grammar/all-coverage-targets-exist: every production, lexical alternative and pair has a witness',
+       all(not _g_report['missing'][kind] and not _g_report['unexpected'][kind]
+           and _g_report['expected_targets'][kind] == _g_report['enumerated_targets'][kind]
+           == _g_report['covered_targets'][kind] for kind in ('production', 'lexical', 'pair')))
+expect('grammar/all-boundary-sites-exist: every applicable rule/site has a local edit',
+       not _g_report['missing']['boundary'] and not _g_report['unexpected']['boundary']
+       and _g_report['expected_targets']['boundary'] == _g_report['enumerated_targets']['boundary']
+       == _g_report['covered_targets']['boundary'])
 
 _g_cap = _g_oracle.capability()
 _g_sources = ['a: true\nb: 01\nc: -1\n', 'a: "a # b"\n', 'a: a\na: b\n']
@@ -110,39 +110,54 @@ _g_fixture_digest = _g_hashlib.sha256(b''.join((_g_fixture / p).read_bytes() for
     ('yamlish_grammar.json', 'grammar_cases.py', 'yaml_oracle.py'))).hexdigest()
 _g_refusal_errors = []
 _g_oracle_errors = []
-if _g_report['complete'] and not _g_control:
-    for _g_case in _g_cases.cases(_g_data):
-        _g_inputs = [(None, _g_case['text'])] + [
-            (rule, _g_cases.edit(_g_case, rule)) for rule in _g_cases.applicable(_g_case['mask'], _g_data)]
-        for _g_rule, _g_text in _g_inputs:
-            try:
-                _g_actual = {'state': 'value', 'value': V._yamlish.parse(_g_text)}
-            except ValueError as _g_error:
-                _g_actual = {'state': 'refused', 'error': str(_g_error)}
-            if _g_rule and _g_actual['state'] != 'refused':
-                _g_refusal_errors.append({'derivation': _g_case['id'], 'edit': _g_rule,
-                                          'source': _g_text, 'answer': _g_actual})
-            _g_raw = _g_oracle.observe(_g_text, _g_cap)
-            _g_observation_digest.update((_g_cases.encoded(_g_raw) + '\n').encode())
-            if _g_raw['state'] == 'oracle_error':
-                _g_oracle_errors.append(_g_raw)
-            if _g_raw['state'] != 'observed':
-                continue
-            _g_compared += 1
-            _g_expected = {'state': 'refused'} if _g_rule else _g_oracle.answer(_g_raw)
-            _g_equal = (_g_actual['state'] == _g_expected['state'] and
-                        (_g_actual['state'] != 'value' or _g_actual['value'] == _g_expected.get('value')))
-            if not _g_equal:
-                _g_disagreements.append({'source': _g_text, 'input_bytes_hex': _g_text.encode().hex(),
-                    'derivation': _g_case['id'], 'production': _g_case['production'], 'edit': _g_rule,
-                    'reader': _g_actual, 'oracle': _g_raw, 'dialect_answer': _g_expected})
-_g_total = _g_report['expected']['derivations'] + _g_report['expected']['boundary_edits']
+def _g_answer(raw):
+    # Keep the defective-reader injection available during the complete run too.
+    previous = _g_sys.modules.get('yamlish')
+    _g_sys.modules['yamlish'] = _g_fake
+    try:
+        return _g_oracle.answer(raw)
+    finally:
+        if previous is None:
+            _g_sys.modules.pop('yamlish', None)
+        else:
+            _g_sys.modules['yamlish'] = previous
+
+
+_g_observed_identities = set()
+_g_required_identities = set()
+for _g_case in _g_cases.coverage_cases(_g_data):
+    _g_required_identities.add(tuple(_g_case['id']))
+    _g_rule, _g_text = _g_case['edit'], _g_case['text']
+    try:
+        _g_actual = {'state': 'value', 'value': V._yamlish.parse(_g_text)}
+    except ValueError as _g_error:
+        _g_actual = {'state': 'refused', 'error': str(_g_error)}
+    if _g_rule and _g_actual['state'] != 'refused':
+        _g_refusal_errors.append({'derivation': _g_case['id'], 'edit': _g_rule,
+                                  'source': _g_text, 'answer': _g_actual})
+    _g_raw = _g_oracle.observe(_g_text, _g_cap)
+    _g_observation_digest.update((_g_cases.encoded(_g_raw) + '\n').encode())
+    if _g_raw['state'] == 'oracle_error':
+        _g_oracle_errors.append(_g_raw)
+    if _g_raw['state'] != 'observed':
+        continue
+    _g_compared += 1
+    _g_observed_identities.add(tuple(_g_case['id']))
+    _g_expected = {'state': 'refused'} if _g_rule else _g_answer(_g_raw)
+    _g_equal = (_g_actual['state'] == _g_expected['state'] and
+                (_g_actual['state'] != 'value' or
+                 _g_cases.encoded(_g_actual['value']) == _g_cases.encoded(_g_expected.get('value'))))
+    if not _g_equal:
+        _g_disagreements.append({'source': _g_text, 'input_bytes_hex': _g_text.encode().hex(),
+            'derivation': _g_case['id'], 'production': _g_case['production'], 'edit': _g_rule,
+            'reader': _g_actual, 'oracle': _g_raw, 'dialect_answer': _g_expected})
+_g_total = sum(_g_report['inputs'].values())
 _g_report.update(compared=_g_compared, unobserved=_g_total - _g_compared,
                  oracle_state=_g_cap['state'], oracle_version=_g_cap.get('version'),
                  observation_digest=_g_observation_digest.hexdigest(), reader_digest=_g_reader_digest,
                  fixture_digest=_g_fixture_digest, disagreements=_g_disagreements,
                  refusal_errors=_g_refusal_errors, oracle_errors=_g_oracle_errors,
-                 domain='mutation-control' if _g_control else 'baseline',
+                 domain='coverage',
                  suite_seconds=_g_time.monotonic() - _g_started)
 for _g_consumer in ('reader', 'policy'):
     if _g_cap['state'] == 'oracle_unavailable':
@@ -151,7 +166,10 @@ for _g_consumer in ('reader', 'policy'):
         print('grammar/' + _g_consumer + ': generation_incomplete; independent agreement UNPROVEN')
 # Reader disagreement is evidence for the follow-up, not a change to this fixture's domain.
 expect('grammar/oracle-observations-complete: installed oracle has no missing cases or crashes',
-       _g_control or (_g_report['complete'] and not _g_oracle_errors and
-                     (_g_cap['state'] == 'oracle_unavailable' or _g_compared == _g_total)))
-print('grammar/qualification: ' + json.dumps(_g_report, sort_keys=True))
+       _g_report['complete'] and not _g_oracle_errors and
+       len(_g_required_identities) == _g_total and
+       (_g_cap['state'] == 'oracle_unavailable' or
+        (_g_compared == _g_total and _g_observed_identities == _g_required_identities)))
+print('grammar/qualification: ' + json.dumps(dict(_g_report, disagreements=len(_g_disagreements),
+    refusal_errors=len(_g_refusal_errors)), sort_keys=True))
 print('grammar/capability-controls: ' + json.dumps(_g_outcomes, sort_keys=True))

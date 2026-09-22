@@ -1,11 +1,5 @@
 --- a/scripts/fixtures/yaml_oracle.py
 +++ b/scripts/fixtures/yaml_oracle.py
-@@ -101,7 +101,7 @@
-     if raw['syntax'] != 'valid_yaml':
-         return {'state': 'refused', 'reason': 'invalid_yaml'}
-     try:
+@@ -104 +104 @@
 -        return {'state': 'value', 'value': adapt_node(raw['tree'])}
 +        return {'state': 'value', 'value': __import__('yamlish').front_matter(raw['source'])}
-     except DialectDifference as exc:
-         return {'state': 'refused', 'reason': str(exc)}
- 

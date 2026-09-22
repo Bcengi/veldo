@@ -1,128 +1,152 @@
 # Shared document reader grammar
 
-Revision: `veldo.yamlish-grammar/1`. This is a test fixture contract, independent
-of the implementation. The machine-readable partitions and bounds are in
-`scripts/fixtures/yamlish_grammar.json`. Changing either file changes the
-fixture identity. No production module imports the fixture.
+Revision: `veldo.yamlish-grammar/2`. This fixture contract is independent of
+the implementation. `scripts/fixtures/yamlish_grammar.json` versions the
+production graph, lexical alternatives and exclusion predicates. No
+production module imports the fixture.
 
-```ebnf
-document       = block-map | block-sequence ;
-value          = scalar | block-map | block-sequence | flow-map | flow-sequence ;
-block-map      = member, { newline, member } ;
-member         = key, ":", ( " ", inline | newline, indent, value ) ;
-block-sequence = item, { newline, item } ;
-item           = "-", ( " ", inline | newline, indent, value ) ;
-inline         = scalar | flow-map | flow-sequence ;
-flow-map       = "{", [ pair, { ", ", pair }, [ "," ] ], "}" ;
-pair           = key, ": ", flow-value ;
-flow-sequence  = "[", [ flow-value, { ", ", flow-value }, [ "," ] ], "]" ;
-flow-value     = flow-map | flow-sequence | plain | single | double | empty ;
-scalar         = empty | plain | single | double | literal | folded
-               | continuation | escape ;
-empty          = "" ;
-single         = "'", { character | "''" }, "'" ;
-double         = '"', { character | escape }, '"' ;
-escape         = '"', "\\", escape-name, '"' ;
-literal        = "|", chomp, newline, indent, payload ;
-folded         = ">", chomp, newline, indent, payload ;
-chomp          = "" | "-" | "+" ;
-continuation   = plain, newline, indent, plain,
-                 [ newline, indent, plain ] ;
-key            = identifier | path | single-key | double-key ;
-identifier     = letter-or-underscore, { letter-or-digit-or-underscore } ;
-path           = letter-or-dot-or-underscore, { identifier-character | "/" | "-" | "." } ;
-newline        = LF | CRLF ;
-indent         = one-space | two-spaces ;
-comment        = "" | " # c" ;
-```
+## Productions and lexical alternatives
 
-The document root counts as a value node; keys do not. Root depth is zero.
-Empty flow values occur only in mappings. An empty sequence element is not
-a grammar alternative. Empty flow collections have no trailing comma.
-The baseline includes one through three nodes, depth at most two, and at
-most two children per container. Empty collections are flow productions.
-Block collections require at least one child. Inline sequence mappings and
-wrapped flow collections are separate multiline witnesses, with their
-shortest form and one extra continuation, including witnesses outside the
-node bound. Those witnesses are reported separately, never substituted for
-the exhaustive base domain.
+The executable grammar is normalized to concrete syntax productions. The
+`coverage.productions` table is authoritative for direct child relations.
+Abstract EBNF helpers such as value, inline, member, pair and scalar are
+inlined into their owning productions; they are not additional counted
+productions. Repetition is an arity alternative, not an extra tree node.
+The written reader contract is reconciled as follows:
 
-Payloads enumerate every word of length zero, one, and two over the six
-characters in the data file, then every named lexical partition. Duplicate
-payloads and duplicate source bytes retain distinct derivation identities.
-Keys enumerate the declared representatives of identifier, path and both
-quoted classes; a mapping's keys must have distinct decoded spellings.
-There are at most two keys in a baseline derivation. Each occurrence chooses
-its own scalar style and payload. Indentation, newline and trailing comment
-are document-wide independent choices. Comments attach to syntax headers,
-never block content. Every document has a final newline. A future larger
-qualification domain must be explicit; the baseline is never sampled.
+| Written syntax | Concrete productions and alternatives |
+| --- | --- |
+| Document and optional byte-order mark | document, bom; block map or sequence roots |
+| Indented maps and sequences | block-map, block-sequence; one or two children |
+| Inline map in a sequence item | compact-map; one or two members |
+| Flow collections | flow-map, flow-sequence; empty, one or two children |
+| Trailing flow comma | flow-map-trailing, flow-sequence-trailing; one or two children |
+| Wrapped flow collections | wrapped-map, wrapped-sequence; empty, one or two children |
+| Empty and plain scalars | empty, plain; canonical integers and retained spellings |
+| Quoted scalars | single, double; doubled apostrophes and escaped characters |
+| YAML escapes | escape; every name in the escape table |
+| Literal/folded blocks | literal, folded; clip/strip/keep, one/two content lines |
+| Plain continuation | continuation; one/two additional lines |
+| Identifier/path keys | key-plain; every identifier/path representative |
+| Quoted keys | key-single, key-double; every quoted representative |
 
-Plain words must be nonempty, have no leading or trailing whitespace, not
-start with a YAML indicator, and contain neither whitespace followed by `#`
-nor a colon followed by whitespace or end of word. Flow plain words also
-exclude flow punctuation. Single quotes double apostrophes. Double quotes
-escape quotes, backslashes and control characters. Literal and folded
-payloads retain their literal spelling, and enumerate all three chomping
-choices. Multiline scalars have the shortest witness and one extra content
-line. Plain continuations use the same payload on each continuation.
-The escape-name table includes all YAML escapes supported by the written
-reader contract and Unicode scalar/control boundaries. Lone surrogates and
-out-of-range escapes are excluded. Canonical decimal integers are the only
-plain values converted to integers. Boolean and null-like words remain
-strings; an empty value is null.
+Block collections and compact maps accept scalars, nested block collections
+and flow collections; block sequences also accept compact maps. Flow and
+wrapped collections accept nested flow/wrapped collections and inline
+scalars. Empty scalar values occur in mappings, not flow sequences.
+Mapping key slots use the three key productions. Document and BOM root
+slots accept block collections. These rules are explicitly enumerated in
+the versioned graph, including recursive self-pairs.
+
+The scalar alternatives retain all words of length zero through two over
+the six-character alphabet and all named integer, leading-zero, boolean,
+null-like, Unicode and control partitions. Duplicate payloads retain
+separate lexical identities. Each supported style/payload/escape/chomping/
+continuation combination is a lexical alternative. Keys retain identifier,
+path, single-quoted and double-quoted representatives. Mapping witnesses
+use distinct decoded keys. Indentation (one/two spaces), newline (LF/CRLF)
+and absent/present trailing comments each receive witnesses. They are not
+crossed with every derivation. Comments attach to syntax headers and every
+document has a final newline.
+
+Plain words are nonempty and trimmed, do not start with YAML indicators,
+and contain neither whitespace followed by `#` nor a colon followed by
+whitespace or end of word. Flow words also exclude flow punctuation. Single
+quotes double apostrophes. Double quotes escape quotes, backslashes and
+controls; non-BMP characters use a single YAML Unicode escape. Literal and
+folded payloads retain their spelling. Plain continuations repeat their
+payload. The escape table includes Unicode scalar/control boundaries but
+no surrogate or out-of-range escapes. Canonical decimal integers alone
+become integers; boolean and null-like words stay strings; empty values
+are null. The inherited lexical registry permits literal DEL in plain and
+continuation styles; PyYAML reports these three witnesses as invalid YAML.
+That discrepancy is recorded, not removed after observing parser answers.
+
+## Complete coverage targets
+
+The qualification domain has three criteria, each required in full:
+
+1. Every concrete production and lexical alternative has a witness.
+2. Every directly allowed parent/child pair has a witness (k-path, k = 2).
+3. Every exclusion rule has a local edit at each applicable production site.
+
+A production site is `(parent, slot, child)`, with a separate document-root
+site. Slots distinguish keys from values and document roots. Repeated and
+recursive occurrences share their grammar site. Coverage is finite because
+it ranges over the grammar graph, not every possible recursive context.
+
+The fixture enumerates required target identities from the grammar,
+constructs terminating witnesses and embeds them through shortest legal
+root paths. It collects production, lexical and edge coverage from the
+emitted derivation trees. Boundary edits use exact spans of the targeted
+production occurrence, including nested collections and quoted keys.
+A separate arithmetic counter counts lexical partitions, incoming graph
+edges and predicate intersections without invoking witness construction,
+rendering or target enumeration. Enumerated and witnessed inventories must
+both equal it; missing or unexpected identities fail their named row.
+
+The current inventory is 22 productions, 934 lexical alternatives, 132
+parent/child pairs and 457 boundary rule/site targets. It produces 1,088
+accepted witnesses and 457 boundary inputs. Duplicate-byte witnesses stay
+separate. These numbers describe this revision, not an unbounded language
+or all combinations of lexical choices, siblings, formatting and nesting.
 
 ## Exclusion registry
 
-Every derivation is crossed with every applicable rule. Edits are single
-insertions, replacements or deletions; their identity includes the original
-derivation. Applicability is determined by syntax metadata, never a parser.
+Applicability is determined by production features in the grammar, never
+by parser acceptance. Each edit changes one targeted occurrence.
 
-| Rule | Applicability and edit |
+| Rule | Applicable production and local edit |
 | --- | --- |
-| duplicate-key | Root mapping: append its first key again |
-| bad-indentation | Any document: insert a tab before its first token |
-| missing-delimiter | Flow collection: delete its outermost closing delimiter |
-| invalid-escape | Any quoted scalar: replace it with a double-quoted invalid escape |
-| unterminated-quote | Any quoted scalar: remove its closing quote |
-| tag | Any scalar: prefix an explicit tag |
-| anchor | Any scalar: prefix an anchor |
-| alias | Any scalar: replace it with an undefined alias |
-| merge-key | Root mapping: insert a merge-key member |
-| directive | Any document: prepend a YAML directive and document marker |
-| multiple-documents | Any document: append a document marker and second mapping |
-| multiline-quote | Any quoted scalar: insert a physical newline inside its quotes |
-| indentation-indicator | Any block scalar: add an explicit indentation indicator |
+| duplicate-key | Any mapping: append its first key again |
+| bad-indentation | Block collection, compact map, block scalar or continuation: insert a tab in physical indentation |
+| missing-delimiter | Flow/wrapped collection: remove its closing delimiter |
+| invalid-escape | Quoted scalar or key: replace with an invalid double-quoted escape |
+| unterminated-quote | Quoted scalar or key: remove its closing quote |
+| tag | Scalar or key: prefix an explicit tag |
+| anchor | Scalar or key: prefix an anchor |
+| alias | Scalar or key: replace with an undefined alias |
+| merge-key | Any mapping: append a merge-key member |
+| directive | Document root: prepend a directive and document marker |
+| multiple-documents | Document root: append a marker and second document |
+| multiline-quote | Quoted scalar or key: insert a physical newline inside quotes |
+| indentation-indicator | Literal/folded scalar: insert an explicit indentation indicator |
 
-The oracle records whether each neighbor is valid general YAML or invalid
-YAML syntax. Expected dialect refusal comes from this registry, not the
-external parser. The raw composition tree preserves ordered key/value pairs,
-scalar tag, spelling, style and source marks before normalization. Duplicate
-keys are detected before converting pairs to a dictionary. The adapter uses
-style and spelling instead of YAML 1.1 implicit tags. Parser exceptions from
-invalid syntax are observations; unexpected exceptions and broken imports
-are `oracle_error`. Only absence of the top-level `yaml` module is
-`oracle_unavailable`. Neither means agreement.
+Boundary witnesses use canonical key `a`, so duplicate-key edits repeat
+that actual key. The original bytes, rule and production site are retained.
+The oracle classifies neighbors as valid general YAML or invalid YAML;
+expected dialect refusal comes from this registry. Reader disagreements
+are evidence for a separate consumer task, not a reason to alter targets.
 
-Raw observations can be retained outside the repository with
-`python3 scripts/fixtures/yaml_oracle.py --inventory PATH --output RAW_PATH`,
-using the inventory produced by the generator. This records each derivation
-identity, raw composition tree or parser error, and the separate adapter answer.
+## Oracle and qualification
 
-## Qualification and limits
+The oracle uses PyYAML composition, preserving source locations, style,
+spelling, node pairs and parser errors before adaptation. Duplicate keys
+are detected before dictionary conversion. The dialect adapter uses style
+and spelling instead of YAML 1.1 implicit tags. Unexpected exceptions or
+broken imports are `oracle_error`; only absence of the top-level `yaml`
+module is `oracle_unavailable`. Neither means agreement.
 
-`python3 scripts/fixtures/grammar_cases.py --inventory` regenerates a streaming
-inventory. It prints counts and a SHA-256 digest; `--output PATH` retains the
-full derivation inventory outside the repository. The gate starts with this
-inventory and checks equality against an independent combinatorial count.
-It then observes the same cases with PyYAML and records disagreements in full.
-The default work budget stops an incomplete qualification explicitly at 60
-seconds. `--seconds 0` requests an unlimited run. A stopped run is red, with
-actual processed counts and unobserved counts; it is never a smaller passing
-domain. This budget is an operational stop, not a grammar bound.
+`python3 scripts/fixtures/grammar_cases.py --count` prints the independently
+counted target inventory. `--inventory --output PATH` emits all inputs and
+reports coverage and its digest. Raw observations can be regenerated with
+`python3 scripts/fixtures/yaml_oracle.py --inventory PATH --output RAW_PATH`.
+Generation uses only the standard library. The gate observes the complete
+inventory; absent PyYAML leaves generation and reader execution active and
+prints named stand-downs for reader and policy observations. Installed
+oracle errors fail qualification.
 
-The mutation harness uses a separately named control domain to finish every
-assertion under each mutation. That control proves the assertions have teeth;
-it does not qualify the baseline language. Full qualification is required to
-close the specification. Missing PyYAML leaves generation and refusal checks
-active and emits a named stand-down for reader and policy observations.
+The same complete coverage domain runs under mutations and their unmutated
+controls. Each mutation must fail its named assertion in a completed run;
+a crash, missing assertion or timeout is not detection. Measurement precedes
+changes to qualification rows; exceeding 60 added gate seconds requires an
+explicit cost stop rather than deleting targets.
+
+## History
+
+Revision 1 exhaustively expanded the three-node bounded domain. It measured
+510,928,488 derivations and 5,013,490,520 boundary edits and exceeded the
+operational budget. Revision 2 replaces that product with complete grammar
+coverage criteria. Historical enumeration remains opt-in through
+`--legacy-exhaustive`; `--control` reproduces its diagnostic control domain.
+Neither is the current qualification domain.

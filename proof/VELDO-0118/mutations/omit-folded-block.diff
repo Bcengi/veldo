@@ -1,11 +1,5 @@
 --- a/scripts/fixtures/grammar_cases.py
 +++ b/scripts/fixtures/grammar_cases.py
-@@ -174,6 +174,8 @@
-         return
-     if nodes == 1 and not root:
-         for atom in scalar_options(data, flow):
-+            if atom[0].startswith("folded/"):
-+                continue
-             yield ('scalar', atom, ())
-     for kind in data['containers']:
-         if root and kind.startswith('flow') or flow and kind.startswith('block'):
+@@ -638,0 +639,2 @@
++        if 'folded' in coverage_seen(node, data)['production']:
++            continue
