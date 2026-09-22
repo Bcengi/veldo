@@ -67,6 +67,12 @@ import cycle.
 import re
 from pathlib import Path
 
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
+
 SCHEMA = "veldo.decision_review/v1"
 DISPOSITIONS = {"defensible", "reframe", "refuted"}
 # WHICH OUTCOMES SUPPORT A DECIDED RECORD, and it is ONE enumeration because the gate and the refusal
@@ -314,23 +320,22 @@ def required_reviews_for(risk, policy_path):
     when the tier or the policy file is absent, never 0, so a decided record can never pass with
     no review. Proportionate line reader, the same posture policy_check.py uses: each tier is a
     line "  <tier>: {..., reviews: N, ...}" inside the risk_tiers block."""
-    default = 1
     try:
-        text = Path(policy_path).read_text()
-    except OSError:
-        return default
-    in_block = False
-    for line in text.splitlines():
-        if re.match(r"^risk_tiers:\s*$", line):
-            in_block = True
-            continue
-        if in_block:
-            if line and not line[0].isspace() and not line.startswith("#"):
-                break  # a non-indented line ends the risk_tiers block
-            m = re.match(r"^\s{2}(\w+):\s*\{.*\breviews:\s*(\d+)", line)
-            if m and m.group(1) == risk:
-                return int(m.group(2))
-    return default
+        policy = _Y.read(policy_path)
+    except FileNotFoundError:
+        return 1
+    if not isinstance(policy, dict):
+        raise ValueError("policy must be a mapping")
+    tiers = policy.get("risk_tiers", {})
+    if not isinstance(tiers, dict):
+        raise ValueError("risk_tiers must be a mapping")
+    tier = tiers.get(risk, {})
+    if not isinstance(tier, dict):
+        raise ValueError("risk tier must be a mapping")
+    count = tier.get("reviews", 1)
+    if not isinstance(count, int) or count < 1:
+        raise ValueError("reviews must be a positive integer")
+    return count
 
 
 def resolve_decision(decision_id, decisions_dir, parse, load_decision):

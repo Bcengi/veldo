@@ -4,12 +4,7 @@ id: VELDO-0006
 title: Budget continuity on the operator's path - where the budget stands, whether the governor is
   actually pacing or merely bootstrapping, and what survives stopping right now
 status: ready
-risk: standard - it adds a read model over the governor's own arithmetic and the recorded event
-  stream, writes nothing and paces nothing. It is NOT low because the number it reports is the one an
-  operator decides on, and this repository has ZERO recorded spend, so the obvious report would say
-  "0 tokens used, plenty of budget" when the truth is "nothing was ever measured" - the exact
-  confident zero this migration kept finding. It is not high because it changes no pacing decision
-  and every leg stands down by name
+risk: standard - it adds a read model over the governor's own arithmetic and the recorded event stream, writes nothing and paces nothing. It is NOT low because the number it reports is the one an operator decides on, and this repository has ZERO recorded spend, so the obvious report would say "0 tokens used, plenty of budget" when the truth is "nothing was ever measured" - the exact confident zero this migration kept finding. It is not high because it changes no pacing decision and every leg stands down by name
 owner: dmitry
 human_approval: not_required
 lane: planned

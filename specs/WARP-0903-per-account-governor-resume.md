@@ -14,39 +14,15 @@ depends_on: [WARP-0902]
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: The governor tracks budget PER ACCOUNT. Each account has its own session and weekly
-      windows and its own measured burn, and the desired active-worker count is computed per account
-      by REUSING the WARP-0706 control law (desired_workers / resume_at), not a reimplementation. An
-      account whose window budget is spent (or is in a limit-error cooldown) contributes zero desired
-      workers while every OTHER account keeps pacing, so the pool never fully stalls while any account
-      still has budget. The fleet-wide desired count is the sum across accounts, capped at the pool
-      max.
+    text: The governor tracks budget PER ACCOUNT. Each account has its own session and weekly windows and its own measured burn, and the desired active-worker count is computed per account by REUSING the WARP-0706 control law (desired_workers / resume_at), not a reimplementation. An account whose window budget is spent (or is in a limit-error cooldown) contributes zero desired workers while every OTHER account keeps pacing, so the pool never fully stalls while any account still has budget. The fleet-wide desired count is the sum across accounts, capped at the pool max.
   - id: AC2
-    text: Burn is attributed per account. The measured burn feeding each account's windows is the
-      burn produced under that account (keyed by the account identifier the worker carries, VELDO_ACCOUNT
-      from W2), so one account's spend never counts against another's budget; an account with no
-      measured burn yet bootstraps exactly as the single-pool control law does (allow up to its share
-      until burn is on the stream).
+    text: Burn is attributed per account. The measured burn feeding each account's windows is the burn produced under that account (keyed by the account identifier the worker carries, VELDO_ACCOUNT from W2), so one account's spend never counts against another's budget; an account with no measured burn yet bootstraps exactly as the single-pool control law does (allow up to its share until burn is on the stream).
   - id: AC3
-    text: Resume timing is per account. resume_at is computed for each backed-off account over its own
-      windows and burn, so an account resumes when ITS window rolls, independent of the others; a
-      fleet with one account spent and another with budget keeps the second running and schedules the
-      first to resume at its own reset.
+    text: Resume timing is per account. resume_at is computed for each backed-off account over its own windows and burn, so an account resumes when ITS window rolls, independent of the others; a fleet with one account spent and another with budget keeps the second running and schedules the first to resume at its own reset.
   - id: AC4
-    text: The launcher's wait seam is filled by a REAL in-session resume-waiter. wait_until(epoch)
-      performs an in-session blocking wait (a real wait in the running session, which dies with it -
-      NOT a detached process, no spawn, consistent with feedback_no_rogue_processes and PLAN-0007
-      NG1); tick() advances one control interval while workers run. On resume the launcher re-checks
-      the per-account desired counts before spawning, so it never resumes straight into a still-spent
-      window. The gate drives a FAKE clock/waiter (deterministic now_epoch, no real sleeping).
+    text: The launcher's wait seam is filled by a REAL in-session resume-waiter. wait_until(epoch) performs an in-session blocking wait (a real wait in the running session, which dies with it - NOT a detached process, no spawn, consistent with feedback_no_rogue_processes and PLAN-0007 NG1); tick() advances one control interval while workers run. On resume the launcher re-checks the per-account desired counts before spawning, so it never resumes straight into a still-spent window. The gate drives a FAKE clock/waiter (deterministic now_epoch, no real sleeping).
   - id: AC5
-    text: Gate-tested via the selftest over synthetic per-account event streams and a fake clock (no
-      real sleeping) - per-account pacing (one account spent, another with budget: the second keeps
-      running, the pool is NOT stalled, and the desired count is the per-account sum capped at max);
-      per-account resume timing (the spent account resumes at its own reset, computed from its own
-      windows); and the waiter re-checks desired before resuming. Non-tautological teeth: a governor
-      that zeroes the WHOLE pool when any single account is spent, or a waiter that resumes without
-      re-checking desired, turns an assertion red.
+    text: "Gate-tested via the selftest over synthetic per-account event streams and a fake clock (no real sleeping) - per-account pacing (one account spent, another with budget: the second keeps running, the pool is NOT stalled, and the desired count is the per-account sum capped at max); per-account resume timing (the spent account resumes at its own reset, computed from its own windows); and the waiter re-checks desired before resuming. Non-tautological teeth: a governor that zeroes the WHOLE pool when any single account is spent, or a waiter that resumes without re-checking desired, turns an assertion red."
 required_evidence: [unit]
 rollback: git revert; additive - a per-account layer over the existing governor plus the in-session
   resume-waiter filling the launcher wait seam, a selftest block, and this spec, all repo-root dogfood

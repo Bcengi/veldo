@@ -4,12 +4,7 @@ id: WARP-0717
 title: A one-second inner loop for a one-line fix - run a named suite alone, and make a partial run
   STRUCTURALLY incapable of being mistaken for a gate pass
 status: shipped
-risk: high - this item creates a fast path, and a fast path next to a slow gate is a standing invitation to
-  treat the fast one as verification. The method's central law is that a green verify.sh is the ONLY definition
-  of done, so the danger here is not a bug, it is EROSION: a partial run that looks authoritative, gets quoted
-  as one, and quietly becomes the bar. Labelling is not sufficient protection against that, which is why the
-  criteria require the partial run to be unable to write the verify stamp, unable to satisfy required-evidence,
-  and unable to emit the line the gate parses. It touches no protected path and changes no assertion
+risk: "high - this item creates a fast path, and a fast path next to a slow gate is a standing invitation to treat the fast one as verification. The method's central law is that a green verify.sh is the ONLY definition of done, so the danger here is not a bug, it is EROSION: a partial run that looks authoritative, gets quoted as one, and quietly becomes the bar. Labelling is not sufficient protection against that, which is why the criteria require the partial run to be unable to write the verify stamp, unable to satisfy required-evidence, and unable to emit the line the gate parses. It touches no protected path and changes no assertion"
 owner: dmitry
 human_approval: not_required
 lane: standalone

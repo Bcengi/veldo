@@ -13,29 +13,15 @@ plan_revision: 1
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A run folder lives under the git common dir at veldo/runs/<run-id>/ so it is
-      shared across worktrees and outside git history. The registry resolves that
-      path from git and accepts an override for testing, and creating a run writes a
-      meta.json (run id, spec id, started at, pid, head) and an initial state.json.
+    text: A run folder lives under the git common dir at veldo/runs/<run-id>/ so it is shared across worktrees and outside git history. The registry resolves that path from git and accepts an override for testing, and creating a run writes a meta.json (run id, spec id, started at, pid, head) and an initial state.json.
   - id: AC2
-    text: state.json is updated by atomic write (temp file plus rename) so a reader
-      never sees a half-written state; live progress is appended to live.jsonl with a
-      monotonic sequence number so a reader can detect gaps and resume.
+    text: state.json is updated by atomic write (temp file plus rename) so a reader never sees a half-written state; live progress is appended to live.jsonl with a monotonic sequence number so a reader can detect gaps and resume.
   - id: AC3
-    text: The registry records the loop phase, a heartbeat timestamp, and a blocked
-      question, and classifies a run as active, blocked, stale, or done from its
-      status and heartbeat age. A stale run (heartbeat older than the threshold) is
-      never reported as blocked unless it explicitly recorded a blocker.
+    text: The registry records the loop phase, a heartbeat timestamp, and a blocked question, and classifies a run as active, blocked, stale, or done from its status and heartbeat age. A stale run (heartbeat older than the threshold) is never reported as blocked unless it explicitly recorded a blocker.
   - id: AC4
-    text: The durable run milestones (run.started, run.blocked, run.resumed, run.done,
-      run.aborted) are added to the event vocabulary and can be emitted to the tracked
-      event stream; the high-volume progress (per-step and heartbeat) stays in the
-      run folder live.jsonl only and is never written to the committed event stream.
+    text: The durable run milestones (run.started, run.blocked, run.resumed, run.done, run.aborted) are added to the event vocabulary and can be emitted to the tracked event stream; the high-volume progress (per-step and heartbeat) stays in the run folder live.jsonl only and is never written to the committed event stream.
   - id: AC5
-    text: A selftest drives the registry over a temporary run root - create, atomic
-      state update, sequenced live append, heartbeat, block, resume, finish, list, and
-      classify (active, blocked, stale, done) - and is non-tautological: a mutation
-      that drops the atomic rename or misclassifies a stale run makes an assertion fail.
+    text: "A selftest drives the registry over a temporary run root - create, atomic state update, sequenced live append, heartbeat, block, resume, finish, list, and classify (active, blocked, stale, done) - and is non-tautological: a mutation that drops the atomic rename or misclassifies a stale run makes an assertion fail."
 required_evidence: [unit]
 rollback: git revert; additive - a new .veldo/runlog.py, five run.* entries added to
   the events vocabulary in both events.py copies, a selftest block, the spec, and the

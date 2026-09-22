@@ -5,11 +5,7 @@ title: History-dependent proofs in a flattened repository - the three assertions
   that resolve their input from git, why a single-commit successor cannot supply it, and the stand-down
   that says so instead of passing quietly
 status: ready
-risk: standard - it changes only test-harness control flow and one reporting line, ships no product
-  behaviour, and a repository with history is byte-identically unaffected. It is not low because the
-  thing being weakened is a PROOF: three of these assertions exist specifically to avoid trusting a
-  pinned digest, and a stand-down written carelessly converts "we could not check this" into a green
-  check, which is the exact defect this project has shipped twice and hunts for by name
+risk: "standard - it changes only test-harness control flow and one reporting line, ships no product behaviour, and a repository with history is byte-identically unaffected. It is not low because the thing being weakened is a PROOF: three of these assertions exist specifically to avoid trusting a pinned digest, and a stand-down written carelessly converts \"we could not check this\" into a green check, which is the exact defect this project has shipped twice and hunts for by name"
 owner: dmitry
 human_approval: not_required
 lane: standalone

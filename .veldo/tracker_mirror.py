@@ -70,6 +70,8 @@ import json
 import sys
 from pathlib import Path
 
+
+
 # Reuse the routing resolver (WARP-0601): which tracker/project serves a repo, fail-closed by name.
 _TR_PATH = Path(__file__).resolve().parent / "tracker.py"
 _trspec = importlib.util.spec_from_file_location("veldo_tracker", _TR_PATH)
@@ -494,7 +496,7 @@ def build_plan_index(plans_dir, specs_dir):
     if not d.exists():
         return index
     for p in sorted(d.glob("*.md")):
-        m = V.re.match(r"^---\n(.*?)\n---", p.read_text(), V.re.S)
+        m = V._yamlish.front_matter_match(p.read_text())
         if not m:
             continue
         try:

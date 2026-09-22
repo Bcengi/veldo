@@ -250,22 +250,11 @@ open_decisions: []
 
 resolved_decisions:
   - id: D1
-    text: Auto-relaunch after FULL account exhaustion. In-session pacing and the resume-waiter (W3)
-      handle backoff and resume while the session process is alive; but a session that is fully killed
-      cannot restart itself. Option A (default, no supervisor - W7 is dropped) - stay fully in-session
-      and accept that a truly killed session needs a one-word human restart. Option B (opt-in, off by
-      default - W7 is built) - a user-level systemd timer launches a fresh in-session fleet session at
-      the reset time. Recommended: build W7 as an opt-in, off by default, so the escape hatch exists
-      but nothing persistent runs unless the founder turns it on.
+    text: "Auto-relaunch after FULL account exhaustion. In-session pacing and the resume-waiter (W3) handle backoff and resume while the session process is alive; but a session that is fully killed cannot restart itself. Option A (default, no supervisor - W7 is dropped) - stay fully in-session and accept that a truly killed session needs a one-word human restart. Option B (opt-in, off by default - W7 is built) - a user-level systemd timer launches a fresh in-session fleet session at the reset time. Recommended: build W7 as an opt-in, off by default, so the escape hatch exists but nothing persistent runs unless the founder turns it on."
     resolved: true
     resolved_at: 2026-07-19
-    resolution: Option B, founder-authorized 2026-07-19. Build W7 as an OPT-IN, OFF-BY-DEFAULT external
-      supervisor. The in-session resume-waiter (W3) stays the DEFAULT; the external systemd-timer
-      supervisor only launches a fresh session at a budget-reset time and never runs headless work, and
-      nothing persistent exists unless the founder explicitly installs it. WARP-0907 is unblocked and
-      built.
+    resolution: Option B, founder-authorized 2026-07-19. Build W7 as an OPT-IN, OFF-BY-DEFAULT external supervisor. The in-session resume-waiter (W3) stays the DEFAULT; the external systemd-timer supervisor only launches a fresh session at a budget-reset time and never runs headless work, and nothing persistent exists unless the founder explicitly installs it. WARP-0907 is unblocked and built.
     blocks: []
-
 ---
 
 ## Intent

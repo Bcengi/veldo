@@ -208,15 +208,15 @@ problem_class_challenge:
 option_challenges:
   - option: opt_a
     dead_end_verdict: holds
-    finding: The dead_end holds: it stops working once the fan-out grows past a single node.
+    finding: 'The dead_end holds: it stops working once the fan-out grows past a single node.'
   - option: opt_b
     dead_end_verdict: holds
-    finding: The dead_end holds: it couples to one engine and stops when a second producer appears.
+    finding: 'The dead_end holds: it couples to one engine and stops when a second producer appears.'
 missing_options: []
 assumption_challenges:
   - assumption: a1
     verdict: load_bearing
-    finding: Load bearing: if the fan-out did not grow, the cheap option would be defensible.
+    finding: 'Load bearing: if the fan-out did not grow, the cheap option would be defensible.'
 """
 
 
@@ -249,10 +249,10 @@ expect("WARP-1106 AC2: an out-of-vocabulary dead_end verdict refuses",
 expect("WARP-1106 AC2: an out-of-vocabulary assumption verdict refuses",
        _dr_errs(GOOD_REVIEW.replace("verdict: load_bearing", "verdict: decorative")) > 0)
 expect("WARP-1106 AC2: an option_challenge lacking its finding refuses",
-       _dr_errs(GOOD_REVIEW.replace("    finding: The dead_end holds: it stops working once the fan-out grows past a single node.\n", "", 1)) > 0)
+       _dr_errs(GOOD_REVIEW.replace("    finding: 'The dead_end holds: it stops working once the fan-out grows past a single node.'\n", "", 1)) > 0)
 expect("WARP-1106 AC2: an empty option_challenges list refuses (a review that challenges nothing is not a review)",
        _dr_errs(GOOD_REVIEW.replace(
-           "option_challenges:\n  - option: opt_a\n    dead_end_verdict: holds\n    finding: The dead_end holds: it stops working once the fan-out grows past a single node.\n  - option: opt_b\n    dead_end_verdict: holds\n    finding: The dead_end holds: it couples to one engine and stops when a second producer appears.\n",
+           "option_challenges:\n  - option: opt_a\n    dead_end_verdict: holds\n    finding: 'The dead_end holds: it stops working once the fan-out grows past a single node.'\n  - option: opt_b\n    dead_end_verdict: holds\n    finding: 'The dead_end holds: it couples to one engine and stops when a second producer appears.'\n",
            "option_challenges: []\n")) > 0)
 expect("WARP-1106 AC2: a duplicate option_challenge refuses",
        _dr_errs(GOOD_REVIEW.replace("  - option: opt_b\n", "  - option: opt_a\n", 1)) > 0)
@@ -370,7 +370,7 @@ expect("WARP-1106 AC6: an absent policy defaults to one review (the floor, never
 # option_challenge's finding, and removing the recommendation, each turn the check RED; each
 # mutation is applied to a copy of the real text and reverts byte-identical.
 _dr_real = _dr_example.read_text()
-_dr_mut_finding = re.sub(r"\n    finding: The dead_end holds under attack:[^\n]*", "", _dr_real, count=1)
+_dr_mut_finding = re.sub(r"\n    finding: \"?The dead_end holds under attack:[^\n]*", "", _dr_real, count=1)
 expect("WARP-1106 TEETH: stripping an option_challenge's finding from the real example turns the check RED",
        _dr_mut_finding != _dr_real and _dr_errs(_dr_mut_finding) > 0)
 _dr_mut_rec = re.sub(r"\nrecommendation:[^\n]*", "", _dr_real, count=1)

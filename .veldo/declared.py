@@ -177,9 +177,11 @@ ELSEWHERE_KEYS = ("capability", "home_as_declared", "segment", "root", "resolved
 # The line shape the manifest uses: two spaces, a name, a colon, then a brace block. Read with a
 # narrow regex rather than the front-matter parser because the manifest's note fields carry commas,
 # braces and colons in prose, and the ONE parser is not asked to survive that.
-_ROW = re.compile(r"^  (\w+):\s*\{(.*)$", re.M)
-_HOME = re.compile(r"\bhome:\s*([^,}]+)")
-_STATUS = re.compile(r"\bstatus:\s*([\w-]+)")
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
 
 
 def search_roots(root=None):
@@ -229,14 +231,11 @@ def search_roots(root=None):
 
 def manifest_rows(text):
     """[(name, status, home_or_None)] for every capability the manifest declares."""
-    out = []
-    for m in _ROW.finditer(text):
-        name, rest = m.group(1), m.group(2)
-        st = _STATUS.search(rest)
-        hm = _HOME.search(rest)
-        out.append((name, st.group(1) if st else None,
-                    hm.group(1).strip() if hm else None))
-    return out
+    data = _Y.parse(text)
+    rows = data.get("capabilities", {})
+    if not isinstance(rows, dict) or any(not isinstance(v, dict) for v in rows.values()):
+        raise ValueError("capabilities must be a mapping of capability records")
+    return [(name, row.get("status"), row.get("home")) for name, row in rows.items()]
 
 
 def home_segments(home):
@@ -325,21 +324,19 @@ def read_exemption_ledger(path=None, root=None):
     if not p.is_file():
         return led
     led["state"] = EXEMPTIONS_PRESENT
-    for line in p.read_text(errors="replace").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if ":" not in line:
-            led["refused"].append({"module": None, "line": line, "why": REFUSED_MALFORMED})
-            continue
-        mod, _sep, reason = line.partition(":")
-        mod, reason = mod.strip().strip('"'), reason.strip().strip('"')
-        if mod and reason:
+    try:
+        rows = _Y.read(p)
+    except (OSError, ValueError) as exc:
+        led["refused"].append({"module": None, "line": str(exc), "why": REFUSED_MALFORMED})
+        return led
+    if not isinstance(rows, dict):
+        led["refused"].append({"module": None, "line": str(p), "why": REFUSED_MALFORMED})
+        return led
+    for mod, reason in rows.items():
+        if isinstance(reason, str) and reason.strip():
             led["accepted"][mod] = reason
-        elif mod:
-            led["refused"].append({"module": mod, "line": line, "why": REFUSED_NO_REASON})
         else:
-            led["refused"].append({"module": None, "line": line, "why": REFUSED_MALFORMED})
+            led["refused"].append({"module": mod, "line": mod, "why": REFUSED_NO_REASON})
     return led
 
 

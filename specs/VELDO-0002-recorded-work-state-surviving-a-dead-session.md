@@ -4,12 +4,7 @@ id: VELDO-0002
 title: What is done, what nobody concluded, and what is queued - one derived answer that survives a
   dead session, and that says plainly when it cannot confirm a run is alive rather than guessing
 status: ready
-risk: standard - it adds a READ-ONLY reader over artifacts and a run registry that both already
-  exist, writes nothing, and gates nothing, so no change can be refused because of it. It is NOT low
-  because the answer it gives is the one an operator acts on after losing a session, and an answer
-  that quietly omits work is worse than no answer at all: the failure it exists to prevent already
-  happened once and cost four built items that survived only because a human went looking. It is not
-  high because it holds no state of its own, so the retreat is deleting one module
+risk: "standard - it adds a READ-ONLY reader over artifacts and a run registry that both already exist, writes nothing, and gates nothing, so no change can be refused because of it. It is NOT low because the answer it gives is the one an operator acts on after losing a session, and an answer that quietly omits work is worse than no answer at all: the failure it exists to prevent already happened once and cost four built items that survived only because a human went looking. It is not high because it holds no state of its own, so the retreat is deleting one module"
 owner: dmitry
 human_approval: not_required
 lane: planned

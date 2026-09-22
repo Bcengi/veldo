@@ -14,35 +14,15 @@ depends_on: [WARP-0802, WARP-0803, WARP-0804, WARP-0805, WARP-0806, WARP-0807, W
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A table-driven cross-pack conformance harness exists (.veldo/pack_conformance.py, build
-      machinery, driven from .veldo/packs.json), wired into the gate via the selftest. Run over the
-      repository it reports every declared pack conformant - a single findings list that is EMPTY
-      when all packs hold and names the pack and failure otherwise.
+    text: A table-driven cross-pack conformance harness exists (.veldo/pack_conformance.py, build machinery, driven from .veldo/packs.json), wired into the gate via the selftest. Run over the repository it reports every declared pack conformant - a single findings list that is EMPTY when all packs hold and names the pack and failure otherwise.
   - id: AC2
-    text: For EACH declared pack the harness drives the pack against its OWN assembled engine through
-      a constructed VELDO state and proves the push gate is real, not honor-system (NG2) - the pack's
-      copied guard (through its committed git pre-push hook where it ships one, else the guard
-      directly) BLOCKS a push at an unproven HEAD (exit non-zero) and ALLOWS one at a proven HEAD
-      (green last_verify + a proof manifest + a passing commit-bound verdict, evidence-inheritance
-      honored), and policy_check.py run standalone exactly as CI runs it agrees (blocks the unproven
-      state, passes the proven state). Asserting BOTH directions per pack is intrinsic teeth: a
-      state-blind gate cannot satisfy block-unproven AND allow-proven.
+    text: "For EACH declared pack the harness drives the pack against its OWN assembled engine through a constructed VELDO state and proves the push gate is real, not honor-system (NG2) - the pack's copied guard (through its committed git pre-push hook where it ships one, else the guard directly) BLOCKS a push at an unproven HEAD (exit non-zero) and ALLOWS one at a proven HEAD (green last_verify + a proof manifest + a passing commit-bound verdict, evidence-inheritance honored), and policy_check.py run standalone exactly as CI runs it agrees (blocks the unproven state, passes the proven state). Asserting BOTH directions per pack is intrinsic teeth: a state-blind gate cannot satisfy block-unproven AND allow-proven."
   - id: AC3
-    text: The harness closes the WARP-0808 review note at the git INDEX - the committed mode of every
-      pack's hooks/pre-push and copied scripts/veldo-guard.sh is asserted executable (100755) via
-      git ls-files -s (stronger than a working-tree os.access check, which can diverge from the
-      index), and a real git-invoked push to a local bare remote proves the exec bit is load-bearing
-      end to end: a committed non-executable hook fails OPEN (git silently skips it, an unproven push
-      lands), an executable one BLOCKS the unproven push.
+    text: "The harness closes the WARP-0808 review note at the git INDEX - the committed mode of every pack's hooks/pre-push and copied scripts/veldo-guard.sh is asserted executable (100755) via git ls-files -s (stronger than a working-tree os.access check, which can diverge from the index), and a real git-invoked push to a local bare remote proves the exec bit is load-bearing end to end: a committed non-executable hook fails OPEN (git silently skips it, an unproven push lands), an executable one BLOCKS the unproven push."
   - id: AC4
-    text: The engine drift-check holds across all seven packs (byte-identical content AND mode),
-      asserted by the harness for every declared pack, so portability and no-drift are gate-enforced
-      by construction, not by inspection - the join point that converts "ported" into a property.
+    text: The engine drift-check holds across all seven packs (byte-identical content AND mode), asserted by the harness for every declared pack, so portability and no-drift are gate-enforced by construction, not by inspection - the join point that converts "ported" into a property.
   - id: AC5
-    text: A selftest asserts the harness passes (findings empty) and is non-tautological - the
-      per-pack both-directions assertion (block unproven, allow proven) is teeth by construction, the
-      real-git-push exec-bit case reproduces the fail-open on a non-executable hook and blocks with
-      the executable one, and the committed-index-mode assertion covers every pack's hook and guard.
+    text: A selftest asserts the harness passes (findings empty) and is non-tautological - the per-pack both-directions assertion (block unproven, allow proven) is teeth by construction, the real-git-push exec-bit case reproduces the fail-open on a non-executable hook and blocks with the executable one, and the committed-index-mode assertion covers every pack's hook and guard.
 required_evidence: [unit]
 rollback: git revert; additive - a new .veldo/pack_conformance.py build-machinery module (not shipped
   engine, not copied into packs), a selftest block, and this spec; no protected path; pure stdlib,

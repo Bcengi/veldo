@@ -19,16 +19,7 @@ V = importlib.util.module_from_spec(_vspec)
 _vspec.loader.exec_module(V)
 
 
-def front_matter(text):
-    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
-    if not m:
-        return {}
-    fm = {}
-    for line in m.group(1).splitlines():
-        if re.match(r"^[A-Za-z_]+:", line):
-            key, _, val = line.partition(":")
-            fm[key.strip()] = val.strip()
-    return fm
+front_matter = V.front_matter
 
 
 def spec_status_by_id():

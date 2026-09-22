@@ -5,14 +5,7 @@ title: The release contract and its registry - a release is a typed, ordered gro
   plan as its floor, no two artifacts in either registry share an id, and a member is bound by the
   bytes of its file rather than by its front matter
 status: ready
-risk: standard - it adds one new artifact contract, one new registry, and one refusal to the plan
-  corpus check, and it changes what the gate accepts rather than what any product does. It is NOT low
-  because both halves are adoption-affecting in the strongest way a contract change can be: the
-  duplicate-id refusal is evaluated against every plan file in every adopting repository, so a
-  repository that already carries a duplicate reddens on the day this lands, and the plan registry it
-  touches is read by eight callers that must not start raising. And it is not high because nothing it
-  touches runs in production, no gate stage consumes the release report, a repository that declares no
-  release is unaffected, and the whole change is reversible by deleting two check registrations
+risk: "standard - it adds one new artifact contract, one new registry, and one refusal to the plan corpus check, and it changes what the gate accepts rather than what any product does. It is NOT low because both halves are adoption-affecting in the strongest way a contract change can be: the duplicate-id refusal is evaluated against every plan file in every adopting repository, so a repository that already carries a duplicate reddens on the day this lands, and the plan registry it touches is read by eight callers that must not start raising. And it is not high because nothing it touches runs in production, no gate stage consumes the release report, a repository that declares no release is unaffected, and the whole change is reversible by deleting two check registrations"
 owner: dmitry
 # CORRECTED to the tier, 2026-08-12: this read `required` while the risk is standard, and
 # .veldo/policy.yaml maps standard to human_approval false. That was a voluntary escalation nobody

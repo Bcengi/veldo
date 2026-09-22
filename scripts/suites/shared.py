@@ -37,6 +37,9 @@ def git_fixture_dependency(path):
     helper = path.parent / "git_process.py"
     if path.is_file() and not helper.exists() and path.parent not in (ROOT / "scripts", ROOT / "engine/scripts"):
         helper.write_bytes((ROOT / ".veldo" / "git_process.py").read_bytes())
+    parser = path.parent / "yamlish.py"
+    if path.is_file() and not parser.exists() and path.parent not in (ROOT / "scripts", ROOT / "engine/scripts"):
+        parser.write_bytes((ROOT / ".veldo" / "yamlish.py").read_bytes())
     return path
 
 

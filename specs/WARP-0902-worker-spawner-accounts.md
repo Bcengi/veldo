@@ -14,43 +14,15 @@ depends_on: [WARP-0901]
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: An account model (.veldo/accounts.py) persists a named account as its own config profile
-      and resolves it by name. account_add(name) records an account whose credentials live in its
-      own CLAUDE_CONFIG_DIR profile directory (the one-time login into that directory is a documented
-      human step; account_add creates and registers the profile, it does not fabricate a login);
-      resolve(name) returns that account's CLAUDE_CONFIG_DIR; list_accounts() enumerates them. The
-      registry persists across invocations (a file under the git common dir, outside git history,
-      shared across worktrees, like the claim ledger), so a registered account is reused with NO
-      relogin. A duplicate add and an unknown resolve each fail by name, not silently.
+    text: An account model (.veldo/accounts.py) persists a named account as its own config profile and resolves it by name. account_add(name) records an account whose credentials live in its own CLAUDE_CONFIG_DIR profile directory (the one-time login into that directory is a documented human step; account_add creates and registers the profile, it does not fabricate a login); resolve(name) returns that account's CLAUDE_CONFIG_DIR; list_accounts() enumerates them. The registry persists across invocations (a file under the git common dir, outside git history, shared across worktrees, like the claim ledger), so a registered account is reused with NO relogin. A duplicate add and an unknown resolve each fail by name, not silently.
   - id: AC2
-    text: The CLAUDE_CONFIG_DIR-per-account model is VERIFIED against real Claude Code behavior (via
-      the claude-code-guide surface or the current docs) - that pointing CLAUDE_CONFIG_DIR at a
-      directory isolates that account's persisted credentials so a session started with it reuses the
-      saved auth without a login prompt - and the account model is implemented to match what is
-      verified (the env var name and semantics are grounded, not assumed). The verified behavior is
-      recorded in the proof.
+    text: The CLAUDE_CONFIG_DIR-per-account model is VERIFIED against real Claude Code behavior (via the claude-code-guide surface or the current docs) - that pointing CLAUDE_CONFIG_DIR at a directory isolates that account's persisted credentials so a session started with it reuses the saved auth without a login prompt - and the account model is implemented to match what is verified (the env var name and semantics are grounded, not assumed). The verified behavior is recorded in the proof.
   - id: AC3
-    text: The fleet WorkerSpawner seam (fleet.py) is filled by a REAL in-session spawner that
-      assembles each worker's environment - its account's CLAUDE_CONFIG_DIR, a worker id, the scope,
-      and capabilities - tracks the handle, and retires it. It NEVER spawns a detached or rogue
-      process: the actual start of a worker is an INJECTED spawn primitive (a fake in the gate; the
-      real primitive is the in-session mechanism or the documented one-session-per-account procedure),
-      and the reference primitive FAILS LOUD rather than fabricate or detach. This is consistent with
-      feedback_no_rogue_processes and PLAN-0007 NG1 (a worker is a vanilla in-session session).
+    text: "The fleet WorkerSpawner seam (fleet.py) is filled by a REAL in-session spawner that assembles each worker's environment - its account's CLAUDE_CONFIG_DIR, a worker id, the scope, and capabilities - tracks the handle, and retires it. It NEVER spawns a detached or rogue process: the actual start of a worker is an INJECTED spawn primitive (a fake in the gate; the real primitive is the in-session mechanism or the documented one-session-per-account procedure), and the reference primitive FAILS LOUD rather than fabricate or detach. This is consistent with feedback_no_rogue_processes and PLAN-0007 NG1 (a worker is a vanilla in-session session)."
   - id: AC4
-    text: Account selection threads through the launcher - a worker is pinned to a chosen account
-      (veldo work/fleet --account NAME) or the pool is spread across the registered accounts, so
-      multi-account is N concurrent one-account workers that self-divide the one frontier through the
-      claim ledger, each worker carrying its account's CLAUDE_CONFIG_DIR. One account is never run as
-      two workers at once by the spreader (one account per worker).
+    text: Account selection threads through the launcher - a worker is pinned to a chosen account (veldo work/fleet --account NAME) or the pool is spread across the registered accounts, so multi-account is N concurrent one-account workers that self-divide the one frontier through the claim ledger, each worker carrying its account's CLAUDE_CONFIG_DIR. One account is never run as two workers at once by the spreader (one account per worker).
   - id: AC5
-    text: Gate-tested via the selftest over a throwaway environment with fakes and NO real login and
-      NO detached process - account add/resolve/list and cross-invocation persistence (duplicate and
-      unknown fail by name); the spawner assembles the right env (the account's CLAUDE_CONFIG_DIR
-      threaded to the worker), reconciles up/down, and retires over a FAKE spawn primitive; the
-      account spreader gives one account per worker. Non-tautological teeth: a spawner that ignores
-      the selected account (wrong or missing CLAUDE_CONFIG_DIR), or a reference primitive that
-      fabricates instead of failing loud, turns an assertion red.
+    text: "Gate-tested via the selftest over a throwaway environment with fakes and NO real login and NO detached process - account add/resolve/list and cross-invocation persistence (duplicate and unknown fail by name); the spawner assembles the right env (the account's CLAUDE_CONFIG_DIR threaded to the worker), reconciles up/down, and retires over a FAKE spawn primitive; the account spreader gives one account per worker. Non-tautological teeth: a spawner that ignores the selected account (wrong or missing CLAUDE_CONFIG_DIR), or a reference primitive that fabricates instead of failing loud, turns an assertion red."
 required_evidence: [unit]
 rollback: git revert; additive - a new .veldo/accounts.py (repo-root dogfood machinery, NOT shipped
   engine, not copied into packs), the WorkerSpawner seam filled in fleet.py, a selftest block, and

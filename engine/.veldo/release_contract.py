@@ -86,6 +86,7 @@ the release level.
 """
 import hashlib
 import re
+import importlib.util
 from pathlib import Path
 
 SCHEMA = "veldo.release/v1"
@@ -178,7 +179,12 @@ REPORT_KEYS = ("stood_down", "stand_down", "releases", "members", "members_by_ki
                "members_resolved", "members_unelaborated", "member_records", "duplicate_ids",
                "digest_coverage", "problems", "notices")
 
-_FM_RE = re.compile(r"^---\n(.*?)\n---", re.S)
+
+# The one syntax reader, loaded by sibling path for file-location imports.
+_yamlish_spec = importlib.util.spec_from_file_location("veldo_yamlish", Path(__file__).resolve().with_name("yamlish.py"))
+_yamlish = importlib.util.module_from_spec(_yamlish_spec)
+_yamlish_spec.loader.exec_module(_yamlish)
+
 
 
 # ---------------------------------------------------------------------------------------
@@ -193,15 +199,12 @@ def front_matter(path, parse):
         text = Path(path).read_text()
     except OSError as e:
         return None, "cannot be read: %s" % e
-    m = _FM_RE.match(text)
-    if not m:
-        return None, "no YAML front matter"
     try:
-        fm = parse(m.group(1))
+        fm = _yamlish.front_matter(text, str(path))
     except ValueError as e:
         return None, "front matter outside the contract subset: %s" % e
-    if not isinstance(fm, dict):
-        return None, "front matter is not a mapping of fields"
+    if fm is None:
+        return None, "no YAML front matter"
     return fm, None
 
 

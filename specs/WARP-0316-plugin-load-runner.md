@@ -13,71 +13,17 @@ human_approval: not_required
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A plugin / extension-loading runner ships at
-      engine/scripts/runners/plugin/plugin_load_runner.py. It reads a
-      fixture (a JSON object naming a reference loader and a list of cases, or a
-      bare list of cases) and drives a plugin loader through a seam whose contract
-      is install(archive_path, target_dir) -> manifest dict, raising on rejection.
-      Each case describes an archive as inline members (a file {name, data} or a
-      symlink {name, symlink_target}), built into a real zip at runtime in a
-      throwaway temp directory (no binary blobs are committed) and installed
-      through the selected loader into a target directory nested inside a sandbox.
-      Each case carries a required verdict of load or reject.
+    text: A plugin / extension-loading runner ships at engine/scripts/runners/plugin/plugin_load_runner.py. It reads a fixture (a JSON object naming a reference loader and a list of cases, or a bare list of cases) and drives a plugin loader through a seam whose contract is install(archive_path, target_dir) -> manifest dict, raising on rejection. Each case describes an archive as inline members (a file {name, data} or a symlink {name, symlink_target}), built into a real zip at runtime in a throwaway temp directory (no binary blobs are committed) and installed through the selected loader into a target directory nested inside a sandbox. Each case carries a required verdict of load or reject.
   - id: AC2
-    text: The runner asserts safe loading. For verdict load the loader must return
-      a manifest dict and every field in expect_manifest must match the returned
-      manifest, so an empty install cannot masquerade as a load. For verdict
-      reject the loader must raise or otherwise refuse, and expect_error_contains
-      (optional) pins a substring of the rejection reason so the archive is
-      refused for the right reason, not by an unrelated bug. Confinement is
-      checked for BOTH verdicts, independent of the loader's return value: the
-      sandbox is walked after every install and any path outside the target
-      directory is a PLUGIN ESCAPE, named on stdout and failing the run, even when
-      the loader returned a manifest and raised nothing.
+    text: "The runner asserts safe loading. For verdict load the loader must return a manifest dict and every field in expect_manifest must match the returned manifest, so an empty install cannot masquerade as a load. For verdict reject the loader must raise or otherwise refuse, and expect_error_contains (optional) pins a substring of the rejection reason so the archive is refused for the right reason, not by an unrelated bug. Confinement is checked for BOTH verdicts, independent of the loader's return value: the sandbox is walked after every install and any path outside the target directory is a PLUGIN ESCAPE, named on stdout and failing the run, even when the loader returned a manifest and raised nothing."
   - id: AC3
-    text: The passing fixture
-      (engine/scripts/runners/plugin/fixtures/pass.plugin.json) exits 0.
-      It drives the reference SAFE loader over a well-formed archive (loads,
-      manifest matches) plus three malicious archives each correctly rejected: a
-      zip-slip ../ path traversal, an absolute-path member, and a symlink whose
-      target escapes the extraction root. The reference SAFE loader (stdlib
-      zipfile) normalizes every member name, refuses an absolute path, refuses a
-      ../ escape, refuses a symlink whose target is absolute or escapes the root,
-      extracts the rest, and reads and returns the manifest file (plugin.json by
-      default).
+    text: "The passing fixture (engine/scripts/runners/plugin/fixtures/pass.plugin.json) exits 0. It drives the reference SAFE loader over a well-formed archive (loads, manifest matches) plus three malicious archives each correctly rejected: a zip-slip ../ path traversal, an absolute-path member, and a symlink whose target escapes the extraction root. The reference SAFE loader (stdlib zipfile) normalizes every member name, refuses an absolute path, refuses a ../ escape, refuses a symlink whose target is absolute or escapes the root, extracts the rest, and reads and returns the manifest file (plugin.json by default)."
   - id: AC4
-    text: The deliberately-failing fixture
-      (engine/scripts/runners/plugin/fixtures/fail.plugin.json) exits 1
-      with the failure named. It points the loader seam at a deliberately-unsafe
-      naive loader (which joins each raw member name onto the target and writes it
-      with no path check) while the corpus still labels the zip-slip archive
-      reject. The naive loader writes the ../ entry outside the target, a file
-      escapes, and the runner exits 1 printing a PLUGIN ESCAPE line naming the
-      escaped path. This proves the runner verifies confinement on disk, not just
-      the loader's return value. A case whose verdict is load but pins neither a
-      manifest field nor confinement asserts nothing observable and is a named
-      config error, and an unknown loader or an empty corpus is a journey error,
-      so a runner that could only ever say PASS is impossible.
+    text: The deliberately-failing fixture (engine/scripts/runners/plugin/fixtures/fail.plugin.json) exits 1 with the failure named. It points the loader seam at a deliberately-unsafe naive loader (which joins each raw member name onto the target and writes it with no path check) while the corpus still labels the zip-slip archive reject. The naive loader writes the ../ entry outside the target, a file escapes, and the runner exits 1 printing a PLUGIN ESCAPE line naming the escaped path. This proves the runner verifies confinement on disk, not just the loader's return value. A case whose verdict is load but pins neither a manifest field nor confinement asserts nothing observable and is a named config error, and an unknown loader or an empty corpus is a journey error, so a runner that could only ever say PASS is impossible.
   - id: AC5
-    text: The assertions reflect real observed behavior and the control logic is
-      gate-tested in scripts/selftest.py. The loaders are pure stdlib zipfile so
-      the whole build-install-scan cycle runs on this Linux box: the pure grading
-      predicate is exercised with crafted observed inputs (a load, a rejection, a
-      silent load labeled reject, a manifest mismatch, a PLUGIN ESCAPE on either
-      verdict, and an asserts-nothing config error), the real safe loader is
-      driven over real good and malicious archives (traversal, absolute path,
-      escaping symlink all refused and leaving nothing behind), the naive loader
-      is shown to escape, and both shipped fixtures are driven end to end (pass ->
-      exit 0, fail -> exit 1 with the escape named). All prior selftest cases keep
-      passing and the gate stays green.
+    text: "The assertions reflect real observed behavior and the control logic is gate-tested in scripts/selftest.py. The loaders are pure stdlib zipfile so the whole build-install-scan cycle runs on this Linux box: the pure grading predicate is exercised with crafted observed inputs (a load, a rejection, a silent load labeled reject, a manifest mismatch, a PLUGIN ESCAPE on either verdict, and an asserts-nothing config error), the real safe loader is driven over real good and malicious archives (traversal, absolute path, escaping symlink all refused and leaving nothing behind), the naive loader is shown to escape, and both shipped fixtures are driven end to end (pass -> exit 0, fail -> exit 1 with the escape named). All prior selftest cases keep passing and the gate stays green."
   - id: AC6
-    text: The runner is generic - zero company, product, project, or person names
-      and no absolute host paths in the runner, fixtures, wrapper, or README - and
-      .veldo/capabilities.yaml (template and repository instance, kept
-      byte-identical) declares it status mechanical, because the control logic and
-      its real surface (stdlib zipfile, real archives built and loaded in a temp
-      dir) both run in the gate on this box. The docs-hygiene, secret, lint, and
-      template-sync gates stay green.
+    text: The runner is generic - zero company, product, project, or person names and no absolute host paths in the runner, fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and repository instance, kept byte-identical) declares it status mechanical, because the control logic and its real surface (stdlib zipfile, real archives built and loaded in a temp dir) both run in the gate on this box. The docs-hygiene, secret, lint, and template-sync gates stay green.
 required_evidence: [unit, operational]
 rollback: git revert; B16 adds a new runner file, a fixture pair, a wrapper and a
   README under engine, a selftest block, an honest capabilities entry

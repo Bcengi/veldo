@@ -14,59 +14,17 @@ protected_paths: []
 required_evidence: [unit, operational]
 acceptance_criteria:
   - id: AC1
-    text: A stdlib dashboard tool ships at .veldo/dashboard.py. It reads the event
-      stream (.veldo/events.jsonl) and renders the derived metrics for a human to
-      read - cycle time (spec.ready to spec.shipped), proof latency (spec.ready to
-      proof.recorded), human minutes, gate pass rate, verdict counts, emergency
-      debt, and regression health. It renders a readable text report by default
-      and a self-contained HTML page under --html (inline CSS only, no external
-      asset, script, font, link, or network request), optionally written to a
-      file under --out. It imports nothing outside the standard library.
+    text: A stdlib dashboard tool ships at .veldo/dashboard.py. It reads the event stream (.veldo/events.jsonl) and renders the derived metrics for a human to read - cycle time (spec.ready to spec.shipped), proof latency (spec.ready to proof.recorded), human minutes, gate pass rate, verdict counts, emergency debt, and regression health. It renders a readable text report by default and a self-contained HTML page under --html (inline CSS only, no external asset, script, font, link, or network request), optionally written to a file under --out. It imports nothing outside the standard library.
   - id: AC2
-    text: The dashboard is a rendering layer with no calculation of its own. Every
-      number it shows comes from .veldo/metrics.py compute(), the single source of
-      truth for metrics; the dashboard calls compute() and formats the result, it
-      never recomputes a figure independently. A single function returns the exact
-      figures the renderers display, and both the text and HTML renderers consume
-      only that function, so there is one numeric path from events to output and
-      no room for a forked calculation.
+    text: The dashboard is a rendering layer with no calculation of its own. Every number it shows comes from .veldo/metrics.py compute(), the single source of truth for metrics; the dashboard calls compute() and formats the result, it never recomputes a figure independently. A single function returns the exact figures the renderers display, and both the text and HTML renderers consume only that function, so there is one numeric path from events to output and no room for a forked calculation.
   - id: AC3
-    text: Where the reader lacked a datum it is extended once, not forked. metrics.py
-      compute() gains verdict_counts (tallied from verdict.recorded events by
-      verdict value) and regression_health (the gate's green/red history in time
-      order - a green-to-red transition is a regression, red-to-green a recovery,
-      and the last gate event is the current standing), and both the reader's own
-      summary and the dashboard read those from compute(). The metrics.py template
-      copy is updated to match the repository instance so the shipped reader and
-      the home reader stay identical.
+    text: Where the reader lacked a datum it is extended once, not forked. metrics.py compute() gains verdict_counts (tallied from verdict.recorded events by verdict value) and regression_health (the gate's green/red history in time order - a green-to-red transition is a regression, red-to-green a recovery, and the last gate event is the current standing), and both the reader's own summary and the dashboard read those from compute(). The metrics.py template copy is updated to match the repository instance so the shipped reader and the home reader stay identical.
   - id: AC4
-    text: The control logic is gate-tested in scripts/selftest.py (CHECK_unit) with
-      a synthetic events stream and no external surface. The selftest calls
-      metrics.compute() and the dashboard's figure function on the same events and
-      asserts the dashboard's reported numbers EQUAL compute()'s for cycle time,
-      human minutes, gate pass rate, verdict counts, and regression health. It
-      proves the equality is non-tautological: a plausible forked recompute of the
-      same metric (gate pass rate over the wrong denominator) yields a DIFFERENT
-      number on the same stream, so a dashboard that recomputed instead of reading
-      compute() would fail the assertion. It also asserts the rendered text and
-      HTML actually carry those figures (the render binds to the figure function),
-      that the HTML is self-contained, and that an empty stream renders honest
-      blanks rather than crashing.
+    text: "The control logic is gate-tested in scripts/selftest.py (CHECK_unit) with a synthetic events stream and no external surface. The selftest calls metrics.compute() and the dashboard's figure function on the same events and asserts the dashboard's reported numbers EQUAL compute()'s for cycle time, human minutes, gate pass rate, verdict counts, and regression health. It proves the equality is non-tautological: a plausible forked recompute of the same metric (gate pass rate over the wrong denominator) yields a DIFFERENT number on the same stream, so a dashboard that recomputed instead of reading compute() would fail the assertion. It also asserts the rendered text and HTML actually carry those figures (the render binds to the figure function), that the HTML is self-contained, and that an empty stream renders honest blanks rather than crashing."
   - id: AC5
-    text: .veldo/capabilities.yaml (repository instance and engine copy,
-      kept byte-identical) declares the dashboard status mechanical - its control
-      logic and its real surface (reading events.jsonl through metrics.compute and
-      rendering) both run in the gate here via stdlib, with no product surface this
-      repository lacks - and metrics_derivation's note is updated to record the new
-      verdict-count and regression-health data. The status is honest: the dashboard
-      overclaims nothing it does not run end to end in the gate.
+    text: ".veldo/capabilities.yaml (repository instance and engine copy, kept byte-identical) declares the dashboard status mechanical - its control logic and its real surface (reading events.jsonl through metrics.compute and rendering) both run in the gate here via stdlib, with no product surface this repository lacks - and metrics_derivation's note is updated to record the new verdict-count and regression-health data. The status is honest: the dashboard overclaims nothing it does not run end to end in the gate."
   - id: AC6
-    text: The deliverable is generic (zero company, product, or person names beyond
-      the standard owner field, and zero absolute host paths in the tool, the spec,
-      and the capabilities entry) and hygienic (ASCII only, no em or en dash, no
-      double hyphen). The specs index regenerates to include this spec, and the
-      full gate (lint, unit, generated, docs, template sync, secret scan, contract
-      validation) stays green with every prior selftest case still passing.
+    text: The deliverable is generic (zero company, product, or person names beyond the standard owner field, and zero absolute host paths in the tool, the spec, and the capabilities entry) and hygienic (ASCII only, no em or en dash, no double hyphen). The specs index regenerates to include this spec, and the full gate (lint, unit, generated, docs, template sync, secret scan, contract validation) stays green with every prior selftest case still passing.
 rollback: git revert; X4 is additive - a new stdlib tool .veldo/dashboard.py (and
   its template copy), an extension to .veldo/metrics.py compute() (and its template
   copy), a selftest block, two capabilities entries, and this spec. It touches no

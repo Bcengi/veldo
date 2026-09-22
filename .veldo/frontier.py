@@ -24,6 +24,8 @@ import os
 import sys
 from pathlib import Path
 
+
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -50,7 +52,7 @@ def _spec_index(repo_root):
             continue
         # parse with parse_yamlish (not the simple front_matter reader) so inline lists
         # like requires: [macos] and labels: [a, b] come through as real lists.
-        m = V.re.match(r"^---\n(.*?)\n---", p.read_text(), V.re.S)
+        m = V._yamlish.front_matter_match(p.read_text())
         if not m:
             continue
         fm = V.parse_yamlish(m.group(1))
@@ -68,7 +70,7 @@ def _plans(repo_root):
     for p in sorted(plans.glob("*.md")):
         if p.name.startswith("TEMPLATE"):
             continue
-        m = V.re.match(r"^---\n(.*?)\n---", p.read_text(), V.re.S)
+        m = V._yamlish.front_matter_match(p.read_text())
         if m:
             out.append(V.parse_yamlish(m.group(1)))
     return out

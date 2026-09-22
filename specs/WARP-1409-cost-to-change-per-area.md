@@ -5,13 +5,7 @@ title: Cost-to-change per area - the per-area aggregation of the actuals corpus,
   produced every number named in the data, and the measured finding that 61 percent of the corpus can
   be attributed at all and none of it carries cost
 status: ready
-risk: standard - a new derivation module that reads the actuals corpus, the architecture contract, spec
-  front matter and git, and writes nothing. No behaviour changes, no gate stage is added, nothing is
-  enforced, and a repository that never calls it is byte-identically unaffected. It is not low because
-  the number it produces is a PER-AREA COST that a reader will quote without asking how it was derived,
-  and half of this corpus can only be attributed by git path rather than by a declaration: a map that
-  presented the weak join as the strong one, or defaulted an unattributable change into an area, would
-  be authoritative and wrong in the direction nobody checks
+risk: "standard - a new derivation module that reads the actuals corpus, the architecture contract, spec front matter and git, and writes nothing. No behaviour changes, no gate stage is added, nothing is enforced, and a repository that never calls it is byte-identically unaffected. It is not low because the number it produces is a PER-AREA COST that a reader will quote without asking how it was derived, and half of this corpus can only be attributed by git path rather than by a declaration: a map that presented the weak join as the strong one, or defaulted an unattributable change into an area, would be authoritative and wrong in the direction nobody checks"
 owner: dmitry
 human_approval: not_required
 lane: planned
@@ -38,18 +32,9 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: The report names its own weaknesses in its own output. A stand-down prints one line saying
-    WHICH condition stood it down (no contract, or no records). A report carrying git-path attribution
-    prints a notice counting those records, and each area line prints how many of its changes were
-    attributed that way. An area with no recorded spend prints tokens=None rather than 0, and the
-    report prints a cost notice saying the corpus carries no spend at all.
-  metrics: Every figure a reader might quote carries its own coverage beside it: records, attributed,
-    unattributed, area_memberships, per-basis counts, cycles_known with cycles_coverage per area, and
-    spend_known with spend_coverage per area, plus a blunt usable_as_cost_ground_truth boolean.
-  error_taxonomy: One refusal, raised as ValueError from report() and reported through validate.fail
-    from check_corpus(), with a message naming the record index, the spec and the offending field.
-    Both surfaces read ONE problem enumeration (corpus_problems), so the reporting form and the
-    refusing form cannot disagree about what is wrong.
+  logs: The report names its own weaknesses in its own output. A stand-down prints one line saying WHICH condition stood it down (no contract, or no records). A report carrying git-path attribution prints a notice counting those records, and each area line prints how many of its changes were attributed that way. An area with no recorded spend prints tokens=None rather than 0, and the report prints a cost notice saying the corpus carries no spend at all.
+  metrics: "Every figure a reader might quote carries its own coverage beside it: records, attributed, unattributed, area_memberships, per-basis counts, cycles_known with cycles_coverage per area, and spend_known with spend_coverage per area, plus a blunt usable_as_cost_ground_truth boolean."
+  error_taxonomy: One refusal, raised as ValueError from report() and reported through validate.fail from check_corpus(), with a message naming the record index, the spec and the offending field. Both surfaces read ONE problem enumeration (corpus_problems), so the reporting form and the refusing form cannot disagree about what is wrong.
 acceptance_criteria:
   - id: AC1
     falsified_by: >

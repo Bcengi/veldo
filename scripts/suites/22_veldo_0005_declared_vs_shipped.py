@@ -47,7 +47,7 @@ def _dc_block(label, fn):
 
 def _dc_manifest(rows):
     """A manifest in the real line shape: two spaces, a name, a colon, a brace block."""
-    lines = ["# fixture manifest", "capabilities:"]
+    lines = ["# fixture manifest", "capabilities:" if rows else "capabilities: {}"]
     for name, body in rows:
         lines.append("  %s: {%s}" % (name, body))
     return "\n".join(lines) + "\n"

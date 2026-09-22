@@ -5,13 +5,7 @@ title: The human-decision surface is real in the code and INERT in practice - th
   supply the agent credentials, so the agent cannot reach the board and every approval degrades to a chat
   message, which is the exact thing the plan forbids
 status: ready
-risk: high - this item is about how a CREDENTIAL reaches a process, so a careless version of it is how secrets
-  end up in a repository, a log, or a shell history. It must therefore add a documented SUPPLY MECHANISM and a
-  diagnosable REFUSAL without ever widening where a secret may live: no secret in a tracked file, no secret in
-  an error message, no secret in a repr, no secret in a captured command line. It is high for that reason and
-  not critical because it grants no new capability - the agent could already authenticate if the environment
-  carried the values, and this item only makes that supply codified, adopter-safe and diagnosable instead of
-  folklore
+risk: "high - this item is about how a CREDENTIAL reaches a process, so a careless version of it is how secrets end up in a repository, a log, or a shell history. It must therefore add a documented SUPPLY MECHANISM and a diagnosable REFUSAL without ever widening where a secret may live: no secret in a tracked file, no secret in an error message, no secret in a repr, no secret in a captured command line. It is high for that reason and not critical because it grants no new capability - the agent could already authenticate if the environment carried the values, and this item only makes that supply codified, adopter-safe and diagnosable instead of folklore"
 owner: dmitry
 human_approval: required
 approved_by: dmitry
@@ -38,13 +32,8 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: A failure to resolve a credential names WHICH reference failed and WHICH supply mechanisms were tried,
-    in order, and says what to do about it, so an operator can fix it without reading the source. It never
-    prints, echoes or reprs the value, and a resolved credential is reported only as resolved-or-not.
-  error_taxonomy: The names are closed and diagnosable: CREDENTIAL_UNRESOLVED (no mechanism produced a value,
-    with the reference name and the mechanisms tried), CREDENTIAL_SOURCE_UNSAFE (a candidate source exists but
-    is rejected, for example a world-readable file or a tracked path), and the pre-existing
-    MirrorRunnerError kept for the case where the token exchange itself fails.
+  logs: A failure to resolve a credential names WHICH reference failed and WHICH supply mechanisms were tried, in order, and says what to do about it, so an operator can fix it without reading the source. It never prints, echoes or reprs the value, and a resolved credential is reported only as resolved-or-not.
+  error_taxonomy: "The names are closed and diagnosable: CREDENTIAL_UNRESOLVED (no mechanism produced a value, with the reference name and the mechanisms tried), CREDENTIAL_SOURCE_UNSAFE (a candidate source exists but is rejected, for example a world-readable file or a tracked path), and the pre-existing MirrorRunnerError kept for the case where the token exchange itself fails."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

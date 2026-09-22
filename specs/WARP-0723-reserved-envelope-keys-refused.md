@@ -5,12 +5,7 @@ title: One documented flag permanently reds the gate - the event CLI lets a call
   fields the validator requires, in a log nothing may rewrite, so the reserved keys must be refused at the
   same place the projection-owned type already is
 status: shipped
-risk: high - the fix is small and local, but it sits in .veldo/events.py, which ships to adopters in eight
-  byte-identical copies, and the failure mode of getting it wrong is the opposite of the defect: a refusal
-  written too broadly would reject the projection's OWN entitled append and stop the review log recording
-  verdicts at all. It is high and not critical because no protected path is touched and the guard point
-  already exists (the projection-owned type is refused on the assembled line immediately before the
-  append), so this widens an existing refusal rather than inventing a mechanism
+risk: "high - the fix is small and local, but it sits in .veldo/events.py, which ships to adopters in eight byte-identical copies, and the failure mode of getting it wrong is the opposite of the defect: a refusal written too broadly would reject the projection's OWN entitled append and stop the review log recording verdicts at all. It is high and not critical because no protected path is touched and the guard point already exists (the projection-owned type is refused on the assembled line immediately before the append), so this widens an existing refusal rather than inventing a mechanism"
 owner: dmitry
 human_approval: not_required
 lane: standalone

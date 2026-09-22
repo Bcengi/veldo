@@ -41,10 +41,9 @@ non_goals:
 
 constraints:
   - id: C1
-    text: One aggregation call, never one call per section (RULE #6).
+    text: "One aggregation call, never one call per section (RULE #6)."
   - id: C2
     text: The read stays under the 500ms budget.
-
 feature_tree:
   - id: F1
     title: Single-call home aggregation - every section in one owner-scoped

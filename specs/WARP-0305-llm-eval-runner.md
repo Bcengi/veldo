@@ -13,54 +13,15 @@ human_approval: not_required
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A generic LLM/eval runner ships at
-      engine/scripts/runners/llm/veldo_llm_runner.py. It reads an eval
-      journey (JSON, a prompt_id, a graded set of cases each with an id, an
-      input, and behavioral graders, optional cost and latency budgets, a
-      min_pass_rate, and an optional baseline of a prior prompt_id and its passed
-      cases). It drives each case through a provider callable that returns an
-      output plus a cost and latency, applies the case's graders, aggregates the
-      pass rate and total cost and latency, and checks them against the budgets.
-      It exits 0 when every budget and the pass rate hold and no regression is
-      found, and exits 1 with the failing case, budget, or regression named. The
-      provider is a seam: the reference ships a deterministic fake provider that
-      returns each case's canned response, so the runner is gradeable with no
-      live model, and an adopting repo passes its own provider.
+    text: "A generic LLM/eval runner ships at engine/scripts/runners/llm/veldo_llm_runner.py. It reads an eval journey (JSON, a prompt_id, a graded set of cases each with an id, an input, and behavioral graders, optional cost and latency budgets, a min_pass_rate, and an optional baseline of a prior prompt_id and its passed cases). It drives each case through a provider callable that returns an output plus a cost and latency, applies the case's graders, aggregates the pass rate and total cost and latency, and checks them against the budgets. It exits 0 when every budget and the pass rate hold and no regression is found, and exits 1 with the failing case, budget, or regression named. The provider is a seam: the reference ships a deterministic fake provider that returns each case's canned response, so the runner is gradeable with no live model, and an adopting repo passes its own provider."
   - id: AC2
-    text: The graders are real behavioral assertions and fail loud. A contains
-      grader fails when its substring is absent, not_contains when its substring
-      is present, equals on any difference, and regex when the pattern does not
-      search the output; each failure names the case and the grader. A total cost
-      or total latency over budget fails with the measured total, and an
-      aggregate pass rate below min_pass_rate fails with the observed rate. A
-      case whose graders all hold counts as passed; a case with no graders is a
-      journey error (a case that asserts nothing is not proof), reported loud.
+    text: The graders are real behavioral assertions and fail loud. A contains grader fails when its substring is absent, not_contains when its substring is present, equals on any difference, and regex when the pattern does not search the output; each failure names the case and the grader. A total cost or total latency over budget fails with the measured total, and an aggregate pass rate below min_pass_rate fails with the observed rate. A case whose graders all hold counts as passed; a case with no graders is a journey error (a case that asserts nothing is not proof), reported loud.
   - id: AC3
-    text: Regression on prompt change is detected. When the journey's prompt_id
-      differs from the baseline's prompt_id, any case listed in the baseline's
-      passed set that now fails is reported as a regression naming the case and
-      both prompt_ids, and the run fails even if the new prompt's other cases
-      pass. A passing fixture (all cases pass under the new prompt, no regression,
-      budgets met) and a deliberately-failing fixture (the new prompt breaks a
-      case that passed under the baseline prompt) ship under
-      engine/scripts/runners/llm/fixtures/; the passing fixture exits 0
-      and the failing fixture exits 1 with the regressed case named.
+    text: Regression on prompt change is detected. When the journey's prompt_id differs from the baseline's prompt_id, any case listed in the baseline's passed set that now fails is reported as a regression naming the case and both prompt_ids, and the run fails even if the new prompt's other cases pass. A passing fixture (all cases pass under the new prompt, no regression, budgets met) and a deliberately-failing fixture (the new prompt breaks a case that passed under the baseline prompt) ship under engine/scripts/runners/llm/fixtures/; the passing fixture exits 0 and the failing fixture exits 1 with the regressed case named.
   - id: AC4
-    text: The runner's control logic is unit-tested in scripts/selftest.py with
-      no external dependency - it drives the runner over both shipped fixtures
-      with the deterministic fake provider (pass to exit 0, fail to exit 1 with
-      the regression named), and the pure helpers are exercised directly for both
-      outcomes (each grader kind true and false, a cost and a latency budget met
-      and exceeded, a pass rate at and below min_pass_rate, a regression present
-      and absent, and a case with no graders reported loud). All prior selftest
-      cases keep passing and the gate stays green.
+    text: The runner's control logic is unit-tested in scripts/selftest.py with no external dependency - it drives the runner over both shipped fixtures with the deterministic fake provider (pass to exit 0, fail to exit 1 with the regression named), and the pure helpers are exercised directly for both outcomes (each grader kind true and false, a cost and a latency budget met and exceeded, a pass rate at and below min_pass_rate, a regression present and absent, and a case with no graders reported loud). All prior selftest cases keep passing and the gate stays green.
   - id: AC5
-    text: The runner is generic - zero company or product names in the runner,
-      fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and
-      repository instance, kept byte-identical) declares it status reference (a
-      shipped reference an adopting repo wires to its eval gate slot with its own
-      model provider; the veldo repo does not run it), never mechanical. The
-      docs-hygiene, secret, lint, and template-sync gates stay green.
+    text: The runner is generic - zero company or product names in the runner, fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and repository instance, kept byte-identical) declares it status reference (a shipped reference an adopting repo wires to its eval gate slot with its own model provider; the veldo repo does not run it), never mechanical. The docs-hygiene, secret, lint, and template-sync gates stay green.
 required_evidence: [unit, operational]
 rollback: git revert; B3 adds a new runner directory under engine, a
   selftest block, and an honest capabilities entry (template and instance) - no

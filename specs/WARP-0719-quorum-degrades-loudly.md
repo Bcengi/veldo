@@ -44,14 +44,8 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: Every authorization decision reports the DECLARED requirement, the AVAILABLE registry capacity, and
-    whether the requirement was satisfied as declared or by degradation, so an operator reading one decision
-    can see it was degraded without consulting the config. A degraded authorization is never reported in the
-    same shape as an undegraded one.
-  error_taxonomy: The refusal names stay closed and gain two: QUORUM_FLOOR_VIOLATED (the declared floor for
-    this touchpoint or tier forbids degradation and the registry cannot meet it, so the decision is refused
-    rather than degraded) and REGISTRY_UNREADABLE (the approver registry is absent or malformed, which must
-    never be read as a small registry, because that would degrade to zero and authorize anything).
+  logs: Every authorization decision reports the DECLARED requirement, the AVAILABLE registry capacity, and whether the requirement was satisfied as declared or by degradation, so an operator reading one decision can see it was degraded without consulting the config. A degraded authorization is never reported in the same shape as an undegraded one.
+  error_taxonomy: "The refusal names stay closed and gain two: QUORUM_FLOOR_VIOLATED (the declared floor for this touchpoint or tier forbids degradation and the registry cannot meet it, so the decision is refused rather than degraded) and REGISTRY_UNREADABLE (the approver registry is absent or malformed, which must never be read as a small registry, because that would degrade to zero and authorize anything)."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

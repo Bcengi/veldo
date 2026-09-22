@@ -51,6 +51,8 @@ import json
 import sys
 from pathlib import Path
 
+
+
 ROOT = Path(__file__).resolve().parent.parent
 
 SCHEMA = "veldo.entropy/v1"
@@ -179,13 +181,13 @@ def spec_area_index(specs_dir, contract, arch):
     for p in sorted(d.glob("*.md")):
         if p.name.startswith("TEMPLATE") or p.name == "index.md":
             continue
-        m = V.re.match(r"^---\n(.*?)\n---", p.read_text(), V.re.S)
+        m = V._yamlish.front_matter_match(p.read_text())
         if not m:
             continue
         try:
             fm = V.parse_yamlish(m.group(1))
         except ValueError:
-            continue
+            raise
         sid = fm.get("id")
         if not sid:
             continue

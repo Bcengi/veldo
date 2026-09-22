@@ -5,12 +5,7 @@ title: Every behaviour-bearing criterion declares its own falsification - the ne
   from reviewer lore into the spec contract, so a criterion that names no way to be proven wrong is
   refused at the gate instead of discovered in review
 status: ready
-risk: standard - it adds one validated field to the specification contract and refuses specs that omit
-  it, so it changes what the gate accepts rather than what any product does. It is NOT low because it
-  is adoption-affecting in the strongest way a contract change can be: every existing spec in every
-  repository either satisfies it or is refused, so a rule written without a migration would redden a
-  working repository on the day it lands. And it is not high because nothing it touches runs in
-  production and the whole change is reversible by deleting one check
+risk: "standard - it adds one validated field to the specification contract and refuses specs that omit it, so it changes what the gate accepts rather than what any product does. It is NOT low because it is adoption-affecting in the strongest way a contract change can be: every existing spec in every repository either satisfies it or is refused, so a rule written without a migration would redden a working repository on the day it lands. And it is not high because nothing it touches runs in production and the whole change is reversible by deleting one check"
 owner: dmitry
 human_approval: not_required
 lane: standalone

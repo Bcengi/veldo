@@ -94,6 +94,7 @@ _FILES = [
     # and it loads the runner by path, which loads the capsule module, so all three travel together.
     ".veldo/fix_validation_record.py",
     ".veldo/git_process.py",
+    ".veldo/yamlish.py",
     ".veldo/fix_validation.py",
     ".veldo/capsule.py",
     ".veldo/verdict_corpus.py",
@@ -230,6 +231,7 @@ REQUIRED_SUBSTRATE = [
     # and it loads the runner by path, which loads the capsule module, so all three travel together.
     ".veldo/fix_validation_record.py",
     ".veldo/git_process.py",
+    ".veldo/yamlish.py",
     ".veldo/fix_validation.py",
     ".veldo/capsule.py",
     ".veldo/verdict_corpus.py",

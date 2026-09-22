@@ -13,71 +13,17 @@ human_approval: not_required
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A terminal/TUI runner ships at
-      engine/scripts/runners/terminal/terminal_runner.py. It reads a
-      journey (a single JSON object naming a command argv, keystrokes to feed,
-      the terminal rows and cols, an optional timeout, and a list of assertions),
-      drives the command in a REAL pseudo-terminal via the standard-library pty
-      module, feeds the declared keystrokes to its stdin, and renders the emitted
-      bytes through a REAL VT/ANSI renderer into a screen model (a grid of cells
-      each carrying a char and attributes, a cursor, current SGR state, and a
-      scrollback history). The renderer is a pure function of its input with no
-      I/O and handles the common sequences a TUI emits: cursor position (CUP) and
-      relative cursor moves, erase in display and erase in line, SGR (bold, dim,
-      underline, reverse, the eight standard and eight bright colors, and reset),
-      carriage return, line feed with scroll into history, backspace, and tab;
-      an unknown sequence is consumed and ignored rather than printed as text.
+    text: "A terminal/TUI runner ships at engine/scripts/runners/terminal/terminal_runner.py. It reads a journey (a single JSON object naming a command argv, keystrokes to feed, the terminal rows and cols, an optional timeout, and a list of assertions), drives the command in a REAL pseudo-terminal via the standard-library pty module, feeds the declared keystrokes to its stdin, and renders the emitted bytes through a REAL VT/ANSI renderer into a screen model (a grid of cells each carrying a char and attributes, a cursor, current SGR state, and a scrollback history). The renderer is a pure function of its input with no I/O and handles the common sequences a TUI emits: cursor position (CUP) and relative cursor moves, erase in display and erase in line, SGR (bold, dim, underline, reverse, the eight standard and eight bright colors, and reset), carriage return, line feed with scroll into history, backspace, and tab; an unknown sequence is consumed and ignored rather than printed as text."
   - id: AC2
-    text: The assertion kinds address the rendered screen model with zero-based
-      row and column coordinates. cell asserts a single cell's char and/or a
-      non-empty attrs map, text_at asserts a run of text at a position,
-      history_contains asserts a substring on some scrollback line that scrolled
-      off the top, and attr asserts one cell's attributes only. A cell/text/attr
-      mismatch fails loud naming the coordinate and expected-versus-got. A
-      cell or attr assertion that observes nothing (no char and no attrs, or no
-      named attribute), an empty text, an unknown kind, and a journey that
-      declares no assertions are all named errors, never a silent pass, so a
-      journey can never rubber-stamp.
+    text: The assertion kinds address the rendered screen model with zero-based row and column coordinates. cell asserts a single cell's char and/or a non-empty attrs map, text_at asserts a run of text at a position, history_contains asserts a substring on some scrollback line that scrolled off the top, and attr asserts one cell's attributes only. A cell/text/attr mismatch fails loud naming the coordinate and expected-versus-got. A cell or attr assertion that observes nothing (no char and no attrs, or no named attribute), an empty text, an unknown kind, and a journey that declares no assertions are all named errors, never a silent pass, so a journey can never rubber-stamp.
   - id: AC3
-    text: The passing fixture
-      (engine/scripts/runners/terminal/fixtures/pass.terminal.json)
-      exits 0. It is a well-formed journey driving a small deterministic terminal
-      program that reads one keystroke line, scrolls eight lines through a
-      six-row screen so the first lines land in scrollback, then clears the screen
-      and places a bold red ERR at row 3 col 5 (one-based in the stream) and a
-      status line echoing the keystroke; every cell, attribute, and scrollback
-      line matches its assertion, so terminal_runner.py on that fixture exits 0.
+    text: The passing fixture (engine/scripts/runners/terminal/fixtures/pass.terminal.json) exits 0. It is a well-formed journey driving a small deterministic terminal program that reads one keystroke line, scrolls eight lines through a six-row screen so the first lines land in scrollback, then clears the screen and places a bold red ERR at row 3 col 5 (one-based in the stream) and a status line echoing the keystroke; every cell, attribute, and scrollback line matches its assertion, so terminal_runner.py on that fixture exits 0.
   - id: AC4
-    text: The deliberately-failing fixture
-      (engine/scripts/runners/terminal/fixtures/fail.terminal.json)
-      exits 1 with the failure named. It drives the same program except the
-      program DROPS the bold attribute and renders plain red ERR instead of bold
-      red; layout, scrollback, and the status line stay correct, so only the
-      dropped-attribute assertions fail and the runner exits 1 printing the cell
-      coordinate and expected-versus-got. This is a real defect a raw-byte grep
-      for the text ERR would never catch, which is why the runner models the
-      screen rather than the byte stream. The defect is deterministic and
-      timing-independent.
+    text: The deliberately-failing fixture (engine/scripts/runners/terminal/fixtures/fail.terminal.json) exits 1 with the failure named. It drives the same program except the program DROPS the bold attribute and renders plain red ERR instead of bold red; layout, scrollback, and the status line stay correct, so only the dropped-attribute assertions fail and the runner exits 1 printing the cell coordinate and expected-versus-got. This is a real defect a raw-byte grep for the text ERR would never catch, which is why the runner models the screen rather than the byte stream. The defect is deterministic and timing-independent.
   - id: AC5
-    text: The assertions reflect real observed behavior and the renderer control
-      logic is unit-tested in scripts/selftest.py over CRAFTED byte strings with
-      no pseudo-terminal (cursor positioning, SGR bold/color and reset, CR/LF,
-      line wrap, scroll into history, and erase), and the assertion grading is
-      shown to name a wrong char, a wrong attribute, a text and a history miss, an
-      out-of-bounds coordinate, an unknown kind, and a vacuous assertion. Because
-      the stdlib pty works deterministically on this Linux box, both shipped
-      fixtures are also driven end to end through a REAL pty (pass -> exit 0,
-      fail -> exit 1 with the dropped bold attribute named at its cell). All prior
-      selftest cases keep passing and the gate stays green.
+    text: The assertions reflect real observed behavior and the renderer control logic is unit-tested in scripts/selftest.py over CRAFTED byte strings with no pseudo-terminal (cursor positioning, SGR bold/color and reset, CR/LF, line wrap, scroll into history, and erase), and the assertion grading is shown to name a wrong char, a wrong attribute, a text and a history miss, an out-of-bounds coordinate, an unknown kind, and a vacuous assertion. Because the stdlib pty works deterministically on this Linux box, both shipped fixtures are also driven end to end through a REAL pty (pass -> exit 0, fail -> exit 1 with the dropped bold attribute named at its cell). All prior selftest cases keep passing and the gate stays green.
   - id: AC6
-    text: The runner is generic - zero company or product names in the runner,
-      fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and
-      repository instance, kept byte-identical) declares it status mechanical: the
-      renderer is a pure function gate-tested over crafted byte strings and both
-      fixtures are driven end to end through a real pty in the gate on this
-      stdlib-only Linux box, so both the control logic and its real surface run in
-      the gate here. The live drive is POSIX-only and fails loud where no pty
-      exists. The docs-hygiene, secret, lint, and template-sync gates stay green.
+    text: "The runner is generic - zero company or product names in the runner, fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and repository instance, kept byte-identical) declares it status mechanical: the renderer is a pure function gate-tested over crafted byte strings and both fixtures are driven end to end through a real pty in the gate on this stdlib-only Linux box, so both the control logic and its real surface run in the gate here. The live drive is POSIX-only and fails loud where no pty exists. The docs-hygiene, secret, lint, and template-sync gates stay green."
 required_evidence: [unit, operational]
 rollback: git revert; B19 adds a new runner file, a fixture pair, a wrapper and a
   README under engine, a selftest block, and an honest capabilities

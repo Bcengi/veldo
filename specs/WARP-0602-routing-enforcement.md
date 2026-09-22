@@ -14,34 +14,15 @@ depends_on: [WARP-0601]
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: An optional front-matter field tracker_repo is accepted on BOTH a veldo.spec/v1 spec and
-      a veldo.plan/v1 plan - it names the repo the work targets when it is mirrored to an external
-      tracker, because one tracker project (a Jira project) spans many repos. It is OPTIONAL: a
-      spec or plan that omits it (every spec and plan in this repo today) stays valid, the
-      single-repo default.
+    text: "An optional front-matter field tracker_repo is accepted on BOTH a veldo.spec/v1 spec and a veldo.plan/v1 plan - it names the repo the work targets when it is mirrored to an external tracker, because one tracker project (a Jira project) spans many repos. It is OPTIONAL: a spec or plan that omits it (every spec and plan in this repo today) stays valid, the single-repo default."
   - id: AC2
-    text: When tracker_repo is present it must be a non-empty string, or validate.py fails by name
-      (a bare or blank tracker_repo, and a non-string value such as a list, are each rejected);
-      this holds for both the spec check and the plan check, independent of whether a tracker
-      config exists.
+    text: When tracker_repo is present it must be a non-empty string, or validate.py fails by name (a bare or blank tracker_repo, and a non-string value such as a list, are each rejected); this holds for both the spec check and the plan check, independent of whether a tracker config exists.
   - id: AC3
-    text: When tracker_repo is present AND a tracker config exists for this repo
-      (.veldo/trackers.json, loaded via .veldo/tracker.py load_tracker_config), the value MUST be a
-      known repo id in that config; a value naming an unknown repo FAILS CLOSED by name, because a
-      routing target nobody can resolve is a decision nobody made. The known-repo set comes from
-      the resolver (.veldo/tracker.py); config parsing and resolution are NOT reimplemented here.
+    text: When tracker_repo is present AND a tracker config exists for this repo (.veldo/trackers.json, loaded via .veldo/tracker.py load_tracker_config), the value MUST be a known repo id in that config; a value naming an unknown repo FAILS CLOSED by name, because a routing target nobody can resolve is a decision nobody made. The known-repo set comes from the resolver (.veldo/tracker.py); config parsing and resolution are NOT reimplemented here.
   - id: AC4
-    text: When tracker_repo is present but NO tracker config exists (load returns an empty config
-      because the integration is not wired for this repo), the field is ALLOWED but not enforced;
-      and when tracker_repo is absent there is no constraint at all. Enforcement runs parallel to
-      the existing lane-field checks in check_spec and check_plan.
+    text: When tracker_repo is present but NO tracker config exists (load returns an empty config because the integration is not wired for this repo), the field is ALLOWED but not enforced; and when tracker_repo is absent there is no constraint at all. Enforcement runs parallel to the existing lane-field checks in check_spec and check_plan.
   - id: AC5
-    text: A selftest drives validate over temporary spec and plan fixtures plus a temporary
-      .veldo/trackers.json and is non-tautological - a resolvable tracker_repo passes, an
-      unresolvable one (an unknown repo) fails by name, a non-string or empty one fails, an absent
-      one passes, and a present one passes when no config is wired; the SAME tracker_repo value
-      that passes against a config declaring it fails against a config that does not, so the check
-      is proven to read the config and not merely the field.
+    text: A selftest drives validate over temporary spec and plan fixtures plus a temporary .veldo/trackers.json and is non-tautological - a resolvable tracker_repo passes, an unresolvable one (an unknown repo) fails by name, a non-string or empty one fails, an absent one passes, and a present one passes when no config is wired; the SAME tracker_repo value that passes against a config declaring it fails against a config that does not, so the check is proven to read the config and not merely the field.
 required_evidence: [unit]
 rollback: git revert; additive - an optional field plus enforcement in .veldo/validate.py, a
   selftest block, one capability entry in both capabilities.yaml copies, a documented line in the

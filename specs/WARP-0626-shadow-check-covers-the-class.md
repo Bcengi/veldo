@@ -6,12 +6,7 @@ title: Make the shadow check cover the CLASS it claims to - a class-level attrib
   catches it already sits in the file wired to nothing, and wiring it also removes both known false
   positives (hardening of WARP-0623, from its own review's ranked notes)
 status: ready
-risk: standard - this strengthens a REFUSAL and removes two false positives. It can only refuse more where
-  a method is genuinely unreachable and less where a method is genuinely callable, which are both the
-  correct directions. It touches the live provisioning module and the adapter base, no protected path, no
-  safety core, and no gate stage. It is worth reviewing carefully for one reason: this item exists because
-  the previous one claimed to "close the whole class of defect" and did not, so a reviewer should test the
-  class claim rather than the instance
+risk: "standard - this strengthens a REFUSAL and removes two false positives. It can only refuse more where a method is genuinely unreachable and less where a method is genuinely callable, which are both the correct directions. It touches the live provisioning module and the adapter base, no protected path, no safety core, and no gate stage. It is worth reviewing carefully for one reason: this item exists because the previous one claimed to \"close the whole class of defect\" and did not, so a reviewer should test the class claim rather than the instance"
 owner: dmitry
 human_approval: not_required
 lane: standalone
@@ -29,13 +24,8 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: The refusal names WHICH mechanism decided it - a name intersection, or a resolved attribute that is
-    not callable - and names the class, the shadowing source and the hidden method, so a refusal is
-    diagnosable without reading the source and a false positive is recognizable as one.
-  error_taxonomy: The names stay closed and gain one: SHADOWED_PROVISIONER_METHOD (a declared attribute
-    name intersects a provisioning method name) and UNREACHABLE_PROVISIONER_METHOD (the resolved attribute
-    on a real instance is not callable, whatever shadowed it), plus the pre-existing vacuity refusal for a
-    composition in which no provisioning mixin is recognized.
+  logs: The refusal names WHICH mechanism decided it - a name intersection, or a resolved attribute that is not callable - and names the class, the shadowing source and the hidden method, so a refusal is diagnosable without reading the source and a false positive is recognizable as one.
+  error_taxonomy: "The names stay closed and gain one: SHADOWED_PROVISIONER_METHOD (a declared attribute name intersects a provisioning method name) and UNREACHABLE_PROVISIONER_METHOD (the resolved attribute on a real instance is not callable, whatever shadowed it), plus the pre-existing vacuity refusal for a composition in which no provisioning mixin is recognized."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

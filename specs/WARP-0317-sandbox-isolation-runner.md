@@ -13,67 +13,15 @@ human_approval: not_required
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A sandbox / isolation runner ships at
-      engine/scripts/runners/sandbox/sandbox_isolation_runner.py. It
-      reads a journey (a JSON object with an image, an allowed_mounts list where
-      each mount is an absolute path with a ro or rw mode, and a checks list) and
-      drives each check as a read or a write at an absolute container path with a
-      required verdict of allowed or denied. It runs the flow through a
-      ContainerDriver seam: the live driver shells out to docker run or podman run
-      with only the declared mount scopes, a read-only root filesystem, no
-      network, and all capabilities dropped, so confinement is enforced by the
-      real runtime; a FakeContainerDriver simulates confinement deterministically
-      in process (a path is readable within a mount, writable within a read-write
-      mount, denied otherwise) so the control logic runs with no container. The
-      confinement model (confine), the verdict classifier (classify), and the
-      grading (grade_check) are pure functions with no I/O.
+    text: "A sandbox / isolation runner ships at engine/scripts/runners/sandbox/sandbox_isolation_runner.py. It reads a journey (a JSON object with an image, an allowed_mounts list where each mount is an absolute path with a ro or rw mode, and a checks list) and drives each check as a read or a write at an absolute container path with a required verdict of allowed or denied. It runs the flow through a ContainerDriver seam: the live driver shells out to docker run or podman run with only the declared mount scopes, a read-only root filesystem, no network, and all capabilities dropped, so confinement is enforced by the real runtime; a FakeContainerDriver simulates confinement deterministically in process (a path is readable within a mount, writable within a read-write mount, denied otherwise) so the control logic runs with no container. The confinement model (confine), the verdict classifier (classify), and the grading (grade_check) are pure functions with no I/O."
   - id: AC2
-    text: The passing fixture
-      (engine/scripts/runners/sandbox/fixtures/pass.sandbox.json) exits
-      0. It is a correctly-confined journey that exercises confinement in both
-      directions: reads inside the read-only and read-write mounts succeed, a
-      write lands in the read-write mount, a write into the read-only mount is
-      refused, and two escape attempts (reading a host secret and writing a host
-      path outside every mount) are denied; every observed verdict matches its
-      required verdict, so the runner driven with the FakeContainerDriver exits 0.
-      Every path is a generic container-internal example, never a host path of any
-      specific machine.
+    text: "The passing fixture (engine/scripts/runners/sandbox/fixtures/pass.sandbox.json) exits 0. It is a correctly-confined journey that exercises confinement in both directions: reads inside the read-only and read-write mounts succeed, a write lands in the read-write mount, a write into the read-only mount is refused, and two escape attempts (reading a host secret and writing a host path outside every mount) are denied; every observed verdict matches its required verdict, so the runner driven with the FakeContainerDriver exits 0. Every path is a generic container-internal example, never a host path of any specific machine."
   - id: AC3
-    text: The deliberately-failing fixture
-      (engine/scripts/runners/sandbox/fixtures/fail.sandbox.json) exits
-      1 with the failure named. It declares an over-broad root ("/") mount (a real
-      misconfiguration) that leaves /etc/shadow reachable while the journey still
-      requires that read denied, so the escape succeeds and the runner exits 1
-      printing a CONFINEMENT BREACH line naming the escaped host path. A path the
-      journey requires denied but the sandbox allows is graded a breach and a path
-      it requires allowed but the sandbox denies is graded over-restricted, and a
-      journey with no checks is a named journey error, so a runner that could only
-      ever say PASS is impossible.
+    text: The deliberately-failing fixture (engine/scripts/runners/sandbox/fixtures/fail.sandbox.json) exits 1 with the failure named. It declares an over-broad root ("/") mount (a real misconfiguration) that leaves /etc/shadow reachable while the journey still requires that read denied, so the escape succeeds and the runner exits 1 printing a CONFINEMENT BREACH line naming the escaped host path. A path the journey requires denied but the sandbox allows is graded a breach and a path it requires allowed but the sandbox denies is graded over-restricted, and a journey with no checks is a named journey error, so a runner that could only ever say PASS is impossible.
   - id: AC4
-    text: The assertions reflect real observed behavior and the control logic is
-      unit-tested in scripts/selftest.py with no external dependency (no container
-      runtime, no host filesystem access). The confinement model is exercised in
-      both directions (a read and write inside a mount, a write into a read-only
-      mount denied, a read and write outside every mount denied, the /data vs
-      /database prefix trap not fooled, a root mount containing everything); the
-      classifier maps exit 0 and 1 to allowed and denied and any other code to a
-      hard error so a failed container cannot masquerade as a clean denial; the
-      grading names a CONFINEMENT BREACH, an over-restriction, and config and
-      journey errors; the live driver's fail-loud contract is proven with no
-      runtime installed via require_runtime; and both shipped fixtures are driven
-      end to end through the fake driver (pass -> exit 0, fail -> exit 1 with the
-      escaped host path named). All prior selftest cases keep passing and the gate
-      stays green.
+    text: The assertions reflect real observed behavior and the control logic is unit-tested in scripts/selftest.py with no external dependency (no container runtime, no host filesystem access). The confinement model is exercised in both directions (a read and write inside a mount, a write into a read-only mount denied, a read and write outside every mount denied, the /data vs /database prefix trap not fooled, a root mount containing everything); the classifier maps exit 0 and 1 to allowed and denied and any other code to a hard error so a failed container cannot masquerade as a clean denial; the grading names a CONFINEMENT BREACH, an over-restriction, and config and journey errors; the live driver's fail-loud contract is proven with no runtime installed via require_runtime; and both shipped fixtures are driven end to end through the fake driver (pass -> exit 0, fail -> exit 1 with the escaped host path named). All prior selftest cases keep passing and the gate stays green.
   - id: AC5
-    text: The runner is generic - zero company or product names in the runner,
-      fixtures, wrapper, or README, and no absolute host paths - and
-      .veldo/capabilities.yaml (template and repository instance, kept
-      byte-identical) declares it status reference (a shipped reference an
-      adopting repo on a host with a working container runtime wires to its own
-      image and the sandbox or isolation gate slot; the veldo home repo has no
-      container surface of its own to confine and this Linux box has no reliable
-      runtime), never mechanical. The docs-hygiene, secret, lint, and
-      template-sync gates stay green.
+    text: The runner is generic - zero company or product names in the runner, fixtures, wrapper, or README, and no absolute host paths - and .veldo/capabilities.yaml (template and repository instance, kept byte-identical) declares it status reference (a shipped reference an adopting repo on a host with a working container runtime wires to its own image and the sandbox or isolation gate slot; the veldo home repo has no container surface of its own to confine and this Linux box has no reliable runtime), never mechanical. The docs-hygiene, secret, lint, and template-sync gates stay green.
 required_evidence: [unit, operational]
 rollback: git revert; B17 adds a new runner file, a fixture pair, a wrapper and a
   README under engine, a selftest block, and an honest capabilities

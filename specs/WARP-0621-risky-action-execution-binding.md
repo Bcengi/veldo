@@ -5,11 +5,7 @@ title: Two keys prove two humans authorised something, not that they authorised 
   THIS system in THIS environment with THESE parameters on the world as it was and exactly once - bind
   those six facts and re-check every one of them at execution
 status: shipped
-risk: high - it adds a new refusal to the path that changes running production systems, and a blocking
-  check that is wrong in the strict direction stops remediation during an incident, which is when
-  remediation matters most. It extends `.veldo/action_executor.py`, the execution organ. It is not
-  critical because the new guard is confined to the risky branch (irreversible, data-mutating, or
-  two-key-declared): a reversible L2 action takes exactly the path it took before, unchanged.
+risk: "high - it adds a new refusal to the path that changes running production systems, and a blocking check that is wrong in the strict direction stops remediation during an incident, which is when remediation matters most. It extends `.veldo/action_executor.py`, the execution organ. It is not critical because the new guard is confined to the risky branch (irreversible, data-mutating, or two-key-declared): a reversible L2 action takes exactly the path it took before, unchanged."
 owner: dmitry
 human_approval: not_required
 lane: planned

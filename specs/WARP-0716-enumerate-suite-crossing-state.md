@@ -4,14 +4,7 @@ id: WARP-0716
 title: Before splitting a 16,000-line test suite, find out whether it CAN be split - enumerate mechanically
   every module-level name that crosses assertion blocks, classify each, and publish the verdict on feasibility
 status: shipped
-risk: standard - this item CHANGES NO BEHAVIOUR. It adds an analysis that reads scripts/selftest.py, parses it,
-  and emits a report which the existing CHECK_generated stage keeps derived; the suite itself is not
-  restructured, no assertion moves, and the gate's stage list is untouched. Its only real risk is being WRONG
-  in a way that misleads the split that follows, which is why the enumeration must be mechanical (from the AST)
-  rather than a careful read, and why the report must state what it could NOT determine rather than presenting
-  a clean answer it does not have. The second risk, paid for once already, is a guard whose remedy does not
-  scale: a derived document is checked by regenerating it, never by re-deriving each of its figures against a
-  hand-written copy
+risk: "standard - this item CHANGES NO BEHAVIOUR. It adds an analysis that reads scripts/selftest.py, parses it, and emits a report which the existing CHECK_generated stage keeps derived; the suite itself is not restructured, no assertion moves, and the gate's stage list is untouched. Its only real risk is being WRONG in a way that misleads the split that follows, which is why the enumeration must be mechanical (from the AST) rather than a careful read, and why the report must state what it could NOT determine rather than presenting a clean answer it does not have. The second risk, paid for once already, is a guard whose remedy does not scale: a derived document is checked by regenerating it, never by re-deriving each of its figures against a hand-written copy"
 owner: dmitry
 human_approval: not_required
 lane: standalone
@@ -28,12 +21,8 @@ footprint:
 protected_paths: []
 behavior_bearing: false
 observability:
-  logs: The survey names every crossing symbol, the line where it is bound, every line that reads it, and its
-    classification, so a reader can audit any single verdict without re-running the analysis.
-  error_taxonomy: The survey FAILS LOUD rather than reporting a clean result it cannot support: if the file
-    does not parse, if a name's binding site cannot be resolved, or if a read cannot be attributed to a block,
-    it says so by name and exits non-zero. An UNDETERMINED symbol is reported as UNDETERMINED, never silently
-    classified as safe.
+  logs: The survey names every crossing symbol, the line where it is bound, every line that reads it, and its classification, so a reader can audit any single verdict without re-running the analysis.
+  error_taxonomy: "The survey FAILS LOUD rather than reporting a clean result it cannot support: if the file does not parse, if a name's binding site cannot be resolved, or if a read cannot be attributed to a block, it says so by name and exits non-zero. An UNDETERMINED symbol is reported as UNDETERMINED, never silently classified as safe."
 acceptance_criteria:
   - id: AC1
     text: >

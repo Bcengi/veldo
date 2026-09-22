@@ -1,11 +1,10 @@
 ---
 schema: veldo.plan/v1
 id: PLAN-0000
-title: One line: the product increment this plan delivers
-kind: iteration            # iteration | mvp | release
-status: draft              # draft -> ready -> in_progress -> released -> closed
-revision: 1                # bump on any scope change after approval; stale
-                           # revisions invalidate dependent context
+title: "One line: the product increment this plan delivers"
+kind: "iteration            # iteration | mvp | release"
+status: draft
+revision: "1                # bump on any scope change after approval; stale"
 owner: who-answers-for-this
 # approved_by / approved_at: required the moment status leaves draft.
 # A plan is approved by a human, on the record, or it is not approved.
@@ -28,31 +27,16 @@ feature_tree:              # the decomposition: features, not tasks
     title: A capability a user can name
     outcome_refs: [O1]
 
-work:                      # the ordered DAG; every spec binds back via
-                           # 'plan:' and 'work:' in its front matter
-  - item: W1
-    spec: VELDO-0000        # the spec id this item becomes
-    title: Small, independently provable, one review in one sitting
-    feature_refs: [F1]
-    depends_on: []         # spec ids; [] is a declaration, absence is an error
-    order: 10
-
-regression:                # designed up front, not accumulated by accident
-  journeys:
-    - id: RJ1
-      title: The journey that must stay green across every item of this plan
-      activation: {when: start}   # start | after:<spec-id>
-      suite: where it runs
-
+work: "# the ordered DAG; every spec binds back via - item: W1 spec: VELDO-0000        # the spec id this item becomes title: Small, independently provable, one review in one sitting feature_refs: [F1] depends_on: []         # spec ids; [] is a declaration, absence is an error order: 10"
+regression: "# designed up front, not accumulated by accident journeys: - id: RJ1 title: The journey that must stay green across every item of this plan activation: {when: start}   # start | after:<spec-id> suite: where it runs"
 release:
   milestone: What done is called
-  mode: continuous         # continuous (merge as green) | coordinated (cut together)
+  mode: "continuous         # continuous (merge as green) | coordinated (cut together)"
   require_all_work_shipped: true
   require_full_regression: true
   rollback: How the increment retreats if observation says so
   observation:
     duration: what watching it in production means here
-
 open_decisions:            # every decision names what it blocks; [] means
                            # nothing waits and work proceeds around it
   - id: D1

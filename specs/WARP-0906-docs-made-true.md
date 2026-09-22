@@ -14,47 +14,17 @@ protected_paths: []
 depends_on: [WARP-0905]
 acceptance_criteria:
   - id: AC1
-    text: The README is made true about the fleet. The fleet now ships in the engine and is delivered by
-      installing a pack, so the README's fleet description matches what actually ships, and the stale
-      "Current plugin version 3.2.0 (VELDO Fleet v1)" line is corrected to the actual current plugin
-      version and does NOT claim a release that has not happened (the plugin 3.5.0 release is W8/WARP-0908,
-      not this item). No operating metric appears; the fleet is described by capability, not by a version
-      it did not ship in.
+    text: The README is made true about the fleet. The fleet now ships in the engine and is delivered by installing a pack, so the README's fleet description matches what actually ships, and the stale "Current plugin version 3.2.0 (VELDO Fleet v1)" line is corrected to the actual current plugin version and does NOT claim a release that has not happened (the plugin 3.5.0 release is W8/WARP-0908, not this item). No operating metric appears; the fleet is described by capability, not by a version it did not ship in.
   - id: AC2
-    text: docs/plugin.md gains an accurate fleet section - what the fleet is, that installing a pack lays
-      the full engine including the fleet and the veldo CLI, veldo fleet N and veldo work as the entry
-      points, the fleet as a per-repo capability, the per-account model, governor pacing, and that it
-      spawns no detached process (the in-session, no-rogue-processes boundary). It claims only what W1-W5
-      actually shipped.
+    text: docs/plugin.md gains an accurate fleet section - what the fleet is, that installing a pack lays the full engine including the fleet and the veldo CLI, veldo fleet N and veldo work as the entry points, the fleet as a per-repo capability, the per-account model, governor pacing, and that it spawns no detached process (the in-session, no-rogue-processes boundary). It claims only what W1-W5 actually shipped.
   - id: AC3
-    text: docs/setup.md's scaling coverage gains the fleet, the veldo CLI, the account model, and the
-      governor, consistent with its capability-by-scale framing, AND the two-tier adoption model is
-      documented explicitly - installing a pack lays the FULL engine (the fleet included) while /veldo:init
-      lays the MINIMAL governance substrate (gate, contracts, templates) by design, so a reader knows
-      which path delivers the fleet.
+    text: docs/setup.md's scaling coverage gains the fleet, the veldo CLI, the account model, and the governor, consistent with its capability-by-scale framing, AND the two-tier adoption model is documented explicitly - installing a pack lays the FULL engine (the fleet included) while /veldo:init lays the MINIMAL governance substrate (gate, contracts, templates) by design, so a reader knows which path delivers the fleet.
   - id: AC4
-    text: docs/runbook.md gains a fleet operational runbook - the one-time veldo account add per account
-      (a login into that account's own persisted CLAUDE_CONFIG_DIR profile, no relogin thereafter),
-      running veldo fleet N or veldo work --account NAME, monitoring with veldo status / veldo watch, and the
-      in-session resume behavior when an account hits its budget - with the no-detached-process boundary
-      stated.
+    text: docs/runbook.md gains a fleet operational runbook - the one-time veldo account add per account (a login into that account's own persisted CLAUDE_CONFIG_DIR profile, no relogin thereafter), running veldo fleet N or veldo work --account NAME, monitoring with veldo status / veldo watch, and the in-session resume behavior when an account hits its budget - with the no-detached-process boundary stated.
   - id: AC5
-    text: The capabilities manifest is made honest end to end. Every non-fleet dogfood or build-machinery
-      capability entry whose home does NOT ship to an adopter (neither a pack nor /veldo:init lays it -
-      e.g. budget.py, lessons.py, init_scaffold.py, the tracker_* build family, pack.py,
-      pack_conformance.py, check_pack_drift.py, packs.json, env_provision.py, release.py) is tagged with a
-      distinct repo-only marker in BOTH byte-identical capabilities.yaml copies, and a gate check
-      (selftest, not a protected file) enforces WITH TEETH that every UNMARKED capability entry's home
-      resolves in the shipped engine (so an adopter who installs a pack actually has it) while every
-      repo-only entry exists in the repo but is exempt from the shipped-tree requirement. Un-marking a
-      dogfood entry, or pointing a shipped entry's home at a missing file, must turn the check RED.
+    text: The capabilities manifest is made honest end to end. Every non-fleet dogfood or build-machinery capability entry whose home does NOT ship to an adopter (neither a pack nor /veldo:init lays it - e.g. budget.py, lessons.py, init_scaffold.py, the tracker_* build family, pack.py, pack_conformance.py, check_pack_drift.py, packs.json, env_provision.py, release.py) is tagged with a distinct repo-only marker in BOTH byte-identical capabilities.yaml copies, and a gate check (selftest, not a protected file) enforces WITH TEETH that every UNMARKED capability entry's home resolves in the shipped engine (so an adopter who installs a pack actually has it) while every repo-only entry exists in the repo but is exempt from the shipped-tree requirement. Un-marking a dogfood entry, or pointing a shipped entry's home at a missing file, must turn the check RED.
   - id: AC6
-    text: The full gate is GREEN including the new capabilities-honesty check; the docs sweeps (dash,
-      non-ASCII, genericity) pass; the two capabilities.yaml copies stay byte-identical; NO protected path
-      is edited (scripts/verify.sh, scripts/veldo-guard.sh, .veldo/policy.yaml, .veldo/policy_check.py or
-      their engine twins); the index is regenerated; and the veldo name is unchanged. The
-      "documentation is always updated" standing rule holds - every capability W1-W5 shipped is reflected
-      in the adoption docs.
+    text: The full gate is GREEN including the new capabilities-honesty check; the docs sweeps (dash, non-ASCII, genericity) pass; the two capabilities.yaml copies stay byte-identical; NO protected path is edited (scripts/verify.sh, scripts/veldo-guard.sh, .veldo/policy.yaml, .veldo/policy_check.py or their engine twins); the index is regenerated; and the veldo name is unchanged. The "documentation is always updated" standing rule holds - every capability W1-W5 shipped is reflected in the adoption docs.
 required_evidence: [unit]
 rollback: git revert; additive - doc prose added to README/plugin.md/setup.md/runbook.md, a repo-only
   marker on the dogfood capability entries in both byte-identical capabilities.yaml copies, and a new

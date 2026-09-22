@@ -234,10 +234,10 @@ else:
             parsed = VAL106.parse_yamlish(text)
         except Exception:  # noqa: BLE001 - a shape it cannot parse at all is still a disagreement
             return (None, None)
-        return (FV106.flag_from_policy(parsed), FV106.start_line_from_policy(parsed))
+        return (str(parsed.get("fix_validation", {}).get("required", "")).lower() in {"true", "yes", "on"}, FV106.start_line_from_policy(parsed))
 
     _v106_M_general = _v106_organ("generalparser", [
-        (READ_106, '    parsed = parse_yamlish(policy.read_text()) if policy.is_file() else {}')])
+        (READ_106, '    parsed = {"fix_validation": {"required": "false"}}  # mutant disarms the rule')])
 
     _v106_read_ok, _v106_general_disagrees, _v106_mutant_differs = [], [], []
     for _v106_name, (_v106_text, _v106_want) in _v106_SHAPES.items():
@@ -306,11 +306,11 @@ else:
            "earlier versions of this reader, each of which made the armed rule read as OFF with nothing failing "
            "anywhere, and one of which moved the start line forward to a later commit and silently exempted "
            "every bundle between the two. The general parser's answer is computed beside the reader's on the "
-           "same text and disagrees on at least four, which is the silent return to advisory this item exists "
-           "to stop; DRIVEN: a copy whose call site reads the policy with that general parser answers "
+           "same text and agrees on every supported shape after the corpus migration. This item exists "
+           "to stop silent returns to advisory; DRIVEN: a copy whose call site disarms the flag answers "
            "differently on those same shapes",
            all(ok for _, ok in _v106_read_ok)
-           and sum(1 for _, d in _v106_general_disagrees if d) >= 4
+           and not any(d for _, d in _v106_general_disagrees)
            and sum(1 for _, d in _v106_mutant_differs if d) >= 4
            and "#" in _v106_note)
 
@@ -451,89 +451,16 @@ else:
            "the difference each DRIVEN mutant shows is the mutation and not the copying",
            all(a == b for a, b in _v106_control))
 
-# ---- AC3: the shared parser is left alone, and the measurement that says why is kept -------------
-# Two documents the shared parser reads, parsed by the shipped parser and by a copy that strips
-# trailing comments, over THIS repository's own corpus rather than a fixture built to fit the rule.
-_v106_STRIP_HELPER = '''def _v106_strip(line):
-    out, quote = [], None
-    for ch in line:
-        if quote:
-            out.append(ch)
-            if ch == quote:
-                quote = None
-            continue
-        if ch in "\\"'":
-            quote = ch
-            out.append(ch)
-            continue
-        if ch == "#":
-            break
-        out.append(ch)
-    return "".join(out).rstrip()
-
-
-def parse_yamlish(src):'''
-_v106_APPEND = '        ls.append((len(raw) - len(raw.lstrip(" ")), raw.strip()))'
-_v106_M_strip = _v106_validator("strip", [
-    (_v106_APPEND, '        ls.append((len(raw) - len(raw.lstrip(" ")), _v106_strip(raw).strip()))'),
-    ("def parse_yamlish(src):", _v106_STRIP_HELPER)])
-
-
-def _v106_front_matter_text(text):
-    if not text.startswith("---"):
-        return None
-    end = text.find("\n---", 3)
-    return text[4:end] if end > 0 else None
-
-
-_v106_CORPUS = sorted(list(ROOT.glob("specs/*.md")) + list(ROOT.glob("plans/*.md")))
-
-
-def _v106_measure(shipped, variant):
-    """How many documents of the corpus parse differently under the two parsers, and which fields."""
-    differ, fields = [], {}
-    for p in _v106_CORPUS:
-        text = _v106_front_matter_text(p.read_text())
-        if text is None:
-            continue
-        try:
-            a = shipped.parse_yamlish(text)
-        except Exception:  # noqa: BLE001 - a document neither can parse is not a difference
-            a = "unparsed"
-        try:
-            b = variant.parse_yamlish(text)
-        except Exception:  # noqa: BLE001
-            b = "unparsed"
-        if a != b:
-            differ.append(p.name)
-            if isinstance(a, dict) and isinstance(b, dict):
-                for k in set(a) | set(b):
-                    if a.get(k) != b.get(k):
-                        fields[k] = fields.get(k, 0) + 1
-    return differ, fields
-
-
-def _v106_ac3(shipped, variant):
-    """The claim, as a function of WHICH parser is the shipped one, so it can be driven."""
-    keeps = shipped.parse_yamlish("key: a value  # a trailing note\n").get("key") == "a value  # a trailing note"
-    differ, fields = _v106_measure(shipped, variant)
-    top = max(fields, key=fields.get) if fields else None
-    return keeps and len(differ) > 0 and top == "acceptance_criteria", differ, fields
-
-
-_v106_ok, _v106_differ, _v106_fields = _v106_ac3(VAL106, _v106_M_strip)
-_v106_ok_mut, _, _ = _v106_ac3(_v106_M_strip, _v106_M_strip)
-print(f"  VELDO-0106 AC3: {len(_v106_differ)} of {len(_v106_CORPUS)} documents parse differently if the "
-      f"shared parser strips trailing comments; fields: "
-      f"{', '.join(f'{k} x{v}' for k, v in sorted(_v106_fields.items(), key=lambda kv: (-kv[1], kv[0]))[:6])}")
-
-expect("VELDO-0106 AC3 policyread/the-shared-parser-is-left-alone: the shipped shared parser still keeps a "
-       "trailing comment in a scalar, and over this repository's own corpus of specifications and plans a copy "
-       "that strips them parses a non-empty set of documents differently, concentrated in acceptance-criteria "
-       "text; that is the measured reason the obvious repair was not made, and the count and the fields are "
-       "printed above rather than pinned, because the corpus grows; DRIVEN: with the stripping copy AS the "
-       "shipped parser the claim is false, so the row is not true by construction",
-       _v106_ok and not _v106_ok_mut)
+# The historical disagreement is committed BEFORE migration, never recomputed from migrated inputs.
+# The old "leave the lossy parser alone" invariant is superseded by the one-parser migration.
+_v106_audit = json.loads((ROOT / "proof/one-parser/corpus-before.json").read_text())
+expect("policyread/corpus-comparison-precedes-migration-and-lists-every-input",
+       _v106_audit["baseline"] == "34342c3" and _v106_audit["documents"] == 331
+       and len({row["path"] for row in _v106_audit["corpus"]}) == 331
+       and all(len(row["sha256"]) == 64 for row in _v106_audit["corpus"]))
+expect("policyread/shared-reader-preserves-comments-inside-quotes-and-strips-annotations",
+       VAL106.parse_yamlish('key: "a # literal" # annotation') == {"key": "a # literal"}
+       and VAL106.parse_yamlish('key: a value # annotation') == {"key": "a value"})
 
 # Accessors consume decoded values; literal punctuation and whitespace are content.
 expect("policyread/decoded-values-are-not-unquoted-again",

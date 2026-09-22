@@ -4,13 +4,7 @@ id: WARP-1408
 title: Budgets - the roll-up, the dollar range and pacing, advisory by design, and the one place a
   number could have stopped work
 status: ready
-risk: standard - a new reader that sums records already committed beside specs, converts them at a
-  declared rate and writes nothing at all. No gate stage is added and a repository with no
-  estimates and no rate is byte-identically unaffected. It is not low for one reason: this is the
-  item that hands a derived number to the PACING GOVERNOR, whose desired_workers returns ZERO
-  WORKERS when a window's budget is spent, so a wrong bound or a zero-token window here would
-  stall real work on an estimate, which is exactly what PLAN-0014's NG1 forbids and what no later
-  item would be able to tell had happened.
+risk: "standard - a new reader that sums records already committed beside specs, converts them at a declared rate and writes nothing at all. No gate stage is added and a repository with no estimates and no rate is byte-identically unaffected. It is not low for one reason: this is the item that hands a derived number to the PACING GOVERNOR, whose desired_workers returns ZERO WORKERS when a window's budget is spent, so a wrong bound or a zero-token window here would stall real work on an estimate, which is exactly what PLAN-0014's NG1 forbids and what no later item would be able to tell had happened."
 owner: dmitry
 human_approval: not_required
 lane: planned

@@ -6,14 +6,7 @@ title: The machine-actor guard must key on STRUCTURAL machine-ness, not on a nam
   is never consulted, so an actor whose humanness cannot be ESTABLISHED must be refused rather than
   assumed human (hardening of the PLAN-0016 authorization core, found by WARP-0620)
 status: shipped
-risk: high - this changes the AUTHORIZATION CORE, the module that decides whether a human decision is
-  authorized, and it changes a REFUSAL rule rather than an accessory. Per PLAN-0016 constraint C2 an item
-  touching the authorization matrix carries a high floor with RECORDED HUMAN APPROVAL, and this qualifies:
-  it alters who can settle a human decision. It is high and not critical because it only ever makes the
-  guard refuse MORE, never less: the existing name list is kept as an additional refusal, so no actor that
-  is refused today becomes permitted, and the change is proven offline against the identities the live run
-  captured. It touches no protected path (.veldo/authorization.py is deliberately not in policy.yaml's
-  protected set) and no gate stage
+risk: "high - this changes the AUTHORIZATION CORE, the module that decides whether a human decision is authorized, and it changes a REFUSAL rule rather than an accessory. Per PLAN-0016 constraint C2 an item touching the authorization matrix carries a high floor with RECORDED HUMAN APPROVAL, and this qualifies: it alters who can settle a human decision. It is high and not critical because it only ever makes the guard refuse MORE, never less: the existing name list is kept as an additional refusal, so no actor that is refused today becomes permitted, and the change is proven offline against the identities the live run captured. It touches no protected path (.veldo/authorization.py is deliberately not in policy.yaml's protected set) and no gate stage"
 owner: dmitry
 human_approval: required
 lane: standalone
@@ -31,14 +24,8 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: Every refusal names WHICH signal decided it - the reported actor kind, the absence of a kind, or
-    the name-list match - so a refused settlement is diagnosable from the output without reading the
-    source, and an operator can tell "this actor is a machine" from "this actor's humanness could not be
-    established".
-  error_taxonomy: The refusal reasons are a closed named set: MACHINE_ACTOR (the tracker reports a
-    non-human kind), UNESTABLISHED_ACTOR_KIND (no kind is reported and humanness therefore cannot be
-    proven), and the pre-existing name-list refusal retained under its current name so no current refusal
-    is renamed or lost.
+  logs: Every refusal names WHICH signal decided it - the reported actor kind, the absence of a kind, or the name-list match - so a refused settlement is diagnosable from the output without reading the source, and an operator can tell "this actor is a machine" from "this actor's humanness could not be established".
+  error_taxonomy: "The refusal reasons are a closed named set: MACHINE_ACTOR (the tracker reports a non-human kind), UNESTABLISHED_ACTOR_KIND (no kind is reported and humanness therefore cannot be proven), and the pre-existing name-list refusal retained under its current name so no current refusal is renamed or lost."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

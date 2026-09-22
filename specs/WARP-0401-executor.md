@@ -14,71 +14,17 @@ protected_paths: []
 required_evidence: [unit, operational]
 acceptance_criteria:
   - id: AC1
-    text: A stdlib module .veldo/executor.py ships an Executor that sequences the
-      loop as explicit steps behind a seam (resolve a ready spec, a plan
-      run-check for a planned spec, build, gate, proof, review, merge readiness).
-      The step surfaces are a LoopSteps interface; the mechanical steps (running
-      the gate, assembling and validating the proof, emitting the loop events,
-      assembling the receipt) the Executor runs itself, and the agent and human
-      steps (build, review, approve or steer) it delegates to injected callables
-      and pauses for. Executor.run(spec_id) drives the steps in order and returns
-      a result. A spec that is not ready halts at resolve and a planned spec whose
-      run-check refuses halts at plan_check, each before any build runs.
+    text: A stdlib module .veldo/executor.py ships an Executor that sequences the loop as explicit steps behind a seam (resolve a ready spec, a plan run-check for a planned spec, build, gate, proof, review, merge readiness). The step surfaces are a LoopSteps interface; the mechanical steps (running the gate, assembling and validating the proof, emitting the loop events, assembling the receipt) the Executor runs itself, and the agent and human steps (build, review, approve or steer) it delegates to injected callables and pauses for. Executor.run(spec_id) drives the steps in order and returns a result. A spec that is not ready halts at resolve and a planned spec whose run-check refuses halts at plan_check, each before any build runs.
   - id: AC2
-    text: Halt-on-failure is enforced and load-bearing (XJ1). A failed step halts
-      the loop and does not proceed to the downstream steps - a red gate does NOT
-      reach proof, review, or merge; a fail verdict does NOT reach merge; and two
-      failed review cycles stop and return the change to the human (at that point
-      the defect is almost always in the specification). The run returns a state
-      that is either halted at the named step with the reason, or ready with the
-      receipt, and never fabricates a missing step result. loop_respected(result)
-      is a pure invariant exposed for direct test: a result with a proof, review,
-      or merge step after a failed gate, or a merge step after a failing final
-      verdict, is not respected.
+    text: "Halt-on-failure is enforced and load-bearing (XJ1). A failed step halts the loop and does not proceed to the downstream steps - a red gate does NOT reach proof, review, or merge; a fail verdict does NOT reach merge; and two failed review cycles stop and return the change to the human (at that point the defect is almost always in the specification). The run returns a state that is either halted at the named step with the reason, or ready with the receipt, and never fabricates a missing step result. loop_respected(result) is a pure invariant exposed for direct test: a result with a proof, review, or merge step after a failed gate, or a merge step after a failing final verdict, is not respected."
   - id: AC3
-    text: The run records the human minutes it cost and assembles a receipt. Human
-      minutes come from the delegated human-attention steps (the review cycles and
-      the approve or steer) and are summed for the run and emitted on their
-      canonical events (verdict.recorded and approval.recorded) so the run total
-      equals what the metrics reader derives from the event stream (no fork). The
-      receipt carries the criteria proven, the gate result, the verdict, the run
-      human_minutes, and the ONE thing (if any) awaiting a human, matching the run
-      skill receipt.
+    text: The run records the human minutes it cost and assembles a receipt. Human minutes come from the delegated human-attention steps (the review cycles and the approve or steer) and are summed for the run and emitted on their canonical events (verdict.recorded and approval.recorded) so the run total equals what the metrics reader derives from the event stream (no fork). The receipt carries the criteria proven, the gate result, the verdict, the run human_minutes, and the ONE thing (if any) awaiting a human, matching the run skill receipt.
   - id: AC4
-    text: Capabilities coverage is honest and complete. Both .veldo/capabilities.yaml
-      and engine/.veldo/capabilities.yaml carry, byte-identically, an
-      executor_driver entry (status mechanical, home .veldo/executor.py) and an
-      executor_agent_dispatch entry (status procedure, home skills/run), each with
-      a status drawn from the manifest vocabulary. mechanical is honest because the
-      step sequencing, halt-on-failure, human_minutes recording, and receipt
-      assembly are stdlib and run end to end in the gate here over a fake seam with
-      no live agent, gate, or backend; procedure is honest because the build and
-      review dispatch and the human approval are skill-instructed and not
-      transactionally enforced (the reference LiveLoop fails loud rather than
-      fabricate them).
+    text: Capabilities coverage is honest and complete. Both .veldo/capabilities.yaml and engine/.veldo/capabilities.yaml carry, byte-identically, an executor_driver entry (status mechanical, home .veldo/executor.py) and an executor_agent_dispatch entry (status procedure, home skills/run), each with a status drawn from the manifest vocabulary. mechanical is honest because the step sequencing, halt-on-failure, human_minutes recording, and receipt assembly are stdlib and run end to end in the gate here over a fake seam with no live agent, gate, or backend; procedure is honest because the build and review dispatch and the human approval are skill-instructed and not transactionally enforced (the reference LiveLoop fails loud rather than fabricate them).
   - id: AC5
-    text: The control logic is gate-tested with no external surface. The selftest
-      (CHECK_unit) imports .veldo/executor.py and drives the Executor over a FAKE
-      LoopSteps seam through a full successful loop (asserting the steps run in
-      order, evidence is reached, human_minutes are recorded, and the receipt has
-      the right shape) AND through the failure cases (a red gate halts before
-      proof, review, and merge; a fail verdict halts before merge; two failed
-      review cycles re-drive then stop for a human; a fail then a pass recovers; a
-      non-ready spec, a plan run-check refusal, a build failure, and an invalid
-      proof each halt at their step; a resolve error is a clean halt not a crash).
-      Non-tautology is proven: a mutant that proceeds past a red gate, and one that
-      merges after a fail verdict, both FAIL the loop_respected invariant while the
-      real halted runs pass it, and the reference LiveLoop fails loud on the
-      delegated steps.
+    text: "The control logic is gate-tested with no external surface. The selftest (CHECK_unit) imports .veldo/executor.py and drives the Executor over a FAKE LoopSteps seam through a full successful loop (asserting the steps run in order, evidence is reached, human_minutes are recorded, and the receipt has the right shape) AND through the failure cases (a red gate halts before proof, review, and merge; a fail verdict halts before merge; two failed review cycles re-drive then stop for a human; a fail then a pass recovers; a non-ready spec, a plan run-check refusal, a build failure, and an invalid proof each halt at their step; a resolve error is a clean halt not a crash). Non-tautology is proven: a mutant that proceeds past a red gate, and one that merges after a fail verdict, both FAIL the loop_respected invariant while the real halted runs pass it, and the reference LiveLoop fails loud on the delegated steps."
   - id: AC6
-    text: The deliverable is generic (zero company, product, or person names and
-      zero absolute host paths in the module, the skill edit, the capabilities
-      entries, and this spec beyond the standard owner field) and hygienic (ASCII
-      only, no em or en dash, no double hyphen). The run skill notes that the
-      executor drives and halts the steps while the agent still builds and reviews.
-      The specs index regenerates to include this spec, and the full gate (lint,
-      unit, generated, docs, template sync, secret scan, contract validation) stays
-      green with every prior selftest case still passing.
+    text: The deliverable is generic (zero company, product, or person names and zero absolute host paths in the module, the skill edit, the capabilities entries, and this spec beyond the standard owner field) and hygienic (ASCII only, no em or en dash, no double hyphen). The run skill notes that the executor drives and halts the steps while the agent still builds and reviews. The specs index regenerates to include this spec, and the full gate (lint, unit, generated, docs, template sync, secret scan, contract validation) stays green with every prior selftest case still passing.
 rollback: git revert; X1 is additive - a stdlib module .veldo/executor.py, a
   selftest block, two capabilities entries in both manifest copies, a run-skill
   paragraph, and this spec. It touches no protected path, no synced core

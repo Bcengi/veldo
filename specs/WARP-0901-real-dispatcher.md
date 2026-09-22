@@ -14,40 +14,15 @@ depends_on: []
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A real Dispatcher (.veldo/dispatch.py) fills the work.py Dispatcher seam. dispatch(unit)
-      routes by unit kind - a build unit (spec status ready) is driven through the executor's build
-      path, a review unit (spec status review) is driven through a fresh-context reviewer - and
-      returns {ok: bool, ...} so the WorkLoop's existing release/failed semantics apply unchanged (a
-      failed dispatch returns ok False and the loop releases the claim for a retry, never a stuck
-      claim).
+    text: "A real Dispatcher (.veldo/dispatch.py) fills the work.py Dispatcher seam. dispatch(unit) routes by unit kind - a build unit (spec status ready) is driven through the executor's build path, a review unit (spec status review) is driven through a fresh-context reviewer - and returns {ok: bool, ...} so the WorkLoop's existing release/failed semantics apply unchanged (a failed dispatch returns ok False and the loop releases the claim for a retry, never a stuck claim)."
   - id: AC2
-    text: The BUILD path drives the executor (WARP-0401) over the spec through resolve, plan
-      run-check, build, gate, and proof, and STOPS at review - the built spec is flipped to status
-      review so it becomes a claimable review unit on the frontier, and the build worker does NOT
-      review its own work (independence is preserved by making review a separate unit). A red gate or
-      a failed build halts (ok False) and does not flip the spec to review. The mechanical steps are
-      the executor's; the intelligent build step stays a delegated procedure (LiveLoop fails loud
-      rather than fabricate a build).
+    text: The BUILD path drives the executor (WARP-0401) over the spec through resolve, plan run-check, build, gate, and proof, and STOPS at review - the built spec is flipped to status review so it becomes a claimable review unit on the frontier, and the build worker does NOT review its own work (independence is preserved by making review a separate unit). A red gate or a failed build halts (ok False) and does not flip the spec to review. The mechanical steps are the executor's; the intelligent build step stays a delegated procedure (LiveLoop fails loud rather than fabricate a build).
   - id: AC3
-    text: The REVIEW path drives a fresh-context reviewer over the built commit and records a
-      commit-bound verdict; on a passing verdict (pass or pass_with_notes, zero blocking findings)
-      the serialized lander (WARP-0704) lands the evidence and the spec becomes shipped (leaving the
-      frontier); on a failing verdict the spec returns to ready (or blocked) for a fix, not shipped.
-      The intelligent review step stays a delegated procedure (the reference path fails loud rather
-      than fabricate a verdict).
+    text: The REVIEW path drives a fresh-context reviewer over the built commit and records a commit-bound verdict; on a passing verdict (pass or pass_with_notes, zero blocking findings) the serialized lander (WARP-0704) lands the evidence and the spec becomes shipped (leaving the frontier); on a failing verdict the spec returns to ready (or blocked) for a fix, not shipped. The intelligent review step stays a delegated procedure (the reference path fails loud rather than fabricate a verdict).
   - id: AC4
-    text: The durable outcome drives the frontier - a shipped spec (build then review then land) is
-      gone from claimable(), and the build/review split means the two unit kinds hand off through
-      the spec's status (ready then review then shipped) with no shared state beyond the repo, so two
-      workers never both build or both review the same unit (the WorkLoop's claim-then-recheck plus
-      the status handoff).
+    text: The durable outcome drives the frontier - a shipped spec (build then review then land) is gone from claimable(), and the build/review split means the two unit kinds hand off through the spec's status (ready then review then shipped) with no shared state beyond the repo, so two workers never both build or both review the same unit (the WorkLoop's claim-then-recheck plus the status handoff).
   - id: AC5
-    text: The dispatcher is gate-tested via the selftest over a THROWAWAY repo with a
-      controllable/fake executor and reviewer (no live agent) - a build unit drives the build path
-      and leaves the spec in review; a review unit with a passing verdict lands and ships the spec;
-      a failing build and a failing verdict each return ok False and leave the spec un-shipped; the
-      real LiveLoop/reviewer path fails loud rather than fabricate. Non-tautological teeth: a mutant
-      that ships without a passing verdict, or that reviews its own build, turns an assertion red.
+    text: "The dispatcher is gate-tested via the selftest over a THROWAWAY repo with a controllable/fake executor and reviewer (no live agent) - a build unit drives the build path and leaves the spec in review; a review unit with a passing verdict lands and ships the spec; a failing build and a failing verdict each return ok False and leave the spec un-shipped; the real LiveLoop/reviewer path fails loud rather than fabricate. Non-tautological teeth: a mutant that ships without a passing verdict, or that reviews its own build, turns an assertion red."
 required_evidence: [unit]
 rollback: git revert; additive - a new .veldo/dispatch.py (repo-root dogfood machinery, NOT shipped
   engine, so not copied into packs and no re-assembly), a selftest block, and this spec; plus any

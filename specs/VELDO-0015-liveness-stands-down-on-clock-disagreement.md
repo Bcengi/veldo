@@ -1,20 +1,9 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0015
-title: Liveness stands down on clock disagreement - a heartbeat from the future is answered
-  "unanswerable, human needed", never "alive", so a fast-clocked worker can no longer lock a unit
-  forever, and never "stale", so its live claim is never handed to a second worker
+title: Liveness stands down on clock disagreement - a heartbeat from the future is answered "unanswerable, human needed", never "alive", so a fast-clocked worker can no longer lock a unit forever, and never "stale", so its live claim is never handed to a second worker
 status: ready
-risk: high - both freshness readers sit under every fleet decision about who owns a unit and whether
-  a run is alive, and each failure direction is serious in a different way. The defect this fixes
-  (PLAN-0018 ledger finding 76): both readers subtract in one direction, so a heartbeat AHEAD of the
-  reader's clock can never exceed the staleness window and reads as alive forever - one worker with a
-  fast clock permanently locks every unit it touches. The tempting one-line fix (a symmetric window)
-  is WORSE: a fast clock then reads stale on every heartbeat and a LIVE claim is handed to a second
-  worker, which is the silent double-build the ledger exists to prevent. The honest design, settled
-  by Dmitry as veldo-factory kernel decision OD-9 on 2026-08-15: clocks that disagree beyond a
-  declared tolerance make liveness UNANSWERABLE, and the reader says so and summons a human instead
-  of guessing in either direction
+risk: "high - both freshness readers sit under every fleet decision about who owns a unit and whether a run is alive, and each failure direction is serious in a different way. The defect this fixes (PLAN-0018 ledger finding 76): both readers subtract in one direction, so a heartbeat AHEAD of the reader's clock can never exceed the staleness window and reads as alive forever - one worker with a fast clock permanently locks every unit it touches. The tempting one-line fix (a symmetric window) is WORSE: a fast clock then reads stale on every heartbeat and a LIVE claim is handed to a second worker, which is the silent double-build the ledger exists to prevent. The honest design, settled by Dmitry as veldo-factory kernel decision OD-9 on 2026-08-15: clocks that disagree beyond a declared tolerance make liveness UNANSWERABLE, and the reader says so and summons a human instead of guessing in either direction"
 owner: dmitry
 human_approval: not_required
 lane: standalone

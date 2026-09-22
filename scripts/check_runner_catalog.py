@@ -26,7 +26,11 @@ import re
 import sys
 from pathlib import Path
 
+import importlib.util
 ROOT = Path(__file__).resolve().parent.parent
+_yspec = importlib.util.spec_from_file_location("veldo_yamlish", ROOT / ".veldo/yamlish.py")
+_Y = importlib.util.module_from_spec(_yspec)
+_yspec.loader.exec_module(_Y)
 RUNNERS = ROOT / "engine" / "scripts" / "runners"
 CAPS = ROOT / ".veldo" / "capabilities.yaml"
 SELFTEST = ROOT / "scripts" / "selftest.py"
@@ -61,19 +65,11 @@ def caps_entries_for(dirname, caps_text):
     The manifest writes each capability as a single-line flow mapping, so a
     per-line parse is exact and needs no yaml dependency.
     """
-    statuses = []
-    for line in caps_text.splitlines():
-        if "home:" not in line or "runners/" not in line:
-            continue
-        home = re.search(r"home:\s*([^,}]+)", line)
-        if not home:
-            continue
-        m = re.search(r"runners/([^/]+)/", home.group(1))
-        if not m or m.group(1) != dirname:
-            continue
-        st = re.search(r"status:\s*([A-Za-z-]+)", line)
-        statuses.append(st.group(1) if st else "")
-    return statuses
+    rows = _Y.parse(caps_text).get("capabilities", {})
+    if not isinstance(rows, dict) or any(not isinstance(v, dict) for v in rows.values()):
+        raise ValueError("capabilities must be a mapping of capability records")
+    return [row.get("status", "") for row in rows.values()
+            if f"runners/{dirname}/" in str(row.get("home", ""))]
 
 
 def has_python_runner_module(runner_dir):

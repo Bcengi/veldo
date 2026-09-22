@@ -6,15 +6,7 @@ title: The behaviour floor contract - an existing codebase's current behaviour b
   human decision settled through the ticket channel and joined to the observation by a digest the
   validator recomputes, so the agent under the gate cannot write its own exemption
 status: ready
-risk: high - it is the root contract of the legacy on-ramp and it REGISTERS TWO NEW PROTECTED PATHS,
-  which is itself a .veldo/policy.yaml edit and therefore a protected-path act needing a commit-bound
-  approval. Two failure directions and both are serious: a floor that admits an inline ruling hands
-  the agent being gated a place to write its own exemption, and a floor whose observation digest is a
-  typed field hands it a pointer at somebody else's judgement. It is NOT critical because nothing here
-  enforces anything - no change is refused because a pin is unruled, the artifact is inert data until
-  a later item consumes it, and a repository with no .veldo/floors/ directory is byte-identically
-  unaffected. It is not standard because the thing it protects is a record of what a named human said
-  about behaviour, which is the only durable output of the whole on-ramp
+risk: "high - it is the root contract of the legacy on-ramp and it REGISTERS TWO NEW PROTECTED PATHS, which is itself a .veldo/policy.yaml edit and therefore a protected-path act needing a commit-bound approval. Two failure directions and both are serious: a floor that admits an inline ruling hands the agent being gated a place to write its own exemption, and a floor whose observation digest is a typed field hands it a pointer at somebody else's judgement. It is NOT critical because nothing here enforces anything - no change is refused because a pin is unruled, the artifact is inert data until a later item consumes it, and a repository with no .veldo/floors/ directory is byte-identically unaffected. It is not standard because the thing it protects is a record of what a named human said about behaviour, which is the only durable output of the whole on-ramp"
 owner: dmitry
 human_approval: required
 lane: standalone

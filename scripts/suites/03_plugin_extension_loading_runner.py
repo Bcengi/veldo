@@ -191,7 +191,7 @@ with tempfile.TemporaryDirectory() as d:
     (base / "alpha" / "fixtures" / "fail.journey.json").write_text("{}")
 
     # a runner with no capabilities entry is caught (uncatalogued)
-    empty_caps = Path(d) / "empty.yaml"; empty_caps.write_text("capabilities:\n")
+    empty_caps = Path(d) / "empty.yaml"; empty_caps.write_text("capabilities: {}\n")
     _f = CAT.audit(runners_dir=base, caps_path=empty_caps, selftest_path=st)
     expect("uncatalogued runner fails the catalog", any("no capabilities.yaml entry" in f for f in _f))
 

@@ -5,14 +5,7 @@ title: Reconciliation and the estimator's own accuracy - the estimate, the actua
   stored at ship, the scale refitted from the growing ledger, and the estimator's own hit rate and
   calibration curve open to anyone
 status: ready
-risk: standard - a new module that reads the committed estimates, the actuals corpus and its own
-  record ledger, and whose only write is a create-only record per shipped spec. No gate stage is
-  added, nothing is enforced, and a repository that reconciles nothing is byte-identically
-  unaffected. It is not low because this is the module that tells everyone how much an estimate is
-  worth: a variance a record could edit after the fact, a hit rate computed over only the changes
-  that happened to work, or a refit scored on the same records it was fitted from would each look
-  exactly like a working measurement while making every number above it more confident and less
-  true.
+risk: "standard - a new module that reads the committed estimates, the actuals corpus and its own record ledger, and whose only write is a create-only record per shipped spec. No gate stage is added, nothing is enforced, and a repository that reconciles nothing is byte-identically unaffected. It is not low because this is the module that tells everyone how much an estimate is worth: a variance a record could edit after the fact, a hit rate computed over only the changes that happened to work, or a refit scored on the same records it was fitted from would each look exactly like a working measurement while making every number above it more confident and less true."
 owner: dmitry
 human_approval: not_required
 lane: planned

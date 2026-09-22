@@ -46,13 +46,8 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: The runner reports, per suite, its name, assertion count and elapsed time, so the next cost regression
-    is attributable to a suite instead of to a 16k-line file. The aggregate line keeps its current exact
-    format ("selftest: N passed, M failed") because the gate and the operator guide both read it.
-  error_taxonomy: The names stay closed and gain two structural refusals: SUITE_NOT_ENUMERATED (a suite file
-    exists on disk but is absent from the manifest, so it would silently not run) and SUITE_LABEL_COLLISION
-    (two suites declare the same assertion label, which would let one silently mask the other in the identity
-    proof). Both exist because the decomposition's own integrity is what needs guarding.
+  logs: "The runner reports, per suite, its name, assertion count and elapsed time, so the next cost regression is attributable to a suite instead of to a 16k-line file. The aggregate line keeps its current exact format (\"selftest: N passed, M failed\") because the gate and the operator guide both read it."
+  error_taxonomy: "The names stay closed and gain two structural refusals: SUITE_NOT_ENUMERATED (a suite file exists on disk but is absent from the manifest, so it would silently not run) and SUITE_LABEL_COLLISION (two suites declare the same assertion label, which would let one silently mask the other in the identity proof). Both exist because the decomposition's own integrity is what needs guarding."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

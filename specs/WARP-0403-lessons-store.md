@@ -14,61 +14,17 @@ protected_paths: []
 required_evidence: [unit, operational]
 acceptance_criteria:
   - id: AC1
-    text: A stdlib module .veldo/lessons.py ships an append-only lesson store.
-      add(lesson) validates a lesson envelope (schema veldo.lesson/v1, id,
-      created_at, category, scope, text, optional source) and appends it as one
-      JSON line to .veldo/lessons.jsonl. The category is drawn from a fixed
-      vocabulary (bug_class, regression, review_finding, emergency). add rejects
-      an unknown category, an empty or missing text, and a malformed scope as a
-      named LessonError (a ValueError subclass), and stores nothing when it
-      rejects, so a bad lesson is loud, never silently filed.
+    text: A stdlib module .veldo/lessons.py ships an append-only lesson store. add(lesson) validates a lesson envelope (schema veldo.lesson/v1, id, created_at, category, scope, text, optional source) and appends it as one JSON line to .veldo/lessons.jsonl. The category is drawn from a fixed vocabulary (bug_class, regression, review_finding, emergency). add rejects an unknown category, an empty or missing text, and a malformed scope as a named LessonError (a ValueError subclass), and stores nothing when it rejects, so a bad lesson is loud, never silently filed.
   - id: AC2
-    text: relevant(context) returns only the lessons whose scope matches the
-      context, most-recent-first, so an unrelated lesson is not surfaced. A scope
-      is exactly one of a path glob (matched against the context touched paths)
-      or a plan-or-spec tag (matched against the context plan id or its tags).
-      An empty store, and a context that matches nothing, both return the empty
-      list - relevant() filters, it does not pass everything through.
-      scope_matches(scope, context) is a pure predicate exposed for direct test,
-      and case is significant so matching is deterministic across platforms.
+    text: relevant(context) returns only the lessons whose scope matches the context, most-recent-first, so an unrelated lesson is not surfaced. A scope is exactly one of a path glob (matched against the context touched paths) or a plan-or-spec tag (matched against the context plan id or its tags). An empty store, and a context that matches nothing, both return the empty list - relevant() filters, it does not pass everything through. scope_matches(scope, context) is a pure predicate exposed for direct test, and case is significant so matching is deterministic across platforms.
   - id: AC3
-    text: Surfacing is a review-skill procedure, not a mechanism.
-      packs/claude/skills/review/SKILL.md instructs the reviewer to compute the change
-      context (touched paths, plan id, spec tags), include the relevant(context)
-      output in what it checks so a failure mode that broke once is re-checked on
-      any change touching the same scope, and record a review.failed finding as a
-      new lesson. The instruction states plainly that the store and relevant()
-      are mechanical while deciding the context and writing the lesson text are
-      agent judgment.
+    text: Surfacing is a review-skill procedure, not a mechanism. packs/claude/skills/review/SKILL.md instructs the reviewer to compute the change context (touched paths, plan id, spec tags), include the relevant(context) output in what it checks so a failure mode that broke once is re-checked on any change touching the same scope, and record a review.failed finding as a new lesson. The instruction states plainly that the store and relevant() are mechanical while deciding the context and writing the lesson text are agent judgment.
   - id: AC4
-    text: Capabilities coverage is honest and complete. Both .veldo/capabilities.yaml
-      and engine/.veldo/capabilities.yaml carry, byte-identically, a
-      lessons_store entry (status mechanical, home .veldo/lessons.py) and a
-      lessons_surfacing entry (status procedure, home skills/review), each with a
-      status drawn from the manifest vocabulary. mechanical is honest because the
-      store and relevant() are stdlib and run end to end in the gate here;
-      procedure is honest because the surfacing into the review prompt is
-      skill-instructed and not transactionally enforced.
+    text: Capabilities coverage is honest and complete. Both .veldo/capabilities.yaml and engine/.veldo/capabilities.yaml carry, byte-identically, a lessons_store entry (status mechanical, home .veldo/lessons.py) and a lessons_surfacing entry (status procedure, home skills/review), each with a status drawn from the manifest vocabulary. mechanical is honest because the store and relevant() are stdlib and run end to end in the gate here; procedure is honest because the surfacing into the review prompt is skill-instructed and not transactionally enforced.
   - id: AC5
-    text: The control logic is gate-tested with no external surface. The selftest
-      (CHECK_unit) imports .veldo/lessons.py and drives add and relevant over a
-      crafted temporary store, asserting a matching lesson is returned, an
-      unrelated path lesson and a tag lesson are EXCLUDED from a path-only
-      context, an empty store returns [], a context that matches nothing returns
-      [], most-recent-first ordering holds across two matches, and every
-      malformed lesson (unknown category, empty text, missing text, two-key
-      scope, non-dict scope, empty scope value, unknown scope key) is rejected as
-      a named LessonError and not stored. The unrelated-excluded assertions fail
-      if relevant() were mutated to return every lesson, so the filter cannot
-      rubber-stamp.
+    text: The control logic is gate-tested with no external surface. The selftest (CHECK_unit) imports .veldo/lessons.py and drives add and relevant over a crafted temporary store, asserting a matching lesson is returned, an unrelated path lesson and a tag lesson are EXCLUDED from a path-only context, an empty store returns [], a context that matches nothing returns [], most-recent-first ordering holds across two matches, and every malformed lesson (unknown category, empty text, missing text, two-key scope, non-dict scope, empty scope value, unknown scope key) is rejected as a named LessonError and not stored. The unrelated-excluded assertions fail if relevant() were mutated to return every lesson, so the filter cannot rubber-stamp.
   - id: AC6
-    text: The deliverable is generic (zero company, product, or person names and
-      zero absolute host paths in the module, the skill edit, the capabilities
-      entries, and this spec beyond the standard owner field) and hygienic (ASCII
-      only, no em or en dash, no double hyphen). The specs index regenerates to
-      include this spec, and the full gate (lint, unit, generated, docs, template
-      sync, secret scan, contract validation) stays green with every prior
-      selftest case still passing.
+    text: The deliverable is generic (zero company, product, or person names and zero absolute host paths in the module, the skill edit, the capabilities entries, and this spec beyond the standard owner field) and hygienic (ASCII only, no em or en dash, no double hyphen). The specs index regenerates to include this spec, and the full gate (lint, unit, generated, docs, template sync, secret scan, contract validation) stays green with every prior selftest case still passing.
 rollback: git revert; X3 is additive - a stdlib module .veldo/lessons.py, its
   seeded lessons.jsonl, a selftest block, two capabilities entries in both
   manifest copies, a review-skill paragraph, and this spec. It touches no

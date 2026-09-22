@@ -14,49 +14,17 @@ protected_paths: []
 depends_on: [WARP-0903, WARP-0905]
 acceptance_criteria:
   - id: AC1
-    text: In-session resume is the DEFAULT. veldo fleet runs the elastic control loop with the in-session
-      resume-waiter (WARP-0903 InSessionWaiter) wired by default, so within a living session a fleet that
-      has hit every account's budget WAITS until the earliest account reset (the governor's resume time)
-      and then RE-CHECKS the desired count before spawning - it never resumes straight into the limit and
-      it spawns NOTHING detached. This path creates no timer and no background process. It is gate-tested
-      through the injected sleep/clock so the gate never actually sleeps.
+    text: In-session resume is the DEFAULT. veldo fleet runs the elastic control loop with the in-session resume-waiter (WARP-0903 InSessionWaiter) wired by default, so within a living session a fleet that has hit every account's budget WAITS until the earliest account reset (the governor's resume time) and then RE-CHECKS the desired count before spawning - it never resumes straight into the limit and it spawns NOTHING detached. This path creates no timer and no background process. It is gate-tested through the injected sleep/clock so the gate never actually sleeps.
   - id: AC2
-    text: The external supervisor is OPT-IN and OFF BY DEFAULT. A supervisor (.veldo/supervisor.py) can
-      arrange for a fresh fleet session to be launched at the account reset time via a user systemd timer,
-      but nothing is scheduled, installed, or launched unless the user EXPLICITLY runs veldo supervisor
-      install. With no such action, VELDO behaves exactly as AC1 (in-session only) and no supervisor
-      artifact exists on the system. The default is never the external mechanism.
+    text: The external supervisor is OPT-IN and OFF BY DEFAULT. A supervisor (.veldo/supervisor.py) can arrange for a fresh fleet session to be launched at the account reset time via a user systemd timer, but nothing is scheduled, installed, or launched unless the user EXPLICITLY runs veldo supervisor install. With no such action, VELDO behaves exactly as AC1 (in-session only) and no supervisor artifact exists on the system. The default is never the external mechanism.
   - id: AC3
-    text: The external supervisor is the RIGHT architecture, visible, and removable. veldo supervisor
-      install generates a standard systemd --user timer plus service unit (the run time computed from the
-      governor's resume time or a declared schedule), prints exactly what it created, and is idempotent;
-      veldo supervisor status reports the timer state; veldo supervisor uninstall removes it cleanly. It is a
-      user systemd timer a person can inspect with systemctl --user - NOT a system crontab, NOT a resident
-      daemon, NOT a lock-refresher, NOT a headless polling loop. The unit generation, install, status,
-      uninstall, and reset-time computation are mechanical and gate-tested over a temporary XDG dir and a
-      FAKE systemctl; the gate NEVER touches the real user systemd and NEVER launches a session.
+    text: The external supervisor is the RIGHT architecture, visible, and removable. veldo supervisor install generates a standard systemd --user timer plus service unit (the run time computed from the governor's resume time or a declared schedule), prints exactly what it created, and is idempotent; veldo supervisor status reports the timer state; veldo supervisor uninstall removes it cleanly. It is a user systemd timer a person can inspect with systemctl --user - NOT a system crontab, NOT a resident daemon, NOT a lock-refresher, NOT a headless polling loop. The unit generation, install, status, uninstall, and reset-time computation are mechanical and gate-tested over a temporary XDG dir and a FAKE systemctl; the gate NEVER touches the real user systemd and NEVER launches a session.
   - id: AC4
-    text: The session-launch primitive is a fail-loud reference seam. Actually starting a Claude Code
-      fleet session is a DELEGATED reference seam that fails loud if invoked without a real launcher wired
-      (the same honesty shape as VELDO's other reference-wired capabilities); VELDO generates the timer and
-      the documented launch command but does not itself spawn a session in the gate, on the default path,
-      or as a side effect of install. No detached process is created by default, by the gate, or by the
-      in-session path - the only thing the opt-in path creates is an inert, inspectable systemd user unit
-      that the OS scheduler runs at the reset time.
+    text: The session-launch primitive is a fail-loud reference seam. Actually starting a Claude Code fleet session is a DELEGATED reference seam that fails loud if invoked without a real launcher wired (the same honesty shape as VELDO's other reference-wired capabilities); VELDO generates the timer and the documented launch command but does not itself spawn a session in the gate, on the default path, or as a side effect of install. No detached process is created by default, by the gate, or by the in-session path - the only thing the opt-in path creates is an inert, inspectable systemd user unit that the OS scheduler runs at the reset time.
   - id: AC5
-    text: Shipped in the engine, honest, and documented. .veldo/supervisor.py ships in the canonical engine
-      (engine/.veldo/) and every pack (re-synced byte-identical, content and mode, drift empty
-      for all seven); the new bin/veldo supervisor subcommand ships identically across the engine and packs
-      (byte-identical, 100755); the new capability entries are honest and NOT marked repo-only because they
-      ship (the in-session resume and the timer management are mechanical, the session-launch is reference)
-      and they pass the WARP-0906 home-resolution honesty check; the runbook documents the in-session
-      default AND the opt-in external supervisor (that it is off by default, how to enable, inspect, and
-      remove it, and the no-detached-process boundary). Both capabilities.yaml copies stay byte-identical.
+    text: Shipped in the engine, honest, and documented. .veldo/supervisor.py ships in the canonical engine (engine/.veldo/) and every pack (re-synced byte-identical, content and mode, drift empty for all seven); the new bin/veldo supervisor subcommand ships identically across the engine and packs (byte-identical, 100755); the new capability entries are honest and NOT marked repo-only because they ship (the in-session resume and the timer management are mechanical, the session-launch is reference) and they pass the WARP-0906 home-resolution honesty check; the runbook documents the in-session default AND the opt-in external supervisor (that it is off by default, how to enable, inspect, and remove it, and the no-detached-process boundary). Both capabilities.yaml copies stay byte-identical.
   - id: AC6
-    text: The full gate is GREEN (selftest including the supervisor tests, the capabilities-honesty check,
-      the pack drift check, and cross-pack conformance across all seven packs); NO protected path is edited
-      (scripts/verify.sh, scripts/veldo-guard.sh, .veldo/policy.yaml, .veldo/policy_check.py or their
-      engine twins); the index is regenerated; RULE #1 is clean; and the veldo name is unchanged.
+    text: "The full gate is GREEN (selftest including the supervisor tests, the capabilities-honesty check, the pack drift check, and cross-pack conformance across all seven packs); NO protected path is edited (scripts/verify.sh, scripts/veldo-guard.sh, .veldo/policy.yaml, .veldo/policy_check.py or their engine twins); the index is regenerated; RULE #1 is clean; and the veldo name is unchanged."
 required_evidence: [unit]
 rollback: git revert; additive - a new .veldo/supervisor.py (shipped to engine + re-synced to the
   packs), a bin/veldo supervisor subcommand (re-shipped), honest capability entries, runbook prose, and

@@ -502,12 +502,14 @@ def render_criteria_draft(incident, signature, recurrence_ids):
         "failure_signature: %s" % signature,
         "recurrence_of: %s" % _recurrence_scalar(recurrence_ids),
         "missing_specification: %s" % ("true" if missing_specification(recurrence_ids) else "false"),
-        "acceptance_criterion: the affected behavior holds again and stays held:",
+        "acceptance_criterion: >-",
+        "  the affected behavior holds again and stays held:",
         "  %s" % _one_line(incident.get("affected_behavior")),
-        "regression_criterion: a regression reproduces the recorded failure signal and FAILS before the",
+        "regression_criterion: >-",
+        "  a regression reproduces the recorded failure signal and FAILS before the",
         "  fix and PASSES after it:",
         "  %s" % _one_line(incident.get("signal")),
-        "review_lane: %s" % REVIEW_LANE_GUIDANCE,
+        "review_lane: %s" % _V._yamlish.quote(REVIEW_LANE_GUIDANCE),
     ]) + "\n"
 
 def _draft_review_block(review):
@@ -597,7 +599,7 @@ def render_runbook_draft(incident, remedy, signature, recurrence_ids, system=Non
         "risk_class: %s" % _draft_risk_class(remedy, reversibility),
         "reversibility:",
         "  class: %s" % reversibility["class"],
-        "  analysis: %s" % reversibility["analysis"],
+        "  analysis: %s" % _V._yamlish.quote(reversibility["analysis"]),
         "  data_mutating: %s" % reversibility["data_mutating"],
     ]
     specs = _draft_parameter_specs(remedy)
@@ -605,11 +607,11 @@ def render_runbook_draft(incident, remedy, signature, recurrence_ids, system=Non
     for spec in specs:
         lines.extend(["  - name: %s" % spec["name"], "    type: %s" % spec["type"],
                       "    required: %s" % spec["required"]])
-    lines.append("rollback: %s" % (_one_line(remedy.get("rollback")) if _is_str(remedy.get("rollback")) else
+    lines.append("rollback: %s" % _V._yamlish.quote(_one_line(remedy.get("rollback")) if _is_str(remedy.get("rollback")) else
                  "unrecorded: the remedy recorded no rollback plan, so a human supplies one before promotion"))
     lines.extend(["canary:", "  supported: %s" % canary["supported"]])
     if "shape" in canary:
-        lines.append("  shape: %s" % canary["shape"])
+        lines.append("  shape: %s" % _V._yamlish.quote(canary["shape"]))
     lines.extend([
         "review:",
         "  status: %s" % review_block["status"],
@@ -621,7 +623,7 @@ def render_runbook_draft(incident, remedy, signature, recurrence_ids, system=Non
         "  recurrence_of: %s" % _recurrence_scalar(recurrence_ids),
         "  drafted_at: %s" % _drafted_at(incident),
         "  drafted_by: %s (machine draft; only a human reviews and promotes it)" % SETTLED_BY,
-        "  review_lane: %s" % REVIEW_LANE_GUIDANCE,
+        "  review_lane: %s" % _V._yamlish.quote(REVIEW_LANE_GUIDANCE),
     ])
     return "\n".join(lines) + "\n"
 

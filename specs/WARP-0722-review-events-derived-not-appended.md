@@ -4,22 +4,7 @@ id: WARP-0722
 title: The review loop is invisible - derive its events from the verdicts that already exist,
   in code that already runs, and delete the instruction that asked a human to remember
 status: ready
-risk: high - and the tier is DERIVED rather than chosen. The ready gate raised it from the
-  standard I first declared, because the footprint spans two contract areas, `enforcement`
-  (scripts/verify.sh, which must call the reconciler for it to be unskippable) and `metrics`
-  (.veldo/events.py, which owns the emitter). That crossing is real rather than an artifact of a
-  loose footprint: an emitter nobody calls is the failure this item exists to fix, so the call
-  site has to live in the stage that always runs. Recorded because WARP-0711 shipped with a risk
-  sentence that misdescribed its own tier, and a floor that is asserted rather than explained is
-  the same defect one layer down. THE SUBSTANTIVE RISKS: an emitter that writes on every gate run
-  can grow the event log without bound, and because the log is APPEND-ONLY a reconciliation that
-  appends a wrong key can never be withdrawn, only superseded. Both are addressed in AC2 rather
-  than hoped away. CORRECTED DURING THE BUILD: this front matter first said it touches no
-  protected path, which was FALSE - `scripts/verify.sh` and its template copy carry a high floor
-  in `.veldo/policy.yaml`, and the stage has to go there, so the push needs a commit-bound
-  approval naming both, as WARP-1102 recorded when it added the shape-gate stage. It touches no
-  frozen core module. A revert returns the method to having no review observability, which is
-  where it is today
+risk: "high - and the tier is DERIVED rather than chosen. The ready gate raised it from the standard I first declared, because the footprint spans two contract areas, `enforcement` (scripts/verify.sh, which must call the reconciler for it to be unskippable) and `metrics` (.veldo/events.py, which owns the emitter). That crossing is real rather than an artifact of a loose footprint: an emitter nobody calls is the failure this item exists to fix, so the call site has to live in the stage that always runs. Recorded because WARP-0711 shipped with a risk sentence that misdescribed its own tier, and a floor that is asserted rather than explained is the same defect one layer down. THE SUBSTANTIVE RISKS: an emitter that writes on every gate run can grow the event log without bound, and because the log is APPEND-ONLY a reconciliation that appends a wrong key can never be withdrawn, only superseded. Both are addressed in AC2 rather than hoped away. CORRECTED DURING THE BUILD: this front matter first said it touches no protected path, which was FALSE - `scripts/verify.sh` and its template copy carry a high floor in `.veldo/policy.yaml`, and the stage has to go there, so the push needs a commit-bound approval naming both, as WARP-1102 recorded when it added the shape-gate stage. It touches no frozen core module. A revert returns the method to having no review observability, which is where it is today"
 owner: dmitry
 human_approval: required
 lane: standalone

@@ -5,14 +5,7 @@ title: The approval surface cannot recognise anyone - declare the approver regis
   protected path, make the tracker group a reconciliation check that fails loudly on divergence, and refuse
   rather than degrade when the declaration cannot be read
 status: draft
-risk: critical - this declares WHO MAY APPROVE. It is the identity half of the authorization surface, and the
-  policy block (VEL-3) is inert without it, so together they are the switch that decides who can authorize
-  work. Two failure directions, both serious: too permissive (a malformed declaration read as a wider approver
-  set) and silently empty (an unreadable declaration treated as zero approvers, which either authorizes nothing
-  and looks like a bug, or worse, is conflated with a declared-empty set). It also REGISTERS A NEW PROTECTED
-  PATH, which is itself a policy.yaml edit and therefore a protected-path act requiring a commit-bound approval
-  record. Critical rather than high because nothing in the repository currently populates this registry at all,
-  so this item creates the first thing that can make an approval SUCCEED
+risk: "critical - this declares WHO MAY APPROVE. It is the identity half of the authorization surface, and the policy block (VEL-3) is inert without it, so together they are the switch that decides who can authorize work. Two failure directions, both serious: too permissive (a malformed declaration read as a wider approver set) and silently empty (an unreadable declaration treated as zero approvers, which either authorizes nothing and looks like a bug, or worse, is conflated with a declared-empty set). It also REGISTERS A NEW PROTECTED PATH, which is itself a policy.yaml edit and therefore a protected-path act requiring a commit-bound approval record. Critical rather than high because nothing in the repository currently populates this registry at all, so this item creates the first thing that can make an approval SUCCEED"
 owner: dmitry
 human_approval: required
 approval_record: >
@@ -40,15 +33,8 @@ protected_paths:
   - .veldo/policy.yaml
 behavior_bearing: true
 observability:
-  logs: A refusal names WHICH condition produced it - the declaration absent, unreadable, malformed, or an
-    identity absent from it - so an operator can tell "nobody may approve" from "we could not tell who may
-    approve" without reading the source. The reconciliation check prints both sets and their symmetric
-    difference when they diverge, so the fix is obvious from the failure.
-  error_taxonomy: The names stay closed and gain three: REGISTRY_ABSENT (no declaration exists, which is
-    distinct from an empty one), REGISTRY_UNREADABLE (a declaration exists but cannot be read or parsed, which
-    must never be read as empty), and REGISTRY_RECONCILE_DIVERGED (the declared set and the tracker group
-    disagree). The pre-existing UNKNOWN_APPROVER keeps its name and meaning for an identity absent from a
-    readable declaration.
+  logs: A refusal names WHICH condition produced it - the declaration absent, unreadable, malformed, or an identity absent from it - so an operator can tell "nobody may approve" from "we could not tell who may approve" without reading the source. The reconciliation check prints both sets and their symmetric difference when they diverge, so the fix is obvious from the failure.
+  error_taxonomy: "The names stay closed and gain three: REGISTRY_ABSENT (no declaration exists, which is distinct from an empty one), REGISTRY_UNREADABLE (a declaration exists but cannot be read or parsed, which must never be read as empty), and REGISTRY_RECONCILE_DIVERGED (the declared set and the tracker group disagree). The pre-existing UNKNOWN_APPROVER keeps its name and meaning for an identity absent from a readable declaration."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

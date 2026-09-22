@@ -21,6 +21,11 @@ rewritten; continuation after a terminal state is a NEW linked entity (R05, R11,
 """
 import importlib.util
 import re
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -572,13 +577,11 @@ def historical_aliases(root=None):
         for p in sorted((base / d).glob("*.md")):
             if p.name.startswith("TEMPLATE") or p.name == "index.md":
                 continue
-            try:
-                head = p.read_text().split("\n---", 1)[0]
-            except (OSError, UnicodeDecodeError):
-                continue
-            m = re.search(r"(?m)^id:\s*(\S+)\s*$", head)
-            if m:
-                out.add(m.group(1))
+            fm = _Y.front_matter(p.read_text(), str(p))
+            if fm is None:
+                raise ValueError(f"{p}: no YAML front matter")
+            if fm.get("id"):
+                out.add(fm["id"])
     return out
 
 

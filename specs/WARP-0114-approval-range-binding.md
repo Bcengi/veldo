@@ -3,7 +3,7 @@ schema: veldo.spec/v1
 id: WARP-0114
 title: Approval binding must be satisfiable - bind to the push range, not HEAD
 status: shipped
-risk: high    # changes .veldo/policy_check.py, protected as of WARP-0113
+risk: high
 owner: dmitry
 human_approval: required
 lane: standalone

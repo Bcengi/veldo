@@ -72,6 +72,12 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
+
 ROOT = Path(__file__).resolve().parent.parent
 
 # The four states. Strings, because they are printed and read by people.
@@ -366,18 +372,10 @@ def ready_specs(root=None):
     for p in sorted(sdir.glob("*.md")):
         if p.name.startswith("TEMPLATE") or p.name == "index.md":
             continue
-        sid, status = "", ""
-        try:
-            text = p.read_text(errors="replace")
-        except OSError:
-            continue
-        for line in text.splitlines()[:60]:
-            if line.startswith("id:") and not sid:
-                sid = line.split(":", 1)[1].strip()
-            elif line.startswith("status:") and not status:
-                status = line.split(":", 1)[1].strip().split(" ")[0].strip()
-            if line.strip() == "---" and sid:
-                break
+        fm = _Y.front_matter(p.read_text(), str(p))
+        if fm is None:
+            raise ValueError(f"{p}: no YAML front matter")
+        sid, status = fm.get("id"), fm.get("status", "")
         if sid:
             out[sid] = {"status": status, "path": str(p.relative_to(base))}
     return out

@@ -13,33 +13,15 @@ plan_revision: 2
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A claim lives as a file under the git common dir at veldo/claims/<unit-id>.json
-      (shared across worktrees, outside git history), carrying the holder worker id, its
-      requirements, and a heartbeat. The claims root resolves from git with a VELDO_RUNS_ROOT
-      style override for tests. A unit id is sanitized so it is safe as a filename.
+    text: A claim lives as a file under the git common dir at veldo/claims/<unit-id>.json (shared across worktrees, outside git history), carrying the holder worker id, its requirements, and a heartbeat. The claims root resolves from git with a VELDO_RUNS_ROOT style override for tests. A unit id is sanitized so it is safe as a filename.
   - id: AC2
-    text: Claiming a currently unclaimed unit is ATOMIC under real concurrency - the claim
-      is published by writing the full record to a temp file and os.link-ing it onto the
-      target (link fails if the target exists), so the target is never visible half-written
-      and two threads racing for the same fresh unit result in exactly one winner, the
-      other told it is already claimed. A live claim (fresh heartbeat) held by another
-      worker is never stolen.
+    text: Claiming a currently unclaimed unit is ATOMIC under real concurrency - the claim is published by writing the full record to a temp file and os.link-ing it onto the target (link fails if the target exists), so the target is never visible half-written and two threads racing for the same fresh unit result in exactly one winner, the other told it is already claimed. A live claim (fresh heartbeat) held by another worker is never stolen.
   - id: AC3
-    text: A claim is granted only when the unit's requirements are a subset of the worker's
-      capabilities; a worker missing any required capability is refused with a capability
-      reason and takes nothing. Capabilities and requirements are free-form string tags, not
-      a hardcoded OS or machine set.
+    text: A claim is granted only when the unit's requirements are a subset of the worker's capabilities; a worker missing any required capability is refused with a capability reason and takes nothing. Capabilities and requirements are free-form string tags, not a hardcoded OS or machine set.
   - id: AC4
-    text: A claim whose heartbeat is older than the staleness threshold is stale (the holder
-      is presumed dead) and is reclaimable by another capable worker; heartbeat refreshes it;
-      release frees it; the same worker re-claiming its own unit is allowed (idempotent).
+    text: A claim whose heartbeat is older than the staleness threshold is stale (the holder is presumed dead) and is reclaimable by another capable worker; heartbeat refreshes it; release frees it; the same worker re-claiming its own unit is allowed (idempotent).
   - id: AC5
-    text: A selftest drives the ledger over a temporary claims root - a CONCURRENT threaded
-      race on one fresh unit grants exactly one winner (many threads, repeated), capability
-      mismatch is refused while a match is granted, a live claim is not stealable, a stale
-      claim is reclaimed, heartbeat and release behave - and is non-tautological: a mutation
-      that skips the capability check, or that reverts the publish so the target is visible
-      before it is fully written, makes an assertion fail under the concurrent race.
+    text: "A selftest drives the ledger over a temporary claims root - a CONCURRENT threaded race on one fresh unit grants exactly one winner (many threads, repeated), capability mismatch is refused while a match is granted, a live claim is not stealable, a stale claim is reclaimed, heartbeat and release behave - and is non-tautological: a mutation that skips the capability check, or that reverts the publish so the target is visible before it is fully written, makes an assertion fail under the concurrent race."
 required_evidence: [unit]
 rollback: git revert; additive - a new .veldo/claim.py, a selftest block, one capability entry
   (both copies), the WARP-0701 spec, and the PLAN-0007 plan; no protected path; claims live

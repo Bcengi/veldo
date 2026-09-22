@@ -19,4 +19,4 @@ structural_weight_tenths: 190
 declared_scale: 25000
 implied_scale: 78947
 scale_error_pct: -68
-note: EXAMPLE RECORD for the fictional spec of the committed estimate example, showing the whole loop: the estimate as committed, the actual as recorded, the variance measured against the bound it missed (never against a midpoint this schema refuses to have), and the structural weight and both scales, so a refit can tell a wrong SCALE from a wrong STRUCTURE and correct only the one it has evidence about
+note: "EXAMPLE RECORD for the fictional spec of the committed estimate example, showing the whole loop: the estimate as committed, the actual as recorded, the variance measured against the bound it missed (never against a midpoint this schema refuses to have), and the structural weight and both scales, so a refit can tell a wrong SCALE from a wrong STRUCTURE and correct only the one it has evidence about"

@@ -33,14 +33,8 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: Every refusal and every skip is named through the adapter's error class - an unreachable issue, a
-    response that is not the expected shape, an incomplete pagination walk, a non-monotonic entry order,
-    and the count of non-status items deliberately skipped - so a reconcile that blocks is diagnosable from
-    the reader's own output without reading the source.
-  error_taxonomy: The failure names are closed: ISSUE_NOT_FOUND, CHANGELOG_UNREADABLE (present but not the
-    expected shape), CHANGELOG_INCOMPLETE (the pagination walk did not account for every entry the tracker
-    reported), and CHANGELOG_UNORDERED (the entries are not monotonic in recorded time). None of these ever
-    degrades to an empty list.
+  logs: Every refusal and every skip is named through the adapter's error class - an unreachable issue, a response that is not the expected shape, an incomplete pagination walk, a non-monotonic entry order, and the count of non-status items deliberately skipped - so a reconcile that blocks is diagnosable from the reader's own output without reading the source.
+  error_taxonomy: "The failure names are closed: ISSUE_NOT_FOUND, CHANGELOG_UNREADABLE (present but not the expected shape), CHANGELOG_INCOMPLETE (the pagination walk did not account for every entry the tracker reported), and CHANGELOG_UNORDERED (the entries are not monotonic in recorded time). None of these ever degrades to an empty list."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

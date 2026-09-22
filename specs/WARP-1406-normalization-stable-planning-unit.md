@@ -28,23 +28,9 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: Every withheld number says why, in its own row, and the reasons are four distinct strings
-    rather than one silence: nothing recorded, recorded but not in tokens (naming the field that WAS
-    recorded), recorded and every figure zero, and the era refusals. The peg line says which basis is
-    in force and names the change it is pegged to, or says it is standing down and why. A row whose
-    non-token spend sits in another era carries a NOTE saying so. A ledger record that cannot be used
-    is refused by name through validate.fail, naming the file and the field. In a tree that carries
-    this module without its sibling organs, the read verbs print one line naming the absent organ and
-    stand down instead of raising.
-  metrics: The roll-up carries both units and its own coverage: pointed, unpointed, points_total from
-    the UNROUNDED ratios, raw tokens PER ERA, the tokens that sit in no readable era, a single
-    tokens_total only when every raw token in the view is in one era, the eras present and the eras
-    declared. A measured change below the display resolution prints `<0.001 pt` rather than a zero.
-  error_taxonomy: Three named refusal surfaces, each with one cause per message: validate_shift over
-    a capability-shift record, validate_peg over a declared peg, and load_ledger over a ledger
-    directory (outside the parser subset, fails validation, duplicate id, two shifts at one instant).
-    record_shift raises ValueError with the same messages, and an absent sibling organ raises
-    OrganAbsent naming the file, which the read verbs report and the write verb refuses on.
+  logs: "Every withheld number says why, in its own row, and the reasons are four distinct strings rather than one silence: nothing recorded, recorded but not in tokens (naming the field that WAS recorded), recorded and every figure zero, and the era refusals. The peg line says which basis is in force and names the change it is pegged to, or says it is standing down and why. A row whose non-token spend sits in another era carries a NOTE saying so. A ledger record that cannot be used is refused by name through validate.fail, naming the file and the field. In a tree that carries this module without its sibling organs, the read verbs print one line naming the absent organ and stand down instead of raising."
+  metrics: "The roll-up carries both units and its own coverage: pointed, unpointed, points_total from the UNROUNDED ratios, raw tokens PER ERA, the tokens that sit in no readable era, a single tokens_total only when every raw token in the view is in one era, the eras present and the eras declared. A measured change below the display resolution prints `<0.001 pt` rather than a zero."
+  error_taxonomy: "Three named refusal surfaces, each with one cause per message: validate_shift over a capability-shift record, validate_peg over a declared peg, and load_ledger over a ledger directory (outside the parser subset, fails validation, duplicate id, two shifts at one instant). record_shift raises ValueError with the same messages, and an absent sibling organ raises OrganAbsent naming the file, which the read verbs report and the write verb refuses on."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

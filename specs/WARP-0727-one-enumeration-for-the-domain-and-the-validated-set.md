@@ -5,14 +5,7 @@ title: An ordinary gate run appends a forged verdict with no flags, because the 
   validated set are computed by two mechanisms whose globs disagree - derive both from ONE enumeration and
   assert their equality in both directions over the real corpus
 status: shipped
-risk: critical - this is the guard that decides whether an agent can mark its own homework, and the route
-  measured here needs no flags, no attacker directory and no second repository: a verdict-shaped file
-  committed one directory deeper than the corpus shape is inside the entitlement domain and invisible to the
-  contract validator, so `validate.py all` exits 0 and the very next stage of the same gate run appends a
-  forged PASS for it. The danger in the permissive direction is live and unwithdrawable, because the log is
-  append-only. The danger in the strict direction is WORSE than the defect: a rule drawn too tight stops the
-  projection recording GENUINE verdicts, and a review log that silently stops recording is indistinguishable
-  from a repository where nobody reviewed anything
+risk: "critical - this is the guard that decides whether an agent can mark its own homework, and the route measured here needs no flags, no attacker directory and no second repository: a verdict-shaped file committed one directory deeper than the corpus shape is inside the entitlement domain and invisible to the contract validator, so `validate.py all` exits 0 and the very next stage of the same gate run appends a forged PASS for it. The danger in the permissive direction is live and unwithdrawable, because the log is append-only. The danger in the strict direction is WORSE than the defect: a rule drawn too tight stops the projection recording GENUINE verdicts, and a review log that silently stops recording is indistinguishable from a repository where nobody reviewed anything"
 owner: dmitry
 human_approval: required
 approved_by: dmitry

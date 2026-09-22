@@ -6,14 +6,7 @@ title: The codified live provisioner cannot run at all - an instance attribute p
   because an offline fake that defines the same private names as the real adapter can hide a name
   collision forever (hardening of the PLAN-0016 live edge, found on the first real execution)
 status: shipped
-risk: standard - a rename of one private method and its three call sites, plus a new structural check.
-  It touches no protected path, no safety core, no contract and no gate stage; it changes no behavior any
-  passing test asserts, because the code path it repairs currently raises TypeError on every call and is
-  therefore unreachable in any green state. The footprint tier is standard: a single declared area,
-  tracker, via .veldo/tracker_jira_live.py, with .veldo/tracker_intake.py read for the constructor and NOT
-  edited. It is worth reviewing carefully for one reason only: the FIX is trivial and the CHECK is the
-  actual deliverable, so a reviewer should attack whether the check genuinely catches the class rather
-  than only this instance
+risk: "standard - a rename of one private method and its three call sites, plus a new structural check. It touches no protected path, no safety core, no contract and no gate stage; it changes no behavior any passing test asserts, because the code path it repairs currently raises TypeError on every call and is therefore unreachable in any green state. The footprint tier is standard: a single declared area, tracker, via .veldo/tracker_jira_live.py, with .veldo/tracker_intake.py read for the constructor and NOT edited. It is worth reviewing carefully for one reason only: the FIX is trivial and the CHECK is the actual deliverable, so a reviewer should attack whether the check genuinely catches the class rather than only this instance"
 owner: dmitry
 human_approval: not_required
 lane: standalone

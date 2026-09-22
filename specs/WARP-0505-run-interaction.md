@@ -14,40 +14,17 @@ protected_paths: []
 required_evidence: [unit]
 acceptance_criteria:
   - id: AC1
-    text: The run registry gains inbox primitives - post_command(run_id, kind, payload)
-      writes an atomic command file (temp file plus rename) to commands/inbox/ with a
-      kind of answer, steer, or abort and rejects an unknown kind; read_inbox returns the
-      pending commands oldest-first; and ack_command moves a command to commands/acked/
-      so it is processed exactly once. All are stdlib and honor the runs-root override.
+    text: The run registry gains inbox primitives - post_command(run_id, kind, payload) writes an atomic command file (temp file plus rename) to commands/inbox/ with a kind of answer, steer, or abort and rejects an unknown kind; read_inbox returns the pending commands oldest-first; and ack_command moves a command to commands/acked/ so it is processed exactly once. All are stdlib and honor the runs-root override.
   - id: AC2
-    text: A running build acts on its inbox at SAFE CHECKPOINTS only - between loop steps
-      and while blocked waiting on a human - through a checkpoint handler that drains the
-      inbox and acts, acking each command exactly once so a drained command is never
-      reprocessed on a later checkpoint.
+    text: A running build acts on its inbox at SAFE CHECKPOINTS only - between loop steps and while blocked waiting on a human - through a checkpoint handler that drains the inbox and acts, acking each command exactly once so a drained command is never reprocessed on a later checkpoint.
   - id: AC3
-    text: An answer to a blocked run records the answer on the run and RESUMES it
-      (runlog.resume); an abort makes the owning loop stop and finish the run aborted at
-      the next checkpoint (never mid-step); a steer is recorded and surfaced to the agent
-      for its next turn and is treated as neither an answer nor an abort (it does not
-      resume or abort). The interaction is COOPERATIVE only - the run process that owns the
-      build acts; nothing external signals or preempts a process.
+    text: An answer to a blocked run records the answer on the run and RESUMES it (runlog.resume); an abort makes the owning loop stop and finish the run aborted at the next checkpoint (never mid-step); a steer is recorded and surfaced to the agent for its next turn and is treated as neither an answer nor an abort (it does not resume or abort). The interaction is COOPERATIVE only - the run process that owns the build acts; nothing external signals or preempts a process.
   - id: AC4
-    text: The high-volume interaction progress (run.command) stays live-only in the run
-      folder and is never added to the committed events vocabulary; resume rides the
-      existing run.resumed milestone and abort the existing run.aborted milestone.
+    text: The high-volume interaction progress (run.command) stays live-only in the run folder and is never added to the committed events vocabulary; resume rides the existing run.resumed milestone and abort the existing run.aborted milestone.
   - id: AC5
-    text: A documented PROCEDURE (in the run skill) requires that an answer which changes a
-      requirement or a durable decision be committed to the spec (or an ADR) before the
-      build is accepted, so a chat answer never becomes hidden engineering truth. This is
-      agent-instructed, not code-enforced, and is called out as such.
+    text: A documented PROCEDURE (in the run skill) requires that an answer which changes a requirement or a durable decision be committed to the spec (or an ADR) before the build is accepted, so a chat answer never becomes hidden engineering truth. This is agent-instructed, not code-enforced, and is called out as such.
   - id: AC6
-    text: A selftest drives the cooperative handling over a temporary runs root with a FAKE
-      checkpoint loop (no live agent or backend) - posting an answer to a blocked run
-      resumes it and the loop completes and the command is ack'd once (not reprocessed);
-      posting an abort finishes the run aborted at the next checkpoint and stops with no
-      step run; posting a steer is surfaced without resuming or aborting - and is
-      non-tautological: a mutation that ignores the inbox (never resumes on an answer) or
-      never aborts makes an assertion fail.
+    text: "A selftest drives the cooperative handling over a temporary runs root with a FAKE checkpoint loop (no live agent or backend) - posting an answer to a blocked run resumes it and the loop completes and the command is ack'd once (not reprocessed); posting an abort finishes the run aborted at the next checkpoint and stops with no step run; posting a steer is surfaced without resuming or aborting - and is non-tautological: a mutation that ignores the inbox (never resumes on an answer) or never aborts makes an assertion fail."
 rollback: git revert; additive - inbox primitives (post_command, read_inbox, ack_command)
   added to .veldo/runlog.py, a cooperative handler and checkpoint driver added to
   .veldo/executor.py, a run_interaction entry added to both capabilities.yaml copies, a

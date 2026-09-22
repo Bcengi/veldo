@@ -42,6 +42,12 @@ import json
 import sys
 from pathlib import Path
 
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
+
 _HERE = Path(__file__).resolve().parent
 
 _trspec = importlib.util.spec_from_file_location("veldo_tracker", _HERE / "tracker.py")
@@ -140,8 +146,8 @@ def _fm_safe(v):
 
 def _fm_scalar(v):
     if isinstance(v, list):
-        return "[" + ", ".join(_fm_safe(str(x)) for x in v) + "]"
-    return _fm_safe(str(v))
+        return "[" + ", ".join(_Y.quote(_fm_safe(str(x))) for x in v) + "]"
+    return str(v) if isinstance(v, int) else _Y.quote(_fm_safe(str(v)))
 
 
 def render_spec_markdown(draft):
@@ -155,11 +161,11 @@ def render_spec_markdown(draft):
             lines.append("acceptance_criteria:")
             for ac in v:
                 lines.append("  - id: %s" % _fm_safe(ac["id"]))
-                lines.append("    text: %s" % _fm_safe(ac["text"]))
+                lines.append("    text: %s" % _fm_scalar(ac["text"]))
         elif k == "intake_source":
             lines.append("intake_source:")
             for sk, sv in v.items():
-                lines.append("  %s: %s" % (_fm_safe(sk), _fm_safe(str(sv))))
+                lines.append("  %s: %s" % (_fm_safe(sk), _fm_scalar(sv)))
         else:
             lines.append("%s: %s" % (k, _fm_scalar(v)))
     lines.append("---")
@@ -359,49 +365,49 @@ def render_plan_markdown(draft):
     fm = draft["front_matter"]
 
     def _inline(seq):
-        return "[" + ", ".join(_fm_safe(str(x)) for x in seq) + "]"
+        return "[" + ", ".join(_fm_scalar(str(x)) for x in seq) + "]"
 
     lines = ["---"]
     for k, v in fm.items():
         if k == "intake_source":
             lines.append("intake_source:")
             for sk, sv in v.items():
-                lines.append("  %s: %s" % (_fm_safe(sk), _fm_safe(str(sv))))
+                lines.append("  %s: %s" % (_fm_scalar(sk), _fm_scalar(sv)))
         elif k == "outcomes":
             lines.append("outcomes:")
             for o in v:
-                lines.append("  - id: %s" % _fm_safe(o["id"]))
-                lines.append("    becomes_true: %s" % _fm_safe(o["becomes_true"]))
-                lines.append("    measure: %s" % _fm_safe(o["measure"]))
+                lines.append("  - id: %s" % _fm_scalar(o["id"]))
+                lines.append("    becomes_true: %s" % _fm_scalar(o["becomes_true"]))
+                lines.append("    measure: %s" % _fm_scalar(o["measure"]))
         elif k == "non_goals":
             lines.append("non_goals:")
             for ng in v:
-                lines.append("  - id: %s" % _fm_safe(ng["id"]))
-                lines.append("    text: %s" % _fm_safe(ng["text"]))
+                lines.append("  - id: %s" % _fm_scalar(ng["id"]))
+                lines.append("    text: %s" % _fm_scalar(ng["text"]))
         elif k == "feature_tree":
             lines.append("feature_tree:")
             for ftr in v:
-                lines.append("  - id: %s" % _fm_safe(ftr["id"]))
-                lines.append("    title: %s" % _fm_safe(ftr["title"]))
+                lines.append("  - id: %s" % _fm_scalar(ftr["id"]))
+                lines.append("    title: %s" % _fm_scalar(ftr["title"]))
                 lines.append("    outcome_refs: %s" % _inline(ftr["outcome_refs"]))
         elif k == "work":
             lines.append("work:")
             for w in v:
-                lines.append("  - item: %s" % _fm_safe(w["item"]))
-                lines.append("    spec: %s" % _fm_safe(w["spec"]))
-                lines.append("    title: %s" % _fm_safe(w["title"]))
+                lines.append("  - item: %s" % _fm_scalar(w["item"]))
+                lines.append("    spec: %s" % _fm_scalar(w["spec"]))
+                lines.append("    title: %s" % _fm_scalar(w["title"]))
                 lines.append("    feature_refs: %s" % _inline(w["feature_refs"]))
                 lines.append("    depends_on: %s" % _inline(w["depends_on"]))
                 lines.append("    order: %d" % int(w["order"]))
         elif k == "release":
             lines.append("release:")
-            lines.append("  milestone: %s" % _fm_safe(v["milestone"]))
-            lines.append("  mode: %s" % _fm_safe(v["mode"]))
+            lines.append("  milestone: %s" % _fm_scalar(v["milestone"]))
+            lines.append("  mode: %s" % _fm_scalar(v["mode"]))
         elif k == "open_decisions":
             lines.append("open_decisions:")
             for d in v:
-                lines.append("  - id: %s" % _fm_safe(d["id"]))
-                lines.append("    text: %s" % _fm_safe(d["text"]))
+                lines.append("  - id: %s" % _fm_scalar(d["id"]))
+                lines.append("    text: %s" % _fm_scalar(d["text"]))
                 lines.append("    blocks: %s" % _inline(d["blocks"]))
         else:
             lines.append("%s: %s" % (k, _fm_scalar(v)))

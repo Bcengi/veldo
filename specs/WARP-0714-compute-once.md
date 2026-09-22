@@ -4,14 +4,7 @@ id: WARP-0714
 title: The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to
   read 9,096 - compute each derivation ONCE, with every optimized value asserted equal to the naive one
 status: ready
-risk: high - this changes the body of the GATE, and the failure mode is the worst available here: a suite that
-  runs faster because it proves LESS, while still printing green. Memoizing a parse, indexing a tree, caching a
-  read or hoisting a render each LOOK safe and each can silently change what an assertion observes. Two
-  specific ways it could manufacture a false green: a cached read serving pre-mutation bytes to a mutation
-  test, and a memoized tree served to an assertion that expected a freshly parsed one. Both are closed by
-  proof rather than by care - every optimized value is asserted EQUAL to the naive value, and the read cache
-  carries its own invalidation proof. No protected path, no runner, no engine module, no change to what any
-  assertion means
+risk: "high - this changes the body of the GATE, and the failure mode is the worst available here: a suite that runs faster because it proves LESS, while still printing green. Memoizing a parse, indexing a tree, caching a read or hoisting a render each LOOK safe and each can silently change what an assertion observes. Two specific ways it could manufacture a false green: a cached read serving pre-mutation bytes to a mutation test, and a memoized tree served to an assertion that expected a freshly parsed one. Both are closed by proof rather than by care - every optimized value is asserted EQUAL to the naive value, and the read cache carries its own invalidation proof. No protected path, no runner, no engine module, no change to what any assertion means"
 owner: dmitry
 human_approval: not_required
 lane: standalone

@@ -67,6 +67,12 @@ switching the engine on (the policy.yaml edit) remains a separate protected-path
 from pathlib import Path
 import json
 
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
+
 SCHEMA = "veldo.authorization/v1"
 
 # The impact FLAGS (veldo.request/v1) that additionally require the frozen two-key rule. data_mutating is
@@ -163,56 +169,21 @@ def _repo_root():
     return Path(__file__).resolve().parent.parent
 
 
-def _yamlish():
-    """The ONE front-matter parser (validate.parse_yamlish), loaded BY PATH from this engine copy's own
-    directory the way the engine loads its siblings (spec_from_file_location), so this module ships no
-    second parser and there is no import cycle. Called only when a policy block is physically present."""
-    import importlib.util
-    p = Path(__file__).resolve().parent / "validate.py"
-    spec = importlib.util.spec_from_file_location("veldo_validate_authz", p)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.parse_yamlish
-
-
-def _extract_block(text, key):
-    """The top-level block named `key` (its declaration line plus every following blank, comment, or
-    indented line, up to the next top-level key), or None when the block is absent. A cheap, self-contained
-    read so the INERT state (no block) never parses anything and never loads the parser."""
-    out, capturing = [], False
-    for raw in text.splitlines():
-        if not capturing:
-            if raw[:1] not in (" ", "\t", "#") and raw.split(":", 1)[0].strip() == key and ":" in raw:
-                capturing = True
-                out.append(raw)
-            continue
-        if raw.strip() and raw[:1] not in (" ", "\t", "#"):
-            break  # the next top-level key ends the block
-        out.append(raw)
-    return "\n".join(out) if capturing else None
-
-
 def load_policy(root=None, parse=None):
-    """The human_decisions approver policy, read from .veldo/policy.yaml (read-only, ROOT-relative, the way
-    policy_check.py reads the same file). Returns the parsed block (a mapping) or None when the file is
-    absent, the block is absent, or the block cannot be parsed - INERT / fail closed: with no block,
-    is_authorized authorizes NOTHING. The block (when present) is parsed with the ONE parser; a caller may
-    inject `parse` (validate.parse_yamlish) to avoid the lazy load."""
+    """Read the whole policy through the syntax boundary; absent block is inert."""
     base = Path(root) if root else _repo_root()
     try:
-        text = (base / ".veldo" / "policy.yaml").read_text()
-    except OSError:
+        data = _Y.read(base / ".veldo" / "policy.yaml")
+    except FileNotFoundError:
         return None
-    block = _extract_block(text, "human_decisions")
-    if block is None:
+    if not isinstance(data, dict):
+        raise ValueError("policy must be a mapping")
+    if "human_decisions" not in data:
         return None
-    p = parse or _yamlish()
-    try:
-        data = p(block)
-    except ValueError:
-        return None
-    hd = data.get("human_decisions") if isinstance(data, dict) else None
-    return hd if isinstance(hd, dict) else None
+    hd = data["human_decisions"]
+    if not isinstance(hd, dict):
+        raise ValueError("human_decisions must be a mapping")
+    return hd
 
 
 def required_roles(touchpoint, tier, policy=None):

@@ -20,6 +20,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+
+
 ROOT = Path(__file__).resolve().parent.parent
 _vspec = importlib.util.spec_from_file_location("veldo_validate", ROOT / ".veldo" / "validate.py")
 V = importlib.util.module_from_spec(_vspec)
@@ -44,7 +46,7 @@ def load_plan(arg):
     """Accept a plan file path or a PLAN-id."""
     p = Path(arg)
     if p.exists():
-        m = V.re.match(r"^---\n(.*?)\n---", p.read_text(), V.re.S)
+        m = V._yamlish.front_matter_match(p.read_text())
         return (p, V.parse_yamlish(m.group(1))) if m else (p, {})
     reg = V.plan_registry(ROOT / "plans")
     if arg in reg:
@@ -234,7 +236,7 @@ def _spec_fm_rich(spec_id):
     list fields like placement and footprint arrive as real lists for the mandatory
     placement gate; the simple front_matter reader flattens inline lists to strings."""
     for p in sorted((ROOT / "specs").glob(f"{spec_id}*.md")):
-        m = V.re.match(r"^---\n(.*?)\n---", p.read_text(), V.re.S)
+        m = V._yamlish.front_matter_match(p.read_text())
         return V.parse_yamlish(m.group(1)) if m else {}
     return {}
 

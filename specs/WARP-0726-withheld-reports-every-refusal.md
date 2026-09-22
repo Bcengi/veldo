@@ -4,13 +4,7 @@ id: WARP-0726
 title: A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is
   dependency-only, so the frontier's diagnostic half must cover EVERY reason claimable() drops a unit
 status: draft
-risk: high - this changes what the queue TELLS a reader, and the failure modes are asymmetric. Reporting too
-  little is the defect being fixed: an item drops out of both halves of the frontier and the queue looks
-  empty rather than broken. Reporting too much is worse than noise, because a report that lists every spec
-  every worker cannot claim for capability or scope reasons stops being read at all, and an unread report is
-  the same silence with more output. It is high and not critical because no protected path and no safety core
-  is touched and the change is to a diagnostic, not to the claim decision; the claim decision itself must be
-  byte-unchanged, which is the property the item most needs asserted
+risk: "high - this changes what the queue TELLS a reader, and the failure modes are asymmetric. Reporting too little is the defect being fixed: an item drops out of both halves of the frontier and the queue looks empty rather than broken. Reporting too much is worse than noise, because a report that lists every spec every worker cannot claim for capability or scope reasons stops being read at all, and an unread report is the same silence with more output. It is high and not critical because no protected path and no safety core is touched and the change is to a diagnostic, not to the claim decision; the claim decision itself must be byte-unchanged, which is the property the item most needs asserted"
 owner: dmitry
 human_approval: required
 lane: standalone
@@ -27,12 +21,8 @@ footprint:
 protected_paths: []
 behavior_bearing: false
 observability:
-  logs: The frontier CLI names every ready build-shaped spec that is not claimable together with the REASON
-    it is not, so a queue that is short can be told apart from a queue that is broken without reading code.
-  error_taxonomy: A spec withheld for an unmet dependency, a spec refused by the placement gate, and a spec
-    with no offer for any reason the tool cannot name are three DIFFERENT lines. The third is required: a
-    reason nobody enumerated must print as an unexplained withholding rather than vanish, which is the same
-    fail-closed rule the survey's UNDETERMINED default is.
+  logs: The frontier CLI names every ready build-shaped spec that is not claimable together with the REASON it is not, so a queue that is short can be told apart from a queue that is broken without reading code.
+  error_taxonomy: "A spec withheld for an unmet dependency, a spec refused by the placement gate, and a spec with no offer for any reason the tool cannot name are three DIFFERENT lines. The third is required: a reason nobody enumerated must print as an unexplained withholding rather than vanish, which is the same fail-closed rule the survey's UNDETERMINED default is."
 acceptance_criteria:
   - id: AC1
     text: >

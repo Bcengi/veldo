@@ -18,6 +18,12 @@ policy.yaml shape the template ships).
 # Load the shared Git boundary by sibling path, including when imported by file location.
 import importlib.util as _git_importlib
 from pathlib import Path as _GitPath
+
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
 _git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
 _git_process = _git_importlib.module_from_spec(_git_spec)
 _git_spec.loader.exec_module(_git_process)
@@ -55,20 +61,11 @@ def _verdict_files():
 
 
 def protected_patterns():
-    pats = []
-    text = (ROOT / ".veldo" / "policy.yaml").read_text()
-    in_pp = False
-    for line in text.splitlines():
-        if re.match(r"^protected_paths:", line):
-            in_pp = True
-            continue
-        if in_pp:
-            m = re.search(r'path:\s*"([^"]+)"', line)
-            if m:
-                pats.append(m.group(1))
-            elif line and not line.startswith((" ", "#", "-")):
-                in_pp = False
-    return pats
+    policy = _Y.read(ROOT / ".veldo" / "policy.yaml")
+    rows = policy.get("protected_paths", [])
+    if not isinstance(rows, list) or any(not isinstance(r, dict) or not isinstance(r.get("path"), str) for r in rows):
+        raise ValueError("policy protected_paths must be a list of path mappings")
+    return [row["path"] for row in rows]
 
 
 def _range_specs():
@@ -305,14 +302,9 @@ def producer_for(spec_id):
 
 def _spec_file_fm(spec_id):
     for p in sorted((ROOT / "specs").glob(f"{spec_id}*.md")):
-        m = re.match(r"^---\n(.*?)\n---", p.read_text(), re.S)
-        if not m:
-            return {}
-        fm = {}
-        for line in m.group(1).splitlines():
-            mm = re.match(r"^([A-Za-z_]+):\s*(.*)$", line)
-            if mm:
-                fm[mm.group(1)] = mm.group(2).strip()
+        fm = _Y.front_matter(p.read_text(), str(p))
+        if fm is None:
+            raise ValueError(f"{p}: no YAML front matter")
         return fm
     return {}
 

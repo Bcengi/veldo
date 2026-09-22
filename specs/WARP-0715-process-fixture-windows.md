@@ -4,12 +4,7 @@ id: WARP-0715
 title: The process runner waits out real kernel windows because that is what it exists to test - shorten only
   the FIXTURE parameters, and only behind a 50-run proof that the shorter windows are not flaky
 status: ready
-risk: high - this item trades wall clock for FLAKINESS RISK, which is the one trade that can make a gate worse
-  while every measurement says it got better. An intermittently red gate is worse than a slow one: it teaches
-  people to re-run instead of to read, and it destroys the only signal the method has. So the reliability proof
-  is not a nicety here, it IS the item, and the acceptance criteria are written so that failing the proof moves
-  the TARGET rather than moving the bar. No shipped constant changes, no protected path is touched, and no
-  assertion is removed
+risk: "high - this item trades wall clock for FLAKINESS RISK, which is the one trade that can make a gate worse while every measurement says it got better. An intermittently red gate is worse than a slow one: it teaches people to re-run instead of to read, and it destroys the only signal the method has. So the reliability proof is not a nicety here, it IS the item, and the acceptance criteria are written so that failing the proof moves the TARGET rather than moving the bar. No shipped constant changes, no protected path is touched, and no assertion is removed"
 owner: dmitry
 human_approval: not_required
 lane: standalone

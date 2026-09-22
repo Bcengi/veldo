@@ -14,49 +14,19 @@ depends_on: [WARP-0905, WARP-0906]
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: The plugin version is bumped to 3.5.0 for the VELDO Fleet distribution v1 milestone -
-      packs/claude/.claude-plugin/plugin.json reads 3.5.0, the marketplace entry (.claude-plugin/marketplace.json)
-      reads 3.5.0, and the PLAN-0009 release.version field reads plugin 3.5.0. The generic method
-      documents are unchanged: the fleet ships as engine and packs, not a change to the VELDO method.
+    text: "The plugin version is bumped to 3.5.0 for the VELDO Fleet distribution v1 milestone - packs/claude/.claude-plugin/plugin.json reads 3.5.0, the marketplace entry (.claude-plugin/marketplace.json) reads 3.5.0, and the PLAN-0009 release.version field reads plugin 3.5.0. The generic method documents are unchanged: the fleet ships as engine and packs, not a change to the VELDO method."
   - id: AC2
-    text: The shipped fleet is recorded honestly in the capability manifest. Every fleet capability an
-      adopter's tree carries (the dispatcher, the account registry, the in-session worker spawner, the
-      per-account governor, the in-session resume waiter, the veldo CLI, the in-session resume default,
-      and the opt-in external supervisor with its session-launch reference seam) is marked mechanical or
-      reference with a home that resolves in the SHIPPED engine, none is over-claimed, and the repo-only
-      markers from W6 stay intact. Both .veldo/capabilities.yaml and the shipped
-      engine/.veldo/capabilities.yaml are byte-identical and pass the WARP-0906
-      home-resolution honesty check (mechanical only where shipping code backs it in an adopter tree,
-      per O5 and C6).
+    text: The shipped fleet is recorded honestly in the capability manifest. Every fleet capability an adopter's tree carries (the dispatcher, the account registry, the in-session worker spawner, the per-account governor, the in-session resume waiter, the veldo CLI, the in-session resume default, and the opt-in external supervisor with its session-launch reference seam) is marked mechanical or reference with a home that resolves in the SHIPPED engine, none is over-claimed, and the repo-only markers from W6 stay intact. Both .veldo/capabilities.yaml and the shipped engine/.veldo/capabilities.yaml are byte-identical and pass the WARP-0906 home-resolution honesty check (mechanical only where shipping code backs it in an adopter tree, per O5 and C6).
   - id: AC3
-    text: Every declared pack's engine stays byte-identical (content AND mode) to the canonical source at
-      the release. After any engine edit the six copied packs are re-synced so pack_drift_report is empty
-      for all seven and the cross-pack conformance harness passes, proving the release ships assembled
-      drop-in distributions with no drift.
+    text: Every declared pack's engine stays byte-identical (content AND mode) to the canonical source at the release. After any engine edit the six copied packs are re-synced so pack_drift_report is empty for all seven and the cross-pack conformance harness passes, proving the release ships assembled drop-in distributions with no drift.
   - id: AC4
-    text: The docs point to the shipped fleet. Every fleet command named in the docs exists in the shipped
-      bin/veldo (veldo work, veldo fleet N, veldo account, veldo status and watch, veldo answer/steer/abort, and
-      veldo supervisor), the README fleet section describes the installable fleet as it ships, and the
-      README plugin-version line reads 3.5.0 with no claim beyond what W1 through W8 ship.
+    text: The docs point to the shipped fleet. Every fleet command named in the docs exists in the shipped bin/veldo (veldo work, veldo fleet N, veldo account, veldo status and watch, veldo answer/steer/abort, and veldo supervisor), the README fleet section describes the installable fleet as it ships, and the README plugin-version line reads 3.5.0 with no claim beyond what W1 through W8 ship.
   - id: AC5
-    text: The packs/claude/ to packs/claude rename and the marketplace source repoint remain DEFERRED as a
-      separate human-approved change, because they move the protected enforcement files
-      (engine/scripts/verify.sh, engine/scripts/veldo-guard.sh,
-      engine/.veldo/policy_check.py) and rewrite the .veldo/policy.yaml entries that name them (a
-      protected-path change requiring human approval). This release keeps packs/claude/ in place as the option-B
-      Claude pack (marketplace source ./packs/claude) and the name stays VELDO (VELDO parked). No protected path
-      is touched by this release, so policy_check requires no approval.
+    text: The packs/claude/ to packs/claude rename and the marketplace source repoint remain DEFERRED as a separate human-approved change, because they move the protected enforcement files (engine/scripts/verify.sh, engine/scripts/veldo-guard.sh, engine/.veldo/policy_check.py) and rewrite the .veldo/policy.yaml entries that name them (a protected-path change requiring human approval). This release keeps packs/claude/ in place as the option-B Claude pack (marketplace source ./packs/claude) and the name stays VELDO (VELDO parked). No protected path is touched by this release, so policy_check requires no approval.
   - id: AC6
-    text: With W1 through W7 already shipped and W8 (this spec) shipped, plan.py release-check PLAN-0009
-      reports releasable and PLAN-0009 status is set to released. At the impl commit W8 is ready, so
-      release-check reports not-yet-releasable (WARP-0908 pending) and releasability is achieved when this
-      spec flips to shipped in the evidence commit - verifiable independently by simulating WARP-0908
-      shipped and running release-check.
+    text: With W1 through W7 already shipped and W8 (this spec) shipped, plan.py release-check PLAN-0009 reports releasable and PLAN-0009 status is set to released. At the impl commit W8 is ready, so release-check reports not-yet-releasable (WARP-0908 pending) and releasability is achieved when this spec flips to shipped in the evidence commit - verifiable independently by simulating WARP-0908 shipped and running release-check.
   - id: AC7
-    text: The full gate is GREEN (selftest including the fleet suites, the capabilities-honesty check, the
-      pack drift check, and cross-pack conformance across all seven packs; contracts, generated, docs
-      hygiene, template sync, and secret scan all pass); no protected path is edited; the index is
-      regenerated; and RULE #1 is clean (no em or en dash, no prose double-hyphen).
+    text: "The full gate is GREEN (selftest including the fleet suites, the capabilities-honesty check, the pack drift check, and cross-pack conformance across all seven packs; contracts, generated, docs hygiene, template sync, and secret scan all pass); no protected path is edited; the index is regenerated; and RULE #1 is clean (no em or en dash, no prose double-hyphen)."
 required_evidence: [operational]
 rollback: git revert the release commit and its evidence; the version bump withdraws and the plan returns
   to in_progress (the eight work items stay shipped). The release is additive - a version bump, a confirmed

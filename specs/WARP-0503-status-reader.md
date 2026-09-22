@@ -14,37 +14,17 @@ protected_paths: []
 required_evidence: [unit]
 acceptance_criteria:
   - id: AC1
-    text: A status(root, runs_root) function assembles one read model with a repo
-      section (the current HEAD and branch read from git), a plan burn-down section,
-      the live runs, a tail of recent durable events, and the recent verdicts. runs_root
-      and the events path are overridable so the reader can be driven over a temporary
-      runs root and a synthetic events file with no live build.
+    text: A status(root, runs_root) function assembles one read model with a repo section (the current HEAD and branch read from git), a plan burn-down section, the live runs, a tail of recent durable events, and the recent verdicts. runs_root and the events path are overridable so the reader can be driven over a temporary runs root and a synthetic events file with no live build.
   - id: AC2
-    text: Each live run in the model carries its classification (active, blocked, stale,
-      or done via the R1 registry classify), the current loop phase, the blocked question,
-      the heartbeat age, and a blocked-elapsed value shown as a SEPARATE field from
-      human_minutes so a blocked wait is never folded into attention time (constraint C3).
+    text: Each live run in the model carries its classification (active, blocked, stale, or done via the R1 registry classify), the current loop phase, the blocked question, the heartbeat age, and a blocked-elapsed value shown as a SEPARATE field from human_minutes so a blocked wait is never folded into attention time (constraint C3).
   - id: AC3
-    text: The plan burn-down is REUSED from .veldo/plan.py (its per-item state and frontier,
-      derived from spec status) rather than reimplemented, so the reader reports the same
-      truth the specs index does.
+    text: The plan burn-down is REUSED from .veldo/plan.py (its per-item state and frontier, derived from spec status) rather than reimplemented, so the reader reports the same truth the specs index does.
   - id: AC4
-    text: Tokens are shown only when the run or live data actually carries them and are
-      reported as "unknown" when absent, never 0 and never an estimate (constraint C3).
-      The reader is a read-only projection: it writes nothing to the registry, the event
-      stream, or the repo.
+    text: "Tokens are shown only when the run or live data actually carries them and are reported as \"unknown\" when absent, never 0 and never an estimate (constraint C3). The reader is a read-only projection: it writes nothing to the registry, the event stream, or the repo."
   - id: AC5
-    text: A CLI exposes the model - veldo status --json prints it as JSON and veldo status
-      prints a compact terminal view, and veldo watch renders the same compact view (a
-      single render, or an interruptible refresh loop that is not gate-tested live).
+    text: A CLI exposes the model - veldo status --json prints it as JSON and veldo status prints a compact terminal view, and veldo watch renders the same compact view (a single render, or an interruptible refresh loop that is not gate-tested live).
   - id: AC6
-    text: A selftest builds synthetic runs in a temporary runs root (an active one, a
-      blocked one carrying a question, a stale one, a done one) plus a synthetic events
-      tail, calls status(), and asserts each run is listed with the correct classification,
-      the blocked question is surfaced, blocked-elapsed is separate from human_minutes,
-      tokens are unknown when absent, and the repo and burn-down sections are present; it
-      is non-tautological - a mutation that drops a run or misreports a classification
-      makes an assertion fail, and a read-only-after-read assertion proves it writes nothing.
+    text: A selftest builds synthetic runs in a temporary runs root (an active one, a blocked one carrying a question, a stale one, a done one) plus a synthetic events tail, calls status(), and asserts each run is listed with the correct classification, the blocked question is surfaced, blocked-elapsed is separate from human_minutes, tokens are unknown when absent, and the repo and burn-down sections are present; it is non-tautological - a mutation that drops a run or misreports a classification makes an assertion fail, and a read-only-after-read assertion proves it writes nothing.
 rollback: git revert; additive - a new .veldo/runstatus.py, a status_reader entry added to
   both capabilities.yaml copies, a selftest block, the spec, and the regenerated index; no
   protected path is touched and the reader writes nothing at runtime.

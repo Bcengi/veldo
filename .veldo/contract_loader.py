@@ -17,6 +17,12 @@ import collections
 import os
 from pathlib import Path
 
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
+
 CONTRACT_ABSENT, CONTRACT_VALID, CONTRACT_INVALID = "absent", "valid", "invalid"
 # The error taxonomy VELDO-0016 and VELDO-0053 name, one word each, so a consumer's diagnostic and a
 # suite's row can name the class without parsing prose.
@@ -72,14 +78,12 @@ def contract_requirement(repo_root):
     if not p.is_file():
         return True
     try:
-        text = p.read_text()
-    except OSError:
+        policy = _Y.read(p)
+    except (OSError, ValueError):
+        return True  # explicit conservative refusal posture, never optional on malformed input
+    if not isinstance(policy, dict):
         return True
-    for line in text.splitlines():
-        if line.startswith("architecture_contract:"):
-            value = line.split(":", 1)[1].split("#", 1)[0].strip().strip("'\"")
-            return value != "optional"
-    return False
+    return "architecture_contract" in policy and policy["architecture_contract"] != "optional"
 
 
 def load_contract_state(repo_root, arch, parse, required=None, contract_path=None):

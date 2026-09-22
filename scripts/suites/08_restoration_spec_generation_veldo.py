@@ -505,8 +505,8 @@ expect("WARP-1012 AC5: the delegating validators are DEFINED in validate_checks.
 expect("WARP-1012 AC5: they are NO LONGER defined in validate.py (moved, not duplicated)",
        "def check_arch(" not in _p1012_vsrc and "def check_shape_review(" not in _p1012_vsrc
        and "def tripwire_status(" not in _p1012_vsrc)
-expect("WARP-1012 AC5: the stayers (the one parser and reporter, check_spec, check_json, check_plan) remain in validate.py",
-       "def parse_yamlish(" in _p1012_vsrc and "def fail(" in _p1012_vsrc
+expect("WARP-1012 AC5: the shared parser alias and the reporter, check_spec, check_json, check_plan remain available in validate.py",
+       "parse_yamlish = _yamlish.parse" in _p1012_vsrc and "def fail(" in _p1012_vsrc
        and "def check_spec(" in _p1012_vsrc and "def check_json(" in _p1012_vsrc
        and "def check_plan(" in _p1012_vsrc)
 expect("WARP-1012 AC5: validate_checks.py loads its siblings but NEVER validate.py (one-way, no import cycle)",

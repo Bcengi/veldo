@@ -23,11 +23,8 @@ depends_on: [WARP-1102, WARP-1103]
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: The gate names each unmatchable footprint entry by spec and by glob, with the reason it can never
-    match, so the remedy is readable without opening the glob compiler.
-  error_taxonomy: One new gate finding, in the footprint family already used by WARP-1103: a declared
-    footprint glob that matches no path in the tree. It is BLOCKING, like the rest of that rule, because a
-    declaration that cannot match is exactly the vacuous check this corpus forbids.
+  logs: The gate names each unmatchable footprint entry by spec and by glob, with the reason it can never match, so the remedy is readable without opening the glob compiler.
+  error_taxonomy: "One new gate finding, in the footprint family already used by WARP-1103: a declared footprint glob that matches no path in the tree. It is BLOCKING, like the rest of that rule, because a declaration that cannot match is exactly the vacuous check this corpus forbids."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

@@ -4,9 +4,7 @@ id: WARP-1704
 title: The public tree is DERIVED from a declared manifest and proven offline, because a curated
   copy is a judgement repeated by hand every release and a leak is permanent the moment it is pushed
 status: ready
-risk: high - it is the one step that moves bytes from a private repository to a public one. A miss
-  is not a bug that can be fixed forward: a leaked customer name, an internal plan or a person's
-  details are permanent the moment they are pushed, and remain in history after any later deletion.
+risk: "high - it is the one step that moves bytes from a private repository to a public one. A miss is not a bug that can be fixed forward: a leaked customer name, an internal plan or a person's details are permanent the moment they are pushed, and remain in history after any later deletion."
 owner: dmitry
 human_approval: required
 lane: planned

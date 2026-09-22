@@ -64,6 +64,8 @@ parser, no second glob compiler, and no second placement or boundary implementat
 # Load the shared Git boundary by sibling path, including when imported by file location.
 import importlib.util as _git_importlib
 from pathlib import Path as _GitPath
+
+
 _git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
 _git_process = _git_importlib.module_from_spec(_git_spec)
 _git_spec.loader.exec_module(_git_process)
@@ -390,13 +392,13 @@ def footprint_findings(changed, root, V, arch):
 
 def _spec_fm(V, path):
     text = Path(path).read_text()
-    m = V.re.match(r"^---\n(.*?)\n---", text, V.re.S)
+    m = V._yamlish.front_matter_match(text)
     if not m:
         return {}
     try:
         return V.parse_yamlish(m.group(1))
     except ValueError:
-        return {}
+        raise
 
 
 # ---------------------------------------------------------------------------

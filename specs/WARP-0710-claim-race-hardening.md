@@ -10,38 +10,15 @@ lane: standalone
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: The claim ledger (.veldo/claim.py) grants a unit under a SINGLE per-unit lock that
-      arbitrates the whole decision - it refuses a live claim by another worker and otherwise
-      (unclaimed, stale, corrupt, or the worker's own) publishes a fully-written record with an
-      atomic os.replace - so the fresh-publish and the stale or own takeover share one arbiter
-      and can never both grant the same unit; the previous design's separate lock-free fresh
-      os.link path and flock-guarded takeover os.replace path are gone.
+    text: The claim ledger (.veldo/claim.py) grants a unit under a SINGLE per-unit lock that arbitrates the whole decision - it refuses a live claim by another worker and otherwise (unclaimed, stale, corrupt, or the worker's own) publishes a fully-written record with an atomic os.replace - so the fresh-publish and the stale or own takeover share one arbiter and can never both grant the same unit; the previous design's separate lock-free fresh os.link path and flock-guarded takeover os.replace path are gone.
   - id: AC2
-    text: Mutual exclusion holds under claim/release CHURN - with the trunk not stale, many
-      workers repeatedly claiming and releasing one unit never produces two live holders,
-      because a fresh claim can no longer be published (unlocked) underneath a takeover's
-      re-check-then-replace. The specific defect fixed - a takeover's os.replace clobbering a
-      freshly-linked live claim after a release removed the file - no longer occurs.
+    text: Mutual exclusion holds under claim/release CHURN - with the trunk not stale, many workers repeatedly claiming and releasing one unit never produces two live holders, because a fresh claim can no longer be published (unlocked) underneath a takeover's re-check-then-replace. The specific defect fixed - a takeover's os.replace clobbering a freshly-linked live claim after a release removed the file - no longer occurs.
   - id: AC3
-    text: Lock-free readers (is_claimed, holder, claimed_units) remain correct because the
-      record is published by an atomic os.replace, so a reader always sees a complete old-or-
-      new record and never a half-written one; and all previously passing claim behaviors
-      (capability refuse-vs-grant, live-claim refusal, stale reclaim, heartbeat, release,
-      claimed_units) are unchanged.
+    text: Lock-free readers (is_claimed, holder, claimed_units) remain correct because the record is published by an atomic os.replace, so a reader always sees a complete old-or- new record and never a half-written one; and all previously passing claim behaviors (capability refuse-vs-grant, live-claim refusal, stale reclaim, heartbeat, release, claimed_units) are unchanged.
   - id: AC4
-    text: A selftest reproduces the race and proves the fix non-tautological - a churn clobber
-      detector (many workers claim, verify they are the holder, release, at default staleness)
-      asserts zero clobbers with the single-lock arbiter, and reverting to the split
-      fresh/takeover paths turns it RED; the existing barrier fresh-unit race and stale-
-      takeover race still pass, and the full gate is GREEN.
+    text: A selftest reproduces the race and proves the fix non-tautological - a churn clobber detector (many workers claim, verify they are the holder, release, at default staleness) asserts zero clobbers with the single-lock arbiter, and reverting to the split fresh/takeover paths turns it RED; the existing barrier fresh-unit race and stale- takeover race still pass, and the full gate is GREEN.
   - id: AC5
-    text: The OTHER write paths - heartbeat and release - also run under the per-unit lock, so
-      their read-modify-write cannot clobber a concurrent takeover either: a heartbeat of a
-      claim taken over since it was last seen refuses instead of overwriting the new holder,
-      and a release removes only if the worker is still the holder under the lock. A selftest
-      fires a heartbeat against a concurrent stale-takeover and asserts the takeover's grant
-      stands (the holder is the taker, not the heartbeater), and is non-tautological - the
-      pre-fix lock-free heartbeat clobbers the takeover in a large fraction of rounds.
+    text: "The OTHER write paths - heartbeat and release - also run under the per-unit lock, so their read-modify-write cannot clobber a concurrent takeover either: a heartbeat of a claim taken over since it was last seen refuses instead of overwriting the new holder, and a release removes only if the worker is still the holder under the lock. A selftest fires a heartbeat against a concurrent stale-takeover and asserts the takeover's grant stands (the holder is the taker, not the heartbeater), and is non-tautological - the pre-fix lock-free heartbeat clobbers the takeover in a large fraction of rounds."
 required_evidence: [unit]
 rollback: git revert; the change is confined to the claim() function in .veldo/claim.py, its
   docstrings, one claim_ledger capability note (both copies), and a selftest block; the claims

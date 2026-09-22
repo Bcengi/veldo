@@ -13,57 +13,15 @@ human_approval: not_required
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A streaming runner ships at
-      engine/scripts/runners/streaming/veldo_streaming_runner.py. It
-      reads a journey (a name, an optional sequence_field, an optional ordered
-      expected_events list, a required terminal matcher, optional final graders
-      with an assemble_field, and a fake list of raw frame blocks) and drives a
-      stream through a SOURCE seam - a callable returning an iterable of raw
-      frame strings - so the control logic runs against a fake in-memory stream
-      with no live server. It parses each raw frame as a server-sent-events
-      block (field: value lines, a required data field, comment lines ignored),
-      asserts framing, sequencing, and the terminal, and exits 0 when every
-      assertion holds and exits 1 with the first failing assertion named. An
-      adopting repo passes source=its own callable (an SSE or websocket reader)
-      unchanged.
+    text: "A streaming runner ships at engine/scripts/runners/streaming/veldo_streaming_runner.py. It reads a journey (a name, an optional sequence_field, an optional ordered expected_events list, a required terminal matcher, optional final graders with an assemble_field, and a fake list of raw frame blocks) and drives a stream through a SOURCE seam - a callable returning an iterable of raw frame strings - so the control logic runs against a fake in-memory stream with no live server. It parses each raw frame as a server-sent-events block (field: value lines, a required data field, comment lines ignored), asserts framing, sequencing, and the terminal, and exits 0 when every assertion holds and exits 1 with the first failing assertion named. An adopting repo passes source=its own callable (an SSE or websocket reader) unchanged."
   - id: AC2
-    text: Chunk sequencing is asserted honestly. When sequence_field is set, the
-      JSON data of each frame that carries that field must yield values that are
-      contiguous and increasing from 0 in arrival order, so a dropped chunk (a
-      gap), a duplicated chunk, or a reordered chunk each fails naming the
-      expected and observed index. When expected_events is set, the ordered list
-      of frame event types must match one to one (a wrong type, a wrong order, a
-      missing frame, or an extra frame fails naming the position). A stream that
-      passes a happy-path "it produced output" check but dropped a chunk in the
-      middle is exactly the defect this catches.
+    text: Chunk sequencing is asserted honestly. When sequence_field is set, the JSON data of each frame that carries that field must yield values that are contiguous and increasing from 0 in arrival order, so a dropped chunk (a gap), a duplicated chunk, or a reordered chunk each fails naming the expected and observed index. When expected_events is set, the ordered list of frame event types must match one to one (a wrong type, a wrong order, a missing frame, or an extra frame fails naming the position). A stream that passes a happy-path "it produced output" check but dropped a chunk in the middle is exactly the defect this catches.
   - id: AC3
-    text: Framing and the terminal are enforced, and a malformed stream fails. A
-      frame whose line is not a valid SSE field (no colon separator, or an
-      unknown field) or that carries no data field is a framing error naming the
-      frame index and the offending content. A terminal frame (matching the
-      journey terminal by event and/or data) is required and must be the LAST
-      frame - a stream with no terminal fails with a did-not-terminate error, and
-      a frame arriving after the terminal fails. When final graders and an
-      assemble_field are set, the data values of the non-terminal frames are
-      concatenated in order and graded (contains, not_contains, equals, regex).
-      A journey that declares none of sequence_field, expected_events, terminal,
-      or final asserts nothing and is a journey error.
+    text: Framing and the terminal are enforced, and a malformed stream fails. A frame whose line is not a valid SSE field (no colon separator, or an unknown field) or that carries no data field is a framing error naming the frame index and the offending content. A terminal frame (matching the journey terminal by event and/or data) is required and must be the LAST frame - a stream with no terminal fails with a did-not-terminate error, and a frame arriving after the terminal fails. When final graders and an assemble_field are set, the data values of the non-terminal frames are concatenated in order and graded (contains, not_contains, equals, regex). A journey that declares none of sequence_field, expected_events, terminal, or final asserts nothing and is a journey error.
   - id: AC4
-    text: The control logic is unit-tested in scripts/selftest.py with a fake
-      in-memory source and NO live stream, mirroring the other reference runners.
-      A happy stream passes; a sequence gap, a reordered chunk, a malformed
-      frame, a missing terminal, a frame after the terminal, and a failed final
-      grader each fail named; an asserts-nothing journey is a journey error. Two
-      shipped fixtures (a well-formed stream and a malformed stream) are driven
-      end to end (pass -> exit 0, malformed -> exit 1 with the failure named).
-      All prior selftest cases keep passing and the gate stays green.
+    text: The control logic is unit-tested in scripts/selftest.py with a fake in-memory source and NO live stream, mirroring the other reference runners. A happy stream passes; a sequence gap, a reordered chunk, a malformed frame, a missing terminal, a frame after the terminal, and a failed final grader each fail named; an asserts-nothing journey is a journey error. Two shipped fixtures (a well-formed stream and a malformed stream) are driven end to end (pass -> exit 0, malformed -> exit 1 with the failure named). All prior selftest cases keep passing and the gate stays green.
   - id: AC5
-    text: The runner is generic - zero company or product names in the runner,
-      fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and
-      repository instance, kept byte-identical) declares it status reference (a
-      shipped reference wired per repo to its own stream source; the veldo home
-      repo ships no streaming surface of its own), never mechanical. The
-      docs-hygiene, secret, lint, and template-sync gates stay green.
+    text: The runner is generic - zero company or product names in the runner, fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and repository instance, kept byte-identical) declares it status reference (a shipped reference wired per repo to its own stream source; the veldo home repo ships no streaming surface of its own), never mechanical. The docs-hygiene, secret, lint, and template-sync gates stay green.
 required_evidence: [unit]
 rollback: git revert; B12 adds a new runner file, a fixture pair, a wrapper and a
   README under engine, a selftest block, and an honest capabilities

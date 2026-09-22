@@ -4,14 +4,7 @@ id: WARP-1404
 title: Historical analogy - the strongest estimating layer, and the one that declines when the
   corpus cannot support a number
 status: ready
-risk: standard - a new module that reads the actuals corpus and a spec and writes nothing at all.
-  No gate stage is added, nothing is enforced, and a repository with no recorded actuals gets a
-  byte-identical estimate record to the one W2 alone produces. It is not low because this is the
-  layer whose basis flips a record to `calibration: calibrated`, so a range this layer produces is
-  the one number in the plan that later surfaces are entitled to trust; a matcher that read outcome
-  data, or a stand-down that returned a zero instead of nothing, would put a confident figure into
-  the budget roll-up (W8) and the reconciliation (W5) with no evidence under it and no reader able
-  to tell.
+risk: "standard - a new module that reads the actuals corpus and a spec and writes nothing at all. No gate stage is added, nothing is enforced, and a repository with no recorded actuals gets a byte-identical estimate record to the one W2 alone produces. It is not low because this is the layer whose basis flips a record to `calibration: calibrated`, so a range this layer produces is the one number in the plan that later surfaces are entitled to trust; a matcher that read outcome data, or a stand-down that returned a zero instead of nothing, would put a confident figure into the budget roll-up (W8) and the reconciliation (W5) with no evidence under it and no reader able to tell."
 owner: dmitry
 human_approval: not_required
 lane: planned

@@ -11,6 +11,8 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import types
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = '34342c3'
@@ -24,7 +26,18 @@ def load(name, path):
 
 
 _git_process = load('audit_git', ROOT / '.veldo/git_process.py')
-Y = load('audit_reader', ROOT / '.veldo/yamlish.py')
+def git_text(revision, path):
+    return _git_process.check_output(['git', 'show', f'{revision}:{path}'], cwd=ROOT, text=True)
+
+
+def archived_module(revision, path):
+    module = types.ModuleType('archived_' + Path(path).stem)
+    module.__file__ = str(ROOT / path)
+    exec(compile(git_text(revision, path), path, 'exec'), module.__dict__)
+    return module
+
+
+Y = archived_module('6b2135a', '.veldo/yamlish.py')
 
 
 def archive(path, names):
@@ -63,17 +76,18 @@ def main():
     old = archive('.veldo/validate.py', {'front_matter', 'parse_yamlish', '_split_top', '_scalar',
                                        '_parse_block', '_parse_map', '_parse_list'})
     index = archive('scripts/update_index.py', {'front_matter'})
-    corpus = sorted(list(ROOT.glob('specs/*.md')) + list(ROOT.glob('plans/*.md')))
+    tracked = _git_process.check_output(['git', 'ls-tree', '-r', '--name-only', BASE], cwd=ROOT, text=True).splitlines()
+    corpus = [ROOT / p for p in tracked if len(Path(p).parts) == 2 and Path(p).parts[0] in ('specs', 'plans') and p.endswith('.md')]
     rows = []
     for p in corpus:
-        text = p.read_text()
+        text = git_text(BASE, p.relative_to(ROOT))
         m = re.match(r'^---\n(.*?)\n---', text, re.S)
         after = outcome(Y.front_matter, text)
         readers = {'validate.front_matter': outcome(old['front_matter'], text),
                    'update_index.front_matter': outcome(index['front_matter'], text)}
         if m:
             readers['validate.parse_yamlish (also release/cost readers)'] = outcome(old['parse_yamlish'], m[1])
-        row = {'path': str(p.relative_to(ROOT)), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest(),
+        row = {'path': str(p.relative_to(ROOT)), 'sha256': hashlib.sha256(text.encode()).hexdigest(),
                'has_front_matter': bool(m), 'comparisons': {}}
         for name, before in readers.items():
             delta = differences(before, after)
@@ -82,14 +96,18 @@ def main():
         rows.append(row)
     # Configs/templates outside the historical 331-document denominator also matter.
     additional = []
-    policy_reader = load('audit_policy', ROOT / '.veldo/fix_validation_record.py')
-    for p in sorted(ROOT.glob('.veldo/**/*.yaml')):
-        before = outcome(old['parse_yamlish'], p.read_text())
-        after = outcome(Y.parse, p.read_text())
+    policy_reader = archived_module(BASE, '.veldo/fix_validation_record.py')
+    for p in [ROOT / name for name in tracked if name.startswith('.veldo/') and name.endswith('.yaml')]:
+        text = git_text(BASE, p.relative_to(ROOT))
+        before = outcome(old['parse_yamlish'], text)
+        after = outcome(Y.parse, text)
         row = {'path': str(p.relative_to(ROOT)), 'comparisons': differences(before, after)}
         if p.name == 'policy.yaml':
-            strict_before = outcome(policy_reader.read_policy, p)
-            strict_after = outcome(lambda text: {k: v for k, v in Y.parse(text).items() if k == 'fix_validation'}, p.read_text())
+            with tempfile.TemporaryDirectory() as tmp:
+                policy = Path(tmp) / 'policy.yaml'
+                policy.write_text(text)
+                strict_before = outcome(policy_reader.read_policy, policy)
+            strict_after = outcome(lambda text: {k: v for k, v in Y.parse(text).items() if k == 'fix_validation'}, text)
             row['strict_policy_reader'] = differences(strict_before, strict_after)
         additional.append(row)
     report = {'baseline': BASE, 'parser_commit': '6b2135a',

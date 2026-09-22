@@ -38,6 +38,12 @@ by whoever first trusts an estimate.
 # Load the shared Git boundary by sibling path, including when imported by file location.
 import importlib.util as _git_importlib
 from pathlib import Path as _GitPath
+
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
 _git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
 _git_process = _git_importlib.module_from_spec(_git_spec)
 _git_spec.loader.exec_module(_git_process)
@@ -64,51 +70,19 @@ def _run(args, cwd=None):
 
 
 def _front_matter(text):
-    """The spec's front matter as raw lines. One reader, and deliberately NOT a second yaml parser:
-    only flat scalars and the two counted list shapes are needed here, and reaching for a parser
-    this module does not otherwise need would be a second spelling of the contract."""
-    if not text.startswith("---"):
-        return ""
-    end = text.find("\n---", 3)
-    return text[3:end] if end > 0 else ""
+    return _Y.front_matter(text) or {}
 
 
 def footprint_of(text):
-    """The declared footprint of one spec, as a list of paths. ONE reader: `spec_features` counts
-    it and `build` tests it against the protected set, and an earlier draft of this module spelled
-    the same regex out in both places, which is the second-spelling defect this repository has a
-    named rule about. A spec with no footprint block has an empty one, not an exception.
-
-    A COMMENT INSIDE THE BLOCK IS NOT THE END OF THE BLOCK. The pattern below requires the line
-    after `footprint:` to be a list item and stops at the first line that is not one, so until
-    2026-08-13 a comment TRUNCATED the read and a comment on the first line EMPTIED it - silently,
-    because an empty footprint is a legal answer. MEASURED by the independent review of WARP-1402
-    over this repository's 215 specs: 8 read wrongly (VELDO-0008 6 of 13, VELDO-0010 0 of 13,
-    VELDO-0011 4 of 16, VELDO-0012 6 of 15, WARP-0717 0 of 9, WARP-0722 0 of 15, WARP-0727 10 of 20,
-    WARP-1409 2 of 9) and 3 of those answered `protected_touch: no` about a spec that DOES touch a
-    declared protected path. This reader is the ONE reader, so every consumer inherited the wrong
-    number: WARP-1402's estimate record stated it as a measured regression surface, and VELDO-0010's
-    committed range came out 3.1x low. Full-line comments are dropped before the match, which is the
-    smallest change that makes the block's own items the answer."""
     fm = _front_matter(text)
-    fm = "".join("%s\n" % l for l in fm.splitlines() if not l.strip().startswith("#"))
-    m = re.search(r"^footprint:\n((?:\s+-\s+.*\n)+)", fm, re.M)
-    if not m:
-        return []
-    return [f.strip().strip('"') for f in re.findall(r"^\s+-\s+(.+?)\s*$", m.group(1), re.M)]
+    value = fm.get("footprint", [])
+    if not isinstance(value, list) or any(not isinstance(v, str) for v in value):
+        raise ValueError("footprint must be a list of paths")
+    return value
 
 
 def footprint_block_present(text):
-    """Whether the spec DECLARES a footprint block at all, which is a different question from what
-    the block contains, and the one a caller needs before it may state a surface of 0.
-
-    IT EXISTS BECAUSE `footprint_of` RETURNING NOTHING HAS TWO CAUSES WITH OPPOSITE MEANINGS: a
-    spec that declares no surface, and a block this reader could not read. A consumer that cannot
-    tell them apart publishes the second as a measurement - which is exactly what happened above,
-    and what the comment repair alone would not prevent the next unreadable shape from doing. Same
-    front matter, same one reader; the caller decides whether an unreadable block is a zero or a
-    refusal (WARP-1402's structural proxy refuses)."""
-    return re.search(r"^footprint:[ \t]*$", _front_matter(text), re.M) is not None
+    return "footprint" in _front_matter(text)
 
 
 def spec_features(path):
@@ -117,9 +91,7 @@ def spec_features(path):
     assess is not a feature, it is an estimate wearing a feature's clothes."""
     text = Path(path).read_text()
     fm = _front_matter(text)
-    def scalar(k):
-        m = re.search(r"^%s:\s*(.+)$" % k, fm, re.M)
-        return m.group(1).strip() if m else None
+    scalar = fm.get
     # NEVER CRASH ON A MISSING FIELD. This read `.split()[0]` on a possibly empty string, so a
     # file with no risk line raised IndexError out of a corpus BUILD. Widening the spec glob from a
     # prefix to *.md is what exposed it: the generated specs/index.md has no front matter at all.
@@ -133,10 +105,9 @@ def spec_features(path):
         "plan": scalar("plan"),
         "lane": scalar("lane"),
         "human_approval": scalar("human_approval"),
-        "acceptance_criteria": len(re.findall(r"^\s+-\s+id:\s*AC\d+", fm, re.M)),
+        "acceptance_criteria": len(fm.get("acceptance_criteria", [])),
         "footprint_declared": len(fp),
-        "depends_on": len([d for d in re.findall(r"^depends_on:\s*\[(.*)\]", fm, re.M)
-                           for d in d.split(",") if d.strip()]),
+        "depends_on": len(fm.get("depends_on", [])),
         "spec_bytes": len(text),
     }
 
@@ -233,7 +204,7 @@ def build(specs_dir=None, events=None, protected=(), shipped_only=True):
         # A FILE IN specs/ IS NOT AUTOMATICALLY A SPEC. The generated index and the templates live
         # here too. An id in the front matter is what makes one, so that is the test rather than a
         # list of filenames to skip, which would need updating every time one is added.
-        if not re.search(r"(?m)^id:\s*\S+", _front_matter(p.read_text(encoding="utf-8", errors="replace"))):
+        if not _front_matter(p.read_text(encoding="utf-8")).get("id"):
             continue
         f = spec_features(p)
         if not f["spec_id"]:

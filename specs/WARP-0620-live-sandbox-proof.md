@@ -1,19 +1,9 @@
 ---
 schema: veldo.spec/v1
 id: WARP-0620
-title: The live-sandbox proof of the inbound edge - execute the codified path against a real board for
-  the first time, with the owner present, and find out what the offline fake could not tell us: the real
-  changelog shape, real actor attribution, and whether the agent's withheld scopes actually stop it from
-  approving its own work (W7 of PLAN-0016, the activation gate the reviews required)
+title: "The live-sandbox proof of the inbound edge - execute the codified path against a real board for the first time, with the owner present, and find out what the offline fake could not tell us: the real changelog shape, real actor attribution, and whether the agent's withheld scopes actually stop it from approving its own work (W7 of PLAN-0016, the activation gate the reviews required)"
 status: blocked
-risk: high - this is the FIRST REAL EXECUTION of the inbound edge, the path that turns a human's tracker
-  decision into an authorized settlement in the repository, and the reviews made a live-sandbox proof the
-  precondition for ever trusting it. It is HIGH and not critical because every property is exercised on a
-  THROWAWAY board with seeded records: no real decision settles, no record on the production board is
-  read or written, and nothing this item runs can authorize a build action. It touches no protected path
-  and edits no safety core. The reason it needs the owner present is not risk approval, it is that only a
-  real human account can produce a real attributed transition, and the agent structurally must not be able
-  to produce one
+risk: "high - this is the FIRST REAL EXECUTION of the inbound edge, the path that turns a human's tracker decision into an authorized settlement in the repository, and the reviews made a live-sandbox proof the precondition for ever trusting it. It is HIGH and not critical because every property is exercised on a THROWAWAY board with seeded records: no real decision settles, no record on the production board is read or written, and nothing this item runs can authorize a build action. It touches no protected path and edits no safety core. The reason it needs the owner present is not risk approval, it is that only a real human account can produce a real attributed transition, and the agent structurally must not be able to produce one"
 owner: dmitry
 human_approval: required
 lane: planned

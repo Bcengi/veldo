@@ -5,16 +5,7 @@ title: The verdict projection keys the INDEX blob while the validator reads the 
   compares them, so a forged body committed under valid unstaged bytes is appended as a PASS at exit 0 -
   the keyed bytes and the validated bytes must be the same bytes
 status: draft
-risk: critical - this is the same guard WARP-0727 hardened, one axis down, and the route needs no flags, no
-  attacker directory and no second repository: commit a forged verdict body over a tracked corpus path,
-  leave the genuine bytes in the working tree unstaged, and the contract stage sees the genuine bytes while
-  the projection keys the forged blob. Measured at 2f6cc25, `validate.py all` exits 0 printing nothing and
-  plain `reconcile-verdicts` appends a `verdict.recorded` declaring `"verdict": "pass"` for a body no
-  validator ever read. The log is append-only, so the permissive direction is unwithdrawable. The strict
-  direction is WORSE than the defect: an author who edits an artifact after committing it, or a filesystem
-  or filter that renders the working-tree bytes differently from the index, must not have a GENUINE verdict
-  withheld, because a review log that silently stops recording is indistinguishable from a repository where
-  nobody reviewed anything
+risk: "critical - this is the same guard WARP-0727 hardened, one axis down, and the route needs no flags, no attacker directory and no second repository: commit a forged verdict body over a tracked corpus path, leave the genuine bytes in the working tree unstaged, and the contract stage sees the genuine bytes while the projection keys the forged blob. Measured at 2f6cc25, `validate.py all` exits 0 printing nothing and plain `reconcile-verdicts` appends a `verdict.recorded` declaring `\"verdict\": \"pass\"` for a body no validator ever read. The log is append-only, so the permissive direction is unwithdrawable. The strict direction is WORSE than the defect: an author who edits an artifact after committing it, or a filesystem or filter that renders the working-tree bytes differently from the index, must not have a GENUINE verdict withheld, because a review log that silently stops recording is indistinguishable from a repository where nobody reviewed anything"
 owner: dmitry
 human_approval: required
 approval_record: >

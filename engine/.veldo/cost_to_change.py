@@ -92,6 +92,7 @@ import argparse
 import importlib.util
 import json
 import re
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -239,31 +240,26 @@ def refuse_malformed(corpus):
     return corpus
 
 
-def front_matter_index(specs_dir, parse):
-    """spec id -> parsed front matter, for every spec in a directory, THROUGH THE CALLER'S
-    PARSER (validate.parse_yamlish), so placement and footprint arrive as real lists and this
-    module ships no second parser. Slicing the front-matter block out of the file is not
-    parsing it; the block itself is handed to `parse`.
 
-    A spec whose front matter is outside the parser's subset is SKIPPED here rather than
-    refused, because that is a spec-validation failure the contract validator already reports
-    by name, and refusing it twice would make an unrelated malformed spec take this map down."""
+# The one syntax reader, loaded by sibling path for file-location imports.
+_yamlish_spec = importlib.util.spec_from_file_location("veldo_yamlish", Path(__file__).resolve().with_name("yamlish.py"))
+_yamlish = importlib.util.module_from_spec(_yamlish_spec)
+_yamlish_spec.loader.exec_module(_yamlish)
+
+def front_matter_index(specs_dir, parse):
+    """Index the complete corpus; malformed metadata refuses the aggregation."""
     out = {}
-    d = Path(specs_dir)
-    if not d.is_dir():
-        return out
-    for p in sorted(d.glob("*.md")):
+    for p in sorted(Path(specs_dir).glob("*.md")):
         if p.name.startswith("TEMPLATE") or p.name == "index.md":
             continue
-        m = re.match(r"^---\n(.*?)\n---", p.read_text(), re.S)
-        if not m:
-            continue
-        try:
-            fm = parse(m.group(1))
-        except ValueError:
-            continue
-        if isinstance(fm, dict) and _is_str(fm.get("id")):
-            out[fm["id"]] = fm
+        fm = _yamlish.front_matter(p.read_text(), str(p))
+        if fm is None:
+            raise ValueError(f"{p}: no YAML front matter")
+        if not _is_str(fm.get("id")):
+            raise ValueError(f"{p}: missing spec id")
+        if fm["id"] in out:
+            raise ValueError(f"{p}: duplicate spec id {fm['id']}")
+        out[fm["id"]] = fm
     return out
 
 

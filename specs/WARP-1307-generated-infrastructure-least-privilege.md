@@ -1,8 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: WARP-1307
-title: Wildcard permissions and public-by-default exposure refuse in generated infrastructure -
-  because `Action: *` and `0.0.0.0/0` are what the training data is full of
+title: "Wildcard permissions and public-by-default exposure refuse in generated infrastructure - because `Action: *` and `0.0.0.0/0` are what the training data is full of"
 status: shipped
 risk: standard - a pure checker over parsed infrastructure declarations. It is not low because it
   decides what reach a generated component gets, and permissive here is an open bucket shipped by a

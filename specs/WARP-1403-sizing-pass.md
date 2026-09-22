@@ -30,20 +30,9 @@ footprint:
   - "specs/index.md"
 behavior_bearing: true
 observability:
-  logs: Every refusal is one SizingPassError naming its own subject: the agent seam names that no
-    agent is wired, the file agent names the path it found nothing at, a judgement names every
-    problem in it, a footprint entry that leaves the tree names the entry, and a brief bound to
-    another question names BOTH digests. The CLI stand-down prints which directory it found no
-    judgements under and says in its own words that this is not a finding.
-  metrics: The layer carries what the prediction was made from and what it cost: the brief digest,
-    the model, self_cost_tokens, self_cost_bps_of_low against a declared ceiling, a plain
-    within-ceiling yes or no, and the eight brief_* inputs the agent was shown. The brief's ledger
-    block reports events, spend_events, specs_with_spend, token_spend_events, tokens_recorded and
-    token_figures_non_integer, each gated on the field that licenses it, with anchor_available and
-    token_anchor_available answering for what is missing rather than reporting a zero.
-  error_taxonomy: ONE exception type (SizingPassError) for every refusal this module makes, so a
-    caller can tell a refusal from a bug, and a raising agent's own exception propagates UNCHANGED
-    because catching it would be a fallback and a fallback here is a fabricated estimate.
+  logs: "Every refusal is one SizingPassError naming its own subject: the agent seam names that no agent is wired, the file agent names the path it found nothing at, a judgement names every problem in it, a footprint entry that leaves the tree names the entry, and a brief bound to another question names BOTH digests. The CLI stand-down prints which directory it found no judgements under and says in its own words that this is not a finding."
+  metrics: "The layer carries what the prediction was made from and what it cost: the brief digest, the model, self_cost_tokens, self_cost_bps_of_low against a declared ceiling, a plain within-ceiling yes or no, and the eight brief_* inputs the agent was shown. The brief's ledger block reports events, spend_events, specs_with_spend, token_spend_events, tokens_recorded and token_figures_non_integer, each gated on the field that licenses it, with anchor_available and token_anchor_available answering for what is missing rather than reporting a zero."
+  error_taxonomy: ONE exception type (SizingPassError) for every refusal this module makes, so a caller can tell a refusal from a bug, and a raising agent's own exception propagates UNCHANGED because catching it would be a fallback and a fallback here is a fabricated estimate.
 acceptance_criteria:
   - id: AC1
     falsified_by: >

@@ -69,6 +69,8 @@ WARP-1211 (W11). This module is the vocabulary and the gate, and only those.
 """
 from pathlib import Path
 
+
+
 SCHEMA = "veldo.observability/v1"
 
 # The recognized observability criteria (outcome O6): the closed vocabulary a
@@ -288,7 +290,7 @@ def _cli(argv):
         return 2
     text = Path(arg).read_text()
     import re as _re
-    m = _re.match(r"^---\n(.*?)\n---", text, _re.S)
+    m = V._yamlish.front_matter_match(text)
     if m is None:
         print("  %s: no YAML front matter" % arg)
         return 1

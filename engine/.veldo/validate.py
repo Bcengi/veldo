@@ -22,6 +22,12 @@ import importlib.util
 import json, re, sys
 from pathlib import Path
 
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
+
 ROOT = Path(__file__).resolve().parent.parent
 
 # The routing resolver (WARP-0601) is the one place that reads the per-org
@@ -44,19 +50,14 @@ def fail(name, msg):
     return 1
 
 
-def front_matter(text):
-    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
-    if not m:
-        return None
-    fm = {}
-    key = None
-    for line in m.group(1).splitlines():
-        if re.match(r"^[A-Za-z_]+:", line):
-            key, _, val = line.partition(":")
-            fm[key.strip()] = val.strip()
-        elif key and line.strip().startswith("-"):
-            fm.setdefault(key + "__list", []).append(line.strip())
-    return fm
+
+# The one syntax reader, loaded by sibling path for file-location imports.
+_yamlish_spec = importlib.util.spec_from_file_location("veldo_yamlish", Path(__file__).resolve().with_name("yamlish.py"))
+_yamlish = importlib.util.module_from_spec(_yamlish_spec)
+_yamlish_spec.loader.exec_module(_yamlish)
+
+front_matter = _yamlish.front_matter
+parse_yamlish = _yamlish.parse
 
 
 def check_tracker_repo(path, fm, repo_root=None):
@@ -94,7 +95,10 @@ def check_tracker_repo(path, fm, repo_root=None):
 def check_spec(path, repo_root=None):
     errs = 0
     text = Path(path).read_text()
-    fm = front_matter(text)
+    try:
+        fm = front_matter(text, str(path))
+    except ValueError as e:
+        return fail(path, str(e))
     if fm is None:
         return fail(path, "no YAML front matter")
     for field in ("schema", "id", "title", "status", "risk", "owner"):
@@ -104,10 +108,10 @@ def check_spec(path, repo_root=None):
         errs += fail(path, f"bad status: {fm['status']}")
     if fm.get("risk") and fm["risk"].split()[0] not in RISKS:
         errs += fail(path, f"bad risk: {fm['risk']}")
-    if "acceptance_criteria__list" not in fm and "acceptance_criteria" not in fm:
+    if "acceptance_criteria" not in fm:
         errs += fail(path, "no acceptance criteria")
     if fm.get("required_evidence"):
-        for kind in [k.strip() for k in fm["required_evidence"].strip("[]").split(",") if k.strip()]:
+        for kind in fm["required_evidence"]:
             if kind not in CANONICAL_KINDS:
                 errs += fail(path, f"unknown evidence kind '{kind}' (canonical: {sorted(CANONICAL_KINDS)})")
     # Lane fields: a spec is planned (bound to a Product Plan work item) or
@@ -169,7 +173,7 @@ def check_required_evidence(spec_path, proof_path):
     fm = front_matter(Path(spec_path).read_text())
     declared = []
     if fm and "required_evidence" in fm:
-        declared = [k.strip() for k in fm["required_evidence"].strip("[]").split(",") if k.strip()]
+        declared = fm["required_evidence"]
     if not declared:
         return 0
     try:
@@ -201,11 +205,13 @@ def check_required_evidence(spec_path, proof_path):
 
 
 def spec_criterion_ids(spec_path):
-    text = Path(spec_path).read_text()
-    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
-    if not m:
-        return []
-    return re.findall(r"^\s*-\s*id:\s*(\S+)", m.group(1), re.M)
+    fm = front_matter(Path(spec_path).read_text(), str(spec_path))
+    if fm is None:
+        raise ValueError(f"{spec_path}: no YAML front matter")
+    criteria = fm.get("acceptance_criteria", [])
+    if not isinstance(criteria, list) or any(not isinstance(c, dict) for c in criteria):
+        raise ValueError(f"{spec_path}: acceptance_criteria must be a list of mappings")
+    return [c["id"] for c in criteria if "id" in c]
 
 
 def check_criteria_coverage(spec_path, proof_path):
@@ -297,175 +303,6 @@ APPROVAL_REQ = ["schema", "id", "decision", "approver", "scope", "recorded_at", 
 # validator makes the ordering mechanical instead of aspirational.
 # ---------------------------------------------------------------------------
 
-def _split_top(s, sep):
-    """Split on sep at bracket/brace/quote depth zero."""
-    out, buf, depth, quote = [], [], 0, None
-    for ch in s:
-        if quote:
-            buf.append(ch)
-            if ch == quote:
-                quote = None
-            continue
-        if ch in "\"'":
-            quote = ch
-            buf.append(ch)
-        elif ch in "[{":
-            depth += 1
-            buf.append(ch)
-        elif ch in "]}":
-            depth -= 1
-            buf.append(ch)
-        elif ch == sep and depth == 0:
-            out.append("".join(buf))
-            buf = []
-        else:
-            buf.append(ch)
-    if buf:
-        out.append("".join(buf))
-    return out
-
-
-def _scalar(s):
-    s = s.strip()
-    if s.startswith("[") and s.endswith("]"):
-        inner = s[1:-1].strip()
-        return [_scalar(x) for x in _split_top(inner, ",")] if inner else []
-    if s.startswith("{") and s.endswith("}"):
-        out = {}
-        inner = s[1:-1].strip()
-        if inner:
-            for part in _split_top(inner, ","):
-                k, _, v = part.partition(":")
-                out[k.strip()] = _scalar(v)
-        return out
-    if len(s) >= 2 and s[0] == s[-1] and s[0] in "\"'":
-        return s[1:-1]
-    if re.fullmatch(r"-?\d+", s):
-        return int(s)
-    return s
-
-
-_KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):(.*)$")
-
-
-def parse_yamlish(src):
-    """Parse the VELDO front-matter subset: nested maps, lists of maps, lists
-    of scalars, inline [] and {}, and deeper-indented continuation lines
-    folded into the previous scalar. Deliberately dependency-free: the
-    contract is this subset, not full YAML, so behavior is identical on
-    every machine. Raises ValueError with a line hint on anything outside
-    the subset."""
-    ls = []
-    for n, raw in enumerate(src.splitlines(), 1):
-        if not raw.strip() or raw.lstrip().startswith("#"):
-            continue
-        if raw[:len(raw) - len(raw.lstrip())].count("\t"):
-            raise ValueError(f"tab indentation (line {n}): the subset is space-indented only")
-        ls.append((len(raw) - len(raw.lstrip(" ")), raw.strip()))
-    val, i = _parse_block(ls, 0, 0)
-    if i != len(ls):
-        raise ValueError(f"unparsed trailing content near: {ls[i][1]!r}")
-    return val if val is not None else {}
-
-
-def _parse_block(ls, i, ind):
-    if i >= len(ls) or ls[i][0] < ind:
-        return None, i
-    if ls[i][1].startswith("- ") or ls[i][1] == "-":
-        return _parse_list(ls, i, ls[i][0])
-    return _parse_map(ls, i, ls[i][0])
-
-
-def _parse_map(ls, i, ind):
-    out, lastkey = {}, None
-    while i < len(ls):
-        lind, txt = ls[i]
-        if lind < ind:
-            break
-        if lind > ind:
-            if lastkey is not None and isinstance(out.get(lastkey), str):
-                out[lastkey] = out[lastkey] + " " + txt
-                i += 1
-                continue
-            raise ValueError(f"unexpected indent near: {txt!r}")
-        if txt.startswith("- "):
-            raise ValueError(f"list item at map level near: {txt!r}")
-        m = _KEY_RE.match(txt)
-        if not m:
-            raise ValueError(f"expected 'key: value' near: {txt!r}")
-        key, rest = m.group(1), m.group(2).strip()
-        if key in out:
-            raise ValueError(f"duplicate key {key!r}: last-wins would silently drop the first value")
-        i += 1
-        if rest == "":
-            if i < len(ls) and ls[i][0] > ind:
-                val, i = _parse_block(ls, i, ls[i][0])
-            else:
-                val = None
-            out[key] = val
-            lastkey = None
-        else:
-            out[key] = _scalar(rest)
-            lastkey = key if isinstance(out[key], str) else None
-    return out, i
-
-
-def _parse_list(ls, i, ind):
-    out = []
-    while i < len(ls) and ls[i][0] == ind and (ls[i][1].startswith("- ") or ls[i][1] == "-"):
-        body = ls[i][1][2:].strip() if ls[i][1] != "-" else ""
-        i += 1
-        m = _KEY_RE.match(body) if body else None
-        if m:
-            # map item: first key inline after the dash, siblings indented deeper
-            item_ind = ind + 2
-            item, lastkey = {}, None
-            key, rest = m.group(1), m.group(2).strip()
-            if rest == "":
-                if i < len(ls) and ls[i][0] > item_ind:
-                    val, i = _parse_block(ls, i, ls[i][0])
-                else:
-                    val = None
-                item[key] = val
-            else:
-                item[key] = _scalar(rest)
-                lastkey = key if isinstance(item[key], str) else None
-            while i < len(ls) and ls[i][0] > ind:
-                lind2, txt2 = ls[i]
-                if lind2 == item_ind and not txt2.startswith("- "):
-                    m2 = _KEY_RE.match(txt2)
-                    if not m2:
-                        raise ValueError(f"expected 'key: value' near: {txt2!r}")
-                    key, rest = m2.group(1), m2.group(2).strip()
-                    if key in item:
-                        raise ValueError(f"duplicate key {key!r} in list item")
-                    i += 1
-                    if rest == "":
-                        if i < len(ls) and ls[i][0] > item_ind:
-                            val, i = _parse_block(ls, i, ls[i][0])
-                        else:
-                            val = None
-                        item[key] = val
-                        lastkey = None
-                    else:
-                        item[key] = _scalar(rest)
-                        lastkey = key if isinstance(item[key], str) else None
-                elif lind2 > item_ind and lastkey is not None and isinstance(item.get(lastkey), str):
-                    item[lastkey] = item[lastkey] + " " + txt2
-                    i += 1
-                else:
-                    raise ValueError(f"unexpected structure in list item near: {txt2!r}")
-            out.append(item)
-        else:
-            val = _scalar(body) if body else ""
-            # deeper-indented lines continue a scalar item
-            while i < len(ls) and ls[i][0] > ind and isinstance(val, str):
-                val = (val + " " + ls[i][1]).strip()
-                i += 1
-            out.append(val)
-    return out, i
-
-
 def _ids(items, key):
     return [it.get(key) for it in items if isinstance(it, dict)]
 
@@ -475,7 +312,7 @@ def check_plan(path, specs_dir=None, repo_root=None):
     forward mirroring check (plan work item -> existing spec must bind back)."""
     errs = 0
     text = Path(path).read_text()
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    m = _Y.front_matter_match(text)
     if not m:
         return fail(path, "no YAML front matter")
     try:
@@ -658,13 +495,13 @@ def plan_registry(plans_dir):
     for p in sorted(Path(plans_dir).glob("*.md")):
         if p.name.startswith("TEMPLATE"):
             continue
-        m = re.match(r"^---\n(.*?)\n---", p.read_text(), re.S)
+        m = _Y.front_matter_match(p.read_text())
         if not m:
             continue
         try:
             fm = parse_yamlish(m.group(1))
         except ValueError:
-            continue
+            raise
         if fm.get("id"):
             reg[fm["id"]] = {"path": p, "fm": fm}
     return reg

@@ -3,7 +3,7 @@ schema: veldo.spec/v1
 id: WARP-0100
 title: Adopt VELDO in the VELDO home repository
 status: shipped
-risk: high    # floored: creates scripts/verify.sh, a protected path in the policy this spec ships
+risk: high
 owner: dmitry
 human_approval: required
 lane: standalone

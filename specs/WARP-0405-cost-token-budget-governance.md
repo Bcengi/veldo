@@ -15,71 +15,19 @@ protected_paths: []
 required_evidence: [unit, operational]
 acceptance_criteria:
   - id: AC1
-    text: Spend rides the single existing event stream. .veldo/events.py emit and
-      make_event gain optional numeric tokens and cost_usd fields that ride the
-      veldo.event/v1 envelope exactly the way human_minutes already does,
-      attributed by the existing correlation_id (which defaults to the spec or
-      plan id). The extension is backward compatible - an event with no spend
-      fields still parses and validates, and events.jsonl validation is
-      unchanged - and no second data store is introduced. .veldo/events.py and
-      engine/.veldo/events.py stay byte-identical.
+    text: Spend rides the single existing event stream. .veldo/events.py emit and make_event gain optional numeric tokens and cost_usd fields that ride the veldo.event/v1 envelope exactly the way human_minutes already does, attributed by the existing correlation_id (which defaults to the spec or plan id). The extension is backward compatible - an event with no spend fields still parses and validates, and events.jsonl validation is unchanged - and no second data store is introduced. .veldo/events.py and engine/.veldo/events.py stay byte-identical.
   - id: AC2
-    text: Budgets are declared in the plan, validated for shape only. A plan may
-      carry a light budgets block in veldo.plan/v1 (an optional plan-level tokens
-      cap, an optional cost_usd cap, and an optional per_spec list of per-work-item
-      caps). A missing budgets block means no budget governance for that plan
-      (backward compatible). The block's shape is validated the lightweight
-      yamlish way plan fields are validated today - not a JSON Schema - and a
-      malformed block (a non-mapping, an unknown key, a negative or non-numeric
-      cap, a per_spec entry without a valid spec id or without any cap, or a
-      duplicate spec) is a named BudgetError, never a silent no-governance pass.
-      Float caps that the yamlish subset leaves as strings are coerced to numbers.
+    text: Budgets are declared in the plan, validated for shape only. A plan may carry a light budgets block in veldo.plan/v1 (an optional plan-level tokens cap, an optional cost_usd cap, and an optional per_spec list of per-work-item caps). A missing budgets block means no budget governance for that plan (backward compatible). The block's shape is validated the lightweight yamlish way plan fields are validated today - not a JSON Schema - and a malformed block (a non-mapping, an unknown key, a negative or non-numeric cap, a per_spec entry without a valid spec id or without any cap, or a duplicate spec) is a named BudgetError, never a silent no-governance pass. Float caps that the yamlish subset leaves as strings are coerced to numbers.
   - id: AC3
-    text: The spend aggregation reuses metrics.compute() once, so there is no
-      drift. .veldo/metrics.py compute() is extended a single time to aggregate
-      spend from the stream - a token total, a cost_usd total, and spend by
-      correlation_id - and both the reader's own summary and the budget enforcer
-      read those from compute(), never a forked calculation. .veldo/metrics.py and
-      engine/.veldo/metrics.py stay byte-identical. A selftest asserts
-      the budget module's spend numbers EQUAL metrics.compute()'s on the same
-      stream (no drift).
+    text: The spend aggregation reuses metrics.compute() once, so there is no drift. .veldo/metrics.py compute() is extended a single time to aggregate spend from the stream - a token total, a cost_usd total, and spend by correlation_id - and both the reader's own summary and the budget enforcer read those from compute(), never a forked calculation. .veldo/metrics.py and engine/.veldo/metrics.py stay byte-identical. A selftest asserts the budget module's spend numbers EQUAL metrics.compute()'s on the same stream (no drift).
   - id: AC4
-    text: A mechanical enforcer ships at .veldo/budget.py. Given a plan (and its
-      per-spec caps) and the event stream, it computes spend per plan (attributed
-      to the plan id and its work-item spec correlations, not the global stream
-      total) and per spec (that spec's own correlation), reports OVER or UNDER,
-      and EXITS NON-ZERO naming the plan or spec and the overage when any declared
-      budget is exceeded; it exits 0 when every declared budget is within limit or
-      no budgets are declared. It reads events.jsonl only through metrics.compute
-      and imports nothing outside the standard library.
+    text: A mechanical enforcer ships at .veldo/budget.py. Given a plan (and its per-spec caps) and the event stream, it computes spend per plan (attributed to the plan id and its work-item spec correlations, not the global stream total) and per spec (that spec's own correlation), reports OVER or UNDER, and EXITS NON-ZERO naming the plan or spec and the overage when any declared budget is exceeded; it exits 0 when every declared budget is within limit or no budgets are declared. It reads events.jsonl only through metrics.compute and imports nothing outside the standard library.
   - id: AC5
-    text: The control logic and its real surface are gate-tested with no external
-      dependency. The selftest (CHECK_unit) drives budget.py over synthetic event
-      streams and crafted plans: a stream under budget passes, a stream over a
-      plan budget fails loud naming the plan and the overage, a stream over a
-      per-spec budget fails loud naming the spec and the overage, a plan with no
-      budgets declared passes, and the no-drift assertion holds (budget spend
-      equals metrics.compute). It proves the enforcer is non-tautological: a
-      one-line mutation that ignores the cap (always-under) and a one-line
-      mutation that misattributes spend across correlations each turn the gate
-      red, and every malformed budgets shape is rejected as a named BudgetError.
+    text: "The control logic and its real surface are gate-tested with no external dependency. The selftest (CHECK_unit) drives budget.py over synthetic event streams and crafted plans: a stream under budget passes, a stream over a plan budget fails loud naming the plan and the overage, a stream over a per-spec budget fails loud naming the spec and the overage, a plan with no budgets declared passes, and the no-drift assertion holds (budget spend equals metrics.compute). It proves the enforcer is non-tautological: a one-line mutation that ignores the cap (always-under) and a one-line mutation that misattributes spend across correlations each turn the gate red, and every malformed budgets shape is rejected as a named BudgetError."
   - id: AC6
-    text: Capabilities coverage is honest. Both .veldo/capabilities.yaml and
-      engine/.veldo/capabilities.yaml carry, byte-identically, a
-      budget_governance entry with status drawn from the manifest vocabulary
-      (mechanical). mechanical is honest because the control logic AND its real
-      surface - reading events.jsonl through metrics.compute and enforcing against
-      declared budgets - both run end to end in the gate here over synthetic
-      streams with stdlib only; there is no product surface this repository lacks,
-      so the status overclaims nothing.
+    text: Capabilities coverage is honest. Both .veldo/capabilities.yaml and engine/.veldo/capabilities.yaml carry, byte-identically, a budget_governance entry with status drawn from the manifest vocabulary (mechanical). mechanical is honest because the control logic AND its real surface - reading events.jsonl through metrics.compute and enforcing against declared budgets - both run end to end in the gate here over synthetic streams with stdlib only; there is no product surface this repository lacks, so the status overclaims nothing.
   - id: AC7
-    text: The deliverable is generic (zero company, product, or person names beyond
-      the standard owner field, and zero absolute host paths in the module, the
-      plan budgets block, the capabilities entry, and this spec) and hygienic
-      (ASCII only, no em or en dash, no double hyphen). The specs index
-      regenerates to include this spec, and the full gate (lint, unit, generated,
-      docs, template sync, secret scan, contract validation) stays green with
-      every prior selftest case still passing.
+    text: The deliverable is generic (zero company, product, or person names beyond the standard owner field, and zero absolute host paths in the module, the plan budgets block, the capabilities entry, and this spec) and hygienic (ASCII only, no em or en dash, no double hyphen). The specs index regenerates to include this spec, and the full gate (lint, unit, generated, docs, template sync, secret scan, contract validation) stays green with every prior selftest case still passing.
 rollback: git revert; X5 is additive - optional tokens and cost_usd envelope
   fields on .veldo/events.py (and its template copy), a single spend aggregation
   added to .veldo/metrics.py compute() (and its template copy), a new stdlib module

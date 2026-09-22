@@ -219,282 +219,48 @@ def start_line_scope(repo, start: str, commit: str, landed=None) -> dict:
 # else in that file it walks past without interpreting, except enough structure to know that a
 # `fix_validation:` it can see is a real key and not text inside someone else's block scalar.
 
-_KEY_RE = re.compile(r"^([ \t]*)([A-Za-z_][A-Za-z0-9_.\-]*)[ \t]*:(.*)$")
-_BLOCK_SCALAR_RE = re.compile(r"^[|>][+-]?\d*[+-]?$")
-# What `required:` may say. YAML 1.1 spells a boolean six ways and the owner may use any of them;
-# anything else is REFUSED rather than read as false, because "off because I did not recognise it"
-# is the answer this whole module exists to remove.
+
+# The one syntax reader, loaded by sibling path for file-location imports.
+_yamlish_spec = importlib.util.spec_from_file_location("veldo_yamlish", Path(__file__).resolve().with_name("yamlish.py"))
+_yamlish = importlib.util.module_from_spec(_yamlish_spec)
+_yamlish_spec.loader.exec_module(_yamlish)
+
 _TRUE_WORDS = frozenset({"true", "yes", "on"})
 _FALSE_WORDS = frozenset({"false", "no", "off"})
 
 
-def _policy_lines(text):
-    """The file's lines, split on the three line terminators a file actually has.
-
-    NOT str.splitlines(), which also breaks on U+2028, U+2029, U+0085, U+000B, U+000C and U+001C.
-    Those are content to YAML, and splitting on them cut a quoted note into two lines whose tail
-    parsed as a second setting."""
-    return re.split(r"\r\n|\r|\n", text)
-
-
-def _indent(line):
-    return len(line) - len(line.lstrip(" \t"))
-
-
-def _scan_scalar(text, i, stops):
-    """One YAML scalar from text[i], with the index just past it. Raises when it cannot be read.
-
-    Quote mode is entered ONLY at the scalar's first character, which is what YAML does: an
-    apostrophe inside a plain scalar is an apostrophe, not the start of a quoted string. Reading it
-    as a quote made `{note: don't relax, required: true}` swallow the setting behind it. Double
-    quotes decode YAML backslash escapes and single quotes honour the doubled '' escape, so neither an
-    escaped quote nor a literal one can flip the parser's idea of where the value ends. A quote that
-    does not close on its line is refused rather than run to the end of the text.
-
-    `#` opens a comment only at the start or after a space or tab, as YAML requires; `a#b` is one
-    scalar."""
-    n = len(text)
-    while i < n and text[i] in " \t":
-        i += 1
-    if i < n and text[i] in "\"'":
-        quote, i, out = text[i], i + 1, []
-        while i < n:
-            ch = text[i]
-            if quote == '"' and ch == "\\":
-                escapes = {"0": "\0", "a": "\a", "b": "\b", "t": "\t", "n": "\n",
-                           "v": "\v", "f": "\f", "r": "\r", "e": "\x1b", " ": " ",
-                           '"': '"', "/": "/", "\\": "\\", "N": "\x85", "_": "\xa0",
-                           "L": "\u2028", "P": "\u2029"}
-                escape = text[i + 1:i + 2]
-                if escape in escapes:
-                    out.append(escapes[escape])
-                    i += 2
-                    continue
-                width = {"x": 2, "u": 4, "U": 8}.get(escape)
-                digits = text[i + 2:i + 2 + width] if width else ""
-                if width and len(digits) == width and re.fullmatch(r"[0-9a-fA-F]+", digits):
-                    code = int(digits, 16)
-                    if code <= 0x10ffff and not 0xd800 <= code <= 0xdfff:
-                        out.append(chr(code))
-                        i += 2 + width
-                        continue
-                raise ValidationError("invalid YAML escape in quoted value: %r" % text[:120])
-            if ch == quote:
-                if quote == "'" and i + 1 < n and text[i + 1] == "'":
-                    out.append("'")
-                    i += 2
-                    continue
-                return "".join(out), i + 1
-            out.append(ch)
-            i += 1
-        raise ValidationError("a quoted value is not closed on its line: %r" % text[:120])
-    out = []
-    while i < n:
-        ch = text[i]
-        if ch in stops:
-            break
-        if ch == "#" and (not out or out[-1] in " \t"):
-            break
-        out.append(ch)
-        i += 1
-    return "".join(out).strip(), i
-
-
-def _trailing_is_empty(text, i):
-    """True when what follows position i is nothing but spaces and a comment."""
-    rest = text[i:].strip()
-    return rest == "" or rest.startswith("#")
-
-
-def _root_keys(lines):
-    """Every key that is a key of the document's top level, as (index, name, indent, rest).
-
-    Two things are structural rather than cosmetic. A key introducing a block scalar (`|` or `>`)
-    owns every more-indented line under it, and those lines are TEXT: a policy file that documents
-    its own rule in prose had `fix_validation:` inside such a block and the reader took it. And a
-    value that opens a quote it does not close on its line continues onto the following lines, which
-    are likewise not keys. The document's top level is the SHALLOWEST indentation any key has, not
-    column zero, so a uniformly indented file reads the same as an unindented one."""
-    entries, unknown, i, n = [], [], 0, len(lines)
-    while i < n:
-        raw = lines[i]
-        if not raw.strip() or raw.lstrip().startswith("#"):
-            i += 1
-            continue
-        m = _KEY_RE.match(raw)
-        if not m:
-            unknown.append((i, _indent(raw)))
-            i += 1
-            continue
-        indent, name, rest = len(m.group(1)), m.group(2), m.group(3)
-        entries.append((i, name, indent, rest))
-        head = rest.strip()
-        if _BLOCK_SCALAR_RE.match(head):
-            i += 1
-            while i < n and (not lines[i].strip() or _indent(lines[i]) > indent):
-                i += 1
-            continue
-        if head[:1] in ("\"", "'"):
-            try:
-                _scan_scalar(rest, 0, "")
-            except ValidationError:
-                # The value continues onto following lines until the quote closes. Those lines are
-                # part of this value and none of them is a key.
-                quote = head[:1]
-                i += 1
-                while i < n and quote not in lines[i]:
-                    i += 1
-                i += 1
-                continue
-        i += 1
-    base = min([e[2] for e in entries] + [indent for _, indent in unknown], default=0)
-    for at, indent in unknown:
-        if indent == base:
-            raise ValidationError("unrecognized top-level policy line %d: %r" % (at + 1, lines[at]))
-    return [e for e in entries if e[2] == base]
-
-
-def _parse_inline(body, where):
-    """`{a: 1, b: two}` between its braces, as a mapping.
-
-    A nested `{}` or `[]` is REFUSED rather than parsed: this file has never needed one, and the
-    comma split that did not know about them turned `meta: {owner: dmitry, required: false}` into a
-    second `required` that overwrote the owner's."""
-    out, i, n = {}, 0, len(body)
-    while True:
-        while i < n and body[i] in " \t":
-            i += 1
-        if i >= n:
-            return out
-        m = re.match(r"([A-Za-z_][A-Za-z0-9_.\-]*)[ \t]*:", body[i:])
-        if not m:
-            raise ValidationError("%s: expected `key: value` in the inline mapping near %r" % (where, body[i:i + 40]))
-        key = m.group(1)
-        i += m.end()
-        while i < n and body[i] in " \t":
-            i += 1
-        if i < n and body[i] in "{[":
-            raise ValidationError("%s: a nested %s is not supported in this block; write it as "
-                                  "indented lines" % (where, body[i]))
-        value, i = _scan_scalar(body, i, ",")
-        if key in out:
-            raise ValidationError("%s: %r appears twice in the inline mapping" % (where, key))
-        out[key] = value
-        while i < n and body[i] in " \t":
-            i += 1
-        if i >= n:
-            return out
-        if body[i] != ",":
-            raise ValidationError("%s: expected a comma after %r, found %r" % (where, key, body[i:i + 20]))
-        i += 1
-
-
-def _parse_block(lines, at, indent, where):
-    """The indented members under a key, as a mapping. Members sit at ONE indentation.
-
-    A member with no value on its line is refused rather than read as empty: `required:` with its
-    value on the following line is legal YAML, and reading it as empty read the owner's armed rule
-    as off. A member at an indentation that is neither the members' nor deeper is refused too, since
-    that is a file whose shape this reader cannot account for."""
-    out, member_indent, i, n = {}, None, at + 1, len(lines)
-    while i < n:
-        raw = lines[i]
-        if not raw.strip() or raw.lstrip().startswith("#"):
-            i += 1
-            continue
-        nind = _indent(raw)
-        if nind <= indent:
-            break
-        if member_indent is None:
-            member_indent = nind
-        if nind > member_indent:
-            raise ValidationError("%s: %r is indented under a member that has no value of its own; "
-                                  "write the value on the member's line" % (where, raw.strip()[:60]))
-        if nind != member_indent:
-            raise ValidationError("%s: %r is at an indentation that is neither the block's nor a "
-                                  "member's" % (where, raw.strip()[:60]))
-        m = _KEY_RE.match(raw)
-        if not m:
-            raise ValidationError("%s: expected `key: value`, found %r" % (where, raw.strip()[:60]))
-        key, rest = m.group(2), m.group(3)
-        value, j = _scan_scalar(rest, 0, "")
-        if not _trailing_is_empty(rest, j):
-            raise ValidationError("%s: %r carries text after its value that this reader cannot "
-                                  "account for" % (where, key))
-        if value == "":
-            raise ValidationError("%s: %r has no value on its own line" % (where, key))
-        if key in out:
-            raise ValidationError("%s: %r appears twice in the block" % (where, key))
-        out[key] = value
-        i += 1
-    return out
-
-
 def read_policy(policy_path) -> dict:
-    """The fix_validation block of the policy file, as a mapping, or a refusal.
+    """Read syntax through yamlish, then validate the fix-validation settings.
 
-    THREE ANSWERS. No policy file, or a file with no fix_validation key at all, is an empty mapping:
-    a repository that never adopted the rule is advisory and that is correct. A block this reader can
-    read EXACTLY is that block. Anything else raises. There is deliberately no fourth answer in which
-    the reader guesses, because every defect this module has ever had lived there.
-
-    The AUTHORITY on the flag is flag_from_policy, which takes an already-parsed mapping; this reader
-    is what produces that mapping everywhere the owner's two settings are read. The validator's
-    general front-matter parser must NOT be used for this file: it strips a whole-line comment and
-    not a trailing one, so `required: true  # armed` reads as false, and it coerces a digit-only
-    value to an integer, so a start line of 0123456 loses its leading zero. It is not taught to do
-    better because 55 of this repository's 328 specifications and plans parse differently under that
-    change, measured by VELDO-0106's own row rather than pinned here."""
+    Only an absent file or absent key is advisory. IO failures, malformed syntax,
+    empty blocks and unknown shapes refuse. Integer-shaped commit IDs are text
+    at this schema boundary; canonical integers are losslessly decimalized.
+    """
     try:
-        raw_bytes = Path(policy_path).read_bytes()
-    except OSError:
+        policy = _yamlish.read(policy_path)
+    except FileNotFoundError:
         return {}
-    try:
-        # utf-8-sig, because a byte order mark is not whitespace and lstrip does not remove it: with
-        # one in front of the key the reader saw no key at all, and no key reads as advisory.
-        text = raw_bytes.decode("utf-8-sig")
-    except UnicodeDecodeError as e:
-        # NOT an OSError, so it used to escape this module and the call site's own handler and take
-        # the whole validator down with it.
-        raise ValidationError("%s is not valid UTF-8: %s" % (policy_path, e))
-    lines = _policy_lines(text)
-    hits = [e for e in _root_keys(lines) if e[1] == FLAG_KEY]
-    if not hits:
+    except (OSError, ValueError) as exc:
+        raise ValidationError(f"{policy_path}: {exc}") from exc
+    if not isinstance(policy, dict):
+        raise ValidationError(f"{policy_path}: policy must be a mapping")
+    if FLAG_KEY not in policy:
         return {}
-    if len(hits) > 1:
-        raise ValidationError("%s: %s appears %d times at the document's top level; which one binds "
-                              "is not this reader's guess to make" % (policy_path, FLAG_KEY, len(hits)))
-    at, _, indent, rest = hits[0]
-    where = "%s line %d" % (policy_path, at + 1)
-    head = rest.strip()
-    if head.startswith("{"):
-        value, j = _scan_scalar(rest, 0, "")
-        if not value.endswith("}"):
-            raise ValidationError("%s: the inline mapping is not closed on its line" % where)
-        if not _trailing_is_empty(rest, j):
-            raise ValidationError("%s: text after the inline mapping this reader cannot account for" % where)
-        block = _parse_inline(value[1:-1], where)
-    elif head and not head.startswith("#"):
-        raise ValidationError("%s: %s must be a mapping, written inline or as indented lines; it "
-                              "carries the scalar %r" % (where, FLAG_KEY, head))
-    else:
-        block = _parse_block(lines, at, indent, where)
-    if not block:
-        raise ValidationError("%s: %s is present but carries no settings; a setting the owner wrote "
-                              "must never read as absent" % (where, FLAG_KEY))
-    if REQUIRED_KEY in block:
-        word = block[REQUIRED_KEY].strip().lower()
-        if word in _TRUE_WORDS:
-            block[REQUIRED_KEY] = "true"
-        elif word in _FALSE_WORDS:
-            block[REQUIRED_KEY] = "false"
-        else:
-            raise ValidationError("%s: %s is %r, which is neither true nor false; it is not read as "
-                                 "false because a value this reader does not understand must not "
-                                 "disarm the rule" % (where, REQUIRED_KEY, block[REQUIRED_KEY]))
+    block = policy[FLAG_KEY]
+    if not isinstance(block, dict) or not block:
+        raise ValidationError(f"{policy_path}: {FLAG_KEY} must be a nonempty mapping")
     if REQUIRED_KEY not in block and START_KEY not in block:
-        raise ValidationError("%s: %s carries neither %s nor %s; a block with neither setting is a "
-                              "typo, not a policy" % (where, FLAG_KEY, REQUIRED_KEY, START_KEY))
+        raise ValidationError(f"{policy_path}: {FLAG_KEY} carries neither {REQUIRED_KEY} nor {START_KEY}")
+    for key, value in block.items():
+        if not isinstance(value, (str, int)) or isinstance(value, bool):
+            raise ValidationError(f"{policy_path}: {key} must be a scalar value")
+    if REQUIRED_KEY in block:
+        word = str(block[REQUIRED_KEY]).lower()
+        if word not in _TRUE_WORDS | _FALSE_WORDS:
+            raise ValidationError(f"{policy_path}: {REQUIRED_KEY} is neither true nor false")
+        block[REQUIRED_KEY] = "true" if word in _TRUE_WORDS else "false"
+    if START_KEY in block:
+        block[START_KEY] = str(block[START_KEY])
     return {FLAG_KEY: block}
 
 
@@ -709,18 +475,7 @@ def check_proof_bundle(path, manifest, root, parse_yamlish, front_matter, fail) 
     validator hands in its own reader of front matter and its own way of reporting a failure, so this
     module never has to know how that validator is put together."""
     policy = Path(root) / ".veldo" / "policy.yaml"
-    # READ BY read_policy, NOT by the parser the validator hands in. The handed-in parser strips a
-    # whole-line comment and not a trailing one, so `required: true  # armed` read as FALSE and the
-    # rule the owner had just armed returned to advisory in silence. read_policy already handles
-    # every shape this file takes, and it is not a second parser written here: it predates this
-    # item and VELDO-0104's suite already tests it. The handed-in parser is still used for the spec
-    # front matter below, which is what it is for.
-    #
-    # The general parser is deliberately NOT taught to strip trailing comments. That was measured
-    # over this repository's corpus first: 55 of its 328 specifications and plans parse differently
-    # under it, 49 of them in acceptance-criteria text and the rest in risk, constraints and status
-    # fields containing a hash. It would truncate shipped specifications to fix a flag nobody had
-    # tripped. VELDO-0106's AC3 row recomputes the count each run rather than pinning it.
+    # Syntax is shared with every document; read_policy adds the settings schema.
     unreadable = ""
     try:
         parsed = read_policy(policy) if policy.is_file() else {}

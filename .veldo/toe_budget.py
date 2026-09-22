@@ -184,6 +184,8 @@ import re
 import sys
 from pathlib import Path
 
+
+
 SCHEMA = "veldo.toe_budget/v1"
 SCHEMA_PRICE = "veldo.toe_token_price/v1"
 ROOT = Path(__file__).resolve().parent.parent
@@ -897,7 +899,7 @@ def load_plan_fm(arg, base=None, V=None):
     V = V or _validate()
     p = Path(arg)
     if p.is_file():
-        m = re.match(r"^---\n(.*?)\n---", p.read_text(), re.S)
+        m = V._yamlish.front_matter_match(p.read_text())
         if not m:
             raise ValueError("no front matter in %s" % arg)
         return V.parse_yamlish(m.group(1))

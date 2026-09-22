@@ -6,14 +6,17 @@ pdf/<name>.pdf with a footer showing "<Title> vX.Y", "by <author>", and
 (VELDO_Documents.pdf) from the same manifest, so the map cannot drift.
 
 Usage: python3 scripts/render_pdfs.py
-Requires: google-chrome, python3-markdown, python3-websockets, python3-yaml.
+Requires: google-chrome, python3-markdown, python3-websockets.
 """
 import asyncio, base64, datetime, json, re, subprocess, tempfile, time
 from pathlib import Path
 
 import markdown
 import websockets
-import yaml
+import importlib.util
+_parser_spec = importlib.util.spec_from_file_location("veldo_yamlish", Path(__file__).resolve().parents[1] / ".veldo/yamlish.py")
+_Y = importlib.util.module_from_spec(_parser_spec)
+_parser_spec.loader.exec_module(_Y)
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
@@ -161,7 +164,7 @@ async def print_pdf(ws, mid, html_path, pdf_path, footer_left, author):
 
 
 async def main():
-    manifest = yaml.safe_load((DOCS / "manifest.yaml").read_text())
+    manifest = _Y.read(DOCS / "manifest.yaml")
     author = manifest["author"]
     PDF.mkdir(exist_ok=True)
 

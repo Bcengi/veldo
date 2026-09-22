@@ -13,57 +13,15 @@ human_approval: not_required
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A contract/schema drift runner ships at
-      engine/scripts/runners/contract/veldo_contract_runner.py. It reads
-      a contract (a name, a version, a strict flag, and a golden schema mapping
-      dotted field paths to JSON type names) and captures a real payload through
-      a PRODUCER seam - a callable returning the payload, defaulting to the
-      contract's captured fixture block so the runner is replayable with no live
-      producer. It derives the captured payload's actual schema (dotted paths to
-      types, recursing into objects and into list element shapes), diffs it
-      against the golden, and exits 0 when there is no breaking drift and exits 1
-      with each drift named (path and kind). An adopting repo passes
-      producer=its own callable (which calls its real service) unchanged.
+    text: A contract/schema drift runner ships at engine/scripts/runners/contract/veldo_contract_runner.py. It reads a contract (a name, a version, a strict flag, and a golden schema mapping dotted field paths to JSON type names) and captures a real payload through a PRODUCER seam - a callable returning the payload, defaulting to the contract's captured fixture block so the runner is replayable with no live producer. It derives the captured payload's actual schema (dotted paths to types, recursing into objects and into list element shapes), diffs it against the golden, and exits 0 when there is no breaking drift and exits 1 with each drift named (path and kind). An adopting repo passes producer=its own callable (which calls its real service) unchanged.
   - id: AC2
-    text: Drift is classified honestly. A field in the golden but absent from the
-      captured payload is a removed drift (breaking); a field whose captured type
-      differs from the golden type is a type_changed drift (breaking); a field in
-      the captured payload but not in the golden is an added drift. Removed and
-      type_changed always fail. An added field fails only when the contract is
-      strict (an additive change is nonbreaking for a tolerant reader but a
-      contract that pins its surface catches it); a non-strict contract tolerates
-      additions and still fails on any removal or type change. Type derivation is
-      JSON-honest: a bool is not an integer or a number, an integer is a number,
-      null is its own type, and objects and arrays are distinguished; list
-      element shapes are derived under a path[] segment so a typed field inside a
-      list is checked.
+    text: "Drift is classified honestly. A field in the golden but absent from the captured payload is a removed drift (breaking); a field whose captured type differs from the golden type is a type_changed drift (breaking); a field in the captured payload but not in the golden is an added drift. Removed and type_changed always fail. An added field fails only when the contract is strict (an additive change is nonbreaking for a tolerant reader but a contract that pins its surface catches it); a non-strict contract tolerates additions and still fails on any removal or type change. Type derivation is JSON-honest: a bool is not an integer or a number, an integer is a number, null is its own type, and objects and arrays are distinguished; list element shapes are derived under a path[] segment so a typed field inside a list is checked."
   - id: AC3
-    text: The contract is versioned and the check cannot pass vacuously. The
-      result records the contract name and version, so a captured payload is
-      always graded against a pinned golden version and a deliberate breaking
-      change is a new golden version rather than silent drift. A contract with an
-      empty golden schema asserts nothing and is a contract error (a check that
-      asserts nothing is not proof), failed loud. A producer that raises is a
-      named capture error, not a silent pass.
+    text: The contract is versioned and the check cannot pass vacuously. The result records the contract name and version, so a captured payload is always graded against a pinned golden version and a deliberate breaking change is a new golden version rather than silent drift. A contract with an empty golden schema asserts nothing and is a contract error (a check that asserts nothing is not proof), failed loud. A producer that raises is a named capture error, not a silent pass.
   - id: AC4
-    text: The control logic is unit-tested in scripts/selftest.py with a captured
-      fixture payload and NO live producer, mirroring the other reference
-      runners. Schema derivation is exercised for nested objects, list element
-      shapes, and every JSON type (including bool-is-not-integer and
-      integer-is-a-number); the diff is exercised for a clean match, a removed
-      field, a type change, and an addition under both strict and non-strict; an
-      empty golden schema is a contract error. Two shipped fixtures (a payload
-      that matches its golden and a payload that has drifted) are driven end to
-      end (pass -> exit 0, drift -> exit 1 with the drift named). All prior
-      selftest cases keep passing and the gate stays green.
+    text: The control logic is unit-tested in scripts/selftest.py with a captured fixture payload and NO live producer, mirroring the other reference runners. Schema derivation is exercised for nested objects, list element shapes, and every JSON type (including bool-is-not-integer and integer-is-a-number); the diff is exercised for a clean match, a removed field, a type change, and an addition under both strict and non-strict; an empty golden schema is a contract error. Two shipped fixtures (a payload that matches its golden and a payload that has drifted) are driven end to end (pass -> exit 0, drift -> exit 1 with the drift named). All prior selftest cases keep passing and the gate stays green.
   - id: AC5
-    text: The runner is generic - zero company or product names in the runner,
-      fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and
-      repository instance, kept byte-identical) declares it status reference (a
-      shipped reference wired per repo to its own producer and golden contracts;
-      the veldo home repo ships no versioned payload contract of its own), never
-      mechanical. The docs-hygiene, secret, lint, and template-sync gates stay
-      green.
+    text: The runner is generic - zero company or product names in the runner, fixtures, wrapper, or README - and .veldo/capabilities.yaml (template and repository instance, kept byte-identical) declares it status reference (a shipped reference wired per repo to its own producer and golden contracts; the veldo home repo ships no versioned payload contract of its own), never mechanical. The docs-hygiene, secret, lint, and template-sync gates stay green.
 required_evidence: [unit]
 rollback: git revert; B11 adds a new runner file, a fixture pair, a wrapper and a
   README under engine, a selftest block, and an honest capabilities

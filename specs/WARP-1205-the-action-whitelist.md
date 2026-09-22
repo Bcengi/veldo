@@ -3,7 +3,7 @@ schema: veldo.spec/v1
 id: WARP-1205
 title: The action whitelist - runbook actions as code (W5 of PLAN-0012)
 status: shipped
-risk: high - the whitelist is the enforcement core on the execution side (PLAN-0012 C2): a spec touching the whitelist carries a high risk floor with recorded human approval, so it needs the expanded gate and the L2 independent review and the founder's recorded approval as the landing key, independent of the footprint tier (which is standard - a single contracts area, no boundary crossing; .veldo/action.py is a placeless engine module like the sibling organs)
+risk: "high - the whitelist is the enforcement core on the execution side (PLAN-0012 C2): a spec touching the whitelist carries a high risk floor with recorded human approval, so it needs the expanded gate and the L2 independent review and the founder's recorded approval as the landing key, independent of the footprint tier (which is standard - a single contracts area, no boundary crossing; .veldo/action.py is a placeless engine module like the sibling organs)"
 owner: dmitry
 human_approval: required
 lane: planned

@@ -5,21 +5,7 @@ title: The gate sleeps 46 real seconds waiting for a user interface that does no
   mobile runners the injected waiter this repository already uses in two other modules, and turn those waits
   from unobservable delay into asserted behaviour
 status: shipped
-risk: high - the footprint crosses the engine area in fourteen files (two runner modules across seven copies
-  each), and it changes modules that SHIP to adopters, so the first duty is that an adopter's WALL-CLOCK
-  WAITING is unchanged: the seam defaults to the real time.sleep and time.monotonic, and every settle constant
-  keeps its numeric value. ONE ADOPTER-VISIBLE BEHAVIOUR DOES CHANGE, and it is named here rather than left
-  inside a claim of byte-identity, because that claim was measured FALSE for it: the runners used to reach
-  `time.sleep` through the module ATTRIBUTE at each call, so a harness that patched `time.sleep` AFTER import
-  intercepted every wait. The seam binds the default at def time to the function OBJECT, so it no longer does.
-  MEASURED on the shipped copy: construct `SettleWaiter()` with a post-import patch installed and
-  `_sleep is the real time.sleep` is True while `_sleep is the patched attribute` is False. Wall-clock waiting
-  is identical; INTERCEPTION is not, and an adopter relying on monkeypatching to speed or observe these waits
-  must pass a waiter instead. The way this could go wrong is subtle rather than loud - shortening a constant, or
-  defaulting to a fake clock in production, would make the gate faster and the shipped runner wrong. Both are
-  closed by assertion rather than by care. It is high and not critical because no protected path is touched, no
-  process-runner assertion is affected (proven: a global virtual clock breaks exactly seven, and they are all in
-  the OTHER runner), and the change is prototype-measured at zero assertion impact
+risk: "high - the footprint crosses the engine area in fourteen files (two runner modules across seven copies each), and it changes modules that SHIP to adopters, so the first duty is that an adopter's WALL-CLOCK WAITING is unchanged: the seam defaults to the real time.sleep and time.monotonic, and every settle constant keeps its numeric value. ONE ADOPTER-VISIBLE BEHAVIOUR DOES CHANGE, and it is named here rather than left inside a claim of byte-identity, because that claim was measured FALSE for it: the runners used to reach `time.sleep` through the module ATTRIBUTE at each call, so a harness that patched `time.sleep` AFTER import intercepted every wait. The seam binds the default at def time to the function OBJECT, so it no longer does. MEASURED on the shipped copy: construct `SettleWaiter()` with a post-import patch installed and `_sleep is the real time.sleep` is True while `_sleep is the patched attribute` is False. Wall-clock waiting is identical; INTERCEPTION is not, and an adopter relying on monkeypatching to speed or observe these waits must pass a waiter instead. The way this could go wrong is subtle rather than loud - shortening a constant, or defaulting to a fake clock in production, would make the gate faster and the shipped runner wrong. Both are closed by assertion rather than by care. It is high and not critical because no protected path is touched, no process-runner assertion is affected (proven: a global virtual clock breaks exactly seven, and they are all in the OTHER runner), and the change is prototype-measured at zero assertion impact"
 owner: dmitry
 human_approval: not_required
 lane: standalone

@@ -4,17 +4,7 @@ id: WARP-0711
 title: The lint stage spawns 661 interpreters to syntax-check 662 files - do it in one process, same files,
   same per-file failure naming, measured 14.07s to 0.82s
 status: shipped
-risk: high - the footprint crosses the enforcement and engine areas (a gate stage plus its seven engine
-  copies), and a footprint crossing never lowers the tier, so high is the floor rather than a judgement. The
-  substantive reason it deserves the tier: this changes a GATE STAGE, and the failure mode is a stage that
-  checks FEWER files than before while still printing pass, which is invisible by construction. That is why
-  the file set is asserted EQUAL to the old stage's rather than assumed, and why a deliberately broken file in
-  each language must still fail by name. It is high and not critical because the stage's contract (same
-  patterns, per-path failure naming, exit semantics, no bytecode) is preserved by proof, no protected path is
-  touched, scripts/verify.sh and the stage list are byte-unchanged, and nothing outside this stage is
-  affected. RECORDED HUMAN APPROVAL IS NOT REQUIRED: the owner directed this optimization, the change is
-  contract-preserving by assertion, and it touches no protected path - if the implementation turns out to need
-  scripts/verify.sh, it STOPS and returns for approval
+risk: "high - the footprint crosses the enforcement and engine areas (a gate stage plus its seven engine copies), and a footprint crossing never lowers the tier, so high is the floor rather than a judgement. The substantive reason it deserves the tier: this changes a GATE STAGE, and the failure mode is a stage that checks FEWER files than before while still printing pass, which is invisible by construction. That is why the file set is asserted EQUAL to the old stage's rather than assumed, and why a deliberately broken file in each language must still fail by name. It is high and not critical because the stage's contract (same patterns, per-path failure naming, exit semantics, no bytecode) is preserved by proof, no protected path is touched, scripts/verify.sh and the stage list are byte-unchanged, and nothing outside this stage is affected. RECORDED HUMAN APPROVAL IS NOT REQUIRED: the owner directed this optimization, the change is contract-preserving by assertion, and it touches no protected path - if the implementation turns out to need scripts/verify.sh, it STOPS and returns for approval"
 owner: dmitry
 human_approval: not_required
 lane: standalone

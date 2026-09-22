@@ -1,7 +1,7 @@
 """The repository's strict, standard-library document reader.
 
 This is a deliberately limited YAML dialect, not a general YAML implementation.
-Mappings have identifier keys; sequences, nested flow collections, quoted strings,
+Mappings have identifier/path or quoted keys; sequences, nested flow collections, quoted strings,
 and space-indented plain continuations are supported. Plain scalars retain their
 spelling except canonical decimal integers (0 or -?[1-9][0-9]*). Boolean words are
 strings: each schema owns boolean interpretation. Leading-zero identifiers stay
@@ -17,8 +17,8 @@ All failures are ValueError with a source and physical line number.
 import re
 from pathlib import Path
 
-_KEY = re.compile(r'([A-Za-z_][A-Za-z0-9_.-]*):(?:[ \t]+|$)(.*)')
-_FLOW_KEY = re.compile(r'([A-Za-z_][A-Za-z0-9_.-]*)[ \t]*:')
+_KEY = re.compile(r'([A-Za-z_.][A-Za-z0-9_./-]*)[ \t]*:(?:[ \t]+|$)(.*)')
+_FLOW_KEY = re.compile(r'([A-Za-z_.][A-Za-z0-9_./-]*)[ \t]*:')
 _INT = re.compile(r'(?:0|-?[1-9][0-9]*)\Z')
 _ESCAPES = dict(zip('0abtnvfre', '\0\a\b\t\n\v\f\r\x1b'))
 _ESCAPES.update({' ': ' ', '"': '"', '/': '/', '\\': '\\',
@@ -107,13 +107,20 @@ class _Flow:
             return out
         while self.i < len(self.text):
             if opener == '{':
-                m = _FLOW_KEY.match(self.text, self.i)
-                if not m:
-                    self.error('expected identifier key in flow mapping')
-                key = m[1]
+                if self.text[self.i:self.i + 1] in ('"', "'"):
+                    key = self.quoted()
+                    self.space()
+                    if self.text[self.i:self.i + 1] != ':':
+                        self.error('expected colon after quoted key')
+                    self.i += 1
+                else:
+                    m = _FLOW_KEY.match(self.text, self.i)
+                    if not m:
+                        self.error('expected identifier key in flow mapping')
+                    key = m[1]
+                    self.i = m.end()
                 if key in out:
                     self.error('duplicate key ' + repr(key))
-                self.i = m.end()
                 out[key] = self.value(True)
             else:
                 out.append(self.value(True))
@@ -229,13 +236,29 @@ class _Document:
         for i, line in enumerate(lines):
             value += line
             nxt = lines[i + 1] if i + 1 < len(lines) else None
-            value += (' ' if indicator.startswith('>') and line and nxt
-                      and not line.startswith(' ') and not nxt.startswith(' ') else '\n')
+            if indicator.startswith('>') and line and nxt and not line.startswith(' ') and not nxt.startswith(' '):
+                value += ' '
+            elif indicator.startswith('>') and not line and nxt and i > 0 and lines[i - 1] and not lines[i - 1].startswith(' '):
+                pass  # the preceding break already represents this blank line
+            else:
+                value += '\n'
         if indicator.endswith('-'):
             return value.rstrip('\n')
         if indicator.endswith('+'):
             return value
         return value.rstrip('\n') + ('\n' if lines else '')
+
+    def member(self, text, n):
+        if text.startswith(('"', "'")):
+            reader = _Flow(text, lambda msg: self.error(n, msg))
+            key = reader.quoted()
+            reader.space()
+            rest = text[reader.i:]
+            if rest == ':' or rest.startswith((': ', ':\t')):
+                return key, rest[1:]
+            return None
+        match = _KEY.fullmatch(text)
+        return match.groups() if match else None
 
     def block(self, indent):
         self.skip()
@@ -253,7 +276,7 @@ class _Document:
                 if not (text == '-' or text.startswith('- ')):
                     self.error(n, 'mixed mapping and sequence')
                 body = text[2:] if text != '-' else ''
-                if _KEY.fullmatch(body):
+                if self.member(body, n):
                     # Treat the first member exactly like every subsequent map member.
                     self.lines[n] = ' ' * (indent + 2) + body
                     self.i = n
@@ -261,10 +284,10 @@ class _Document:
                 else:
                     out.append(self.value(body, indent, n))
             else:
-                m = _KEY.fullmatch(text)
+                m = self.member(text, n)
                 if not m:
                     self.error(n, 'expected identifier key: value')
-                key, rest = m.groups()
+                key, rest = m
                 if key in out:
                     self.error(n, 'duplicate key ' + repr(key))
                 out[key] = self.value(rest, indent, n)
@@ -295,16 +318,39 @@ def read(path):
         raise ParseError(f'{path}: invalid UTF-8: {exc}') from exc
 
 
+def front_matter_match(text):
+    """Locate a complete front-matter region for readers and source-preserving writers.
+
+    group(1) is the metadata source; start/end allow an existing writer to edit
+    that region without rewriting the prose body. Unclosed fences always refuse.
+    """
+    if not re.match(r"\A\ufeff?---(?:\r\n|\r|\n|$)", text):
+        return None
+    match = re.match(r"\A\ufeff?---(?:\r\n|\r|\n)(.*?)(?:\r\n|\r|\n)---(?=\r\n|\r|\n|$)", text, re.S)
+    if match is None:
+        raise ParseError("<text>:1: unclosed front matter")
+    return match
+
+
 def front_matter(text, source='<text>'):
     """Return a mapping, None only for no opening fence, or refuse malformed metadata."""
-    lines = re.split(r'\r\n|\r|\n', text.removeprefix('\ufeff'))
-    if lines[0] != '---':
+    match = front_matter_match(text)
+    if match is None:
         return None
-    try:
-        end = lines.index('---', 1)
-    except ValueError:
-        raise ParseError(f'{source}:1: unclosed front matter') from None
-    value = parse('\n' + '\n'.join(lines[1:end]), source)
+    value = parse('\n' + match.group(1), source)
     if not isinstance(value, dict):
         raise ParseError(f'{source}:2: front matter must be a mapping')
     return value
+
+
+def quote(value):
+    """Encode a scalar for repository writers, quoting whenever plain spelling is unsafe."""
+    import json
+    if not isinstance(value, str):
+        return json.dumps(value)
+    try:
+        if '\n' not in value and '\r' not in value and parse('value: ' + value) == {'value': value}:
+            return value
+    except ValueError:
+        pass
+    return json.dumps(value, ensure_ascii=True)

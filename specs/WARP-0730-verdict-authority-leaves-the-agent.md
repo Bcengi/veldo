@@ -5,14 +5,7 @@ title: Nine rounds of forgery guards each bought exactly one spelling, because a
   own process cannot stop that agent writing bytes - remove the capability instead of guarding it, so the
   gate marks ordinary work done and only the owner can sign off high risk
 status: ready
-risk: critical - this removes the guard the product's central claim rests on, and removing a guard is the
-  move that most deserves suspicion. The danger in the permissive direction is that verdict authority moves
-  somewhere weaker rather than nowhere, leaving forgery possible with the defence deleted. The danger in the
-  strict direction is that ordinary items stop being able to ship at all, which is what the current
-  critical-tier two-review requirement already does in practice: WARP-0725 has needed two independent
-  reviews for days and has zero. It is critical rather than high because the change touches
-  `.veldo/policy.yaml`, a protected path at floor high, and because getting it wrong reintroduces the exact
-  defect the last nine rounds were spent on
+risk: "critical - this removes the guard the product's central claim rests on, and removing a guard is the move that most deserves suspicion. The danger in the permissive direction is that verdict authority moves somewhere weaker rather than nowhere, leaving forgery possible with the defence deleted. The danger in the strict direction is that ordinary items stop being able to ship at all, which is what the current critical-tier two-review requirement already does in practice: WARP-0725 has needed two independent reviews for days and has zero. It is critical rather than high because the change touches `.veldo/policy.yaml`, a protected path at floor high, and because getting it wrong reintroduces the exact defect the last nine rounds were spent on"
 owner: dmitry
 human_approval: required
 approved_by: dmitry

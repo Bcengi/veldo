@@ -1,25 +1,9 @@
 ---
 schema: veldo.spec/v1
 id: WARP-1208
-title: Incident as intent - the compressed loop and reconciliation. A closed incident is not a
-  restored service, it is a settled piece of intent: the close refuses without a human-validated
-  diagnosis, the failure mode leaves behind drafted regression criteria and a drafted runbook action
-  that ONLY a human promotes, the executed remediation is reconciled against its receipt (never a
-  claim), a recurring failure signature is reported as a missing specification, and the whole pass
-  is idempotent under replay (W8 of PLAN-0012)
+title: "Incident as intent - the compressed loop and reconciliation. A closed incident is not a restored service, it is a settled piece of intent: the close refuses without a human-validated diagnosis, the failure mode leaves behind drafted regression criteria and a drafted runbook action that ONLY a human promotes, the executed remediation is reconciled against its receipt (never a claim), a recurring failure signature is reported as a missing specification, and the whole pass is idempotent under replay (W8 of PLAN-0012)"
 status: shipped
-risk: standard - this item builds NO execution path and touches NO enforcement-core organ. It is the
-  reconciliation pass that RUNS AFTER an incident is already diagnosed and any remediation already
-  executed: it reads the incident and remedy records, reads an execution receipt the executor
-  (WARP-1206) already wrote, writes a reconciliation receipt plus two DRAFT artifacts, and appends
-  the incident.closed event. C2's high floor covers specs touching the executor, the whitelist, the
-  two-key rule, the kill switch, or the ladder configuration; this spec edits none of them
-  (.veldo/action_executor.py, .veldo/action.py, .veldo/two_key.py are READ for their shipped physics and
-  are NOT in the footprint), and it opens no data-mutating path, so the critical tier does not apply
-  either. The footprint tier is standard as well (a single declared area, contracts, via
-  .veldo/validate.py; the new module is a placeless engine organ like every sibling of this plan).
-  Nothing here lowers a class: the drafts it writes are structurally OUTSIDE the whitelist store, so
-  the machine gains no ability to promote anything
+risk: "standard - this item builds NO execution path and touches NO enforcement-core organ. It is the reconciliation pass that RUNS AFTER an incident is already diagnosed and any remediation already executed: it reads the incident and remedy records, reads an execution receipt the executor (WARP-1206) already wrote, writes a reconciliation receipt plus two DRAFT artifacts, and appends the incident.closed event. C2's high floor covers specs touching the executor, the whitelist, the two-key rule, the kill switch, or the ladder configuration; this spec edits none of them (.veldo/action_executor.py, .veldo/action.py, .veldo/two_key.py are READ for their shipped physics and are NOT in the footprint), and it opens no data-mutating path, so the critical tier does not apply either. The footprint tier is standard as well (a single declared area, contracts, via .veldo/validate.py; the new module is a placeless engine organ like every sibling of this plan). Nothing here lowers a class: the drafts it writes are structurally OUTSIDE the whitelist store, so the machine gains no ability to promote anything"
 owner: dmitry
 human_approval: not_required
 lane: planned

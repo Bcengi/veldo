@@ -7,15 +7,7 @@ title: The support numbers - time-to-diagnosis and time-to-restore, recurrence r
   cost-to-change per area where that data exists and standing down honestly where it does not
   (W10 of PLAN-0012)
 status: shipped
-risk: standard - this item DERIVES and RENDERS; it decides nothing and refuses nothing operationally.
-  It reads the event stream and the reconciliation receipts, both already written, and adds measures to
-  the existing metrics derivation and dashboard. It touches no enforcement-core organ (the executor, the
-  whitelist, the two-key rule, the kill switch and the ladder are not read and not edited), opens no
-  execution path, starts no process, and writes no record other than rendered output. The footprint tier
-  is standard as well: a single declared area, metrics, via .veldo/metrics.py and .veldo/dashboard.py. The
-  one property that makes this item worth reviewing carefully is HONESTY OF NUMBERS rather than safety of
-  action: a derived measure that silently counts an unbacked event, or invents a denominator, is a lie a
-  human will act on, so the anti-vacuity work here is on the exclusion and the stand-down
+risk: "standard - this item DERIVES and RENDERS; it decides nothing and refuses nothing operationally. It reads the event stream and the reconciliation receipts, both already written, and adds measures to the existing metrics derivation and dashboard. It touches no enforcement-core organ (the executor, the whitelist, the two-key rule, the kill switch and the ladder are not read and not edited), opens no execution path, starts no process, and writes no record other than rendered output. The footprint tier is standard as well: a single declared area, metrics, via .veldo/metrics.py and .veldo/dashboard.py. The one property that makes this item worth reviewing carefully is HONESTY OF NUMBERS rather than safety of action: a derived measure that silently counts an unbacked event, or invents a denominator, is a lie a human will act on, so the anti-vacuity work here is on the exclusion and the stand-down"
 owner: dmitry
 human_approval: not_required
 lane: planned
@@ -73,95 +65,9 @@ footprint:
 protected_paths: []
 behavior_bearing: true
 observability:
-  logs: Every excluded or unresolvable input is reported by NAME in the rendered output and in the
-    returned model rather than dropped silently - an incident.closed event with no backing receipt, a
-    receipt whose incident cannot be resolved, a measure whose denominator is zero, and an absent
-    per-area cost source each appear as a named exclusion or stand-down line, so a surprising number is
-    diagnosable from the output alone without reading the source. An entry a store directory holds that is
-    NOT a record is ACCOUNTED rather than dropped: the read counts it, names it with the declared reason it
-    is skippable, and the model carries it as read_skipped so ALL THREE SURFACES render it - the text report
-    on its own line, the dashboard on its own card and --json as a key - because a basis a human never sees
-    is not observability. A RECORD IS IDENTIFIED BY ITS NAME (the suffix is asked FIRST), so what a
-    declared name may dismiss is a KIND of entry rather than a content: a REGULAR FILE, or a DIRECTORY that
-    proves by its own enumeration, WITHIN A DECLARED DEPTH BOUND, that it holds no record and nothing that
-    could hold one, and never a SYMLINK; every other ENUMERATED entry - including a subtree deeper than that
-    bound - leaves the read INCOMPLETE with the entry NAMED and the bound stated. Every name and every
-    detail that reaches a surface is PRINTABLE on any output stream (a directory entry name and an area id
-    are bytes read off
-    disk and the stream printing them may be ASCII), and a recorded line whose bytes are not valid UTF-8 IS
-    SKIPPED by the loop reader and NAMED by the support pass, as is a line that PARSES TO SOMETHING THAT IS
-    NOT A RECORD, so neither a diagnosable stand-down nor the pre-existing loop measures can be turned into
-    a crash by a recorded line. EVERY RECURSIVE READ THIS PASS PERFORMS IS BOUNDED OR BACKSTOPPED, which is
-    the class the depth defect belongs to rather than its one instance: there are exactly TWO recursive
-    paths (the dismissible-directory walk and json.loads over a nested recorded artifact), the walk stops at
-    the declared depth bound, and RecursionError - a RuntimeError that no OSError/ValueError handler catches
-    - is caught at BOTH, each standing its own source down BY NAME. AND THE CLASS THOSE ROUNDS WERE EACH ONE
-    MEMBER OF IS NAMED FROM WHAT THIS ITEM DECLARES RATHER THAN FROM HOW ITS CODE HAPPENS TO REACH IT,
-    because three successive taxonomies keyed on a MECHANISM (recursion, then the exception classes, then the
-    thirteen READ PRIMITIVES) were each one name short: A DECLARED SOURCE BECOMES UNAVAILABLE AND SOME
-    SURFACE PRINTS NOTHING AT ALL - HOWEVER THE SOURCE IS REACHED, AND WHETHER THE FAILURE RAISES OR BLOCKS.
-    A MODULE LOAD IS A READ that none of those primitives names, and a read that BLOCKS raises nothing at
-    all, so no handler and no declared exception set can reach it. THE RULE IS THEREFORE QUANTIFIED OVER THE
-    DECLARED TABLE: every one of the THIRTEEN declared sources has a READ UNIT (SUPPORT_READ_UNITS), every
-    unit is asked WHAT IT IS before anything opens it (a whole-file read of an entry that is neither a
-    regular file nor a directory blocks until a writer appears), every hand-off of a unit to an ENGINE OWNER
-    goes through ONE delegation boundary that asks that question and then names the whole Exception family,
-    and NO declared source is loaded as a module by a hard-coded path anywhere in the pass. AND THE DOMAIN OF
-    THAT RULE IS THE TRANSITIVE CLOSURE OF WHAT IS OPENED ON THIS PASS'S BEHALF RATHER THAN WHAT THIS PASS
-    OPENS ITSELF, which is the correction the first formulation needed and the reason it was not enough: a
-    DELEGATED read unit is where the read STARTS, and six of the thirteen rows are delegated, so EVERY ROOT
-    ANY OWNER OPENS ON THIS PASS'S BEHALF is DECLARED (SUPPORT_DELEGATED_CLOSURE: one row per hand-off,
-    every root naming WHERE its kind question is asked), the closure is PROVEN COMPLETE BY MEASUREMENT under
-    an interpreter audit hook over the real owner calls rather than by reading an owner's source, and a
-    MODULE LOAD's closure is TWO files rather than one, because the loader opens the BYTECODE CACHE as well
-    as the source. THE ONE MEMBER OF THIS CLASS THIS ITEM DOES NOT REACH IS STATED RATHER THAN IMPLIED AWAY:
-    a REGULAR FILE on a wedged filesystem blocks with nothing to see at stat time, which no kind test can
-    answer and which needs a watchdog at the caller. WITHIN that rule
-    every read of a recorded artifact still SITS INSIDE A HANDLER NAMING AT LEAST FOUR DECLARED CLASSES -
-    OSError, ValueError, RecursionError and MemoryError - or one naming the whole Exception family, and those
-    reads are ENUMERATED FROM THE AST with the handler standing over each and the unguarded list asserted
-    EMPTY; KeyboardInterrupt and SystemExit are deliberately NOT in that set, because an operator's stop and
-    a caller's exit are not properties of an artifact and must propagate; and the assertions DRIVE THE FOUR
-    REAL SURFACES for EVERY DECLARED SOURCE crossed with four hostile entry shapes, EACH UNDER A TIMEOUT that
-    counts a wedged surface as a failure, which is the coverage neither the model-only grid nor an
-    exception-keyed rule could have. A STREAM THAT EXISTS AND CANNOT BE READ AT ALL IS NOT A SHORTER HISTORY EITHER: the
-    loop reader returns NO event and a NAMED SHORTFALL carrying the path, the exception class and its
-    message, rendered above the measures on both text surfaces, as its own card on the HTML one and as its
-    own key on --json, while an ABSENT stream stays complete, empty and silent (adoption safe). EVERY READ OF
-    A RECORDED ARTIFACT
-    THIS PASS PERFORMS NAMES ITS CODEC rather than inheriting the locale's, so a measure is a property of
-    the recorded bytes and not of the environment that read them; the four ENGINE OWNERS this pass EXECUTES
-    still decode through the locale, which is outside this footprint and is declared with its measured cost
-    (the source that owner reads stands down BY NAME under an ASCII locale, and no MEASURE moves).
-  error_taxonomy: The exclusion and stand-down reasons are a closed, named set (UNBACKED_EVENT,
-    UNRESOLVED_RECEIPT, CONFLICTING_RECEIPTS, CONFLICTING_RECORDS, UNRESOLVED_RECURRENCE,
-    UNUSABLE_INTERVAL, UNREADABLE_TIMESTAMP, EMPTY_DENOMINATOR, NO_AREA_COST_DATA,
-    UNREADABLE_AREA_COST_DATA, NO_ARCHITECTURE_CONTRACT, UNREADABLE_ARCHITECTURE_CONTRACT,
-    NO_SPEC_CORPUS, UNREADABLE_SPEC_CORPUS, UNREADABLE_SPEC_AREA_INDEX, UNREADABLE_RECEIPT_FILE,
-    UNREADABLE_INCIDENT_RECORD, UNREADABLE_INCIDENT_VOCABULARY, UNREADABLE_INPUT_SOURCE,
-    INCOMPLETE_READ, UNREADABLE_EVENT_STREAM, UNREADABLE_INCIDENT_CONTRACT_OWNER,
-    UNREADABLE_FRONT_MATTER_PARSER, UNREADABLE_INTENT_CORPUS_OWNER, UNREADABLE_ENTROPY_OWNER), each
-    naming what was skipped and why, so an honest gap in the numbers is legible as a category rather than
-    inferred from a missing row. Three of the first eight were added by the round-1 review, which found
-    real input classes handled silently: two receipts resolving to one closure with nothing ordering
-    them, a timestamp pair no arithmetic can subtract, and a contract file that exists but yields no
-    declared area (which is its own condition and must never be reported as an empty denominator). Eleven
-    more were added by the round-2 review, which found BOTH of those defect CLASSES still standing on
-    sibling inputs: ABSENT is never reported as UNREADABLE for ANY source the pass reads, and a DUPLICATE
-    KEY is never resolved by collection order for ANY dict the pass keys by an id it read (the receipts
-    and the incident records both refuse and name every participant; the other four collections carry a
-    proven reason they cannot conflict). A recurrence_of naming an incident nothing authenticated is named
-    rather than counted. The last six are the round-4 review's, and they are what AC3's new rule needs
-    rather than another shape: INCOMPLETE_READ is the ONE name a source carries when it cannot prove it
-    read completely (so an unenumerated shape needs no name of its own), and the other five are the
-    sources round 4 found DECLARED NOWHERE - the recorded event stream and the four sibling OWNER MODULES
-    the readers execute, each of which now names ITSELF instead of a failure in one being charged to
-    whichever data source was being read. The source table lives in .veldo/metrics_support_contract.py
-    (thirteen rows), is walked by the completeness rule, and is asserted complete against the code.
-  metrics: This item IS the metrics surface: it derives time-to-diagnosis, time-to-restore, recurrence
-    rate and the diagnosability score from the recorded incident lifecycle events, and reports the count
-    of authenticated versus excluded inputs alongside every measure so the reader can see the evidence
-    base each number rests on.
+  logs: "Every excluded or unresolvable input is reported by NAME in the rendered output and in the returned model rather than dropped silently - an incident.closed event with no backing receipt, a receipt whose incident cannot be resolved, a measure whose denominator is zero, and an absent per-area cost source each appear as a named exclusion or stand-down line, so a surprising number is diagnosable from the output alone without reading the source. An entry a store directory holds that is NOT a record is ACCOUNTED rather than dropped: the read counts it, names it with the declared reason it is skippable, and the model carries it as read_skipped so ALL THREE SURFACES render it - the text report on its own line, the dashboard on its own card and --json as a key - because a basis a human never sees is not observability. A RECORD IS IDENTIFIED BY ITS NAME (the suffix is asked FIRST), so what a declared name may dismiss is a KIND of entry rather than a content: a REGULAR FILE, or a DIRECTORY that proves by its own enumeration, WITHIN A DECLARED DEPTH BOUND, that it holds no record and nothing that could hold one, and never a SYMLINK; every other ENUMERATED entry - including a subtree deeper than that bound - leaves the read INCOMPLETE with the entry NAMED and the bound stated. Every name and every detail that reaches a surface is PRINTABLE on any output stream (a directory entry name and an area id are bytes read off disk and the stream printing them may be ASCII), and a recorded line whose bytes are not valid UTF-8 IS SKIPPED by the loop reader and NAMED by the support pass, as is a line that PARSES TO SOMETHING THAT IS NOT A RECORD, so neither a diagnosable stand-down nor the pre-existing loop measures can be turned into a crash by a recorded line. EVERY RECURSIVE READ THIS PASS PERFORMS IS BOUNDED OR BACKSTOPPED, which is the class the depth defect belongs to rather than its one instance: there are exactly TWO recursive paths (the dismissible-directory walk and json.loads over a nested recorded artifact), the walk stops at the declared depth bound, and RecursionError - a RuntimeError that no OSError/ValueError handler catches - is caught at BOTH, each standing its own source down BY NAME. AND THE CLASS THOSE ROUNDS WERE EACH ONE MEMBER OF IS NAMED FROM WHAT THIS ITEM DECLARES RATHER THAN FROM HOW ITS CODE HAPPENS TO REACH IT, because three successive taxonomies keyed on a MECHANISM (recursion, then the exception classes, then the thirteen READ PRIMITIVES) were each one name short: A DECLARED SOURCE BECOMES UNAVAILABLE AND SOME SURFACE PRINTS NOTHING AT ALL - HOWEVER THE SOURCE IS REACHED, AND WHETHER THE FAILURE RAISES OR BLOCKS. A MODULE LOAD IS A READ that none of those primitives names, and a read that BLOCKS raises nothing at all, so no handler and no declared exception set can reach it. THE RULE IS THEREFORE QUANTIFIED OVER THE DECLARED TABLE: every one of the THIRTEEN declared sources has a READ UNIT (SUPPORT_READ_UNITS), every unit is asked WHAT IT IS before anything opens it (a whole-file read of an entry that is neither a regular file nor a directory blocks until a writer appears), every hand-off of a unit to an ENGINE OWNER goes through ONE delegation boundary that asks that question and then names the whole Exception family, and NO declared source is loaded as a module by a hard-coded path anywhere in the pass. AND THE DOMAIN OF THAT RULE IS THE TRANSITIVE CLOSURE OF WHAT IS OPENED ON THIS PASS'S BEHALF RATHER THAN WHAT THIS PASS OPENS ITSELF, which is the correction the first formulation needed and the reason it was not enough: a DELEGATED read unit is where the read STARTS, and six of the thirteen rows are delegated, so EVERY ROOT ANY OWNER OPENS ON THIS PASS'S BEHALF is DECLARED (SUPPORT_DELEGATED_CLOSURE: one row per hand-off, every root naming WHERE its kind question is asked), the closure is PROVEN COMPLETE BY MEASUREMENT under an interpreter audit hook over the real owner calls rather than by reading an owner's source, and a MODULE LOAD's closure is TWO files rather than one, because the loader opens the BYTECODE CACHE as well as the source. THE ONE MEMBER OF THIS CLASS THIS ITEM DOES NOT REACH IS STATED RATHER THAN IMPLIED AWAY: a REGULAR FILE on a wedged filesystem blocks with nothing to see at stat time, which no kind test can answer and which needs a watchdog at the caller. WITHIN that rule every read of a recorded artifact still SITS INSIDE A HANDLER NAMING AT LEAST FOUR DECLARED CLASSES - OSError, ValueError, RecursionError and MemoryError - or one naming the whole Exception family, and those reads are ENUMERATED FROM THE AST with the handler standing over each and the unguarded list asserted EMPTY; KeyboardInterrupt and SystemExit are deliberately NOT in that set, because an operator's stop and a caller's exit are not properties of an artifact and must propagate; and the assertions DRIVE THE FOUR REAL SURFACES for EVERY DECLARED SOURCE crossed with four hostile entry shapes, EACH UNDER A TIMEOUT that counts a wedged surface as a failure, which is the coverage neither the model-only grid nor an exception-keyed rule could have. A STREAM THAT EXISTS AND CANNOT BE READ AT ALL IS NOT A SHORTER HISTORY EITHER: the loop reader returns NO event and a NAMED SHORTFALL carrying the path, the exception class and its message, rendered above the measures on both text surfaces, as its own card on the HTML one and as its own key on --json, while an ABSENT stream stays complete, empty and silent (adoption safe). EVERY READ OF A RECORDED ARTIFACT THIS PASS PERFORMS NAMES ITS CODEC rather than inheriting the locale's, so a measure is a property of the recorded bytes and not of the environment that read them; the four ENGINE OWNERS this pass EXECUTES still decode through the locale, which is outside this footprint and is declared with its measured cost (the source that owner reads stands down BY NAME under an ASCII locale, and no MEASURE moves)."
+  error_taxonomy: "The exclusion and stand-down reasons are a closed, named set (UNBACKED_EVENT, UNRESOLVED_RECEIPT, CONFLICTING_RECEIPTS, CONFLICTING_RECORDS, UNRESOLVED_RECURRENCE, UNUSABLE_INTERVAL, UNREADABLE_TIMESTAMP, EMPTY_DENOMINATOR, NO_AREA_COST_DATA, UNREADABLE_AREA_COST_DATA, NO_ARCHITECTURE_CONTRACT, UNREADABLE_ARCHITECTURE_CONTRACT, NO_SPEC_CORPUS, UNREADABLE_SPEC_CORPUS, UNREADABLE_SPEC_AREA_INDEX, UNREADABLE_RECEIPT_FILE, UNREADABLE_INCIDENT_RECORD, UNREADABLE_INCIDENT_VOCABULARY, UNREADABLE_INPUT_SOURCE, INCOMPLETE_READ, UNREADABLE_EVENT_STREAM, UNREADABLE_INCIDENT_CONTRACT_OWNER, UNREADABLE_FRONT_MATTER_PARSER, UNREADABLE_INTENT_CORPUS_OWNER, UNREADABLE_ENTROPY_OWNER), each naming what was skipped and why, so an honest gap in the numbers is legible as a category rather than inferred from a missing row. Three of the first eight were added by the round-1 review, which found real input classes handled silently: two receipts resolving to one closure with nothing ordering them, a timestamp pair no arithmetic can subtract, and a contract file that exists but yields no declared area (which is its own condition and must never be reported as an empty denominator). Eleven more were added by the round-2 review, which found BOTH of those defect CLASSES still standing on sibling inputs: ABSENT is never reported as UNREADABLE for ANY source the pass reads, and a DUPLICATE KEY is never resolved by collection order for ANY dict the pass keys by an id it read (the receipts and the incident records both refuse and name every participant; the other four collections carry a proven reason they cannot conflict). A recurrence_of naming an incident nothing authenticated is named rather than counted. The last six are the round-4 review's, and they are what AC3's new rule needs rather than another shape: INCOMPLETE_READ is the ONE name a source carries when it cannot prove it read completely (so an unenumerated shape needs no name of its own), and the other five are the sources round 4 found DECLARED NOWHERE - the recorded event stream and the four sibling OWNER MODULES the readers execute, each of which now names ITSELF instead of a failure in one being charged to whichever data source was being read. The source table lives in .veldo/metrics_support_contract.py (thirteen rows), is walked by the completeness rule, and is asserted complete against the code."
+  metrics: "This item IS the metrics surface: it derives time-to-diagnosis, time-to-restore, recurrence rate and the diagnosability score from the recorded incident lifecycle events, and reports the count of authenticated versus excluded inputs alongside every measure so the reader can see the evidence base each number rests on."
 acceptance_criteria:
   - id: AC1
     falsified_by: >

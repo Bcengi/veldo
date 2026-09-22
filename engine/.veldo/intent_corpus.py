@@ -60,7 +60,14 @@ in-session `git log` over this repository's own history.
 
 # Load the shared Git boundary by sibling path, including when imported by file location.
 import importlib.util as _git_importlib
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
 from pathlib import Path as _GitPath
+
+
 _git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
 _git_process = _git_importlib.module_from_spec(_git_spec)
 _git_spec.loader.exec_module(_git_process)
@@ -213,7 +220,7 @@ def _spec_front_matter(text, parse):
     front matter, or one outside the parser subset, is a malformed corpus artifact and
     REFUSES by name (fail closed)."""
     import re
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    m = _Y.front_matter_match(text)
     if not m:
         raise IntentCorpusError("corpus artifact malformed: a spec has no YAML front matter")
     try:

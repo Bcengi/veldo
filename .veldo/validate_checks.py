@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """VELDO contract validator, part two: the sibling-module delegating validators.
 
 This module is a PURE extraction from .veldo/validate.py, split out solely so that
@@ -25,20 +24,17 @@ import importlib.util
 import re
 from pathlib import Path
 
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
+
 ROOT = Path(__file__).resolve().parent.parent
 
-# Bound by validate.py after it loads this module (the one-way load): its ONE
-# front-matter parser and ONE failure reporter, the same two callables it hands
-# arch.py and decision.py. Declared here so the contract is explicit; validate.py
-# is the authoritative binder. This module never loads validate.py (no cycle).
 parse_yamlish = None
 fail = None
 
-# The proof-corpus enumeration (WARP-0727): the ONE owner of what a corpus path IS, and the
-# SAME module .veldo/events.py derives the projection's entitlement domain through. Enforcement
-# here REUSES it and never reimplements the enumeration, because the defect being closed is
-# precisely two mechanisms enumerating one set in two spellings, with the gap between them
-# invisible to both.
 _cospec = importlib.util.spec_from_file_location(
     "veldo_verdict_corpus", ROOT / ".veldo" / "verdict_corpus.py")
 _CORPUS = importlib.util.module_from_spec(_cospec)
@@ -260,13 +256,13 @@ def check_placement(path, repo_root=None):
     if contract is None:
         return 0  # adoption safe: no contract in this repo, the check stands down
     text = Path(path).read_text()
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    m = _Y.front_matter_match(text)
     if m is None:
         return 0  # check_spec already reports a missing front matter
     body = m.group(1)
     # Presence gate: parse richly only when the spec actually declares one of the
     # fields, so a spec that declares neither is byte-identically unaffected.
-    if not re.search(r"(?m)^(placement|footprint):", body):
+    if not {"placement", "footprint"}.intersection(parse_yamlish(body)):
         return 0
     try:
         fm = parse_yamlish(body)
@@ -302,13 +298,13 @@ def check_observability(path, repo_root=None):
     if contract is None:
         return 0  # adoption safe: no contract in this repo, the check stands down
     text = Path(path).read_text()
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    m = _Y.front_matter_match(text)
     if m is None:
         return 0  # check_spec already reports a missing front matter
     body = m.group(1)
     # Presence gate: parse richly only when the spec actually declares one of the fields,
     # so a spec that declares neither is byte-identically unaffected.
-    if not re.search(r"(?m)^(observability|behavior_bearing):", body):
+    if not {"observability", "behavior_bearing"}.intersection(parse_yamlish(body)):
         return 0
     try:
         fm = parse_yamlish(body)
@@ -376,7 +372,7 @@ def check_ready(path, repo_root=None):
     if contract is None:
         return 0
     text = Path(path).read_text()
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    m = _Y.front_matter_match(text)
     if m is None:
         return fail(path, "no front matter: cannot gate placement at the ready transition")
     try:
@@ -531,7 +527,7 @@ def check_shape_review(spec_path, changed_paths, repo_root=None):
     if contract is None:
         return 0
     text = Path(spec_path).read_text()
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    m = _Y.front_matter_match(text)
     if m is None:
         return fail(spec_path, "no front matter: cannot grade shape-fit against the contract")
     try:
@@ -622,7 +618,7 @@ def check_depends_on(path, text):
     Absent is legal (most specs declare no dependency at all). A member naming a spec that does
     not exist stays legal on purpose: the frontier must treat it as unshipped and report it, and
     refusing it here would move that case out of reach of the code that handles it."""
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    m = _Y.front_matter_match(text)
     if m is None:
         return 0  # the missing-front-matter red belongs to the caller, not to this field
     try:
@@ -667,13 +663,13 @@ def check_spec_ids(specs_dir=None):
     for p in sorted(d.glob("*.md")):
         if p.name.startswith("TEMPLATE") or p.name == "index.md":
             continue
-        m = re.match(r"^---\n(.*?)\n---", p.read_text(), re.S)
+        m = _Y.front_matter_match(p.read_text())
         if m is None:
             continue
         try:
             fm = parse_yamlish(m.group(1))
         except ValueError:
-            continue
+            raise
         if fm.get("id"):
             by_id.setdefault(fm["id"], []).append(p.name)
     errs = 0
@@ -905,12 +901,12 @@ def check_falsification_declared(path, repo_root=None, enforce=None):
     costume. HONEST BOUNDARY: this is the DECLARATION and its structural validation, and whether the
     declared change would REALLY turn a criterion red is the judgement a reviewer is for."""
     text = Path(path).read_text()
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    m = _Y.front_matter_match(text)
     if m is None:
         return 0  # check_spec already reports a missing front matter
     body = m.group(1)
     # Presence gate: a spec declaring no behavior_bearing is never even parsed richly here.
-    if not re.search(r"(?m)^behavior_bearing:", body):
+    if "behavior_bearing" not in parse_yamlish(body):
         return _falsification_stand_down(
             path, "declares no behavior_bearing field, so the rule does not reach it")
     try:
@@ -958,15 +954,14 @@ def falsification_migration(specs_dir=None):
         if p.name.startswith("TEMPLATE") or p.name == "index.md":
             continue
         counts["specs"] += 1
-        m = re.match(r"^---\n(.*?)\n---", p.read_text(), re.S)
+        m = _Y.front_matter_match(p.read_text())
         if m is None:
             counts["stood_down"] += 1
             continue
         try:
             fm = parse_yamlish(m.group(1))
         except ValueError:
-            counts["stood_down"] += 1
-            continue
+            raise
         if not falsification_gated(fm, obs)[0]:
             counts["stood_down"] += 1
             continue

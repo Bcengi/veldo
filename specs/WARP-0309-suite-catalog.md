@@ -13,65 +13,17 @@ human_approval: not_required
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A runner catalog is added to the docs (a new section in docs/plugin.md,
-      "Runner catalog and gate-slot wiring") that covers EVERY runner directory
-      under engine/scripts/runners/. For each runner it gives the
-      surface, the home path, the capabilities status, what the runner asserts,
-      its passing/failing fixture pair, and the gate slot an adopting repo wires
-      it into. The catalog extends an existing document so no new PDF or manifest
-      entry is required (pdf rendering stays a manual release act).
+    text: A runner catalog is added to the docs (a new section in docs/plugin.md, "Runner catalog and gate-slot wiring") that covers EVERY runner directory under engine/scripts/runners/. For each runner it gives the surface, the home path, the capabilities status, what the runner asserts, its passing/failing fixture pair, and the gate slot an adopting repo wires it into. The catalog extends an existing document so no new PDF or manifest entry is required (pdf rendering stays a manual release act).
   - id: AC2
-    text: The catalog gives gate-slot wiring guidance per runner - the CHECK_
-      slot in scripts/verify.sh an adopting repo points each runner at (for
-      example api/contract to CHECK_contract or CHECK_integration, auth to
-      CHECK_security or CHECK_contract, web journeys to CHECK_journeys, token
-      lint to CHECK_token_lint, migration to CHECK_migration, performance to
-      CHECK_performance, and surfaces without a dedicated canonical slot to
-      CHECK_extra or a repo-declared named slot) - consistent with the intended
-      slot recorded in each capabilities.yaml note.
+    text: The catalog gives gate-slot wiring guidance per runner - the CHECK_ slot in scripts/verify.sh an adopting repo points each runner at (for example api/contract to CHECK_contract or CHECK_integration, auth to CHECK_security or CHECK_contract, web journeys to CHECK_journeys, token lint to CHECK_token_lint, migration to CHECK_migration, performance to CHECK_performance, and surfaces without a dedicated canonical slot to CHECK_extra or a repo-declared named slot) - consistent with the intended slot recorded in each capabilities.yaml note.
   - id: AC3
-    text: Capabilities coverage is honest and complete. Every runner directory
-      has at least one .veldo/capabilities.yaml entry whose home points into it,
-      and every such entry carries a non-blank status drawn from the manifest
-      vocabulary (mechanical, reference, procedure, absent, control-plane). The
-      catalog DEFERS to the manifest for status - it states the manifest is
-      authoritative and never prints a status that contradicts capabilities.yaml
-      - and it explains the reference-versus-mechanical distinction (reference =
-      needs a product surface the home repo lacks, so the home gate marks that
-      slot na; mechanical = control logic gate-tested end to end here).
+    text: Capabilities coverage is honest and complete. Every runner directory has at least one .veldo/capabilities.yaml entry whose home points into it, and every such entry carries a non-blank status drawn from the manifest vocabulary (mechanical, reference, procedure, absent, control-plane). The catalog DEFERS to the manifest for status - it states the manifest is authoritative and never prints a status that contradicts capabilities.yaml - and it explains the reference-versus-mechanical distinction (reference = needs a product surface the home repo lacks, so the home gate marks that slot na; mechanical = control logic gate-tested end to end here).
   - id: AC4
-    text: A stdlib catalog-completeness check ships at
-      scripts/check_runner_catalog.py and is wired into the gate through the unit
-      slot (scripts/selftest.py, CHECK_unit). It ENUMERATES every runner
-      directory and fails closed unless each has a passing fixture, a
-      deliberately-failing fixture, a capabilities entry with a non-blank
-      vocabulary-valid status, and a gate wiring (a Python runner must be
-      referenced in scripts/selftest.py; a runner with no importable module must
-      ship a fixture-driving test_*.sh wrapper). It observes real files, so it
-      cannot be satisfied by the docs table alone. The selftest drives it against
-      the real tree AND against synthetic trees each missing one property (a
-      passing fixture, a failing fixture, a capabilities entry, an in-vocabulary
-      status, a selftest reference, an exercising wrapper), proving every branch
-      fails closed. This is BJ1: no runner rubber-stamps or ships uncatalogued.
+    text: "A stdlib catalog-completeness check ships at scripts/check_runner_catalog.py and is wired into the gate through the unit slot (scripts/selftest.py, CHECK_unit). It ENUMERATES every runner directory and fails closed unless each has a passing fixture, a deliberately-failing fixture, a capabilities entry with a non-blank vocabulary-valid status, and a gate wiring (a Python runner must be referenced in scripts/selftest.py; a runner with no importable module must ship a fixture-driving test_*.sh wrapper). It observes real files, so it cannot be satisfied by the docs table alone. The selftest drives it against the real tree AND against synthetic trees each missing one property (a passing fixture, a failing fixture, a capabilities entry, an in-vocabulary status, a selftest reference, an exercising wrapper), proving every branch fails closed. This is BJ1: no runner rubber-stamps or ships uncatalogued."
   - id: AC5
-    text: BJ2 is documented and asserted - the home gate never invokes a surface
-      runner it lacks. The catalog records that scripts/verify.sh declares every
-      surface-requiring slot (journeys, ui_states, accessibility, token_lint,
-      visual_baselines, contract, integration, migration, performance, security)
-      na with a reason, and check_runner_catalog.py asserts mechanically that no
-      required gate command (CHECK_*="required:...") in verify.sh shells a runner
-      (contains runners/). The unit slot importing runner control logic in
-      process with stdlib only is not driving a live surface, so the home gate
-      stays hermetic - no backend, emulator, simulator, container runtime, or
-      third party is needed to run it.
+    text: BJ2 is documented and asserted - the home gate never invokes a surface runner it lacks. The catalog records that scripts/verify.sh declares every surface-requiring slot (journeys, ui_states, accessibility, token_lint, visual_baselines, contract, integration, migration, performance, security) na with a reason, and check_runner_catalog.py asserts mechanically that no required gate command (CHECK_*="required:...") in verify.sh shells a runner (contains runners/). The unit slot importing runner control logic in process with stdlib only is not driving a live surface, so the home gate stays hermetic - no backend, emulator, simulator, container runtime, or third party is needed to run it.
   - id: AC6
-    text: The deliverable is generic (zero company, product, or person names and
-      zero absolute host paths in the docs section, the check script, and the
-      spec beyond the standard owner field) and hygienic (ASCII only, no em or en
-      dash, no double hyphen). The specs index regenerates to include this spec,
-      and the full gate (lint, unit, generated, docs, template sync, secret scan,
-      contract validation) stays green with every prior selftest case still
-      passing.
+    text: The deliverable is generic (zero company, product, or person names and zero absolute host paths in the docs section, the check script, and the spec beyond the standard owner field) and hygienic (ASCII only, no em or en dash, no double hyphen). The specs index regenerates to include this spec, and the full gate (lint, unit, generated, docs, template sync, secret scan, contract validation) stays green with every prior selftest case still passing.
 required_evidence: [unit, operational]
 rollback: git revert; B9 is additive - a docs section in docs/plugin.md, a new
   stdlib script scripts/check_runner_catalog.py, a selftest block, a Document

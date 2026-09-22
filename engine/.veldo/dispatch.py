@@ -58,6 +58,12 @@ import re
 import uuid
 from pathlib import Path
 
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -160,7 +166,7 @@ class Dispatcher(WK.Dispatcher):
         shipped removes the unit from the frontier."""
         p = self._spec_path(sid)
         text = p.read_text()
-        m = re.match(r"^---\n(.*?)\n---", text, re.S)
+        m = _Y.front_matter_match(text)
         if not m:
             raise EX.ExecutorError("spec %r has no front matter to update" % sid)
         new_fm, n = re.subn(r"(?m)^status: .*$", "status: " + new, m.group(1), count=1)

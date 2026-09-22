@@ -13,30 +13,13 @@ plan_revision: 1
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: A CLI exposes veldo answer <run-id> <text>, veldo steer <run-id> <text>, and
-      veldo abort <run-id> [reason], each posting the matching command (answer, steer,
-      abort) to that run's inbox via runlog.post_command and printing the command id.
-      An unknown run-id or an empty required text fails loud with a nonzero exit, and
-      the payload posted is exactly the text the human supplied.
+    text: A CLI exposes veldo answer <run-id> <text>, veldo steer <run-id> <text>, and veldo abort <run-id> [reason], each posting the matching command (answer, steer, abort) to that run's inbox via runlog.post_command and printing the command id. An unknown run-id or an empty required text fails loud with a nonzero exit, and the payload posted is exactly the text the human supplied.
   - id: AC2
-    text: The commands the CLI posts are the same ones the R5 run loop consumes at a
-      safe checkpoint - an answer resumes a blocked run, an abort stops it aborted at
-      the next checkpoint, a steer is recorded - so the CLI is a front door over the
-      existing inbox, not a second path (it calls runlog.post_command, it does not
-      reimplement inbox writing or command handling).
+    text: The commands the CLI posts are the same ones the R5 run loop consumes at a safe checkpoint - an answer resumes a blocked run, an abort stops it aborted at the next checkpoint, a steer is recorded - so the CLI is a front door over the existing inbox, not a second path (it calls runlog.post_command, it does not reimplement inbox writing or command handling).
   - id: AC3
-    text: The chat-surface procedure is documented for an assistant (for example one
-      on Telegram): read veldo status --json to see the live runs and any blocked
-      question, then issue veldo answer/steer/abort for a run. The rule that an answer
-      changing a requirement or durable decision must be committed to the spec (never
-      left as hidden chat truth) is restated where the procedure lives.
+    text: "The chat-surface procedure is documented for an assistant (for example one on Telegram): read veldo status --json to see the live runs and any blocked question, then issue veldo answer/steer/abort for a run. The rule that an answer changing a requirement or durable decision must be committed to the spec (never left as hidden chat truth) is restated where the procedure lives."
   - id: AC4
-    text: A selftest drives the CLI over a temporary runs root - answer, steer, and
-      abort each land the correct kind and exact payload in the target run's inbox,
-      and an unknown command kind or a missing run is rejected - and is
-      non-tautological: a mutation that posts the wrong kind or drops the payload
-      makes an assertion fail. The CLI writes only through runlog (no repo/events
-      writes of its own).
+    text: "A selftest drives the CLI over a temporary runs root - answer, steer, and abort each land the correct kind and exact payload in the target run's inbox, and an unknown command kind or a missing run is rejected - and is non-tautological: a mutation that posts the wrong kind or drops the payload makes an assertion fail. The CLI writes only through runlog (no repo/events writes of its own)."
 required_evidence: [unit]
 rollback: git revert; additive - a .veldo/runcmd.py CLI over runlog.post_command, a
   chat-surface procedure note in the run skill, a selftest block, one capability

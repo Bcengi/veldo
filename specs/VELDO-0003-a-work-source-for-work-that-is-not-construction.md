@@ -4,12 +4,7 @@ id: VELDO-0003
 title: A work source for work that is not construction - review, audit and authoring become claimable
   units the EXISTING fleet drains, with the produced artifact deciding done and never a worker's word
 status: ready
-risk: standard - it adds one artifact contract and one read model, and deliberately adds NO control
-  loop, NO spawner and NO pacing, because all three already exist and are already governed. It is NOT
-  low because it is the surface through which a pool of workers divides work, so a wrong claim answer
-  means two workers doing one task or a task nobody takes. It is not high because it enforces nothing:
-  no build is refused, no gate stage consults it, and an absent task directory stands the whole read
-  model down
+risk: "standard - it adds one artifact contract and one read model, and deliberately adds NO control loop, NO spawner and NO pacing, because all three already exist and are already governed. It is NOT low because it is the surface through which a pool of workers divides work, so a wrong claim answer means two workers doing one task or a task nobody takes. It is not high because it enforces nothing: no build is refused, no gate stage consults it, and an absent task directory stands the whole read model down"
 owner: dmitry
 human_approval: not_required
 lane: planned

@@ -14,41 +14,15 @@ depends_on: [WARP-0601]
 protected_paths: []
 acceptance_criteria:
   - id: AC1
-    text: An abstract TrackerAdapter seam declares the vendor-neutral operations intake and the
-      mirror need and nothing more - the reads list_intake_items() and read_item(id), and the
-      writes comment(id, text), set_status(id, mapped_status), create_or_update_epic(...) and
-      create_or_update_child(...) - as the single boundary both tracker edges stand on. The base
-      owns the shared logic (input validation by name, the write audit, the fail-loud guard) and
-      each surface primitive raises NotImplementedError, so a real adapter supplies only the
-      primitives and inherits every guarantee.
+    text: An abstract TrackerAdapter seam declares the vendor-neutral operations intake and the mirror need and nothing more - the reads list_intake_items() and read_item(id), and the writes comment(id, text), set_status(id, mapped_status), create_or_update_epic(...) and create_or_update_child(...) - as the single boundary both tracker edges stand on. The base owns the shared logic (input validation by name, the write audit, the fail-loud guard) and each surface primitive raises NotImplementedError, so a real adapter supplies only the primitives and inherits every guarantee.
   - id: AC2
-    text: A deterministic in-memory FakeTracker implements the seam with no network and no
-      credentials - an internal dict of items, epics, children, and their statuses, transitions,
-      and comments - so intake (list and read items) and the mirror (comment, set status, create
-      or update an epic and its children) are exercised end to end offline in the gate.
+    text: A deterministic in-memory FakeTracker implements the seam with no network and no credentials - an internal dict of items, epics, children, and their statuses, transitions, and comments - so intake (list and read items) and the mirror (comment, set status, create or update an epic and its children) are exercised end to end offline in the gate.
   - id: AC3
-    text: The seam is provider-agnostic - it carries zero dependency on any one tracker (a real
-      Jira adapter is the later WARP-0604 item behind this same seam) - and READS are
-      side-effect-free while WRITES are explicit: every write goes through a base method that
-      appends to a base-owned write audit that no read ever touches, so "reads do not mutate,
-      writes are explicit" is provable against the seam and not against one backend.
+    text: "The seam is provider-agnostic - it carries zero dependency on any one tracker (a real Jira adapter is the later WARP-0604 item behind this same seam) - and READS are side-effect-free while WRITES are explicit: every write goes through a base method that appends to a base-owned write audit that no read ever touches, so \"reads do not mutate, writes are explicit\" is provable against the seam and not against one backend."
   - id: AC4
-    text: The FakeTracker is deterministic and idempotent where the mirror relies on it, with the
-      semantics documented - set_status is idempotent by target state (setting the status an
-      object already holds records no transition and returns False, a real move records one
-      transition and returns True), comment is append-only but key-idempotent (a comment carrying
-      an idempotency key posts at most once so a closing comment survives at-least-once event
-      replay, a keyless comment always appends), and create_or_update_epic and
-      create_or_update_child are upserts keyed by a stable caller identity (a plan id, a work item
-      id) so a re-run updates in place and never forks a second epic.
+    text: The FakeTracker is deterministic and idempotent where the mirror relies on it, with the semantics documented - set_status is idempotent by target state (setting the status an object already holds records no transition and returns False, a real move records one transition and returns True), comment is append-only but key-idempotent (a comment carrying an idempotency key posts at most once so a closing comment survives at-least-once event replay, a keyless comment always appends), and create_or_update_epic and create_or_update_child are upserts keyed by a stable caller identity (a plan id, a work item id) so a re-run updates in place and never forks a second epic.
   - id: AC5
-    text: A selftest drives the FakeTracker through the full seam surface and asserts each
-      operation's observable effect, and is non-tautological - a comment then a read shows the
-      comment (a read reflects a prior write), a status set then a read shows the new status,
-      repeating a status set adds no second transition, a keyed comment does not double-post, an
-      upsert re-run yields one object not two, a run of reads leaves the write audit unchanged
-      while a write grows it, and a write to an object the tracker does not hold fails loud by
-      name.
+    text: A selftest drives the FakeTracker through the full seam surface and asserts each operation's observable effect, and is non-tautological - a comment then a read shows the comment (a read reflects a prior write), a status set then a read shows the new status, repeating a status set adds no second transition, a keyed comment does not double-post, an upsert re-run yields one object not two, a run of reads leaves the write audit unchanged while a write grows it, and a write to an object the tracker does not hold fails loud by name.
 required_evidence: [unit]
 rollback: git revert; additive - a new .veldo/tracker_adapter.py, a selftest block, one capability
   entry in both capabilities.yaml copies, and this spec; no protected path; pure stdlib, no network.

@@ -5,15 +5,7 @@ title: A forged verdict still lands from a folder inside our own repository, bec
   two paths share a work tree instead of whether the key came from the projection's own domain - state the
   property once and derive entitlement from the enumeration, never from a path comparison
 status: ready
-risk: critical - this is the guard that decides whether an agent can mark its own homework, which is the one
-  claim the product is sold on, and it has now been defeated seven times in seven different spellings. The
-  danger in the permissive direction is what is live today: a forged PASS that resolves, survives a fresh
-  clone, is counted by our own metrics, and can never be withdrawn from an append-only log. The danger in the
-  strict direction is worse than the defect, because an entitlement rule drawn too narrowly stops the
-  projection recording GENUINE verdicts at all, and a review log that silently stops recording is
-  indistinguishable from a repository where nobody reviewed anything. It is critical rather than high because
-  no narrower framing has survived: rounds 4 to 9 of WARP-0722 each closed a route and each left the property
-  unstated
+risk: "critical - this is the guard that decides whether an agent can mark its own homework, which is the one claim the product is sold on, and it has now been defeated seven times in seven different spellings. The danger in the permissive direction is what is live today: a forged PASS that resolves, survives a fresh clone, is counted by our own metrics, and can never be withdrawn from an append-only log. The danger in the strict direction is worse than the defect, because an entitlement rule drawn too narrowly stops the projection recording GENUINE verdicts at all, and a review log that silently stops recording is indistinguishable from a repository where nobody reviewed anything. It is critical rather than high because no narrower framing has survived: rounds 4 to 9 of WARP-0722 each closed a route and each left the property unstated"
 owner: dmitry
 human_approval: required
 approved_by: dmitry

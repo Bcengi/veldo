@@ -59,7 +59,14 @@ import importlib.util
 import json
 import re
 import sys
+import importlib.util as _yaml_importlib
+from pathlib import Path as _YamlPath
+_yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))
+_Y = _yaml_importlib.module_from_spec(_yaml_spec)
+_yaml_spec.loader.exec_module(_Y)
 from pathlib import Path
+
+
 
 _HERE = Path(__file__).resolve().parent
 
@@ -158,12 +165,11 @@ def _flip_draft_to_ready(markdown):
     'status:' token anywhere in the body is never mistaken for it, and nothing else on the spec moves."""
     if not isinstance(markdown, str) or not markdown.strip():
         return markdown, False
-    m = re.match(r"^---\n(.*?)\n---", markdown, re.S)
+    m = _Y.front_matter_match(markdown)
     if not m:
         return markdown, False
     fm = m.group(1)
-    sm = re.search(r"(?m)^status: *(\S.*?) *$", fm)
-    if sm is None or sm.group(1).strip() != "draft":
+    if _Y.front_matter(markdown).get("status") != "draft":
         return markdown, False  # already ready/beyond, or no readable draft status: fail closed, no-op
     new_fm, n = re.subn(r"(?m)^status: .*$", "status: ready", fm, count=1)
     if n != 1:
@@ -301,8 +307,7 @@ class FakeSpecStore(SpecStore):
         md = self._specs.get((repo, spec_id))
         if not isinstance(md, str):
             return None
-        m = re.search(r"(?m)^status: *(\S+)", md)
-        return m.group(1) if m else None
+        return (_Y.front_matter(md) or {}).get("status")
 
     def markdowns(self):
         return {k: v for k, v in self._specs.items()}
@@ -448,7 +453,7 @@ class FilesystemSpecStore(SpecStore):
         for p in sorted(d.glob("*.md")):
             if p.name == "index.md" or p.name.startswith("TEMPLATE"):
                 continue
-            m = V.re.match(r"^---\n(.*?)\n---", p.read_text(), V.re.S)
+            m = _Y.front_matter_match(p.read_text())
             if not m:
                 continue
             try:

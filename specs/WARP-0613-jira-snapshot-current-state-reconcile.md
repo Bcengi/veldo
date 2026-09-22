@@ -5,18 +5,7 @@ title: veldo jira snapshot - reconcile the board to the CURRENT repository state
   projected from its DECLARED file status, standalone specs included), the snapshot half of the
   snapshot-then-subscribe pattern that complements the event-driven mirror
 status: shipped
-risk: standard - this composes on the released tracker foundation (PLAN-0006 seam/mirror + PLAN-0010
-  live edges) and on the just-landed board bootstrap (WARP-0612), and is REPO-ONLY build machinery (it
-  lives in the same tracker_jira_init.py / tracker_adapter.py the bootstrap does, inside the single
-  tracker architecture area). It touches NO protected path (verify.sh, veldo-guard.sh, policy.yaml,
-  policy_check.py and their template twins are untouched) and nothing in the production-support safety
-  core (the executor, whitelist, two-key rule, kill switch, or ladder), so per policy.yaml the floor is
-  standard. Like the bootstrap it performs live external writes at run time (upserting epics/children
-  and setting their status), but that path is REFERENCE-WIRED exactly like the shipped bootstrap and the
-  live mirror runner: it is never exercised in the gate (the FakeTracker path is), it fails closed
-  without a token, and running it live against a real board is a separate, explicit, human-driven act,
-  not part of landing this spec. The mechanical footprint stays inside the single tracker area, so it
-  crosses no boundary and the footprint tier floor does not elevate it
+risk: "standard - this composes on the released tracker foundation (PLAN-0006 seam/mirror + PLAN-0010 live edges) and on the just-landed board bootstrap (WARP-0612), and is REPO-ONLY build machinery (it lives in the same tracker_jira_init.py / tracker_adapter.py the bootstrap does, inside the single tracker architecture area). It touches NO protected path (verify.sh, veldo-guard.sh, policy.yaml, policy_check.py and their template twins are untouched) and nothing in the production-support safety core (the executor, whitelist, two-key rule, kill switch, or ladder), so per policy.yaml the floor is standard. Like the bootstrap it performs live external writes at run time (upserting epics/children and setting their status), but that path is REFERENCE-WIRED exactly like the shipped bootstrap and the live mirror runner: it is never exercised in the gate (the FakeTracker path is), it fails closed without a token, and running it live against a real board is a separate, explicit, human-driven act, not part of landing this spec. The mechanical footprint stays inside the single tracker area, so it crosses no boundary and the footprint tier floor does not elevate it"
 owner: dmitry
 human_approval: not_required
 lane: standalone
@@ -46,115 +35,26 @@ observability:
     transition), which the report counts so a human sees it.
 acceptance_criteria:
   - id: AC1
-    falsified_by: >
-      Delete the unwired-repo guard at .veldo/tracker_jira_init.py:401-403 so snapshot_from_repo falls
-      through into build_spec_index with no config and raises instead of returning reconciled False:
-      that is the load-bearing leg here (the genericity clause is checked only by the literal grep at
-      scripts/suites/09_action_whitelist_warp_1205.py:1376-1377), and the clean-no-op assertion at
-      scripts/suites/09_action_whitelist_warp_1205.py:1374-1375 must go red.
-    text: The snapshot is GENERIC and reads every input BY REFERENCE, reusing the shipped mirror's own
-      readers rather than reinventing them - build_spec_index and build_plan_index read the repository
-      (the single source of truth), resolve_status_map resolves the per-org VELDO-status -> tracker-status
-      map, and the tracker connection is read from .veldo/trackers.json. tracker_jira_init.py carries no
-      company-specific or board-specific literal (grep-clean for the org/board name and domain), and a
-      repo with no tracker config is a clean no-op reported honestly (never an error).
+    falsified_by: "> Delete the unwired-repo guard at .veldo/tracker_jira_init.py:401-403 so snapshot_from_repo falls through into build_spec_index with no config and raises instead of returning reconciled False: that is the load-bearing leg here (the genericity clause is checked only by the literal grep at scripts/suites/09_action_whitelist_warp_1205.py:1376-1377), and the clean-no-op assertion at scripts/suites/09_action_whitelist_warp_1205.py:1374-1375 must go red."
+    text: The snapshot is GENERIC and reads every input BY REFERENCE, reusing the shipped mirror's own readers rather than reinventing them - build_spec_index and build_plan_index read the repository (the single source of truth), resolve_status_map resolves the per-org VELDO-status -> tracker-status map, and the tracker connection is read from .veldo/trackers.json. tracker_jira_init.py carries no company-specific or board-specific literal (grep-clean for the org/board name and domain), and a repo with no tracker config is a clean no-op reported honestly (never an error).
   - id: AC2
-    falsified_by: >
-      Change the mapped-status guard in _project_status at .veldo/tracker_jira_init.py:437-441 to fall
-      back to the raw declared status (set_status with status_map.get(ws, declared_status)) so an
-      unmapped declared status reports a confident value instead of standing down, breaking the
-      load-bearing NG4 leave-it-unset leg, and the assertion at
-      scripts/suites/09_action_whitelist_warp_1205.py:1336-1337 (both in_progress items unset, unset 2)
-      must go red.
-    text: It PROJECTS THE DECLARED CURRENT STATE. For every plan (excluding the reserved PLAN-0000
-      scaffold, filtered by _is_scaffold_id, never by a company/board value) it upserts the plan's epic
-      keyed by plan id - the SAME stable marker the epic mirror uses, so the two converge and never fork
-      - and sets the epic's status from the plan's DECLARED file status through FILE_STATUS_TO_VELDO and
-      the status_map. For every spec it upserts the spec's child and sets the child's status from the
-      spec's DECLARED file status the same way. A plan or spec whose declared status has NO
-      FILE_STATUS_TO_VELDO entry (draft, in_progress, proven, closed) leaves the status UNSET - the
-      snapshot never invents a transition outside the mapped VELDO set (NG4), the same guarantee the
-      event mirror upholds.
+    falsified_by: "> Change the mapped-status guard in _project_status at .veldo/tracker_jira_init.py:437-441 to fall back to the raw declared status (set_status with status_map.get(ws, declared_status)) so an unmapped declared status reports a confident value instead of standing down, breaking the load-bearing NG4 leave-it-unset leg, and the assertion at scripts/suites/09_action_whitelist_warp_1205.py:1336-1337 (both in_progress items unset, unset 2) must go red."
+    text: It PROJECTS THE DECLARED CURRENT STATE. For every plan (excluding the reserved PLAN-0000 scaffold, filtered by _is_scaffold_id, never by a company/board value) it upserts the plan's epic keyed by plan id - the SAME stable marker the epic mirror uses, so the two converge and never fork - and sets the epic's status from the plan's DECLARED file status through FILE_STATUS_TO_VELDO and the status_map. For every spec it upserts the spec's child and sets the child's status from the spec's DECLARED file status the same way. A plan or spec whose declared status has NO FILE_STATUS_TO_VELDO entry (draft, in_progress, proven, closed) leaves the status UNSET - the snapshot never invents a transition outside the mapped VELDO set (NG4), the same guarantee the event mirror upholds.
   - id: AC3
-    falsified_by: >
-      Drop the released-to-shipped pair from the FILE_STATUS_TO_VELDO extension at
-      .veldo/tracker_jira_init.py:188 so a released plan's epic is left unset, breaking the load-bearing
-      leg of this criterion (the extension for the current-state facts no lifecycle event carries), and
-      the assertion at scripts/suites/09_action_whitelist_warp_1205.py:1326-1327 (epic:PLAN-0006 shows
-      the mapped Shipped status) must go red.
-    text: It COVERS WHAT THE EVENT STREAM STRUCTURALLY CANNOT. FILE_STATUS_TO_VELDO is BUILT FROM the
-      mirror's shipped SPEC_STATUS_TO_VELDO (so the two agree byte-for-byte on the shared statuses
-      shipped/blocked/ready and the shared constant is copied, never mutated) and EXTENDS it with the two
-      current-state statuses no lifecycle event carries: a spec parked in review projects to the VELDO
-      status in_review, and a released plan projects its epic to shipped. So a board reconciled by the
-      snapshot reflects a spec currently in review and a released plan even when the event stream holds no
-      event that would move them, which the event mirror (driven only by spec.ready/blocked/shipped and a
-      recorded verdict) cannot do from the stream alone.
+    falsified_by: "> Drop the released-to-shipped pair from the FILE_STATUS_TO_VELDO extension at .veldo/tracker_jira_init.py:188 so a released plan's epic is left unset, breaking the load-bearing leg of this criterion (the extension for the current-state facts no lifecycle event carries), and the assertion at scripts/suites/09_action_whitelist_warp_1205.py:1326-1327 (epic:PLAN-0006 shows the mapped Shipped status) must go red."
+    text: "It COVERS WHAT THE EVENT STREAM STRUCTURALLY CANNOT. FILE_STATUS_TO_VELDO is BUILT FROM the mirror's shipped SPEC_STATUS_TO_VELDO (so the two agree byte-for-byte on the shared statuses shipped/blocked/ready and the shared constant is copied, never mutated) and EXTENDS it with the two current-state statuses no lifecycle event carries: a spec parked in review projects to the VELDO status in_review, and a released plan projects its epic to shipped. So a board reconciled by the snapshot reflects a spec currently in review and a released plan even when the event stream holds no event that would move them, which the event mirror (driven only by spec.ready/blocked/shipped and a recorded verdict) cannot do from the stream alone."
   - id: AC4
-    falsified_by: >
-      Change the standalone branch at .veldo/tracker_jira_init.py:476 to pass the spec id as the epic key
-      (create_or_update_child(sid, sid, ...)) so a plan-less spec is forced under a spurious epic,
-      breaking the load-bearing epic_key None top-level placement, and the assertion at
-      scripts/suites/09_action_whitelist_warp_1205.py:1331-1332 (find_child(None, WARP-9702) resolves and
-      no epic exists for it) must go red.
-    text: It places STANDALONE specs correctly and reports created-vs-reused WITHOUT a redundant write. A
-      spec that declares no plan (it is in no plan's work list) is projected as a TOP-LEVEL item of the
-      child issue type - a Task with no epic parent - via create_or_update_child with epic_key None, so it
-      is never forced under a spurious epic and never mapped to a wrong type; its id carries no epic
-      segment so it cannot collide with an under-epic child. find_epic and find_child are SIDE-EFFECT-FREE
-      reads (the base seam's write audit is byte-unchanged after they run), the read counterparts to the
-      upserts keyed the same way, so the snapshot tells a created object from a reused one for its report
-      without a second write.
+    falsified_by: "> Change the standalone branch at .veldo/tracker_jira_init.py:476 to pass the spec id as the epic key (create_or_update_child(sid, sid, ...)) so a plan-less spec is forced under a spurious epic, breaking the load-bearing epic_key None top-level placement, and the assertion at scripts/suites/09_action_whitelist_warp_1205.py:1331-1332 (find_child(None, WARP-9702) resolves and no epic exists for it) must go red."
+    text: It places STANDALONE specs correctly and reports created-vs-reused WITHOUT a redundant write. A spec that declares no plan (it is in no plan's work list) is projected as a TOP-LEVEL item of the child issue type - a Task with no epic parent - via create_or_update_child with epic_key None, so it is never forced under a spurious epic and never mapped to a wrong type; its id carries no epic segment so it cannot collide with an under-epic child. find_epic and find_child are SIDE-EFFECT-FREE reads (the base seam's write audit is byte-unchanged after they run), the read counterparts to the upserts keyed the same way, so the snapshot tells a created object from a reused one for its report without a second write.
   - id: AC5
-    falsified_by: >
-      Delete the no-op-when-unchanged guard in FakeTracker._set_status at
-      .veldo/tracker_adapter.py:758-759 so a second reconcile re-records every transition: that breaks
-      the load-bearing idempotency leg (the one-way leg has no guard to remove, only a write-back to
-      add), and the assertions at scripts/suites/09_action_whitelist_warp_1205.py:1353-1357 (board digest
-      byte-identical, re-run transitions 0) must go red.
-    text: It is IDEMPOTENT and ONE-WAY. Re-running the snapshot over the same repository forks no epic or
-      child, records no duplicate transition, and leaves the board byte-identical (the upserts are keyed,
-      set_status is a no-op when unchanged). It writes ONLY through the provisioner seam (the keyed
-      upserts and set_status) and NEVER mutates a spec, a plan, or the in-memory indices it reads - there
-      is no code path here that writes back into the repository, so the repository stays the single source
-      of truth (C1). Because the snapshot projects the DECLARED file status, when it runs after the event
-      mirror it makes the board agree with the file even if an event would have said otherwise - the
-      declared repository state wins, which is the source-of-truth invariant, not a conflict.
+    falsified_by: "> Delete the no-op-when-unchanged guard in FakeTracker._set_status at .veldo/tracker_adapter.py:758-759 so a second reconcile re-records every transition: that breaks the load-bearing idempotency leg (the one-way leg has no guard to remove, only a write-back to add), and the assertions at scripts/suites/09_action_whitelist_warp_1205.py:1353-1357 (board digest byte-identical, re-run transitions 0) must go red."
+    text: It is IDEMPOTENT and ONE-WAY. Re-running the snapshot over the same repository forks no epic or child, records no duplicate transition, and leaves the board byte-identical (the upserts are keyed, set_status is a no-op when unchanged). It writes ONLY through the provisioner seam (the keyed upserts and set_status) and NEVER mutates a spec, a plan, or the in-memory indices it reads - there is no code path here that writes back into the repository, so the repository stays the single source of truth (C1). Because the snapshot projects the DECLARED file status, when it runs after the event mirror it makes the board agree with the file even if an event would have said otherwise - the declared repository state wins, which is the source-of-truth invariant, not a conflict.
   - id: AC6
-    falsified_by: >
-      Delete the snapshot_from_repo call at .veldo/tracker_jira_init.py:507-509 and its report key at 510
-      so veldo jira init provisions, fences, and event-mirrors but never reconciles, breaking the
-      load-bearing leg that init runs the snapshot as its FINAL step, and the assertion at
-      scripts/suites/09_action_whitelist_warp_1205.py:1396-1397 (a snapshot report block reporting
-      reconciled true) must go red.
-    text: It is wired as ONE command, veldo jira snapshot (a subcommand of the repo-only
-      tracker_jira_init.py that bin/veldo already routes 'jira' to, behind the SAME existence guard as veldo
-      jira init and veldo mirror; bin/veldo itself is UNCHANGED and stays byte-identical across its copies).
-      veldo jira snapshot --dry-run previews the whole reconcile over an in-memory FakeTracker with no
-      network and no token; without it it builds the SAME reference live provisioner veldo jira init builds
-      and FAILS CLOSED when no token resolves. veldo jira init ALSO runs the snapshot as the FINAL step of
-      its one-pass bootstrap (provision, then event-mirror catch-up, then snapshot reconcile), so a single
-      init yields a board that reflects the current declared state; both remain idempotent so a re-run of
-      either changes nothing. It creates no timer, daemon, or auto-start and spawns nothing detached (NG1).
+    falsified_by: "> Delete the snapshot_from_repo call at .veldo/tracker_jira_init.py:507-509 and its report key at 510 so veldo jira init provisions, fences, and event-mirrors but never reconciles, breaking the load-bearing leg that init runs the snapshot as its FINAL step, and the assertion at scripts/suites/09_action_whitelist_warp_1205.py:1396-1397 (a snapshot report block reporting reconciled true) must go red."
+    text: It is wired as ONE command, veldo jira snapshot (a subcommand of the repo-only tracker_jira_init.py that bin/veldo already routes 'jira' to, behind the SAME existence guard as veldo jira init and veldo mirror; bin/veldo itself is UNCHANGED and stays byte-identical across its copies). veldo jira snapshot --dry-run previews the whole reconcile over an in-memory FakeTracker with no network and no token; without it it builds the SAME reference live provisioner veldo jira init builds and FAILS CLOSED when no token resolves. veldo jira init ALSO runs the snapshot as the FINAL step of its one-pass bootstrap (provision, then event-mirror catch-up, then snapshot reconcile), so a single init yields a board that reflects the current declared state; both remain idempotent so a re-run of either changes nothing. It creates no timer, daemon, or auto-start and spawns nothing detached (NG1).
   - id: AC7
-    falsified_by: >
-      Add a second literal file-status table as a fallback in _project_status at
-      .veldo/tracker_jira_init.py:436 for a declared status absent from FILE_STATUS_TO_VELDO: tooth T1
-      then goes VACUOUS because its mutant still reaches In Review through the fallback, which breaks the
-      load-bearing none-of-the-teeth-is-vacuous leg, and the mutant leg of the assertion at
-      scripts/suites/10_warp_0613_anti_vacuity.py:32-34 must go red.
-    text: A selftest drives the WHOLE snapshot over the deterministic FakeTracker offline (no network) and
-      is NON-TAUTOLOGICAL. A spec whose declared status is review shows the mapped In Review status; a
-      released plan's epic shows the mapped Shipped status; a standalone spec (no plan) becomes a
-      top-level task with its mapped status and under NO epic; a plan/spec whose declared status has no
-      VELDO mapping leaves its status unset (no invented transition); a re-run forks nothing and leaves the
-      board byte-identical; and the spec/plan indices are byte-unchanged afterward (one-way). Each load-
-      bearing behavior carries an in-memory source-mutation TOOTH that turns its assertion red while the
-      on-disk module stays byte-unchanged: neutralizing the review->in_review extension makes the in-review
-      spec lose its status; neutralizing the released->shipped extension makes the released epic lose its
-      shipped status; neutralizing the epic_key-None top-level branch forces the standalone spec under a
-      spurious epic (or collides its id); and neutralizing the keyed-upsert reuse makes a re-run fork or
-      duplicate. None of the teeth is vacuous.
+    falsified_by: "> Add a second literal file-status table as a fallback in _project_status at .veldo/tracker_jira_init.py:436 for a declared status absent from FILE_STATUS_TO_VELDO: tooth T1 then goes VACUOUS because its mutant still reaches In Review through the fallback, which breaks the load-bearing none-of-the-teeth-is-vacuous leg, and the mutant leg of the assertion at scripts/suites/10_warp_0613_anti_vacuity.py:32-34 must go red."
+    text: "A selftest drives the WHOLE snapshot over the deterministic FakeTracker offline (no network) and is NON-TAUTOLOGICAL. A spec whose declared status is review shows the mapped In Review status; a released plan's epic shows the mapped Shipped status; a standalone spec (no plan) becomes a top-level task with its mapped status and under NO epic; a plan/spec whose declared status has no VELDO mapping leaves its status unset (no invented transition); a re-run forks nothing and leaves the board byte-identical; and the spec/plan indices are byte-unchanged afterward (one-way). Each load- bearing behavior carries an in-memory source-mutation TOOTH that turns its assertion red while the on-disk module stays byte-unchanged: neutralizing the review->in_review extension makes the in-review spec lose its status; neutralizing the released->shipped extension makes the released epic lose its shipped status; neutralizing the epic_key-None top-level branch forces the standalone spec under a spurious epic (or collides its id); and neutralizing the keyed-upsert reuse makes a re-run fork or duplicate. None of the teeth is vacuous."
 required_evidence: [unit]
 rollback: git revert; additive - a new snapshot_from_repo projection and a veldo jira snapshot subcommand
   in the repo-only tracker_jira_init.py, two side-effect-free find primitives plus top-level-task support

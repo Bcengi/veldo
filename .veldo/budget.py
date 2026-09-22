@@ -38,6 +38,8 @@ import re
 import sys
 from pathlib import Path
 
+
+
 ROOT = Path(__file__).resolve().parent.parent
 
 # Load the shared reader (single source of truth for spend) and the contract
@@ -281,7 +283,7 @@ def _load_plan_fm(arg):
     """Accept a plan file path or a PLAN-id and return its front matter."""
     p = Path(arg)
     if p.exists():
-        m = V.re.match(r"^---\n(.*?)\n---", p.read_text(), V.re.S)
+        m = V._yamlish.front_matter_match(p.read_text())
         if not m:
             raise SystemExit("no front matter in %s" % arg)
         return V.parse_yamlish(m.group(1))
