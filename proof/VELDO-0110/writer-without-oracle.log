@@ -1,0 +1,13 @@
+test_generated_real_yaml_oracle (__main__.WriterTests.test_generated_real_yaml_oracle) ... skipped 'writer/generated-real-yaml-oracle STANDS DOWN: PyYAML unavailable'
+test_generated_round_trip (__main__.WriterTests.test_generated_round_trip) ... ok
+test_missing_oracle_stands_down_by_name (__main__.WriterTests.test_missing_oracle_stands_down_by_name) ... ok
+test_oracle_catches_old_reader_based_quoting (__main__.WriterTests.test_oracle_catches_old_reader_based_quoting) ... skipped 'writer/old-quoting-oracle-control STANDS DOWN: PyYAML unavailable'
+test_oracle_in_other_direction (__main__.WriterTests.test_oracle_in_other_direction) ... skipped 'writer/oracle-to-writer-to-both-readers STANDS DOWN: PyYAML unavailable'
+test_refusals (__main__.WriterTests.test_refusals) ... ok
+test_restoration_measurement_types (__main__.WriterTests.test_restoration_measurement_types) ... ok
+test_tracker_guard_is_unchanged_and_precedes_writer (__main__.WriterTests.test_tracker_guard_is_unchanged_and_precedes_writer) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.553s
+
+OK (skipped=3)

@@ -64,3 +64,16 @@ applicable gate stages. [Verification details](verification.md) identify the exa
 commit and tree; [the complete log](gate.log) records every stage. All 39 changed
 `.veldo` files have byte-identical engine copies. Gate byproducts are restored and
 excluded from commits; this evidence does not claim independent review or merging.
+
+## Write-side continuation
+
+The continuation requested at 23e1a2b centralizes serialization beside the reader,
+retains tracker injection protection, and adds generated round trips, an independent
+YAML oracle, the complete current-corpus audit, and a second-writer boundary check.
+[Design and test contract](writer.md). [Corpus report](writer-corpus.json).
+
+The final write-side gate at c38e8d5 is **RED**: unit and first-use integration each
+passed 5,549 assertions with zero failures, but secret inventory flags the existing
+read-side gate log's synthetic guardrail diagnostic in the tree and reachable history.
+[Verification and unresolved finding](writer-verification.md) records the result;
+it does not supersede a red gate with the earlier read-side green result.

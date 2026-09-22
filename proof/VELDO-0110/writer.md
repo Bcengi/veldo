@@ -42,4 +42,5 @@ against both readers with exact field, type, and value diagnostics. It does not
 rewrite the input corpus. The prose-only index has no metadata to serialize and
 is recorded separately. The JSON records input and output hashes for every path.
 
-Full-gate results for this continuation are recorded separately after execution.
+The final full gate is **RED** on the existing historical log fixture finding.
+[Verification and unresolved work](writer-verification.md) records all stage results.
