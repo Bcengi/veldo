@@ -492,7 +492,7 @@
    "requires": [
     "53_veldo_0123_mutations"
    ],
-   "regions": "Required mutation stage, exact assertion observations, deadlines and private content-addressed reuse"
+   "regions": "Required mutation stage, exact assertion observations, deadlines and fresh execution"
   }
  ]
 }

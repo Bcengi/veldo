@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 """Reproduce VELDO-0123 qualification and drive its named refutations on temporary copies.
 
-No committed artifact is ever offered to the mutation result cache. This script's output
-is documentary proof only; the real stage independently measures and publishes its results.
+Output is documentary proof; the real stage independently executes every case fresh.
 """
 import argparse
 import ast
-import copy
 import difflib
 import importlib.util
+import hashlib
 import json
-import os
 from pathlib import Path
 import shutil
 import sys
 import tempfile
-import time
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
@@ -30,10 +27,26 @@ def load(path, name):
 
 Q = load(ROOT / 'scripts/suites/53_veldo_0123_mutations.py', 'qualification')
 SOURCE = ROOT / 'scripts/check_gate_mutations.py'
+FULL = False
+
+
+def summarize(value):
+    """Condense successful stage observations only; failures remain in full."""
+    if isinstance(value, list):
+        return [summarize(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+    if value.get('schema') == 'veldo.mutation-stage/v1' and value.get('status') == 'passed':
+        body = json.dumps(value['results'], sort_keys=True, separators=(',', ':')).encode()
+        return dict({k: v for k, v in value.items() if k != 'results'},
+                    results_count=len(value['results']), results_sha256=hashlib.sha256(body).hexdigest(),
+                    observation_counts={field: sum(r[field]['count'] for r in value['results'])
+                                        for field in ('baseline', 'noop', 'mutant')})
+    return {k: summarize(v) for k, v in value.items()}
 
 
 def write(path, value):
-    path.write_text(json.dumps(value, indent=2) + '\n')
+    path.write_text(json.dumps(value if FULL else summarize(value), indent=2) + '\n')
 
 
 def refutations(out):
@@ -45,8 +58,8 @@ def refutations(out):
     source = SOURCE.read_text()
     gate_source = (ROOT / 'scripts/verify.sh').read_text()
     mutations = []
-    def add(name, row, old, new, matrix=None, shell=False):
-        mutations.append((name, row, old, new, matrix, shell))
+    def add(name, row, old, new, shell=False):
+        mutations.append((name, row, old, new, shell))
     add('omit-review-registry', Q.ROWS[0],
         "DRIVERS = ('check_teeth_mutations.py', 'check_review_mutations.py')",
         "DRIVERS = ('check_teeth_mutations.py',)")
@@ -69,40 +82,8 @@ def refutations(out):
         'echo "   ${name}: FAIL"; FAIL=1; RAN=$((RAN+1))',
         'echo "   ${name}: FAIL"; FAIL=0; RAN=$((RAN+1))', shell=True)
     add('accept-removed-teeth', Q.ROWS[3], "            if after != [False]:", "            if False:")
-    matrix = [entry['input'] for entry in evidence['matrix']]
-    key_anchor = "    return digest({'inputs': components, 'case': case})"
-    for item in matrix:
-        if item in ('addition', 'deletion'):
-            removed = '.veldo/untracked_import.py' if item == 'addition' else 'scripts/suites/support/transitive.py'
-            edit = "    components = dict(components, files={k: v for k, v in components['files'].items() if k != " + repr(removed) + "})\n"
-        elif item == 'mode':
-            edit = "    components = dict(components, files={k: [0, v[1]] for k, v in components['files'].items()})\n"
-        elif item.startswith('runtime:'):
-            edit = "    components = dict(components, runtime={k: v for k, v in components['runtime'].items() if k != " + repr(item.split(':')[1]) + "})\n"
-        elif item == 'case-definition':
-            edit = "    case = dict(case, finding=0)\n"
-        elif item in ('interpreter', 'history', 'schema', 'fixture-version'):
-            field = {'interpreter': 'runtime', 'fixture-version': 'fixture_version'}.get(item, item)
-            edit = "    components = {k: v for k, v in components.items() if k != " + repr(field) + "}\n"
-        else:
-            edit = "    components = dict(components, files={k: v for k, v in components['files'].items() if k != " + repr(item) + "})\n"
-        add('omit-input-' + item, Q.ROWS[4], key_anchor, edit + key_anchor, item)
-        # The malformed reuse policy explicitly rebinds an old observation to a new input.
-        add('reuse-stale-' + item, Q.ROWS[5],
-            "        path = directory / (key + '.json')",
-            "        for prior in directory.glob('*.json'):\n"
-            "            previous = json.loads(prior.read_text())\n"
-            "            if previous['case']['identity'] == case['identity']:\n"
-            "                previous.update(key=key, case=case, schema=SCHEMA, fixture_version=FIXTURE_VERSION)\n"
-            "                return validate_result(previous, case, key)\n"
-            "        path = directory / (key + '.json')", item)
-    add('ignore-file-bytes', Q.ROWS[4],
-        "hashlib.sha256(body).hexdigest()]", "'constant']", '.veldo/fixture.py')
-    add('discard-all-reusable-results', Q.ROWS[5],
-        'def read_record(directory, key, case):\n    try:',
-        'def read_record(directory, key, case):\n    return None\n    try:')
     results = []
-    for index, (name, row, old, new, single, shell) in enumerate(mutations):
+    for index, (name, row, old, new, shell) in enumerate(mutations):
         with tempfile.TemporaryDirectory(prefix='v123-falsifier-') as directory:
             repo = Path(directory)
             (repo / 'scripts').mkdir()
@@ -116,11 +97,11 @@ def refutations(out):
             (repo / 'scripts/check_gate_mutations.py').write_text(source if shell else after)
             (repo / 'scripts/verify.sh').write_text(after if shell else gate_source)
             mutant = Q.import_gate(repo / 'scripts/check_gate_mutations.py')
-            observed, detail = Q.qualification(mutant, repo, selected=row, matrix_only=single)
+            observed, detail = Q.qualification(mutant, repo, selected=row)
             if observed != {row: False}:
                 raise RuntimeError((name, 'named assertion did not turn false', observed))
             result = dict(mutation=name, row=row, observations=observed, completed=True,
-                          input=single, diff=''.join(difflib.unified_diff(before.splitlines(True),
+                          diff=''.join(difflib.unified_diff(before.splitlines(True),
                               after.splitlines(True), fromfile='original', tofile='mutant')),
                           evidence=detail)
             results.append(result)
@@ -170,9 +151,6 @@ def removed_teeth(out):
             raise RuntimeError(control)
         write(out / 'assertion-control.json', control)
         for driver, suite, target in targets:
-            warm = module.run_stage(repo)
-            if warm['status'] != 'passed' or warm['worker_invocations'] != 0:
-                raise RuntimeError('prewarming did not reuse every case')
             path = repo / 'scripts/suites' / suite
             before = path.read_text()
             after = weaken(before, target)
@@ -186,29 +164,38 @@ def removed_teeth(out):
                        target in r['case']['rows'] and r['error'] == 'mutation_survived']
             if weakened['status'] != 'failed' or not matched:
                 raise RuntimeError((target, weakened))
-            results.append(dict(driver=driver, target=target, prewarm=warm['reused'],
+            results.append(dict(driver=driver, target=target,
                                 elapsed=weakened['elapsed'], workers=weakened['worker_invocations'],
                                 diff=''.join(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
                                                                fromfile=suite, tofile=suite)),
                                 surviving_mutations=matched))
             write(out / 'removed-teeth.json', results)
             print(f'{len(results)}/{len(targets)} {driver} {target}: mutation_survived', flush=True)
-        # A no-op copy changes bytes, invalidates records, and preserves all observations.
+        # A no-op copy preserves all observations while executing every case again.
         path = repo / 'scripts/suites/shared.py'
         path.write_text(path.read_text() + '\n# no-op qualification control\n')
         noop = module.run_stage(repo)
-        if noop['status'] != 'passed' or noop['computed'] != len(cases):
+        if noop['status'] != 'passed' or noop['executed'] != len(cases):
             raise RuntimeError(noop)
         write(out / 'assertion-noop.json', noop)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('mode', choices=('refutations', 'removed-teeth'))
+    parser.add_argument('mode', choices=('refutations', 'removed-teeth', 'stage'))
+    parser.add_argument('--full', action='store_true', help='retain successful per-case observations too')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    global FULL
+    FULL = args.full
     args.output.mkdir(parents=True, exist_ok=True)
-    (refutations if args.mode == 'refutations' else removed_teeth)(args.output)
+    if args.mode == 'stage':
+        result = Q.import_gate(SOURCE).run_stage()
+        write(args.output / 'stage.json', result)
+        if result['status'] != 'passed':
+            raise RuntimeError(result)
+    else:
+        (refutations if args.mode == 'refutations' else removed_teeth)(args.output)
 
 
 if __name__ == '__main__':

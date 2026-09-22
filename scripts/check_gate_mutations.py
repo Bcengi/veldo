@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Repository-only mutation gate. Receipts are output; only private local records enable reuse.
+"""Repository-only mutation gate. Every registered case executes fresh on every invocation.
 
 Workers see a frozen copy of scripts, .veldo and the proof corpus, never gate receipts.
 The source tree is read twice to reject races. Git history is cloned at the measured HEAD.
@@ -12,13 +12,10 @@ import importlib.util
 import json
 import os
 from pathlib import Path
-import platform
 import shutil
 import signal
-import socket
 import subprocess
 import sys
-import sysconfig
 import tempfile
 import time
 
@@ -27,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DRIVERS = ('check_teeth_mutations.py', 'check_review_mutations.py')
 SCHEMA = 'veldo.mutation-result/v1'
 FIXTURE_VERSION = 1
-BUDGET = 600
+BUDGET = 120
 WORKER_BUDGET = 120
 PARALLEL = 8
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
@@ -82,7 +79,7 @@ def fixed_env(home, binpath='/usr/bin:/bin'):
 
 
 def command(args, env):
-    """Even setup and identity subprocesses belong to an owned, bounded process group."""
+    """Even setup subprocesses belong to an owned, bounded process group."""
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             env=env, start_new_session=True)
     try:
@@ -128,7 +125,7 @@ def read_inputs(root):
             if rel in OUTPUTS or '__pycache__' in path.parts:
                 continue
             if path.is_symlink():
-                raise Refused('key_failure', 'symlink input: ' + rel)
+                raise Refused('driver_error', 'symlink input: ' + rel)
             if path.is_file():
                 files[rel] = (path.stat().st_mode & 0o777, path.read_bytes())
     return files
@@ -137,44 +134,6 @@ def read_inputs(root):
 def file_identity(files):
     return {name: [mode, hashlib.sha256(body).hexdigest()]
             for name, (mode, body) in files.items()}
-
-
-def runtime_identity():
-    """Runtime bytes, external Git implementation and native libraries, plus kernel capabilities."""
-    paths = {Path(sys.executable).resolve(), Path('/usr/bin/git').resolve()}
-    for base in (Path(sysconfig.get_path('stdlib')), Path('/usr/lib/git-core'),
-                 Path('/usr/lib/python3/dist-packages'),
-                 Path(sysconfig.get_path('purelib'))):
-        for path in base.rglob('*'):
-            if path.is_file():
-                paths.add(path.resolve())
-    # Native extension dependencies are inputs too (OpenSSL, SQLite, libc, ...).
-    native = [p for p in paths if '.so' in p.name or p in
-              {Path(sys.executable).resolve(), Path('/usr/bin/git').resolve()}]
-    for path in native:
-        try:
-            out = command(['/usr/bin/ldd', str(path)], fixed_env('/nonexistent')).decode()
-        except subprocess.CalledProcessError:
-            out = ''  # A static executable or non-native Git helper has no shared libraries.
-        for word in out.split():
-            if word.startswith('/') and Path(word).is_file():
-                paths.add(Path(word).resolve())
-    return {'implementation': platform.python_implementation(), 'version': sys.version,
-            'executable': str(Path(sys.executable).resolve()), 'cache_tag': sys.implementation.cache_tag,
-            'runtime': {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)},
-            'host': [platform.platform(), platform.machine(), os.getuid(), os.getgid(),
-                     os.cpu_count(), hasattr(socket, 'SO_PEERCRED')],
-            'environment': fixed_env('<private-worker-directory>')}
-
-
-def input_components(files, runtime, history):
-    ids = file_identity(files)
-    return {'files': ids, 'runtime': runtime, 'history': history,
-            'schema': SCHEMA, 'fixture_version': FIXTURE_VERSION}
-
-
-def case_key(components, case):
-    return digest({'inputs': components, 'case': case})
 
 
 def observations(value):
@@ -189,9 +148,9 @@ def observations(value):
     return rows
 
 
-def validate_result(record, case, key):
+def validate_result(record, case):
     try:
-        if (record['schema'] != SCHEMA or record['key'] != key or record['case'] != case
+        if (record['schema'] != SCHEMA or record['case'] != case
                 or record['fixture_version'] != FIXTURE_VERSION):
             raise ValueError('identity mismatch')
         honest, noop, broken = (observations(record[k]) for k in ('baseline', 'noop', 'mutant'))
@@ -212,45 +171,6 @@ def validate_result(record, case, key):
         return record
     except (KeyError, TypeError, ValueError) as error:
         raise Refused('driver_error', str(error)) from error
-
-
-def cache_directory(root):
-    admin = Path(git(root, 'rev-parse', '--absolute-git-dir')).resolve()
-    if admin == root or root in admin.parents:
-        # A normal checkout's .git is administrative, not a committed-tree result source.
-        if admin != root / '.git':
-            raise Refused('key_failure', 'not a private Git administrative directory')
-    directory = admin / 'mutation-results'
-    if directory.is_symlink() or directory.resolve().parent != admin:
-        raise Refused('key_failure', 'cache must remain in this checkout Git directory')
-    return directory
-
-
-def read_record(directory, key, case):
-    try:
-        path = directory / (key + '.json')
-        if path.is_symlink():
-            return None
-        return validate_result(json.loads(path.read_text()), case, key)
-    except Exception:  # Corrupt records of any shape are misses, never stage results.
-        return None
-
-
-def publish(directory, key, record):
-    """Only the caller's completed, validated local drive reaches this atomic publication."""
-    try:
-        directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(dir=directory, mode='w', delete=False) as stream:
-            path = Path(stream.name)
-            json.dump(record, stream, sort_keys=True)
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(path, directory / (key + '.json'))
-        return True
-    except OSError:
-        if 'path' in locals():
-            path.unlink(missing_ok=True)
-        return False
 
 
 class Workers:
@@ -370,8 +290,8 @@ def run_stage(root=ROOT):
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline)
-    receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [], 'key_failures': [],
-               'registered': 0, 'computed': 0, 'reused': 0, 'cache_misses': 0,
+    receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [],
+               'registered': 0, 'executed': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
     previous = signal.getsignal(signal.SIGALRM)
 
@@ -389,92 +309,63 @@ def run_stage(root=ROOT):
                                            'worker_seconds': 0.0}
         files = read_inputs(root)
         head = git(root, 'rev-parse', 'HEAD')
-        try:
-            runtime = runtime_identity()
-        except (OSError, ValueError, subprocess.SubprocessError) as error:
-            runtime = None
-            receipt['key_failures'].append(str(error))
-        components = input_components(files, runtime, head)
-        receipt['input_digest'] = digest(components)
+        receipt['input_digest'] = digest({'files': file_identity(files), 'head': head})
         receipt['implementation_digest'] = hashlib.sha256(
             files['scripts/check_gate_mutations.py'][1]).hexdigest()
-        try:
-            cache = cache_directory(root)
-        except (OSError, subprocess.SubprocessError, Refused) as error:
-            cache = None
-            receipt['key_failures'].append(str(error))
-        keys, records, missing = {}, {}, []
-        for case in cases:
-            try:
-                key = case_key(components, case) if runtime is not None else None
-            except (OSError, ValueError, TypeError) as error:
-                key = None
-                receipt['key_failures'].append(str(error))
-            keys[case['identity']] = key
-            record = read_record(cache, key, case) if cache and key else None
-            if record is None:
-                missing.append(case)
-            else:
-                records[case['identity']] = ('reused', record)
-        receipt['cache_misses'] = len(missing)
+        results = {}
         with tempfile.TemporaryDirectory(prefix='veldo-mutations-') as temporary:
             directory = Path(temporary)
-            if missing:
-                frozen = directory / 'input'
-                snapshot(root, frozen, files, head)
-                # Registries executed again from the frozen bytes: an enumeration race is red.
-                if inventory(frozen) != cases:
-                    raise Refused('incomplete_inventory', 'registry changed while snapshotting')
-                controls = {}
-                for case in missing:
-                    group = case['suite'] + ':' + case['module']
-                    for mode in ('baseline', 'noop'):
-                        controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode})
-                control_results = workers.run(controls, directory, frozen)
-                mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant'}
-                                              for c in missing}, directory, frozen)
-                for case in missing:
-                    identity = case['identity']
-                    group = case['suite'] + ':' + case['module']
-                    source = files['.veldo/' + case['module']][1].decode()
-                    count = source.count(case['old'])
-                    old_digest = hashlib.sha256(source.encode()).hexdigest()
-                    new_digest = hashlib.sha256(source.replace(case['old'], case['new']).encode()).hexdigest()
-                    record = {'schema': SCHEMA, 'key': keys[identity], 'case': case,
-                              'fixture_version': FIXTURE_VERSION, 'replacement_count': count,
-                              'old_digest': old_digest, 'new_digest': new_digest,
-                              'baseline': control_results[group + ':baseline']['result'],
-                              'noop': control_results[group + ':noop']['result'],
-                              'mutant': mutant_results[identity]['result'],
-                              'elapsed': mutant_results[identity]['elapsed']}
-                    try:
-                        validate_result(record, case, keys[identity])
-                    except Refused as error:
-                        receipt['invalid_results'].append(dict(record, error=error.code, detail=error.detail))
-                        continue
-                    records[identity] = ('computed', record)
+            frozen = directory / 'input'
+            snapshot(root, frozen, files, head)
+            # Registries executed again from the frozen bytes: an enumeration race is red.
+            if inventory(frozen) != cases:
+                raise Refused('incomplete_inventory', 'registry changed while snapshotting')
+            controls = {}
+            for case in cases:
+                group = case['suite'] + ':' + case['module']
+                for mode in ('baseline', 'noop'):
+                    controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode})
+            control_results = workers.run(controls, directory, frozen)
+            mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant'}
+                                          for c in cases}, directory, frozen)
+            for case in cases:
+                identity = case['identity']
+                group = case['suite'] + ':' + case['module']
+                source = files['.veldo/' + case['module']][1].decode()
+                count = source.count(case['old'])
+                old_digest = hashlib.sha256(source.encode()).hexdigest()
+                new_digest = hashlib.sha256(source.replace(case['old'], case['new']).encode()).hexdigest()
+                record = {'schema': SCHEMA, 'case': case,
+                          'fixture_version': FIXTURE_VERSION, 'replacement_count': count,
+                          'old_digest': old_digest, 'new_digest': new_digest,
+                          'baseline': control_results[group + ':baseline']['result'],
+                          'noop': control_results[group + ':noop']['result'],
+                          'mutant': mutant_results[identity]['result'],
+                          'elapsed': mutant_results[identity]['elapsed']}
+                try:
+                    validate_result(record, case)
+                except Refused as error:
+                    receipt['invalid_results'].append(dict(record, error=error.code, detail=error.detail))
+                    continue
+                results[identity] = record
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
-            # No result, including a hit, is accepted across a change to any measured input.
+            # Reject changes to the checked inputs during execution.
             if (file_identity(read_inputs(root)) != file_identity(files)
-                    or git(root, 'rev-parse', 'HEAD') != head
-                    or (runtime is not None and runtime_identity() != runtime)):
+                    or git(root, 'rev-parse', 'HEAD') != head):
                 raise Refused('driver_error', 'inputs changed during stage')
             workers.check()
-            if set(records) != {c['identity'] for c in cases}:
+            if set(results) != {c['identity'] for c in cases}:
                 raise Refused('incomplete_inventory', 'registered/result identities differ')
             for case in cases:
                 identity = case['identity']
-                provenance, record = records[identity]
-                validate_result(record, case, keys[identity])
-                if provenance == 'computed' and cache and keys[identity]:
-                    publish(cache, keys[identity], record)
-                receipt[provenance] += 1
+                record = results[identity]
+                validate_result(record, case)
+                receipt['executed'] += 1
                 receipt['rejected'] += 1
-                receipt['drivers'][case['driver']]['worker_seconds'] += (
-                    record['elapsed'] if provenance == 'computed' else 0)
-                receipt['results'].append(dict(record, provenance=provenance))
+                receipt['drivers'][case['driver']]['worker_seconds'] += record['elapsed']
+                receipt['results'].append(record)
         workers.check()
         receipt['status'] = 'passed'
     except Exception as error:  # All incomplete drives are named errors, never detections.
@@ -502,7 +393,7 @@ def main():
         return 0
     receipt = run_stage()
     print(json.dumps(receipt, sort_keys=True), flush=True)
-    print('mutations: {status} registered={registered} computed={computed} reused={reused} '
+    print('mutations: {status} registered={registered} executed={executed} '
           'rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)
     return 0 if receipt['status'] == 'passed' else 1
 
