@@ -56,10 +56,15 @@ spec's prose history; its owner-only claim, falsifier, and status are unchanged.
 negative control, a copy carrying only an added comment, required to agree with the original on every
 case the others turn on, so the difference each mutant shows is the mutation and not the copying.
 
-The last row is the one this item exists for: the real validator over this repository's own landed
-corpus, with the flag on and no line, refusing bundles that shipped before the machinery existed, and
-the same library call with the line recorded, refusing none. It passes the line as an argument
-and does not write the policy file.
+The corpus row, proofcheck/the-corpus-this-item-exists-for, reads this checkout's proof/*/manifest.json
+files and any corresponding validation records. It calls check_bundle in-process with required=True
+and an explicit start_line argument: first the empty string, then this checkout's dynamically
+resolved HEAD. It requires more than 100 manifests, at least one refusal without a line, and no
+refusals with HEAD as the line. This measures the library decision over the real corpus, not a CLI
+validator run or policy-file loading, and does not pin a commit id.
+
+Writing the real policy file and restoring it in a finally block was the historical procedure.
+The current row does neither; it passes both settings directly to check_bundle.
 
 **What this does not show.** Every row here is a check somebody wrote, so it can only find what a
 check was written for. It shows the scope decision is made where it should be and cannot be moved by
