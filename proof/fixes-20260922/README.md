@@ -28,7 +28,7 @@ covers both accessors. The identifiers otherwise follow the review prompt.
 | 13 | Use the shallow clone's actual tip, require both objects and successful fixture setup, and remove the vacuous success alternative. | The mutation driver writes a copy that treats return code 1 as settled non-ancestry; this exact row turns red. |
 | 14 | Check the applied-command list as well as refusal responses. | A broken copy applies the invalid-signature command and then returns the correct refusal; the transport/signature row turns red. |
 | 15 | Drive the executable relay with raw stdin and compare stdout byte for byte, including binary, empty, large, and whitespace-sensitive payloads. | A broken executable reserializes JSON and rejects binary input; the carrying row turns red. |
-| 16 | Distinguish zero output bytes from a parsed JSON object. | A broken relay emits literal `{}` when the authority is unavailable; the no-output row turns red. |
+| 16 | The original repair distinguished empty output from `{}` but still conflated it with JSON `null`. | The teeth-20260922 follow-up compares raw stdout to `b""` in suite 48 row `relay/an-unreachable-authority-is-reported-not-answered`; `null`, one newline, one space, and `{}` each turn it red. `relay/usage-has-zero-stdout`, `relay/oversized-request-has-zero-stdout`, and `relay/oversized-response-has-zero-stdout` extend the zero-byte assertions to the other refusal paths. |
 | 17 | Snapshot recursive file contents and metadata in both state directories after authority shutdown, including existing files. | A broken client overwrites an existing last-seen file while still refusing; the no-local-authority row turns red. |
 
 ## Verification record

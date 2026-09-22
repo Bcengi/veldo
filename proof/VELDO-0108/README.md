@@ -36,11 +36,18 @@ unix sockets before and after.
 
 ## What the evidence is
 
-Five rows in `scripts/suites/48_veldo_0108_relay.py`. The relay runs as a real child process with the
+Eight rows in `scripts/suites/48_veldo_0108_relay.py`. The relay runs as a real child process with the
 request on stdin, against real authority child processes on real sockets. A valid command arrives
 unchanged and is accepted. A command tampered with in transit and one signed by a key the authority
-does not know are both refused **at the authority**. With the authority stopped the relay exits 3,
-writes nothing to stdout, and names the endpoint on stderr rather than inventing an answer.
+does not know are both refused **at the authority**. With the authority stopped,
+`relay/an-unreachable-authority-is-reported-not-answered` requires exit 3, raw stdout equal
+to `b""`, and the endpoint named on stderr.
+Suite 48 also requires exactly zero stdout bytes in `relay/usage-has-zero-stdout`,
+`relay/oversized-request-has-zero-stdout`, and `relay/oversized-response-has-zero-stdout`.
+`python3 scripts/check_teeth_mutations.py --finding 2` injects `null`, one newline, and one
+space into each of these four paths in temporary relay copies; each fails its named assertion.
+It also drives `{}` on the unavailable path. The successful empty echo remains a raw-byte
+comparison in `relay/the-authority-judges-not-the-relay`.
 
 The carrying promise is measured separately against a bare echo socket, byte for byte, on a NUL byte,
 text that is not valid UTF-8, half a megabyte and an empty payload, because a relay that quietly

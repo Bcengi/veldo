@@ -42,6 +42,23 @@ def cases():
               ['ipc/signature-fields-match-request'])
     signature('signed-nonrequest-field', SIGNED, SIGNED + ' + ("extra_coordinate",)',
               ['ipc/signature-fields-match-request'])
+    empty_paths = {
+        'unreachable': ('        return EXIT_UNREACHABLE',
+                        'relay/an-unreachable-authority-is-reported-not-answered'),
+        'usage': ('        return 64', 'relay/usage-has-zero-stdout'),
+        'oversized-request': ('        return EXIT_TOO_LARGE\n    try:',
+                              'relay/oversized-request-has-zero-stdout'),
+        'oversized-response': ('        return EXIT_TOO_LARGE\n    stdout.write(answer)',
+                               'relay/oversized-response-has-zero-stdout'),
+    }
+    for path, (anchor, row) in empty_paths.items():
+        for name, payload in [('null', b'null'), ('newline', b'\n'), ('space', b' ')]:
+            add(2, path + '-' + name, '48_veldo_0108_relay.py', 'control_relay.py',
+                anchor, '        stdout.write(' + repr(payload) + ')\n' + anchor, [row])
+    add(2, 'unreachable-object', '48_veldo_0108_relay.py', 'control_relay.py',
+        '        return EXIT_UNREACHABLE',
+        '        stdout.write(b"{}")\n        return EXIT_UNREACHABLE',
+        ['relay/an-unreachable-authority-is-reported-not-answered'])
     return result
 
 

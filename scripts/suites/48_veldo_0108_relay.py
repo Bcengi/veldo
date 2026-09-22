@@ -138,6 +138,44 @@ for _v108_name, _v108_payload in _v108_PAYLOADS.items():
         _v108_got = None
     _v108_t.join(timeout=15)
     _v108_byte_rows.append((_v108_name, _v108_got == _v108_payload))
+# Every refusal path promises no answer: compare raw bytes, never parsed JSON.
+_v108_usage = _v108_sp.run([_v108_sys.executable, str(_v108_MAIN / "control_relay.py")],
+                          input=b"", capture_output=True, timeout=5)
+expect("VELDO-0108 relay/usage-has-zero-stdout: usage failure exits 64 with exactly zero stdout bytes",
+       _v108_usage.returncode == 64 and _v108_usage.stdout == b""
+       and b"usage:" in _v108_usage.stderr)
+_v108_large_request = _v108_sp.run(
+    [_v108_sys.executable, str(_v108_MAIN / "control_relay.py"), _v108_echo_addr],
+    input=b"x" * (RL108.MAX_BYTES + 1), capture_output=True, timeout=5)
+expect("VELDO-0108 relay/oversized-request-has-zero-stdout: oversized input exits 4 without an answer",
+       _v108_large_request.returncode == RL108.EXIT_TOO_LARGE
+       and _v108_large_request.stdout == b"" and b"request exceeded" in _v108_large_request.stderr)
+
+
+def _v108_oversized_answer():
+    try:
+        conn, _ = _v108_echo_srv.accept()
+    except OSError:
+        return
+    with conn:
+        conn.settimeout(2)
+        while conn.recv(65536):
+            pass
+        conn.sendall(b"x" * (RL108.MAX_BYTES + 1))
+
+
+_v108_large_thread = _v108_threading.Thread(target=_v108_oversized_answer, daemon=True)
+_v108_large_thread.start()
+try:
+    _v108_large_response = _v108_sp.run(
+        [_v108_sys.executable, str(_v108_MAIN / "control_relay.py"), _v108_echo_addr],
+        input=b"request", capture_output=True, timeout=5)
+finally:
+    _v108_large_thread.join(timeout=5)
+expect("VELDO-0108 relay/oversized-response-has-zero-stdout: oversized endpoint output exits 4 "
+       "with exactly zero stdout bytes",
+       not _v108_large_thread.is_alive() and _v108_large_response.returncode == RL108.EXIT_TOO_LARGE
+       and _v108_large_response.stdout == b"" and b"response exceeded" in _v108_large_response.stderr)
 _v108_echo_srv.close()
 
 if not _v108_have_git:
@@ -226,7 +264,7 @@ else:
             _v108_pA, _v108_cA = _v108_start("A", _v108_MAIN, _v108_ADDR_A, "dom-a", "store-a", _v108_PA)
             _v108_pB, _v108_cB = _v108_start("B", _v108_MAIN, _v108_ADDR_B, "dom-b", "store-b", _v108_PB)
 
-            def _v108_relay(relay_dir, address, payload, extra_env=None):
+            def _v108_relay(relay_dir, address, payload, extra_env=None, raw_stdout=False):
                 """The relay as sshd runs it: a child process with the request on stdin."""
                 e = dict(_v108_os.environ)
                 e.update(extra_env or {})
@@ -236,7 +274,7 @@ else:
                     answer = _v108_json.loads(r.stdout.decode()) if r.stdout else None
                 except ValueError:
                     answer = {"unparsable_stdout": r.stdout[:200].decode("utf-8", "replace")}
-                return r.returncode, answer, r.stderr.decode("utf-8", "replace")
+                return r.returncode, r.stdout if raw_stdout else answer, r.stderr.decode("utf-8", "replace")
 
             # ---- AC1: the authority judges, not the relay -------------------------------------
             _v108_cmd = {"operation": "upsert", "id": "relayed",
@@ -366,15 +404,16 @@ else:
             _v108_count = len(_v108_applied(_v108_cA))
             _v108_Path(_v108_cA["stop_flag"]).write_text("stop\n")
             _v108_pA.wait(timeout=10)
-            _v108_rc_down, _v108_ans_down, _v108_err_down = _v108_relay(_v108_MAIN, _v108_ADDR_A, _v108_raw)
+            _v108_rc_down, _v108_ans_down, _v108_err_down = _v108_relay(
+                _v108_MAIN, _v108_ADDR_A, _v108_raw, raw_stdout=True)
 
             expect("VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered: with the authority "
                    "stopped, the relay exits %d, writes NOTHING to its standard output, names the endpoint on "
                    "its standard error, and applies nothing. It does not invent an answer, which would be the "
                    "local fallback VELDO-0109 exists to forbid arriving one layer lower down"
                    % RL108.EXIT_UNREACHABLE,
-                   _v108_rc_down == RL108.EXIT_UNREACHABLE and _v108_ans_down is None
-                   and "not answering" in _v108_err_down
+                   _v108_rc_down == RL108.EXIT_UNREACHABLE and _v108_ans_down == b""
+                   and "not answering" in _v108_err_down and _v108_ADDR_A in _v108_err_down
                    and len(_v108_applied(_v108_cA)) == _v108_count)
 
             # ---- the negative control ----------------------------------------------------------
