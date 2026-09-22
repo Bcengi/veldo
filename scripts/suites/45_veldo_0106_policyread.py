@@ -61,7 +61,7 @@ def _v106_validator(tag, edits=()):
     return _v106_load("v106_validate_" + tag, d / ".veldo" / "validate.py")
 
 
-READ_106 = '    parsed = read_policy(policy) if policy.is_file() else {}'
+READ_106 = '    parsed = read_policy(policy)'
 SHAPE_106 = '''    if not _FULL_COMMIT_ID.fullmatch(start):
         return {"recorded": start, "resolved": False, "excluded": False,
                 "reason": (f"the recorded start line {start!r} is not a commit id; it must be forty "
@@ -120,6 +120,8 @@ else:
     # ---- AC1: every shape the owner's file can take, read at the call site -----------------------
     _v106_ZERO = "0" + "1" * 39          # forty hex characters, and a general parser makes it 39
     _v106_SHAPES = {
+        "double_quoted_root": ('"fix_validation": {required: true, from_commit: ' + _v106_LINE + '}\n', _v106_LINE),
+        "single_quoted_root": ("'fix_validation': {required: true, from_commit: " + _v106_LINE + '}\n', _v106_LINE),
         "block_plain": (
             "fix_validation:\n"
             "  required: true\n"
@@ -359,8 +361,6 @@ else:
 
     # ---- AC4: a fix_validation block that cannot be read is REQUIRED, never quietly advisory ------
     _v106_UNREADABLE = {
-        "double_quoted_root": '\"fix_validation\": {required: true}\n',
-        "single_quoted_root": "'fix_validation': {required: true}\n",
         "flow_root": "{fix_validation: {required: true}}\n",
 
         "a_scalar_where_a_mapping_belongs": "fix_validation: true\n",

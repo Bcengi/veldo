@@ -262,8 +262,6 @@ def check_placement(path, repo_root=None):
     body = m.group(1)
     # Presence gate: parse richly only when the spec actually declares one of the
     # fields, so a spec that declares neither is byte-identically unaffected.
-    if not {"placement", "footprint"}.intersection(parse_yamlish(body)):
-        return 0
     try:
         fm = parse_yamlish(body)
     except ValueError as e:
@@ -304,8 +302,6 @@ def check_observability(path, repo_root=None):
     body = m.group(1)
     # Presence gate: parse richly only when the spec actually declares one of the fields,
     # so a spec that declares neither is byte-identically unaffected.
-    if not {"observability", "behavior_bearing"}.intersection(parse_yamlish(body)):
-        return 0
     try:
         fm = parse_yamlish(body)
     except ValueError as e:
@@ -906,9 +902,6 @@ def check_falsification_declared(path, repo_root=None, enforce=None):
         return 0  # check_spec already reports a missing front matter
     body = m.group(1)
     # Presence gate: a spec declaring no behavior_bearing is never even parsed richly here.
-    if "behavior_bearing" not in parse_yamlish(body):
-        return _falsification_stand_down(
-            path, "declares no behavior_bearing field, so the rule does not reach it")
     try:
         fm = parse_yamlish(body)
     except ValueError as e:

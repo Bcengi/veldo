@@ -79,8 +79,6 @@ def check_tracker_repo(path, fm, repo_root=None):
     if not isinstance(val, str) or not val.strip():
         return fail(path, "tracker_repo, when present, must be a non-empty string")
     repo = val.strip()
-    if len(repo) >= 2 and repo[0] == repo[-1] and repo[0] in "\"'":
-        repo = repo[1:-1].strip()
     if not repo:
         return fail(path, "tracker_repo, when present, must be a non-empty string")
     cfg = _TRACKER.load_tracker_config(repo_root=str(repo_root or ROOT))

@@ -234,7 +234,7 @@ def _spec_fm(spec_id):
 def _spec_fm_rich(spec_id):
     """Parse a spec's front matter with the full subset parser (parse_yamlish), so
     list fields like placement and footprint arrive as real lists for the mandatory
-    placement gate; the simple front_matter reader flattens inline lists to strings."""
+    placement gate. Both front-matter entry points now use the same syntax reader."""
     for p in sorted((ROOT / "specs").glob(f"{spec_id}*.md")):
         m = V._yamlish.front_matter_match(p.read_text())
         return V.parse_yamlish(m.group(1)) if m else {}

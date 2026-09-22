@@ -174,9 +174,7 @@ FINDING_KEYS_UNRESOLVED = ("finding", "capability", "status", "home_as_declared"
 # checkable without trusting the resolver that produced it.
 ELSEWHERE_KEYS = ("capability", "home_as_declared", "segment", "root", "resolved_at")
 
-# The line shape the manifest uses: two spaces, a name, a colon, then a brace block. Read with a
-# narrow regex rather than the front-matter parser because the manifest's note fields carry commas,
-# braces and colons in prose, and the ONE parser is not asked to survive that.
+# Capability notes are explicitly quoted in the manifest; all syntax uses the shared reader.
 import importlib.util as _yaml_importlib
 from pathlib import Path as _YamlPath
 _yaml_spec = _yaml_importlib.spec_from_file_location("veldo_yamlish", _YamlPath(__file__).resolve().with_name("yamlish.py"))

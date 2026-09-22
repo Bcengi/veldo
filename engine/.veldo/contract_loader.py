@@ -70,8 +70,7 @@ def contract_requirement(repo_root):
     misspelling closes rather than opens. A policy entry that is not a regular file (a directory,
     a dangling link, a FIFO) or that cannot be read is NOT OPENED and means required: the kind
     question is asked before the read, so nothing here can block, and an unreadable policy closes.
-    Proportionate line reader, the posture policy_check.protected_patterns and
-    decision_review.required_reviews_for take with the same file (one policy, no second parser)."""
+    The shared syntax reader accounts for the complete policy before this schema rule runs."""
     p = Path(repo_root) / ".veldo" / "policy.yaml"
     if not os.path.lexists(p):
         return False

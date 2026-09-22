@@ -55,7 +55,7 @@ _RC_SRC = (ROOT / ".veldo" / "release_contract.py").read_text()
 # any third-party package (a YAML library above all) is - that is what dependency free means here,
 # and it is what makes the parse callable the caller hands in the only path from text to values.
 _RC_STDLIB_ONLY = {"hashlib", "re", "pathlib", "json", "os", "sys", "io", "collections",
-                   "itertools", "functools", "datetime", "typing", "dataclasses", "textwrap"}
+                   "itertools", "functools", "datetime", "typing", "dataclasses", "textwrap", "importlib"}
 
 
 def _rc_block(label, fn):
@@ -274,11 +274,11 @@ def _rc_ac1():
                 _rc_tokenising.add(_node.func.attr)
         expect("VELDO-0011 AC1: this module ships NO second front-matter parser, read from its "
                "SYNTAX TREE rather than from a substring - it defines no parse function, imports no "
-               "YAML library and no module of this repository, and NOTHING in it tokenises text by "
+               "YAML library, delegates to the shared yamlish module, and NOTHING in it tokenises text by "
                "line or by colon, which is the shape every hand-rolled front-matter reader has, so "
-               "the parse callable its caller hands in is the only path from text to values",
+               "the shared reader is the only path from text to values",
                "def parse_yamlish" not in _RC_SRC and "import yaml" not in _RC_SRC
-               and "parse(m.group(1))" in _RC_SRC
+               and "_yamlish.front_matter(text, str(path))" in _RC_SRC
                and not [n for n in _rc_defs if "parse" in n or "yaml" in n]
                and _rc_tokenising == set()
                and _rc_imports <= _RC_STDLIB_ONLY

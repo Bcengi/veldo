@@ -707,8 +707,8 @@ with tempfile.TemporaryDirectory() as _d:
            "unreadable one from arriving as a confident measurement. THE CONTROL IS THE ROW ABOVE, "
            "bound here as well: the same fixture with NO block at all estimates fine at surface 0, "
            "so this refuses an unreadable block and not an absent one",
-           _w1402_unread_out[0] and _w1402_unread_out[1].startswith("ValueError:")
-           and "reads as EMPTY" in _w1402_unread_out[1]
+           _w1402_unread_out[0] and _w1402_unread_out[1].startswith("ParseError:")
+           and "expected identifier key" in _w1402_unread_out[1]
            and _w1402_min["inputs"]["regression_surface"] == 0)
 
     _w1402_in = _w1402_ac2["inputs"]
@@ -838,17 +838,9 @@ with tempfile.TemporaryDirectory() as _d:
         "schema: veldo.policy/v1\nrisk_tiers:\n"
         "  critical: {gate: expanded, reviews: 3, min_independence: L2,\n"
         "             human_approval: true}\n")
-    expect("WARP-1402 AC4 CONTROL FOR THAT FINDING, AND IT NOW CARRIES THE WHOLE WEIGHT: three "
-           "hermetic policy roots, three answers. The SAME tier on ONE line reads `policy` with the "
-           "fixture's own 3 reviews; the SAME tier written across TWO lines reads `default`, which "
-           "is the folding this item measured, reproduced without requiring any live file to stay "
-           "unreadable; and a root with no policy at all falls back for every tier, which is the "
-           "adopting repository's case. So the fallback is the line FOLDING and not a hardcoded "
-           "refusal of the critical tier, and a policy_tier that always claimed `policy` reds the "
-           "second and third of these",
+    expect("WARP-1402 AC4: the strict reader gives the same declared review count for one-line and multiline flow mappings; only an absent policy uses defaults",
            E1402.policy_tier("critical", root=_w1402_polroot) == (3, "expanded", "policy")
-           and E1402.policy_tier("critical", root=_w1402_polroot_fold)
-           == (E1402.DEFAULT_REVIEWS["critical"], E1402.DEFAULT_GATE["critical"], "default")
+           and E1402.policy_tier("critical", root=_w1402_polroot_fold) == (3, "expanded", "policy")
            and E1402.policy_tier("standard", root=_w1402_polroot_none)[2] == "default")
 
     expect("WARP-1402 AC4: THE PROXY REACHES FOR NOTHING OUTSIDE THE REPOSITORY AND NAMES NO "

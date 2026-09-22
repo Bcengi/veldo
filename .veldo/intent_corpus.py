@@ -144,75 +144,9 @@ def _require_query(v, what):
 
 
 def _fold_text(v):
-    """Normalize a scalar the ONE front-matter parser produced from a `>` or `|` block
-    scalar. parse_yamlish does not interpret the YAML block indicator (the contract is a
-    subset, not full YAML), so a `text: >` field arrives as its folded body with a leading
-    ">" (or "|") token; strip that leading indicator so the recorded criterion reads as
-    authored. This normalizes the parser's own representation; it is not a second parser."""
-    if not isinstance(v, str):
-        return v
-    s = v.strip()
-    if s[:2] in ("> ", "| "):
-        return s[2:].strip()
-    if s in (">", "|"):
-        return ""
-    return s
+    """The syntax reader already decoded blocks and quotes; preserve literal text."""
+    return v
 
-
-# --- the Trace: an artifact-grounded answer that never fabricates ------------------------
-
-class Trace:
-    """One artifact-grounded answer from the corpus. When governed is True the answer rests
-    on real artifacts and `citations` lists their real paths (the spec, the proof manifest,
-    the verdict); the responder cites these. When governed is False the corpus found NO
-    governing artifact and says so in `reason` - it carries no fabricated spec, criteria,
-    proof, or verdict. This is the diagnosis-from-artifacts guarantee made concrete: an
-    answer is grounded, or it is honestly absent, never invented."""
-
-    __slots__ = ("governed", "reason", "spec_id", "title", "status", "criteria", "plan",
-                 "work", "proof", "verdicts", "areas", "contract_present", "recent_changes",
-                 "matched_by", "candidates", "citations")
-
-    def __init__(self, governed, reason=None, spec_id=None, title=None, status=None,
-                 criteria=None, plan=None, work=None, proof=None, verdicts=None, areas=None,
-                 contract_present=False, recent_changes=None, matched_by=None,
-                 candidates=None, citations=None):
-        self.governed = bool(governed)
-        self.reason = reason
-        self.spec_id = spec_id
-        self.title = title
-        self.status = status
-        self.criteria = criteria or []          # the acceptance criteria = what the spec PROMISED
-        self.plan = plan
-        self.work = work
-        self.proof = proof                       # the proof record, or None (never fabricated)
-        self.verdicts = verdicts or []           # the review verdict(s), or [] (never fabricated)
-        self.areas = areas                        # a set of area ids, or None when no contract
-        self.contract_present = bool(contract_present)
-        self.recent_changes = recent_changes      # {git, events} when enriched, else None
-        self.matched_by = matched_by              # how the behavior resolved (spec_id | footprint)
-        self.candidates = candidates or []        # every spec a footprint query matched (grounded)
-        self.citations = citations or []          # the REAL artifact paths this answer rests on
-
-    @classmethod
-    def ungoverned(cls, reason, spec_id=None):
-        """The honest negative: no governing artifact. Carries the reason and nothing
-        fabricated, so the caller can never mistake it for a grounded answer."""
-        return cls(False, reason=reason, spec_id=spec_id)
-
-    def as_dict(self):
-        return {k: (sorted(v) if isinstance(v, set) else v)
-                for k, v in ((s, getattr(self, s)) for s in self.__slots__)}
-
-    def __repr__(self):
-        if not self.governed:
-            return "<Trace ungoverned reason=%r>" % self.reason
-        return "<Trace spec=%r status=%r criteria=%d proof=%s verdicts=%d citations=%d>" % (
-            self.spec_id, self.status, len(self.criteria),
-            "yes" if self.proof else "none", len(self.verdicts), len(self.citations))
-
-
-# --- readers over the recorded artifacts (reuse the repo's own readers, injected) --------
 
 def _spec_front_matter(text, parse):
     """The full front matter of a spec, parsed by the ONE injected parser, so lists like

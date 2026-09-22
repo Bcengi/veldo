@@ -1846,3 +1846,25 @@ expect("WARP-1409 housekeeping: the fixture repository this suite built - a real
 
 del _w1409_cspec, _w1409_tspec, _w1409_mspec, _w1409_pspec, _w1409_re
 del _w1409_hashlib, _w1409_os, _w1409_shutil, _w1409_subprocess, _w1409_sys
+
+# One-parser migration: an unreadable spec must not disappear from attribution.
+with tempfile.TemporaryDirectory() as _y_cost_dir:
+    _y_cost_path = Path(_y_cost_dir) / "S.md"
+    for _y_bad_metadata in ("status: ready\nstatus: draft", "- item", "status: [bad"):
+        _y_cost_path.write_text("---\n" + _y_bad_metadata + "\n---\n")
+        try:
+            _W1409.front_matter_index(_y_cost_dir, V.parse_yamlish)
+            _y_cost_refused = False
+        except ValueError:
+            _y_cost_refused = True
+        expect("parser/cost-attribution-refuses-malformed-metadata-" + _y_bad_metadata,
+               _y_cost_refused)
+
+_y_cost_live = _W1409.front_matter_index(ROOT / "specs", V.parse_yamlish)
+_y_cost_expected = {}
+for _y_spec in sorted((ROOT / "specs").glob("*.md")):
+    if _y_spec.name.startswith("TEMPLATE") or _y_spec.name == "index.md":
+        continue
+    _y_fm = V.front_matter(_y_spec.read_text())
+    _y_cost_expected[_y_fm["id"]] = _y_fm
+expect("parser/cost-index-agrees-on-the-entire-real-spec-corpus", _y_cost_live == _y_cost_expected)

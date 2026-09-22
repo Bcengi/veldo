@@ -19,10 +19,9 @@ leaning on a plural somebody has to notice. Nothing here calls that module and n
 calls this one. The artifacts themselves live flat in `releases/`, like plans.
 
 DEPENDENCY FREE BY CONSTRUCTION, in the shape .veldo/request.py and .veldo/decision.py
-already use: the caller (.veldo/validate.py) hands in the ONE front-matter parser
-(validate.parse_yamlish) and the ONE failure reporter (validate.fail). This module therefore
-adds NO second YAML parser, and there is no import cycle: validate.py may load this, and this
-loads nothing of validate.py.
+already use: yamlish owns the syntax and the caller supplies the failure reporter. The parser
+argument is retained for API compatibility; front_matter delegates to yamlish. There is no import
+cycle: validate.py may load this, and this loads nothing of validate.py.
 
 TWO SHIPPED DEFECTS ARE FIXED HERE, both verified in the code rather than theorised:
 

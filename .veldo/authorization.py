@@ -52,9 +52,8 @@ two_key.py not at all; a non-list or malformed impact fails CLOSED (the second k
 SEPARATION AND REUSE (no second parser, no second gate). This is a set of PURE functions over already
 parsed inputs: the request envelope, the attestations, the approver registry, and (for the second key)
 the two frozen key records. It reads the human_decisions block from .veldo/policy.yaml the way
-policy_check.py reads that same file - ROOT-relative and read-only - and parses only that block, reusing
-the ONE front-matter parser (validate.parse_yamlish, loaded by path the way the engine loads its
-siblings) rather than shipping a second parser; in the INERT state (no block) it never parses at all.
+policy_check.py reads that same file - ROOT-relative and read-only - through yamlish. The whole file
+must parse before the human_decisions field can be treated as absent. Malformed input refuses.
 It holds no credential, opens no connection, runs nothing, and starts no process, thread, or timer
 (NG3, no-detach): dependency free by construction (pathlib and json at module top; importlib lazily,
 only when a policy block is present or the two-key path is reached).

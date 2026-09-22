@@ -514,21 +514,21 @@ def _dc_ac4():
         exemptions=('.veldo/keeper.py: a real reason, so this one is applied\n'
                     '.veldo/helper.py:\n'
                     'a line with no colon at all\n'))
-    expect("VELDO-0005 AC4: A REFUSED EXEMPTION IS REPORTED AS REFUSED, with the line it came from "
-           "and why. Refusing an exemption is right - an exemption list with no reasons is where "
-           "undeclared modules go to be forgotten - but refusing it in SILENCE is its own defect: "
-           "the human who wrote the entry saw the module still listed as undeclared with no hint "
-           "the entry had been seen at all, which is a stand-down recorded and never reported. A "
-           "non-entry that names no module is refused too rather than skipped",
-           [f["module"] for f in rep5["refused_exemptions"]] == [".veldo/helper.py", None]
-           and rep5["refused_exemptions"][0]["why"] == DC.REFUSED_NO_REASON
-           and rep5["refused_exemptions"][1]["why"] == DC.REFUSED_MALFORMED
-           and rep5["refused_exemptions"][1]["line"] == "a line with no colon at all"
-           and [f["module"] for f in rep5["undeclared"]] == [".veldo/helper.py"]
-           and [f["module"] for f in rep5["exempted"]] == [".veldo/keeper.py"]
-           and any("exemption REFUSED .veldo/helper.py" in ln for ln in lines5)
-           and any("exemption REFUSED <no module named>" in ln for ln in lines5)
-           and any("PRESENT: 1 applied, 2 REFUSED, 0 STALE" in ln for ln in lines5))
+    expect("VELDO-0005 AC4: a malformed exemption document refuses the whole input with its source line; no partial exemption is applied",
+           len(rep5["refused_exemptions"]) == 1
+           and rep5["refused_exemptions"][0]["why"] == DC.REFUSED_MALFORMED
+           and ":3:" in rep5["refused_exemptions"][0]["line"]
+           and [f["module"] for f in rep5["undeclared"]] == [".veldo/helper.py", ".veldo/keeper.py"]
+           and rep5["exempted"] == []
+           and any("exemption REFUSED" in ln for ln in lines5))
+    rep5b, lines5b = _dc_report(
+        [("one", "status: mechanical, home: .veldo/a.py")],
+        files=[".veldo/a.py", ".veldo/helper.py", ".veldo/keeper.py"],
+        exemptions='.veldo/keeper.py: a real reason\n.veldo/helper.py:\n')
+    expect("VELDO-0005 AC4: a syntactically valid empty exemption reason is reported, with valid reasons preserved",
+           [f["module"] for f in rep5b["refused_exemptions"]] == [".veldo/helper.py"]
+           and rep5b["refused_exemptions"][0]["why"] == DC.REFUSED_NO_REASON
+           and [f["module"] for f in rep5b["exempted"]] == [".veldo/keeper.py"])
 
     rep6, lines6 = _dc_report(
         [("one", "status: mechanical, home: .veldo/a.py")],

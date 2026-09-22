@@ -196,6 +196,7 @@ class _Document:
                     self.i += 1
         value = self.scalar(rest, n)
         quoted = rest.startswith(('"', "'"))
+        gap_start = self.i
         self.skip()
         continuation_indent = None
         while self.i < len(self.lines) and self.indent() > parent:
@@ -209,8 +210,10 @@ class _Document:
             part = self.scalar(text, at)
             if not isinstance(part, str):
                 self.error(at, 'non-text scalar continuation')
-            value += ' ' + part
+            blanks = sum(not line.strip(' \t') for line in self.lines[gap_start:self.i])
+            value += ('\n' * blanks if blanks else ' ') + part
             self.i += 1
+            gap_start = self.i
             self.skip()
         return value
 

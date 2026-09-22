@@ -725,34 +725,24 @@ def write_record(rec, dirpath=None, root=None, replace=False):
 # ---------------------------------------------------------------------------------------
 
 def policy_tier(risk, root=None):
-    """(reviews, gate_depth, source) for one risk tier: read from this repository's declared
-    `.veldo/policy.yaml` where it is readable, from the declared default table where it is
-    not, and the source SAYS WHICH.
-
-    MEASURED, AND THE REASON THIS RETURNS A SOURCE AT ALL: in this repository the `critical`
-    tier is written across two lines, and the ONE front-matter parser folds a deeper-indented
-    continuation into the preceding scalar, so that tier arrives as a STRING rather than a
-    map and its review count is not readable there. Falling back is right, and hiding the
-    fallback would put a default into a record that looks like a policy reading."""
-    tiers = {}
+    """Read a declared tier exactly; defaults apply only to absent policy/tier data."""
     base = Path(root) if root else ROOT
-    p = base / ".veldo" / "policy.yaml"
-    if p.is_file():
-        try:
-            doc = _validate().parse_yamlish(p.read_text())
-        except (ValueError, OSError):
-            doc = {}
-        if isinstance(doc, dict) and isinstance(doc.get("risk_tiers"), dict):
-            tiers = doc["risk_tiers"]
-    t = tiers.get(risk)
-    if isinstance(t, dict):
-        reviews, gate = t.get("reviews"), t.get("gate")
-        if _is_int(reviews) and reviews > 0 and gate in GATE_REWORK:
-            return reviews, gate, "policy"
-    if risk not in DEFAULT_REVIEWS:
-        raise ValueError("no declared expectation for risk tier %r: the proxy knows %s"
-                         % (risk, sorted(DEFAULT_REVIEWS)))
-    return DEFAULT_REVIEWS[risk], DEFAULT_GATE[risk], "default"
+    try:
+        doc = _validate()._yamlish.read(base / ".veldo" / "policy.yaml")
+    except FileNotFoundError:
+        doc = {}
+    if not isinstance(doc, dict) or not isinstance(doc.get("risk_tiers", {}), dict):
+        raise ValueError("policy risk_tiers must be a mapping")
+    tiers = doc.get("risk_tiers", {})
+    if risk not in tiers:
+        return DEFAULT_REVIEWS[risk], DEFAULT_GATE[risk], "default"
+    tier = tiers[risk]
+    if not isinstance(tier, dict):
+        raise ValueError(f"policy tier {risk} must be a mapping")
+    reviews, gate = tier.get("reviews"), tier.get("gate")
+    if not _is_int(reviews) or reviews <= 0 or gate not in GATE_REWORK:
+        raise ValueError(f"policy tier {risk} must declare positive reviews and a known gate")
+    return reviews, gate, "policy"
 
 
 def expected_review_cycles(reviews, gate_depth, protected_touch):

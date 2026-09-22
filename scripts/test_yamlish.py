@@ -38,6 +38,9 @@ class ReaderTests(unittest.TestCase):
         self.assertEqual(Y.parse('x: |+\n  first\n\n'), {'x': 'first\n\n'})
         self.assertEqual(Y.parse('x: |-\n  first\n    indented\n  last\n'), {'x': 'first\n  indented\nlast'})
 
+    def test_plain_paragraphs(self):
+        self.assertEqual(Y.parse('text: first\n  line\n\n  second'), {'text': 'first line\nsecond'})
+
     def test_keys_and_lossless_writer(self):
         self.assertEqual(Y.parse('"a key": value\n.veldo/path.py: reason'), {'a key': 'value', '.veldo/path.py': 'reason'})
         self.assertEqual(Y.parse('fix_validation : {required: true}'), {'fix_validation': {'required': 'true'}})

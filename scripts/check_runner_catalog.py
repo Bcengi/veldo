@@ -62,8 +62,7 @@ def fixtures_of(runner_dir):
 def caps_entries_for(dirname, caps_text):
     """Statuses of every capability whose home points into runners/<dirname>/.
 
-    The manifest writes each capability as a single-line flow mapping, so a
-    per-line parse is exact and needs no yaml dependency.
+    The shared reader handles block and flow mappings identically.
     """
     rows = _Y.parse(caps_text).get("capabilities", {})
     if not isinstance(rows, dict) or any(not isinstance(v, dict) for v in rows.values()):

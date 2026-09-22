@@ -215,9 +215,8 @@ def start_line_scope(repo, start: str, commit: str, landed=None) -> dict:
 # reintroduced by the fix for the one before. A subset reader cannot be patched into a YAML reader;
 # the reachable answer is a reader that knows when it is outside its subset.
 #
-# WHAT IT STILL IS NOT. Not a YAML parser. It reads one root-level key of one small file. Anything
-# else in that file it walks past without interpreting, except enough structure to know that a
-# `fix_validation:` it can see is a real key and not text inside someone else's block scalar.
+# Syntax now belongs to yamlish. This module validates only the settings schema, after
+# the shared reader has accounted for the whole document.
 
 
 # The one syntax reader, loaded by sibling path for file-location imports.
@@ -478,7 +477,7 @@ def check_proof_bundle(path, manifest, root, parse_yamlish, front_matter, fail) 
     # Syntax is shared with every document; read_policy adds the settings schema.
     unreadable = ""
     try:
-        parsed = read_policy(policy) if policy.is_file() else {}
+        parsed = read_policy(policy)
     except ValidationError as e:
         # FAIL CLOSED, LOUDLY. A fix_validation block the owner wrote and this reader cannot parse is
         # the one case where answering "advisory" would be a lie with consequences: it switches the

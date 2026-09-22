@@ -318,8 +318,7 @@ def required_reviews_for(risk, policy_path):
     read from .veldo/policy.yaml risk_tiers (the single source of truth for the tier ladder,
     D5). Defaults to 1 (the floor: any decided decision needs at least one adversarial review)
     when the tier or the policy file is absent, never 0, so a decided record can never pass with
-    no review. Proportionate line reader, the same posture policy_check.py uses: each tier is a
-    line "  <tier>: {..., reviews: N, ...}" inside the risk_tiers block."""
+    no review. Present malformed syntax or tier shapes refuse through the shared reader."""
     try:
         policy = _Y.read(policy_path)
     except FileNotFoundError:

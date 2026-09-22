@@ -55,8 +55,18 @@ expect('parser/validator-and-index-return-identical-structures',
        all(V.front_matter(p.read_text()) == _y_index.front_matter(p.read_text()) == fm
            for p, fm in _y_current))
 _y_fv = _y_load('parser_policy', ROOT / '.veldo/fix_validation_record.py')
-_y_cost = _y_load('parser_cost', ROOT / '.veldo/cost_to_change.py')
 _y_release = _y_load('parser_release', ROOT / '.veldo/release_contract.py')
+expect('parser/release-reader-agrees-on-every-corpus-document',
+       all(_y_release.front_matter(p, V.parse_yamlish) == (fm, None)
+           for p, fm in _y_current if fm is not None))
+_y_migrations = json.loads((ROOT / 'proof/VELDO-0110/document-migration.json').read_text())
+_y_preserved = True
+for _y_row in _y_migrations:
+    _y_path = ROOT / _y_row['path']
+    _y_value = (_y_reader.front_matter(_y_path.read_text()) if _y_path.suffix == '.md'
+                else _y_reader.read(_y_path))
+    _y_preserved = _y_preserved and _y_value[_y_row['field']] == _y_row['new'][_y_row['field']]
+expect('parser/migrated-prose-retains-every-recorded-field-value', _y_preserved)
 with tempfile.TemporaryDirectory() as _y_dir:
     _y_root = Path(_y_dir)
     _y_policy = _y_root / 'policy.yaml'
@@ -74,11 +84,6 @@ with tempfile.TemporaryDirectory() as _y_dir:
             except ValueError:
                 _y_refused.append(True)
         _y_fm, _y_error = _y_release.front_matter(_y_bad, V.parse_yamlish)
-        try:
-            _y_cost.front_matter_index(_y_root, V.parse_yamlish)
-            _y_refused.append(False)
-        except ValueError:
-            _y_refused.append(True)
         expect('parser/malformed-front-matter-refuses-across-all-surfaces-' + str(len(_y_text)),
                all(_y_refused) and _y_fm is None and bool(_y_error))
 _y_scaffold = _y_load('parser_scaffold', ROOT / '.veldo/init_scaffold.py')
