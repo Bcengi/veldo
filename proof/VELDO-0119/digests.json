@@ -1,0 +1,14 @@
+{
+  "observations.jsonl": {
+    "sha256": "6797e06f0a9fbeec59841dcadb4ae04ad1e1a3e3f048b3f8a9fa6925e1c5b177",
+    "bytes": 1966061,
+    "source_commit": "00a10f8b444ba5169ea790755375218802ac6b31",
+    "command": "python3 proof/VELDO-0119/measure.py --verify"
+  },
+  "corpus-before.json": {
+    "sha256": "53a7e0088936695e86aa296e9d84075b569509acb4479e276d0a2a92ca7b2041",
+    "bytes": 8136630,
+    "source_commit": "b34d17d08c84cffdfcead0898cfcc7c1af71dffb",
+    "command": "python3 proof/VELDO-0119/corpus.py --verify"
+  }
+}

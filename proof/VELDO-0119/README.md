@@ -47,7 +47,7 @@ identities are in `proof/VELDO-0118/coverage-targets.json`; `measurement.json`
 binds that inventory by SHA-256 and reports missing/unexpected sets.
 This is the declared coverage domain, not all possible unbounded strings.
 
-`observations.jsonl.xz.b64` contains every raw observation and both reader results,
+The regenerable `observations.jsonl` contains every raw observation and both reader results,
 including derivation, input digest, source, boundary classification and typed
 expected tree. `measurement.json` binds its uncompressed SHA-256, grammar and
 fixture versions/digests, both implementation digests and executed inventories.
@@ -77,7 +77,7 @@ second independently loaded copy is present in every temporary drive.
 
 ## Real corpus
 
-`corpus-before.json.xz.b64` records full parsed trees/refusals and parser inputs
+The regenerable `corpus-before.json` records full parsed trees/refusals and parser inputs
 for both copies across 651 documents at `b34d17d`: 49 YAML/YML documents and
 602 Markdown documents. It includes specs, plans, manifests, substrate records,
 engine copies and templates; unread Markdown prose is omitted. This deliberately
@@ -119,19 +119,58 @@ commit. The reviewer supplies the stamp from verification of the merged tree.
 
 The first gate attempt at `5110cbb` completed with 5,580 unit and integration
 checks passing and all 54 mutations detected, but was red because the docs
-sweep treats xz proof files as text. The final proof uses an ASCII base64
-envelope around those same compressed bytes; decoded contents are unchanged.
+sweep treats xz proof files as text. The full generated artifacts now stay outside
+the repository; readable digests and regeneration commands replace them.
 `initial-verification.json` retains that failed attempt separately.
+
+## Artifact digests and regeneration
+
+`digests.json` records SHA-256 digests of the exact uncompressed bytes, source
+commits and verification commands. The digests were taken from the original
+artifacts before removal:
+
+| Artifact | Uncompressed bytes | SHA-256 |
+| --- | ---: | --- |
+| `observations.jsonl` | 1966061 | `6797e06f0a9fbeec59841dcadb4ae04ad1e1a3e3f048b3f8a9fa6925e1c5b177` |
+| `corpus-before.json` | 8136630 | `53a7e0088936695e86aa296e9d84075b569509acb4479e276d0a2a92ca7b2041` |
+
+Run the updated scripts from this branch:
+
+```
+python3 proof/VELDO-0119/measure.py --verify
+python3 proof/VELDO-0119/corpus.py --verify
+```
+
+`measure.py --verify` archives the observation suite, fixtures and both readers
+from exact commit `00a10f8b444ba5169ea790755375218802ac6b31` into a temporary
+directory under `/tmp`, then regenerates observations there. The original
+oracle environment is Python 3.12 with PyYAML 6.0.1. `corpus.py --verify`
+regenerates the before snapshot using both readers and every original document
+from exact commit `b34d17d08c84cffdfcead0898cfcc7c1af71dffb` via Git blob reads.
+Neither command switches a branch or worktree. Both compare the regenerated
+uncompressed file to its committed digest, exit non-zero on a mismatch, and
+remove the temporary files on exit.
+
+Both commands were run and reported `SHA-256 MATCH`; actual outputs are in
+`regeneration-verification.json`. Each also exited 1 with `SHA-256 mismatch`
+when its expected digest was temporarily replaced by 64 zeroes, then restored.
+The regenerated corpus comparison also matches `corpus-after-del-adapter.json`
+byte for byte. All existing readable summaries, counts, dispositions and
+comparisons are retained.
 
 ## Reproduce
 
 ```
 python3 proof/VELDO-0119/measure.py --output-dir /tmp/veldo-0119-observations
+python3 proof/VELDO-0119/corpus.py --baseline --output /tmp/veldo-0119-corpus-before.json
 python3 proof/VELDO-0119/corpus.py --output /tmp/veldo-0119-corpus.json
 python3 scripts/check_teeth_mutations.py --finding 119 --diff-dir /tmp/veldo-0119-diffs
 bash scripts/verify.sh
 ```
 
 The first command regenerates complete unfiltered observations and coverage
-inventories outside the checkout. The frozen corpus includes the original
-parser inputs so source edits after the baseline cannot mask a reader change.
+inventories from the current checkout into the external output directory. The
+second regenerates the pinned before snapshot as readable JSON; the third
+compares its original parser inputs with the current readers. Source edits
+after the baseline cannot mask a reader change. The `--verify` commands above
+reproduce the pinned historical artifacts and enforce their digests.

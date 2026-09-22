@@ -1,0 +1,34 @@
+{
+  "checks": [
+    {
+      "artifact": "observations.jsonl",
+      "sha256": "6797e06f0a9fbeec59841dcadb4ae04ad1e1a3e3f048b3f8a9fa6925e1c5b177",
+      "bytes": 1966061,
+      "source_commit": "00a10f8b444ba5169ea790755375218802ac6b31",
+      "command": "python3 proof/VELDO-0119/measure.py --verify",
+      "exit_code": 0,
+      "stdout": "{\"rows\": [[\"reader/generated-grammar-agrees\", true], [\"reader/generated-boundaries-refuse\", true], [\"reader/agreement-requires-full-oracle-domain\", true]], \"seconds\": 3.8839421439915895, \"normal_gate_added_seconds\": 7.767884287983179, \"historical_failures\": 0}\nobservations.jsonl: SHA-256 MATCH 6797e06f0a9fbeec59841dcadb4ae04ad1e1a3e3f048b3f8a9fa6925e1c5b177\n",
+      "stderr": "",
+      "wrong_digest_control": {
+        "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "exit_code": 1,
+        "stderr": "observations.jsonl: SHA-256 mismatch: 6797e06f0a9fbeec59841dcadb4ae04ad1e1a3e3f048b3f8a9fa6925e1c5b177 != 0000000000000000000000000000000000000000000000000000000000000000\n"
+      }
+    },
+    {
+      "artifact": "corpus-before.json",
+      "sha256": "53a7e0088936695e86aa296e9d84075b569509acb4479e276d0a2a92ca7b2041",
+      "bytes": 8136630,
+      "source_commit": "b34d17d08c84cffdfcead0898cfcc7c1af71dffb",
+      "command": "python3 proof/VELDO-0119/corpus.py --verify",
+      "exit_code": 0,
+      "stdout": "corpus-before.json: SHA-256 MATCH 53a7e0088936695e86aa296e9d84075b569509acb4479e276d0a2a92ca7b2041\n",
+      "stderr": "",
+      "wrong_digest_control": {
+        "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "exit_code": 1,
+        "stderr": "corpus-before.json: SHA-256 mismatch: 53a7e0088936695e86aa296e9d84075b569509acb4479e276d0a2a92ca7b2041 != 0000000000000000000000000000000000000000000000000000000000000000\n"
+      }
+    }
+  ]
+}
