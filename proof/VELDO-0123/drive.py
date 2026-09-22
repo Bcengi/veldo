@@ -168,14 +168,19 @@ def removed_teeth(out):
                                 elapsed=weakened['elapsed'], workers=weakened['worker_invocations'],
                                 diff=''.join(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
                                                                fromfile=suite, tofile=suite)),
-                                surviving_mutations=matched))
+                                failure=weakened))
             write(out / 'removed-teeth.json', results)
             print(f'{len(results)}/{len(targets)} {driver} {target}: mutation_survived', flush=True)
         # A no-op copy preserves all observations while executing every case again.
         path = repo / 'scripts/suites/shared.py'
         path.write_text(path.read_text() + '\n# no-op qualification control\n')
         noop = module.run_stage(repo)
-        if noop['status'] != 'passed' or noop['executed'] != len(cases):
+        observations_equal = all(
+            left['case'] == right['case'] and all(left[field] == right[field]
+                for field in ('baseline', 'noop', 'mutant'))
+            for left, right in zip(control['results'], noop['results']))
+        if (noop['status'] != 'passed' or noop['executed'] != len(cases)
+                or not observations_equal):
             raise RuntimeError(noop)
         write(out / 'assertion-noop.json', noop)
 

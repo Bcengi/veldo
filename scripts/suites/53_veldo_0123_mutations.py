@@ -60,8 +60,7 @@ def fixture(root, source):
         (root / 'scripts' / driver).write_text(FIXTURE_DRIVER)
     for path, content in {'.veldo/fixture.py': 'answer = True',
                           'scripts/suites/fixture.py': 'condition',
-                          'scripts/suites/shared.py': '# shared',
-                          'proof/data.json': '{}', 'README.md': 'documentation'}.items():
+                          'scripts/suites/shared.py': '# shared'}.items():
         (root / path).write_text(content)
     env = dict(_m123_os.environ, GIT_AUTHOR_NAME='fixture', GIT_AUTHOR_EMAIL='fixture@example.test',
                GIT_COMMITTER_NAME='fixture', GIT_COMMITTER_EMAIL='fixture@example.test',
@@ -112,6 +111,17 @@ def qualification(module, repository, selected=None):
                       and first['worker_invocations'] == second['worker_invocations'] == 4
                       and module.git(root, 'status', '--porcelain') == ''
                       and not list(root.rglob('__pycache__')))
+                driver_path = root / 'scripts/check_teeth_mutations.py'
+                driver_source = driver_path.read_text()
+                driver_path.write_text(driver_source.replace(
+                    "return [dict(name='fixture'",
+                    "return [dict(name='added', finding=2, suite='fixture.py', module='fixture.py', "
+                    "old='answer = True', new='answer = False', rows=['fixture/teeth']), dict(name='fixture'"))
+                added = run()
+                ok &= (added['status'] == 'passed' and added['registered'] == added['executed'] == 3
+                       and {r['case']['identity'] for r in added['results']} ==
+                       expected | {'check_teeth_mutations.py:added'})
+                driver_path.write_text(driver_source)
                 ok &= gate_exit(root, repository / 'scripts/verify.sh') == 0
                 for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
                     path = root / 'scripts' / driver

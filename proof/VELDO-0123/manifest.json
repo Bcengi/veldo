@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0123",
-  "commit": "409ac130443f44683f6b1ef441a8026bd9057ffb",
+  "commit": "713ef9d2b8e446a785d7e00de1126d0e4403e8ed",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-09-22T20:27:49.831412+00:00",
+  "produced_at": "2026-09-22T20:50:50.953724+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0123/qualification.json",
-          "detail": "gate/both-mutation-drivers-are-required; Both complete registries; real canonical catalog fixtures for successful, failing, missing and disabled stages; cold/warm/mixed receipts."
+          "detail": "Both drivers execute fresh on consecutive calls; exact inventories; either failure, missing driver, and disabled stage propagate through real canonical shell fixtures."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0123/README.md",
-          "detail": "Driven falsifiers, actual domain mutations and clean cold/warm canonical gates."
+          "detail": "Declared falsifier and second mutation make the named assertion false; unmutated control passes. Real domain qualification and final clean-tree gate are documented in README.md."
         }
       ]
     },
@@ -29,12 +29,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0123/qualification.json",
-          "detail": "gate/mutation-results-have-teeth; Completed baseline, no-op and mutant observations; exact named target false; all baseline rows retained; moved anchors, crashes, absent/duplicate targets and survivors refused."
+          "detail": "Named assertions turn false exactly once; completed green baseline and identical no-op controls; missing, duplicate, surviving, moved-anchor and crash drives refused."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0123/README.md",
-          "detail": "Driven falsifiers, actual domain mutations and clean cold/warm canonical gates."
+          "detail": "Declared falsifier and second mutation make the named assertion false; unmutated control passes. Real domain qualification and final clean-tree gate are documented in README.md."
         }
       ]
     },
@@ -45,12 +45,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0123/qualification.json",
-          "detail": "gate/mutation-stage-budget-is-enforced; One non-resetting 600-second clock, individual 120-second limit, deterministic deadline schedule, real hung child and process-group cleanup; real full cold and warm measurements below."
+          "detail": "Non-resetting 120-second combined deadline with 5-second cleanup allowance; deterministic boundary controls and a real hung process group."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0123/README.md",
-          "detail": "Driven falsifiers, actual domain mutations and clean cold/warm canonical gates."
+          "detail": "Declared falsifier and second mutation make the named assertion false; unmutated control passes. Real domain qualification and final clean-tree gate are documented in README.md."
         }
       ]
     },
@@ -61,44 +61,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0123/qualification.json",
-          "detail": "gate/removed-teeth-redden-the-gate; Every one of 25 driver/target pairs weakened independently in disposable trees after prewarming; real stage recomputed and found the named mutant survived. Unchanged and no-op controls passed."
+          "detail": "Every registered driver/target pair weakened independently; full inventories execute; surviving named mutants fail the stage; unchanged and no-op controls pass."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0123/README.md",
-          "detail": "Driven falsifiers, actual domain mutations and clean cold/warm canonical gates."
-        }
-      ]
-    },
-    {
-      "id": "AC5",
-      "status": "passed",
-      "evidence": [
-        {
-          "type": "unit",
-          "ref": "proof/VELDO-0123/qualification.json",
-          "detail": "gate/mutation-reuse-is-input-complete; Checkout-private Git-admin records, complete observations, actual input bytes and modes, immutable worker copy and source/runtime stability checks; committed-tree receipts cannot supply results."
-        },
-        {
-          "type": "integration",
-          "ref": "proof/VELDO-0123/README.md",
-          "detail": "Driven falsifiers, actual domain mutations and clean cold/warm canonical gates."
-        }
-      ]
-    },
-    {
-      "id": "AC6",
-      "status": "passed",
-      "evidence": [
-        {
-          "type": "unit",
-          "ref": "proof/VELDO-0123/qualification.json",
-          "detail": "gate/mutation-reuse-invalidates-per-input; 155 independent input changes, including all 133 importable .veldo Python paths, both drivers, case definition, suite, shared/support files, corpus, coordinator, history, schema, fixture version, modes, additions/deletions, and runtime/host/environment identity. Warm and README-only fixtures launch zero workers; missing/corrupt/unkeyable/unwritable records recompute; real Python 3.12 and 3.13 runs."
-        },
-        {
-          "type": "integration",
-          "ref": "proof/VELDO-0123/README.md",
-          "detail": "Driven falsifiers, actual domain mutations and clean cold/warm canonical gates."
+          "detail": "Declared falsifier and second mutation make the named assertion false; unmutated control passes. Real domain qualification and final clean-tree gate are documented in README.md."
         }
       ]
     }
@@ -107,32 +75,29 @@
     {
       "name": "unit",
       "status": "passed",
-      "command": "bash scripts/verify.sh",
-      "ref": "proof/VELDO-0123/gate-cold.log"
+      "command": "python3 -B proof/VELDO-0123/drive.py refutations --output /tmp/veldo-0123-refutations",
+      "ref": "proof/VELDO-0123/qualification.json"
     },
     {
       "name": "integration",
       "status": "passed",
-      "command": "bash scripts/verify.sh",
-      "ref": "proof/VELDO-0123/gate-warm.log"
+      "command": "python3 -B proof/VELDO-0123/drive.py removed-teeth --output /tmp/veldo-0123-assertions",
+      "ref": "proof/VELDO-0123/removed-teeth.json"
     }
   ],
   "artifacts": [
     "proof/VELDO-0123/README.md",
+    "proof/VELDO-0123/drive.py",
     "proof/VELDO-0123/assertion-control.json",
     "proof/VELDO-0123/assertion-noop.json",
-    "proof/VELDO-0123/drive.py",
     "proof/VELDO-0123/falsifiers.json",
-    "proof/VELDO-0123/gate-cold.log",
-    "proof/VELDO-0123/gate-warm.log",
-    "proof/VELDO-0123/host.json",
-    "proof/VELDO-0123/python313.json",
     "proof/VELDO-0123/qualification.json",
     "proof/VELDO-0123/removed-teeth.json",
-    "proof/VELDO-0123/stage-cold.json",
-    "proof/VELDO-0123/stage-warm.json",
-    "proof/VELDO-0123/timings.json"
+    "proof/VELDO-0123/host.json",
+    "proof/VELDO-0123/history.json",
+    "proof/VELDO-0123/interrupted-qualification.log",
+    "proof/VELDO-0123/selector-refusal.log"
   ],
   "rollback": "Revert the repository mutation stage, its gate wiring and qualification suite together; retain the prior mutation-evidence gap as open.",
-  "review": "Independent review and separate owner approval for landing scripts/verify.sh remain required; no approval is asserted by this implementation proof."
+  "review": "Implementation evidence only; independent review and the merged-tree gate stamp belong to the reviewer. The owner approved removing reuse in Telegram 28800 answering 28798."
 }

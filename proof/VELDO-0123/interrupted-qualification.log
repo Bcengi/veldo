@@ -1,0 +1,26 @@
+1/25 check_review_mutations.py proofcheck/unanswerable-ancestry-fails-closed: mutation_survived
+2/25 check_review_mutations.py ipc/transport-and-command-are-checked-separately: mutation_survived
+3/25 check_review_mutations.py relay/an-unreachable-authority-is-reported-not-answered: mutation_survived
+4/25 check_review_mutations.py relay/the-authority-judges-not-the-relay: mutation_survived
+5/25 check_review_mutations.py unavailable/no-local-authority-appears: mutation_survived
+6/25 check_teeth_mutations.py proofcheck/start-line-not-author-writable: mutation_survived
+7/25 check_teeth_mutations.py enrollment/independent-clones-share-bound-store: mutation_survived
+8/25 check_teeth_mutations.py ipc/signature-covers/authority_generation: mutation_survived
+9/25 check_teeth_mutations.py ipc/signature-covers/binding_digest: mutation_survived
+10/25 check_teeth_mutations.py ipc/signature-covers/clone_uuid: mutation_survived
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0123/proof/VELDO-0123/drive.py", line 202, in <module>
+    else:
+    ^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0123/proof/VELDO-0123/drive.py", line 198, in main
+    result = Q.import_gate(SOURCE).run_stage()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0123/proof/VELDO-0123/drive.py", line 159, in removed_teeth
+    weakened = module.run_stage(repo)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0123/scripts/check_gate_mutations.py", line 329, in run_stage
+    mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant'}
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/build-veldo-0123/scripts/check_gate_mutations.py", line 250, in run
+    time.sleep(0.02)
+KeyboardInterrupt
