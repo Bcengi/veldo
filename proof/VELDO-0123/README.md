@@ -46,3 +46,13 @@ The teeth driver now owns source selection, exact replacement, whole-directory f
 `fixture-qualification.json` records all five qualification rows green, including `gate/fixture-cases-execute-named-targets`: the real teeth worker observes the named fixture target red, preserves sibling and nested files, and reports matching baseline/no-op observations and exact byte digests. `fixture-falsifiers.json` records eleven completed drives with the named assertion false, including restoration of production-only paths and exclusion of fixtures from the snapshot. Reproduce with `python3 -B proof/VELDO-0123/drive.py refutations --output /tmp/veldo-0123-fixture-refutations`. Both standalone drivers passed (33 teeth and 5 review cases).
 
 The first clean-tree gate attempt at `961c4f7` encountered an existing timeout-row race: the reaped child's `/proc` entry disappeared while being read. `fixture-gate-first-attempt.log` retains the failure. That attempt was stopped during integration and is not gate evidence. Suite 53 now treats both missing-entry read errors as completed cleanup; other errors still propagate.
+
+The final `bash scripts/verify.sh` started from clean commit `a62f954bb9b0d5cc47c36d5c08f7ee5df85a6fc7` and exited 0:
+
+```text
+selftest: 5572 passed, 0 failed
+mutations: passed registered=38 executed=38 rejected=38 workers=48 elapsed=11.254s
+GATE: GREEN (a62f954bb9b0d5cc47c36d5c08f7ee5df85a6fc7)
+```
+
+The gate byproducts were restored before committing this final evidence note. This records the branch verification, not an independent review or the reviewer's merged-tree stamp. Nothing was pushed.
