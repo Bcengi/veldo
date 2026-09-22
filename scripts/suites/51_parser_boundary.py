@@ -92,3 +92,44 @@ expect('parser/init-required-substrate-includes-the-transitive-reader',
        and (ROOT / '.veldo/init_scaffold.py').read_text().count('".veldo/yamlish.py"') == 2)
 expect('parser/shared-reader-engine-mirror-is-identical',
        (ROOT / '.veldo/yamlish.py').read_bytes() == (ROOT / 'engine/.veldo/yamlish.py').read_bytes())
+
+# A strict reader cannot help if an index catches its refusal and reports absence.
+_y_mirror = _y_load('parser_mirror', ROOT / '.veldo/tracker_mirror.py')
+_y_estimate = _y_load('parser_estimate', ROOT / '.veldo/estimate.py')
+_y_projection = _y_load('parser_projection', ROOT / '.veldo/request_projection.py')
+_y_floor = _y_load('parser_floor', ROOT / '.veldo/behavior_floor.py')
+with tempfile.TemporaryDirectory() as _y_dir:
+    _y_root = Path(_y_dir)
+    _y_specs = _y_root / 'specs'
+    _y_plans = _y_root / 'plans'
+    _y_specs.mkdir()
+    _y_plans.mkdir()
+    _y_bad = _y_specs / 'bad.md'
+    _y_bad.write_text('---\nid: A\nid: B\n---\n')
+    _y_calls = [
+        ('tracker-spec-index', lambda: _y_mirror.build_spec_index(_y_specs)),
+        ('tracker-plan-status-index', lambda: _y_mirror.build_plan_index(_y_plans, _y_specs)),
+        ('release-index', lambda: _y_release.release_registry(_y_specs, V.parse_yamlish)),
+        ('duplicate-index', lambda: _y_release.id_paths([_y_bad], V.parse_yamlish)),
+    ]
+    _y_private = _y_root / '.veldo'
+    _y_private.mkdir()
+    (_y_private / 'policy.yaml').write_text('protected_paths: [bad\n')
+    _y_calls.append(('estimate-policy', lambda: _y_estimate.protected_paths(_y_root)))
+    _y_requests = _y_private / 'requests'
+    _y_requests.mkdir()
+    (_y_requests / 'bad.yaml').write_text('id: A\nid: B\n')
+    _y_calls.extend([
+        ('request-projection', lambda: _y_projection.build_request_index(_y_requests)),
+        ('floor-request-index', lambda: _y_floor._load_requests(_y_root, V.parse_yamlish)),
+    ])
+    for _y_name, _y_call in _y_calls:
+        try:
+            _y_call()
+            _y_refused = False
+        except ValueError:
+            _y_refused = True
+        expect('parser/no-malformed-input-becomes-absence-' + _y_name, _y_refused)
+    expect('parser/release-corpus-reports-unreadable-metadata',
+           any(cause == _y_release.CAUSE_UNREADABLE for _, cause, _ in
+               _y_release.release_problems(_y_specs, _y_plans, V.parse_yamlish)))

@@ -359,7 +359,7 @@ def _rc_ac2():
                "reach it the same way, so a release-side copy cannot exist even while it agrees",
                _RC_SRC.count("def duplicate_ids(") == 1
                and _RC_SRC.count("return duplicate_ids(id_paths(artifact_files(") == 2
-               and "duplicate_ids(id_paths(files, parse))" in _RC_SRC
+               and "duplicate_ids(id_paths(files, parse, problems))" in _RC_SRC
                and _RCM.duplicate_ids({"X-1": [Path("a.md"), Path("b.md")], "X-2": [Path("c.md")]})
                == [("X-1", ["a.md", "b.md"])]
                and _RCM.duplicate_ids({}) == [])
@@ -983,7 +983,7 @@ def _rc_template_and_wiring():
            "the two surfaces cannot disagree about what is wrong",
            "report[\"problems\"]" in _RC_SRC
            and _RC_SRC.count("def release_problems(") == 1
-           and _RC_SRC.count("release_problems(releases_dir, plans_dir, parse)") == 2)
+           and _RC_SRC.count("release_problems(releases_dir, plans_dir, parse)") == 3)
     # DERIVED, never a pinned count: every CAUSE_ constant the module declares is registered in
     # CAUSES, and no two of them share a value, so a cause added later without being registered
     # reds here instead of being invisible.

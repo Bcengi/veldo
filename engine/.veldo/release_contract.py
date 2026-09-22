@@ -221,17 +221,19 @@ def artifact_files(directory):
     return [p for p in sorted(d.glob("*.md")) if not p.name.startswith(TEMPLATE_PREFIX)]
 
 
-def id_paths(paths, parse):
+def id_paths(paths, parse, problems=None):
     """{declared id: [path, ...]} over artifact files: the ONE mapping the duplicate rule eats.
 
-    A file with no readable front matter or no id is skipped, exactly as plan_registry skips
-    it, so this mapping describes the same set that registry describes and the two cannot
-    disagree about what is in the corpus. The value is a LIST because that is the whole point:
+    Unreadable metadata raises unless the corpus validator supplies its explicit problem
+    collector. Missing IDs are reported by record validation. The value is a LIST because
     a mapping that kept one path per id is the shipped defect."""
     out = {}
     for p in paths:
-        fm, _problem = front_matter(p, parse)
+        fm, problem = front_matter(p, parse)
         if fm is None:
+            if problems is None:
+                raise ValueError("%s: %s" % (p, problem))
+            problems.append((str(p), CAUSE_UNREADABLE, problem))
             continue
         aid = fm.get("id")
         if isinstance(aid, str) and aid.strip():
@@ -254,15 +256,13 @@ def duplicate_ids(mapping):
 def release_registry(releases_dir, parse):
     """{id: {"path": Path, "fm": dict}} for every release file.
 
-    DELIBERATELY THE SHAPE OF plan_registry (.veldo/validate.py:652-670), including that it
-    does not raise and that a colliding id resolves to whichever file sorted last: a reader
-    that started raising would redden the gate far from the defect. The collision is not
-    swallowed, it is exposed through release_duplicate_ids and refused at the corpus check."""
+    Unreadable front matter refuses the whole index. Colliding IDs are exposed through
+    release_duplicate_ids and refused at the corpus check."""
     reg = {}
     for p in artifact_files(releases_dir):
-        fm, _problem = front_matter(p, parse)
+        fm, problem = front_matter(p, parse)
         if fm is None:
-            continue
+            raise ValueError("%s: %s" % (p, problem))
         rid = fm.get("id")
         if isinstance(rid, str) and rid.strip():
             reg[rid] = {"path": p, "fm": fm}
@@ -512,14 +512,16 @@ def member_claims(records):
 # ---------------------------------------------------------------------------------------
 # THE CORPUS: one problem enumeration, one report, one refusal.
 # ---------------------------------------------------------------------------------------
-def _plan_records(plans_dir, parse):
+def _plan_records(plans_dir, parse, problems=None):
     """{plan id: {"path", "fm", "paths"}} for the plan corpus, where "paths" is EVERY file that
     declared the id. Built from the one enumeration, so a member resolving through it sees the
     same corpus the plan registry sees and can also see when that id is ambiguous."""
     out = {}
-    for pid, paths in id_paths(artifact_files(plans_dir), parse).items():
-        fm, _problem = front_matter(paths[-1], parse)
-        out[pid] = {"path": paths[-1], "fm": fm or {}, "paths": paths}
+    for pid, paths in id_paths(artifact_files(plans_dir), parse, problems).items():
+        fm, problem = front_matter(paths[-1], parse)
+        if fm is None:
+            raise ValueError("%s: %s" % (paths[-1], problem))
+        out[pid] = {"path": paths[-1], "fm": fm, "paths": paths}
     return out
 
 
@@ -534,7 +536,7 @@ def release_problems(releases_dir, plans_dir, parse):
     files = artifact_files(releases_dir)
     problems = []
 
-    for rid, names in duplicate_ids(id_paths(files, parse)):
+    for rid, names in duplicate_ids(id_paths(files, parse, problems)):
         problems.append((d, CAUSE_DUPLICATE_RELEASE_ID,
                          "duplicate release id %s declared by %d files: %s. One of them "
                          "disappears from every derived view, so neither is trusted"
@@ -544,14 +546,13 @@ def release_problems(releases_dir, plans_dir, parse):
     for p in files:
         fm, problem = front_matter(p, parse)
         if fm is None:
-            problems.append((str(p), CAUSE_UNREADABLE, problem))
-            continue
+            continue  # already recorded by id_paths
         problems.extend(record_problems(p, fm))
         rid = fm.get("id")
         if isinstance(rid, str) and rid.strip():
             records[rid] = {"path": p, "fm": fm}
 
-    plans = _plan_records(plans_dir, parse)
+    plans = _plan_records(plans_dir, parse, problems)
 
     # A member binding to an AMBIGUOUS plan id: the release cannot say which file it grouped.
     # This is the release-side face of the duplicate-id defect, and it is a different fact from
@@ -703,7 +704,13 @@ def check_release(releases_dir, plans_dir, parse, fail):
     unadopted check gets mistaken for a green one. Fail closed the moment a release exists.
     Notices are printed through the same reporter with the posture named IN the line, and are
     NOT counted: a report is migration pressure, not a refusal."""
-    report = release_report(releases_dir, plans_dir, parse)
+    try:
+        report = release_report(releases_dir, plans_dir, parse)
+    except ValueError:
+        problems = release_problems(releases_dir, plans_dir, parse)
+        if not problems:
+            raise
+        return sum(fail(subject, message) for subject, _cause, message in problems)
     if report["stood_down"]:
         fail(str(Path(releases_dir)),
              "release check STANDS DOWN, recorded rather than passed: %s" % report["stand_down"])

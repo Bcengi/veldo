@@ -443,9 +443,7 @@ class FilesystemSpecStore(SpecStore):
         return Path(root) / "specs"
 
     def _iter_front_matter(self, repo):
-        # The intake_source link is a NESTED map, so parse with parse_yamlish (the parser plan.py and
-        # the mirror's build_plan_index use), NOT the shallow scalar front_matter reader - front_matter
-        # collapses the nested map and would drop the tracker/item the idempotency oracle matches on.
+        # The shared reader preserves the nested intake_source mapping.
         V = self._validate_mod()
         d = self._specs_dir(repo)
         if not d.exists():
@@ -453,13 +451,7 @@ class FilesystemSpecStore(SpecStore):
         for p in sorted(d.glob("*.md")):
             if p.name == "index.md" or p.name.startswith("TEMPLATE"):
                 continue
-            m = _Y.front_matter_match(p.read_text())
-            if not m:
-                continue
-            try:
-                fm = V.parse_yamlish(m.group(1))
-            except Exception:
-                fm = None
+            fm = V.front_matter(p.read_text(), str(p))
             if fm:
                 yield p, fm
 

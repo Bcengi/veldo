@@ -327,8 +327,8 @@ def _check_decision_choice_tier(data, root, name, parse, fail):
         return 0
     try:
         drec = parse(dpath.read_text())
-    except (OSError, ValueError):
-        return 0
+    except (OSError, ValueError) as exc:
+        return fail(str(dpath), "bound decision is unreadable: %s" % exc)
     if not isinstance(drec, dict) or drec.get("schema") != "veldo.decision/v1":
         return 0
     want = derive_tier(drec)

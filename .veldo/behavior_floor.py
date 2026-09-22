@@ -631,12 +631,10 @@ def _load_requests(root, parse):
     if not d.is_dir() or parse is None:
         return out
     for p in sorted(d.glob("*.yaml")):
-        try:
-            rec = parse(p.read_text())
-        except (OSError, ValueError):
-            continue
-        if isinstance(rec, dict):
-            out.append(rec)
+        rec = parse(p.read_text())
+        if not isinstance(rec, dict):
+            raise ValueError("%s: request record must be a mapping" % p)
+        out.append(rec)
     return out
 
 
@@ -697,10 +695,7 @@ def _bound_decision_record(req, root, parse, decisions):
         p = Path(root or ".") / ref
         if parse is None or not p.is_file():
             return None
-        try:
-            rec = parse(p.read_text())
-        except (OSError, ValueError):
-            return None
+        rec = parse(p.read_text())
     if not isinstance(rec, dict) or rec.get("schema") != SETTLEMENT_SCHEMA:
         return None
     if rec.get("status") != DECISION_STATUS_DECIDED or not isinstance(rec.get("decision"), dict):

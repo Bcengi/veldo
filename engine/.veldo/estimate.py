@@ -768,15 +768,16 @@ def protected_paths(root=None):
     p = base / ".veldo" / "policy.yaml"
     if not p.is_file():
         return ()
-    try:
-        doc = _validate().parse_yamlish(p.read_text())
-    except (ValueError, OSError):
+    doc = _validate().parse_yamlish(p.read_text(), str(p))
+    if not isinstance(doc, dict):
+        raise ValueError("%s: policy must be a mapping" % p)
+    if "protected_paths" not in doc:
         return ()
-    paths = doc.get("protected_paths") if isinstance(doc, dict) else None
-    if not isinstance(paths, list):
-        return ()
-    return tuple(e["path"] for e in paths
-                 if isinstance(e, dict) and isinstance(e.get("path"), str))
+    paths = doc["protected_paths"]
+    if not isinstance(paths, list) or any(
+            not isinstance(e, dict) or not isinstance(e.get("path"), str) for e in paths):
+        raise ValueError("%s: protected_paths must be a list of path mappings" % p)
+    return tuple(e["path"] for e in paths)
 
 
 def structural_proxy(spec_path, protected=(), root=None):

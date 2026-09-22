@@ -33,6 +33,11 @@ class ReaderTests(unittest.TestCase):
                          {'note': 'fix_validation:\n  required: true', 'x': 1})
         self.assertEqual(Y.parse('note: >\n  a\n  b\n'), {'note': 'a b\n'})
 
+    def test_blocks_preserve_physical_end_of_file(self):
+        for indicator in ('|', '|+', '>', '>+'):
+            self.assertEqual(Y.parse('note: ' + indicator + '\n  text'), {'note': 'text'})
+            self.assertEqual(Y.parse('note: ' + indicator + '\n  text\n'), {'note': 'text\n'})
+
     def test_blocks_preserve_paragraphs(self):
         self.assertEqual(Y.parse('x: >-\n  first\n  line\n\n  second\n'), {'x': 'first line\nsecond'})
         self.assertEqual(Y.parse('x: |+\n  first\n\n'), {'x': 'first\n\n'})

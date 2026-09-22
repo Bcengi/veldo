@@ -151,6 +151,7 @@ class _Document:
     def __init__(self, text, source):
         self.lines = re.split(r'\r\n|\r|\n', text.removeprefix('\ufeff'))
         self.source = source
+        self.final_newline = text.endswith(("\n", "\r"))
         self.i = 0
         for n, line in enumerate(self.lines):
             indent = line[:len(line) - len(line.lstrip(' \t'))]
@@ -243,13 +244,13 @@ class _Document:
                 value += ' '
             elif indicator.startswith('>') and not line and nxt and i > 0 and lines[i - 1] and not lines[i - 1].startswith(' '):
                 pass  # the preceding break already represents this blank line
-            else:
+            elif nxt is not None or self.i < len(self.lines) or self.final_newline:
                 value += '\n'
         if indicator.endswith('-'):
             return value.rstrip('\n')
         if indicator.endswith('+'):
             return value
-        return value.rstrip('\n') + ('\n' if lines else '')
+        return value.rstrip('\n') + ('\n' if value.endswith('\n') else '')
 
     def member(self, text, n):
         if text.startswith(('"', "'")):
