@@ -626,7 +626,7 @@ with tempfile.TemporaryDirectory() as _ikd:
     _ik_md = IK.render_spec_markdown(_ik_d)
     _ik_p = tmpfile(_ikd, "WARP-9601-x.md", _ik_md)
     expect("intake renders a VALID veldo.spec/v1 draft bound to the repo",
-           V.check_spec(_ik_p, repo_root=_ikd) == 0 and "tracker_repo: repo-a" in _ik_md)
+           V.check_spec(_ik_p, repo_root=_ikd) == 0 and V.front_matter(_ik_md)["tracker_repo"] == "repo-a")
 # AC1/C4 front-matter injection defense: an untrusted title carrying newlines that try to inject
 # id:/schema: front-matter keys must NOT change the rendered draft's id or schema (data, not structure)
 _ik_evil = {"id": "EVIL-1", "title": "pwn\nid: VELDO-HIJACK\nschema: attacker/v9\nowner: mallory",
@@ -852,7 +852,7 @@ _br_md = _br_store.markdown_for("repo-a", _br_spec_id)
 with tempfile.TemporaryDirectory() as _brd:
     expect("bridge writes a VALID status:draft veldo.spec/v1 bound to the repo with the source linked",
            V.check_spec(tmpfile(_brd, _br_spec_id + ".md", _br_md), repo_root=_brd) == 0
-           and "status: draft" in _br_md and "tracker_repo: repo-a" in _br_md and "item: CAND" in _br_md)
+           and V.front_matter(_br_md)["status"] == "draft" and V.front_matter(_br_md)["tracker_repo"] == "repo-a" and V.front_matter(_br_md)["intake_source"]["item"] == "CAND")
 
 # AC4 single-leg negatives with teeth: each negative alone yields NO draft and NO comment (the adapter
 # receives ZERO writes), and RESTORING the one dropped leg makes the SAME ticket draft (non-tautology)
@@ -1003,7 +1003,7 @@ _prw_after = _prw_store.markdown_for("repo-a", _prw_sid)
 expect("promote writes NOTHING back to the tracker (outbound is WARP-1004): zero adapter writes",
        _prw_ft.writes() == [])
 expect("promote changes ONLY the front-matter status line draft -> ready, nothing else on the spec",
-       _prw_before.count("status: draft") == 1 and _prw_before.replace("status: draft", "status: ready", 1) == _prw_after)
+       _prw_before.count('status: "draft"') == 1 and _prw_before.replace('status: "draft"', "status: ready", 1) == _prw_after)
 
 # AC1/AC4 the promote is REAL on the reference FilesystemSpecStore, not only the fake: a draft on disk is
 # flipped draft -> ready in place by a FRESH store (via the durable intake_source link), and a second
@@ -1018,7 +1018,7 @@ with tempfile.TemporaryDirectory() as _prfs:
     BR.reconcile_promotions(TA.FakeTracker(intake_items=[_prfs_t]), _BR_CFG, BR.FilesystemSpecStore({"repo-a": _prfs}))
     _prfs_post2 = _prfs_specs[0].read_text()
     expect("promote on the FilesystemSpecStore flips the on-disk draft to ready in place, idempotently",
-           "status: draft" in _prfs_pre and "status: ready" in _prfs_post and "status: draft" not in _prfs_post
+           V.front_matter(_prfs_pre)["status"] == "draft" and V.front_matter(_prfs_post)["status"] == "ready"
            and _prfs_post2 == _prfs_post and len(_prfs_specs) == 1)
 
 # --- outbound ready-to-test handoff (WARP-1004, W4 of PLAN-0010): the round-trip back onto the ticket.

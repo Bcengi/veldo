@@ -479,38 +479,21 @@ def _drafted_at(incident):
                 return _one_line(timeline.get(field))
     return UNRECORDED
 
-def _recurrence_scalar(recurrence_ids):
-    """The recurrence set as an inline list the front-matter subset reads back as a list."""
-    return "[%s]" % ", ".join(_token(i) for i in recurrence_ids)
-
 def render_criteria_draft(incident, signature, recurrence_ids):
     """Render the REGRESSION CRITERIA DRAFT from the FAILURE MODE: the affected behavior becomes the acceptance criterion
     and the signal the regression criterion, carrying the incident id, signature, and recurrence set. A DRAFT only a
     HUMAN promotes: status draft, no decider, no promoted flag, no review. PURE, so a re-render is byte-identical."""
-    return "\n".join([
-        "# VELDO regression criteria DRAFT (%s): the failure mode of a reconciled incident, rendered as"
-        % SCHEMA_CRITERIA_DRAFT,
-        "# acceptance and regression criteria for a HUMAN to promote into a specification (W8 of PLAN-0012, outcome O5).",
-        "# The machine drafts; a human judges whether these criteria are SUFFICIENT and promotes them into a real",
-        "# veldo.spec/v1 criterion that flows the normal loop. This draft is inert: no gate sweeps it, no machine promotes it.",
-        "# %s" % REVIEW_LANE_GUIDANCE,
-        "schema: %s" % SCHEMA_CRITERIA_DRAFT,
-        "status: draft",
-        "drafted_by: %s (machine draft; a human promotes it into a specification)" % SETTLED_BY,
-        "drafted_at: %s" % _drafted_at(incident),
-        "incident: %s" % _one_line(incident.get("id")),
-        "failure_signature: %s" % signature,
-        "recurrence_of: %s" % _recurrence_scalar(recurrence_ids),
-        "missing_specification: %s" % ("true" if missing_specification(recurrence_ids) else "false"),
-        "acceptance_criterion: >-",
-        "  the affected behavior holds again and stays held:",
-        "  %s" % _one_line(incident.get("affected_behavior")),
-        "regression_criterion: >-",
-        "  a regression reproduces the recorded failure signal and FAILS before the",
-        "  fix and PASSES after it:",
-        "  %s" % _one_line(incident.get("signal")),
-        "review_lane: %s" % _V._yamlish.quote(REVIEW_LANE_GUIDANCE),
-    ]) + "\n"
+    return _V._yamlish.dump({
+        "schema": SCHEMA_CRITERIA_DRAFT, "status": "draft",
+        "drafted_by": "%s (machine draft; a human promotes it into a specification)" % SETTLED_BY,
+        "drafted_at": _drafted_at(incident), "incident": _one_line(incident.get("id")),
+        "failure_signature": signature, "recurrence_of": [_token(i) for i in recurrence_ids],
+        "missing_specification": "true" if missing_specification(recurrence_ids) else "false",
+        "acceptance_criterion": "the affected behavior holds again and stays held: " + _one_line(incident.get("affected_behavior")),
+        "regression_criterion": "a regression reproduces the recorded failure signal and FAILS before the fix and PASSES after it: " + _one_line(incident.get("signal")),
+        "review_lane": REVIEW_LANE_GUIDANCE,
+    })
+
 
 def _draft_review_block(review):
     """The review block a DRAFT may carry: exactly status proposed. None when REFUSED - any other status, or ANY verdict
@@ -582,50 +565,25 @@ def render_runbook_draft(incident, remedy, signature, recurrence_ids, system=Non
     action_ref = proposed_action_ref(remedy)
     reversibility = _draft_reversibility(remedy)
     canary = _draft_canary(remedy)
-    lines = [
-        "# VELDO runbook action DRAFT (%s, review status %s): the remediation of a reconciled incident,"
-        % (_ACT.SCHEMA_ACTION, DRAFT_REVIEW_STATUS),
-        "# rendered as a runbook action for a HUMAN to review and promote (W8 of PLAN-0012, outcome O5). Runbook actions",
-        "# self-maintain from real incidents AS DRAFTS. This one is deliberately UNREVIEWED: the shipped whitelist admits",
-        "# only a reviewed, approved, digest-current action, so it does not exist to the machine execution path and no",
-        "# machine can promote it; it also lives OUTSIDE the whitelist store, so promotion is a human act of moving it in",
-        "# and reviewing it. The parameter constraints are deliberately unconstrained: tightening the safety envelope is",
-        "# part of the human review. %s" % REVIEW_LANE_GUIDANCE,
-        "schema: %s" % _ACT.SCHEMA_ACTION,
-        "id: %s" % _token(action_ref),
-        "title: runbook action drafted from incident %s (%s)"
-        % (_one_line(incident.get("id")), _one_line(action_ref)),
-        "system: %s" % (_one_line(system) if _is_str(system) else UNRECORDED),
-        "risk_class: %s" % _draft_risk_class(remedy, reversibility),
-        "reversibility:",
-        "  class: %s" % reversibility["class"],
-        "  analysis: %s" % _V._yamlish.quote(reversibility["analysis"]),
-        "  data_mutating: %s" % reversibility["data_mutating"],
-    ]
-    specs = _draft_parameter_specs(remedy)
-    lines.append("parameters: []" if not specs else "parameters:")
-    for spec in specs:
-        lines.extend(["  - name: %s" % spec["name"], "    type: %s" % spec["type"],
-                      "    required: %s" % spec["required"]])
-    lines.append("rollback: %s" % _V._yamlish.quote(_one_line(remedy.get("rollback")) if _is_str(remedy.get("rollback")) else
-                 "unrecorded: the remedy recorded no rollback plan, so a human supplies one before promotion"))
-    lines.extend(["canary:", "  supported: %s" % canary["supported"]])
-    if "shape" in canary:
-        lines.append("  shape: %s" % _V._yamlish.quote(canary["shape"]))
-    lines.extend([
-        "review:",
-        "  status: %s" % review_block["status"],
-        "drafted_from:",
-        "  incident: %s" % _one_line(incident.get("id")),
-        "  remedy: %s" % (_one_line(remedy.get("id")) if isinstance(remedy, dict) else NONE_VALUE),
-        "  proposed_action: %s" % _one_line(action_ref),
-        "  failure_signature: %s" % signature,
-        "  recurrence_of: %s" % _recurrence_scalar(recurrence_ids),
-        "  drafted_at: %s" % _drafted_at(incident),
-        "  drafted_by: %s (machine draft; only a human reviews and promotes it)" % SETTLED_BY,
-        "  review_lane: %s" % _V._yamlish.quote(REVIEW_LANE_GUIDANCE),
-    ])
-    return "\n".join(lines) + "\n"
+    return _V._yamlish.dump({
+        "schema": _ACT.SCHEMA_ACTION, "id": _token(action_ref),
+        "title": "runbook action drafted from incident %s (%s)" % (_one_line(incident.get("id")), _one_line(action_ref)),
+        "system": _one_line(system) if _is_str(system) else UNRECORDED,
+        "risk_class": _draft_risk_class(remedy, reversibility), "reversibility": reversibility,
+        "parameters": _draft_parameter_specs(remedy),
+        "rollback": _one_line(remedy.get("rollback")) if _is_str(remedy.get("rollback")) else
+                    "unrecorded: the remedy recorded no rollback plan, so a human supplies one before promotion",
+        "canary": canary, "review": review_block,
+        "drafted_from": {
+            "incident": _one_line(incident.get("id")),
+            "remedy": _one_line(remedy.get("id")) if isinstance(remedy, dict) else NONE_VALUE,
+            "proposed_action": _one_line(action_ref), "failure_signature": signature,
+            "recurrence_of": [_token(i) for i in recurrence_ids], "drafted_at": _drafted_at(incident),
+            "drafted_by": "%s (machine draft; only a human reviews and promotes it)" % SETTLED_BY,
+            "review_lane": REVIEW_LANE_GUIDANCE,
+        },
+    })
+
 
 def write_drafts(incident, remedy, signature, recurrence_ids, store,
                  execution_receipt=None, draft_review=None):

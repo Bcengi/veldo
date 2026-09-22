@@ -710,7 +710,7 @@ def render_lines(view, price_per_1k_tokens=None):
 def render_shift(rec):
     """One ledger entry as yamlish text, in a fixed key order, which `validate.parse_yamlish` reads
     back unchanged. Only declared keys are written, so a stray field cannot ride along."""
-    return "".join("%s: %s\n" % (k, rec[k]) for k in SHIFT_ORDER if rec.get(k) is not None)
+    return _validate_module()._yamlish.dump({k: rec[k] for k in SHIFT_ORDER if rec.get(k) is not None})
 
 
 def record_shift(rec, eras_dir, parse_iso=None):

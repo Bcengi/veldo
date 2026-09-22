@@ -144,34 +144,24 @@ def _fm_safe(v):
     return " ".join(cleaned.split())
 
 
-def _fm_scalar(v):
-    if isinstance(v, list):
-        return "[" + ", ".join(_Y.quote(_fm_safe(str(x))) for x in v) + "]"
-    return str(v) if isinstance(v, int) else _Y.quote(_fm_safe(str(v)))
+def _safe_front_matter(value):
+    """Apply the unchanged injection guard before the shared lossless writer."""
+    if isinstance(value, dict):
+        result = {}
+        for key, child in value.items():
+            safe_key = _fm_safe(key)
+            if safe_key in result:
+                raise IntakeError('front-matter keys collide after sanitization')
+            result[safe_key] = _safe_front_matter(child)
+        return result
+    if isinstance(value, list):
+        return [_safe_front_matter(child) for child in value]
+    return _fm_safe(value)
 
 
 def render_spec_markdown(draft):
-    """Render a draft (from draft_spec_from_item) as a veldo.spec/v1 markdown file. The acceptance
-    criteria and intake_source are nested, so they are emitted in the block style validate.py parses.
-    Every front-matter value is passed through _fm_safe so untrusted ticket text cannot inject a key."""
-    fm = draft["front_matter"]
-    lines = ["---"]
-    for k, v in fm.items():
-        if k == "acceptance_criteria":
-            lines.append("acceptance_criteria:")
-            for ac in v:
-                lines.append("  - id: %s" % _fm_safe(ac["id"]))
-                lines.append("    text: %s" % _fm_scalar(ac["text"]))
-        elif k == "intake_source":
-            lines.append("intake_source:")
-            for sk, sv in v.items():
-                lines.append("  %s: %s" % (_fm_safe(sk), _fm_scalar(sv)))
-        else:
-            lines.append("%s: %s" % (k, _fm_scalar(v)))
-    lines.append("---")
-    lines.append("")
-    lines.append(draft["body"])
-    return "\n".join(lines)
+    """Sanitize tracker metadata, then delegate all syntax to the one writer."""
+    return _Y.render_document(_safe_front_matter(draft['front_matter']), draft['body'])
 
 
 # --- Confluence requirements-template intake (W7) ---------------------------
@@ -357,64 +347,8 @@ def intake_plan_from_requirements(adapter, page_id, config, plan_id="PLAN-0000",
     return draft_plan_from_requirements(item, config, plan_id=plan_id, owner=owner)
 
 
-def render_plan_markdown(draft):
-    """Render a draft (from draft_plan_from_requirements) as a veldo.plan/v1 markdown file. The nested
-    plan structures (outcomes, feature_tree, work, release, open_decisions) are emitted in the block
-    style validate.py's parse_yamlish reads, and EVERY value is passed through _fm_safe so untrusted
-    page text can never open a new front-matter key (the plan injection guard)."""
-    fm = draft["front_matter"]
-
-    def _inline(seq):
-        return "[" + ", ".join(_fm_scalar(str(x)) for x in seq) + "]"
-
-    lines = ["---"]
-    for k, v in fm.items():
-        if k == "intake_source":
-            lines.append("intake_source:")
-            for sk, sv in v.items():
-                lines.append("  %s: %s" % (_fm_scalar(sk), _fm_scalar(sv)))
-        elif k == "outcomes":
-            lines.append("outcomes:")
-            for o in v:
-                lines.append("  - id: %s" % _fm_scalar(o["id"]))
-                lines.append("    becomes_true: %s" % _fm_scalar(o["becomes_true"]))
-                lines.append("    measure: %s" % _fm_scalar(o["measure"]))
-        elif k == "non_goals":
-            lines.append("non_goals:")
-            for ng in v:
-                lines.append("  - id: %s" % _fm_scalar(ng["id"]))
-                lines.append("    text: %s" % _fm_scalar(ng["text"]))
-        elif k == "feature_tree":
-            lines.append("feature_tree:")
-            for ftr in v:
-                lines.append("  - id: %s" % _fm_scalar(ftr["id"]))
-                lines.append("    title: %s" % _fm_scalar(ftr["title"]))
-                lines.append("    outcome_refs: %s" % _inline(ftr["outcome_refs"]))
-        elif k == "work":
-            lines.append("work:")
-            for w in v:
-                lines.append("  - item: %s" % _fm_scalar(w["item"]))
-                lines.append("    spec: %s" % _fm_scalar(w["spec"]))
-                lines.append("    title: %s" % _fm_scalar(w["title"]))
-                lines.append("    feature_refs: %s" % _inline(w["feature_refs"]))
-                lines.append("    depends_on: %s" % _inline(w["depends_on"]))
-                lines.append("    order: %d" % int(w["order"]))
-        elif k == "release":
-            lines.append("release:")
-            lines.append("  milestone: %s" % _fm_scalar(v["milestone"]))
-            lines.append("  mode: %s" % _fm_scalar(v["mode"]))
-        elif k == "open_decisions":
-            lines.append("open_decisions:")
-            for d in v:
-                lines.append("  - id: %s" % _fm_scalar(d["id"]))
-                lines.append("    text: %s" % _fm_scalar(d["text"]))
-                lines.append("    blocks: %s" % _inline(d["blocks"]))
-        else:
-            lines.append("%s: %s" % (k, _fm_scalar(v)))
-    lines.append("---")
-    lines.append("")
-    lines.append(draft["body"])
-    return "\n".join(lines)
+# Both schemas use the same sanitization and document writer.
+render_plan_markdown = render_spec_markdown
 
 
 def _jira_issue_to_item(issue):

@@ -151,34 +151,18 @@ def render_draft(crossing, today):
     dim = crossing.get("dimension")
     latest = crossing.get("latest")
     baseline = crossing.get("baseline")
-    lines = [
-        "# VELDO restoration draft (veldo.restoration/v1): a per-area cost-to-change series crossed",
-        "# its relative-degradation threshold (PLAN-0011 W9, resolved decision D2), so the area's",
-        "# entropy must be RESTORED through the normal loop. This is a DRAFT the entropy pass wrote",
-        "# for a HUMAN to promote: read the intent, author a veldo.spec/v1 restoration spec placed in",
-        "# the named area, and let it flow through the loop like any spec. The machine drafts the",
-        "# intent; it never authors the spec, never promotes its own draft, and never restores",
-        "# anything itself (NG2). The loop closes when the area's cost-to-change for the crossed",
-        "# rule returns to or below the expected measure (run restoration.py --close after it ships).",
-        "schema: %s" % SCHEMA,
-        "status: draft",
-        "drafted_by: veldo-entropy-pass (machine draft; a human promotes it into a veldo.spec/v1 restoration spec)",
-        "drafted_at: %s" % today.isoformat(),
-        "area: %s" % area,
-        "crossed_rule: %s" % dim,
-        "reason: the %s cost-to-change for area %s rose to %s against its own trailing baseline %s "
-        "(+%.0f%%), crossing the relative-degradation threshold; restore the area so the "
-        "cost-to-change returns to baseline." % (dim, area, latest, baseline, _pct(crossing)),
-        "before:",
-        "  latest: %s" % latest,
-        "  baseline: %s" % baseline,
-        "  relative_increase: %s" % crossing.get("relative_increase"),
-        "expected_post_restoration_measure:",
-        "  dimension: %s" % dim,
-        "  target: %s" % baseline,
-        "  condition: <= %s" % baseline,
-    ]
-    return "\n".join(lines) + "\n"
+    return V._yamlish.dump({
+        "schema": SCHEMA, "status": "draft",
+        "drafted_by": "veldo-entropy-pass (machine draft; a human promotes it into a veldo.spec/v1 restoration spec)",
+        "drafted_at": today.isoformat(), "area": area, "crossed_rule": dim,
+        "reason": "the %s cost-to-change for area %s rose to %s against its own trailing baseline %s "
+                  "(+%.0f%%), crossing the relative-degradation threshold; restore the area so the "
+                  "cost-to-change returns to baseline." % (dim, area, latest, baseline, _pct(crossing)),
+        "before": {"latest": str(latest), "baseline": str(baseline),
+                   "relative_increase": str(crossing.get("relative_increase"))},
+        "expected_post_restoration_measure": {"dimension": dim, "target": str(baseline),
+                                               "condition": "<= %s" % baseline},
+    })
 
 
 def draft_from_crossings(crossings, restorations_dir, today=None):

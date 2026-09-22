@@ -348,13 +348,79 @@ def front_matter(text, source='<text>'):
 
 
 def quote(value):
-    """Encode a scalar for repository writers, quoting whenever plain spelling is unsafe."""
+    """Encode a string or canonical integer without consulting the reader.
+
+    Every string is quoted, including YAML 1.1 boolean/date/number spellings.
+    Non-ASCII code points use YAML escapes (astral characters need one double-quote Unicode escape,
+    not JSON's surrogate pair). Lone surrogates are not Unicode scalar values.
+    None uses an empty block value; booleans/floats are outside the reader's
+    value domain and are refused, never silently coerced to strings.
+    """
     import json
-    if not isinstance(value, str):
-        return json.dumps(value)
+    if value is None:
+        return ''
+    if type(value) is int:
+        return str(value)
+    if type(value) is not str:
+        raise ValueError('document scalar must be a string, integer, or None')
+    if any(0xd800 <= ord(ch) <= 0xdfff for ch in value):
+        raise ValueError('document string contains a lone surrogate')
+    encoded = json.dumps(value, ensure_ascii=False)
+    return ''.join(ch if ord(ch) < 127 else
+                   ('\\u%04x' % ord(ch) if ord(ch) <= 0xffff else '\\U%08x' % ord(ch))
+                   for ch in encoded)
+
+
+def dump(mapping):
+    """Serialize a nonempty document mapping in the shared reader's value domain.
+
+    Keys are strings; values are strings, integers, None, lists, or mappings.
+    Empty nested collections are preserved. Cycles and unsupported values refuse
+    before any text is returned. No sanitization: values round trip exactly.
+    Schema-specific guards (including tracker injection protection) run upstream.
+    """
+    if type(mapping) is not dict or not mapping:
+        raise ValueError('document root must be a nonempty mapping')
+    active = set()
+
+    def emit(value, indent):
+        if id(value) in active:
+            raise ValueError('document contains a cycle')
+        active.add(id(value))
+        lines = []
+        try:
+            members = value.items() if type(value) is dict else enumerate(value)
+            for key, child in members:
+                if type(value) is dict:
+                    if type(key) is not str:
+                        raise ValueError('document mapping keys must be strings')
+                    # Plain identifier keys avoid noise; YAML-resolved words stay quoted.
+                    plain = (re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', key)
+                             and key.lower() not in {'true', 'false', 'yes', 'no', 'on', 'off', 'null'})
+                    lead = ' ' * indent + (key if plain else quote(key)) + ':'
+                else:
+                    lead = ' ' * indent + '-'
+                if type(child) in (dict, list):
+                    if child:
+                        lines.append(lead)
+                        lines.extend(emit(child, indent + 2))
+                    else:
+                        lines.append(lead + (' {}' if type(child) is dict else ' []'))
+                else:
+                    scalar = quote(child)
+                    lines.append(lead + (' ' + scalar if scalar else ''))
+        finally:
+            active.remove(id(value))
+        return lines
+
     try:
-        if '\n' not in value and '\r' not in value and parse('value: ' + value) == {'value': value}:
-            return value
-    except ValueError:
-        pass
-    return json.dumps(value, ensure_ascii=True)
+        return '\n'.join(emit(mapping, 0)) + '\n'
+    except RecursionError as exc:
+        raise ValueError('document nesting exceeds writer limit') from exc
+
+
+def render_document(mapping, body=''):
+    """Render Markdown front matter and preserve the supplied body verbatim."""
+    if type(body) is not str:
+        raise ValueError('document body must be a string')
+    return '---\n' + dump(mapping) + '---\n\n' + body

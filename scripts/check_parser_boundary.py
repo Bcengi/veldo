@@ -79,7 +79,8 @@ def check(root):
         for path in sorted((root / directory).glob('*.py')):
             rel = path.relative_to(root).as_posix()
             if rel in {'.veldo/yamlish.py', 'engine/.veldo/yamlish.py',
-                       'scripts/check_parser_boundary.py', 'scripts/parser_corpus_audit.py'}:
+                       'scripts/check_parser_boundary.py', 'scripts/parser_corpus_audit.py',
+                       'scripts/test_document_writer.py'}:
                 continue
             # Git commit trailers are a colon-delimited external protocol, not YAML.
             # Restrict the exception to that function; other code in the module is covered.

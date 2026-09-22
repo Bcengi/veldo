@@ -567,8 +567,8 @@ with tempfile.TemporaryDirectory() as _d:
            and _w1402_rec_at2["committed_at"] == _W1402_AT2
            and {k: v for k, v in _w1402_rec_at2.items() if k != "committed_at"}
            == {k: v for k, v in _W1402_GOOD.items() if k != "committed_at"}
-           and _w1402_at_lines == [["committed_at: %s" % _W1402_AT],
-                                   ["committed_at: %s" % _W1402_AT2]]
+           and _w1402_at_lines == [['committed_at: "%s"' % _W1402_AT],
+                                   ['committed_at: "%s"' % _W1402_AT2]]
            and [ln for ln in E1402.render_record(_w1402_rec_at2).splitlines()
                 if not ln.startswith("committed_at:")]
            == [ln for ln in E1402.render_record(_W1402_GOOD).splitlines()

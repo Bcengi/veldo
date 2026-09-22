@@ -578,27 +578,21 @@ def render_record(rec):
     if problems:
         raise ValueError("refusing to render an invalid estimate record: "
                          + "; ".join(problems))
-    lines = []
-    for k in RECORD_ORDER:
-        if k == "layers" or k not in rec:
-            continue
-        lines.append("%s: %s" % (k, _render_scalar(rec[k], "record key %r" % k)))
-    lines.append("layers:")
-    for i, l in enumerate(rec["layers"]):
-        first = True
-        for k in LAYER_ORDER:
-            if k not in l or k == "inputs":
-                continue
-            lead = "  - " if first else "    "
-            lines.append("%s%s: %s" % (lead, k, _render_scalar(
-                l[k], "layer %d key %r" % (i + 1, k))))
-            first = False
-        if "inputs" in l:
-            lines.append("    inputs:")
-            for ik in sorted(l["inputs"]):
-                lines.append("      %s: %s" % (ik, _render_scalar(
-                    l["inputs"][ik], "layer %d input %r" % (i + 1, ik))))
-    return "\n".join(lines) + "\n"
+    ordered = {k: rec[k] for k in RECORD_ORDER if k != "layers" and k in rec}
+    ordered["layers"] = []
+    for i, layer in enumerate(rec["layers"]):
+        item = {k: layer[k] for k in LAYER_ORDER if k != "inputs" and k in layer}
+        for k, value in item.items():
+            _render_scalar(value, "layer %d key %r" % (i + 1, k))
+        if "inputs" in layer:
+            item["inputs"] = {k: layer["inputs"][k] for k in sorted(layer["inputs"])}
+            for k, value in item["inputs"].items():
+                _render_scalar(value, "layer %d input %r" % (i + 1, k))
+        ordered["layers"].append(item)
+    for k, value in ordered.items():
+        if k != "layers":
+            _render_scalar(value, "record key %r" % k)
+    return _validate()._yamlish.dump(ordered)
 
 
 def parse_record(text):

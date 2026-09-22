@@ -477,6 +477,14 @@
     "51_parser_boundary"
    ],
    "regions": "One strict document reader and corpus migration regressions"
+  },
+  {
+   "name": "52_writer_boundary",
+   "file": "52_writer_boundary.py",
+   "requires": [
+    "52_writer_boundary"
+   ],
+   "regions": "One document writer, generated round trips and external YAML oracle"
   }
  ]
 }

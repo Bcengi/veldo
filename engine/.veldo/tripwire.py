@@ -56,6 +56,11 @@ decision record is read), so this module adds no second YAML parser and no impor
 from datetime import date, timedelta
 from pathlib import Path
 
+import importlib.util
+_yspec = importlib.util.spec_from_file_location("veldo_yamlish", Path(__file__).with_name("yamlish.py"))
+_Y = importlib.util.module_from_spec(_yspec)
+_yspec.loader.exec_module(_Y)
+
 SCHEMA = "veldo.readings/v1"
 REDECISION_SCHEMA = "veldo.redecision/v1"
 DECISION_SCHEMA = "veldo.decision/v1"
@@ -434,26 +439,14 @@ def check_tripwires(decisions_dir, readings_dir, root, parse, fail, load_decisio
 def _render_redecision(decision_id, fired, today):
     """Render one veldo.redecision/v1 DRAFT naming the breached decision and its fired
     assumptions, for a human to promote and elaborate into a full decision record."""
-    lines = [
-        "# VELDO re-decision draft (veldo.redecision/v1): a foundational decision's assumption",
-        "# breached its in-session tripwire, so the foundation must be re-decided against the",
-        "# problem class, never today's scale. This is a DRAFT the tripwire pass wrote for a",
-        "# HUMAN to promote and elaborate into a full veldo.decision/v1 record; the machine",
-        "# drafts, it never decides and never re-platforms anything itself.",
-        "schema: %s" % REDECISION_SCHEMA,
-        "redecides: %s" % decision_id,
-        "status: draft",
-        "drafted_by: veldo-tripwire-pass (machine draft; a human elaborates and decides)",
-        "drafted_at: %s" % today.isoformat(),
-        "reason: one or more assumptions of %s breached their in-session tripwire; re-decide the foundation against the stated problem class." % decision_id,
-        "breached_assumptions:",
-    ]
-    for f in fired:
-        lines.append("  - id: %s" % f["assumption"])
-        lines.append("    state: %s" % f["state"])
-        lines.append("    statement: %s" % f.get("statement"))
-        lines.append("    detail: %s" % f["detail"])
-    return "\n".join(lines) + "\n"
+    return _Y.dump({
+        "schema": REDECISION_SCHEMA, "redecides": decision_id, "status": "draft",
+        "drafted_by": "veldo-tripwire-pass (machine draft; a human elaborates and decides)",
+        "drafted_at": today.isoformat(),
+        "reason": "one or more assumptions of %s breached their in-session tripwire; re-decide the foundation against the stated problem class." % decision_id,
+        "breached_assumptions": [{"id": f["assumption"], "state": f["state"],
+                                  "statement": f.get("statement"), "detail": f["detail"]} for f in fired],
+    })
 
 
 def draft_redecisions(decisions_dir, readings_dir, redecisions_dir, parse, fail, load_decision, now=None):

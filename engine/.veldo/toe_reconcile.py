@@ -527,12 +527,10 @@ def render_record(rec):
         raise ValueError("refusing to render an invalid reconciliation record: "
                          + "; ".join(problems))
     EST = _estimate()
-    lines = []
-    for k in RECORD_ORDER:
-        if k not in rec:
-            continue
-        lines.append("%s: %s" % (k, EST._render_scalar(rec[k], "record key %r" % k)))
-    return "\n".join(lines) + "\n"
+    ordered = {k: rec[k] for k in RECORD_ORDER if k in rec}
+    for k, value in ordered.items():
+        EST._render_scalar(value, "record key %r" % k)
+    return EST._validate()._yamlish.dump(ordered)
 
 
 def parse_record(text):

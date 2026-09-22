@@ -1,0 +1,2995 @@
+{
+  "baseline_documents": 331,
+  "documents": 332,
+  "re_emitted": 331,
+  "oracle": "PyYAML 6.0.1",
+  "failures": 0,
+  "corpus": [
+    {
+      "path": "plans/PLAN-0001-veldo-one-point-zero.md",
+      "sha256": "326c97a4aae01f60a1f5451dd2a0e98460a83991dfd0fea1c4a96b109c088e55",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b35b6b00cf8054a0898d50f6b580ac459e913f7aa9f030bb16ae5f0e2108696a"
+    },
+    {
+      "path": "plans/PLAN-0002-companion-home.md",
+      "sha256": "649d18ada69db16e714ba8a92a2ededf9068d7b70b0adda12102662da216f682",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ba97588b6c4d5a05805c19cc68ea315d9bec4c946f7b5e74b4d254fde11b8fd8"
+    },
+    {
+      "path": "plans/PLAN-0003-batteries-runner-suite.md",
+      "sha256": "8806479d5dcbe4805a5bef1700a27149c32cb7d613a9a4998e780c5bee6e22e0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7a20e864f6355e4285cb9d8d2df7d7c1d3b8e66d71e6bc769eb354ede5ff1d53"
+    },
+    {
+      "path": "plans/PLAN-0004-veldo-two-point-zero.md",
+      "sha256": "6e77134f9d664d0262333daf8b8d9b9068b9350d8caa25858708e8f15f9f27af",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "789a7382332df22c065c4c3a3b48c0595e0d6ab8fa2dac3ceb970e35380cb1bf"
+    },
+    {
+      "path": "plans/PLAN-0005-run-lens.md",
+      "sha256": "846a0f7aec8e6e9e74cba4cfa5348bc8beaed23305af364dc9dc444d600ff50e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "20a4ac019d862fb4eae3b92ef56cad73283c28c94f904482c59781ce60f35357"
+    },
+    {
+      "path": "plans/PLAN-0006-tracker-integration.md",
+      "sha256": "0cb22fa8aa1b6b866f0cbea00a534ee1dab53ba076ac5f80ad7574c61059a54c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7261dcdf8d7ce6968fc5f9207edb15a10824b3945b8a9c34396c1e574952c209"
+    },
+    {
+      "path": "plans/PLAN-0007-veldo-fleet.md",
+      "sha256": "02c86a7d84b5de8fa6c3a1358fa8a7abd8aebce8307634dc43aa1d48b7c2fbe4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "5fccbab83d82e8de6fc3e50b2d95621e00a5e7f7aeba3ef07ff64e7affc8de15"
+    },
+    {
+      "path": "plans/PLAN-0008-multitool-packs.md",
+      "sha256": "3353bef590356cdc193837cd27aad962fe46e378687941619f88aa0eb140bc9f",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6cf851f4af36e395c2b7b5ed579db08afb23ffe42b51a17dd00dca0d381cb07f"
+    },
+    {
+      "path": "plans/PLAN-0009-fleet-distribution.md",
+      "sha256": "7b40dfdca3e968e0ddcca5605398abaaa41d91d0913cf5d81ae4d66cf59c269b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "21cba2b95336dd10519a92c53ccb16684b2aa45905006b59080f9049616bc2f2"
+    },
+    {
+      "path": "plans/PLAN-0010-tracker-driven-autonomous-fleet.md",
+      "sha256": "66823feb432f9770953b2ddd9c346baa83a3a8af677038095f439809c41ba7b4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d4d8907f1421b7f31d61f724656df4442ba684413bcf67548fac15ca979036ce"
+    },
+    {
+      "path": "plans/PLAN-0011-architecture-and-maintainability.md",
+      "sha256": "68e786c9a82f1691d713317c82c334cb7104e9b2385ac76e03cddd893688e583",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "577087b0244a0940c26bdeb598a9e92d8e0c49254f3e3495b07bd26200aa9037"
+    },
+    {
+      "path": "plans/PLAN-0012-production-support-responder.md",
+      "sha256": "a53dcf608d6a2eba49e69474426880f4c1f606a7a4bdc86b27940bfbd7f1d51e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "82414407334df819ecb693ced2f9ac5189ad26cdbe1fdfd358ad2fd1549fac41"
+    },
+    {
+      "path": "plans/PLAN-0013-security-by-design.md",
+      "sha256": "f07081dd72fe2f5e5c0673713136bef50e8b198a92f114fb0d7639f78f29a181",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "805544495ad3c5d58912eb6dd91fe2007b16032497498d9c2b1b10e6c186733e"
+    },
+    {
+      "path": "plans/PLAN-0014-tokens-of-effort.md",
+      "sha256": "43c09046e31b2a4c3c2cc5749b1243e25cf8ec7600508e98de7d458ce14a2f40",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "64cb73989730177265844e489b5f6f44adf1658e8bf0c1095b5f555b6623bb50"
+    },
+    {
+      "path": "plans/PLAN-0015-substrate-and-release.md",
+      "sha256": "ba962d85c9278638c723799e816ada81c76a9bdac32682d3ef69fd04ce8aa317",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "74253ef46111355d453670f08000bbdac355e1462dd8ebc1d3a4a6ee8dbd6b56"
+    },
+    {
+      "path": "plans/PLAN-0016-human-decisions-through-jira.md",
+      "sha256": "8317e853468ef5583e91d106fe5c102c1c16f720adb9678f4134579e383487b4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3d5e2afbe99524412fb1522759de2d869976144b3737577ae1778e03b82de320"
+    },
+    {
+      "path": "plans/PLAN-0017-the-veldo-launch.md",
+      "sha256": "e4ab548dc237088bdd1fceb86e54e64f5982c439171e9a3b038c6015dd92d165",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "dbf0c0cf1c8c6ea91b30fe83288e914a0816603eca6cfe34e6aa13c0a11b8205"
+    },
+    {
+      "path": "plans/PLAN-0018-what-a-complex-project-needs.md",
+      "sha256": "ffd4e8151d1cfd5083976eae1c8d7ce7c516dc2f692627a19d998dfc0e44f9d5",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c3b613e7f27accf71e87f9021f93b5c478a225dd9cb2f04cbaaa9d1806ada3cb"
+    },
+    {
+      "path": "plans/PLAN-0019-dark-factory.md",
+      "sha256": "6474d5088a204b525424d7d6bc3c95381aed8de95146daac5011b211db0f8a98",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f1edd67404803622a04118ca75a7e543d3570791d1160ed063e58f2bde04e8e5"
+    },
+    {
+      "path": "plans/PLAN-0020-independent-validation.md",
+      "sha256": "f3bf5cb75a495f68d3b2a99e9a76e291e87956bd8a5ad7254aa0d48c39705b98",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0cdd150baa7540b974f9d616e33d4bab76a8a665e055e131ce1de38927ed837d"
+    },
+    {
+      "path": "plans/TEMPLATE.md",
+      "sha256": "316aea3b99f0d993cb8329fd988c5bf6a134f9f53fc92a56ce9185153f545425",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "40671e1b782740e5a3e2975da5849ae07153efa6fc90d12d88e5587f9b09b0f0"
+    },
+    {
+      "path": "specs/TEMPLATE.md",
+      "sha256": "b0001bcf28e2083602238d94722c81a11dd40694c540305f4d42fe962a047fcd",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bfa5935c7266c086f13815f16ca26aa4f501703b97d8c87f18945393d83f9d5a"
+    },
+    {
+      "path": "specs/VELDO-0001-every-criterion-declares-its-own-falsification.md",
+      "sha256": "8c0ba6211d42979200995d96006d4dab202ddcbd6817492393f49863c44efb4d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6939979b8345de6772aeac65b54f5a5f07ed6ef36d40c2fbae0464447fdf7cfc"
+    },
+    {
+      "path": "specs/VELDO-0002-recorded-work-state-surviving-a-dead-session.md",
+      "sha256": "56555ea6681a286e636ce0860e69e8359cb5ea566dcdd57539d336a6fcc5b780",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "de19dc6fd559aab7ae9a1ecc1724bdfc8a367240274fad213ef55a91f5838d4d"
+    },
+    {
+      "path": "specs/VELDO-0003-a-work-source-for-work-that-is-not-construction.md",
+      "sha256": "58d86021e5d315bb3df32f3cd199be0bfd522cfb8e3287c2e77a2ded48668726",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "674e693f499cd81c55b30d13e4331f8e3b876ee2883e555cccff95d280f315ee"
+    },
+    {
+      "path": "specs/VELDO-0004-the-promise-corpus.md",
+      "sha256": "dda98041e02ed3c55c83acbbfcb986853b9583e286f445882b88ff156946b165",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8ca79747a6ba55899cd61e4f0fabbae3ee2bc5a76bc03aca274aedce64996792"
+    },
+    {
+      "path": "specs/VELDO-0005-declared-and-shipped-disagree.md",
+      "sha256": "d9df456a8d1007a77b7df22445515c4b643a174c8ca0aec5574b8c8d40a33aed",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d33a32ac8860aba1d295c72879327afefce9ecfb4d7f16e736ff1bc1198b9dfb"
+    },
+    {
+      "path": "specs/VELDO-0006-budget-continuity-on-the-operators-path.md",
+      "sha256": "5e1a639895193f81f3f07ea59f2c2aeeca8fa4215bb630d70da62c661d077d08",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d9b4838be0e81aa5d4c64ec870df86c9581f42ba77f2f66bf348f10ab8955a64"
+    },
+    {
+      "path": "specs/VELDO-0007-install-and-run-from-the-artifact-an-adopter-receives.md",
+      "sha256": "ab94b0c0a9879af66cc89e871e4e3d1d3ce1b806c05f63696d0c5d1c0425dead",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "89b4a1b286b87f6cd3223bce3775c76855a210ad4eefa4163963a68b7135c231"
+    },
+    {
+      "path": "specs/VELDO-0008-veldo-version-from-one-declaration.md",
+      "sha256": "aaa92b175f17f942b246758c33d816bfb21b4073e389f3b29e050d5613cd9447",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "86e55963f23bd7e29754a83683cd4f19af7c234318c78136209770980cfa1c7e"
+    },
+    {
+      "path": "specs/VELDO-0009-init-stamps-the-version-it-laid-down.md",
+      "sha256": "9f0d8d6d6c31a40232914e977795b07d985e2db17a550f0843769336638e2ea7",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "85705b1d16dfebd38dd1ce462a1c93d0d5cc788b027a459cac5362bae5528c54"
+    },
+    {
+      "path": "specs/VELDO-0010-evidence-names-the-version-that-produced-it.md",
+      "sha256": "441daf2ebb770a10301ebc6227d684d0dfa9ced014e4c2c5bf1c6408da144c75",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6432ce938b84d22a5b247ad341611ae0004c485c3db955c6c042732e684fc1e1"
+    },
+    {
+      "path": "specs/VELDO-0011-release-contract-and-registry.md",
+      "sha256": "0a788c17f2e5b670a6f5c679a9f422da8d73bc109a5074d8cefa90667a4633d5",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "582e04eef695b972b14a50a6f382816a887f72bcb3d526adbaf07ba1cd6f3dc8"
+    },
+    {
+      "path": "specs/VELDO-0012-behaviour-floor-contract.md",
+      "sha256": "179a3e9a6961e4e86cf44e3ad383477da94b25bed448accd37253ce31a2d8b40",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "46fb29289729bae856ae4333f9ed66e139413d0767a2c3bea5cb6f9fe960ab3a"
+    },
+    {
+      "path": "specs/VELDO-0013-a-declared-falsification-is-driven-and-recorded.md",
+      "sha256": "365a23a32372616d3575bf06a32782042e28decef5013472f047edf77fa2e9ed",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c82a3dceca17e962f0dff5fa828d5ff06416c8f743d96a0d9ea317d486b7acf2"
+    },
+    {
+      "path": "specs/VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md",
+      "sha256": "a871918927a281fcd023c4bc27054744c8a4455fbc639f9a0df56fe44d185901",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "89e7c9ac675eef6be9c9e0a8974109d92e5b0884377a7c8a75e82dcc5a61b0e4"
+    },
+    {
+      "path": "specs/VELDO-0015-liveness-stands-down-on-clock-disagreement.md",
+      "sha256": "0783f8da460fce522a0cf1939108e17e8a75ae543b7043ce86d842ffcd3ea875",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "fbec31769fc551c491a43441d34cf143294ce91866830a2a2747f265f84dcf43"
+    },
+    {
+      "path": "specs/VELDO-0016-policy-boundaries.md",
+      "sha256": "0b9c42ffdad58566e4a9f5900dc2943df73b869fb8b1aabb5f14bbb3d11f2a22",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0c141ff5ae39ac6a2e2a38b1b6c855baaf1c0c2607506299a8e15b2d5ae7ef01"
+    },
+    {
+      "path": "specs/VELDO-0017-entity-lifecycle-contracts.md",
+      "sha256": "e141214a2d305d968054dcf63d953fd11b0d3793262c4affd9b0c5302be33170",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "5143dcada9f6336c7e9ab5e4383ffa6134ee5ed817d10ae67459ac4334ba17d3"
+    },
+    {
+      "path": "specs/VELDO-0018-release-floor-contracts.md",
+      "sha256": "3d5a038e805faf67545a7ddbc39b1f224634615596ceae0039041b189a4eb907",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ef5137e9319fe3feb751c5799b08776c8ce28841bfb7f3957eddf32c88df3f75"
+    },
+    {
+      "path": "specs/VELDO-0019-combined-graph-contracts.md",
+      "sha256": "4270e10e931a87a85038f7231897a7b9e85d9f2cba99dbd1ca48038735cc4f3a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "13587dce6c1e55b0c4125f160812f7898fc0ec63ad2505831bc70f838408d0dc"
+    },
+    {
+      "path": "specs/VELDO-0020-signing-authority-contracts.md",
+      "sha256": "2d3ef14bda32414f27d4fa41ffdbe60b236255d0aa238d085eb7471125835d6e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "91e9284ab67daf7ec8c7c8758760b6c79d2e5c4efdb29296ef9a8bbf2af57c1a"
+    },
+    {
+      "path": "specs/VELDO-0021-completion-eligibility-contracts.md",
+      "sha256": "f6363996cfbf2c53d647dc94babb46dbc41b9d9e0dcd19c0ac4c8d38004609be",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "23bb66de6e2a455af7db584e272840158cfab973c5652da8a6de2776aa5a6e51"
+    },
+    {
+      "path": "specs/VELDO-0022-section-2-admission-contracts.md",
+      "sha256": "fa6ff217a228581793207f9872fb5d4ea5af9027a9e8887bbb6802e7867c3a8e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "5ab2089ad3aa6846495ca222d2d8dd58ac92d433694628264de83d2659412824"
+    },
+    {
+      "path": "specs/VELDO-0023-journaled-commands.md",
+      "sha256": "3adf53f58c5478a229764c73191f7ee71ca56d48869fb21074be0d5ca0091be2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0071293c1a9b8f5d3bc8fc050655a6080c3115fba71b4e48243c77fc0b8452f3"
+    },
+    {
+      "path": "specs/VELDO-0024-signed-git-replication.md",
+      "sha256": "51154b7ec9723f47b8dc65b1aa57b6bd0e8a61e5b004807393b9539f26d49e21",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6f3914009d2c190e3510c70e6717edc9a3ff2e025a45d012ec0b79b318704c9a"
+    },
+    {
+      "path": "specs/VELDO-0025-membership-and-delegation.md",
+      "sha256": "700aef4f6e818a06936a1ec92b344fbf3c14e60e72b1af822d631a3c5df9163c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8214790f6edc8dce049568b4577a3cda2c8d539b1945f4dcb7163e87a1c121ff"
+    },
+    {
+      "path": "specs/VELDO-0026-authorization-rechecks.md",
+      "sha256": "d13da5674676a7245bd34f09ac8cbe7b6feeb55f56e73622c34f9c3b2fb5f3b5",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e55571be118051765f4a4f5ced722a1fed7f5e7a04783f96118fc3de0317ba3f"
+    },
+    {
+      "path": "specs/VELDO-0027-protected-signing.md",
+      "sha256": "7413116ac8673aa048266cd175c5cf0fc8741464b5b4d193fae869097f64a2de",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "fdb327df6ce4bfa96b3f2597904f680ca248bc472d5e700a860d4382865cc655"
+    },
+    {
+      "path": "specs/VELDO-0028-protected-effects.md",
+      "sha256": "579728e9b073b972253741311f89a4289366c2ff2b7bf995c0f58eded11edc55",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a1d9d6bf6e1d6e077d3aa21e9933188bc0e1756145370ce62accaf8052c49f81"
+    },
+    {
+      "path": "specs/VELDO-0029-repository-enrollment.md",
+      "sha256": "c581ea8d3725e5c9b132eb3dacafa7fcbc8e1751151cfbb917b75a2f034f862d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "1ace5d8f8d3cfbcc75c4bf2d7ba0044945e3c9b4edef362ec50cbf2c88df6f49"
+    },
+    {
+      "path": "specs/VELDO-0030-authority-generation-fencing.md",
+      "sha256": "e9d7377c27e5add8e1d0746389e5e3cb1c82ed13dc724627aaa29b6865569894",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c9f2bac5b7826878c99ebdbe40af811c89616f55bd5cdd594d0322560f8a7778"
+    },
+    {
+      "path": "specs/VELDO-0031-authority-backed-claims.md",
+      "sha256": "b8c2c2a66c19d95bf1256fc80cfaaca4e02b2e30e66bfb5c0e0710ae7939debe",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0f449d2c51e35a1633a3f3650ee32b1b1a00bb7e3f5d63c70ac2565e77b02dbc"
+    },
+    {
+      "path": "specs/VELDO-0032-clock-task-reporting.md",
+      "sha256": "57a16b544f4ea98a4ae8c8561fff014d6ef90ce7e70690234f73a1ebd6719bbd",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f61acab5d518d0ac50c7a6e02c1253f775a598abc6885d025dff2977471781a0"
+    },
+    {
+      "path": "specs/VELDO-0033-clock-refusal-propagation.md",
+      "sha256": "ad8dccb0996600a08fc5a3b3d0c467aaf3991751611d2af325f7f31d45edc095",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d4609a381cb54596ac31e48d0efa78e1aa4a3c291f2afd341e736cc65128e16e"
+    },
+    {
+      "path": "specs/VELDO-0034-clock-status-display.md",
+      "sha256": "41f51c85973459ab69e456153256ee63ca4afed5260d2602bac363ce177f1717",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6e06cd1df56eaf753b9803d4b45e51836c0caa8cb9283742bdd0d4baa12c7417"
+    },
+    {
+      "path": "specs/VELDO-0035-authoritative-snapshots.md",
+      "sha256": "242b8a26bfb9b9185e919449a8eaf79b7f25426e6400e1720af3ee6cbb90e209",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "43191b46cbea30114abb16318b49e724c1f7db683296695e5729b28b64ff7429"
+    },
+    {
+      "path": "specs/VELDO-0036-capacity-and-spend-reservations.md",
+      "sha256": "5f39475de4d88284562085541badcb8b3279e110b04b19c851c5dbdf9a166911",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "2217fadfc5c779aa317fd2d774f0243e7ba8a8795893f9d97acf72fa57d9428c"
+    },
+    {
+      "path": "specs/VELDO-0037-specification-alias-publication.md",
+      "sha256": "8c554c0ce1f135f40e1d16b243bce8294390b8531b0632eb74e82427fe372a2f",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "795976d0facb4397f47022236155c49ba1af9366797b06a002de8a277e0ee56e"
+    },
+    {
+      "path": "specs/VELDO-0038-effect-recovery-commands.md",
+      "sha256": "39e8ea67c0fe5f7664faa8a83d1a785d7bc0ecf500cdcf6acee45230f142dcff",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f8bb72f0f94f22b2ab20c7386bd2f1c451c004520dd65177238e6f260ef6cce5"
+    },
+    {
+      "path": "specs/VELDO-0039-durable-dispatch-acceptance.md",
+      "sha256": "f58d27eba74f74efd731f6d1456c40b805cbbd990f75c7d8e89fbdd406584d48",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d27f63fc1445c7b28671f1fb4a09f75f013ba7450b064398cbb2174652226955"
+    },
+    {
+      "path": "specs/VELDO-0040-process-containment.md",
+      "sha256": "635c8ef8199e791abd0064b0103ffbd17de3f3e3428eba89fc92ebe9408b28c1",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "dd17ca9e2cbc0eb845ac8da3b80e34963e147c195f8cfcdd53e2d81f5ad46dbf"
+    },
+    {
+      "path": "specs/VELDO-0041-heartbeat-and-retirement.md",
+      "sha256": "419023d709a19577f6c4ce155ea91ecdb0e8dc25b41ece45abde8e96f76cac9c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6143cde4cff278308531bc9bf59c2ea15b3222aa5982b01d752fb4ac0318f818"
+    },
+    {
+      "path": "specs/VELDO-0042-isolated-worker-clones.md",
+      "sha256": "0652530616ec073f8df13a7e6bb6d0c87cad392186a78b0f591021f5e6afc76e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3598f60dfd66418e6f52d912e8ffa957fb72344cbc78217eb40c0a322f151652"
+    },
+    {
+      "path": "specs/VELDO-0043-replaceable-langgraph-adapter.md",
+      "sha256": "e4cc684f56ccab384ad4183fb236d3ff2a5ddd76ec0c2f588d43f9e1fc81ffa0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "15a3d6a61261be0b8eefe76528ca720e1dd5190a319a35dd0730578bb2f0b452"
+    },
+    {
+      "path": "specs/VELDO-0044-checkpoint-isolation.md",
+      "sha256": "ba76a8dd05bb7c1a2dfbbb8168a05f4cd18c29e6b2f44886d97234bfff6623c9",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e744845ed5e32776dc89a73c9626098cd66f12f3bc0c2eeddb995f19b6baef53"
+    },
+    {
+      "path": "specs/VELDO-0045-isolated-runtime-distribution.md",
+      "sha256": "8969986fa8b45981798d1713db7cd8232f49cae86c1be881df4841fb50d2d590",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "5de92d4d56602f1f19d3943156ce6ea9946fa586a6efa1ad488ae86ab5ac371c"
+    },
+    {
+      "path": "specs/VELDO-0046-durable-notification-delivery.md",
+      "sha256": "d69a2b7532188595eeb95a89c4ec13f669ac28fdf1a708e67e4af1549f2747bf",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6085f32dacedf739ad368e1a8d5d749fb916867e0e037e5ce938068bdab9ca86"
+    },
+    {
+      "path": "specs/VELDO-0047-authority-service-lifecycle.md",
+      "sha256": "1bd229ab174ba98c852ec9f2b4ad91396f6e4302768fa5ca35e8e5e4dc600d21",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "60062e651185393222e142d882bd4795e7d42ba53fbb0972e3e470077df9960c"
+    },
+    {
+      "path": "specs/VELDO-0048-integrity-and-replica-restoration.md",
+      "sha256": "5c83263addbfb00d2d79ac34d0b4aa6ee529ee35847c5cd6497fbcadf6763091",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "af09b504195270aa67ad2083beb176b22f75e823908350a8eab19a4a1cdc522b"
+    },
+    {
+      "path": "specs/VELDO-0049-authoritative-floor-transitions.md",
+      "sha256": "a880589072ea9079b9fde503399a8fe0337bcb9ede14c2e3d2804196a6a30855",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e939dda0d958957b9a9ed3bfa258c789ebfefced942cff5a5561a659d9806dc6"
+    },
+    {
+      "path": "specs/VELDO-0050-durable-contextual-proof.md",
+      "sha256": "4da8a030fe035c8a0e1432627e4cdc1088f76dd7157b70c123bf073fb421ecb5",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f9b9a9d34aacbca3021199c9743224307b1ef72416469f3cff21b9be50ea892d"
+    },
+    {
+      "path": "specs/VELDO-0051-journal-event-publication.md",
+      "sha256": "284edc6daebd6e3002d7ee158c7af44196656f21763e159f100add64954bec4e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bdd022cf313b32d79c057eda3d3392b85206db978c4dfa547e9acdb9cd8a200c"
+    },
+    {
+      "path": "specs/VELDO-0052-shared-floor-eligibility.md",
+      "sha256": "0a09a28289f67e7ee0fc40d616f7c70c1d50106d9b8397ecd2ca46f0c6d09965",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "352344b93e8f862c2093fb042709dd9c47a0a1554d2af327d14854ff6b78e7ec"
+    },
+    {
+      "path": "specs/VELDO-0053-architecture-entry-refusals.md",
+      "sha256": "ddf509d225473d0be2d4d29c38c6f05766a7275973ac44c03010a9bff82cd651",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "cc7e95fdbe6dbd7312398b2ac7bc14001bb27bcb772491751b94970131c8bdfb"
+    },
+    {
+      "path": "specs/VELDO-0054-floor-decision-dependencies.md",
+      "sha256": "b46d144fbd6cd78cad86bf4c973ed96737734b09b4b3af18f291a4a9bc6ccee6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "89d1869667d3c7e71e246e6154026aec273996df91e0144c952d9d42a04a4295"
+    },
+    {
+      "path": "specs/VELDO-0055-release-regression-receipts.md",
+      "sha256": "751693e378b0b8135845b1162eb4edccfad43fb1726255223919c585a3cbf9a2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e90bfcfe50646d84575d0855c42dc345c4a61b20b4730f0b626e9e824e75d1dc"
+    },
+    {
+      "path": "specs/VELDO-0056-disposable-landing-candidates.md",
+      "sha256": "13c1a74945a83e59cd275e5f1c2209a0b2e0b8ae31372444033ea556e6a26c3e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "64e5aac5ca66b885e4f363059655c0b29f9477488e6532c484d7968a9e23892e"
+    },
+    {
+      "path": "specs/VELDO-0057-exact-tip-completion.md",
+      "sha256": "b79676cec88c6327a9ec0085ad679baff972ead25b1bfdc5ff15e50a5fcba151",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7f04e8cbcb9848edc9157909a8dec5dba4b9f18cde54edba4bd1d5796fb43b3d"
+    },
+    {
+      "path": "specs/VELDO-0058-isolated-gate-observations.md",
+      "sha256": "32063b316b88b229fd2d17a339340b6a5eca9aee4681a9a8525038dfc2eb3c46",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "931d36c0903029321c5155e72954b9d5ca72dbc23b11a43f4490dd7e290fd42d"
+    },
+    {
+      "path": "specs/VELDO-0059-installed-floor-slice.md",
+      "sha256": "77af17c19467c2d4acfca9ecc73419e512df9c5e4ad8ea87d92fe0b35c02775a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "73a4e0e8005c9d161c0d831be9135846696fd86648cd0ec6f1c1b19be3e6e0de"
+    },
+    {
+      "path": "specs/VELDO-0060-claude-code-adapter-qualification.md",
+      "sha256": "970dcde7b422eabc0fb16cea6528af0572be569e50db7123ca7d53d829efd256",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b02e321b4addb6148de1962b07eaf27c0b92ea96d426d0213a27af82dcf46c32"
+    },
+    {
+      "path": "specs/VELDO-0061-codex-adapter-qualification.md",
+      "sha256": "72e113bc0f02933e620d557f7a13dadb68e9a13ec48f8b5a652c66016a9353b6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "9702e4458e6adc05c9d7be6d720f900979054379b7b9810cb68cb64613b17299"
+    },
+    {
+      "path": "specs/VELDO-0062-provider-credentials-and-usage.md",
+      "sha256": "ed18170b7910da4323403960e1aa7bbdb7643918b9fea614d2e5cd34dfe7953c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "07c3a427bd71890db7b148dae2e9b313b24d2e129d4205e79ec444f975030325"
+    },
+    {
+      "path": "specs/VELDO-0063-production-governor-lifecycle.md",
+      "sha256": "ae5185513a2da732c9f829e3f1c46293448dfc84903949d022cda82941bddaf7",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a815e92729b1b330d3e3b0955491a95924499a239ecf107e473f34e20dd1d3b7"
+    },
+    {
+      "path": "specs/VELDO-0064-assignment-inbox-projections.md",
+      "sha256": "f77353bdc33bd1c29a12ec7f3865e6b9701f734e6b4511eab5342653e3c0e6b6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b263bddac53958b401ebdc85953193aef10552dac3385f9398559bd23564210b"
+    },
+    {
+      "path": "specs/VELDO-0065-versioned-channel-presentations.md",
+      "sha256": "87c6054ef26052236474a9ef0a81f1a19a0c6c1a6307e993ff222c1ad674d4b4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ce71b3cbf1d7c682799e090063613cc18c84bc69f0f0f3aa39fa9f64b78438a0"
+    },
+    {
+      "path": "specs/VELDO-0066-canonical-channel-attribution.md",
+      "sha256": "f64ada9d0a578b65d9d216a4d90ba22fd4a93315909293435fb4c6f2342d64ff",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e4690cd4a906f1d4e6a3e3585af348f4e802ac7c36fcbe20f9c06ca691c56593"
+    },
+    {
+      "path": "specs/VELDO-0067-restricted-channel-edges.md",
+      "sha256": "730f50d29e2332fad2aa34b461c6ddf12d75fac2469c734dcebcdbfdc7596607",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c371fe18e364f4859fc804c5757cb51aa705061ab9be989f09501bf9c546f802"
+    },
+    {
+      "path": "specs/VELDO-0068-atomic-cross-channel-settlement.md",
+      "sha256": "700a8172eac6d92dde904aa30f6b9f5648c21f9329da0e84a31ab97961037eb0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "fa05634aef81a362eb10123c15d156b85df8f92e893e0ef995931718f5780b29"
+    },
+    {
+      "path": "specs/VELDO-0069-governing-decision-bindings.md",
+      "sha256": "54ff3e85266347c3e1de7add499c52fa05d916db4c1458cd6a5cf78fdd80131a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7a4d28f59cbc0d27e935509a34d9290fe250845717d8640fa6d1ab855adfd000"
+    },
+    {
+      "path": "specs/VELDO-0070-independent-decision-review.md",
+      "sha256": "62f3d16efc1a6377043db0bdf9000a47ef22af345554e4ce7c027c8504cab265",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8bebabae6c88dbd68ebbf6a707c1098e5a05b3968eaafb319e59da8ce693e920"
+    },
+    {
+      "path": "specs/VELDO-0071-governing-assumptions-tripwires.md",
+      "sha256": "53b7a25e7359b9afe67b1f393ec8f594da3690b7b725656a46436463a65ec75b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "2068fe699d4f9a5a24b5aea12d3a73f3085e3d2dfd4accd66fda9b84b16a4f30"
+    },
+    {
+      "path": "specs/VELDO-0072-tracker-projection-history-repair.md",
+      "sha256": "7d9d5280d9bbfc756659c16bcff57d100403181de59d25f8ded79753446e7391",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "faee4c7e5a2e871f120cbd6ea51fcac95f20e6270c8ac49855625845b31832fb"
+    },
+    {
+      "path": "specs/VELDO-0073-channel-ingress-activation.md",
+      "sha256": "589c2a106d3eb535496bafbfc62bfb24874363c7283ed56c6043d7ddff97702d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "806aa8d94afce1b713374d4d8af9f543c61525bcdefc4c702a8786b2f1f174ea"
+    },
+    {
+      "path": "specs/VELDO-0074-interrupted-channel-decisions.md",
+      "sha256": "0c1644b47243967b60fc52aab022296431d05d2530502a801454098757364d06",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c11410b0be819df74a5b33aeae8d08fd347bad3ab9e03cfb1644b8561675ebea"
+    },
+    {
+      "path": "specs/VELDO-0075-andon-delivery-resumption.md",
+      "sha256": "cefee4af9fd467c06f405f1893948a081f96c82c5f979f01313d06114091ca0b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8543ddf09f25617ec870f46538a9ac8b50318ad1a535b9ce1eb9af1fcea24efe"
+    },
+    {
+      "path": "specs/VELDO-0076-project-ownership-charter-lifecycle.md",
+      "sha256": "c84c2bd530cdac307569c9bbfc7f59b7ee9d13ff0f77f29127bb7d2560064a0b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ad57c5618cad0802ec16a76660395f201d96e714aacd5ed4a1b9384f4c556ebb"
+    },
+    {
+      "path": "specs/VELDO-0077-objective-acceptance-outcome-assessment.md",
+      "sha256": "86a3e39844d53a450217012b6c8b5c7cad3171da8b9d2f19a3a1d654e2afd698",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "edab4957a4a6df270bf844b5780e80520a524cf4d1832aa7c4a561ebbc7ca5ce"
+    },
+    {
+      "path": "specs/VELDO-0078-backlog-lifecycle-priority-execution.md",
+      "sha256": "f7bcb1ddd8c22603c0ddb0f61476f62d7c652755f3df2630e2d0f0ae5ec7e976",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "dc852f7522e27553a89d9e1c4f38452e6cd9ad17a49e1ca230f32d5520d957ad"
+    },
+    {
+      "path": "specs/VELDO-0079-grooming-enrolled-decision-surfaces.md",
+      "sha256": "010e6f8e88033ecf8310b14683d6c7e001506903e39a909588c510dfdb97b9e4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b262d9e842eee4572049307b3aef0a5a93ee5be1ac5a11a0a4a2667c93898947"
+    },
+    {
+      "path": "specs/VELDO-0080-work-class-dispatch-defect-reproduction.md",
+      "sha256": "aa54c1a28914abecef784d7df88a1b53e3f7d38ee822fa909da929e580800845",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e6491898da38c4d8e196f15766fda094540fd250f24100af58fbc3cb6bf41cc4"
+    },
+    {
+      "path": "specs/VELDO-0081-quarantine-inspection-taint-execution.md",
+      "sha256": "ba4dfb853d222ba47553bc8217e5fd8e3a439d01fd7a402d0bf56b8749012616",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "997ea5cf1901daa0f877d2dd0fd594fd31c3643da3329b50558b7e13bacc5568"
+    },
+    {
+      "path": "specs/VELDO-0082-standing-maintenance-compliance-occurrences.md",
+      "sha256": "a7b94b3c7b4291b803f57f614fd571d912387157dbc0de403146a0e62ced8d31",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "97a517432c87cc058b3fe0c48b6dc076741413f88b4a8722ffb693203de0998a"
+    },
+    {
+      "path": "specs/VELDO-0083-security-emergency-incident-containment.md",
+      "sha256": "c9dd3d6b7ead033729f80d686e02c180d0511567722c2733602090bac5a8ba51",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "82166d40dffa1071bc05dc7fb9f921f3d26be8b00b5c33164ac1683328e58858"
+    },
+    {
+      "path": "specs/VELDO-0084-readmission-scope-admission-debt.md",
+      "sha256": "0e77277530cafeb43f146b8d0982276c9f953db02932285b715109e0a67ea925",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f1ed4ffa79a4e733ce5c29386aafef95ef3a0fbebf30ee592acd1f9d6b8c4f04"
+    },
+    {
+      "path": "specs/VELDO-0085-decomposition-concurrent-publication.md",
+      "sha256": "a88854009b57f5fd0ba88150e7cc3b058f8f3c71d0938c59a30de643ce3b60ef",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "806f20fd35601ebbd59b6b499b5404eeeb85e2f3fe47e9773968c100b7bf1a25"
+    },
+    {
+      "path": "specs/VELDO-0086-release-execution-ownership-contributions.md",
+      "sha256": "8369fddad872035a68e82a53d8f72f64f76ce2a8fb93e3ef2bdd91cfd1dc1055",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a6cb4a7c357324daaac942461427a4ae5436ec9556a7252fb42e50ed6becc003"
+    },
+    {
+      "path": "specs/VELDO-0087-project-dependency-invalidation-traceability.md",
+      "sha256": "ee082006f738e480cd8800cdd586c7a62fade76ecc2b5ca6218539e63392b369",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3b40a574b2e9001b9ac28727a9ca8c530d36bc7d9943095accd244a16d882d6c"
+    },
+    {
+      "path": "specs/VELDO-0088-project-manager-execution-graphs.md",
+      "sha256": "22d48c0caff3742ec1d9a98333b3d78c33bbe580a74cc3dcce2ed6b4ddbab488",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "cb11f550ad4e057fefeec06ac00fbc9761d7b58959e6c3b3df314034d341b702"
+    },
+    {
+      "path": "specs/VELDO-0089-versioned-team-configuration.md",
+      "sha256": "ede346438a6df7e55fd7e1a9eaeba622d17686655632558b30ff637a7ae0a052",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "4cb44749c179883ff3cd45e54348f8dff547825ebccb506a12723ff47137d56a"
+    },
+    {
+      "path": "specs/VELDO-0090-capability-bound-specialist-selection.md",
+      "sha256": "5298c85d3e648badb724c74d6e9c7452d26cb6fc151a5645c5cdc7ad91a6fa3f",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c94e54af48132a8910bf0b0760ae760ce60dcec10d61681e2a5e96adf28b33eb"
+    },
+    {
+      "path": "specs/VELDO-0091-budgeted-requirements-elaboration.md",
+      "sha256": "b10396062879e016523c6581641acc831cb4bf92036b09a001fa3c08d890e2ee",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "173f4a26345d720cac3ef28f54d0062f75f6b02d7fe4bb21e7b4f27b16a91afd"
+    },
+    {
+      "path": "specs/VELDO-0092-typed-proposals-authorization-validation.md",
+      "sha256": "6f19d89fdcae9e053e7dcc65e09e4d6b1d64d6d1d1754364a2f222a18449a63d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6546eb8380ef8e4fda0d31a6786734eb4c2b5ee37d614f11fbbbc56640a7ef08"
+    },
+    {
+      "path": "specs/VELDO-0093-project-cycle-serialization-checkpoint-recovery.md",
+      "sha256": "eb8848bc2b4ffb140474df718ce0700e4e9b2938b66b68fdabe9fcc417c9aac0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "5b19c6d18d7be8a0683a9d7c0620a297227a722eb151d02fcd0f557bde0a68c6"
+    },
+    {
+      "path": "specs/VELDO-0094-every-pack-installation-floor-slice.md",
+      "sha256": "fb4f0d5bed416d4c6360a9df3bb1a1362128ee379257eee276f1fddd4f56bf70",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "fb0a5e226082701aea12f01df90ab3a3665159baed7f80214c41001e62680136"
+    },
+    {
+      "path": "specs/VELDO-0095-historical-migration-atomic-cutover.md",
+      "sha256": "196c286b0ec5dafcececdf2caf5e3feec283c8467ec5767c7fa29c43f255b26d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ec75bbdaddce10fd13524b0e0d6a37cc38ae39888ea4c601868aa40ffee1413d"
+    },
+    {
+      "path": "specs/VELDO-0096-clone-principal-adoption-qualification.md",
+      "sha256": "7650ac7935166d8b11ce4e8721adbabf7fd9158f4a453701dab6521bdb9cdc32",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "83439e6932bf1246a5fdf491fb9d1ab304e291d25880d04b8c607b5d15316a6e"
+    },
+    {
+      "path": "specs/VELDO-0097-operational-recovery-scope-revocation-lost-ack.md",
+      "sha256": "682341bcc066fc9afb3a9e9ed65731e214197c7ec1dd61088633c16418e50fd0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ef1be0b9bd6bf5a3f77028bf0d6d232919931dc57f50d8c4884076107896df26"
+    },
+    {
+      "path": "specs/VELDO-0098-rollback-coordinated-release-qualification.md",
+      "sha256": "40d34a7ed677b1fc6b77b63f26c8c16f4df7248d708839bc01fa87a04a9b1643",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c6af43bc649a0de0bf936d46fb7ff05e3187d32f52cff487d7278b317fefe7b5"
+    },
+    {
+      "path": "specs/VELDO-0099-worktree-git-shape.md",
+      "sha256": "38aad8483d40137f202fd113152ae8e13210b4a6a7966dd567f99e85061721e6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "46b83c20fccedf8bcfa2512ecc0b4622eedaca3181752f97ec85dc802036f7a2"
+    },
+    {
+      "path": "specs/VELDO-0100-landlock-write-confinement.md",
+      "sha256": "fa9289923c2021b475c1cc3c06aa360ceaec7fba5ddb5d2482f05bc938bc846f",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "427b3e03bffd62cefc9ac86fd99c150a835e9dfcaf72c0e8c8a599ef97b1b835"
+    },
+    {
+      "path": "specs/VELDO-0101-review-saves-reproductions.md",
+      "sha256": "9b6a89a758767401cad1bed365a902caa21f981c2b8781912fb46e10351097f7",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3efc8d9ccacc4ee7ff5e3595fa499ccaf64406bea4463616a1639a1a1ce4715d"
+    },
+    {
+      "path": "specs/VELDO-0102-capsule-runner.md",
+      "sha256": "14cb92bde5b25f3b92b6754b76d3ea9bf1db13399c675356ff95e3351bd992af",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "88199a7c9764cdc9263ae78ce52cb9f045897a9d3708a60ad5a7e4598918fa2e"
+    },
+    {
+      "path": "specs/VELDO-0103-fresh-assessor-run.md",
+      "sha256": "efc29a99d685d7ad08dbbe142b973ad046b2b2cf7811fd0b8595cc58835c20ab",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "9c6d4d3bf408131c52f200399c84e62bb21be21bdafaa45cbc00040d2d7291e1"
+    },
+    {
+      "path": "specs/VELDO-0104-proof-check-refuses-unvalidated-fixes.md",
+      "sha256": "d09902f3a9f9b0a432532110f0ae7b0902090d9a67b3036f63d4bad986fc95e6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a095b7229be3c3f01982f21f1434201da5c378a6ffe0874eb49afa9cc019a213"
+    },
+    {
+      "path": "specs/VELDO-0105-fix-validation-start-line.md",
+      "sha256": "24077b4fe119ce7f0de10c0499da6c6f2fa6266a81f4b745bffd5b68c8790301",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c44d74ab214bcb83fed6572a9484f302a608c1a2cb61c7861adf0bfd472222a0"
+    },
+    {
+      "path": "specs/VELDO-0106-policy-read-exactly-as-written.md",
+      "sha256": "06d5df6749d0b5df66fcce36ae58656c91dd89b9aca32b161f5dac2dda385770",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0821ec64285953af8e2088d07cda2e1ee991fa07f768bc088a84daa984c34abd"
+    },
+    {
+      "path": "specs/VELDO-0107-local-authenticated-ipc-routing.md",
+      "sha256": "2900e37c942dce546f1dcf8b706659cfe16ce23c3f2b1794e60048185ac000e7",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3079419e20222945ee555e2dd061931b816db814c4c754415fdd9d6c92fe8421"
+    },
+    {
+      "path": "specs/VELDO-0108-ssh-command-relay.md",
+      "sha256": "f08d91ed21dd7cd15545f11dd9e58f5037244138f387d66f353d4609f1ef5b09",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "1cb661f0ea6cf26e5da1e6c7de5c46d855637360dfbb2709373043e4af744777"
+    },
+    {
+      "path": "specs/VELDO-0109-authority-unavailable.md",
+      "sha256": "55be7ceb619c402319ba22d35e139ff987e6240595d6f06f8186cd02a6f1fd0a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6b07d9bb9ac6dc3c85d23fdcb17be00faa1ec2df71e88f8af9d0495902e17949"
+    },
+    {
+      "path": "specs/VELDO-0110-one-document-reader.md",
+      "sha256": "7216db1fee99d07ffb2baf372f76aba36800ca0741e3df87e6fd57d93997adc0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ddcfac9c90ecb3eb987f2c9dfd63ba612b967c8cb449b06b833472516623d420"
+    },
+    {
+      "path": "specs/WARP-0100-adopt-veldo.md",
+      "sha256": "dd208e0f30666e7e9d5102072523015c3de504d009219099c038e62d9801d752",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8e1478a572515d87cfe5b4d82e4dbbc3df165c3663500dafa4804c0024fee431"
+    },
+    {
+      "path": "specs/WARP-0101-plan-contract.md",
+      "sha256": "ba82343a899365ab02e9c4c960dfe0a8267d3ccd144de4176f9c4f51e2810f23",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3e41e44e850c239c9e7806c39c6a161556169c9c63e3824f7365af22b21be9fa"
+    },
+    {
+      "path": "specs/WARP-0102-plan-skill-and-lanes.md",
+      "sha256": "7732fe86d2dda4fe9db2cfa0e5ed77ede7145b7e63e8fc416e62862077d9e7cf",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bf9cbb53b1e999a7cd137799e17f74fdfdb33bcbb694ddc64ebe60f6180f3b6f"
+    },
+    {
+      "path": "specs/WARP-0103-run-plan-integration.md",
+      "sha256": "3f44d19c8000c147b501a9cffd3a8725ae7d5d67d78fed386080f271e6f715d1",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c3b50ab0c706b83f0e8d3a340c019ec0a55b8457ad6a2b304a7ce7d43e249978"
+    },
+    {
+      "path": "specs/WARP-0104-regression-mechanics.md",
+      "sha256": "14850365511bd2d41f9eb2c78732526f1ca61c5623035caa6f53ed5a9c37bf5e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e3bf3b3540a3133f0aa59be314f682c846fa0ef7d466bc599eb0101ca16ec433"
+    },
+    {
+      "path": "specs/WARP-0105-web-journey-runner.md",
+      "sha256": "c4cf2121af4c1eb50d1015354202cf1714f4276dae3017b8ccf13f079fa786c0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e888d649b2cc7fc5baca03bd22e1b38c3ac6b2438b9c6c2143f91046c7edd437"
+    },
+    {
+      "path": "specs/WARP-0106-design-token-lint-and-baselines.md",
+      "sha256": "d9cb4907079641c85c23ad2218d46e2bc4382df0faedc2b2192d8c1a43179069",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "06e0ad6adb06e5412554caf606830ebc4c5bf8d381e6a81675289596da514b5d"
+    },
+    {
+      "path": "specs/WARP-0107-android-runner.md",
+      "sha256": "8aa48011df9da8b9bdaf429e7773f6a36b913ebeb8242cb8fbf22922a62512ff",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "9f9410d1dd51f550b3377fae48d0594551cb8b6deb0d20ee16949b2aa3c27e4f"
+    },
+    {
+      "path": "specs/WARP-0108-event-envelope-and-metrics.md",
+      "sha256": "b5fc55bf74c370791b74ca820df6653909f1d20e1ee6b9d4d40c49a50fa82fe0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ecf61cc432ec69936b0c94bc68a65dee4224f805250cddeca56aebb340c9cd4e"
+    },
+    {
+      "path": "specs/WARP-0109-core-loop-closure.md",
+      "sha256": "0b3327c490f48b90920b0314ea2c6cb4057818b97cbbfc0458b25d03e4a8ebae",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bf17474d15776035d97c823c896f9414d6f640cbb193291c35a94da47f901180"
+    },
+    {
+      "path": "specs/WARP-0110-server-side-gate-wiring.md",
+      "sha256": "edf0aadd6c932097788162d0b4fb4cc368749bfb94022bd4433ada85ca030080",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c88f1186cd114b4108318ef609ce1b4f56df43fbb46915fbf0104c8c09d00478"
+    },
+    {
+      "path": "specs/WARP-0111-planning-layer-docs.md",
+      "sha256": "ab590a0e1d40f1bd7c49d7da14ff8233bc6978bb227184ac63411982fc963b65",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a5d76f036a82fca66dff41ac4e01622d80dd16e33950efac51a7e520c0cf9847"
+    },
+    {
+      "path": "specs/WARP-0112-dogfood-companion-home.md",
+      "sha256": "cd9c448af1079981b2645aa4c49a872d0302fc6bb0d49382a4434d984f517e00",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7c9abdc9215e568e90c108820fb4f5dc570ed3c1770598529a3e9463c4fdc0c6"
+    },
+    {
+      "path": "specs/WARP-0113-review-findings-hardening.md",
+      "sha256": "d576a9d6e735a9fb9da8a8bc1eb5278dc9a8ca4c1c933611ba466e0709a188da",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3a5e45ce39ef9963f8ef9213009bd555bafbe7c4546238e347c0ca7768424e0d"
+    },
+    {
+      "path": "specs/WARP-0114-approval-range-binding.md",
+      "sha256": "df8c0771e63c7057232c5d81a403ce4f2dae1614cd7ab1d877278d38d1a7449a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "84e9df0bffb9a58e4bad15fec78c2f2706c9af061b0298e9396e40239f25afc3"
+    },
+    {
+      "path": "specs/WARP-0201-home-aggregation.md",
+      "sha256": "34c2c94c1d5b5199e8ab23a8757f1f3ba918c9cbd6537942f50b54c7c4a8ac45",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "afc2092e5e4d9143d6882224eea9a71bde8331b5e8204e2ca4460dda75793547"
+    },
+    {
+      "path": "specs/WARP-0202-active-trip-selection.md",
+      "sha256": "9f3158b73288e9c9ccc9ace997b99fc7b2e04bb5ae9af4fece173301edb36ca4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bf6c2ffa91a675a90a6eb54dedb60179c1682fe3b794d9544fdd2eb4adeb87a7"
+    },
+    {
+      "path": "specs/WARP-0203-owner-scope-empty-grace.md",
+      "sha256": "a87f49d6f0f9728847a4feb7831e6596bc1182b9ca4c1a8ab06e5170f1860a63",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "365dde6d5cf1cfd1d4104098b3a71109aa2c32da8990ab0d099b4a76e6a95824"
+    },
+    {
+      "path": "specs/WARP-0204-derived-content.md",
+      "sha256": "3db7b15bde35f86f9df98dc1b13ba81d9b66d5a5b481ca0b684437c2b0c07a7d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "076f04f6a7f62db3283c05d98822e5efe1cf3953d3e915afb4baeab66e890775"
+    },
+    {
+      "path": "specs/WARP-0301-http-api-runner.md",
+      "sha256": "332a18459b6c51db233c3b7a4491e55ea7d4ed880a87fc11f386742814549eca",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "96ed46520fdd2e515f00c9213282163661c31f259112f51517e8bda64d97f7bb"
+    },
+    {
+      "path": "specs/WARP-0302-auth-authorization-runner.md",
+      "sha256": "565d2c28d373f2fb86f5f720992af4635a4c2ed2a246cf86cf68b90f4b34fecf",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "dadb7e4f1bcf9276e9b9666946f5e95ce3eec45f3215ecf57a15ee91afba02f4"
+    },
+    {
+      "path": "specs/WARP-0303-db-migration-runner.md",
+      "sha256": "be8e95cf3b90aaa9740120c2e816e50a8e2ccb4a459b10bb0978bb1b2bbd4dbf",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3fe01f1a89b9741d64fefed253f607bb1ba3aee2ffe93361202b5959a0cab1b6"
+    },
+    {
+      "path": "specs/WARP-0304-performance-load-runner.md",
+      "sha256": "494dad6e8c9824a75365a6e733a2b6de02fd73868a48244ebf9c085e8d13b76b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d20bff7b0c28c7dbfeadcb8ea54d2030e6a21d8648a1a57d05128cfad093e5e0"
+    },
+    {
+      "path": "specs/WARP-0305-llm-eval-runner.md",
+      "sha256": "a86ce5491c0ce97adf8e2e862c25105421b94e7281ee71f91eccca149fb33243",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a407dce3f28f4c7378669d2175b88cb8f3343a63b18f453147a92c25a8bae17e"
+    },
+    {
+      "path": "specs/WARP-0306-cli-process-runner.md",
+      "sha256": "e7b328070b66cd4ba1a38c09e82b3b3ce114db948f480c6f786281a65a2db753",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ec9c169e0e20d9f247bf624acd6c934025abe4803e5167009fb84bfd5296f1ee"
+    },
+    {
+      "path": "specs/WARP-0307-integration-contract-runner.md",
+      "sha256": "dc9c2045b0f121b7bcd1ce199c0e0b590c189d92b338da876fbcbf0f9f77c469",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "63063abe6a8784f7b7410368a6673246a5844ba12d6f49f48311f3efa0bbf79f"
+    },
+    {
+      "path": "specs/WARP-0308-ios-mobile-runner.md",
+      "sha256": "8321c5177c30461669db1e67366608c31383984e5cf1fb296fa9aa5fce9f8312",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "fde31072255b743c5113ed302662a25d65b184c6743dcad84eeae04be906a363"
+    },
+    {
+      "path": "specs/WARP-0309-suite-catalog.md",
+      "sha256": "aee309e3b7e2b8cd72ea4ff92afae1ca193d15db28cffa6f37beacc356b91250",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d80cab10f9312915ac7bc048e6349e92007fb98c5197d21a6de83b4144db35ef"
+    },
+    {
+      "path": "specs/WARP-0310-agent-loop-runner.md",
+      "sha256": "0630e5ac3a7875cfe6527dfc7b738677fb2ca314e256921a0f25068cadb6a8d2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b456c839adba52b9a0369622f10b6e0c757b5225c1b0bfe4d80a46052408e5d9"
+    },
+    {
+      "path": "specs/WARP-0311-contract-schema-runner.md",
+      "sha256": "228307bdd42a246a8886fee46cbce370f662e27d5ed04e8c124a65fb28ce5bd4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6372237438e0f4dc17f5f2efbe44de35d6589bab455bfb06e69bd5aed7b9b876"
+    },
+    {
+      "path": "specs/WARP-0312-streaming-runner.md",
+      "sha256": "da5d1863fe2bc1d43d27acbfb2872baae7fe627eecba165e44cbf7442b539617",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8ebabaff9d4ea4801b8bacb796f55558221981cb0f8a48afd328d16b4aa62aad"
+    },
+    {
+      "path": "specs/WARP-0313-process-lifecycle-runner.md",
+      "sha256": "1295abbce813b204f09f9c19bfe55a4d3c0e8eede3a6af2b93e1cb0fc385ea46",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "112441a7fefd8fa69b1d5c6e0c2c7393a481c1148edde75afda0fa4090762e8c"
+    },
+    {
+      "path": "specs/WARP-0314-config-schema-runner.md",
+      "sha256": "dc84afc1dd918997e581e8c0d6bfe4f37c3b12cc4886a4dc2a7071ce207168a9",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d9116f7a86adad2e5407b4a62bc966a88e741ff9403a67d0a2181ae8607f16b3"
+    },
+    {
+      "path": "specs/WARP-0315-security-guard-runner.md",
+      "sha256": "6fd442643df178fe1c386be8f3b2e9d2fc486d32e818d3b9c610cb102e613085",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "476a1fe4e22e746dcdd69629e73999311e048837007e5e67e07834492b4d019f"
+    },
+    {
+      "path": "specs/WARP-0316-plugin-load-runner.md",
+      "sha256": "04351303614b0772e5aafa627b5f04ab1ceb33683b7a51e8eef863cd4025c8bf",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "786c35fef4ecd1955f87476887725268884ddd87f4b0327d75812c2a9e9ba0ba"
+    },
+    {
+      "path": "specs/WARP-0317-sandbox-isolation-runner.md",
+      "sha256": "f64e7b6337d5e191dc2504d4ae4afb92e0a3bacc580f58cbabfa9804fce9f708",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "03e97826689c6383999eca7fc5fe4ae1d40e5a8a947412e83964a1525909ea88"
+    },
+    {
+      "path": "specs/WARP-0318-mcp-server-client-runner.md",
+      "sha256": "bfd5c69fe775311118ab621a27190562a0d79635844904df63b3ba892e2c058d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "df4304010ed07745317690bd0d956cddb08c6f16a97252be34dd7b3af3fbfd3e"
+    },
+    {
+      "path": "specs/WARP-0319-terminal-tui-runner.md",
+      "sha256": "83d0d9fb20bc1d5f0924bd6e045f2a8563fc03cffbdf53a6977f2b0a3fc1e423",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "99c7e0a7f3075d374b8429fe0ca2e5cc6ea459ebfd8a3f3164daa3e7ee45ba19"
+    },
+    {
+      "path": "specs/WARP-0320-static-guardrail-runner.md",
+      "sha256": "d40b44cdc59ec5e5b36657fe38e1c6e9091a8871daa4fda750a728353456c5ff",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "df59b2d7782526cfbcfb7322bed6601dc2f266c1185602af043f7a8efb420d06"
+    },
+    {
+      "path": "specs/WARP-0401-executor.md",
+      "sha256": "ad38bb678ab2a034370124d75bc90a195fbcbeaf972029b550f17c4db0202f6e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "69140b5fb994c6fb327b1a5e6d706e8357510c184aa6a2c32b5defe9867e0b9b"
+    },
+    {
+      "path": "specs/WARP-0402-veldo-init-scaffold.md",
+      "sha256": "4144e8dcd02ea8a2b94835babf324f829b5fd1e89cd11f45e2e14daa3c497416",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "dd0ebdac756a88e7f007e28cf1f42262c7909610a4bc47b5034a8e1643e00cb6"
+    },
+    {
+      "path": "specs/WARP-0403-lessons-store.md",
+      "sha256": "dfac14006aa2d1f3de5b0a1aef7f640b81aece02fcb3aba331452b8037f6c776",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "81f71989a9114b302421174d2bf039df83eb8fd452146e1d3d7ab6b2bd8d47ef"
+    },
+    {
+      "path": "specs/WARP-0404-metrics-dashboard.md",
+      "sha256": "e67c47ceaf682b46c101ec2f0caa2e77531cb95d88d142adf9171f2a533d06b9",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "2374c0cc5b3d0a85c510e496aefad92affdbc0b2921fd211721c78f78c6315eb"
+    },
+    {
+      "path": "specs/WARP-0405-cost-token-budget-governance.md",
+      "sha256": "3bf197be1630309737082447678ac89a33f360ca917b945e0c119f2a44611b56",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bdd876ca408a0138c69614fc232fe69a3eb22cd5d3f0c518f47d26eead8af152"
+    },
+    {
+      "path": "specs/WARP-0406-ephemeral-env-provisioning.md",
+      "sha256": "d5e25418b97b33cd177667f4635de6a9402e90c0382a3b3b08ed8e42c66da6c6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bb046544c9c674f71e8b8bebb770eed632d20f67c46a98e6e10c0f68f970959a"
+    },
+    {
+      "path": "specs/WARP-0407-release-rollback-automation.md",
+      "sha256": "e598356c6aea04cd841e5a71093f865c72cf90970cd3b1f657c08485b4c850e2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "accaa6165dec2b206963766db72c43a89b605206d6101210ccc3781fd34d548a"
+    },
+    {
+      "path": "specs/WARP-0410-release-veldo-two-point-zero.md",
+      "sha256": "2bcf81d79de90c30bb6e8a98603255ea16af3794bae5dfeee7ae801c139e2b8c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d5df2f6595e7378ecdd7057d18ca760839c228ab8b60ecc59dd54524eb0bc8d6"
+    },
+    {
+      "path": "specs/WARP-0411-runner-anti-vacuity-hardening.md",
+      "sha256": "35443582550291216241e5daa738e7e5494219cba77114b0ce069a8a53de5ff6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "97479636e6be657b9ad6149d225e262e36ba3cddb7dbf69a0fc2c9d34b72cff4"
+    },
+    {
+      "path": "specs/WARP-0501-run-registry.md",
+      "sha256": "d1a525c6283f5a4341964b195d199bdc417b75fd401fd03cbd356ea2deb15766",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8ff67c47e64d98a5e64df582b729d4e42ac7da11ebabfe0e436021060efea0f7"
+    },
+    {
+      "path": "specs/WARP-0502-run-wrapper.md",
+      "sha256": "784c6f2a45257742a519f977cdeba8fc73c2fa7e448f152b4c612a2fe1de5e20",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d6313ba696308fa3864a07dfeb12a54add5cb63f8abc10f2d14b77088a24f8dc"
+    },
+    {
+      "path": "specs/WARP-0503-status-reader.md",
+      "sha256": "d8a1a0ecd64b4934574eed47493fd067b324d3ec7310970d6b15e9a92fcf651e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ac6501cce74357cc24ac8870ca9746982366a0d467706ee395b555890f67559b"
+    },
+    {
+      "path": "specs/WARP-0504-status-server.md",
+      "sha256": "3d14b5a180ffb9700f93e1f04c3c02e2166fef984efdfe168e266fe419f2a04e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a9a5240955a31e5144e2589e109d96aeb10c259ae3814be86985e3bfbfcaa6f1"
+    },
+    {
+      "path": "specs/WARP-0505-run-interaction.md",
+      "sha256": "2cc74d3c23aca387d89ed575411c459e96fc7958d1b3ab45f81c218a8c453b79",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ae88473c619a4e114a5f93d2b0a6e3c3e27975498b798a7c2f0cf71b350b4279"
+    },
+    {
+      "path": "specs/WARP-0506-chat-surface.md",
+      "sha256": "bf7d545572bad08bde2558797267da5731d63f68b79891831b76f6908c9d77ed",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "90e2deb9afc41d8931f428d9ac5e18d22d5107ca51d209e609fae4d80bf3b2c6"
+    },
+    {
+      "path": "specs/WARP-0507-release-run-lens.md",
+      "sha256": "e105b03182e975783489e00c2ac25800e2994f9f80bea728f52b247298d74d84",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "22d68e142bfa4b71d20169ebd46c80486de612381afcd21122940c8834042492"
+    },
+    {
+      "path": "specs/WARP-0601-tracker-routing.md",
+      "sha256": "a64603f99c4df89f207455f501cbadb9ee7285bc96f811d37633a5254ef1a126",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "cb7d7d9fc4ec85be425ab90361565f16c2bc7f42ec3e6a993e421e6f71131a99"
+    },
+    {
+      "path": "specs/WARP-0602-routing-enforcement.md",
+      "sha256": "22ee21c043edaeeecfe80f7d0188e3ab7f4d02ecce3f23c8e4eb16e615d2af32",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "1d55013698e2cccbf9519103a4537e289f9bb9513c3dc9670b3c9a2a48fdfff9"
+    },
+    {
+      "path": "specs/WARP-0603-tracker-seam.md",
+      "sha256": "86e6d70c52b0cc0c89d6f9f8f2b51fe1685bafc0d38cd12d9abaa5492c71c3ce",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "58787a0f150dd7261df300880d9e7c97512fb92ba6e504fcd4c78fd4b78fd875"
+    },
+    {
+      "path": "specs/WARP-0604-jira-intake.md",
+      "sha256": "1a894a4761e22f65e7aca834d2eaff75d48147d03555437a532396090e1bb4e8",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "73352c5951a9ca774707d1c8614e1297ef9fc70b7a7b0dab290660bd6ab43f09"
+    },
+    {
+      "path": "specs/WARP-0605-spec-mirror.md",
+      "sha256": "590e6d5ef21dd046a5d8e8fbea9e562ab938e98b35663901ccc72635fa1833bd",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "af9426c2479b194a07fbf09175c69f83c066b0607664c326db1f68716225e7c7"
+    },
+    {
+      "path": "specs/WARP-0606-epic-mirror.md",
+      "sha256": "969de8a8cc68e1d5eeceeb30b836f615a18f13c6f5cc1a7af757b3dbe7892350",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "80c7e9fd9132617c462c97dba6e7bb61659d438abe62455d02edb5864f8d03d6"
+    },
+    {
+      "path": "specs/WARP-0607-confluence-intake.md",
+      "sha256": "1982749f929bc10048e01521c4805a44100cd3612234978cd3db9b2a93899eb1",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "085afdb5b296ccda76582d6e74e368c59ab176a93de033b8e491260a951d7260"
+    },
+    {
+      "path": "specs/WARP-0608-tracker-conformance.md",
+      "sha256": "a9bc8a40ae48188d06c34960683a19c0f35e06b9a9e45a2fc77a11fd712ae767",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8652b333a40806c8ebd50848214fdc0b1f135e01cf4ad5e09f8ae143ec6b98b8"
+    },
+    {
+      "path": "specs/WARP-0609-release-tracker.md",
+      "sha256": "9a8e3ee3e44cd27eb912f52f2e890011f65779f01809bbaffa21d72304dcc9a6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7c78b65a6ddd8ab2d42c1d0c3f451d7828a0e97c85bfed80e93910eae4c55195"
+    },
+    {
+      "path": "specs/WARP-0610-tracker-docs-made-true.md",
+      "sha256": "118c9594273c77ff2d26ca05a26c7172180855d37d26fbe35ee57a32b2b2281b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c807adc2b492f650f6a53b22584b37fde1912a4527fae51403305827d5cc0f28"
+    },
+    {
+      "path": "specs/WARP-0611-tracker-operator-guide.md",
+      "sha256": "5d46bad2f04b2549220685763e2893f0e73745aa5f01d221192685dcfdf85b84",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "1cc42f85ad154023967234102d248f58269cad11e5b636675ccaab623e54b5c1"
+    },
+    {
+      "path": "specs/WARP-0612-jira-init-board-bootstrap.md",
+      "sha256": "624dbf3bc23c43d894760bf86e213d40b2e90d5317e0d31eaec074d2bb8f2808",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6a16b333f1dd089348c52819b21f8b7e945556654175069d37e2064ec1872c27"
+    },
+    {
+      "path": "specs/WARP-0613-jira-snapshot-current-state-reconcile.md",
+      "sha256": "18798500ba29d5682b774afc9a2a14e7d561a217928f17c9965df8725a75b707",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "718dfd4b6c4a3c600c1dc07377c74cc02ebc7fdd52a2026e23d1c53f04570410"
+    },
+    {
+      "path": "specs/WARP-0614-fenced-agent-identity.md",
+      "sha256": "e5c55bbfcf546e37a00580dc70b5803291342f89cb0ed9a02b14a4194b1b68f7",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "943dc6643de89dbf89a8de373fd7f81be222cff2b597b99b44fae366329ed07f"
+    },
+    {
+      "path": "specs/WARP-0615-human-touchpoint-request-record.md",
+      "sha256": "1df7be4176c8d7b6c7612d6111e528b8c861330dd22de17068bc76d0e7635d38",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d3c17902c94f5f3a003dd71a6bd2f256b49b9d368998c502e6292407c165778e"
+    },
+    {
+      "path": "specs/WARP-0616-authorization-module.md",
+      "sha256": "cee3daa42acf561c879e1a6b737c16f2c14ad71b397b36c7b8c31877d0b3230a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "77a21b107bf112ffdba0eb26ca69e4812148b1bbcabd0748836f25cbc2beb724"
+    },
+    {
+      "path": "specs/WARP-0617-outbound-decision-projection.md",
+      "sha256": "41eb462226c0e922e0a7edd0624286b9ac4e6577b95413e8e6560cdb6d989e09",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "1ac154c4fbaee39e47b27f3994aa1aef0227ff3c6ac4a679969444233a3d7a4d"
+    },
+    {
+      "path": "specs/WARP-0618-request-telegram-doorbell.md",
+      "sha256": "7b0e747669067538e8081dd8c564ab79b0fead3e343e43be00794abc10b4538b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "dde25485bf36500b54a99eebe478d8158c769bcdbd3d42f05695f61e9127f1dd"
+    },
+    {
+      "path": "specs/WARP-0619-request-inbound-reconcile.md",
+      "sha256": "1455a0c0814bccc22e973c576503bd751808876b9349fc5a93e39268a4edaaf8",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "db67f677c2094cb6f81fd50e00c6dee71295291f19dde6f7e0bb89ba3fb17feb"
+    },
+    {
+      "path": "specs/WARP-0620-live-sandbox-proof.md",
+      "sha256": "71a01973fd2f15b8814eb091e05deffc5f3d751360cb815af4e15e6ff34f9f7d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "805fa0aa6e2f174c7340cdd5089d55043442091ff8facec7eb4df468d214d858"
+    },
+    {
+      "path": "specs/WARP-0621-risky-action-execution-binding.md",
+      "sha256": "534b226e5a4cb6dbe94d12364bbabc4697b2b43848cf0f02b1426ea681ef93b2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "21b13ff283763e6e325207a2aacae9d5b4a1b94981c9da0a43dbac1893a3c784"
+    },
+    {
+      "path": "specs/WARP-0622-conformance-no-bypass-release.md",
+      "sha256": "e3c9c8b0b9a474bdde0cdb5e3339f8494d7763a00e8d5ea53573f72a183a6226",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7123974635d2efe5e4d8686ae3433b4226d8b7274ea5d7e0c13f02e7da177482"
+    },
+    {
+      "path": "specs/WARP-0623-live-provisioner-name-collision.md",
+      "sha256": "cde660de6d8001074537b4de698e207f32dc1411f247c1295d0bed53298ba9eb",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3696b0324e5d1e467825a0aa7baa5921fc49ec47d5f80b1322b336a9a4152794"
+    },
+    {
+      "path": "specs/WARP-0624-machine-actor-structural.md",
+      "sha256": "9a2917925ba49b91c25862057625cb3e8b346a2b016c63d3ee1b4aeb6c21dd6d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7ec9b784808205735e1c63a0651b2ffec5cb909e09c4b80d979cc78010c2e28c"
+    },
+    {
+      "path": "specs/WARP-0625-live-changelog-reader.md",
+      "sha256": "9eff7b631c7c1e053de5335ac2b80805ac13b9f16d96fb20cb28d3f5d18b6b1d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0549c0cac9d8ad9f71a23a7ec54188b748436f4af72fc0488d9679d810dff9bb"
+    },
+    {
+      "path": "specs/WARP-0626-shadow-check-covers-the-class.md",
+      "sha256": "e07078aeefe290ee2dc6c2557cacf9f890f23fe960cd812edd5020512cb2b2e9",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "da9b4aad0311ec10ab44628b3bad0d50569cb06b9ea3ab39ccc56811c29570ab"
+    },
+    {
+      "path": "specs/WARP-0701-claim-ledger.md",
+      "sha256": "c4998b99adc572be818f717c1c99cb85e59d5b019a6ff4d6b840244db0598922",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "60f8931bee4867542153ef0b537c4b8e39aa720039d84e9c4d1b67d003618a95"
+    },
+    {
+      "path": "specs/WARP-0702-claimable-frontier.md",
+      "sha256": "9e6f5e3f6de27a943629ff18f9413c0840a04e6eb3f29770c674270ae27b1152",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a756dd273899d029f338c19c809a8edcbe5f916640d541ff43d78a01d3810ba0"
+    },
+    {
+      "path": "specs/WARP-0703-work-loop.md",
+      "sha256": "8e27f61c80830146b5e9c97147b9e513d57de0975735f91fcf190c3c48e6d787",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7b0a9dde9e872b7be13fe970f24f3e3f22283e3f9c873581c729be26813661b3"
+    },
+    {
+      "path": "specs/WARP-0704-serialized-lander.md",
+      "sha256": "e843a951cc024e5cefa42deb7918ac75616baa4f68acd9c6996bcd5c1da4de04",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f3143b88e169768ca14c081b47678acd79597ac5ac76d91141a9e7c01bbe9aef"
+    },
+    {
+      "path": "specs/WARP-0705-env-provisioning.md",
+      "sha256": "29d635bc14a5ad0300bf0ac8291f12927838d40bf321b978a30a27802bb9b4fc",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e9ab29ab7037fd029852280ea1167bce04247b6c4a8939d5277f0674b2e76b95"
+    },
+    {
+      "path": "specs/WARP-0706-token-governor.md",
+      "sha256": "57d197b27ff925c7e3e935c835f7b66df0cd7ae9882e40055122e0b06bd54a63",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "2c8ed2330f262a71e0b1db80001b7d29e06cd432f1623f7dcef55b9057b478aa"
+    },
+    {
+      "path": "specs/WARP-0707-fleet-launcher.md",
+      "sha256": "1b976f6ac17f372c2f220752d6a46bebd4a7e4af2900346594f68c4fa987e532",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "2d4e293098c3a16bfe686f0dadf258a1e78918397b5ab0a8e6ba20eb093feca8"
+    },
+    {
+      "path": "specs/WARP-0708-release-veldo-fleet.md",
+      "sha256": "c7377f88163cb641c04fd5cafc45f3de681b0c14e9d2a365fc13232ac00b7fb4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "07866640ca9b46a51e9c8f60ec1bbedcb271d78ec2e473a93abe0c208faf1c73"
+    },
+    {
+      "path": "specs/WARP-0709-readme-comprehensive.md",
+      "sha256": "8fcd92e8d33598f885962e58a9f4603bb10361eaaeb21d5eb6859b59246e5f63",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "11bf80f98b9bc1206230734c3ffe53919b4c9f5ff1dd5b15aed89b9134a53a19"
+    },
+    {
+      "path": "specs/WARP-0710-claim-race-hardening.md",
+      "sha256": "2a5a77132ae5e4a43b687a2c0e7bbacd12281d6e7df43ed87f6acdbdecd9a703",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8fc4f65e4031ad65dd5c890de543b4d3b053019c91a65441ba4e45161a37dee5"
+    },
+    {
+      "path": "specs/WARP-0711-lint-one-interpreter.md",
+      "sha256": "0d128cfe2ba3ebdb75c9172187a4e342ffc9698534d6ed0cba1819b5224a72f6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "36528d3c1c5de19bf65772680f8971de2ee02fba1e2732f1413472b395d82ca8"
+    },
+    {
+      "path": "specs/WARP-0712-suite-decomposition.md",
+      "sha256": "09844598355b57b7e33c0ec3359383490d1b36996aada8e2fedcad4c91d2a84e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a87b02209cd343cf9e0cc225e8c50595d55f2672d6c8b6c4caa313b2babe4a44"
+    },
+    {
+      "path": "specs/WARP-0713-mobile-runner-injected-clock.md",
+      "sha256": "015fe368b08a744351b58eeae6eead13767f392074396aa406e76955303d8c98",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "de03baa68a1dbaad9bc3142ee13bd45cca7bbce8cd1122fa80d422cd5ed371c5"
+    },
+    {
+      "path": "specs/WARP-0714-compute-once.md",
+      "sha256": "439e31843b6e1368ac3545f3e165bf342ff6f1da92a5fc2cde0c36612d4818d6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ba7a279f809078b3d56f5952036a511d4c76a74d607c97a96ef5cc55ce99030f"
+    },
+    {
+      "path": "specs/WARP-0715-process-fixture-windows.md",
+      "sha256": "2e2d0a9b9f55c8454336c7358ac85ca06c2ee2150589201e42c0026a7805fe33",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "758015fb4df2ef2259c3a2dcdc890db3516682f2e6096a8bd8bbfe576b4f13ce"
+    },
+    {
+      "path": "specs/WARP-0716-enumerate-suite-crossing-state.md",
+      "sha256": "117fe25a814c74b5ac03f610d3780ecb523372fcfa487858b22e73640ed1cfed",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "1288d2c9048af0ed19488f5a5342922918e9da6f5461cfdd2bfbe23038b293e6"
+    },
+    {
+      "path": "specs/WARP-0717-subset-runner.md",
+      "sha256": "25335f0fda23a52db693bd990eb76b5be6e5204321fcf875d2672fbaf57cf1f2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "fa1134c0aedacda0e08bc7b11d2133e1f6a6104e405ce0669e02f5cfb0bf87e4"
+    },
+    {
+      "path": "specs/WARP-0718-credential-supply-codified.md",
+      "sha256": "59aff7d81cf244848cdd567bf870abb109474aa4ff6142aa3e56c5f37e2838c1",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "5d56d4732bd412a4a8342d4382a9a28746fb2238fd80e102c989e9ca51f1eb90"
+    },
+    {
+      "path": "specs/WARP-0719-quorum-degrades-loudly.md",
+      "sha256": "c10ad95ee5c29f1fff32a899e12f5e952a16b4f9068fbee378a1092f759646e1",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "4260058ebd00e51edb5e9d69417f247a1f94b2d520551b0071282e3d1714d810"
+    },
+    {
+      "path": "specs/WARP-0720-approver-registry-declared.md",
+      "sha256": "c446e0075dcb4b74517848a029b980a6400acaa966d61d5c5493cf72cf468291",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f57444f09e252730c03b9c0215ec80196049f415807241378a113a84d97937c2"
+    },
+    {
+      "path": "specs/WARP-0722-review-events-derived-not-appended.md",
+      "sha256": "061fdf006043eda4d701ecda397dfb9ac3dc144b5d8c8202d84f3f288def3bd1",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f21536441fe49e767500aa01348c231a178421a60110b4ed063f5160ed99be2e"
+    },
+    {
+      "path": "specs/WARP-0723-reserved-envelope-keys-refused.md",
+      "sha256": "553edadbd3b3edc54ad1075fbc09d657c0564c1a4c8d228c0ac57847f8da84f2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "24baff7b3549e076559ca1aa304f63847c3bfb496ec9847d54521faf273ebe72"
+    },
+    {
+      "path": "specs/WARP-0724-frontier-honours-declared-dependencies.md",
+      "sha256": "3281a6eecff3be5caa3645c71bfd2ce4f2c279ee2f81892ad4aa4fcf07f7c962",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a1420ac8eec6dcc016c6d658566eecb5fb34094f897dba55ebe708f3b9ae497d"
+    },
+    {
+      "path": "specs/WARP-0725-entitlement-is-the-projections-domain.md",
+      "sha256": "78d00e883c61c9f64b029e05ee4bbb14959e77d962d0eef1b0b34527fc463394",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "9b812808db9ff6428dd97dedbc8b5ef010991a184a1720212d8528a392f0b871"
+    },
+    {
+      "path": "specs/WARP-0726-withheld-reports-every-refusal.md",
+      "sha256": "c950c8664b28b09ea4fe7a1f5a59954a8787114db05bc0d70707be94559ae9d8",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8d510816f0b6df21a949219c8ff398c82c796d11ef55562ab15abd6200a332fe"
+    },
+    {
+      "path": "specs/WARP-0727-one-enumeration-for-the-domain-and-the-validated-set.md",
+      "sha256": "55cada22bab24b6e7ba28af1152e2f16c1d5b968f03cc28f3bd3d41bb57ef727",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "9d8d04f643cec1fb93c4e7638bfb8bb6087545a14f5b3896471bf157deda298d"
+    },
+    {
+      "path": "specs/WARP-0728-keyed-bytes-are-the-validated-bytes.md",
+      "sha256": "3fd50e06e9a5a09e7d6fd2fdac7cf4f7d667a62fbc4fc617612ac844291553b3",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "16c9ba8c9faab45d76d88441da5c6981388a15ae6e838ca7fa8c6f4db13acbe0"
+    },
+    {
+      "path": "specs/WARP-0729-footprint-globs-must-match-a-path.md",
+      "sha256": "fea17ad0838a89aaccb3003fe6354526ffdd264649b483dac7610e8a67c10caa",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6210ceb76e0e0b2e246a519ae556434d209b9cdfd5e5e421ab370a416d8b715e"
+    },
+    {
+      "path": "specs/WARP-0730-verdict-authority-leaves-the-agent.md",
+      "sha256": "82431377884ccb37e0706124b0e28b41ade97cc5edee4e6823f53b0fa6531467",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f1ad7ed8caaf4f734c0421082019c29985db03a01fe1f0c15b2166f66ccd0940"
+    },
+    {
+      "path": "specs/WARP-0731-delete-the-forgery-guard-machinery.md",
+      "sha256": "a46b42d621e4b4c3dbd06ed0173e36dc31485a350524c4e6c811f3934f708cd1",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "4f47e2e5552f80fc9ed595ea9d757cc047c5825955f88dedaf005dfa2d1e8b2e"
+    },
+    {
+      "path": "specs/WARP-0732-blocking-findings-stop-the-merge.md",
+      "sha256": "c03bfe77278329a30f21aa346d8d4443dc16f878ba027221d0af4b303aa82c93",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c8c7a80424d9a35a4e982667853e25de494269ae350e79e879640a9989df1027"
+    },
+    {
+      "path": "specs/WARP-0733-spend-recording.md",
+      "sha256": "e96c8a691085cb5bdb647013bf4dcf58d5d27818680452f10e58534003a61df3",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "77be6d123e74af95615e87be8805183468a939378ca6ad240255cd8a10d24e01"
+    },
+    {
+      "path": "specs/WARP-0734-no-undeclared-orphan-specs.md",
+      "sha256": "ef98fe34e7fbaa6d1d8dcd723a59d3cf7bf841f27d302c71ce002869709f6afc",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "5058edad27a97349ea9e3875f66ea3dd664faa4df5a0cb725a85e1ccaaddcfd0"
+    },
+    {
+      "path": "specs/WARP-0735-docs-area-in-the-architecture-contract.md",
+      "sha256": "99221363ed74b8cc601143a6e606fc79e2cac01087f106df2225eaf563b229c8",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0ee5e9920894447c953eec19500c4b1b493d6b672ac4aa94f256ba7b87b4de20"
+    },
+    {
+      "path": "specs/WARP-0801-pack-engine.md",
+      "sha256": "ea32200ec8ec97566d58e313239e025e802f2d5baa1c754e92a015c01192225e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "7b62ac7d475af751407ebfa0bcbb3aecf1fc3fae27b8b2d1efec36a3e7d1e03a"
+    },
+    {
+      "path": "specs/WARP-0802-claude-pack.md",
+      "sha256": "697e7bf9d92c80127e9c41f3edbc3e5767011c1a9a86a6e196d0c6aeb5a26286",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e6aa83c16529a86039a1881068d511f4a7e082f3c26157a26238679faf837c8b"
+    },
+    {
+      "path": "specs/WARP-0803-cursor-pack.md",
+      "sha256": "c95fa6d749f56bd1591225dc5278b4b29465d85e6f9f4fa05092fafa9dfd4deb",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "2d7d883635ffbf788688f27dab5f436fa6af1b52ac3f39a6f5e8e7b786971929"
+    },
+    {
+      "path": "specs/WARP-0804-codex-pack.md",
+      "sha256": "ad6ed3d42e29b35597eb5d9197649eab4d474dbd35eaa71e3d2ab802dd72f387",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a212fc923fc93e9f4dcdd43ef891ac0e27d7f941a1138fa70918c2052c35fa83"
+    },
+    {
+      "path": "specs/WARP-0805-copilot-pack.md",
+      "sha256": "62048cb0efdd74e31b39597485afaa96d7e59035b9b317ffe86eb65fa0cd85f0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "dd9360b7a071397996c93e17b3ed92c6d3600c7fceff5e7444a4d077bd304e5a"
+    },
+    {
+      "path": "specs/WARP-0806-antigravity-pack.md",
+      "sha256": "69f893b039ee219ac6ce60900c6555dc73c414359d5d4385888cc2d83e830500",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "9ec708c8244d181396941eba807181b9cad4468a90ade168c52e8633598534bd"
+    },
+    {
+      "path": "specs/WARP-0807-opencode-pack.md",
+      "sha256": "2f63239d4a1a0dd8b14e59f3e3b920afa2cb68dc6a5575ad325064a84ea14704",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "00dc6eded35b5f2b8096b87635734ccb932bf8e7254fcd73366dc7ab24c86ae6"
+    },
+    {
+      "path": "specs/WARP-0808-aider-pack.md",
+      "sha256": "a90a88ffb6decd8046b24a0c08a4ba1f9449a1cbfbeef257ebc682c7c846dd80",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d920db69747da83253dc6f3d6f70fcc68988f6bdc5af37d444d2b22030ac089b"
+    },
+    {
+      "path": "specs/WARP-0809-cross-pack-conformance.md",
+      "sha256": "224cc39497d281b47a96b01f8a94786fa0c92fd6bb1f2e574136fdfe77c22ef7",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "21aebded91af370a4c24ef97288e1df1841dfc7e1dfeb15f685730a3e8849efc"
+    },
+    {
+      "path": "specs/WARP-0810-release-multitool-packs.md",
+      "sha256": "81b10cd80e0a6792c267088f34af7f8925b9d682e16ff684376bd470919f5a5d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "94eed0610de5c22833ecd2a4c6918eab61dac55a01c66206874890ad13556cb1"
+    },
+    {
+      "path": "specs/WARP-0901-real-dispatcher.md",
+      "sha256": "806e1d7a21e225abf023265de72b03e2ad02c0207f6fb5f70155f5b503fd9287",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "2a6652dc536ed344ff818e8e6fea0773db0ddcb4d3e4d6fcb16f4f60088020c3"
+    },
+    {
+      "path": "specs/WARP-0902-worker-spawner-accounts.md",
+      "sha256": "acba6a812559fcc573bd60989c0f64f851918a8e4ed4f8030adb449c53e641ed",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b64b1c23ba413b58cba80848c327621c800822d282902f7093e594bfe54d9562"
+    },
+    {
+      "path": "specs/WARP-0903-per-account-governor-resume.md",
+      "sha256": "4592be50822284a1710e68a3ee033946e7cf00a7fe0707dc47a7601443b064e9",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "166ac13baa8f8e712cfcbc320fcbdaf3cefc1eb9570010551179f8c7600934a2"
+    },
+    {
+      "path": "specs/WARP-0904-veldo-cli.md",
+      "sha256": "182e3abd5f2239da3c6f563c380147038ea0a1c2c9d962fb0581ca4169266970",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0aa753cf9acd26e61dd2de694d8bf0678c9fd333aa85b473e3924eb3f4ec84df"
+    },
+    {
+      "path": "specs/WARP-0905-ship-fleet-in-engine.md",
+      "sha256": "4ce6ffeb09fcd8f661c2add38f43ed7cf31c6a32cb3c54b45dc034c514bdae47",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ccf3b5ab30c11c10d590d7f322a3a6362b5a3b79cae94b6b60f04c377eb7326a"
+    },
+    {
+      "path": "specs/WARP-0906-docs-made-true.md",
+      "sha256": "903aef6261fa70bf693d2fa31646a69a7f9de6fa63d33ab75351df726832b5d1",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "4a425057310280469f7a0795bb7d4bd25f6077094cc4a4c554be1403d54ca65f"
+    },
+    {
+      "path": "specs/WARP-0907-fleet-supervisor.md",
+      "sha256": "485c25e618fac6c68547e3fc25cb6e09b558281720a002b23cc2fec3bad96279",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "18995f57fff55f2173fdbb828e3a5d7a15ffc83783308f90bbabe859726ffd07"
+    },
+    {
+      "path": "specs/WARP-0908-release-fleet-distribution.md",
+      "sha256": "27203314a4eca3553f0502d0ac3d9eec8a28f8ee23e7bf459d8cefd7f7c9c1c2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6390c886ae362f00ca2bae86c21318b856d617c3d593316d681b47374ca2345f"
+    },
+    {
+      "path": "specs/WARP-0909-clean-context-dispatch-loop.md",
+      "sha256": "28894325afe8563d9113cc4adb8ac0a8081edb2fa2d83f6e6b49d8717ba8da0e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6912b928d009ccb7df7e6ad97c8618854b8059a68e9ddd72c01bb3943a396e1b"
+    },
+    {
+      "path": "specs/WARP-1001-eligibility-model-and-agent-user.md",
+      "sha256": "914db9097104c6c3d0dc6017e865a032eca13e96a9b3fce4142fd22794de89c0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "453d006db799980cdcd566bb5e55023f3830030c745514ec267bac297d46adca"
+    },
+    {
+      "path": "specs/WARP-1002-inbound-bridge-draft-stage.md",
+      "sha256": "2ee85f7c5473c802b9f9ce66c9015ba10fd5fae1e4514aadc88c232a5a3b4aa3",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3ad6f0634824cbff199a11c7a2e84dbced1f1ba954728c012369ed61ff0546b9"
+    },
+    {
+      "path": "specs/WARP-1003-promote-gate.md",
+      "sha256": "2c7a5e1fbbb4b71d84ac652f3997cb1246cb8823b5b56cf8ece76e3896390a64",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "131a4d8cb08e025fde809e3324698f6ff4f7462187b3657d3c6509cb2ecfd450"
+    },
+    {
+      "path": "specs/WARP-1004-reassign-and-artifact-links.md",
+      "sha256": "ae29b1d52041c217c43079c2cf44ea93b5cf03486ed13c3cf6f2e95892077441",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "72c6f305ba3a3f8e2c470c5c38262e5dca55ce54be33a51f074cb233972618ec"
+    },
+    {
+      "path": "specs/WARP-1005-live-mirror-runner.md",
+      "sha256": "3471fd8a7de0237bbb427902fec03cfcb1c631a72baf7aa5cbab029821a02769",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0bf5b299b23bb8de4ffe7ef9d801cb674324f5f1ec183db7ec1239e1c36fdc71"
+    },
+    {
+      "path": "specs/WARP-1006-live-epic-child-creation.md",
+      "sha256": "131cded24b23bea969720b1365e8f6a0817651a307e8397c0d810af293fc6f4a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b352e21cbef37cf322ab680dfa84f44a5c1a79a18ef97df79674c4800dc7bbfb"
+    },
+    {
+      "path": "specs/WARP-1007-doc-to-plan-generator.md",
+      "sha256": "10b353ee8a823ed3cd356bbf25e305e5e34d9278bba37c5586731f9afac483d7",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "fc5cc8f9199a7999b51d4cac2fa81c6cdb802378e4ed7eeaa35b0090d91f7d21"
+    },
+    {
+      "path": "specs/WARP-1008-release-tracker-driven-fleet.md",
+      "sha256": "9f33d20b0d4ad1739c45a81a190f393b88d6a743f2e6a83af8a1884caaf4c17e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d38db4f6598504f489245d7da193dc26dec4e46d66829640973c9feed4e4cfab"
+    },
+    {
+      "path": "specs/WARP-1009-docs-and-state-made-true.md",
+      "sha256": "d3af701537023d0d2885119b5f5a2d34eca7e23e77337643de4ef4350ca77303",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6858332c9b6163a4b3630a7110de4d88c9f59eaf3d6991f81bc5d99d29ce8bdb"
+    },
+    {
+      "path": "specs/WARP-1010-real-in-session-worker-spawner.md",
+      "sha256": "60263acd7a462556ed0e335f4914a40bc37ac6f7944ba96f9c6440b800102343",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "50b960462f72e01f86cab6049f18f4b977adebc4a549528dd74916aa44e7256c"
+    },
+    {
+      "path": "specs/WARP-1011-refine-footprint-tier-boundary-crossing.md",
+      "sha256": "c57e9b2a60df0e136dd8adaf39f43ef65dcec5940629a88e9dec5556963e0041",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "1488741ce95ef41f902b06c0ac52b5d7aa81e5daecaab31a1ae96687805f2d46"
+    },
+    {
+      "path": "specs/WARP-1012-restore-validate-under-budget.md",
+      "sha256": "19e13ed79d2047d4d85fac54a35126e2eb2c70589442e0af42df7db1473e7c73",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "055636ae26837c31a747ab3cf4f7eb1d9a42a113b6802508b09d9bbc583c27d4"
+    },
+    {
+      "path": "specs/WARP-1101-architecture-contract-and-validator.md",
+      "sha256": "cc3fd717c6063ca920c70dea9811e798a8c75c7d5a0a11577db982a1786a9ef0",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "39fa9e8e4a73e12bd5d3d94bb9f92232d0fc7b06c3faaf32b571ef82e9b817d7"
+    },
+    {
+      "path": "specs/WARP-1102-gate-shape-enforcement.md",
+      "sha256": "4926d0b2b37e9914a2e694d453d43cb539ea73b9a3251167ca1c9b97806be159",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "cc3117f1fc2b8926feacd16108f68f662a8174c8566d2ccc3f1f63982d64f353"
+    },
+    {
+      "path": "specs/WARP-1103-placement-and-footprint.md",
+      "sha256": "4bd9520abe36e9040cd2bb5363f5a4113c087e1de576b4e338dfe7f35ed1272a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "798077afabc34edc98001263f5fa731f070dd02f15e57ec005df9ba439e43ec1"
+    },
+    {
+      "path": "specs/WARP-1104-shape-fit-review-dimension.md",
+      "sha256": "44ceb55385d0b0f168b7a173e167dedeac2af9f047c0a5be11250938518bf996",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "1da560548a532c29fcd8f3e45a7be96f783bbe98f9dca07142df64b605802673"
+    },
+    {
+      "path": "specs/WARP-1105-foundational-decision-record.md",
+      "sha256": "034ed4c151a62aaf15b0fe7fb7b27cdd591a5eecaa1bd52b412768a2ded16d7e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "480eea0e9266afc205f292f2cc50487e935a4cd13865eb37225c85f20799b605"
+    },
+    {
+      "path": "specs/WARP-1106-adversarial-decision-review.md",
+      "sha256": "f882f499e5226d8ca8bd5ae4f99320430800cb4b88352f990193701b0da5caa6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "4d2f8a3d95eca6c8fae9cbaf118086fb7821341c6d647efe278bb5fadd359663"
+    },
+    {
+      "path": "specs/WARP-1107-decision-tripwires.md",
+      "sha256": "8f1dd4abf762514345bd5ae7db2622b28a94d5d9774d9d80f1605ccf18e1e9f4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b952a4601677e9b31164ad728b259f914fb275e823c9ca843ffeb007562b32d3"
+    },
+    {
+      "path": "specs/WARP-1108-entropy-metrics.md",
+      "sha256": "5d6095a75713b6ab4e5d321f9b01324b5bd1e7234a92fe4caddb58c43becc996",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "28bcbedb937b6d65c43b8f5f97b694e73e7397a687666174e6c3caead7d9e884"
+    },
+    {
+      "path": "specs/WARP-1109-restoration-spec-generation.md",
+      "sha256": "5053fb21a2e187e4cc24dee4b1b35286d19f1c982c5d314a8816b63ba799556d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "fd909a1f9c9c1d40dd659f1fa032bc6eef66146478ced2118243b7d6a366ee60"
+    },
+    {
+      "path": "specs/WARP-1110-release-architecture-maintainability.md",
+      "sha256": "c68e9f9e16423bfc17abbab8b2ebdd646742d7bd56d359bae2d70d4afa91811a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bcb2ceaa1c78f43d6c67d21c5d5ce65ec5757e837a199eeb81988e4c218e71c0"
+    },
+    {
+      "path": "specs/WARP-1201-incident-and-remedy-contracts.md",
+      "sha256": "e86397635dd7f6de1666612456234f92e649e22e4f2268509d49e2790cf84c5b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "41e535e8f27bc083a7dbe8419f170d6bacac829e8ecb68765d191f15eba7ed5b"
+    },
+    {
+      "path": "specs/WARP-1202-the-evidence-plane-access-physics.md",
+      "sha256": "5280c4616ead7b1b85e2ddeaad81db974e891155c6887afb4d36f285f6539216",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "49916da30b054322c499de756d717d3781734aaac7f032d9159a95b444408d72"
+    },
+    {
+      "path": "specs/WARP-1203-the-intent-corpus-at-runtime.md",
+      "sha256": "984f77ec0f42fc10b21969273a71eb77bbe377eb1652a357752aac77cba5e03e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "0a5014936e6278123de86717cd8e89fc136a626c63869458c6d31f3b62192c45"
+    },
+    {
+      "path": "specs/WARP-1204-the-responder-investigation-loop.md",
+      "sha256": "f7778b993463f031b702f2dec8b9c9fc2752f24eea52d18d9ae29ab52cafe596",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b01ef303c8262f08c82a5f0649bbe7e36fe868ffdc381e1c85e4f2519e90dffc"
+    },
+    {
+      "path": "specs/WARP-1205-the-action-whitelist.md",
+      "sha256": "b7390d2755b0aaeea2242b124d3bea6dce0a378d74ec12a101dadca0909de255",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f351450cb0607346b69b7fde792e05a48a72b5068b1939550be8ad1ac3010553"
+    },
+    {
+      "path": "specs/WARP-1206-the-execution-organ.md",
+      "sha256": "970d315ca4b62afabb9a339f6b7f2c53fd3fd999cc45b85d66a66ba4cfd7a992",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "d64b6e0d200d8e114f950abbd31ccbc69a03171904d0d0d49d0b4796c2845b64"
+    },
+    {
+      "path": "specs/WARP-1207-the-two-key-rule.md",
+      "sha256": "0780d01cf76da0117d0e0bfbcbfa99ab51d290ebafba8610c38f2bfe7c88f996",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "19d362d0c264979b87a21bb741ebb87e02a667599839efae9a2b98d89a495943"
+    },
+    {
+      "path": "specs/WARP-1208-incident-as-intent-and-reconciliation.md",
+      "sha256": "9b7163b345b652a941777d6769ba0ed240a6965c582736ec2af6b695a62ddb1d",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bce53877d09fd5af257b886debcc86ac6e3f5d94e7a76f9ec70217036e63c7b2"
+    },
+    {
+      "path": "specs/WARP-1209-diagnosability-gated.md",
+      "sha256": "c9dec39cd61f33a7dc55c561ec6d51bf96806e4f07205450b3c33b4a292b3382",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "bed179e78c05d99766de4761606a010ecca1f5e1de5f7e958f6146800e0b6b23"
+    },
+    {
+      "path": "specs/WARP-1210-the-support-numbers.md",
+      "sha256": "f3c0734d774a8abf3b35b271aef4c71387fbb8328e50115b3134722453b8f37f",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6f045d37c5d46540e2ff85cdd6571d1da4268f3bcbca88242c90c59276686132"
+    },
+    {
+      "path": "specs/WARP-1211-production-support-release.md",
+      "sha256": "8c9d9b2aa742d3162fc3342b2990dfd9a875f6ad934cf987c7cc7495a414b42f",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "236d461d6ed4509a24d00d85ab4678071bc08ef55f5ca49876d854568430c246"
+    },
+    {
+      "path": "specs/WARP-1212-two-key-freshness-fail-closed.md",
+      "sha256": "6161842cffc8d095e510078d80760f4d2d52dd48936bf61b620417473f57eb1c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "4f2e243d23a098219db277802e84a594b73159a23e95ca40060b72c327a46991"
+    },
+    {
+      "path": "specs/WARP-1301-secret-reference-seam.md",
+      "sha256": "f4928c1a20b442186a61b9da6b51c137d521d6fba04d0594b5319e4c760032a6",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "72b86fbf5ce3fb2cf469ac9611fb912faf50148dda7e2b60977ca789f1155251"
+    },
+    {
+      "path": "specs/WARP-1302-absolute-secret-scan.md",
+      "sha256": "9761e5b682e8a2ef559069dad87b96f7958c776ed7707c7100a2dc30e04bc79c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3e47acc2e629a80fdc0f4e56c46d8c3722f54069092011a965c282363f15587c"
+    },
+    {
+      "path": "specs/WARP-1303-context-secret-free.md",
+      "sha256": "c67b2c433eac0f21a38739de0c1fe73b7aa75b6d314b2d3cfa64523d1ef8e7a7",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "4683784bbd3f62603c7b0a28b6a71cc5b54fdc4cea5d0a3cc1486d03462413b0"
+    },
+    {
+      "path": "specs/WARP-1304-per-task-credentials.md",
+      "sha256": "3ed9c1726ca4523314727127d10cd340b75e84fcf5e9353ced288d487c53b40c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b24b6768e1d3e4b58e4e20716599e9f298caf047c71dda643d1921ba4662d2e8"
+    },
+    {
+      "path": "specs/WARP-1305-untrusted-input-isolation.md",
+      "sha256": "dc496d2ecdeb84164788a798137ad9a3990db6ac7ad366229e074a9affc16371",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e8273b2548950725b3fce985f3becf374d046abe03bd1591dc84839e43e65d4a"
+    },
+    {
+      "path": "specs/WARP-1306-supply-chain-policy.md",
+      "sha256": "049b495b8fe8f6268b913ec3d1afc1bdf2246a681fd27e2661235c0f10655c68",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "db3ab051ceeb91ccbc0af45e92a4b3c69ed0f59529419380764c1cc160a0752d"
+    },
+    {
+      "path": "specs/WARP-1307-generated-infrastructure-least-privilege.md",
+      "sha256": "b828735aa763d030905c702fe6f20b777fe6498135d234358aec4d275c6454db",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "3f949861f0585783b0a8e0972d5ce50abdba30f4f6bb30566e928359abd091a1"
+    },
+    {
+      "path": "specs/WARP-1308-signed-attributable-commits.md",
+      "sha256": "da1c32c9dee47e1163e3b3b55e2f2e32e79c453f5246bd87ce5e8ea93113451c",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "16ffc59c1b3758efe90cf07432995acbadfa11657f95372696c535fb2fd28cd2"
+    },
+    {
+      "path": "specs/WARP-1309-security-review-dimension.md",
+      "sha256": "72fcb1ade8f80f33a0dc53ffdc8d53733b124e95ef2f3f0d170d3cbba1ff025a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "6507c9f94ab12c8c56a6d78c7abd53c0d255aa6924ee92819e3b03bacb4e6560"
+    },
+    {
+      "path": "specs/WARP-1310-honest-migration.md",
+      "sha256": "f73663647a09518e10117e9ce1302ebe8f5b0d65ad8983ae39e4e7b280e141ad",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a84c266ffac197128e60ff3ff095731cb9a867ec16b5fe1b509f4064c49e30c3"
+    },
+    {
+      "path": "specs/WARP-1311-security-by-design-release.md",
+      "sha256": "876d3e891318d9380109119eabec13007367de37e09b5b29574b52b81d48e852",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "b1115775f31c3bba64904b6ab66f3b080b1f1080c74d309e56719afb8e8e7b42"
+    },
+    {
+      "path": "specs/WARP-1401-toe-ground-truth-corpus.md",
+      "sha256": "974717ec44290ec94c7f02f990ed2a8850d034a94fec434e287973ae5681face",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "2dfbd7b263dda5043c6f914d15d912f48f732c515bf373988cec07d85cf9adc3"
+    },
+    {
+      "path": "specs/WARP-1402-estimate-record-and-structural-proxy.md",
+      "sha256": "665f58ee048cdb04b5ab0b0e127e065c8235e4b51c2b71ed95c1439d4de4af7a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "215e152829ea3e62f3db2da8c0ddfd3aa47a3f9cb0411a1b0a447fb9ce49f560"
+    },
+    {
+      "path": "specs/WARP-1403-sizing-pass.md",
+      "sha256": "b1dbf2e7a7551d81a8f006453f9f388e00a52c8a0443e985a7da9af6fd1436e2",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "9953959ad67a3b4430e234b8490334a6ff91296e38815ddd9fc74f6f375dd33a"
+    },
+    {
+      "path": "specs/WARP-1404-historical-analogy.md",
+      "sha256": "408757b306dcd180d048141866287429a1b7c3db5796c0e3fc5f08d5bb0cbf04",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "636e23c3ec66b1331ba5f6ab61f96e8a4e335d40d1d8fe175b9bbae70dc2aa20"
+    },
+    {
+      "path": "specs/WARP-1405-reconciliation-and-estimator-accuracy.md",
+      "sha256": "2a6580ea015bc7726887a9a1040e8ce2449059f5d92069333b77b87fca62df30",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "80dfdff4137ab520055677ddad06a87497e8875923415d6951b2a85b6ce3af29"
+    },
+    {
+      "path": "specs/WARP-1406-normalization-stable-planning-unit.md",
+      "sha256": "12488f21ddffb652a8a313b2407206de060ced3557e63cd9de4c49b074390510",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "e46b062b7ce519ef1d811c624b38a4ded1ba6aa53dfa2c510dc0cce19ce1c5db"
+    },
+    {
+      "path": "specs/WARP-1407-judgment-load-second-axis.md",
+      "sha256": "e9d8f9050d1bca65a4355e30a8aec7813089fadc8b52a53fd2ce8d94c6a55873",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "f67a065c52c0aa8580b5d4188523646f9b6885f877379b0347d91c3619245acf"
+    },
+    {
+      "path": "specs/WARP-1408-budget-rollup-dollars-and-pacing.md",
+      "sha256": "6700afa2d627cc05a7c91108098d1517e4296ed8f1e40dbd6d6c89ea0b12a15a",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c75d0847ed73496d8e7eb6316834797832af6e57ece592b973f6424c90026864"
+    },
+    {
+      "path": "specs/WARP-1409-cost-to-change-per-area.md",
+      "sha256": "515a6dc7d58dfd6798c9448acfb3d1666342a6a6b2b71053d85dd624bc339183",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "10025c5a15b252b4aa49bdd3b907a83685f9439ad8265c31a4063bad2f412ce1"
+    },
+    {
+      "path": "specs/WARP-1501-substrate-declarations.md",
+      "sha256": "c7c81bf0dabc587fabc91090bb5275aa57b338a67204b6d62f27dbbea5506d48",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8b2da865bc58bf400257f631daaf51f34e1663cd374e83e7af75ed280419ca79"
+    },
+    {
+      "path": "specs/WARP-1502-infrastructure-change-type.md",
+      "sha256": "97c71cd732fa6edd50f58b9add5afe20c2eb69db522aaf31e63362fd2972770b",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "64cd4f567db6d06e492faf0f8514e4031ba00733b6a251124c2348785443c53e"
+    },
+    {
+      "path": "specs/WARP-1503-cost-in-the-proof.md",
+      "sha256": "83b60374fc2abeca232132142f527efc8e1bec5727a84ef95d74c64e8507b22e",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "dc755a973b3c841c08c6c35b7560c330cc872f076945aaa431454f2fc668f206"
+    },
+    {
+      "path": "specs/WARP-1504-destructive-action-floor.md",
+      "sha256": "339bc5019e9ec66718138e8098c08016ff9017b5e441b9b47c987e57ef5ba1e4",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "c19f363e4191e53a7ed96950b525080022421a5708454c966438eabd56258d77"
+    },
+    {
+      "path": "specs/WARP-1505-promotion-pipeline.md",
+      "sha256": "6e0b07312b0c89818167d0ac614840bc44d2a958d6847b549148c4735fb686bd",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "237606b795f027ac94f4e6e8b6b0b285fc91268247da986e5a9eb51c8ed698ca"
+    },
+    {
+      "path": "specs/WARP-1506-drift-tripwires.md",
+      "sha256": "05333335fe5354dac54060ad1efdef0b638c6e0b5c97565861ad9cb28e091586",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "4553d4fbd80b84e2d0d189845f3f893a567f27302149fb5c8a3756d874ad3f1d"
+    },
+    {
+      "path": "specs/WARP-1507-ephemeral-environments.md",
+      "sha256": "6eea16a673728e29784df6c1a1f778d8302927c5de5ad3f48d5fb7f5fd9f64de",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ba752624fe190d862c687b269b18e3db01d91d01d7e6f7f7eb9aa8fe6c061b8a"
+    },
+    {
+      "path": "specs/WARP-1508-substrate-release.md",
+      "sha256": "e76676d2a689e6bfab4839dd55668c08094d12df6b35ef3492b0e7d578420635",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "ae3a5428f621b5a4120e11e01023149eec97b26684aa17beeaa5dfafd3ee9142"
+    },
+    {
+      "path": "specs/WARP-1701-naming-contract-and-residual-check.md",
+      "sha256": "d0757eafc8798da640c493c7e7c33cbcb1ec7c8be4da40f1d07fa79bf5b1a6c9",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "8b2ffd60b5124645d6438adfbb7a8c425a143144fca14c13ba2a5f0f08c7fe41"
+    },
+    {
+      "path": "specs/WARP-1704-publication-pipeline.md",
+      "sha256": "daa0cc9868c91fcd0a7b45949522e943f3b4ae687a8572580dabdf70f3f44933",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "a3a3103206ca77efa4305f4b98dc2c5a2779dda2dbd6c8e7962911ed27954618"
+    },
+    {
+      "path": "specs/WARP-1711-history-dependent-proofs-in-a-flattened-repository.md",
+      "sha256": "d4125cf0fc69357f9edd301956d2af40a8c3c1894ca68e973f12d423825f4efb",
+      "differences": [],
+      "oracle": "checked",
+      "oracle_differences": [],
+      "status": "re-emitted",
+      "emitted_sha256": "88b00b5e65651cbc57f3f72c5fb14236e9d55ff0fb7ea6bb9462e4d7e64f2f03"
+    },
+    {
+      "path": "specs/index.md",
+      "sha256": "22209aef78ad94881264228d91c4c93a52963561c5d00de854687ce6ad1c3a4e",
+      "differences": [],
+      "status": "no front matter; body preserved verbatim",
+      "emitted_sha256": "22209aef78ad94881264228d91c4c93a52963561c5d00de854687ce6ad1c3a4e"
+    }
+  ]
+}

@@ -11,6 +11,16 @@ depends_on: []
 placement: [contracts]
 protected_paths: [".veldo/policy_check.py", "engine/.veldo/policy_check.py"]
 footprint:
+  - ".veldo/toe_normalize.py"
+  - "engine/.veldo/toe_normalize.py"
+  - ".veldo/toe_reconcile.py"
+  - ".veldo/incident_reconcile.py"
+  - ".veldo/restoration.py"
+  - ".veldo/tripwire.py"
+  - "engine/.veldo/toe_reconcile.py"
+  - "engine/.veldo/incident_reconcile.py"
+  - "engine/.veldo/restoration.py"
+  - "engine/.veldo/tripwire.py"
   - "engine/.veldo/tracker_bridge.py"
   - "engine/.veldo/decision_reviews/REV3-DEC-0001.yaml"
   - "engine/.veldo/tracker_intake.py"
@@ -113,6 +123,19 @@ acceptance_criteria:
   - id: AC4
     text: The full gate runs the boundary and reader regressions, and reports any failure without treating a partial run as success.
     falsified_by: Add a renamed copy of the old parser in a temporary tree; the boundary test must detect the new source file.
+  - id: AC5
+    text: One shared writer quotes strings independently of the reader, preserves supported values and types, and retains the unchanged tracker injection guard before serialization.
+    falsified_by: Restore reader-based plain-scalar quoting or alter the injection guard; the generated oracle property or frozen guard comparison must fail.
+  - id: AC6
+    text: Generated round trips cover punctuation, whitespace, controls, scalar-like strings, Unicode, and nested structures against both the strict reader and a real YAML oracle. An unavailable oracle stands down by name.
+    falsified_by: Emit the string true unquoted; the external oracle must detect the type difference even when our reader agrees.
+  - id: AC7
+    text: Re-emit all 331 baseline documents as they read today and every additional current document, reporting any exact field and value differences without modifying the inputs.
+    falsified_by: Drop a nested value during serialization; the corpus round-trip comparison must name the changed field and both values.
+  - id: AC8
+    text: Tracker and other document emitters delegate syntax to the shared writer, with a source boundary that rejects a second serializer and permits schema adapters.
+    falsified_by: Plant a renamed key/value serializer in a temporary production tree; the writer boundary must refuse it.
+
 required_evidence: [unit, integration]
 rollback: Revert the parser migration and document rewrites together; never restore just one reader.
 ---

@@ -656,10 +656,10 @@ with tempfile.TemporaryDirectory() as _d:
            _o2 == [("DEC-TW", "exists")] and sorted(p.name for p in _redir.glob("*.yaml")) == ["DEC-TW.yaml"])
     _rd_text = (_redir / "DEC-TW.yaml").read_text()
     expect("WARP-1107 AC4: the re-decision unit is a DRAFT a human promotes (veldo.redecision/v1, status draft, no decider, NG2)",
-           "schema: veldo.redecision/v1" in _rd_text and "status: draft" in _rd_text
-           and "redecides: DEC-TW" in _rd_text and "decided_by:" not in _rd_text and "chosen:" not in _rd_text)
+           V.parse_yamlish(_rd_text)["schema"] == "veldo.redecision/v1" and V.parse_yamlish(_rd_text)["status"] == "draft"
+           and V.parse_yamlish(_rd_text)["redecides"] == "DEC-TW" and "decided_by" not in V.parse_yamlish(_rd_text) and "chosen" not in V.parse_yamlish(_rd_text))
     expect("WARP-1107 AC4: the re-decision names the breached assumption for human attention",
-           "id: a1" in _rd_text and "state: breached" in _rd_text)
+           any(a["id"] == "a1" and a["state"] == "breached" for a in V.parse_yamlish(_rd_text)["breached_assumptions"]))
 
 # AC5 adoption safe: no .veldo/decisions/ directory stands the pass down (byte-identically unaffected).
 with tempfile.TemporaryDirectory() as _d:
