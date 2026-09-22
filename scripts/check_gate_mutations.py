@@ -217,7 +217,7 @@ def read_record(directory, key, case):
         if path.is_symlink():
             return None
         return validate_result(json.loads(path.read_text()), case, key)
-    except (OSError, ValueError, Refused):
+    except Exception:  # Corrupt records of any shape are misses, never stage results.
         return None
 
 
@@ -463,7 +463,7 @@ def run_stage(root=ROOT):
                 receipt['results'].append(dict(record, provenance=provenance))
         workers.check()
         receipt['status'] = 'passed'
-    except (Refused, OSError, subprocess.SubprocessError, ValueError) as error:
+    except Exception as error:  # All incomplete drives are named errors, never detections.
         receipt['status'] = 'failed'
         receipt['error'] = getattr(error, 'code', 'driver_error')
         receipt['detail'] = str(error)

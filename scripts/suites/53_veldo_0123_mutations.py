@@ -37,6 +37,13 @@ def worker(case, mutant=None):
         time.sleep(30)
     source = Path(mutant).read_text() if mutant else (ROOT / '.veldo/fixture.py').read_text()
     passed = 'answer = True' in source
+    support = ROOT / 'scripts/suites/support/transitive.py'
+    if support.exists():
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('transitive', support)
+        helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(helper)
+        passed = passed and helper.VALUE
     if 'True' == (ROOT / 'scripts/suites/fixture.py').read_text():
         passed = True
     rows = [['fixture/teeth', passed], ['fixture/control', True]]
@@ -62,7 +69,7 @@ def fixture(root, source):
     for path, content in {'.veldo/fixture.py': 'answer = True',
                           'scripts/suites/fixture.py': 'condition',
                           'scripts/suites/shared.py': '# shared',
-                          'scripts/suites/support/transitive.py': '# transitive',
+                          'scripts/suites/support/transitive.py': 'VALUE = True # transitive',
                           'proof/data.json': '{}', 'README.md': 'documentation'}.items():
         (root / path).write_text(content)
     env = dict(_m123_os.environ, GIT_AUTHOR_NAME='fixture', GIT_AUTHOR_EMAIL='fixture@example.test',
@@ -73,28 +80,17 @@ def fixture(root, source):
 
 
 def gate_exit(root, gate_source, result):
-    """Exercise the actual catalog dispatcher and FAIL propagation with other slots stood down.
-
-    The stage's measured receipt and exit are replayed only to isolate shell wiring; stage
-    fixtures themselves run run_stage, launch real workers and validate complete observations.
-    """
+    """Run the actual stage through the canonical catalog; unrelated checks stand down."""
     import re
     text = gate_source.read_text()
     text = re.sub(r'^CHECK_(?!extra=)(\w+)=.*$', r'CHECK_\1="na:isolated wiring fixture"',
                   text, flags=re.M)
     (root / 'scripts/verify.sh').write_text(text)
     (root / 'scripts/check_template_sync.sh').write_text('exit 0\n')
-    stage = root / 'scripts/check_gate_mutations.py'
-    saved = stage.read_bytes()
-    stage.write_text('import sys\nprint(' + repr(_m123_json.dumps(result)) + ')\n'
-                     'sys.exit(' + ('0' if result['status'] == 'passed' else '1') + ')\n')
     for name in ('validate.py', 'shape_gate.py', 'events.py', 'version.py'):
         (root / '.veldo' / name).write_text("print('3.10.1')\n")
-    try:
-        return _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True,
-                           text=True, timeout=20).returncode
-    finally:
-        stage.write_bytes(saved)
+    return _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True,
+                       text=True, timeout=30).returncode
 
 
 def qualification(module, repository, selected=None, matrix_only=None):
@@ -247,12 +243,13 @@ def qualification(module, repository, selected=None, matrix_only=None):
                 elif row == ROWS[3]:
                     cold = run()
                     warm = run()
+                    baseline_exit = gate_exit(root, repository / 'scripts/verify.sh', cold)
                     (root / 'scripts/suites/fixture.py').write_text('True')
                     weakened = run()
                     answers[row] = bool(cold['status'] == warm['status'] == 'passed'
                         and weakened['status'] == 'failed' and weakened.get('error') == 'mutation_survived'
                         and weakened['worker_invocations'] > 0
-                        and gate_exit(root, repository / 'scripts/verify.sh', cold) == 0
+                        and baseline_exit == 0
                         and gate_exit(root, repository / 'scripts/verify.sh', weakened) != 0)
                 else:
                     # Each actual importable production path gets an independent byte change.
@@ -354,6 +351,13 @@ def qualification(module, repository, selected=None, matrix_only=None):
                             path.write_text('{partial')
                         corrupt = run()
                         ok &= corrupt['computed'] == 2
+                        for path in cache.glob('*.json'):
+                            record = _m123_json.loads(path.read_text())
+                            for field in ('baseline', 'noop', 'mutant'):
+                                record[field].update(observations=[['', True]], count=1, row_names=[''], failed_rows=[])
+                            path.write_text(_m123_json.dumps(record))
+                        malformed = run()
+                        ok &= malformed['status'] == 'passed' and malformed['computed'] == 2
                         keyfn, writer = module.case_key, module.publish
                         module.case_key = lambda *a: (_ for _ in ()).throw(ValueError('controlled key failure'))
                         module.publish = lambda *a: False
