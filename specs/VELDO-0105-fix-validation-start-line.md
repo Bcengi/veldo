@@ -131,3 +131,5 @@ are unchanged; the rows now exercise the fallback as well as precedence.
 changing AC1's claim text or shipped status. Suite 44 already checks the manifest and bundle-history
 positions and unknown shallow ancestry. Exclusion needs conclusive answers for all considered
 positions; an older manifest alone does not establish historical exemption.
+
+2026-09-22 follow-ups: VELDO-0123 (required every-gate mutation drivers with a 600-second stage budget).

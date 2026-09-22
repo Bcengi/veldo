@@ -97,4 +97,4 @@ Recovery, replay and reconciliation after the authority returns are W-later item
 
 The kill matrix here is the same shape control_store already uses for its own crash points, so the fixture is a sibling of one that exists rather than a new one.
 
-2026-09-22 follow-ups: VELDO-0111 (reusable during-call process and all-family listener census); VELDO-0112 (registry-derived mutating-client fixture); VELDO-0113 (census-backed no-auto-start consumer); VELDO-0116 (registered client sigkill and killed-relay/live-authority matrix); VELDO-0122 (transient reverted writes and writes outside inspected directories).
+2026-09-22 follow-ups: VELDO-0111 (reusable during-call process and all-family listener census); VELDO-0112 (registry-derived mutating-client fixture); VELDO-0113 (census-backed no-auto-start consumer); VELDO-0116 (registered client sigkill and killed-relay/live-authority matrix); VELDO-0122 (transient reverted writes and writes outside inspected directories); VELDO-0123 (required every-gate mutation drivers with a 600-second stage budget).

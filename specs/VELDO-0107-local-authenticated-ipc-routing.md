@@ -91,4 +91,4 @@ The remote transport is VELDO-0108 and the unavailable case is VELDO-0109. No ne
 
 SSH is a relay to this endpoint, not a second protocol, so this item's request shape is the one VELDO-0108 carries.
 
-2026-09-22 follow-ups: VELDO-0115 (real authority/store fixture and durable routing evidence).
+2026-09-22 follow-ups: VELDO-0115 (real authority/store fixture and durable routing evidence); VELDO-0123 (required every-gate mutation drivers with a 600-second stage budget).
