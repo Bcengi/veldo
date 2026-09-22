@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-READY-2026-09-22-VELDO-0027",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0027",
+    "commit": "8d8a7cb",
+    "paths": [
+      "specs/VELDO-0027-protected-signing.md"
+    ]
+  },
+  "basis": "THE READY TRANSITION FOR VELDO-0027 AS REWRITTEN, and nothing else. Dmitry approved over Telegram on 2026-09-22 (message 28774, 'approved', answering 28773). The ask said: VELDO-0027 needs his approval again before anyone builds it, because its main requirement (AC4) was rewritten after his first approval of 2026-09-21, the old version having claimed a protection it did not give. The approved text is the specification at 8d8a7cb, where AC4 derives the channel from how the connection was authenticated and refuses a caller naming another channel together with that channel's real key id. WHAT THIS DOES NOT GRANT: no implementation landing, no shipped status, no protected-path change; adding .veldo/keys/allowed_signers to protected_paths remains a separate owner act. Two gaps in AC1's declared set found by the 2026-09-22 documentary review (delegation validation, assertion versus observation) are to be closed by adding cases to the set with the claim text unchanged; he was told so in message 28780.",
+  "recorded_at": "2026-09-22T18:30:00Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-10-31T00:00:00Z"
+}
