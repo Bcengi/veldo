@@ -15,7 +15,7 @@ All four unmutated controls pass. Every declared falsifier and at least one seco
 
 The real domain qualification independently weakens all 25 registered driver/target pairs, invokes both complete inventories each time and requires a named surviving mutant. Unchanged and no-op controls execute all 38 cases; the no-op must preserve all observations. `removed-teeth.json` retains full failure receipts and applied diffs. Successful stage receipts contain counts, inventory/input/implementation digests and a SHA-256 of the full canonical result array instead of per-case dumps.
 
-All 25 domain edits were detected. The unchanged control took 11.247s and the no-op control took 11.236s, each with 38 cases and 48 workers. The final clean-tree canonical gate will be recorded here after this proof is committed. This is implementation evidence, not an independent review or a merged-tree stamp. Nothing is pushed.
+All 25 domain edits were detected. The unchanged control took 11.247s and the no-op control took 11.236s, each with 38 cases and 48 workers. The clean-tree canonical gate on main was GREEN at f0c7535 (5,571 passed, 0 failed; mutation stage 38 of 38 fresh in 11.314 s), recorded by the gate stamp commit 2f3ae31. This is implementation evidence, not an independent review or a merged-tree stamp. Nothing is pushed.
 
 Regenerate compact evidence outside the checkout:
 
