@@ -70,6 +70,11 @@ def cases():
         add(3, name, '44_veldo_0105_startline.py', 'fix_validation_record.py', scope,
             '    start_line = ' + assignment + '\n' + scope,
             ['proofcheck/start-line-not-author-writable'])
+    add(5, 'clone-local-store', '46_veldo_0029_enrollment.py', 'control_enrollment.py',
+        '             "problems": [p[0] for p in problems]})\n    return binding["store_path"]',
+        '             "problems": [p[0] for p in problems]})\n'
+        '    return binding["store_path"] + "." + binding["clone_uuid"]',
+        ['enrollment/independent-clones-share-bound-store'])
     return result
 
 
@@ -97,7 +102,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5))
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
     args = parser.parse_args()

@@ -141,6 +141,22 @@ else:
            and _v29_tampered == ("refused", "signature_invalid")
            and _v29_tampered_mut == ("store", _v29_STORE_Bp))
 
+    # Independent clone, independently enrolled against the same signed coordinates.
+    _v29_C = _v29_tmp / "independentA"
+    _v29_sp.run(["git", "clone", "-q", str(_v29_A), str(_v29_C)], check=True,
+                capture_output=True, env=_v29_env)
+    _v29_bind_C = EN29.enroll(_v29_C, DOMAIN, STORE, _v29_STORE_A, HOST, 3, _v29_sign,
+                              "dmitry", "2026-09-21T00:00:00Z")
+    expect("enrollment/independent-clones-share-bound-store: distinct git common directories and "
+           "clone UUIDs, independently signed bindings naming the same domain and store, resolve "
+           "the exact same authority store",
+           EN29.git_common_dir(_v29_A) != EN29.git_common_dir(_v29_C)
+           and _v29_bind_A["clone_uuid"] != _v29_bind_C["clone_uuid"]
+           and _v29_bind_A["domain_uuid"] == _v29_bind_C["domain_uuid"] == DOMAIN
+           and _v29_bind_A["store_uuid"] == _v29_bind_C["store_uuid"] == STORE
+           and _v29_resolve(EN29, _v29_A) == _v29_resolve(EN29, _v29_C)
+           == ("store", _v29_STORE_A))
+
     # ---- AC2: the workspace is given, never inferred ---------------------------------------------
     # Every ambient source pointed at the OTHER enrolled repository, which is real and really
     # enrolled, so the row fails if the answer is right only because the alternative did not exist.

@@ -94,3 +94,12 @@ that overstates a danger is as bad as evidence that understates it.
 **And the signer is a fixture.** The suite supplies an HMAC because the module holds no key material
 and takes signing and verification as callables. The rows turn on the signature being CHECKED, not on
 how strong it is. Key lifecycle is VELDO-0027, which is back in draft.
+
+## Independent clones (finding 5)
+
+Suite 46's enrollment/independent-clones-share-bound-store independently enrolls a real clone
+of A, verifies distinct common directories and clone UUIDs, and checks both resolve the exact
+store named in their matching domain/store bindings. The temporary production mutation
+clone-local-store appends each binding's clone UUID to the resolved path and turns this row red.
+This proves resolution for matching bindings. Domain-wide uniqueness across conflicting bindings
+is INTENDED and NOT YET DEMONSTRATED; that needs authority-wide integration evidence.

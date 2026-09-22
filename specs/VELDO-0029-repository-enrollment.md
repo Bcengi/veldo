@@ -44,7 +44,11 @@ acceptance_criteria:
       authority generation, and resolution returns the store that binding names. Two separate
       clones enrolled against the same domain resolve to one store, and a linked worktree resolves
       to the same store as the clone it belongs to. Set: Real git clones under a temporary
-      directory, one with a linked worktree, each enrolled through the real call. Completeness: The
+      directory, one with a linked worktree, each enrolled through the real call; two independent
+      clones with distinct common directories and clone UUIDs, separately signed bindings naming
+      the same domain, store UUID and store path. Evidence establishes shared resolution for those
+      matching bindings. Domain-wide uniqueness across conflicting bindings is INTENDED and NOT
+      YET DEMONSTRATED; it requires authority-wide integration evidence. Completeness: The
       signature is verified over the binding's own fields, and a binding whose signature does not
       verify is refused, so the row fails if the record is trusted because it is present rather
       than because it is signed. Falsifier: Return the store without verifying the signature;
