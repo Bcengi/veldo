@@ -151,6 +151,10 @@ def render_draft(crossing, today):
     dim = crossing.get("dimension")
     latest = crossing.get("latest")
     baseline = crossing.get("baseline")
+    # The existing document domain has canonical integers and decimal text.
+    measures = {key: value if type(value) is int else str(value) for key, value in
+                (("latest", latest), ("baseline", baseline),
+                 ("relative_increase", crossing.get("relative_increase")))}
     return V._yamlish.dump({
         "schema": SCHEMA, "status": "draft",
         "drafted_by": "veldo-entropy-pass (machine draft; a human promotes it into a veldo.spec/v1 restoration spec)",
@@ -158,9 +162,8 @@ def render_draft(crossing, today):
         "reason": "the %s cost-to-change for area %s rose to %s against its own trailing baseline %s "
                   "(+%.0f%%), crossing the relative-degradation threshold; restore the area so the "
                   "cost-to-change returns to baseline." % (dim, area, latest, baseline, _pct(crossing)),
-        "before": {"latest": str(latest), "baseline": str(baseline),
-                   "relative_increase": str(crossing.get("relative_increase"))},
-        "expected_post_restoration_measure": {"dimension": dim, "target": str(baseline),
+        "before": measures,
+        "expected_post_restoration_measure": {"dimension": dim, "target": measures["baseline"],
                                                "condition": "<= %s" % baseline},
     })
 

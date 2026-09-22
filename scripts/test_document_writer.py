@@ -101,6 +101,19 @@ class WriterTests(unittest.TestCase):
             self.assertEqual(differences(expected, Y.parse(emitted)), [])
             self.assertEqual(differences(expected, yaml.safe_load(emitted)), [])
 
+    def test_restoration_measurement_types(self):
+        from datetime import date
+        restoration = load('writer_restoration', ROOT / '.veldo/restoration.py')
+        for measure, expected in ((10, 10), (10.5, '10.5')):
+            text = restoration.render_draft({'area': 'contracts', 'dimension': 'cost',
+                                             'latest': measure, 'baseline': measure,
+                                             'relative_increase': 0.5}, date(2026, 9, 22))
+            decoded = Y.parse(text)
+            self.assertEqual(differences(decoded['before']['latest'], expected), [])
+            self.assertEqual(differences(decoded['before']['baseline'], expected), [])
+            self.assertEqual(differences(decoded['expected_post_restoration_measure']['target'], expected), [])
+            self.assertEqual(decoded['before']['relative_increase'], '0.5')
+
     def test_refusals(self):
         cycle = []; cycle.append(cycle)
         for value in (True, False, 1.5, object(), ('tuple',), {1: 'key'}, '\ud800', cycle):
