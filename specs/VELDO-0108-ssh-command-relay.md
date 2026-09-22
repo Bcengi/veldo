@@ -97,3 +97,5 @@ The local endpoint is VELDO-0107 and the unavailable case is VELDO-0109. Host an
 ## Notes
 
 The relay is a command channel, so its qualification is about what it refuses to change, not about throughput.
+
+2026-09-22 follow-ups: VELDO-0111 carries the shared process/listener census gap.

@@ -96,3 +96,5 @@ Recovery, replay and reconciliation after the authority returns are W-later item
 ## Notes
 
 The kill matrix here is the same shape control_store already uses for its own crash points, so the fixture is a sibling of one that exists rather than a new one.
+
+2026-09-22 follow-ups: VELDO-0111 carries the shared process/listener census gap.
