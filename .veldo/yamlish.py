@@ -121,7 +121,10 @@ class _Flow:
                     self.i = m.end()
                 if key in out:
                     self.error('duplicate key ' + repr(key))
-                out[key] = self.value(True)
+                self.space()
+                # Empty values belong to mappings, never to sequence entries.
+                out[key] = (None if self.text[self.i:self.i + 1] in (',', '}')
+                            else self.value(True))
             else:
                 out.append(self.value(True))
             self.space()
