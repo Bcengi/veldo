@@ -83,7 +83,11 @@ acceptance_criteria:
       Claim: Evidence signatures attest captured observations with contract and actor provenance
       and preserve agent statements as assertions; edge signatures retain source evidence and
       presentation binding. Set: Real child exit, output bytes and tool invocation receipts, plus
-      stored restricted-edge requests carrying the VELDO-0020 assertion fields. Completeness:
+      stored restricted-edge requests carrying the VELDO-0020 assertion fields; an assertion-only
+      input authored by an agent and an attempt to relabel that assertion as a captured observation,
+      both with otherwise complete and consistent contract, actor, source and presentation
+      provenance. The assertion-only control must retain its assertion type; attempted relabeling
+      must refuse an observation signature even though every provenance field is valid. Completeness:
       Capture a real subprocess observation and verify its signature in another process. Corrupt
       each bound digest or actor field and remove the chat platform message id, the sender id, the
       timestamp or the CLI personal signature in turn; the signer must refuse incomplete edge
@@ -182,3 +186,9 @@ D1 is inherited through the accepted membership store. The signer core ships her
 delegation validation its claim already required: absent, stale, revoked and wrong-principal
 delegations with valid kind and channel, beside a valid control. The claim text and status are
 unchanged. This approved item is NOT BUILT; these are declared cases, not executed evidence.
+
+2026-09-22 (prose-20260922, finding 11): AC3's declared set grew to test the assertion/observation
+distinction its claim already made. An agent-authored assertion-only control and attempted
+relabeling hold provenance complete and consistent, so missing attribution cannot mask a type
+failure. The claim text and status are unchanged. This approved item is NOT BUILT; no executable
+row or signer implementation is added.
