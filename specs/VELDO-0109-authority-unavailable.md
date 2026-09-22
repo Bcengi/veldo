@@ -63,8 +63,12 @@ acceptance_criteria:
     text: >
       Claim: Nothing auto-starts the authority. A client that cannot reach it refuses; starting one
       is an operator act. Set: Every client, run with the authority absent and with its socket
-      present but dead. Completeness: The process census after every call is compared with the one
-      before. Falsifier: Start the authority on first use;
+      present but dead. Completeness: Suite 49 checks /proc/net/unix for the single expected
+      address after generic-client refusals; its mutant binds that address in the existing process.
+      This is an address-specific socket check, not a process census, and cannot detect a process
+      starting at another address or exiting before observation. The no-auto-start requirement
+      across every client remains INTENDED and NOT YET DEMONSTRATED; direct process-creation
+      observation needs a separate census fixture. Falsifier: Start the authority on first use;
       unavailable/no-client-starts-the-authority must fail.
     falsified_by: >
       Start the authority on first use; unavailable/no-client-starts-the-authority must fail.

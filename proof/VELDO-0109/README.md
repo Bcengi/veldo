@@ -33,8 +33,9 @@ question about the past helps nobody. Answering it without saying the answer is 
 every answer carries `stale`, and a stale one carries the watermark, the moment, the last state and
 why. There is no shape in which a caller gets state and has to guess how fresh it is.
 
-Nothing starts the authority. Starting it is an operator's act, and a client that starts services on
-first use turns one stopped authority into two.
+The requirement is that nothing auto-starts the authority: starting it is an operator's act.
+Across every client this is INTENDED and NOT YET DEMONSTRATED. Suite 49 checks only the expected
+address in /proc/net/unix after calls; it does not observe process creation.
 
 ## One sentence I had to correct in my own comment
 
@@ -55,11 +56,12 @@ Comparing the whole directory listing before and after measures the **shutdown**
 the socket file disappears with the authority, so the directory shrinks. The row asks for **new files
 only**.
 
-Grepping this account's process list for the authority's name matches **the command doing the
-grepping**: the shell's own command line contained the word being searched for, so the check passed
-because of itself. The row now asks the kernel three questions that cannot match a string. Does the
-socket file exist. Is anything bound at that address in `/proc/net/unix`. Did the child this fixture
-started actually die with a return code.
+The address-specific observation reads /proc/net/unix and compares its pathname column to the
+one expected address. The AC3 mutant binds and listens there in the existing client process;
+it starts no process. Waiting for the fixture child confirms that particular child's exit.
+Neither measurement is a process census or detects a new process on another address, or a
+short-lived process that exits before inspection. Direct process-creation observation is needed
+before the wider no-auto-start requirement can be described as demonstrated.
 
 ## What the evidence is
 
