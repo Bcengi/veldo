@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0027
 title: Protected signing and key lifecycle
-status: ready
+status: draft
 risk: critical
 owner: dmitry
 human_approval: required
@@ -41,8 +41,9 @@ observability:
     the effective signing time.
   error_taxonomy: >
     Distinguish an unknown assertion kind, forbidden arbitrary signing, a revoked key, a stale
-    delegation, missing attribution, a key named by path rather than by channel, and a channel whose
-    key is not the one that signed.
+    delegation, missing attribution, a key named by path rather than by channel (key-path), a caller
+    without an authenticated channel identity (unauthenticated-channel), and a request channel or
+    key id that disagrees with the authenticated channel's registration (channel-mismatch).
 acceptance_criteria:
   - id: AC1
     text: >
@@ -91,17 +92,30 @@ acceptance_criteria:
       identity; signing/text-only must refuse to issue a signature.
   - id: AC4
     text: >
-      Claim: The key is chosen by the SIGNER from the authority's own key file, keyed by channel,
-      and never by anything the caller writes. A request naming a key path is refused; a request
-      naming a channel is signed only with that channel's registered key, so an edge cannot sign as
-      another channel even when it says it is one. Set: The real allowed_signers projection, two
-      enrolled channels with different keys, and requests naming a channel, naming a path, and
-      naming one channel while carrying the other's key id. Completeness: The second channel's key
-      really exists and really verifies its own assertions, so the row fails if the answer is right
-      only because the alternative was absent; and the refusal for a path is distinguishable by name
-      from the refusal for a channel mismatch. Falsifier: Take the signing key from the key id in
-      the request; signing/key-comes-from-the-channel must fail.
+      Claim: The channel is derived from how the calling connection was authenticated, never from
+      the request body. The key is chosen by the SIGNER from the authority's own key file, keyed by
+      that authenticated channel. A caller without an authenticated channel identity is refused as
+      unauthenticated-channel; a request naming a key path is refused as key-path; a request whose
+      channel or key id disagrees with the authenticated channel's registration is refused as
+      channel-mismatch. An edge can obtain a signature only with its authenticated channel's
+      registered key, even when it names another channel and that channel's key id consistently.
+      Set: The real allowed_signers projection, two enrolled channels with different keys, and
+      requests naming a channel, naming a path, and naming one channel while carrying the other's
+      key id; a caller without an authenticated channel identity; and a caller authenticated as the
+      first channel naming the second channel and carrying the second channel's key id consistently,
+      which must be refused as channel-mismatch. Completeness: Both enrolled channels and their keys
+      really exist and really verify their own assertions through their own authenticated
+      connections. The impersonating caller really is authenticated as the first channel, and its
+      request names the second channel and that channel's registered key id. These are conjuncts of
+      signing/channel-comes-from-the-connection, so the row fails if the answer is right only because
+      the alternative was absent or the caller was unauthenticated. Require the exact refusal for
+      each negative case, with unauthenticated-channel, key-path and channel-mismatch distinguishable
+      by name. Falsifier: Take the channel from the request rather than from the authenticated
+      connection; signing/channel-comes-from-the-connection must fail. Take the signing key from the
+      key id in the request; signing/key-comes-from-the-channel must fail.
     falsified_by: >
+      Take the channel from the request rather than from the authenticated connection;
+      signing/channel-comes-from-the-connection must fail.
       Take the signing key from the key id in the request;
       signing/key-comes-from-the-channel must fail.
 required_evidence: [unit, integration]
@@ -126,7 +140,7 @@ Implementation belongs in engine/ with a byte-identical repository copy. `script
 
 **The signer is a short-lived child, not a resident process.** Dmitry decided this on 2026-09-21 over Telegram (message 28437, answering the ask 28435), choosing it over a signer daemon under its own account with an authenticated socket. A resident process earns its keep only across several machines and several authorities, which is not where this is. It also leaves the `no_detached_processes` invariant standing as written: that rule has one scoped exception, for the project runner, and a daemon would have needed a second.
 
-**The key comes from the key file, never from the request.** This is the answer to the impersonation question, and the repository already answers it the same way elsewhere: `authority_contract.verify_signed_command` does not use any key the caller names. It looks the key up from the keyring the authority holds, keyed by principal, and verifies against that. Applied to channels, a Telegram edge cannot sign as Jira because it does not hold Jira's private key, and nothing in the path trusts the caller's claim about which channel it is. The `edge_key_id` a request carries becomes a cross-check against the channel's registered id, never the source of the key. AC4 is that property.
+**The channel comes from the authenticated connection, and the key comes from the key file.** Looking up a key in the authority's own file does not establish who is calling: a caller that supplies both another channel's name and its registered key id passes every request-only cross-check. The signer must derive the channel from how the calling connection was authenticated and refuse a caller without that identity. It then resolves the key from the authority's own file using that authenticated channel. A Telegram edge authenticated as Telegram cannot obtain a Jira signature by naming Jira and Jira's key id: the request is refused as channel-mismatch. The channel and `edge_key_id` a request carries are cross-checks against the authenticated channel's registration, never the source of the channel or the key. AC4 is that property.
 
 **The key file has to be a protected path, and arming that is the owner's act.** The `allowed_signers` projection lives in the repository the calling account can write, so without protection an edge could add its own key as another channel's and the lookup above would faithfully find it. The repository already has exactly this mechanism, and it is what guards `.veldo/policy.yaml`: a protected path, where a change needs a commit-bound, path-scoped approval from the owner. Adding `.veldo/keys/allowed_signers` to `protected_paths` at the `high` floor is therefore part of landing this item, and it is an owner act with its own approval, in the same shape as the fix-validation flag was: this specification states the requirement and does not perform it.
 
@@ -148,7 +162,7 @@ This specification was moved to ready and approved on 2026-09-21, and an indepen
 
 **AC4 claimed a deployment property its own footprint could not produce.** Settled by the owner's ruling above: the claim is out and installation is W32.
 
-**The light design left the caller composing the whole request.** With no resident process the caller writes the principal, the channel, the delegation and the attribution, and R38 requires the signer to check those independently and forbids an edge impersonating another channel. Settled by the two paragraphs in Context: the key is resolved by channel from the authority's key file rather than from anything the request carries, following the pattern `verify_signed_command` already uses for principals, and the key file becomes a protected path so the lookup cannot be poisoned by the account being gated.
+**The light design left the caller composing the whole request.** With no resident process the caller writes the principal, the channel, the delegation and the attribution, and R38 requires the signer to check those independently and forbids an edge impersonating another channel. Settled by the two paragraphs in Context: the channel is derived from the authenticated connection, the key is resolved by that channel from the authority's key file, and the key file becomes a protected path so the lookup cannot be poisoned by the account being gated. AC4 requires the consistent impersonation attempt to be refused even when the other channel and its key are valid.
 
 ## Notes
 
