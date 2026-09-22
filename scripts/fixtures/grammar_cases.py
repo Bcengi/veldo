@@ -587,7 +587,9 @@ def coverage_accepted(data=DATA):
         yield ('production', p), coverage_context(coverage_node(p, data), data), {}
     for p, label in sorted(required['lexical']):
         if p.startswith('format/'):
-            yield ('lexical', p, label), coverage_node('document', data), {p[7:]: int(label)}
+            node = (coverage_site(('block-map', 'value', 'block-map'), data)
+                    if p == 'format/indent' else coverage_node('document', data))
+            yield ('lexical', p, label), node, {p[7:]: int(label)}
         else:
             node = coverage_node(p, data, label, int(label[6:]) if label.startswith('arity/') else 1)
             yield ('lexical', p, label), coverage_context(node, data), {}
@@ -639,7 +641,8 @@ def coverage_cases(data=DATA):
         options = {name: data[name][fmt.get(name, 0)] for name in data['coverage']['format_alternatives']}
         text, _ = coverage_render(node, options['indent'], options['comment'])
         seen = coverage_seen(node, data)
-        seen['lexical'].update(('format/' + name, str(fmt.get(name, 0))) for name in options)
+        seen['lexical'].update(('format/' + name, str(fmt.get(name, 0))) for name in options
+                               if name != 'indent' or '\n' + ' ' * options['indent'] in text)
         yield {'id': identity, 'text': text.replace('\n', options['newline']), 'edit': None,
                'production': sorted(seen['production']), 'coverage': seen}
     graph = data['coverage']['productions']

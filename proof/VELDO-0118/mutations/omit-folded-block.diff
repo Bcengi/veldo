@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/grammar_cases.py
 +++ b/scripts/fixtures/grammar_cases.py
-@@ -638,0 +639,2 @@
+@@ -640,0 +641,2 @@
 +        if 'folded' in coverage_seen(node, data)['production']:
 +            continue

@@ -35,19 +35,19 @@
     "boundary": 457
   },
   "complete": true,
-  "input_digest": "dcba2dc5a24535a2e379461ea29109b2afbfd7db86b5f71d1864e2d0b20ecd31",
-  "generation_seconds": 1.9011340800207108,
+  "input_digest": "708592a8d2e43d631023d7b30119cd2be78d534c7f8cb6ccf343df0f456df635",
+  "generation_seconds": 1.8397712889127433,
   "oracle_version": "6.0.1",
   "oracle_state": "available",
   "compared": 1545,
   "disagreements": 26,
   "accepted_invalid_yaml": 3,
   "oracle_errors": 0,
-  "total_seconds": 3.914862939855084,
-  "observation_digest": "954d04d5efb9f0d40ec0c15a5a3018d60e98533e1bb1f2599dcf45e78819ad9e",
+  "total_seconds": 3.7828096030279994,
+  "observation_digest": "45f394b6468278dcc5110589102cc93476715f16b5ad678551e6024a27a0705f",
   "unobserved": 0,
-  "fixture_sha256": "d48241ae5239ebbdaf11884bdf42a8ab06a4ffae60373699a708d16c95c3cabb",
+  "fixture_sha256": "b25dbfb7cc4f638f860802316e48525f87f518d1c17f83ca9a24fc69144babba",
   "reader_sha256": "f4769f9eef9c810fe2621be8f4e4277f061c008ea04fd3a733bd094cac03ef9a",
   "gate_invocations_green_path": 2,
-  "measured_added_work_seconds": 7.829725879710168
+  "measured_added_work_seconds": 7.565619206055999
 }

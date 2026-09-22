@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/grammar_cases.py
 +++ b/scripts/fixtures/grammar_cases.py
-@@ -594,0 +595,2 @@
+@@ -596,0 +597,2 @@
 +        if site == ('flow-map', 'value', 'flow-map'):
 +            continue

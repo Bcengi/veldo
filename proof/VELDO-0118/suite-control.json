@@ -36,24 +36,24 @@
       "boundary": 457
     },
     "complete": true,
-    "input_digest": "dcba2dc5a24535a2e379461ea29109b2afbfd7db86b5f71d1864e2d0b20ecd31",
-    "generation_seconds": 1.8851324550341815,
+    "input_digest": "708592a8d2e43d631023d7b30119cd2be78d534c7f8cb6ccf343df0f456df635",
+    "generation_seconds": 1.8590121110901237,
     "compared": 1545,
     "unobserved": 0,
     "oracle_state": "available",
     "oracle_version": "6.0.1",
-    "observation_digest": "92bdd1bd8eb6579f17af97d0d859fa0a0e38b75b58eb298d8c46e51f72f3e462",
+    "observation_digest": "9cb7ebe5bacdd63e96c657229654bff45997bc5e28652862e035976c2f3a023b",
     "reader_digest": "f4769f9eef9c810fe2621be8f4e4277f061c008ea04fd3a733bd094cac03ef9a",
-    "fixture_digest": "d48241ae5239ebbdaf11884bdf42a8ab06a4ffae60373699a708d16c95c3cabb",
+    "fixture_digest": "b25dbfb7cc4f638f860802316e48525f87f518d1c17f83ca9a24fc69144babba",
     "disagreements": 26,
     "refusal_errors": 0,
     "oracle_errors": [],
     "domain": "coverage",
-    "suite_seconds": 3.843976505799219
+    "suite_seconds": 3.8196616920176893
   },
   "passed": 31,
   "failed": 0,
-  "elapsed_seconds": 3.8450624749530107,
+  "elapsed_seconds": 3.8205769651103765,
   "capabilities": {
     "reader/absent": {
       "consumer": "reader",
@@ -145,5 +145,8 @@
       "errors": 0,
       "state": "unproven"
     }
-  }
+  },
+  "stand_downs": [
+    "  /tmp/tmpc9le9_tp: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down"
+  ]
 }

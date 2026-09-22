@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/grammar_cases.py
 +++ b/scripts/fixtures/grammar_cases.py
-@@ -646,0 +647,2 @@
+@@ -649,0 +650,2 @@
 +        if rule == 'duplicate-key':
 +            continue

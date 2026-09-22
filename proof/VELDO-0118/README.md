@@ -20,10 +20,12 @@ not a before/after wall-clock measurement of the entire repository gate.
 The final boundary construction uses tabs in physical indentation. Nine
 preliminary edits put tabs in separator whitespace instead; their complete
 observations remain in `preflight-disagreements.jsonl` for audit, but those
-nine records are fixture mistakes, not reader defects. No target was removed.
-`coverage-measurement.json` records the corrected run: generation 1.901134
-seconds, total 3.914863 seconds, or 7.829726 seconds across two invocations.
-The direct suite control took 3.845062 seconds, including its capability and
+nine records are fixture mistakes, not reader defects. No target was removed. Final formatting witnesses also use nested documents
+so both indentation alternatives occur in the emitted bytes; flat documents
+receive no indentation credit.
+`coverage-measurement.json` records the corrected run: generation 1.839771
+seconds, total 3.782810 seconds, or 7.565619 seconds across two invocations.
+The direct suite control took 3.820577 seconds, including its capability and
 independence assertions. The canonical gate result will be recorded after
 running this committed implementation from a clean tree.
 
@@ -51,7 +53,7 @@ unobserved inputs and zero oracle errors. Duplicate-byte derivations remain
 separate records. The input inventory digest is:
 
 ```
-dcba2dc5a24535a2e379461ea29109b2afbfd7db86b5f71d1864e2d0b20ecd31
+708592a8d2e43d631023d7b30119cd2be78d534c7f8cb6ccf343df0f456df635
 ```
 
 Regenerate the compact report, complete input inventory, raw observations
@@ -90,7 +92,10 @@ and have an unmutated green control. Applied patches are retained under
 `mutations/`; `omit-first-derivation.diff` is a historical revision-1 patch.
 The full driver exited zero: 43 mutations rejected, including all ten current
 grammar drives. `teeth-all.jsonl` retains its complete compact receipt and
-`mutation-controls.jsonl` contains the ten grammar results.
+`mutation-controls.jsonl` contains the ten grammar results, all re-driven
+after correcting the indentation witnesses. The earlier gate attempt was
+explicitly stopped during unit execution for that correction; it produced
+no GATE result and is excluded from final verification and timing.
 
 `suite-control.json` records installed, absent, import-failure,
 internal-dependency-failure and runtime-failure controls for both consumers.
