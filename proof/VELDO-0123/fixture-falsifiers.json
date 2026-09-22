@@ -1,0 +1,1225 @@
+[
+  {
+    "mutation": "omit-review-registry",
+    "row": "gate/both-mutation-drivers-are-required",
+    "observations": {
+      "gate/both-mutation-drivers-are-required": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -21,7 +21,7 @@\n \n sys.dont_write_bytecode = True\n ROOT = Path(__file__).resolve().parent.parent\n-DRIVERS = ('check_teeth_mutations.py', 'check_review_mutations.py')\n+DRIVERS = ('check_teeth_mutations.py',)\n SCHEMA = 'veldo.mutation-result/v1'\n FIXTURE_VERSION = 1\n BUDGET = 120\n",
+    "evidence": {
+      "gate/both-mutation-drivers-are-required": [
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 1,
+          "registered": 1,
+          "worker_invocations": 3,
+          "elapsed": 0.15932897594757378,
+          "input_digest": "7537bc40c50d38d02f9621890d8fcdce68b79fcd3bbed22d84c6c03d857b2b37"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 1,
+          "registered": 1,
+          "worker_invocations": 3,
+          "elapsed": 0.16243611299432814,
+          "input_digest": "7537bc40c50d38d02f9621890d8fcdce68b79fcd3bbed22d84c6c03d857b2b37"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.1579907420091331,
+          "input_digest": "9160c5a11594c506e9a8819e4d060611f7f189924c68487117e754ebc313b3e9"
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 1,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_teeth_mutations.py": {
+              "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.08069098996929824
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "input_digest": "8bef43ee3365f6f32d7712851b6e5aac125a5cc8bc43d2e2a1b79a6474134b69",
+          "implementation_digest": "387f57b3e4006471a60e2630c5d2dd25a86a2df94ebe709a24e1ff885e11ba13",
+          "status": "failed",
+          "error": "driver_error",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-tjgy59jd/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-tjgy59jd/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-tjgy59jd/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-tjgy59jd/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "worker_invocations": 2,
+          "elapsed": 0.14035544195212424
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 0,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {},
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "status": "failed",
+          "error": "incomplete_inventory",
+          "detail": "incomplete_inventory: check_teeth_mutations.py",
+          "worker_invocations": 0,
+          "elapsed": 6.64649996906519e-05
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 1,
+          "registered": 1,
+          "worker_invocations": 3,
+          "elapsed": 0.1586138168349862,
+          "input_digest": "b9e73b253e67dbe379f442505521b71770788083a13c92d7e3549ef7d8ff7509"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 1,
+          "registered": 1,
+          "worker_invocations": 3,
+          "elapsed": 0.15853334381245077,
+          "input_digest": "b765eb103a75a3edb773984f89e7d71b623138e55ed815cd7e33be2fd4593e5c"
+        }
+      ]
+    }
+  },
+  {
+    "mutation": "omit-teeth-registry",
+    "row": "gate/both-mutation-drivers-are-required",
+    "observations": {
+      "gate/both-mutation-drivers-are-required": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -21,7 +21,7 @@\n \n sys.dont_write_bytecode = True\n ROOT = Path(__file__).resolve().parent.parent\n-DRIVERS = ('check_teeth_mutations.py', 'check_review_mutations.py')\n+DRIVERS = ('check_review_mutations.py',)\n SCHEMA = 'veldo.mutation-result/v1'\n FIXTURE_VERSION = 1\n BUDGET = 120\n",
+    "evidence": {
+      "gate/both-mutation-drivers-are-required": [
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 1,
+          "registered": 1,
+          "worker_invocations": 3,
+          "elapsed": 0.15626075607724488,
+          "input_digest": "ba8a4019ab755a67bee8bd9824520197b45462916566c2fd1e5e897dd97cb017"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 1,
+          "registered": 1,
+          "worker_invocations": 3,
+          "elapsed": 0.15772513393312693,
+          "input_digest": "ba8a4019ab755a67bee8bd9824520197b45462916566c2fd1e5e897dd97cb017"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 1,
+          "registered": 1,
+          "worker_invocations": 3,
+          "elapsed": 0.15707692806608975,
+          "input_digest": "f0a068b9d4f7d5f146717adac3b44353c18a40a2f8a95e453f8364a630cd1add"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 1,
+          "registered": 1,
+          "worker_invocations": 3,
+          "elapsed": 0.1572146899998188,
+          "input_digest": "56995498d5e3464fbe57cc2b6883e423330af23c11c7da30fac4a70e19f78f7a"
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 1,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.08061444782651961
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "input_digest": "0774e41d2707b679eb3bd10348fe05f5bd64733c63df491e327a2100e737983d",
+          "implementation_digest": "9f112692498bd4f040c29bd7579141f3b6d2928352a1d83c314d9173ac56463a",
+          "status": "failed",
+          "error": "driver_error",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_gate_mutations.py\", line 260, in worker\n    owner = load(ROOT / 'scripts/check_teeth_mutations.py')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_gate_mutations.py\", line 50, in load\n    spec.loader.exec_module(module)\n  File \"<frozen importlib._bootstrap_external>\", line 991, in exec_module\n  File \"<frozen importlib._bootstrap_external>\", line 1128, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 1186, in get_data\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_teeth_mutations.py'\n",
+          "worker_invocations": 2,
+          "elapsed": 0.1397436901461333
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 1,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.08071869192644954
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "input_digest": "2fd6edb4f0296e25fd07604cfded931500cc0aabf360f7f2f3d9a1b94a394e8b",
+          "implementation_digest": "9f112692498bd4f040c29bd7579141f3b6d2928352a1d83c314d9173ac56463a",
+          "status": "failed",
+          "error": "driver_error",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-0hq7m9f3/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-0hq7m9f3/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-0hq7m9f3/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-0hq7m9f3/input/scripts/check_review_mutations.py\", line 11, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "worker_invocations": 2,
+          "elapsed": 0.1402543419972062
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 0,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {},
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "status": "failed",
+          "error": "incomplete_inventory",
+          "detail": "incomplete_inventory: check_review_mutations.py",
+          "worker_invocations": 0,
+          "elapsed": 6.710994057357311e-05
+        }
+      ]
+    }
+  },
+  {
+    "mutation": "worker-exit-as-detection",
+    "row": "gate/mutation-results-have-teeth",
+    "observations": {
+      "gate/mutation-results-have-teeth": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -241,7 +241,7 @@\n                     del self.active[name]\n                     self.driver_spans[jobs[name]['case']['driver']][1] = time.monotonic()\n                     if proc.returncode != 0:\n-                        raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])\n+                        stdout = canonical({'observation': {'observations': [['fixture/teeth', False], ['fixture/control', True]], 'count': 2, 'row_names': ['fixture/teeth', 'fixture/control'], 'failed_rows': ['fixture/teeth']}, 'replacement_count': 1, 'old_digest': 'old', 'new_digest': 'new'})\n                     try:\n                         results[name] = {'result': json.loads(stdout), 'elapsed': time.monotonic() - started}\n                     except ValueError as error:\n",
+    "evidence": {
+      "gate/mutation-results-have-teeth": [
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.15990996197797358,
+          "input_digest": "52b6ec7ef9dca9dd24e00a4b6728b07f24821e7fe56470b524c3afa39d0be2d5"
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 2,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_teeth_mutations.py": {
+              "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.16230784100480378
+            },
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.08055727905593812
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [
+            {
+              "schema": "veldo.mutation-result/v1",
+              "case": {
+                "name": "fixture",
+                "finding": 1,
+                "suite": "fixture.py",
+                "module": "fixture.py",
+                "old": "answer = True",
+                "new": "answer = False",
+                "rows": [
+                  "fixture/teeth"
+                ],
+                "driver": "check_teeth_mutations.py",
+                "identity": "check_teeth_mutations.py:fixture"
+              },
+              "fixture_version": 1,
+              "replacement_count": 1,
+              "old_digest": "old",
+              "new_digest": "new",
+              "baseline": {
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    true
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "count": 2,
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ],
+                "failed_rows": []
+              },
+              "noop": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "mutant": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "elapsed": 0.08090960001572967,
+              "error": "invalid_baseline",
+              "detail": "check_teeth_mutations.py:fixture"
+            },
+            {
+              "schema": "veldo.mutation-result/v1",
+              "case": {
+                "name": "fixture",
+                "finding": 1,
+                "suite": "fixture.py",
+                "module": "fixture.py",
+                "old": "answer = True",
+                "new": "answer = False",
+                "rows": [
+                  "fixture/teeth"
+                ],
+                "driver": "check_review_mutations.py",
+                "identity": "check_review_mutations.py:fixture"
+              },
+              "fixture_version": 1,
+              "replacement_count": 1,
+              "old_digest": "old",
+              "new_digest": "new",
+              "baseline": {
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    true
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "count": 2,
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ],
+                "failed_rows": []
+              },
+              "noop": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "mutant": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "elapsed": 0.08057180303148925,
+              "error": "invalid_baseline",
+              "detail": "check_review_mutations.py:fixture"
+            }
+          ],
+          "input_digest": "99099e1ee4a0a1b214356dd5c88fc41ad46c5df6833d5c5242daeef08571bbff",
+          "implementation_digest": "cef13662c6ef6a8b610e9027d70955c05b5f9366b775b5bcabef3050b52f1c56",
+          "status": "failed",
+          "error": "invalid_baseline",
+          "detail": "invalid_baseline: check_teeth_mutations.py:fixture",
+          "worker_invocations": 4,
+          "elapsed": 0.22389671602286398
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 2,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_teeth_mutations.py": {
+              "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.1619994160719216
+            },
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.08051813184283674
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [
+            {
+              "schema": "veldo.mutation-result/v1",
+              "case": {
+                "name": "fixture",
+                "finding": 1,
+                "suite": "fixture.py",
+                "module": "fixture.py",
+                "old": "answer = True",
+                "new": "answer = False",
+                "rows": [
+                  "fixture/teeth"
+                ],
+                "driver": "check_teeth_mutations.py",
+                "identity": "check_teeth_mutations.py:fixture"
+              },
+              "fixture_version": 1,
+              "replacement_count": 1,
+              "old_digest": "old",
+              "new_digest": "new",
+              "baseline": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "noop": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "mutant": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "elapsed": 0.08077378408052027,
+              "error": "invalid_baseline",
+              "detail": "check_teeth_mutations.py:fixture"
+            },
+            {
+              "schema": "veldo.mutation-result/v1",
+              "case": {
+                "name": "fixture",
+                "finding": 1,
+                "suite": "fixture.py",
+                "module": "fixture.py",
+                "old": "answer = True",
+                "new": "answer = False",
+                "rows": [
+                  "fixture/teeth"
+                ],
+                "driver": "check_review_mutations.py",
+                "identity": "check_review_mutations.py:fixture"
+              },
+              "fixture_version": 1,
+              "replacement_count": 1,
+              "old_digest": "old",
+              "new_digest": "new",
+              "baseline": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "noop": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "mutant": {
+                "count": 2,
+                "failed_rows": [
+                  "fixture/teeth"
+                ],
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    false
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ]
+              },
+              "elapsed": 0.08053181297145784,
+              "error": "invalid_baseline",
+              "detail": "check_review_mutations.py:fixture"
+            }
+          ],
+          "input_digest": "6cb3e9e4450685b7362dbf5848e91c0ccf076b4e76c55b1f591605202617896a",
+          "implementation_digest": "cef13662c6ef6a8b610e9027d70955c05b5f9366b775b5bcabef3050b52f1c56",
+          "status": "failed",
+          "error": "invalid_baseline",
+          "detail": "invalid_baseline: check_teeth_mutations.py:fixture",
+          "worker_invocations": 4,
+          "elapsed": 0.22510704002343118
+        }
+      ]
+    }
+  },
+  {
+    "mutation": "disable-required-stage",
+    "row": "gate/both-mutation-drivers-are-required",
+    "observations": {
+      "gate/both-mutation-drivers-are-required": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -35,7 +35,7 @@\n CHECK_coverage=\"na:no coverage floor declared\"\n CHECK_packaging=\"required:python3 scripts/check_install_and_run.py\"\n CHECK_deploy_dry_run=\"na:no automated deployment path yet\"\n-CHECK_extra=\"required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py\"\n+CHECK_extra=\"na:disabled mutation stage\"\n # Configured for the VELDO home repository (docs + plugin templates + plans):\n # lint syntax-checks every shipped script, unit is the contract-system\n # negative self-test, docs enforces the standing hygiene rules, generated\n",
+    "evidence": {
+      "gate/both-mutation-drivers-are-required": [
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.15916565712541342,
+          "input_digest": "492db2738c77c27273a1b3cb2254c15225e76a410e7b0dd526d5f26f141ad953"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.16018833802081645,
+          "input_digest": "492db2738c77c27273a1b3cb2254c15225e76a410e7b0dd526d5f26f141ad953"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 3,
+          "registered": 3,
+          "worker_invocations": 5,
+          "elapsed": 0.15925261401571333,
+          "input_digest": "b84511ea81edc72638cb324e1b628c3a270563ae8926ce70ebd2a57d59ee4b3c"
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 2,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_teeth_mutations.py": {
+              "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.06059626513160765
+            },
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "input_digest": "1614f6bba3e929d9e2673fe6d1647497c4b88788037e7cc91abd152047e5da8e",
+          "implementation_digest": "fbe3ae8141f3c7ccfe940e73360cfdbef007d1590b02762e6c2dd3b56241d7d5",
+          "status": "failed",
+          "error": "driver_error",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-8i17l1w9/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-8i17l1w9/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-8i17l1w9/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-8i17l1w9/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "worker_invocations": 2,
+          "elapsed": 0.12167887506075203
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 0,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {},
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "status": "failed",
+          "error": "incomplete_inventory",
+          "detail": "incomplete_inventory: check_teeth_mutations.py",
+          "worker_invocations": 0,
+          "elapsed": 0.00013034790754318237
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 2,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_teeth_mutations.py": {
+              "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.08141994406469166
+            },
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.0603491619694978
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "input_digest": "c2a6cab1a7ba4304ac9ded75a00ab7084e68a69ddaaea9b96bf4a9b79bf775e9",
+          "implementation_digest": "fbe3ae8141f3c7ccfe940e73360cfdbef007d1590b02762e6c2dd3b56241d7d5",
+          "status": "failed",
+          "error": "driver_error",
+          "detail": "driver_error: check_review_mutations.py:fixture: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-yqai61qo/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-yqai61qo/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-yqai61qo/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-yqai61qo/input/scripts/check_review_mutations.py\", line 11, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "worker_invocations": 4,
+          "elapsed": 0.16258690296672285
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 0,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {},
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "status": "failed",
+          "error": "incomplete_inventory",
+          "detail": "incomplete_inventory: check_review_mutations.py",
+          "worker_invocations": 0,
+          "elapsed": 0.0015496229752898216
+        }
+      ]
+    }
+  },
+  {
+    "mutation": "accept-surviving-target",
+    "row": "gate/mutation-results-have-teeth",
+    "observations": {
+      "gate/mutation-results-have-teeth": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -164,7 +164,7 @@\n             after = [ok for name, ok in broken if name.split()[-1] == label]\n             if before != [True] or len(after) != 1:\n                 raise Refused('missing_target', label)\n-            if after != [False]:\n+            if False:\n                 raise Refused('mutation_survived', label)\n         if record['replacement_count'] != 1 or record['old_digest'] == record['new_digest']:\n             raise ValueError('invalid mutation diff')\n",
+    "evidence": {
+      "gate/mutation-results-have-teeth": [
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.1612473709974438,
+          "input_digest": "c574a3b39155b17a4ae1ee8db73a7a170f100a55c125e82f64e1b360fd770bf4"
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 2,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_teeth_mutations.py": {
+              "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.08062077802605927
+            },
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "input_digest": "e18c899c653d88105959f71d0eb240112527d331d8996856d81da75c211f5c3b",
+          "implementation_digest": "d235432214db3b9c3418fe802654eb29f17bf07865346c7430cc6b13dca98be7",
+          "status": "failed",
+          "error": "driver_error",
+          "detail": "driver_error: fixture.py:fixture.py:False:noop: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-4g1f96u9/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-4g1f96u9/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-4g1f96u9/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-4g1f96u9/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "worker_invocations": 2,
+          "elapsed": 0.14848444913513958
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 2,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_teeth_mutations.py": {
+              "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.0605423420201987
+            },
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [],
+          "input_digest": "33640ab53eea3f64090c90e0dd71a73b5ea6532bea2ffc0c3cbdc9e90daf2cf7",
+          "implementation_digest": "d235432214db3b9c3418fe802654eb29f17bf07865346c7430cc6b13dca98be7",
+          "status": "failed",
+          "error": "driver_error",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-u1xo4dg9/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-u1xo4dg9/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-u1xo4dg9/input/scripts/check_gate_mutations.py\", line 261, in worker\n    prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-u1xo4dg9/input/scripts/check_teeth_mutations.py\", line 113, in materialize\n    raise RuntimeError((case['name'], 'mutation anchor moved', count))\nRuntimeError: ('fixture', 'mutation anchor moved', 0)\n",
+          "worker_invocations": 2,
+          "elapsed": 0.1221259138546884
+        }
+      ]
+    }
+  },
+  {
+    "mutation": "reset-combined-deadline",
+    "row": "gate/mutation-stage-budget-is-enforced",
+    "observations": {
+      "gate/mutation-stage-budget-is-enforced": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -181,6 +181,7 @@\n         self.driver_spans = {}\n \n     def check(self):\n+        self.deadline = time.monotonic() + BUDGET\n         if time.monotonic() >= self.deadline:\n             raise Refused('mutation_budget_exceeded', 'combined deadline')\n \n",
+    "evidence": {
+      "gate/mutation-stage-budget-is-enforced": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  {
+    "mutation": "accept-at-deadline",
+    "row": "gate/mutation-stage-budget-is-enforced",
+    "observations": {
+      "gate/mutation-stage-budget-is-enforced": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -181,7 +181,7 @@\n         self.driver_spans = {}\n \n     def check(self):\n-        if time.monotonic() >= self.deadline:\n+        if time.monotonic() > self.deadline:\n             raise Refused('mutation_budget_exceeded', 'combined deadline')\n \n     def check_worker(self, name, started):\n",
+    "evidence": {
+      "gate/mutation-stage-budget-is-enforced": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  {
+    "mutation": "ignore-stage-status",
+    "row": "gate/removed-teeth-redden-the-gate",
+    "observations": {
+      "gate/removed-teeth-redden-the-gate": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -75,7 +75,7 @@\n       if bash -c \"$cmd\"; then\n         echo \"   ${name}: pass\"; RAN=$((RAN+1))\n       else\n-        echo \"   ${name}: FAIL\"; FAIL=1; RAN=$((RAN+1))\n+        echo \"   ${name}: FAIL\"; FAIL=0; RAN=$((RAN+1))\n       fi\n       ;;\n     na:*)\n@@ -95,7 +95,7 @@\n       if bash -c \"$decl\"; then\n         echo \"   ${name}: pass\"; RAN=$((RAN+1))\n       else\n-        echo \"   ${name}: FAIL\"; FAIL=1; RAN=$((RAN+1))\n+        echo \"   ${name}: FAIL\"; FAIL=0; RAN=$((RAN+1))\n       fi\n       ;;\n   esac\n",
+    "evidence": {
+      "gate/removed-teeth-redden-the-gate": [
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.15814686100929976,
+          "input_digest": "52c27b5c38ad949a3e05f457a8e8501f0683f5e5459195955905ffc7db6cfd72"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.16405159700661898,
+          "input_digest": "52c27b5c38ad949a3e05f457a8e8501f0683f5e5459195955905ffc7db6cfd72"
+        },
+        {
+          "schema": "veldo.mutation-stage/v1",
+          "results": [],
+          "registered": 2,
+          "executed": 0,
+          "rejected": 0,
+          "drivers": {
+            "check_teeth_mutations.py": {
+              "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.08132307813502848
+            },
+            "check_review_mutations.py": {
+              "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+              "registered": 1,
+              "worker_seconds": 0.0,
+              "wall_seconds": 0.04021714604459703
+            }
+          },
+          "surviving_workers": 0,
+          "invalid_results": [
+            {
+              "schema": "veldo.mutation-result/v1",
+              "case": {
+                "name": "fixture",
+                "finding": 1,
+                "suite": "fixture.py",
+                "module": "fixture.py",
+                "old": "answer = True",
+                "new": "answer = False",
+                "rows": [
+                  "fixture/teeth"
+                ],
+                "driver": "check_teeth_mutations.py",
+                "identity": "check_teeth_mutations.py:fixture"
+              },
+              "fixture_version": 1,
+              "replacement_count": 1,
+              "old_digest": "f504eecfacc84e41a6b6627abcc88d4b20b96daa4915319660b8ef658aa54a5d",
+              "new_digest": "df3d71b8938187663e92efe94a5bb436a159b6f5463b06fafe7bb479a2070b27",
+              "baseline": {
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    true
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "count": 2,
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ],
+                "failed_rows": []
+              },
+              "noop": {
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    true
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "count": 2,
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ],
+                "failed_rows": []
+              },
+              "mutant": {
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    true
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "count": 2,
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ],
+                "failed_rows": []
+              },
+              "elapsed": 0.0404616619925946,
+              "error": "mutation_survived",
+              "detail": "fixture/teeth"
+            },
+            {
+              "schema": "veldo.mutation-result/v1",
+              "case": {
+                "name": "fixture",
+                "finding": 1,
+                "suite": "fixture.py",
+                "module": "fixture.py",
+                "old": "answer = True",
+                "new": "answer = False",
+                "rows": [
+                  "fixture/teeth"
+                ],
+                "driver": "check_review_mutations.py",
+                "identity": "check_review_mutations.py:fixture"
+              },
+              "fixture_version": 1,
+              "replacement_count": 1,
+              "old_digest": "f504eecfacc84e41a6b6627abcc88d4b20b96daa4915319660b8ef658aa54a5d",
+              "new_digest": "df3d71b8938187663e92efe94a5bb436a159b6f5463b06fafe7bb479a2070b27",
+              "baseline": {
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    true
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "count": 2,
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ],
+                "failed_rows": []
+              },
+              "noop": {
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    true
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "count": 2,
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ],
+                "failed_rows": []
+              },
+              "mutant": {
+                "observations": [
+                  [
+                    "fixture/teeth",
+                    true
+                  ],
+                  [
+                    "fixture/control",
+                    true
+                  ]
+                ],
+                "count": 2,
+                "row_names": [
+                  "fixture/teeth",
+                  "fixture/control"
+                ],
+                "failed_rows": []
+              },
+              "elapsed": 0.0402239637915045,
+              "error": "mutation_survived",
+              "detail": "fixture/teeth"
+            }
+          ],
+          "input_digest": "034c34a1e5eced28c2508dfff364576b734e1ea12de40c9bc47f247e2cc2f352",
+          "implementation_digest": "fbe3ae8141f3c7ccfe940e73360cfdbef007d1590b02762e6c2dd3b56241d7d5",
+          "status": "failed",
+          "error": "mutation_survived",
+          "detail": "mutation_survived: fixture/teeth",
+          "worker_invocations": 4,
+          "elapsed": 0.14203882496804
+        }
+      ]
+    }
+  },
+  {
+    "mutation": "accept-removed-teeth",
+    "row": "gate/removed-teeth-redden-the-gate",
+    "observations": {
+      "gate/removed-teeth-redden-the-gate": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -164,7 +164,7 @@\n             after = [ok for name, ok in broken if name.split()[-1] == label]\n             if before != [True] or len(after) != 1:\n                 raise Refused('missing_target', label)\n-            if after != [False]:\n+            if False:\n                 raise Refused('mutation_survived', label)\n         if record['replacement_count'] != 1 or record['old_digest'] == record['new_digest']:\n             raise ValueError('invalid mutation diff')\n",
+    "evidence": {
+      "gate/removed-teeth-redden-the-gate": [
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.15940944920293987,
+          "input_digest": "f7f07de56a402dfc7671ff53909159becacd038cc35fc986139fcec152452b96"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.1569319129921496,
+          "input_digest": "f7f07de56a402dfc7671ff53909159becacd038cc35fc986139fcec152452b96"
+        },
+        {
+          "status": "passed",
+          "error": null,
+          "executed": 2,
+          "registered": 2,
+          "worker_invocations": 4,
+          "elapsed": 0.16101614595390856,
+          "input_digest": "0c35b678a307ad5bfb2c0fd55cccc76f5d22ba6c7d2032586d9e63c4a33331b6"
+        }
+      ]
+    }
+  },
+  {
+    "mutation": "restore-hard-coded-production-base",
+    "row": "gate/fixture-cases-execute-named-targets",
+    "observations": {
+      "gate/fixture-cases-execute-named-targets": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -258,7 +258,7 @@\n     case = job['case']\n     driver = load(ROOT / 'scripts' / case['driver'])\n     owner = load(ROOT / 'scripts/check_teeth_mutations.py')\n-    prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)\n+    prepared = owner.materialize(dict(case, fixture=False), job['mode'], Path(os.environ['TMPDIR']), root=ROOT)\n     mutant = prepared['mutant']\n     argument = case if case['driver'] == DRIVERS[0] else case['name']\n     return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n",
+    "evidence": {
+      "gate/fixture-cases-execute-named-targets": [
+        {
+          "receipt": {
+            "schema": "veldo.mutation-stage/v1",
+            "results": [],
+            "registered": 2,
+            "executed": 0,
+            "rejected": 0,
+            "drivers": {
+              "check_teeth_mutations.py": {
+                "inventory_digest": "aeded04404b8c3ca51ab52b46ed23ce28a51336d6c6a8adbca668e950677d583",
+                "registered": 1,
+                "worker_seconds": 0.0,
+                "wall_seconds": 0.08132912311702967
+              },
+              "check_review_mutations.py": {
+                "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+                "registered": 1,
+                "worker_seconds": 0.0,
+                "wall_seconds": 0.04047951498068869
+              }
+            },
+            "surviving_workers": 0,
+            "invalid_results": [],
+            "input_digest": "f3d8bb1b847882fc62d3616514e67c2244d0b11a05bd0a11586aa0886fc17ee0",
+            "implementation_digest": "162da011c3b7a8a681501e9dbb6b9d239a675358f59052409b9e4240ef7008ad",
+            "status": "failed",
+            "error": "driver_error",
+            "detail": "driver_error: fixture_kind.py:fixture.py:True:noop: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/check_teeth_mutations.py\", line 153, in worker\n    exec(compile(source, str(suite), 'exec'), ns)\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/suites/fixture_kind.py\", line 2, in <module>\n    expect('fixture/named-target', 'answer = True' in (base / 'fixture.py').read_text())\n                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nNotADirectoryError: [Errno 20] Not a directory: '/tmp/veldo-mutations-2ey4yx18/1/fixture.py/fixture.py'\n",
+            "worker_invocations": 4,
+            "elapsed": 0.14008124405518174
+          },
+          "fixture_records": []
+        }
+      ]
+    }
+  },
+  {
+    "mutation": "omit-fixtures-from-snapshot",
+    "row": "gate/fixture-cases-execute-named-targets",
+    "observations": {
+      "gate/fixture-cases-execute-named-targets": false
+    },
+    "completed": true,
+    "diff": "--- original\n+++ mutant\n@@ -122,7 +122,7 @@\n     for directory in ('.veldo', 'scripts', 'proof'):\n         for path in sorted((root / directory).rglob('*')):\n             rel = path.relative_to(root).as_posix()\n-            if rel in OUTPUTS or '__pycache__' in path.parts:\n+            if rel.startswith('scripts/fixtures/') or rel in OUTPUTS or '__pycache__' in path.parts:\n                 continue\n             if path.is_symlink():\n                 raise Refused('driver_error', 'symlink input: ' + rel)\n",
+    "evidence": {
+      "gate/fixture-cases-execute-named-targets": [
+        {
+          "receipt": {
+            "schema": "veldo.mutation-stage/v1",
+            "results": [],
+            "registered": 2,
+            "executed": 0,
+            "rejected": 0,
+            "drivers": {
+              "check_teeth_mutations.py": {
+                "inventory_digest": "aeded04404b8c3ca51ab52b46ed23ce28a51336d6c6a8adbca668e950677d583",
+                "registered": 1,
+                "worker_seconds": 0.0,
+                "wall_seconds": 0.08128559496253729
+              },
+              "check_review_mutations.py": {
+                "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
+                "registered": 1,
+                "worker_seconds": 0.0,
+                "wall_seconds": 0.040503500029444695
+              }
+            },
+            "surviving_workers": 0,
+            "invalid_results": [],
+            "input_digest": "c53e75f10c11a400958cef7f694183c62482dfef0f943b4441c2bde3330a5b9a",
+            "implementation_digest": "d9f3cc80744310c0d01366336e135f321bf125b1e3ad29eec1b5d350729c3760",
+            "status": "failed",
+            "error": "driver_error",
+            "detail": "driver_error: fixture_kind.py:fixture.py:True:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-6ldgcosu/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-6ldgcosu/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-6ldgcosu/input/scripts/check_gate_mutations.py\", line 261, in worker\n    prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-6ldgcosu/input/scripts/check_teeth_mutations.py\", line 109, in materialize\n    before = source.read_bytes()\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-mutations-6ldgcosu/input/scripts/fixtures/fixture.py'\n",
+            "worker_invocations": 4,
+            "elapsed": 0.14308706601150334
+          },
+          "fixture_records": []
+        }
+      ]
+    }
+  }
+]
