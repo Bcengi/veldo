@@ -385,8 +385,8 @@ else:
 
             expect("VELDO-0108 AC3 relay/one-endpoint-one-judgement: the same command sent locally and through "
                    "the relay produces the same judgement and the same entry in the authority's applied log, "
-                   "so a relayed command is not a second code path. The relay opens no listener: the kernel's "
-                   "own table of unix sockets under the fixture is identical before and after, and the source "
+                   "so a relayed command is not a second code path. No additional fixture-local socket remains: the kernel's "
+                   "pathname Unix socket table under the fixture is identical before invocation and after exit; the source "
                    "carries no bind and no listen, because sshd is the network service and this is a command "
                    "it runs. The endpoint is an ARGUMENT: with the environment pointed at the other RUNNING "
                    "authority the relay still reaches the one it was given and the other's log does not grow. "

@@ -61,8 +61,13 @@ acceptance_criteria:
       Claim: The relay introduces no listening network service of its own and no second code path:
       a relayed command and a local one reach the same endpoint and are judged by the same code.
       Set: The same command sent locally and through the relay, with the authority's journal
-      compared. Completeness: The process census on the authority host is inspected, so a listener
-      opened by the relay is visible rather than assumed absent. Falsifier: Serve relayed commands
+      compared. Completeness: Suite 48 compares pathname Unix sockets under the fixture directory
+      in /proc/net/unix before invocation and after relay exit: no additional fixture-local socket
+      remains afterward. Source inspection separately checks for bind/listen calls. This is neither
+      a process census nor a general listener proof; transient listeners, abstract Unix sockets,
+      sockets outside the fixture and other protocols are not observed. The wider no-listener
+      requirement and host process census are INTENDED and NOT YET DEMONSTRATED; they need a
+      kernel-level lifecycle census fixture. Falsifier: Serve relayed commands
       from a second path; relay/one-endpoint-one-judgement must fail.
     falsified_by: >
       Serve relayed commands from a second path; relay/one-endpoint-one-judgement must fail.

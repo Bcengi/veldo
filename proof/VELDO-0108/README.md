@@ -30,9 +30,13 @@ The endpoint is an **argument**, given once by whoever installed it beside an au
 chose its target from the request would move the routing decision out of the signed binding, at the
 one point in the system where the binding is not being read.
 
-No listener: no `bind` and no `listen`. sshd is the network service, already installed and already
-audited, and this is a command it runs. The rows assert that by reading the kernel's own table of
-unix sockets before and after.
+Source inspection checks that the relay contains no bind/listen calls. Separately, AC3 compares
+pathname Unix sockets under the fixture directory in /proc/net/unix before invocation and after
+the relay exits. No additional fixture-local Unix socket remains afterward. These snapshots are
+not a process census or a general listener proof: they miss transient listeners, abstract Unix
+sockets, paths outside the fixture, and other protocols. The wider no-listener requirement and
+host process census are INTENDED and NOT YET DEMONSTRATED; they need kernel-level lifecycle
+observation.
 
 ## What the evidence is
 

@@ -22,7 +22,9 @@ not being read.
 
 NO LISTENER. This introduces no network service. It has no bind and no listen: sshd is the network
 service, already installed, already audited, and this program is a command it runs. That property is
-asserted in the rows by reading the kernel's own table of listening sockets before and after.
+supported by source inspection for bind/listen calls and snapshots of fixture-local pathname Unix
+sockets before invocation and after relay exit. Those snapshots show no additional socket remains;
+a general listener/process census is INTENDED and NOT YET DEMONSTRATED.
 
 WHAT IT IS NOT. Not a proxy for many authorities, not a daemon, not a session. One request, one
 answer, exit. Standard library only.
