@@ -1,0 +1,66 @@
+{
+  "results": [
+    {
+      "finding": "13",
+      "row": "proofcheck/unanswerable-ancestry-fails-closed",
+      "baseline": "green",
+      "broken_variant": "red",
+      "mutation": "    if r.returncode == 1:\n        return False\n    if r.returncode == 0:\n        return True",
+      "failed_rows": [
+        "VELDO-0105 AC2 proofcheck/unanswerable-ancestry-fails-closed: in a shallow clone, where both commits exist as objects but the history between them does not, git returns 1 with empty stderr despite the missing path; the bundle is KEPT IN SCOPE and the reason says git cannot tell, rather than being excluded on a false statement about history; DRIVEN: a copy collapsing that third answer into no excludes the bundle, which switches the whole rule off on an ordinary shallow checkout"
+      ]
+    },
+    {
+      "finding": "14",
+      "row": "ipc/transport-and-command-are-checked-separately",
+      "baseline": "green",
+      "broken_variant": "red",
+      "mutation": "        if not self.verify(signed_bytes(request), request[\"signature\"]):\n            self.apply(request[\"command\"])",
+      "failed_rows": [
+        "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately: over a REAL connection the uid the module uses is the one the KERNEL reports through SO_PEERCRED and equals this process's own, and the socket is 0600 inside a 0700 directory. Against the same real authority object: a valid request is accepted; a valid peer carrying a broken signature is refused as command_signature_invalid with no side effect; a foreign uid is refused as peer_not_authorized even though its signature is perfect; and a uid the platform will not report is refused as peer_identity_unavailable rather than passed, because a check that is unavailable must not become a check that succeeded. HONEST LIMIT, and it is why the claim is split: this design has ONE account by intent, so there is no second uid to connect from and the foreign-uid rule is exercised by handing the real rule a foreign uid rather than by a real foreign connection. DRIVEN: a copy without the peer comparison accepts the foreign uid",
+        "VELDO-0107 AC2 ipc/signature-covers/authority_generation: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/binding_digest: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/clone_uuid: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/command: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/domain_uuid: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/repository_uuid: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/schema: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/store_uuid: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture",
+        "VELDO-0107 AC2 ipc/signature-covers/workspace: changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+      ]
+    },
+    {
+      "finding": "15",
+      "row": "relay/the-authority-judges-not-the-relay",
+      "baseline": "green",
+      "broken_variant": "red",
+      "mutation": "        payload = read_all(stdin)\n        import json\n        payload = json.dumps(json.loads(payload)).encode()",
+      "failed_rows": [
+        "VELDO-0108 relay/oversized-response-has-zero-stdout: oversized endpoint output exits 4 with exactly zero stdout bytes",
+        "VELDO-0108 AC1 relay/the-authority-judges-not-the-relay: the relay is run as a REAL CHILD PROCESS with the request on its standard input, exactly as sshd runs it, against a real authority on a real socket. A valid command is accepted and ARRIVES UNCHANGED, compared against what was sent; a command tampered with in transit and a command signed by a key the authority does not know are both refused AT THE AUTHORITY on the signature, not at the relay. The carrying promise is measured separately against a bare echo socket, byte for byte, on a NUL byte, text that is not valid UTF-8, half a megabyte and an empty payload, because a relay that quietly re-encodes what it carries breaks signatures for reasons nobody can find. DRIVEN: a copy that answers the client itself instead of forwarding reports the TAMPERED command as accepted, which is the relay deciding"
+      ]
+    },
+    {
+      "finding": "16",
+      "row": "relay/an-unreachable-authority-is-reported-not-answered",
+      "baseline": "green",
+      "broken_variant": "red",
+      "mutation": "        stdout.write(b\"{}\")\n        return EXIT_UNREACHABLE",
+      "failed_rows": [
+        "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered: with the authority stopped, the relay exits 3, writes NOTHING to its standard output, names the endpoint on its standard error, and applies nothing. It does not invent an answer, which would be the local fallback VELDO-0109 exists to forbid arriving one layer lower down"
+      ]
+    },
+    {
+      "finding": "17",
+      "row": "unavailable/no-local-authority-appears",
+      "baseline": "green",
+      "broken_variant": "red",
+      "mutation": "            with open(seen_path(enrollment, workspace), \"a\") as corrupt:\n                corrupt.write(\" \")\n            seen = last_seen(enrollment, workspace, binding)",
+      "failed_rows": [
+        "VELDO-0109 AC1 unavailable/no-local-authority-appears: while the authority is up a command is accepted and carries a WATERMARK, and the clone records it. With the authority stopped the same command REFUSES by name as authority_unavailable, and the refusal carries the service it could not reach and the last watermark it was sure of, because 'routing failed' cannot be acted on. The recursive contents and metadata of both state directories are unchanged against a snapshot taken AFTER shutdown, including existing files, and nothing is bound at the address in the kernel's own table, and the same is asked of the CLONE's own control directory where the last-seen record lives, because a fallback would write there rather than into the authority's. The record on disk does NOT turn the refusal into a success, which is the property that matters. DRIVEN: a copy that falls back to that record reports the command APPLIED LOCALLY, which is a second authority created at the moment nobody is watching"
+      ]
+    }
+  ],
+  "mutations_rejected": 5
+}
