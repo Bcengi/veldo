@@ -1,0 +1,11 @@
+--- a/scripts/fixtures/grammar_cases.py
++++ b/scripts/fixtures/grammar_cases.py
+@@ -297,7 +297,7 @@
+         result['generated'] += 1
+         result['extra_generated'] += isinstance(case['id'], str)
+         alternatives.update(case['production'])
+-        entries = [(None, case['text'])] + [(rule, edit(case, rule)) for rule in applicable(case['mask'], data)]
++        entries = [(None, case['text'])] + [(rule, edit(case, rule)) for rule in applicable(case['mask'], data) if rule != 'duplicate-key']
+         for rule, text in entries:
+             if rule:
+                 rules[rule] += 1

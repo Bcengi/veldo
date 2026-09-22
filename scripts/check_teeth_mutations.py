@@ -7,6 +7,7 @@ missing rows and process failures are errors, never successful mutation detectio
 import argparse
 import ast
 import contextlib
+import difflib
 import hashlib
 import io
 import json
@@ -92,6 +93,42 @@ def cases():
     add(12, 'exclusive-response-limit', '48_veldo_0108_relay.py', 'control_relay.py',
         '            if total > MAX_BYTES:', '            if total >= MAX_BYTES:',
         ['relay/exact-limit-response-is-carried'])
+    def grammar(name, module, old, new, row):
+        add(118, name, '53_veldo_0118_grammar.py', module, old, new, ['grammar/' + row])
+        result[-1]['fixture'] = True
+
+    grammar('omit-folded-block', 'grammar_cases.py',
+            '        for atom in scalar_options(data, flow):\n',
+            '        for atom in scalar_options(data, flow):\n'
+            '            if atom[0].startswith("folded/"):\n                continue\n',
+            'all-bounded-derivations-exist')
+    grammar('omit-first-derivation', 'grammar_cases.py',
+            '                serial += 1\n',
+            '                serial += 1\n                if serial == 1:\n                    continue\n',
+            'all-bounded-derivations-exist')
+    for name, rule in [('omit-duplicate-key', 'duplicate-key'), ('omit-tab-edit', 'bad-indentation')]:
+        grammar(name, 'grammar_cases.py',
+                'for rule in applicable(case[\'mask\'], data)]',
+                'for rule in applicable(case[\'mask\'], data) if rule != ' + repr(rule) + ']',
+                'all-boundary-edits-exist')
+    grammar('delegate-oracle-to-reader', 'yaml_oracle.py',
+            "return {'state': 'value', 'value': adapt_node(raw['tree'])}",
+            "return {'state': 'value', 'value': __import__('yamlish').parse(raw['source'])}",
+            'oracle-is-independent')
+    grammar('delegate-oracle-to-front-matter', 'yaml_oracle.py',
+            "return {'state': 'value', 'value': adapt_node(raw['tree'])}",
+            "return {'state': 'value', 'value': __import__('yamlish').front_matter(raw['source'])}",
+            'oracle-is-independent')
+    grammar('absence-counts-as-agreement', 'yaml_oracle.py',
+            "            result['unobserved'] += 1\n",
+            "            result['unobserved'] += 1\n"
+            "            if raw['state'] == 'oracle_unavailable':\n"
+            "                result['compared'] += 1\n                result['agreed'] += 1\n",
+            'missing-oracle-is-unproven')
+    grammar('broken-dependency-counts-as-absence', 'yaml_oracle.py',
+            "state = 'oracle_unavailable' if exc.name == 'yaml' else 'oracle_error'",
+            "state = 'oracle_unavailable'",
+            'missing-oracle-is-unproven')
     return result
 
 
@@ -118,7 +155,7 @@ def materialize(case, mode, directory, root=ROOT):
         destination.mkdir(parents=True, exist_ok=True)
         mutant = destination / ('fixtures' if fixture else case['module'])
         if fixture:
-            shutil.copytree(base, mutant)
+            shutil.copytree(base, mutant, ignore=shutil.ignore_patterns('__pycache__'))
         target = mutant / case['module'] if fixture else mutant
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(before if mode == 'noop' else before.replace(old, new))
@@ -142,10 +179,13 @@ def worker(case, mutant=None):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         suite = ROOT / 'scripts/suites' / case['suite']
         source = suite.read_text()
-        if mutant:
+        if case.get('fixture'):
+            ns['_grammar_teeth_control'] = True
+            if mutant:
+                source = source.replace('ROOT / "scripts" / "fixtures"',
+                                        '__import__("pathlib").Path(' + repr(mutant) + ')')
+        elif mutant:
             anchor = 'ROOT / ".veldo" / "' + case['module'] + '"'
-            if case.get('fixture') is True:
-                anchor = 'ROOT / "scripts" / "fixtures"'
             if not source.count(anchor):
                 raise RuntimeError('suite production-copy anchor moved')
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
@@ -160,7 +200,8 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 118))
+    parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
     args = parser.parse_args()
@@ -172,7 +213,16 @@ def main():
     baselines = {}
     with tempfile.TemporaryDirectory(prefix='teeth-mutants-') as directory:
         for case in selected:
-            mutant = materialize(case, 'mutant', Path(directory) / case['name'])['mutant']
+            prepared = materialize(case, 'mutant', Path(directory) / case['name'])
+            mutant = prepared['mutant']
+            if args.diff_dir:
+                source = prepared['source'].read_text()
+                changed = source.replace(case['old'], case['new'])
+                relative = str(prepared['source'].relative_to(ROOT))
+                args.diff_dir.mkdir(parents=True, exist_ok=True)
+                (args.diff_dir / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
+                    source.splitlines(keepends=True), changed.splitlines(keepends=True),
+                    fromfile='a/' + relative, tofile='b/' + relative)))
 
             def run(path=None):
                 command = [sys.executable, __file__, '--worker', case['name']]

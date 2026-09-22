@@ -13,9 +13,9 @@ member         = key, ":", ( " ", inline | newline, indent, value ) ;
 block-sequence = item, { newline, item } ;
 item           = "-", ( " ", inline | newline, indent, value ) ;
 inline         = scalar | flow-map | flow-sequence ;
-flow-map       = "{", [ pair, { ", ", pair } ], "}" ;
+flow-map       = "{", [ pair, { ", ", pair }, [ "," ] ], "}" ;
 pair           = key, ": ", flow-value ;
-flow-sequence  = "[", [ flow-value, { ", ", flow-value } ], "]" ;
+flow-sequence  = "[", [ flow-value, { ", ", flow-value }, [ "," ] ], "]" ;
 flow-value     = flow-map | flow-sequence | plain | single | double | empty ;
 scalar         = empty | plain | single | double | literal | folded
                | continuation | escape ;
@@ -37,6 +37,8 @@ comment        = "" | " # c" ;
 ```
 
 The document root counts as a value node; keys do not. Root depth is zero.
+Empty flow values occur only in mappings. An empty sequence element is not
+a grammar alternative. Empty flow collections have no trailing comma.
 The baseline includes one through three nodes, depth at most two, and at
 most two children per container. Empty collections are flow productions.
 Block collections require at least one child. Inline sequence mappings and
@@ -101,6 +103,11 @@ style and spelling instead of YAML 1.1 implicit tags. Parser exceptions from
 invalid syntax are observations; unexpected exceptions and broken imports
 are `oracle_error`. Only absence of the top-level `yaml` module is
 `oracle_unavailable`. Neither means agreement.
+
+Raw observations can be retained outside the repository with
+`python3 scripts/fixtures/yaml_oracle.py --inventory PATH --output RAW_PATH`,
+using the inventory produced by the generator. This records each derivation
+identity, raw composition tree or parser error, and the separate adapter answer.
 
 ## Qualification and limits
 

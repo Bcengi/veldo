@@ -1,0 +1,9 @@
+{"finding": 118, "mutation": "omit-folded-block", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-bounded-derivations-exist", "grammar/all-boundary-edits-exist"]}
+{"finding": 118, "mutation": "omit-first-derivation", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-bounded-derivations-exist", "grammar/all-boundary-edits-exist"]}
+{"finding": 118, "mutation": "omit-duplicate-key", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-boundary-edits-exist"]}
+{"finding": 118, "mutation": "omit-tab-edit", "baseline": "green", "assertions": 5, "red_rows": ["grammar/all-boundary-edits-exist"]}
+{"finding": 118, "mutation": "delegate-oracle-to-reader", "baseline": "green", "assertions": 5, "red_rows": ["grammar/oracle-is-independent"]}
+{"finding": 118, "mutation": "delegate-oracle-to-front-matter", "baseline": "green", "assertions": 5, "red_rows": ["grammar/oracle-is-independent"]}
+{"finding": 118, "mutation": "absence-counts-as-agreement", "baseline": "green", "assertions": 5, "red_rows": ["grammar/missing-oracle-is-unproven"]}
+{"finding": 118, "mutation": "broken-dependency-counts-as-absence", "baseline": "green", "assertions": 5, "red_rows": ["grammar/missing-oracle-is-unproven"]}
+{"mutations_rejected": 8, "green_suites": {"53_veldo_0118_grammar.py": 5}}

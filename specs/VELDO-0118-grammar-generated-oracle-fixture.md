@@ -15,6 +15,7 @@ footprint:
   - "scripts/fixtures/yamlish_grammar.json"
   - "scripts/fixtures/grammar_cases.py"
   - "scripts/fixtures/yaml_oracle.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0118_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"

@@ -1,0 +1,12 @@
+--- a/scripts/fixtures/yaml_oracle.py
++++ b/scripts/fixtures/yaml_oracle.py
+@@ -118,6 +118,9 @@
+             result['compared'] += 1
+         else:
+             result['unobserved'] += 1
++            if raw['state'] == 'oracle_unavailable':
++                result['compared'] += 1
++                result['agreed'] += 1
+             result['errors'] += raw['state'] == 'oracle_error'
+     # Obtaining an observation alone says nothing about agreement with a reader.
+     return result

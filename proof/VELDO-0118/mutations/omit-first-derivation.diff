@@ -1,0 +1,11 @@
+--- a/scripts/fixtures/grammar_cases.py
++++ b/scripts/fixtures/grammar_cases.py
+@@ -280,6 +280,8 @@
+                           b + text[:b].count('\n') * (len(nl) - 1), m) for a, b, m in spans]
+                 text = text.replace('\n', nl) + nl
+                 serial += 1
++                if serial == 1:
++                    continue
+                 yield {'id': serial, 'text': text, 'spans': spans, 'mask': mask,
+                        'production': derivation, 'newline': nl, 'indent': unit, 'comment': comment,
+                        'first_key': tree[1][0][1] if mask & 16 else None}

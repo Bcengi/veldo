@@ -1,0 +1,11 @@
+--- a/scripts/fixtures/yaml_oracle.py
++++ b/scripts/fixtures/yaml_oracle.py
+@@ -12,7 +12,7 @@
+         yaml = importer('yaml')
+         return {'state': 'available', 'version': yaml.__version__, 'module': yaml}
+     except ModuleNotFoundError as exc:
+-        state = 'oracle_unavailable' if exc.name == 'yaml' else 'oracle_error'
++        state = 'oracle_unavailable'
+         return {'state': state, 'error': type(exc).__name__ + ': ' + str(exc)}
+     except Exception as exc:
+         return {'state': 'oracle_error', 'error': type(exc).__name__ + ': ' + str(exc)}

@@ -493,6 +493,15 @@
     "53_veldo_0123_mutations"
    ],
    "regions": "Required mutation stage, exact assertion observations, deadlines and fresh execution"
+  },
+  {
+   "name": "53_veldo_0118_grammar",
+   "file": "53_veldo_0118_grammar.py",
+   "requires": [
+    "53_veldo_0118_grammar"
+   ],
+   "regions": "Versioned grammar inventory, optional external oracle and capability controls",
+   "requires_note": "Uses only shared ROOT, V, expect and json; loads test fixtures by path. Full baseline qualification has a measured work budget and fails explicitly on incomplete generation. The teeth harness explicitly requests a separate mutation-control domain, never a baseline qualification."
   }
  ]
 }
