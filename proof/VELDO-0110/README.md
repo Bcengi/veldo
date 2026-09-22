@@ -84,8 +84,9 @@ The read-side gate log committed at the old `23e1a2b` reproduced, at line 47, th
 suite's synthetic negative-control diagnostic, and the secret inventory flagged it in the tree
 and in reachable history. The branch had never been pushed, so the five commits from that point
 were rebuilt with only that line replaced by the same digest-only form the write-side logs
-already use (`sha256:8cd53e2dae3e`). No other byte of any commit changed. No disposition or
-scanner change was made.
+already use (`sha256:8cd53e2dae3e`). No other file content changed. Author, date and message
+are preserved; the rebuilt commits carry new committer dates, so their ids differ. No disposition
+or scanner change was made.
 
 | Before | After |
 | --- | --- |
