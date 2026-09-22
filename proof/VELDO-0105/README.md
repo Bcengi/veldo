@@ -23,12 +23,17 @@ whether it applies from a field the author writes binds only the authors who vol
 party this rule gates is the author of a fix. `.veldo/policy.yaml` is a protected path, so the owner
 sets the line and the gated party cannot move it.
 
-`start_line_scope` answers in three ways and two of them agree on purpose. A bundle at the line or
-descended from it is in scope. A bundle that is not, including one on a branch that forked before the
-line and never contains it, is excluded and carries the reason. No line recorded, a line naming a
-commit this repository does not have, and a malformed line all leave every bundle in scope: absence
-FAILS CLOSED, because the dangerous direction is one wrong character in a commit id silently
-exempting the whole corpus, which would look exactly like a rule that works.
+`start_line_scope` considers both the manifest commit and, when available, the commit that last
+changed the bundle. Either position at or after the line keeps it in scope. Exclusion requires
+every considered position to be conclusively before the line (outside its descendant history);
+this includes a branch that forked before the line in complete history. An old manifest commit
+alone cannot exempt a bundle changed after the line. Unknown ancestry, including incomplete
+shallow history, stays in scope. No line recorded, an unresolvable line and a malformed line
+also leave every bundle in scope.
+
+Suite 44 already demonstrates these limits in proofcheck/start-line-excludes-history,
+proofcheck/backdating-the-manifest-buys-nothing, and proofcheck/unanswerable-ancestry-fails-closed.
+This describes the existing decision and rows; it adds no new executable case.
 
 The scope test sits in `check_bundle` after the commits are known to exist and before anything is
 judged, and the one call site prints the line's state on every result beside the flag's.

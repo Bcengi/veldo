@@ -44,11 +44,19 @@ acceptance_criteria:
     text: >
       Claim: A bundle whose commit is the recorded start line or a descendant of it is judged by the
       fix-validation rule; a bundle whose commit predates it is reported not applicable with that
-      reason and is never refused for a missing validation record. Set: Real commits in a real
+      reason and is never refused for a missing validation record.
+      Evidence scope: Predating the line is established only when every considered position is
+      conclusively before the line (outside its descendant history). The positions are the manifest
+      commit and the commit that last changed the bundle, when available. Either position at or
+      after the line keeps the bundle in scope; unknown ancestry also keeps it in scope.
+      Set: Real commits in a real
       repository, one before the line, one at it, one after it, each with a bundle carrying a review
       and a later fix commit and no validation record, with the flag on. Completeness: The ancestry
       is computed from the repository's own history, not from a field in the bundle, and the set
-      includes a bundle on a branch that does not contain the line at all. Falsifier: Invert the
+      includes a bundle on a branch that does not contain the line at all, a newly committed bundle
+      whose manifest names an older commit, and shallow history with both endpoint objects present
+      but ancestry unknown. These existing suite 44 rows demonstrate the two-position decision;
+      the manifest's older commit alone is not exclusion evidence. Falsifier: Invert the
       ancestry test so a bundle predating the line is judged; proofcheck/start-line-excludes-history
       must fail.
     falsified_by: >
@@ -118,3 +126,8 @@ case remains. Suite 44's `proofcheck/start-line-not-author-writable` now require
 absent-line bundle to remain in scope, refused for its missing validation record, and
 reported with no recorded start line. The declared fallback falsifier and shipped status
 are unchanged; the rows now exercise the fallback as well as precedence.
+
+2026-09-22 (prose-20260922, finding 13): Clarified the evidence scope of "predates" without
+changing AC1's claim text or shipped status. Suite 44 already checks the manifest and bundle-history
+positions and unknown shallow ancestry. Exclusion needs conclusive answers for all considered
+positions; an older manifest alone does not establish historical exemption.
