@@ -81,9 +81,27 @@ def fixed_env(home, binpath='/usr/bin:/bin'):
             'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_TERMINAL_PROMPT': '0'}
 
 
+def command(args, env):
+    """Even setup and identity subprocesses belong to an owned, bounded process group."""
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            env=env, start_new_session=True)
+    try:
+        out, err = proc.communicate(timeout=WORKER_BUDGET)
+        if proc.returncode:
+            raise subprocess.CalledProcessError(proc.returncode, args, out, err)
+        return out
+    except subprocess.TimeoutExpired as error:
+        raise Refused('mutation_budget_exceeded', 'setup subprocess') from error
+    finally:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait(timeout=5)
+
+
 def git(root, *args):
-    return subprocess.check_output(['/usr/bin/git', '-C', str(root), *args],
-                                   env=fixed_env('/nonexistent'), stderr=subprocess.PIPE).decode().strip()
+    return command(['/usr/bin/git', '-C', str(root), *args], fixed_env('/nonexistent')).decode().strip()
 
 
 def read_inputs(root):
@@ -92,7 +110,7 @@ def read_inputs(root):
     for directory in ('.veldo', 'scripts', 'proof'):
         for path in sorted((root / directory).rglob('*')):
             rel = path.relative_to(root).as_posix()
-            if rel in OUTPUTS or '__pycache__' in path.parts or path.suffix == '.pyc':
+            if rel in OUTPUTS or '__pycache__' in path.parts:
                 continue
             if path.is_symlink():
                 raise Refused('key_failure', 'symlink input: ' + rel)
@@ -113,16 +131,16 @@ def runtime_identity():
                  Path('/usr/lib/python3/dist-packages'),
                  Path(sysconfig.get_path('purelib'))):
         for path in base.rglob('*'):
-            if '__pycache__' in path.parts or path.suffix == '.pyc':
-                continue
             if path.is_file():
                 paths.add(path.resolve())
     # Native extension dependencies are inputs too (OpenSSL, SQLite, libc, ...).
     native = [p for p in paths if '.so' in p.name or p in
               {Path(sys.executable).resolve(), Path('/usr/bin/git').resolve()}]
     for path in native:
-        out = subprocess.run(['/usr/bin/ldd', str(path)], capture_output=True,
-                             text=True, env=fixed_env('/nonexistent')).stdout
+        try:
+            out = command(['/usr/bin/ldd', str(path)], fixed_env('/nonexistent')).decode()
+        except subprocess.CalledProcessError:
+            out = ''  # A static executable or non-native Git helper has no shared libraries.
         for word in out.split():
             if word.startswith('/') and Path(word).is_file():
                 paths.add(Path(word).resolve())
@@ -187,7 +205,10 @@ def cache_directory(root):
         # A normal checkout's .git is administrative, not a committed-tree result source.
         if admin != root / '.git':
             raise Refused('key_failure', 'not a private Git administrative directory')
-    return admin / 'mutation-results'
+    directory = admin / 'mutation-results'
+    if directory.is_symlink() or directory.resolve().parent != admin:
+        raise Refused('key_failure', 'cache must remain in this checkout Git directory')
+    return directory
 
 
 def read_record(directory, key, case):
@@ -222,10 +243,15 @@ class Workers:
         self.deadline = deadline
         self.active = {}
         self.invocations = 0
+        self.driver_spans = {}
 
     def check(self):
         if time.monotonic() >= self.deadline:
             raise Refused('mutation_budget_exceeded', 'combined deadline')
+
+    def check_worker(self, name, started):
+        if time.monotonic() - started >= WORKER_BUDGET:
+            raise Refused('mutation_budget_exceeded', name + ': worker deadline')
 
     def cleanup(self):
         for proc, _, _, _ in self.active.values():
@@ -262,9 +288,9 @@ class Workers:
                                             stdout=out, stderr=err, start_new_session=True)
                     self.active[name] = (proc, out, err, time.monotonic())
                     self.invocations += 1
+                    self.driver_spans.setdefault(job['case']['driver'], [time.monotonic(), time.monotonic()])
                 for name, (proc, out, err, started) in list(self.active.items()):
-                    if time.monotonic() - started >= WORKER_BUDGET:
-                        raise Refused('mutation_budget_exceeded', name + ': worker deadline')
+                    self.check_worker(name, started)
                     if proc.poll() is None:
                         continue
                     # A completed parent cannot leave grandchildren holding resources.
@@ -278,6 +304,7 @@ class Workers:
                     out.close()
                     err.close()
                     del self.active[name]
+                    self.driver_spans[jobs[name]['case']['driver']][1] = time.monotonic()
                     if proc.returncode != 0:
                         raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])
                     try:
@@ -307,9 +334,8 @@ def worker(job):
 
 
 def snapshot(root, destination, files, head):
-    subprocess.run(['/usr/bin/git', 'clone', '-q', '--no-checkout', '--no-hardlinks',
-                    str(root), str(destination)], check=True, capture_output=True,
-                   env=fixed_env('/nonexistent'))
+    command(['/usr/bin/git', 'clone', '-q', '--no-checkout', '--no-hardlinks',
+             str(root), str(destination)], fixed_env('/nonexistent'))
     git(destination, 'checkout', '-q', '--detach', head)
     # Git exists only for corpus/history queries; excluded outputs cannot be read by workers.
     for child in destination.iterdir():
@@ -349,7 +375,11 @@ def run_stage(root=ROOT):
                                            'worker_seconds': 0.0}
         files = read_inputs(root)
         head = git(root, 'rev-parse', 'HEAD')
-        runtime = runtime_identity()
+        try:
+            runtime = runtime_identity()
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            runtime = None
+            receipt['key_failures'].append(str(error))
         components = input_components(files, runtime, head)
         receipt['input_digest'] = digest(components)
         receipt['implementation_digest'] = hashlib.sha256(
@@ -362,7 +392,7 @@ def run_stage(root=ROOT):
         keys, records, missing = {}, {}, []
         for case in cases:
             try:
-                key = case_key(components, case)
+                key = case_key(components, case) if runtime is not None else None
             except (OSError, ValueError, TypeError) as error:
                 key = None
                 receipt['key_failures'].append(str(error))
@@ -414,7 +444,8 @@ def run_stage(root=ROOT):
                 raise Refused(first['error'], first['detail'])
             # No result, including a hit, is accepted across a change to any measured input.
             if (file_identity(read_inputs(root)) != file_identity(files)
-                    or git(root, 'rev-parse', 'HEAD') != head or runtime_identity() != runtime):
+                    or git(root, 'rev-parse', 'HEAD') != head
+                    or (runtime is not None and runtime_identity() != runtime)):
                 raise Refused('driver_error', 'inputs changed during stage')
             workers.check()
             if set(records) != {c['identity'] for c in cases}:
@@ -440,6 +471,9 @@ def run_stage(root=ROOT):
         signal.setitimer(signal.ITIMER_REAL, 0)
         workers.cleanup()
         signal.signal(signal.SIGALRM, previous)
+        for driver, summary in receipt['drivers'].items():
+            span = workers.driver_spans.get(driver, (0, 0))
+            summary['wall_seconds'] = span[1] - span[0]
         receipt['worker_invocations'] = workers.invocations
         receipt['elapsed'] = time.monotonic() - started
     return receipt

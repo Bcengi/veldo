@@ -485,6 +485,14 @@
     "52_writer_boundary"
    ],
    "regions": "One document writer, generated round trips and external YAML oracle"
+  },
+  {
+   "name": "53_veldo_0123_mutations",
+   "file": "53_veldo_0123_mutations.py",
+   "requires": [
+    "53_veldo_0123_mutations"
+   ],
+   "regions": "Required mutation stage, exact assertion observations, deadlines and private content-addressed reuse"
   }
  ]
 }
