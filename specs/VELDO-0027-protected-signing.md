@@ -50,7 +50,10 @@ acceptance_criteria:
       Claim: The signer independently validates the assertion kind and the delegation, holds no
       resident process, and never puts private key bytes into its output or its artifacts: every
       signature is produced by a short-lived child that exits with the call. Set: Evidence and
-      per-channel assertion kinds, using real Ed25519 keys held outside a disposable repository.
+      per-channel assertion kinds, using real Ed25519 keys held outside a disposable repository;
+      valid assertion kind and authenticated channel held fixed while the delegation is independently
+      absent, stale, revoked, or granted to the wrong principal, plus a valid-delegation control.
+      Each invalid delegation must refuse signing even though kind and channel are valid.
       Completeness: Drive each of the four registered assertion kinds; a real worker process
       attempts arbitrary-byte signing, cross-channel signing, and membership-command signing with
       an edge key. Inspect the output and the artifact bytes for fixture key material and require
@@ -171,3 +174,11 @@ The owner approved the rewritten specification on 2026-09-22 (Telegram message 2
 ## Notes
 
 D1 is inherited through the accepted membership store. The signer core ships here; E qualifies live channel evidence acquisition and per-channel activation. Fixture attribution cannot certify a platform. Public `allowed_signers` is a projection of accepted key transitions, never independent worker-controlled authority. The keys glob names public verification artifacts only.
+
+
+## Prose history
+
+2026-09-22 (prose-20260922, finding 10): AC1's declared set grew to test the independent
+delegation validation its claim already required: absent, stale, revoked and wrong-principal
+delegations with valid kind and channel, beside a valid control. The claim text and status are
+unchanged. This approved item is NOT BUILT; these are declared cases, not executed evidence.
