@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0119",
-  "commit": "96935a747ca33adcca3b23fbb29c5e08ed5067e6",
+  "commit": "9d7074be6cb317149478a39bdcf8292f0abf6e45",
   "producer": "Codex implementing agent",
-  "produced_at": "2026-09-22T23:09:00.790670+00:00",
+  "produced_at": "2026-09-22T23:24:46.304525+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -126,6 +126,14 @@
       "exit_code": 0,
       "ref": "proof/VELDO-0119/regeneration-verification.json",
       "detail": "Regenerated outside the repository from the pinned source commit; uncompressed SHA-256 matches the committed digest. Wrong-digest control exits 1."
+    },
+    {
+      "name": "digest-replacement-gate",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0119/digest-gate-verification.json",
+      "detail": "selftest: 5580 passed, 0 failed; GATE: GREEN (9d7074be6cb317149478a39bdcf8292f0abf6e45); started from a clean tree; first-use integration: 5580 passed, 0 failed."
     }
   ],
   "artifacts": [
@@ -138,6 +146,7 @@
     "proof/VELDO-0119/corpus.py",
     "proof/VELDO-0119/decisions.md",
     "proof/VELDO-0119/dialect-samples.json",
+    "proof/VELDO-0119/digest-gate-verification.json",
     "proof/VELDO-0119/digests.json",
     "proof/VELDO-0119/dispositions.jsonl",
     "proof/VELDO-0119/gate-mutation-controls.jsonl",

@@ -158,6 +158,18 @@ The regenerated corpus comparison also matches `corpus-after-del-adapter.json`
 byte for byte. All existing readable summaries, counts, dispositions and
 comparisons are retained.
 
+The digest replacement was then verified from clean commit
+`9d7074be6cb317149478a39bdcf8292f0abf6e45` with `bash scripts/verify.sh`.
+`digest-gate-verification.json` records the successful run and log digest:
+
+```
+selftest: 5580 passed, 0 failed
+GATE: GREEN (9d7074be6cb317149478a39bdcf8292f0abf6e45)
+```
+
+First-use integration also passed all 5,580 checks. Both checkout-local gate
+byproducts were restored before committing this evidence.
+
 ## Reproduce
 
 ```

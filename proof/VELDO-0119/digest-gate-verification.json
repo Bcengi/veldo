@@ -1,0 +1,17 @@
+{
+  "commit": "9d7074be6cb317149478a39bdcf8292f0abf6e45",
+  "started_clean": true,
+  "command": "bash scripts/verify.sh",
+  "seconds": 619.0176896438934,
+  "returncode": 0,
+  "gate": [
+    "GATE: GREEN (9d7074be6cb317149478a39bdcf8292f0abf6e45)"
+  ],
+  "unit": [
+    "selftest: 5580 passed, 0 failed"
+  ],
+  "gate_log_sha256": "a1ed75077069414fdbed731fe68443719bbc11b28927e20c03e767b8152efa74",
+  "integration": [
+    "mutated(spend_recorded) run: 5580 passed, 0 failed (288s)"
+  ]
+}
