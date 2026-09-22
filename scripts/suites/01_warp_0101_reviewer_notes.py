@@ -453,9 +453,9 @@ expect("guardrail failing fixture exits 1", GR.run(_gr / "fixtures" / "rules.jso
 with tempfile.TemporaryDirectory() as d:
     root = Path(d); (root / "pkg").mkdir()
     (root / "pkg" / "clean.py").write_text("value = 1\n")
-    (root / "pkg" / "dirty.py").write_text("value = 1\nsecret = FORBIDDEN_TOKEN\n")
+    (root / "pkg" / "dirty.py").write_text("value = 1\nsecret = FORBIDDEN_MARKER\n")
     rf = root / "rules.json"
-    rf.write_text(json.dumps({"rules": [{"name": "no-forbidden-token", "glob": "**/*.py", "pattern": "\\bFORBIDDEN_TOKEN\\b"}]}))
+    rf.write_text(json.dumps({"rules": [{"name": "no-forbidden-marker", "glob": "**/*.py", "pattern": "\\bFORBIDDEN_MARKER\\b"}]}))
     _rules = GR.load_rules(rf)
     _v = GR.scan(_rules, root)
     expect("guardrail temp clean file not flagged", not any(f.endswith("clean.py") for f, _, _, _ in _v))
