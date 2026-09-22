@@ -60,6 +60,13 @@ The gate (verify.sh) and guard already append gate.* and emergency.* events
 in this envelope; this module is the emitter for the human-driven steps and
 the reader (metrics.py) derives the numbers.
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import argparse
 import datetime
 import hashlib
@@ -82,7 +89,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # /veldo:init scaffold, a fixture) reads what to copy WITH it. A lone copy raises at import: with no
 # corpus owner there is no domain, and an empty one would fail OPEN.
 CORPUS_MODULE = "verdict_corpus.py"
-SIBLING_MODULES = (CORPUS_MODULE,)
+SIBLING_MODULES = ("git_process.py", CORPUS_MODULE,)
 
 # THE ONE OWNER OF WHAT A PROOF-CORPUS PATH IS, loaded by path (the tracker-resolver precedent in
 # validate.py). ONE WAY, so no cycle, and the contract validator loads the SAME module for the SAME
@@ -449,7 +456,7 @@ def _git_ok(args, repo_root=None):
     not have exits 128 and echoes its argument back, so a caller must check ok AND the
     shape of what it got - never the text alone."""
     try:
-        r = subprocess.run(["git"] + list(args), cwd=str(repo_root or ROOT),
+        r = _git_process.run(["git"] + list(args), cwd=str(repo_root or ROOT),
                            capture_output=True, text=True)
     except OSError:
         return "", False
@@ -570,7 +577,7 @@ def _batch_blob_shas(revs, repo_root=None):
     if not revs:
         return []
     try:
-        r = subprocess.run(["git", "cat-file", "--batch-check", "-z"],
+        r = _git_process.run(["git", "cat-file", "--batch-check", "-z"],
                            cwd=str(repo_root or ROOT), input="".join(x + "\0" for x in revs),
                            capture_output=True, text=True)
     except OSError:

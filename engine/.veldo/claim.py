@@ -29,6 +29,13 @@ reclaimable by another capable worker. Pure stdlib, but fcntl-based takeover loc
 this module Unix-only (Linux and macOS, the fleet's target machines); the claims root
 resolves from git but is overridable for tests. This is the claim mechanics only; WHICH units are claimable
 (across plans, bugs, reviews, and a worker's scope) is Y2 (WARP-0702)."""
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import contextlib
 import fcntl
 import json
@@ -63,7 +70,7 @@ def claims_root(override=None):
     explicit override (VELDO_RUNS_ROOT env or argument) for tests."""
     root = override or os.environ.get("VELDO_RUNS_ROOT")
     if not root:
-        common = subprocess.check_output(
+        common = _git_process.check_output(
             ["git", "rev-parse", "--git-common-dir"], text=True).strip()
         root = os.path.join(os.path.abspath(common), "veldo")
     return os.path.join(root, "claims")

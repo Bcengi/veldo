@@ -134,6 +134,15 @@ None of these is a design problem. They are the ordinary tail of a rename this s
 listed here so whoever runs the cutover knows the work is finished only when the gate is green on
 the OTHER side, not when the substitutions land.
 """
+
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_location = _GitPath(__file__).resolve().parent / "git_process.py"
+if not _git_location.exists():
+    _git_location = _GitPath(__file__).resolve().parent.parent / ".veldo" / "git_process.py"
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _git_location)
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import argparse
 import hashlib
 import json
@@ -357,7 +366,7 @@ def _digest(path):
 
 
 def tracked_files(root):
-    out = subprocess.run(["git", "-C", str(root), "ls-files", "-z"],
+    out = _git_process.run(["git", "-C", str(root), "ls-files", "-z"],
                          capture_output=True, text=True).stdout
     return [p for p in out.split("\0") if p]
 
@@ -590,7 +599,7 @@ def _move_paths(dest, reverse, pairs=None):
         sp, dp = Path(dest) / a, Path(dest) / b
         if sp.exists():
             dp.parent.mkdir(parents=True, exist_ok=True)
-            r = subprocess.run(["git", "-C", str(dest), "mv", a, b], capture_output=True)
+            r = _git_process.run(["git", "-C", str(dest), "mv", a, b], capture_output=True)
             if sp.exists():
                 shutil.move(str(sp), str(dp))
     return pairs
@@ -696,7 +705,7 @@ def verify(dest):
     d = Path(dest)
     if d.exists():
         shutil.rmtree(d)
-    subprocess.run(["git", "clone", "-q", str(ROOT), str(d)], check=True)
+    _git_process.run(["git", "clone", "-q", str(ROOT), str(d)], check=True)
 
     # SNAPSHOT THE CLONE, not this working tree. An earlier version compared the round-tripped
     # clone against ROOT's live files and reported two mismatches that were nothing to do with the
@@ -710,7 +719,7 @@ def verify(dest):
     edits = sum(len(e) for passes in manifest.values() for e in passes)
     print("forward: %d file(s) rewritten, %d edit(s) recorded across %d file(s)"
           % (fwd, edits, len(manifest)))
-    residual = subprocess.run(["git", "-C", str(d), "grep", "-il", "warp"],
+    residual = _git_process.run(["git", "-C", str(d), "grep", "-il", "warp"],
                               capture_output=True, text=True).stdout.split()
     print("files still mentioning the old name after forward: %d" % len(residual))
 

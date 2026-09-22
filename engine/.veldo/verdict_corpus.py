@@ -123,6 +123,13 @@ WHAT THIS DOES NOT REACH, DECLARED AS LIMITS AND NOT DEFENDED AGAINST:
     replaces: GIT_DIR and GIT_WORK_TREE pointed at an attacker's repository make that
     repository's enumeration the domain.
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import fnmatch
 import os
 import subprocess
@@ -229,7 +236,7 @@ def _git_z(args, cwd):
     one, which is a genuine review that can never be recorded. NUL delimited output is never
     quoted and is also the only form safe for a path containing a newline."""
     try:
-        r = subprocess.run(["git"] + list(args), cwd=str(cwd), capture_output=True, text=True)
+        r = _git_process.run(["git"] + list(args), cwd=str(cwd), capture_output=True, text=True)
     except OSError:
         return [], False
     if r.returncode != 0:
@@ -252,7 +259,7 @@ def _git_line(args, cwd):
     the anchoring defect the round before it. git terminates the answer with one newline, so one
     newline is what is removed, and what git returned is what this module reads."""
     try:
-        r = subprocess.run(["git"] + list(args), cwd=str(cwd), capture_output=True, text=True)
+        r = _git_process.run(["git"] + list(args), cwd=str(cwd), capture_output=True, text=True)
     except OSError:
         return "", False
     if r.returncode != 0:

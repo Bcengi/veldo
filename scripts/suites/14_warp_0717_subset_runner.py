@@ -27,7 +27,7 @@ _w17_scripts = ROOT / "scripts"
 _w17_suites = _w17_scripts / "suites"
 
 _w17_rs_spec = importlib.util.spec_from_file_location(
-    "w17_run_scope", _w17_scripts / "run_scope.py")
+    "w17_run_scope", git_fixture_dependency(_w17_scripts / "run_scope.py"))
 _W17RS = importlib.util.module_from_spec(_w17_rs_spec)
 _w17_rs_spec.loader.exec_module(_W17RS)
 

@@ -30,7 +30,7 @@ def _v21_mutated(old, new):
     d = Path(tempfile.mkdtemp(prefix="v21mut"))
     assert _v21_src.count(old) == 1, (old[:60], _v21_src.count(old))
     (d / "completion_contract.py").write_text(_v21_src.replace(old, new))
-    spec = _v21_ilu.spec_from_file_location("v21_mut_%s" % d.name, d / "completion_contract.py")
+    spec = _v21_ilu.spec_from_file_location("v21_mut_%s" % d.name, git_fixture_dependency(d / "completion_contract.py"))
     m = _v21_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     _v21_shutil.rmtree(d, ignore_errors=True)

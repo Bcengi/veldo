@@ -25,7 +25,7 @@ _v105_have_git = _v105_shutil.which("git") is not None
 
 
 def _v105_load(name, path):
-    spec = _v105_ilu.spec_from_file_location(name, path)
+    spec = _v105_ilu.spec_from_file_location(name, git_fixture_dependency(path))
     m = _v105_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m

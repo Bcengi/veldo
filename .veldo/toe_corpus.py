@@ -34,6 +34,13 @@ record and any estimator built on this corpus is estimating against features and
 `coverage()` reports that split as a number, so the gap is visible in the data rather than discovered
 by whoever first trusts an estimate.
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import json
 import re
 import subprocess
@@ -52,7 +59,7 @@ GATE_PASS, GATE_FAIL, VERDICT = "gate.passed", "gate.failed", "verdict.recorded"
 
 
 def _run(args, cwd=None):
-    r = subprocess.run(args, capture_output=True, text=True, cwd=str(cwd or ROOT))
+    r = _git_process.run(["git", *args], capture_output=True, text=True, cwd=str(cwd or ROOT))
     return r.stdout if r.returncode == 0 else ""
 
 
@@ -190,11 +197,11 @@ def git_touched(spec_id, root=None):
     repository with one commit naming a spec id, the same two readers answer non-empty and the count
     can be required to equal the length of what it counted, everywhere, with no stand-down. `_run`
     already took the working directory; only these two calls did not pass it."""
-    out = _run(["git", "log", "--format=%H", "--grep", spec_id, "--all"], cwd=root)
+    out = _run(["log", "--format=%H", "--grep", spec_id, "--all"], cwd=root)
     shas = [s for s in out.split() if s]
     files = set()
     for sha in shas:
-        for ln in _run(["git", "show", "--name-only", "--format=", sha], cwd=root).splitlines():
+        for ln in _run(["show", "--name-only", "--format=", sha], cwd=root).splitlines():
             if ln.strip():
                 files.add(ln.strip())
     return {"commits": sorted(shas), "files": sorted(files)}

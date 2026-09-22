@@ -24,6 +24,15 @@ make the output depend on a substitution nobody reviewed, and would train us to 
 finding it just repaired.
 """
 
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_location = _GitPath(__file__).resolve().parent / "git_process.py"
+if not _git_location.exists():
+    _git_location = _GitPath(__file__).resolve().parent.parent / ".veldo" / "git_process.py"
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _git_location)
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
+
 import argparse
 import importlib.util as _ilu
 import filecmp
@@ -132,7 +141,7 @@ def tracked_files(root=None):
     it - measured: the first version of the assertion guarding this stayed green under the old parse.
     A property that only a differently shaped tree can exhibit needs a way to be asked about that
     tree, exactly as the corpus owner takes its root as an argument."""
-    out = subprocess.run(["git", "-C", str(root or ROOT), "ls-files", "-z"],
+    out = _git_process.run(["git", "-C", str(root or ROOT), "ls-files", "-z"],
                          capture_output=True, text=True, check=True)
     return sorted(p for p in out.stdout.split("\0") if p)
 

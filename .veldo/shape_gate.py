@@ -60,6 +60,13 @@ parser, parse_yamlish) and .veldo/arch.py (the one place a path maps to an area 
 modeled boundary is defined) the same way plan.py does, so there is no second YAML
 parser, no second glob compiler, and no second placement or boundary implementation.
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import ast
 import importlib.util
 import subprocess
@@ -134,7 +141,7 @@ def _line_count(path):
 
 def _git(root, *args):
     try:
-        r = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True)
+        r = _git_process.run(["git", *args], cwd=str(root), capture_output=True, text=True)
     except (OSError, ValueError):
         return []
     if r.returncode != 0:

@@ -308,6 +308,7 @@ def _vp_run_gate(gate_rel, declare_version):
         (base / ".veldo").mkdir(parents=True)
         _vp_shutil.copy2(ROOT / gate_rel, base / "scripts" / "verify.sh")
         _vp_shutil.copy2(ROOT / ".veldo" / "version.py", base / ".veldo" / "version.py")
+        git_fixture_dependency(base / ".veldo" / "version.py")
         if declare_version is not None:
             (base / ".claude-plugin").mkdir(parents=True)
             (base / ".claude-plugin" / "marketplace.json").write_text(json.dumps(

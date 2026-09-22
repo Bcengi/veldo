@@ -34,6 +34,13 @@ CRASH POINTS. Under VELDO_CONTROL_TEST_HARNESS=1 a publisher process may SIGKILL
 export is prepared, after the remote ref moved, after the acknowledgement persisted, or after
 dispatch ran but before it was recorded. Every window is reconciled by reconcile() on restart.
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import base64
 import hashlib
 import json
@@ -74,16 +81,8 @@ def _kill_point(name):
         os.kill(os.getpid(), signal.SIGKILL)
 
 
-def _git_env():
-    env = dict(os.environ)
-    env.update({"GIT_AUTHOR_NAME": "veldo-authority", "GIT_AUTHOR_EMAIL": "authority@veldo.local",
-                "GIT_COMMITTER_NAME": "veldo-authority", "GIT_COMMITTER_EMAIL": "authority@veldo.local",
-                "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull, "GIT_TERMINAL_PROMPT": "0"})
-    return env
-
-
 def _git(args, cwd, input_bytes=None, check=True, timeout=60):
-    r = subprocess.run(["git"] + list(args), cwd=cwd, input=input_bytes, capture_output=True, env=_git_env(), timeout=timeout,
+    r = _git_process.run(["git"] + list(args), cwd=cwd, input=input_bytes, capture_output=True, identity=("veldo-authority", "authority@veldo.local"), timeout=timeout,
                        stdin=None if input_bytes is not None else subprocess.DEVNULL)
     if check and r.returncode != 0:
         raise subprocess.CalledProcessError(r.returncode, r.args, r.stdout, r.stderr)

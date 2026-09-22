@@ -32,6 +32,13 @@ writes. The owner flag fix_validation.required in .veldo/policy.yaml decides ref
 """
 from __future__ import annotations
 
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
+
 import importlib.util
 import json
 import os
@@ -73,7 +80,7 @@ def _load(name: str, path: Path):
 
 def _checkout(repo: str | os.PathLike, commit: str, dest: Path) -> None:
     dest.mkdir(parents=True, exist_ok=True)
-    ar = subprocess.run(["git", "-C", str(repo), "archive", "--format=tar", commit], capture_output=True, timeout=120)
+    ar = _git_process.run(["git", "-C", str(repo), "archive", "--format=tar", commit], capture_output=True, timeout=120)
     if ar.returncode != 0:
         raise ValidationError(f"git archive {commit} failed: {ar.stderr.decode('utf-8', 'replace')[:300]}")
     tar = subprocess.run(["tar", "-x", "-C", str(dest)], input=ar.stdout, capture_output=True, timeout=120)

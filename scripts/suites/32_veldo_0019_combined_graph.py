@@ -28,7 +28,7 @@ def _v19_mutated(old, new):
     assert _v19_src.count(old) == 1, (old[:60], _v19_src.count(old))
     src = _v19_src.replace(old, new).replace("ROOT = Path(__file__).resolve().parent.parent", "ROOT = Path(%r)" % str(ROOT))
     (d / "graph_contract.py").write_text(src)
-    spec = _v19_ilu.spec_from_file_location("v19_mut_%s" % d.name, d / "graph_contract.py")
+    spec = _v19_ilu.spec_from_file_location("v19_mut_%s" % d.name, git_fixture_dependency(d / "graph_contract.py"))
     m = _v19_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     _v19_shutil.rmtree(d, ignore_errors=True)

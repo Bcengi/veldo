@@ -24,6 +24,15 @@ remain" is verified by absence, and absence is exactly what a broken tree also l
 Usage:
   python3 scripts/migrate_to_veldo.py <dest> [--genericize-public] [--skip-gate]
 """
+
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_location = _GitPath(__file__).resolve().parent / "git_process.py"
+if not _git_location.exists():
+    _git_location = _GitPath(__file__).resolve().parent.parent / ".veldo" / "git_process.py"
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _git_location)
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import argparse
 import importlib.util
 import json
@@ -59,7 +68,7 @@ def load_map():
 
 
 def tracked_files():
-    out = subprocess.run(["git", "-C", str(ROOT), "ls-files", "-z"],
+    out = _git_process.run(["git", "-C", str(ROOT), "ls-files", "-z"],
                          capture_output=True, text=True, check=True).stdout
     return [p for p in out.split("\0") if p]
 
@@ -183,9 +192,9 @@ def run_gate(dest):
                GIT_AUTHOR_EMAIL="dimaimages@gmail.com",
                GIT_COMMITTER_NAME="Dmitry Grinberg",
                GIT_COMMITTER_EMAIL="dimaimages@gmail.com")
-    for cmd in (["git", "init", "-q"], ["git", "add", "-A"],
-                ["git", "commit", "-q", "-m", "Veldo"]):
-        subprocess.run(cmd, cwd=str(dest), env=env, check=True,
+    for cmd in (["init", "-q"], ["add", "-A"],
+                ["commit", "-q", "-m", "Veldo"]):
+        _git_process.run(["git", *cmd], cwd=str(dest), identity=("Dmitry Grinberg", "dimaimages@gmail.com"), check=True,
                        capture_output=True, text=True)
     r = subprocess.run(["bash", "scripts/verify.sh"], cwd=str(dest),
                        capture_output=True, text=True)

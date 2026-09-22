@@ -1233,7 +1233,7 @@ def _v22_module_in(tree):
     no possibility of a byte reaching the real append-only log."""
     _v22_lay_module(tree)
     _s = importlib.util.spec_from_file_location(
-        "veldo_events_0722_probe", tree / ".veldo/events.py")
+        "veldo_events_0722_probe", git_fixture_dependency(tree / ".veldo/events.py"))
     _m = importlib.util.module_from_spec(_s)
     _s.loader.exec_module(_m)
     return _m
@@ -2542,7 +2542,7 @@ def _v27_load(name, path):
     """One module loaded BY ABSOLUTE PATH, so a copy in a throwaway tree derives its own ROOT
     and every sibling it loads comes from THAT tree. This is what makes a mutant applied to a
     copy actually reach the code under test instead of the repository's own."""
-    _s = importlib.util.spec_from_file_location(name, str(path))
+    _s = importlib.util.spec_from_file_location(name, git_fixture_dependency(str(path)))
     _m = importlib.util.module_from_spec(_s)
     _s.loader.exec_module(_m)
     return _m
@@ -3457,7 +3457,7 @@ with tempfile.TemporaryDirectory() as _v22_ro_d:
     # append-only log where nothing could take it back.
     _v22_shutil.copy(str(ROOT / ".veldo/executor.py"), str(_v22_ro / ".veldo/executor.py"))
     _v22_ex_spec = importlib.util.spec_from_file_location(
-        "veldo_executor_0722", str(_v22_ro / ".veldo/executor.py"))
+        "veldo_executor_0722", git_fixture_dependency(str(_v22_ro / ".veldo/executor.py")))
     _v22_EX = importlib.util.module_from_spec(_v22_ex_spec)
     _v22_ex_spec.loader.exec_module(_v22_EX)
     _v22_route_log = Path(_v22_ro_d) / "routes.jsonl"
@@ -4286,7 +4286,7 @@ def _v23_load(tree, tag):
     sys.modules. None when it will not load, which the expectations red on BY NAME."""
     try:
         s = importlib.util.spec_from_file_location("veldo_events_0723_" + tag,
-                                                   tree / ".veldo/events.py")
+                                                   git_fixture_dependency(tree / ".veldo/events.py"))
         m = importlib.util.module_from_spec(s)
         s.loader.exec_module(m)
         return m

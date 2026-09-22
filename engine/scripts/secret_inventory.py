@@ -10,6 +10,15 @@ REFERENCE - path, line, detector, digest - and never the matched text.
 Exit code is 1 only when the declared posture is enforcing AND something is outstanding. Advisory
 reports and returns 0, which is D4's sequencing: no repository is blocked on day one.
 """
+
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_location = _GitPath(__file__).resolve().parent / "git_process.py"
+if not _git_location.exists():
+    _git_location = _GitPath(__file__).resolve().parent.parent / ".veldo" / "git_process.py"
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _git_location)
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import hashlib
 import importlib.util
 import json
@@ -28,7 +37,7 @@ def _load(name, path):
 
 
 def _git(root, *args):
-    return subprocess.run(["git", "-C", str(root)] + list(args),
+    return _git_process.run(["git", "-C", str(root)] + list(args),
                           capture_output=True, text=True).stdout
 
 
@@ -62,7 +71,7 @@ def reachable_blobs(root):
                  if " " in l)
     if not paths:
         return []
-    check = subprocess.run(
+    check = _git_process.run(
         ["git", "-C", str(root), "cat-file",
          "--batch-check=%(objectname) %(objecttype) %(objectsize)"],
         input="\n".join(paths), capture_output=True, text=True).stdout.splitlines()
@@ -70,7 +79,7 @@ def reachable_blobs(root):
             if len(w) == 3 and w[1] == "blob" and int(w[2]) < MAX_BLOB]
     if not shas:
         return []
-    buf = subprocess.run(["git", "-C", str(root), "cat-file", "--batch"],
+    buf = _git_process.run(["git", "-C", str(root), "cat-file", "--batch"],
                          input="\n".join(shas).encode(), capture_output=True).stdout
     out, pos = [], 0
     while pos < len(buf):

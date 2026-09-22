@@ -25,6 +25,13 @@ that safe with two guarantees:
 The lander's control logic (lock, serialize, stage order, abort-and-release, ff-push guard)
 is mechanical and gate-tested here over a fake LandOps with no real git; the real git steps
 live in GitLandOps. Pure stdlib; Unix-only via the claim ledger."""
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import importlib.util
 import os
 import subprocess
@@ -154,7 +161,7 @@ class Lander:
 
 
 def _conflicted_paths(repo_root):
-    out = subprocess.run(["git", "-C", str(repo_root), "diff", "--name-only",
+    out = _git_process.run(["git", "-C", str(repo_root), "diff", "--name-only",
                           "--diff-filter=U"], capture_output=True, text=True)
     return [p for p in out.stdout.splitlines() if p.strip()]
 
@@ -168,7 +175,7 @@ def _union_resolve_one(repo_root, path):
     the land rather than commit lost content."""
     def _stage(n):
         # git stage syntax is :N:path (1=base, 2=ours, 3=theirs); the leading colon matters.
-        r = subprocess.run(["git", "-C", str(repo_root), "show", ":%d:%s" % (n, path)],
+        r = _git_process.run(["git", "-C", str(repo_root), "show", ":%d:%s" % (n, path)],
                            capture_output=True, text=True)
         return r.stdout if r.returncode == 0 else ""
     with tempfile.TemporaryDirectory() as td:
@@ -178,13 +185,13 @@ def _union_resolve_one(repo_root, path):
         for name, n in ((base, 1), (ours, 2), (theirs, 3)):
             with open(name, "w") as f:
                 f.write(_stage(n))
-        merged = subprocess.run(["git", "merge-file", "-p", "--union", ours, base, theirs],
+        merged = _git_process.run(["git", "merge-file", "-p", "--union", ours, base, theirs],
                                 capture_output=True, text=True)
         if merged.returncode != 0:
             return False
         with open(os.path.join(repo_root, path), "w") as f:
             f.write(merged.stdout)
-    subprocess.run(["git", "-C", str(repo_root), "add", "--", path], check=True)
+    _git_process.run(["git", "-C", str(repo_root), "add", "--", path], check=True)
     return True
 
 
@@ -200,7 +207,7 @@ class GitLandOps(LandOps):
         self.push = push
 
     def _git(self, *args, check=True):
-        return subprocess.run(["git", "-C", self.repo_root, *args],
+        return _git_process.run(["git", "-C", self.repo_root, *args],
                               capture_output=True, text=True, check=check)
 
     def sync_main(self):

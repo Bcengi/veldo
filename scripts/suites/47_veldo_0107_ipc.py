@@ -40,7 +40,7 @@ _v107_children = []
 
 
 def _v107_load(name, path):
-    spec = _v107_ilu.spec_from_file_location(name, path)
+    spec = _v107_ilu.spec_from_file_location(name, git_fixture_dependency(path))
     m = _v107_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m

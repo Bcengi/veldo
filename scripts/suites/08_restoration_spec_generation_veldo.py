@@ -996,7 +996,7 @@ def _ic_no_detached(src):
 expect("WARP-1203 AC5: intent_corpus.py starts no detached/background process (no Popen/fork/exec/spawn/setsid/nohup/start_new_session/multiprocessing/threading/asyncio/claude -p)",
        _ic_no_detached(_ic_src))
 expect("WARP-1203 AC5: the only external program is a synchronous in-session git read (subprocess.run over git, never Popen)",
-       'subprocess.run(["git"' in _ic_src and "Popen" not in _ic_src)
+       '_git_process.run(["git"' in _ic_src and "Popen" not in _ic_src)
 _ic_head = _ic_src.split("\ndef ", 1)[0].split("\nclass ", 1)[0]
 expect("WARP-1203 AC5: subprocess is imported LAZILY inside the git reader, not at module top (mirrors fleet.py)",
        "import subprocess" not in _ic_head and "import subprocess" in _ic_src)

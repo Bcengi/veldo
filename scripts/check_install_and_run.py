@@ -65,6 +65,15 @@ control, because it stops the reader looking. It is gone, and the suite instead 
 this stage launches with an interpreter or a shell: scripts/publish.py and the pack's copy of
 scripts/verify.sh.
 """
+
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_location = _GitPath(__file__).resolve().parent / "git_process.py"
+if not _git_location.exists():
+    _git_location = _GitPath(__file__).resolve().parent.parent / ".veldo" / "git_process.py"
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _git_location)
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import argparse
 import re
 import shutil
@@ -130,6 +139,9 @@ def composed_packs(pub_root):
 # assertion about this call's keyword arguments an assertion about every child: no session is
 # detached, no shell is interposed, nothing is left running when the call returns.
 def _run(argv, cwd=None, timeout=900):
+    if argv and str(argv[0]) == "git":
+        return _git_process.run([str(a) for a in argv], cwd=str(cwd) if cwd else None,
+                                capture_output=True, text=True, timeout=timeout)
     return subprocess.run([str(a) for a in argv], cwd=str(cwd) if cwd else None,
                           capture_output=True, text=True, timeout=timeout)
 

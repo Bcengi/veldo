@@ -886,7 +886,7 @@ with tempfile.TemporaryDirectory() as _d:
                  ".veldo/policy.yaml", "plans/STARTER.md", "specs/index.md", "CLAUDE.md", "VELDO.md"):
         expect(f"init scaffold laid {_rel}", (Path(_d) / _rel).exists())
     # the starter plan is a VALID veldo.plan/v1, checked by the scaffold's OWN validator
-    _svspec = importlib.util.spec_from_file_location("scaffold_validate", Path(_d) / ".veldo" / "validate.py")
+    _svspec = importlib.util.spec_from_file_location("scaffold_validate", git_fixture_dependency(Path(_d) / ".veldo" / "validate.py"))
     _SV = importlib.util.module_from_spec(_svspec); _svspec.loader.exec_module(_SV)
     expect("init scaffold starter plan validates",
            _SV.check_plan(Path(_d) / "plans" / "STARTER.md", specs_dir=Path(_d) / "specs") == 0)

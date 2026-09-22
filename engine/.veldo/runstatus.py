@@ -32,6 +32,13 @@ events file, with no live build or backend.
   python3 .veldo/runstatus.py watch             a single compact render
   python3 .veldo/runstatus.py watch --interval 2   refresh loop (Ctrl-C to stop)
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import argparse
 import importlib.util
 import json
@@ -68,7 +75,7 @@ def _git(args, root):
     """A read-only git query; returns None on any failure (not a git repo,
     detached, git absent) so the reader degrades to 'unknown' rather than crash."""
     try:
-        return subprocess.check_output(
+        return _git_process.check_output(
             ["git"] + args, cwd=str(root), text=True,
             stderr=subprocess.DEVNULL).strip()
     except Exception:

@@ -16,6 +16,13 @@ Standard library only.
 """
 from __future__ import annotations
 
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
+
 import fnmatch
 import importlib.util
 import json
@@ -72,13 +79,13 @@ PARKED_SHIPPED = "parked-item-shipped"
 def _commit_exists(repo, commit: str) -> bool:
     """Is this commit an object in THIS repository? Asked before anything is counted between two
     commits, because a range over a history nobody has is not a question with an answer."""
-    r = subprocess.run(["git", "-C", str(repo), "cat-file", "-e", f"{commit}^{{commit}}"],
+    r = _git_process.run(["git", "-C", str(repo), "cat-file", "-e", f"{commit}^{{commit}}"],
                        capture_output=True, timeout=60)
     return r.returncode == 0
 
 
 def _git(repo, *args: str) -> list:
-    r = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, timeout=120)
+    r = _git_process.run(["git", "-C", str(repo), *args], capture_output=True, text=True, timeout=120)
     if r.returncode != 0:
         raise ValidationError(f"git {' '.join(args)} failed: {r.stderr.strip()[:300]}")
     return [line for line in r.stdout.splitlines() if line.strip()]
@@ -119,16 +126,16 @@ def _is_ancestor(repo, older: str, newer: str):
     conclusive only with complete history: Git returns 1 even when shallow boundaries
     hide the connecting path. Unknown history keeps the bundle in scope.
     """
-    r = subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", older, newer],
+    r = _git_process.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", older, newer],
                        capture_output=True, timeout=60)
     if r.returncode == 0:
         return True
     if r.returncode == 1:
-        shallow = subprocess.run(["git", "-C", str(repo), "rev-parse", "--is-shallow-repository"],
+        shallow = _git_process.run(["git", "-C", str(repo), "rev-parse", "--is-shallow-repository"],
                                  capture_output=True, text=True, timeout=60)
         if shallow.returncode == 0 and shallow.stdout.strip() == "false":
             # Also force traversal: missing objects in a non-shallow repository are unknown.
-            history = subprocess.run(["git", "-C", str(repo), "rev-list", older, newer],
+            history = _git_process.run(["git", "-C", str(repo), "rev-list", older, newer],
                                      capture_output=True, timeout=60)
             if history.returncode == 0:
                 return False
@@ -143,7 +150,7 @@ def bundle_landed_at(repo, proof_dir):
     exempted the bundle: name a commit from before the line and the rule stops applying. So the
     bundle's position is also asked of git, which the author cannot edit from inside the bundle.
     None when the bundle is not committed yet, which is the ordinary case while it is being built."""
-    r = subprocess.run(["git", "-C", str(repo), "log", "-1", "--format=%H", "--", str(proof_dir)],
+    r = _git_process.run(["git", "-C", str(repo), "log", "-1", "--format=%H", "--", str(proof_dir)],
                        capture_output=True, text=True, timeout=60)
     out = (r.stdout or "").strip()
     return out if r.returncode == 0 and out else None
@@ -791,7 +798,7 @@ def main(argv: list) -> int:
 
 
 def _git_root(path: Path) -> Path:
-    r = subprocess.run(["git", "-C", str(path), "rev-parse", "--show-toplevel"], capture_output=True, text=True, timeout=60)
+    r = _git_process.run(["git", "-C", str(path), "rev-parse", "--show-toplevel"], capture_output=True, text=True, timeout=60)
     if r.returncode != 0:
         raise ValidationError(f"{path} is not inside a git repository")
     return Path(r.stdout.strip())

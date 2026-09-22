@@ -878,7 +878,7 @@ _fl_head = _fl_src.split("\ndef ", 1)[0].split("\nclass ", 1)[0]
 expect("WARP-1010 AC2: fleet.py does not import subprocess at module top (the git worktree helper imports it lazily)",
        "import subprocess" not in _fl_head and "import subprocess" in _fl_src)
 expect("WARP-1010 AC2: fleet.py's only external program is an in-line `git worktree` (git, never a worker)",
-       'subprocess.run(["git", "worktree"]' in _fl_src and "Popen" not in _fl_src
+       '_git_process.run(["git", "worktree"]' in _fl_src and "Popen" not in _fl_src
        and "self._dispatch(worker_id, env, worktree)" in _fl_src)
 # MUTATION teeth: inject a detached worker spawn and prove the no-detach check goes RED (not vacuous).
 _fl_mut_popen = _fl_src + '\n_p = subprocess.Popen(["claude", "-p", prompt], start_new_session=True)\n'

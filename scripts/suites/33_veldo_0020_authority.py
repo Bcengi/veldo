@@ -32,7 +32,7 @@ def _v20_mutated_two(old1, new1, old2, new2):
     d = Path(tempfile.mkdtemp(prefix="v20mut2"))
     assert _v20_src.count(old1) == 1 and _v20_src.count(old2) == 1, (old1[:60], old2[:60])
     (d / "authority_contract.py").write_text(_v20_src.replace(old1, new1).replace(old2, new2))
-    spec = _v20_ilu.spec_from_file_location("v20_mut_%s" % d.name, d / "authority_contract.py")
+    spec = _v20_ilu.spec_from_file_location("v20_mut_%s" % d.name, git_fixture_dependency(d / "authority_contract.py"))
     m = _v20_ilu.module_from_spec(spec); spec.loader.exec_module(m)
     return m
 
@@ -41,7 +41,7 @@ def _v20_mutated(old, new):
     d = Path(tempfile.mkdtemp(prefix="v20mut"))
     assert _v20_src.count(old) == 1, (old[:60], _v20_src.count(old))
     (d / "authority_contract.py").write_text(_v20_src.replace(old, new))
-    spec = _v20_ilu.spec_from_file_location("v20_mut_%s" % d.name, d / "authority_contract.py")
+    spec = _v20_ilu.spec_from_file_location("v20_mut_%s" % d.name, git_fixture_dependency(d / "authority_contract.py"))
     m = _v20_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     _v20_shutil.rmtree(d, ignore_errors=True)

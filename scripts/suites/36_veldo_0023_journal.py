@@ -35,7 +35,7 @@ _v23_replay_path = ROOT / ".veldo" / "control_replay.py"
 
 
 def _v23_load(name, path):
-    spec = _v23_ilu.spec_from_file_location(name, path)
+    spec = _v23_ilu.spec_from_file_location(name, git_fixture_dependency(path))
     m = _v23_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m

@@ -39,7 +39,7 @@ _v109_children = []
 
 
 def _v109_load(name, path):
-    spec = _v109_ilu.spec_from_file_location(name, path)
+    spec = _v109_ilu.spec_from_file_location(name, git_fixture_dependency(path))
     m = _v109_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m

@@ -27,6 +27,13 @@ The registry persists as a JSON file under the git common dir (veldo/accounts/re
 shared across worktrees, outside git history, machine-local), the same place and pattern as the
 claim ledger, so a registered account survives across invocations and worktrees with no relogin.
 Pure stdlib; the registry root is overridable for tests."""
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import argparse
 import contextlib
 import fcntl
@@ -65,7 +72,7 @@ def accounts_root(override=None):
     claim ledger and is reused across every worktree of the repo."""
     root = override or os.environ.get("VELDO_RUNS_ROOT")
     if not root:
-        common = subprocess.check_output(
+        common = _git_process.check_output(
             ["git", "rev-parse", "--git-common-dir"], text=True).strip()
         root = os.path.join(os.path.abspath(common), "veldo")
     return os.path.join(root, "accounts")

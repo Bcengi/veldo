@@ -30,7 +30,7 @@ def _v18_mutated(old, new):
     # the copy loads its sibling organs from the REAL engine: ROOT is derived from the file's parent
     (d / "release_floor_contract.py").write_text((d / "release_floor_contract.py").read_text().replace(
         "ROOT = Path(__file__).resolve().parent.parent", "ROOT = Path(%r)" % str(ROOT)))
-    spec = _v18_ilu.spec_from_file_location("v18_mut_%s" % d.name, d / "release_floor_contract.py")
+    spec = _v18_ilu.spec_from_file_location("v18_mut_%s" % d.name, git_fixture_dependency(d / "release_floor_contract.py"))
     m = _v18_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     _v18_shutil.rmtree(d, ignore_errors=True)

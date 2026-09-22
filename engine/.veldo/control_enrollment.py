@@ -26,6 +26,13 @@ as they are in control_store. It opens no database, starts no service and speaks
 WHICH store, and refuses by name when it cannot. The local IPC client, the SSH relay and the
 authority-unavailable behaviour are separate work. Standard library only.
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import hashlib
 import json
 import os
@@ -63,26 +70,9 @@ class EnrollmentRefused(Exception):
 # Explicit coordinates. Every git call below names its workspace with -C.
 # ---------------------------------------------------------------------------------------------
 
-def _clean_env():
-    """The caller's environment with EVERY GIT_ variable removed.
-
-    `-C` is not enough and that is not obvious. GIT_DIR in the environment OVERRIDES `git -C`: with
-    it set, `git -C repoA rev-parse --git-common-dir` answers repoB's directory and
-    `git -C repoA rev-list --max-parents=0 HEAD` answers repoB's root commit. So a caller who sets
-    one variable moves this module's idea of which repository it is looking at, which is the whole
-    defect this item exists to remove, arriving through the back door.
-
-    Removed by PREFIX rather than by a list of names. GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR,
-    GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY, GIT_CEILING_DIRECTORIES, GIT_NAMESPACE and the GIT_CONFIG
-    family all redirect something, git adds more over time, and a list of names is a list that goes
-    stale. This is the module's ONLY reading of the environment and it never takes a value from it:
-    it only takes values away."""
-    return {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-
-
 def _git(workspace, *args):
-    r = subprocess.run(["git", "-C", str(workspace), *args], capture_output=True, text=True,
-                       timeout=60, env=_clean_env())
+    r = _git_process.run(["git", "-C", str(workspace), *args], capture_output=True, text=True,
+                       timeout=60)
     if r.returncode != 0:
         raise EnrollmentRefused("not_a_repository",
                                 "git %s failed in %s: %s" % (" ".join(args), workspace, r.stderr.strip()[:200]),

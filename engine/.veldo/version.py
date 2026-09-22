@@ -50,6 +50,13 @@ independent review of this item.
 A DISAGREEMENT NAMES BOTH SIDES. "The versions differ" is not actionable; "this manifest says X
 and the canonical declaration says Y" is, and which side is wrong is not always the copy.
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import argparse
 import json
 import subprocess
@@ -246,7 +253,7 @@ def tracked_manifests(root=None, names=MANIFEST_NAMES):
     base = Path(root) if root is not None else ROOT
     rels = []
     try:
-        out = subprocess.run(["git", "ls-files", "-z"], cwd=str(base), capture_output=True,
+        out = _git_process.run(["git", "ls-files", "-z"], cwd=str(base), capture_output=True,
                              text=True, timeout=60)
         if out.returncode == 0:
             rels = [r for r in out.stdout.split("\0") if r]

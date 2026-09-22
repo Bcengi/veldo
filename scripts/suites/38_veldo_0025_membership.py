@@ -36,7 +36,7 @@ _v25_have_ssh = _v25_shutil.which("ssh-keygen") is not None
 
 
 def _v25_load(name, path):
-    spec = _v25_ilu.spec_from_file_location(name, path)
+    spec = _v25_ilu.spec_from_file_location(name, git_fixture_dependency(path))
     m = _v25_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m

@@ -461,6 +461,14 @@
     "49_veldo_0109_unavailable"
    ],
    "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the client under a temporary directory. It builds real git repositories there, starts a real authority child process through scripts/suites/support/v107_authority_runner.py, STOPS it, and measures what happens after. It reads /proc/net/unix to ask the kernel whether anything is bound at an address, because a process census matched by name matches the command doing the matching. One mutant binds a socket of its own under the temporary directory and the row closes it. Everything is written under that temporary directory; no environment variable and no current directory is changed. It stands down by name when git is absent or the runner script is missing."
+  },
+  {
+   "name": "50_git_environment",
+   "file": "50_git_environment.py",
+   "requires": [
+    "50_git_environment"
+   ],
+   "regions": "Shared Git boundary regression checks"
   }
  ]
 }

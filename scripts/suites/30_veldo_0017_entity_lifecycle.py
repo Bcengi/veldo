@@ -55,7 +55,7 @@ def _v17_mutated(old, new, count=1, more=()):
         assert src.count(o) == count, (o[:60], src.count(o))
         src = src.replace(o, n)
     (d / "entity_contract.py").write_text(src)
-    spec = _v17_ilu.spec_from_file_location("v17_mut_%s" % d.name, d / "entity_contract.py")
+    spec = _v17_ilu.spec_from_file_location("v17_mut_%s" % d.name, git_fixture_dependency(d / "entity_contract.py"))
     m = _v17_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     _v17_shutil.rmtree(d, ignore_errors=True)

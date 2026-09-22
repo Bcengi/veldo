@@ -986,7 +986,7 @@ with tempfile.TemporaryDirectory() as _w1408_d:
     _w1408_shutil.copytree(ROOT / "engine" / ".veldo", _w1408_engine / ".veldo")
     _w1408_engine_has_budget = (_w1408_engine / ".veldo" / "budget.py").exists()
     _w1408_espec = importlib.util.spec_from_file_location(
-        "w1408_engine_toe_budget", _w1408_engine / ".veldo" / "toe_budget.py")
+        "w1408_engine_toe_budget", git_fixture_dependency(_w1408_engine / ".veldo" / "toe_budget.py"))
     T1408E = importlib.util.module_from_spec(_w1408_espec)
     _w1408_espec.loader.exec_module(T1408E)
     _w1408_engine_view = T1408E.rollup(_W1408_FM2, _W1408_ESTS2, price=_W1408_PRICE)
@@ -1010,7 +1010,7 @@ with tempfile.TemporaryDirectory() as _w1408_d:
     if (_w1408_nobudget / ".veldo" / "budget.py").exists():
         (_w1408_nobudget / ".veldo" / "budget.py").unlink()
     _w1408_nbspec = importlib.util.spec_from_file_location(
-        "w1408_nobudget_toe_budget", _w1408_nobudget / ".veldo" / "toe_budget.py")
+        "w1408_nobudget_toe_budget", git_fixture_dependency(_w1408_nobudget / ".veldo" / "toe_budget.py"))
     T1408N = importlib.util.module_from_spec(_w1408_nbspec)
     _w1408_nbspec.loader.exec_module(T1408N)
     _w1408_nb_view = T1408N.rollup(_W1408_FM2, _W1408_ESTS2, price=_W1408_PRICE)

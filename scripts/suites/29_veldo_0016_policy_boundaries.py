@@ -141,7 +141,7 @@ def _v16_fixture(state, required, mutate=None):
 
 
 def _v16_mod(fx, name):
-    spec = _v16_ilu.spec_from_file_location("v16_%s_%s" % (name, fx.name), fx / ".veldo" / (name + ".py"))
+    spec = _v16_ilu.spec_from_file_location("v16_%s_%s" % (name, fx.name), git_fixture_dependency(fx / ".veldo" / (name + ".py")))
     m = _v16_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m
@@ -595,7 +595,7 @@ def _v16_mutated_pc(old, new):
     src = (ROOT / ".veldo" / "policy_contract.py").read_text()
     assert src.count(old) == 1, (old, src.count(old))
     (d / "policy_contract.py").write_text(src.replace(old, new))
-    spec = _v16_ilu.spec_from_file_location("v16_pc_mut_%s" % d.name, d / "policy_contract.py")
+    spec = _v16_ilu.spec_from_file_location("v16_pc_mut_%s" % d.name, git_fixture_dependency(d / "policy_contract.py"))
     m = _v16_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     _v16_shutil.rmtree(d, ignore_errors=True)

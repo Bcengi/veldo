@@ -33,7 +33,7 @@ _v24_replica_path = ROOT / ".veldo" / "control_replica.py"
 
 
 def _v24_load(name, path):
-    spec = _v24_ilu.spec_from_file_location(name, path)
+    spec = _v24_ilu.spec_from_file_location(name, git_fixture_dependency(path))
     m = _v24_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m
@@ -472,7 +472,7 @@ CS24.execute(_v24_ec, _v24_cmd("e1", "E1", {}, 0), "dmitry", _v24_stub_sign, 1, 
 _v24_e_rec = CS24.export_journal(_v24_ec)[0]
 _v24_e_id = CP24.export_identity(_v24_e_rec)
 _v24_e_tree = _v24_sp.run(["git", "mktree"], cwd=_v24_e_audit, input=b"", capture_output=True, stdin=None).stdout.decode().strip()
-_v24_e_fake = _v24_sp.run(["git", "commit-tree", _v24_e_tree, "-m", "veldo export " + _v24_e_id], cwd=_v24_e_audit, capture_output=True, env=CP24._git_env(), stdin=_v24_sp.DEVNULL).stdout.decode().strip()
+_v24_e_fake = _v24_sp.run(["git", "commit-tree", _v24_e_tree, "-m", "veldo export " + _v24_e_id], cwd=_v24_e_audit, capture_output=True, env=CP24._git_process.clean_env(identity=("veldo-authority", "authority@veldo.local")), stdin=_v24_sp.DEVNULL).stdout.decode().strip()
 _v24_sp.run(["git", "update-ref", CP24.AUDIT_REF, _v24_e_fake], cwd=_v24_e_audit, capture_output=True, stdin=_v24_sp.DEVNULL)
 _v24_e_problems = _v24_e_pub.validate_commit(_v24_e_fake, _v24_e_id, None)
 _v24_e_r = CP24.publish_pending(_v24_ec, CS24, _v24_e_pub, _v24_art, 1001.0)

@@ -23,6 +23,13 @@ Two hard constraints shape this:
 
 Grouping is just a scope (a plan id, a label, or a workspace) threaded to every worker. Pure
 stdlib control logic; the governor and frontier it consumes are the real read models."""
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import importlib.util
 import os
 import tempfile
@@ -99,7 +106,7 @@ def _git_worktree(args, cwd=None):
     in-line call that completes and returns - it detaches NOTHING, backgrounds NOTHING, and starts
     no worker process (feedback_no_rogue_processes, PLAN-0007 NG1). A non-zero exit FAILS LOUD."""
     import subprocess  # lazy, git-only: provision an isolated worktree, never start a worker
-    proc = subprocess.run(["git", "worktree"] + [str(a) for a in args],
+    proc = _git_process.run(["git", "worktree"] + [str(a) for a in args],
                           cwd=cwd, capture_output=True, text=True)
     if proc.returncode != 0:
         raise WorktreeError("git worktree %s failed (rc=%d): %s"

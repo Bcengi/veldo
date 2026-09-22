@@ -33,7 +33,7 @@ _v29_KEY = b"the owner's key, which this module never sees"
 
 
 def _v29_load(name, path):
-    spec = _v29_ilu.spec_from_file_location(name, path)
+    spec = _v29_ilu.spec_from_file_location(name, git_fixture_dependency(path))
     m = _v29_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m
@@ -176,15 +176,14 @@ else:
            "resolving the first workspace still answers the first store and reading its identity still "
            "reads its own root commits. Those four are the point: each OVERRIDES `git -C`, so passing the "
            "workspace explicitly was NOT enough and the first version of this module failed here. It now "
-           "reads the environment in exactly one place and only to strip every GIT_ variable from it by "
-           "prefix, never to take a value, and contains no os.getcwd and no __file__ at all. DRIVEN: a copy that resolves "
+           "uses the shared Git boundary to strip inherited Git variables by "
+           "prefix and disable global configuration. DRIVEN: a copy that resolves "
            "from the process's current directory when an explicit workspace was given answers the other "
            "store, which is what the shipped control_db_path does today",
            _v29_under_ambient == ("store", _v29_STORE_A)
            and _v29_ambient_ident == EN29.root_commits(_v29_A)
-           and "os.getcwd" not in _v29_src29 and "__file__" not in _v29_src29
-           and _v29_src29.count("os.environ") == 1
-           and 'if not k.startswith("GIT_")' in _v29_src29
+           and "os.getcwd" not in _v29_src29 and "os.environ" not in _v29_src29
+           and "_git_process.run" in _v29_src29
            and _v29_under_ambient_mut == ("store", _v29_STORE_Bp))
 
     # ---- AC2, second row: the ambient resolver in control_store is CLOSED -----------------------

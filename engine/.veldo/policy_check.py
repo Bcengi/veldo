@@ -14,6 +14,13 @@ prints the reason and exits 1 (block). Checks, for the current HEAD:
 Proportionate by design: stdlib only, no yaml dependency (reads the simple
 policy.yaml shape the template ships).
 """
+
+# Load the shared Git boundary by sibling path, including when imported by file location.
+import importlib.util as _git_importlib
+from pathlib import Path as _GitPath
+_git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _GitPath(__file__).resolve().with_name("git_process.py"))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 import datetime, fnmatch, hashlib, importlib.util, json, re, subprocess, sys
 from pathlib import Path
 
@@ -81,7 +88,7 @@ def _range_specs():
     """
     specs = ["@{upstream}..HEAD"]
     for ref in ("origin/HEAD", "origin/main"):
-        r = subprocess.run(["git", "rev-parse", "--verify", "--quiet", ref],
+        r = _git_process.run(["git", "rev-parse", "--verify", "--quiet", ref],
                            capture_output=True, text=True, cwd=ROOT)
         if r.returncode == 0 and r.stdout.strip():
             specs.append(ref + "..HEAD")
@@ -92,7 +99,7 @@ def _range_specs():
 def changed_files():
     # files changed on this branch vs its upstream (see _range_specs for why the order matters)
     for spec in _range_specs():
-        r = subprocess.run(["git", "diff", "--name-only", spec],
+        r = _git_process.run(["git", "diff", "--name-only", spec],
                            capture_output=True, text=True, cwd=ROOT)
         if r.returncode == 0:
             return [f for f in r.stdout.splitlines() if f]
@@ -100,7 +107,7 @@ def changed_files():
 
 
 def head():
-    r = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=ROOT)
+    r = _git_process.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=ROOT)
     return r.stdout.strip()
 
 
@@ -108,7 +115,7 @@ def push_range_commits():
     """Every commit hash being pushed, HEAD first. Same base resolution as
     changed_files, through `_range_specs`, so the two cannot disagree about what the push is."""
     for spec in _range_specs():
-        r = subprocess.run(["git", "rev-list", spec],
+        r = _git_process.run(["git", "rev-list", spec],
                            capture_output=True, text=True, cwd=ROOT)
         if r.returncode == 0:
             return [c for c in r.stdout.splitlines() if c]
@@ -376,7 +383,7 @@ def _head_spec_id():
     """The spec id of the change at HEAD, via the verdict bound to HEAD or its
     parent (the evidence-commit case)."""
     h = head()
-    parent = subprocess.run(["git", "rev-parse", "HEAD^"], capture_output=True,
+    parent = _git_process.run(["git", "rev-parse", "HEAD^"], capture_output=True,
                             text=True, cwd=ROOT).stdout.strip()
     for f in _verdict_files():
         try:

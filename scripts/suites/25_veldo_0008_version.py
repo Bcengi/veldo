@@ -420,6 +420,7 @@ def _vv_ac4():
         vdir = base / ".veldo"
         vdir.mkdir(parents=True, exist_ok=True)
         (vdir / "version.py").write_text((ROOT / ".veldo" / "version.py").read_text())
+        git_fixture_dependency(vdir / "version.py")
         bad = _vv_sp.run([_vv_sys.executable, str(vdir / "version.py")],
                          cwd=str(base), capture_output=True, text=True)
         expect("VELDO-0008 AC4: with NO canonical declaration the CLI exits NON-ZERO and prints the "
@@ -441,6 +442,7 @@ def _vv_ac4():
             vdir = base / ".veldo"
             vdir.mkdir(parents=True, exist_ok=True)
             (vdir / "version.py").write_text((ROOT / ".veldo" / "version.py").read_text())
+            git_fixture_dependency(vdir / "version.py")
             bare = _vv_sp.run([_vv_sys.executable, str(vdir / "version.py")],
                               cwd=str(base), capture_output=True, text=True)
             rep = _vv_sp.run([_vv_sys.executable, str(vdir / "version.py"), "--report"],

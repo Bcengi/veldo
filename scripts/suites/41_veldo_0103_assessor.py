@@ -28,7 +28,7 @@ BASE_LINE_41 = '    base = Path(cwd)'
 
 
 def _v103_load(name, path):
-    spec = _v103_ilu.spec_from_file_location(name, path)
+    spec = _v103_ilu.spec_from_file_location(name, git_fixture_dependency(path))
     m = _v103_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m

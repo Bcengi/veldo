@@ -31,6 +31,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
+def git_fixture_dependency(path):
+    """Copies of runtime modules carry their shared Git dependency beside them."""
+    path = Path(path)
+    helper = path.parent / "git_process.py"
+    if path.is_file() and not helper.exists() and path.parent not in (ROOT / "scripts", ROOT / "engine/scripts"):
+        helper.write_bytes((ROOT / ".veldo" / "git_process.py").read_bytes())
+    return path
+
+
 spec = importlib.util.spec_from_file_location("validate", ROOT / ".veldo" / "validate.py")
 V = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(V)

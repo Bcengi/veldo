@@ -30,7 +30,7 @@ def _v22_mutated(old, new):
     assert _v22_src.count(old) == 1, (old[:60], _v22_src.count(old))
     (d / "admission_contract.py").write_text(_v22_src.replace(old, new))
     _v22_shutil.copyfile(ROOT / ".veldo" / "arch.py", d / "arch.py")  # the one glob compiler, beside the copy as beside the original
-    spec = _v22_ilu.spec_from_file_location("v22_mut_%s" % d.name, d / "admission_contract.py")
+    spec = _v22_ilu.spec_from_file_location("v22_mut_%s" % d.name, git_fixture_dependency(d / "admission_contract.py"))
     m = _v22_ilu.module_from_spec(spec)
     spec.loader.exec_module(m)
     _v22_shutil.rmtree(d, ignore_errors=True)
