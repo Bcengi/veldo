@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0122
 title: Observe transient and out-of-directory writes during unavailable calls
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

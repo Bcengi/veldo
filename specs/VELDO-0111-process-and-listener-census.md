@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0111
 title: Observe process creation and every supported listener during a call
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0123
 title: Require every mutation result in every gate with content-addressed reuse
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

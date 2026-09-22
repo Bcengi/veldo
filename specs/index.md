@@ -25,6 +25,19 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0108 | Remote clients reach the same endpoint through an authenticated SSH command relay, not a second server | ready | critical | dmitry | required | VELDO-0108-ssh-command-relay.md |
 | VELDO-0109 | An unreachable authority stops mutation and admission, and never becomes a local one | ready | critical | dmitry | required | VELDO-0109-authority-unavailable.md |
 | VELDO-0110 | One strict reader for repository documents | ready | high | dmitry | required | VELDO-0110-one-document-reader.md |
+| VELDO-0111 | Observe process creation and every supported listener during a call | ready | high | dmitry | required | VELDO-0111-process-and-listener-census.md |
+| VELDO-0112 | Derive mutating-client fixtures from the production client registry | ready | high | dmitry | required | VELDO-0112-registered-client-fixture.md |
+| VELDO-0113 | Measure no auto-start across every registered client | ready | high | dmitry | required | VELDO-0113-no-client-auto-starts-authority.md |
+| VELDO-0114 | Prove the relay opens no service during its whole invocation | ready | high | dmitry | required | VELDO-0114-relay-has-no-listener.md |
+| VELDO-0115 | Observe real store mutation through the bound authority | ready | critical | dmitry | required | VELDO-0115-real-authority-store-fixture.md |
+| VELDO-0116 | Refuse every registered mutating client after authority or relay death | ready | critical | dmitry | required | VELDO-0116-unavailable-registered-client-matrix.md |
+| VELDO-0117 | The authority rejects conflicting store bindings for one domain | ready | critical | dmitry | required | VELDO-0117-authority-domain-store-uniqueness.md |
+| VELDO-0118 | Generate a shared grammar domain and independent YAML oracle observations | ready | high | dmitry | required | VELDO-0118-grammar-generated-oracle-fixture.md |
+| VELDO-0119 | Measure shared-reader agreement over the generated grammar domain | ready | high | dmitry | required | VELDO-0119-shared-reader-grammar-agreement.md |
+| VELDO-0120 | Preserve policy settings across the generated shared-reader grammar | ready | high | dmitry | required | VELDO-0120-policy-grammar-agreement.md |
+| VELDO-0121 | Qualify relay behavior at every transport exchange failure boundary | ready | high | dmitry | required | VELDO-0121-relay-transport-failure-interleavings.md |
+| VELDO-0122 | Observe transient and out-of-directory writes during unavailable calls | ready | high | dmitry | required | VELDO-0122-unavailable-calls-have-no-transient-writes.md |
+| VELDO-0123 | Require every mutation result in every gate with content-addressed reuse | ready | high | dmitry | required | VELDO-0123-mutation-drivers-in-every-gate.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a human decision must arrive as an attested record and never as an answer typed at a prompt | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning method just as unreachable as an instance one and neither wired site refuses it, the function that catches it already sits in the file wired to nothing, and wiring it also removes both known false positives (hardening of WARP-0623, from its own review's ranked notes) | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to read 9,096 - compute each derivation ONCE, with every optimized value asserted equal to the naive one | ready | high | dmitry | not_required | WARP-0714-compute-once.md |
@@ -119,19 +132,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
-| VELDO-0111 | Observe process creation and every supported listener during a call | draft | high | dmitry | required | VELDO-0111-process-and-listener-census.md |
-| VELDO-0112 | Derive mutating-client fixtures from the production client registry | draft | high | dmitry | required | VELDO-0112-registered-client-fixture.md |
-| VELDO-0113 | Measure no auto-start across every registered client | draft | high | dmitry | required | VELDO-0113-no-client-auto-starts-authority.md |
-| VELDO-0114 | Prove the relay opens no service during its whole invocation | draft | high | dmitry | required | VELDO-0114-relay-has-no-listener.md |
-| VELDO-0115 | Observe real store mutation through the bound authority | draft | critical | dmitry | required | VELDO-0115-real-authority-store-fixture.md |
-| VELDO-0116 | Refuse every registered mutating client after authority or relay death | draft | critical | dmitry | required | VELDO-0116-unavailable-registered-client-matrix.md |
-| VELDO-0117 | The authority rejects conflicting store bindings for one domain | draft | critical | dmitry | required | VELDO-0117-authority-domain-store-uniqueness.md |
-| VELDO-0118 | Generate a shared grammar domain and independent YAML oracle observations | draft | high | dmitry | required | VELDO-0118-grammar-generated-oracle-fixture.md |
-| VELDO-0119 | Measure shared-reader agreement over the generated grammar domain | draft | high | dmitry | required | VELDO-0119-shared-reader-grammar-agreement.md |
-| VELDO-0120 | Preserve policy settings across the generated shared-reader grammar | draft | high | dmitry | required | VELDO-0120-policy-grammar-agreement.md |
-| VELDO-0121 | Qualify relay behavior at every transport exchange failure boundary | draft | high | dmitry | required | VELDO-0121-relay-transport-failure-interleavings.md |
-| VELDO-0122 | Observe transient and out-of-directory writes during unavailable calls | draft | high | dmitry | required | VELDO-0122-unavailable-calls-have-no-transient-writes.md |
-| VELDO-0123 | Require every mutation result in every gate with content-addressed reuse | draft | high | dmitry | required | VELDO-0123-mutation-drivers-in-every-gate.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a protected path, make the tracker group a reconciliation check that fails loudly on divergence, and refuse rather than degrade when the declaration cannot be read | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is dependency-only, so the frontier's diagnostic half must cover EVERY reason claimable() drops a unit | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing compares them, so a forged body committed under valid unstaged bytes is appended as a PASS at exit 0 - the keyed bytes and the validated bytes must be the same bytes | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |

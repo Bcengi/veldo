@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0118
 title: Generate a shared grammar domain and independent YAML oracle observations
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

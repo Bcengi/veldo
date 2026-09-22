@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0114
 title: Prove the relay opens no service during its whole invocation
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

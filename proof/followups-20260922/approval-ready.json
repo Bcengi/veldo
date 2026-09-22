@@ -1,0 +1,29 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-READY-2026-09-22-FOLLOWUPS",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0111",
+    "commit": "435f416",
+    "paths": [
+      "specs/VELDO-0111-process-and-listener-census.md",
+      "specs/VELDO-0112-registered-client-fixture.md",
+      "specs/VELDO-0113-no-client-auto-starts-authority.md",
+      "specs/VELDO-0114-relay-has-no-listener.md",
+      "specs/VELDO-0115-real-authority-store-fixture.md",
+      "specs/VELDO-0116-unavailable-registered-client-matrix.md",
+      "specs/VELDO-0117-authority-domain-store-uniqueness.md",
+      "specs/VELDO-0118-grammar-generated-oracle-fixture.md",
+      "specs/VELDO-0119-shared-reader-grammar-agreement.md",
+      "specs/VELDO-0120-policy-grammar-agreement.md",
+      "specs/VELDO-0121-relay-transport-failure-interleavings.md",
+      "specs/VELDO-0122-unavailable-calls-have-no-transient-writes.md",
+      "specs/VELDO-0123-mutation-drivers-in-every-gate.md"
+    ]
+  },
+  "basis": "THE READY TRANSITION FOR THIRTEEN FOLLOW-UP SPECIFICATIONS, VELDO-0111 through VELDO-0123, and nothing else. Dmitry approved over Telegram on 2026-09-22 (message 28792, 'Yes', answering 28791). The ask listed all thirteen in one line each, described the two revisions made after review (mutation results reused only under a content-addressed key of every input, held outside the committed tree; the census uses unprivileged ptrace and reports INCOMPLETE by name where it cannot run), and asked two questions: whether they may be put on main and pushed, and whether they are approved to build. The approved text is the specification set at 435f416. WHAT THIS DOES NOT GRANT: no implementation landing, no shipped status, no protected-path change; VELDO-0123 names scripts/verify.sh as a protected path, and changing it remains a separate owner act at landing.",
+  "recorded_at": "2026-09-22T19:40:00Z",
+  "recorded_by": "Ava (Claude, recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-11-30T00:00:00Z"
+}

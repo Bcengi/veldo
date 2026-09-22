@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0120
 title: Preserve policy settings across the generated shared-reader grammar
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
