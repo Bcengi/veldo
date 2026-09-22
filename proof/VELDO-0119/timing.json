@@ -1,0 +1,59 @@
+{
+  "measurement": "Sequential mutation-stage runs over identical clean 5110cbb inputs; baseline filters only finding 119 out of the registry in memory. No source or gate configuration changed. Normal suite cost is a direct complete run multiplied by two gate invocations.",
+  "baseline": {
+    "schema": "veldo.mutation-stage/v1",
+    "registered": 48,
+    "executed": 48,
+    "rejected": 48,
+    "drivers": {
+      "check_teeth_mutations.py": {
+        "inventory_digest": "d9c662a09566434e7cf8b9a8d466fe34bedaa78d1b133d22572dd188aa269340",
+        "registered": 43,
+        "worker_seconds": 75.61819630837999,
+        "wall_seconds": 17.417804525000975
+      },
+      "check_review_mutations.py": {
+        "inventory_digest": "7275f4a0753a0d85301dbc12887ed5102d08c6b9f3a35ec678af9106a7a80b69",
+        "registered": 5,
+        "worker_seconds": 8.973504709778354,
+        "wall_seconds": 5.173098913161084
+      }
+    },
+    "surviving_workers": 0,
+    "input_digest": "31e71e34a9d8cfdc9efc5bc54418aba8d7328220837bb1b90d5b5c3af0517a63",
+    "implementation_digest": "61306cddfb4cca299469f11a2ed969b256600db12e56d77fe96d88cc6417bf54",
+    "status": "passed",
+    "worker_invocations": 62,
+    "elapsed": 19.377806250937283
+  },
+  "with_new_cases": {
+    "schema": "veldo.mutation-stage/v1",
+    "registered": 54,
+    "executed": 54,
+    "rejected": 54,
+    "drivers": {
+      "check_teeth_mutations.py": {
+        "inventory_digest": "f17d785086b70b1f6f2cb0fe3f00c7fdf8d2671fde1b9bf49e9cbc53c2205885",
+        "registered": 49,
+        "worker_seconds": 101.92183214169927,
+        "wall_seconds": 19.183272121939808
+      },
+      "check_review_mutations.py": {
+        "inventory_digest": "7275f4a0753a0d85301dbc12887ed5102d08c6b9f3a35ec678af9106a7a80b69",
+        "registered": 5,
+        "worker_seconds": 9.145818491699174,
+        "wall_seconds": 5.3839471319224685
+      }
+    },
+    "surviving_workers": 0,
+    "input_digest": "31e71e34a9d8cfdc9efc5bc54418aba8d7328220837bb1b90d5b5c3af0517a63",
+    "implementation_digest": "61306cddfb4cca299469f11a2ed969b256600db12e56d77fe96d88cc6417bf54",
+    "status": "passed",
+    "worker_invocations": 72,
+    "elapsed": 23.88139444612898
+  },
+  "mutation_stage_added_seconds": 4.503588195191696,
+  "normal_suite_added_seconds": 7.8352476679719985,
+  "total_added_gate_work_seconds": 12.338835863163695,
+  "limit_seconds": 60
+}

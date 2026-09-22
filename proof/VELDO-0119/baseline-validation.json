@@ -1,0 +1,9 @@
+{
+  "base": "b34d17d",
+  "documents": 651,
+  "copies": 2,
+  "original_input_digests_match": true,
+  "original_reader_digests_match": true,
+  "all_original_parse_outcomes_match": true,
+  "method": "Independently reload both reader modules and each full document from git show b34d17d, then compare full values/refusals with the pre-change snapshot."
+}

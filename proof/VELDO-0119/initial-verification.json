@@ -1,0 +1,16 @@
+{
+  "commit": "5110cbbb1f725265fa73df52d1eb5df6a6e1a2f6",
+  "started_clean": true,
+  "seconds": 620.7490949449129,
+  "returncode": 1,
+  "gate": [
+    "GATE: RED (5110cbbb1f725265fa73df52d1eb5df6a6e1a2f6)"
+  ],
+  "unit": [
+    "selftest: 5580 passed, 0 failed"
+  ],
+  "integration": [
+    "mutated(spend_recorded) run: 5580 passed, 0 failed (288s)"
+  ],
+  "gate_log_sha256": "8f0cfab9b3dd64d14ca3f6c09b247b4323f5b69da0b740c1aff26ef09ec68b65"
+}

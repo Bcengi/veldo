@@ -1,0 +1,24 @@
+{
+  "commit": "96935a747ca33adcca3b23fbb29c5e08ed5067e6",
+  "started_clean": true,
+  "seconds": 619.4423380221706,
+  "returncode": 0,
+  "gate": [
+    "GATE: GREEN (96935a747ca33adcca3b23fbb29c5e08ed5067e6)"
+  ],
+  "unit": [
+    "selftest: 5580 passed, 0 failed"
+  ],
+  "integration": [
+    "mutated(spend_recorded) run: 5580 passed, 0 failed (288s)"
+  ],
+  "gate_log_sha256": "c243d80317b48223dd0910f6ec076862a3454c7014be4474677e57f41796b48e",
+  "gate_suite_seconds": 4.0189841201063246,
+  "gate_reader_qualification": true,
+  "gate_mutation_stage_seconds": 23.805481815943494,
+  "gate_mutations_registered": 54,
+  "mutations": "mutations: passed registered=54 executed=54 rejected=54 workers=72 elapsed=23.805s",
+  "measurement_note": "Clean implementation gate. Added work is measured separately in timing.json; the historical full gate comparison includes machine and run variation.",
+  "historical_gate_seconds": 578.9430865999311,
+  "historical_wall_delta_seconds": 40.49925142223947
+}

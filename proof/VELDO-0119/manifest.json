@@ -1,0 +1,145 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0119",
+  "commit": "96935a747ca33adcca3b23fbb29c5e08ed5067e6",
+  "producer": "Codex implementing agent",
+  "produced_at": "2026-09-22T23:09:00.790670+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0119/measurement.json",
+          "detail": "Both independent reader copies execute all 1088 supported witnesses and agree on exact typed trees. All 218 historical disagreements settle. Raw observations, documented DEL adaptation and unchanged corpus are retained."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0119/gate-mutation-controls.jsonl",
+          "detail": "Declared falsifier plus a second mutation fail the named row in completed temporary-copy runs; exact baseline, no-op and mutant observations retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0119/verification.json",
+          "detail": "Canonical clean-tree gate and first-use integration suite passed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0119/measurement.json",
+          "detail": "All 457 boundaries refuse in both copies with source and physical line checks. Independent observations distinguish 225 invalid YAML and 232 valid YAML outside the dialect."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0119/gate-mutation-controls.jsonl",
+          "detail": "Declared falsifier plus a second mutation fail the named row in completed temporary-copy runs; exact baseline, no-op and mutant observations retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0119/verification.json",
+          "detail": "Canonical clean-tree gate and first-use integration suite passed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0119/measurement.json",
+          "detail": "Complete inventory joins qualify only provisioned independent observations. Full-domain absent, broken-import, broken-runtime and omitted-input controls cannot qualify; absent-oracle execution is retained."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0119/gate-mutation-controls.jsonl",
+          "detail": "Declared falsifier plus a second mutation fail the named row in completed temporary-copy runs; exact baseline, no-op and mutant observations retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0119/verification.json",
+          "detail": "Canonical clean-tree gate and first-use integration suite passed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0119/verification.json",
+      "detail": "selftest: 5580 passed, 0 failed; GATE: GREEN (96935a747ca33adcca3b23fbb29c5e08ed5067e6)"
+    },
+    {
+      "name": "named-falsifiers",
+      "status": "passed",
+      "command": "python3 scripts/check_teeth_mutations.py --finding 119 --diff-dir proof/VELDO-0119/mutations",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0119/mutation-controls.jsonl",
+      "detail": "Six registered mutations rejected, two per named row; all unmutated controls green."
+    },
+    {
+      "name": "full-mutation-stage",
+      "status": "passed",
+      "command": "python3 -B scripts/check_gate_mutations.py",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0119/gate-mutation-controls.jsonl",
+      "detail": "mutations: passed registered=54 executed=54 rejected=54 workers=72 elapsed=23.805s"
+    },
+    {
+      "name": "complete-observations",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0119/measure.py --output-dir /tmp/veldo-0119-observations",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0119/measurement.json",
+      "detail": "No omitted or filtered inputs; all 218 historical cases rechecked through both copies."
+    },
+    {
+      "name": "corpus-meaning",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0119/corpus.py --output /tmp/veldo-0119-corpus.json",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0119/corpus-after-del-adapter.json",
+      "detail": "651 frozen document inputs, both copies; zero changed meanings/refusals after each fix. Entire owner policy tree unchanged."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0119/README.md",
+    "proof/VELDO-0119/absence.json",
+    "proof/VELDO-0119/baseline-validation.json",
+    "proof/VELDO-0119/corpus-after-blank-block.json",
+    "proof/VELDO-0119/corpus-after-del-adapter.json",
+    "proof/VELDO-0119/corpus-after-empty-flow.json",
+    "proof/VELDO-0119/corpus-before.json.xz.b64",
+    "proof/VELDO-0119/corpus.py",
+    "proof/VELDO-0119/decisions.md",
+    "proof/VELDO-0119/dialect-samples.json",
+    "proof/VELDO-0119/dispositions.jsonl",
+    "proof/VELDO-0119/gate-mutation-controls.jsonl",
+    "proof/VELDO-0119/initial-verification.json",
+    "proof/VELDO-0119/literal-del-observations.json",
+    "proof/VELDO-0119/measure.py",
+    "proof/VELDO-0119/measurement.json",
+    "proof/VELDO-0119/mutation-controls.jsonl",
+    "proof/VELDO-0119/mutations/reader-accept-unclosed-flow.diff",
+    "proof/VELDO-0119/mutations/reader-coerce-leading-zero.diff",
+    "proof/VELDO-0119/mutations/reader-omit-from-required-domain.diff",
+    "proof/VELDO-0119/mutations/reader-overwrite-duplicate.diff",
+    "proof/VELDO-0119/mutations/reader-strip-quoted-hash.diff",
+    "proof/VELDO-0119/mutations/reader-unavailable-counts-as-compared.diff",
+    "proof/VELDO-0119/observations.jsonl.xz.b64",
+    "proof/VELDO-0119/timing.json",
+    "proof/VELDO-0119/verification.json"
+  ],
+  "rollback": "Revert the reader corrections and consumer wiring together; retain the disagreement history and reopen qualification.",
+  "review": "No independent review, self-approval, merge or push claimed. Specification remains ready."
+}
