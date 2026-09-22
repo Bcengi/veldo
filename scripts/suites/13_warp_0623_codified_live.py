@@ -337,10 +337,11 @@ expect("WARP-0623 AC5: the capability entry is mechanical, homed in the live mod
 # never been part of the canonical engine (engine), so there is no shipped copy to sync and no
 # pack carries one; capabilities.yaml is the artifact that does ship, and it is byte-identical above.
 _lp_engine = set(PK.engine_files(str(ROOT / "engine")))
-expect("WARP-0623 AC5: the live provisioner is REPO-ONLY - the whole tracker board-bootstrap cluster is absent from the canonical engine and from every pack, so 'engine-synced' here means the capability record, not a shipped module copy",
-       not [_m for _m in ("tracker_jira_live.py", "tracker_jira_init.py", "tracker_intake.py",
-                          "tracker_adapter.py") if (".veldo/" + _m) in _lp_engine]
-       and not (ROOT / "engine/.veldo/tracker_jira_live.py").exists())
+expect("WARP-0623 AC5: the live board provisioners and adapter remain repository-only; the shared-parser intake source has an identical engine mirror",
+       not [_m for _m in ("tracker_jira_live.py", "tracker_jira_init.py", "tracker_adapter.py") if (".veldo/" + _m) in _lp_engine]
+       and not (ROOT / "engine/.veldo/tracker_jira_live.py").exists()
+       and (ROOT / ".veldo/tracker_intake.py").read_bytes()
+       == (ROOT / "engine/.veldo/tracker_intake.py").read_bytes())
 # AC5 dogfood: this item's own spec is ready, standard risk, touches no protected path, and passes the
 # repository's own placement and diagnosability gates.
 _lp_fm = V.parse_yamlish(re.match(r"^---\n(.*?)\n---",
