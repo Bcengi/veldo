@@ -144,3 +144,5 @@ The work contract is the owner's explicit one-parser request on branch one-parse
 The parser and corpus report were committed first, as that request requires. This
 record binds the resulting evidence directory to the repository's spec roster; it
 adds no approval and makes no claim of independent review or shipped status.
+
+2026-09-22 follow-ups: VELDO-0118 (shared written-grammar generator and optional independent oracle fixture).

@@ -140,3 +140,5 @@ The shared parser is deliberately unchanged, and so is the integer coercion in i
 ## Notes
 
 `read_policy` and `_strip_comment` already exist and are already tested by VELDO-0104's suite; this item does not write a second stripper. The refusal is by shape and happens before `_commit_exists`, so a mistyped line and a line this repository does not have stay distinguishable in the output.
+
+2026-09-22 follow-ups: VELDO-0118 (shared written-grammar generator and optional independent oracle fixture).
