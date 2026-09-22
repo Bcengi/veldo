@@ -46,11 +46,16 @@ obvious. **`GIT_DIR` in the environment overrides `-C`.** With it set, the modul
 named repoA, so the identity check compared the wrong repository against the binding.
 `GIT_WORK_TREE`, `GIT_COMMON_DIR` and `GIT_OBJECT_DIRECTORY` do the same.
 
-`_git` now strips every variable whose name begins `GIT_` from the child environment, **by prefix
-rather than by a list of names**, because git grows more of them and a list of names goes stale
-silently. That filter is the module's only reading of the environment and it never takes a value from
-it: it only takes values away. The row asserts that sentence as well as the behaviour, by counting
-`os.environ` in the source.
+Enrollment's _git now delegates to the shared [.veldo/git_process.py](../../.veldo/git_process.py)
+subprocess boundary. That boundary strips inherited GIT_* variables by prefix, then installs its
+own settings disabling global and system configuration (including HOME/XDG discovery), replacement
+objects and terminal prompts. Repository-local configuration remains authoritative.
+
+Suite 46's enrollment/ambient-sources-decide-nothing checks resolution under competing-repository
+environment settings and asserts that enrollment contains neither os.environ nor os.getcwd and
+does call _git_process.run. It does not count environment reads in enrollment. The shared boundary's
+hostile HOME configuration and runtime-call coverage are documented separately in
+[the repair evidence, finding 4 enrollment](../fixes-20260922/README.md), including suite 50.
 
 It was caught by the row and not by a review, and only because the row points four ambient sources at
 a second repository that is real and really enrolled. A row that had pointed them at a directory that
@@ -58,7 +63,7 @@ did not exist would have passed.
 
 ## What the evidence is, and what it is not
 
-Five rows in `scripts/suites/46_veldo_0029_enrollment.py`, over real git repositories built under a
+Seven rows in `scripts/suites/46_veldo_0029_enrollment.py`, over real git repositories built under a
 temporary directory: two clones of different repositories, a linked worktree of the first, a
 directory swapped for a clone of another repository with the old binding restored into it, a fresh
 clone of the same repository with the binding restored but not the clone uuid, and a directory that
