@@ -1,0 +1,16 @@
+Clean-tree gate attempt at 961c4f7. Unit stage failed; gate stopped during integration to fix and rerun. No completed gate result or unit count.
+
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/fix-0123-fixture-cases/scripts/selftest.py", line 190, in <module>
+    exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
+  File "/home/dmitry/projects/veldo-worktrees/fix-0123-fixture-cases/scripts/suites/53_veldo_0123_mutations.py", line 302, in <module>
+    _m123_answers, _m123_evidence = qualification(_m123_gate, ROOT)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/fix-0123-fixture-cases/scripts/suites/53_veldo_0123_mutations.py", line 254, in qualification
+    child_dead = not status.exists() or status.read_text().split()[2] == 'Z'
+                                        ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1030, in read_text
+    return f.read()
+           ^^^^^^^^
+ProcessLookupError: [Errno 3] No such process
+   unit: FAIL

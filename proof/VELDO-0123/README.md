@@ -38,3 +38,11 @@ Result digests bind the observed run, including elapsed times; new runs naturall
 During this rework, an initial domain qualification was intentionally interrupted after ten successful assertion edits to strengthen capture: retain the complete failed stage receipt and compare the final no-op observations exactly. Its full terminal output is in `interrupted-qualification.log`; it is not counted as a completed qualification. The replacement run below covers all 25 targets.
 
 An attempted focused command used the abbreviation `--suite 53`; the dispatcher refused it without running assertions (full output: `selector-refusal.log`). Using `--suite 53_veldo_0123_mutations` ran the four qualification rows successfully. The dispatcher correctly returned exit 2 for a partial run; only the full canonical gate below is gate evidence.
+
+## Fixture-kind case repair
+
+The teeth driver now owns source selection, exact replacement, whole-directory fixture copies and digests of the actual module bytes. The gate and both standalone drivers use that owner. The frozen scripts input includes fixtures. No synthetic case enters the real registry.
+
+`fixture-qualification.json` records all five qualification rows green, including `gate/fixture-cases-execute-named-targets`: the real teeth worker observes the named fixture target red, preserves sibling and nested files, and reports matching baseline/no-op observations and exact byte digests. `fixture-falsifiers.json` records eleven completed drives with the named assertion false, including restoration of production-only paths and exclusion of fixtures from the snapshot. Reproduce with `python3 -B proof/VELDO-0123/drive.py refutations --output /tmp/veldo-0123-fixture-refutations`. Both standalone drivers passed (33 teeth and 5 review cases).
+
+The first clean-tree gate attempt at `961c4f7` encountered an existing timeout-row race: the reaped child's `/proc` entry disappeared while being read. `fixture-gate-first-attempt.log` retains the failure. That attempt was stopped during integration and is not gate evidence. Suite 53 now treats both missing-entry read errors as completed cleanup; other errors still propagate.

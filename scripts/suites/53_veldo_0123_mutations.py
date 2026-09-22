@@ -251,7 +251,11 @@ def qualification(module, repository, selected=None):
                 if pidfile.exists():
                     pid = int(pidfile.read_text())
                     status = _m123_Path('/proc') / str(pid) / 'stat'
-                    child_dead = not status.exists() or status.read_text().split()[2] == 'Z'
+                    try:
+                        child_dead = status.read_text().split()[2] == 'Z'
+                    except (FileNotFoundError, ProcessLookupError):
+                        # Reaping may race the read, including after /proc opens the file.
+                        child_dead = True
                 detail.append(dict(deadline_hits=hits, worker_limit=worker_limit,
                                    timed_out=timed_out, child_dead=child_dead,
                                    cleanup_seconds=_m123_time.monotonic() - started,

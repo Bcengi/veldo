@@ -15,8 +15,8 @@
           "executed": 1,
           "registered": 1,
           "worker_invocations": 3,
-          "elapsed": 0.15932897594757378,
-          "input_digest": "7537bc40c50d38d02f9621890d8fcdce68b79fcd3bbed22d84c6c03d857b2b37"
+          "elapsed": 0.16080351686105132,
+          "input_digest": "91861f287751eb8ec78a51d8d9082db2b4d8abec3f29e9abe258a50185b35605"
         },
         {
           "status": "passed",
@@ -24,8 +24,8 @@
           "executed": 1,
           "registered": 1,
           "worker_invocations": 3,
-          "elapsed": 0.16243611299432814,
-          "input_digest": "7537bc40c50d38d02f9621890d8fcdce68b79fcd3bbed22d84c6c03d857b2b37"
+          "elapsed": 0.16219814494252205,
+          "input_digest": "91861f287751eb8ec78a51d8d9082db2b4d8abec3f29e9abe258a50185b35605"
         },
         {
           "status": "passed",
@@ -33,8 +33,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.1579907420091331,
-          "input_digest": "9160c5a11594c506e9a8819e4d060611f7f189924c68487117e754ebc313b3e9"
+          "elapsed": 0.1587070170789957,
+          "input_digest": "e80cb8e67432f6dc7b36a1c8c7abbcbab362b9a1a1b7fc14050bba0c67d655a6"
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -47,18 +47,18 @@
               "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.08069098996929824
+              "wall_seconds": 0.060755430022254586
             }
           },
           "surviving_workers": 0,
           "invalid_results": [],
-          "input_digest": "8bef43ee3365f6f32d7712851b6e5aac125a5cc8bc43d2e2a1b79a6474134b69",
+          "input_digest": "6caec358eba794f08926e4644068d2432d8f70fa45bcb80d943550302d813892",
           "implementation_digest": "387f57b3e4006471a60e2630c5d2dd25a86a2df94ebe709a24e1ff885e11ba13",
           "status": "failed",
           "error": "driver_error",
-          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-tjgy59jd/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-tjgy59jd/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-tjgy59jd/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-tjgy59jd/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-wxq28z6d/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-wxq28z6d/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-wxq28z6d/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-wxq28z6d/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
           "worker_invocations": 2,
-          "elapsed": 0.14035544195212424
+          "elapsed": 0.12264190288260579
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -73,7 +73,7 @@
           "error": "incomplete_inventory",
           "detail": "incomplete_inventory: check_teeth_mutations.py",
           "worker_invocations": 0,
-          "elapsed": 6.64649996906519e-05
+          "elapsed": 7.396400906145573e-05
         },
         {
           "status": "passed",
@@ -81,8 +81,8 @@
           "executed": 1,
           "registered": 1,
           "worker_invocations": 3,
-          "elapsed": 0.1586138168349862,
-          "input_digest": "b9e73b253e67dbe379f442505521b71770788083a13c92d7e3549ef7d8ff7509"
+          "elapsed": 0.16039150906726718,
+          "input_digest": "1dd59ce968f7af3c07bf2da233747a0f6786c252fe3de426f08d2c973c8ad590"
         },
         {
           "status": "passed",
@@ -90,8 +90,8 @@
           "executed": 1,
           "registered": 1,
           "worker_invocations": 3,
-          "elapsed": 0.15853334381245077,
-          "input_digest": "b765eb103a75a3edb773984f89e7d71b623138e55ed815cd7e33be2fd4593e5c"
+          "elapsed": 0.15805851994082332,
+          "input_digest": "2a632a0ff9c8d768f8266eeb9eae9f5c12760e74a52f6ab971fba42fece77b94"
         }
       ]
     }
@@ -112,8 +112,8 @@
           "executed": 1,
           "registered": 1,
           "worker_invocations": 3,
-          "elapsed": 0.15626075607724488,
-          "input_digest": "ba8a4019ab755a67bee8bd9824520197b45462916566c2fd1e5e897dd97cb017"
+          "elapsed": 0.1543423649854958,
+          "input_digest": "15b9478f6eedb0f2e701dea49b4350c8577fa660515d04a2f6c89de67bd2bb17"
         },
         {
           "status": "passed",
@@ -121,8 +121,8 @@
           "executed": 1,
           "registered": 1,
           "worker_invocations": 3,
-          "elapsed": 0.15772513393312693,
-          "input_digest": "ba8a4019ab755a67bee8bd9824520197b45462916566c2fd1e5e897dd97cb017"
+          "elapsed": 0.1603448078967631,
+          "input_digest": "15b9478f6eedb0f2e701dea49b4350c8577fa660515d04a2f6c89de67bd2bb17"
         },
         {
           "status": "passed",
@@ -130,8 +130,8 @@
           "executed": 1,
           "registered": 1,
           "worker_invocations": 3,
-          "elapsed": 0.15707692806608975,
-          "input_digest": "f0a068b9d4f7d5f146717adac3b44353c18a40a2f8a95e453f8364a630cd1add"
+          "elapsed": 0.1564443341922015,
+          "input_digest": "a6e178496b72b9fbf92d8c7336445e07fcca497b4f74df032605cc68ce2651ef"
         },
         {
           "status": "passed",
@@ -139,8 +139,8 @@
           "executed": 1,
           "registered": 1,
           "worker_invocations": 3,
-          "elapsed": 0.1572146899998188,
-          "input_digest": "56995498d5e3464fbe57cc2b6883e423330af23c11c7da30fac4a70e19f78f7a"
+          "elapsed": 0.15634486405178905,
+          "input_digest": "0b78dbcd710b1c90add3d4909ae24a05e1894614f83975bcd524335ee5e1f736"
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -153,18 +153,18 @@
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.08061444782651961
+              "wall_seconds": 0.06060061417520046
             }
           },
           "surviving_workers": 0,
           "invalid_results": [],
-          "input_digest": "0774e41d2707b679eb3bd10348fe05f5bd64733c63df491e327a2100e737983d",
+          "input_digest": "27c892e1ca0446cdb60a359ad89a79b00cf46f4803c9aa3b166763cb04f89199",
           "implementation_digest": "9f112692498bd4f040c29bd7579141f3b6d2928352a1d83c314d9173ac56463a",
           "status": "failed",
           "error": "driver_error",
-          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_gate_mutations.py\", line 260, in worker\n    owner = load(ROOT / 'scripts/check_teeth_mutations.py')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_gate_mutations.py\", line 50, in load\n    spec.loader.exec_module(module)\n  File \"<frozen importlib._bootstrap_external>\", line 991, in exec_module\n  File \"<frozen importlib._bootstrap_external>\", line 1128, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 1186, in get_data\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-mutations-2m0xfb3z/input/scripts/check_teeth_mutations.py'\n",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-jawzzyz9/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-jawzzyz9/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-jawzzyz9/input/scripts/check_gate_mutations.py\", line 260, in worker\n    owner = load(ROOT / 'scripts/check_teeth_mutations.py')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-jawzzyz9/input/scripts/check_gate_mutations.py\", line 50, in load\n    spec.loader.exec_module(module)\n  File \"<frozen importlib._bootstrap_external>\", line 991, in exec_module\n  File \"<frozen importlib._bootstrap_external>\", line 1128, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 1186, in get_data\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-mutations-jawzzyz9/input/scripts/check_teeth_mutations.py'\n",
           "worker_invocations": 2,
-          "elapsed": 0.1397436901461333
+          "elapsed": 0.11921473313122988
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -177,18 +177,18 @@
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.08071869192644954
+              "wall_seconds": 0.08068352891132236
             }
           },
           "surviving_workers": 0,
           "invalid_results": [],
-          "input_digest": "2fd6edb4f0296e25fd07604cfded931500cc0aabf360f7f2f3d9a1b94a394e8b",
+          "input_digest": "6db26aca1dcb7b4ed36bac078e7f2149cdadeaa879c0fde3840a6b133952271a",
           "implementation_digest": "9f112692498bd4f040c29bd7579141f3b6d2928352a1d83c314d9173ac56463a",
           "status": "failed",
           "error": "driver_error",
-          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-0hq7m9f3/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-0hq7m9f3/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-0hq7m9f3/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-0hq7m9f3/input/scripts/check_review_mutations.py\", line 11, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-3o9b3rzo/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-3o9b3rzo/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-3o9b3rzo/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-3o9b3rzo/input/scripts/check_review_mutations.py\", line 11, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
           "worker_invocations": 2,
-          "elapsed": 0.1402543419972062
+          "elapsed": 0.14001052593812346
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -203,7 +203,7 @@
           "error": "incomplete_inventory",
           "detail": "incomplete_inventory: check_review_mutations.py",
           "worker_invocations": 0,
-          "elapsed": 6.710994057357311e-05
+          "elapsed": 7.236399687826633e-05
         }
       ]
     }
@@ -224,8 +224,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.15990996197797358,
-          "input_digest": "52b6ec7ef9dca9dd24e00a4b6728b07f24821e7fe56470b524c3afa39d0be2d5"
+          "elapsed": 0.15794962993822992,
+          "input_digest": "ce22a6cb25c4f8ebc5fddefc549c1a2009ed1a0804e612ae8dd5e578a89eb46b"
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -238,13 +238,13 @@
               "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.16230784100480378
+              "wall_seconds": 0.1216059981379658
             },
             "check_review_mutations.py": {
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.08055727905593812
+              "wall_seconds": 0.08041411801241338
             }
           },
           "surviving_workers": 0,
@@ -326,7 +326,7 @@
                   "fixture/control"
                 ]
               },
-              "elapsed": 0.08090960001572967,
+              "elapsed": 0.06058065895922482,
               "error": "invalid_baseline",
               "detail": "check_teeth_mutations.py:fixture"
             },
@@ -407,18 +407,18 @@
                   "fixture/control"
                 ]
               },
-              "elapsed": 0.08057180303148925,
+              "elapsed": 0.08043128508143127,
               "error": "invalid_baseline",
               "detail": "check_review_mutations.py:fixture"
             }
           ],
-          "input_digest": "99099e1ee4a0a1b214356dd5c88fc41ad46c5df6833d5c5242daeef08571bbff",
+          "input_digest": "e986e7fccfb765ff9979b4c73a4769148ad401358594c4260e4d173068cf91b5",
           "implementation_digest": "cef13662c6ef6a8b610e9027d70955c05b5f9366b775b5bcabef3050b52f1c56",
           "status": "failed",
           "error": "invalid_baseline",
           "detail": "invalid_baseline: check_teeth_mutations.py:fixture",
           "worker_invocations": 4,
-          "elapsed": 0.22389671602286398
+          "elapsed": 0.20809768000617623
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -431,13 +431,13 @@
               "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.1619994160719216
+              "wall_seconds": 0.1217755270190537
             },
             "check_review_mutations.py": {
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.08051813184283674
+              "wall_seconds": 0.06030319398269057
             }
           },
           "surviving_workers": 0,
@@ -521,7 +521,7 @@
                   "fixture/control"
                 ]
               },
-              "elapsed": 0.08077378408052027,
+              "elapsed": 0.06060947198420763,
               "error": "invalid_baseline",
               "detail": "check_teeth_mutations.py:fixture"
             },
@@ -604,18 +604,18 @@
                   "fixture/control"
                 ]
               },
-              "elapsed": 0.08053181297145784,
+              "elapsed": 0.0603135300334543,
               "error": "invalid_baseline",
               "detail": "check_review_mutations.py:fixture"
             }
           ],
-          "input_digest": "6cb3e9e4450685b7362dbf5848e91c0ccf076b4e76c55b1f591605202617896a",
+          "input_digest": "4273e219b38b6b1b5e0a7920a4436b3edb32b5d72e71f87af7ae82d4c030fc7a",
           "implementation_digest": "cef13662c6ef6a8b610e9027d70955c05b5f9366b775b5bcabef3050b52f1c56",
           "status": "failed",
           "error": "invalid_baseline",
           "detail": "invalid_baseline: check_teeth_mutations.py:fixture",
           "worker_invocations": 4,
-          "elapsed": 0.22510704002343118
+          "elapsed": 0.1835271460004151
         }
       ]
     }
@@ -636,8 +636,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.15916565712541342,
-          "input_digest": "492db2738c77c27273a1b3cb2254c15225e76a410e7b0dd526d5f26f141ad953"
+          "elapsed": 0.16172986500896513,
+          "input_digest": "0e33b4539e561f00a6f232079778b8f6fd7802e4655453bbfcb8aa2f4d6daf2d"
         },
         {
           "status": "passed",
@@ -645,8 +645,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.16018833802081645,
-          "input_digest": "492db2738c77c27273a1b3cb2254c15225e76a410e7b0dd526d5f26f141ad953"
+          "elapsed": 0.16171679203398526,
+          "input_digest": "0e33b4539e561f00a6f232079778b8f6fd7802e4655453bbfcb8aa2f4d6daf2d"
         },
         {
           "status": "passed",
@@ -654,8 +654,8 @@
           "executed": 3,
           "registered": 3,
           "worker_invocations": 5,
-          "elapsed": 0.15925261401571333,
-          "input_digest": "b84511ea81edc72638cb324e1b628c3a270563ae8926ce70ebd2a57d59ee4b3c"
+          "elapsed": 0.15857257321476936,
+          "input_digest": "d368782eebcb375a353a84c2d8b4eccbe3f065e16b39592e0c6d8e433fe6eec4"
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -668,7 +668,7 @@
               "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.06059626513160765
+              "wall_seconds": 0.06053631822578609
             },
             "check_review_mutations.py": {
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
@@ -679,13 +679,13 @@
           },
           "surviving_workers": 0,
           "invalid_results": [],
-          "input_digest": "1614f6bba3e929d9e2673fe6d1647497c4b88788037e7cc91abd152047e5da8e",
+          "input_digest": "c953b6eedf8f6a1c45ba017fb56ff3760ca0455c7500a8b381facffe20cbf3bb",
           "implementation_digest": "fbe3ae8141f3c7ccfe940e73360cfdbef007d1590b02762e6c2dd3b56241d7d5",
           "status": "failed",
           "error": "driver_error",
-          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-8i17l1w9/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-8i17l1w9/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-8i17l1w9/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-8i17l1w9/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-jgaf6t4n/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-jgaf6t4n/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-jgaf6t4n/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-jgaf6t4n/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
           "worker_invocations": 2,
-          "elapsed": 0.12167887506075203
+          "elapsed": 0.12300120596773922
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -700,7 +700,7 @@
           "error": "incomplete_inventory",
           "detail": "incomplete_inventory: check_teeth_mutations.py",
           "worker_invocations": 0,
-          "elapsed": 0.00013034790754318237
+          "elapsed": 6.506592035293579e-05
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -713,24 +713,24 @@
               "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.08141994406469166
+              "wall_seconds": 0.08138664183206856
             },
             "check_review_mutations.py": {
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.0603491619694978
+              "wall_seconds": 0.06028934009373188
             }
           },
           "surviving_workers": 0,
           "invalid_results": [],
-          "input_digest": "c2a6cab1a7ba4304ac9ded75a00ab7084e68a69ddaaea9b96bf4a9b79bf775e9",
+          "input_digest": "18dd4ee7e9902814deda6c8d8185d40cf9e61e23173ff4172ddc7097a12ada40",
           "implementation_digest": "fbe3ae8141f3c7ccfe940e73360cfdbef007d1590b02762e6c2dd3b56241d7d5",
           "status": "failed",
           "error": "driver_error",
-          "detail": "driver_error: check_review_mutations.py:fixture: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-yqai61qo/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-yqai61qo/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-yqai61qo/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-yqai61qo/input/scripts/check_review_mutations.py\", line 11, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "detail": "driver_error: check_review_mutations.py:fixture: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-bq8j_nzt/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-bq8j_nzt/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-bq8j_nzt/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-bq8j_nzt/input/scripts/check_review_mutations.py\", line 11, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
           "worker_invocations": 4,
-          "elapsed": 0.16258690296672285
+          "elapsed": 0.16040876717306674
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -745,7 +745,7 @@
           "error": "incomplete_inventory",
           "detail": "incomplete_inventory: check_review_mutations.py",
           "worker_invocations": 0,
-          "elapsed": 0.0015496229752898216
+          "elapsed": 0.0014908409211784601
         }
       ]
     }
@@ -766,8 +766,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.1612473709974438,
-          "input_digest": "c574a3b39155b17a4ae1ee8db73a7a170f100a55c125e82f64e1b360fd770bf4"
+          "elapsed": 0.1578694919589907,
+          "input_digest": "c6d1f57ebef44cc0153e955df9adfc5d1ec7202ae7ca532b80afbd9198684332"
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -780,7 +780,7 @@
               "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.08062077802605927
+              "wall_seconds": 0.0605974190402776
             },
             "check_review_mutations.py": {
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
@@ -791,13 +791,13 @@
           },
           "surviving_workers": 0,
           "invalid_results": [],
-          "input_digest": "e18c899c653d88105959f71d0eb240112527d331d8996856d81da75c211f5c3b",
+          "input_digest": "cab59fc66c24bbbf414ff22452f8b8da7d7b338e2e162d3b5afc233c0fdb3963",
           "implementation_digest": "d235432214db3b9c3418fe802654eb29f17bf07865346c7430cc6b13dca98be7",
           "status": "failed",
           "error": "driver_error",
-          "detail": "driver_error: fixture.py:fixture.py:False:noop: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-4g1f96u9/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-4g1f96u9/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-4g1f96u9/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-4g1f96u9/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
+          "detail": "driver_error: fixture.py:fixture.py:False:noop: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-x5c2dpf0/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-x5c2dpf0/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-x5c2dpf0/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-x5c2dpf0/input/scripts/check_teeth_mutations.py\", line 213, in worker\n    raise RuntimeError('controlled worker crash')\nRuntimeError: controlled worker crash\n",
           "worker_invocations": 2,
-          "elapsed": 0.14848444913513958
+          "elapsed": 0.12507194699719548
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -810,7 +810,7 @@
               "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.0605423420201987
+              "wall_seconds": 0.06068469397723675
             },
             "check_review_mutations.py": {
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
@@ -821,13 +821,13 @@
           },
           "surviving_workers": 0,
           "invalid_results": [],
-          "input_digest": "33640ab53eea3f64090c90e0dd71a73b5ea6532bea2ffc0c3cbdc9e90daf2cf7",
+          "input_digest": "60961e8ad7aa389f39a7b14d7d1720847263365492b65ed7c3ba1599f38568fb",
           "implementation_digest": "d235432214db3b9c3418fe802654eb29f17bf07865346c7430cc6b13dca98be7",
           "status": "failed",
           "error": "driver_error",
-          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-u1xo4dg9/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-u1xo4dg9/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-u1xo4dg9/input/scripts/check_gate_mutations.py\", line 261, in worker\n    prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-u1xo4dg9/input/scripts/check_teeth_mutations.py\", line 113, in materialize\n    raise RuntimeError((case['name'], 'mutation anchor moved', count))\nRuntimeError: ('fixture', 'mutation anchor moved', 0)\n",
+          "detail": "driver_error: fixture.py:fixture.py:False:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-4pqd7wno/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-4pqd7wno/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-4pqd7wno/input/scripts/check_gate_mutations.py\", line 261, in worker\n    prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-4pqd7wno/input/scripts/check_teeth_mutations.py\", line 113, in materialize\n    raise RuntimeError((case['name'], 'mutation anchor moved', count))\nRuntimeError: ('fixture', 'mutation anchor moved', 0)\n",
           "worker_invocations": 2,
-          "elapsed": 0.1221259138546884
+          "elapsed": 0.12434336496517062
         }
       ]
     }
@@ -890,8 +890,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.15814686100929976,
-          "input_digest": "52c27b5c38ad949a3e05f457a8e8501f0683f5e5459195955905ffc7db6cfd72"
+          "elapsed": 0.15962352696806192,
+          "input_digest": "b3f47c5a3b0df9fc662ebe89f44ed712d114ab81e6d870a9f694464200fcc746"
         },
         {
           "status": "passed",
@@ -899,8 +899,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.16405159700661898,
-          "input_digest": "52c27b5c38ad949a3e05f457a8e8501f0683f5e5459195955905ffc7db6cfd72"
+          "elapsed": 0.16367947519756854,
+          "input_digest": "b3f47c5a3b0df9fc662ebe89f44ed712d114ab81e6d870a9f694464200fcc746"
         },
         {
           "schema": "veldo.mutation-stage/v1",
@@ -913,13 +913,13 @@
               "inventory_digest": "6acd327ee0cc9a775c82ecddaa4e8b95c78ab5aa7c9c717384b469720da4b7e1",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.08132307813502848
+              "wall_seconds": 0.08135224506258965
             },
             "check_review_mutations.py": {
               "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
               "registered": 1,
               "worker_seconds": 0.0,
-              "wall_seconds": 0.04021714604459703
+              "wall_seconds": 0.04025838989764452
             }
           },
           "surviving_workers": 0,
@@ -997,7 +997,7 @@
                 ],
                 "failed_rows": []
               },
-              "elapsed": 0.0404616619925946,
+              "elapsed": 0.04048415692523122,
               "error": "mutation_survived",
               "detail": "fixture/teeth"
             },
@@ -1074,18 +1074,18 @@
                 ],
                 "failed_rows": []
               },
-              "elapsed": 0.0402239637915045,
+              "elapsed": 0.04026550496928394,
               "error": "mutation_survived",
               "detail": "fixture/teeth"
             }
           ],
-          "input_digest": "034c34a1e5eced28c2508dfff364576b734e1ea12de40c9bc47f247e2cc2f352",
+          "input_digest": "20f94a594d6b339b9075dddb59a391f366352b717f5471a0c9ed3a5e46ccafb9",
           "implementation_digest": "fbe3ae8141f3c7ccfe940e73360cfdbef007d1590b02762e6c2dd3b56241d7d5",
           "status": "failed",
           "error": "mutation_survived",
           "detail": "mutation_survived: fixture/teeth",
           "worker_invocations": 4,
-          "elapsed": 0.14203882496804
+          "elapsed": 0.14124608505517244
         }
       ]
     }
@@ -1106,8 +1106,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.15940944920293987,
-          "input_digest": "f7f07de56a402dfc7671ff53909159becacd038cc35fc986139fcec152452b96"
+          "elapsed": 0.15850833803415298,
+          "input_digest": "6f5c4d8198ac912d8c19fde124303816a4642455433720ff36010f6e52616777"
         },
         {
           "status": "passed",
@@ -1115,8 +1115,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.1569319129921496,
-          "input_digest": "f7f07de56a402dfc7671ff53909159becacd038cc35fc986139fcec152452b96"
+          "elapsed": 0.1639623399823904,
+          "input_digest": "6f5c4d8198ac912d8c19fde124303816a4642455433720ff36010f6e52616777"
         },
         {
           "status": "passed",
@@ -1124,8 +1124,8 @@
           "executed": 2,
           "registered": 2,
           "worker_invocations": 4,
-          "elapsed": 0.16101614595390856,
-          "input_digest": "0c35b678a307ad5bfb2c0fd55cccc76f5d22ba6c7d2032586d9e63c4a33331b6"
+          "elapsed": 0.15822114516049623,
+          "input_digest": "b2abe6345fc90c23efc35c2fb193fc3c7e4fd5b6a6cd8cc8a18c14fc81717bbf"
         }
       ]
     }
@@ -1152,24 +1152,24 @@
                 "inventory_digest": "aeded04404b8c3ca51ab52b46ed23ce28a51336d6c6a8adbca668e950677d583",
                 "registered": 1,
                 "worker_seconds": 0.0,
-                "wall_seconds": 0.08132912311702967
+                "wall_seconds": 0.08126149419695139
               },
               "check_review_mutations.py": {
                 "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
                 "registered": 1,
                 "worker_seconds": 0.0,
-                "wall_seconds": 0.04047951498068869
+                "wall_seconds": 0.040579647989943624
               }
             },
             "surviving_workers": 0,
             "invalid_results": [],
-            "input_digest": "f3d8bb1b847882fc62d3616514e67c2244d0b11a05bd0a11586aa0886fc17ee0",
+            "input_digest": "40406d3d29ac4c04bd0456f4c3ceb77742e31b327ba2432cbe821d61d0426a38",
             "implementation_digest": "162da011c3b7a8a681501e9dbb6b9d239a675358f59052409b9e4240ef7008ad",
             "status": "failed",
             "error": "driver_error",
-            "detail": "driver_error: fixture_kind.py:fixture.py:True:noop: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/check_teeth_mutations.py\", line 153, in worker\n    exec(compile(source, str(suite), 'exec'), ns)\n  File \"/tmp/veldo-mutations-2ey4yx18/input/scripts/suites/fixture_kind.py\", line 2, in <module>\n    expect('fixture/named-target', 'answer = True' in (base / 'fixture.py').read_text())\n                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nNotADirectoryError: [Errno 20] Not a directory: '/tmp/veldo-mutations-2ey4yx18/1/fixture.py/fixture.py'\n",
+            "detail": "driver_error: fixture_kind.py:fixture.py:True:noop: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-najeswzw/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-najeswzw/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-najeswzw/input/scripts/check_gate_mutations.py\", line 264, in worker\n    return dict(observation=driver.worker(argument, str(mutant) if mutant else None),\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-najeswzw/input/scripts/check_teeth_mutations.py\", line 153, in worker\n    exec(compile(source, str(suite), 'exec'), ns)\n  File \"/tmp/veldo-mutations-najeswzw/input/scripts/suites/fixture_kind.py\", line 2, in <module>\n    expect('fixture/named-target', 'answer = True' in (base / 'fixture.py').read_text())\n                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nNotADirectoryError: [Errno 20] Not a directory: '/tmp/veldo-mutations-najeswzw/1/fixture.py/fixture.py'\n",
             "worker_invocations": 4,
-            "elapsed": 0.14008124405518174
+            "elapsed": 0.14113848004490137
           },
           "fixture_records": []
         }
@@ -1198,24 +1198,24 @@
                 "inventory_digest": "aeded04404b8c3ca51ab52b46ed23ce28a51336d6c6a8adbca668e950677d583",
                 "registered": 1,
                 "worker_seconds": 0.0,
-                "wall_seconds": 0.08128559496253729
+                "wall_seconds": 0.08114574407227337
               },
               "check_review_mutations.py": {
                 "inventory_digest": "0eb4a2339250bcba2b12f9f5a70775390dd59471b9f6f17ff70b5fd283b8633a",
                 "registered": 1,
                 "worker_seconds": 0.0,
-                "wall_seconds": 0.040503500029444695
+                "wall_seconds": 0.04048976697959006
               }
             },
             "surviving_workers": 0,
             "invalid_results": [],
-            "input_digest": "c53e75f10c11a400958cef7f694183c62482dfef0f943b4441c2bde3330a5b9a",
+            "input_digest": "0fbbb3112f0407d3ec113e97c40c239e761d04436e5f86643502c5b062544f5a",
             "implementation_digest": "d9f3cc80744310c0d01366336e135f321bf125b1e3ad29eec1b5d350729c3760",
             "status": "failed",
             "error": "driver_error",
-            "detail": "driver_error: fixture_kind.py:fixture.py:True:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-6ldgcosu/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-6ldgcosu/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-6ldgcosu/input/scripts/check_gate_mutations.py\", line 261, in worker\n    prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-6ldgcosu/input/scripts/check_teeth_mutations.py\", line 109, in materialize\n    before = source.read_bytes()\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-mutations-6ldgcosu/input/scripts/fixtures/fixture.py'\n",
+            "detail": "driver_error: fixture_kind.py:fixture.py:True:baseline: Traceback (most recent call last):\n  File \"/tmp/veldo-mutations-nmp2l4rr/input/scripts/check_gate_mutations.py\", line 400, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/tmp/veldo-mutations-nmp2l4rr/input/scripts/check_gate_mutations.py\", line 390, in main\n    print(json.dumps(worker(json.loads(args.worker.read_text()))))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-nmp2l4rr/input/scripts/check_gate_mutations.py\", line 261, in worker\n    prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=ROOT)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/veldo-mutations-nmp2l4rr/input/scripts/check_teeth_mutations.py\", line 109, in materialize\n    before = source.read_bytes()\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-mutations-nmp2l4rr/input/scripts/fixtures/fixture.py'\n",
             "worker_invocations": 4,
-            "elapsed": 0.14308706601150334
+            "elapsed": 0.14218076481483877
           },
           "fixture_records": []
         }
