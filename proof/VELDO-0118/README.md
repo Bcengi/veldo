@@ -47,5 +47,29 @@ python3 scripts/fixtures/yaml_oracle.py --inventory /tmp/grammar-inputs.jsonl --
 ```
 
 The unlimited commands are explicit qualification requests, not claims that
-the full domain has been executed. Final gate timing, actual generated
-counts and all observed disagreements will be recorded after the gate run.
+the full domain has been executed. Final gate timing and actual generated
+baseline counts will be recorded after the gate run.
+
+## Control-domain findings for VELDO-0119
+
+`control-comparison.json` records a complete diagnostic comparison of the
+separate control domain: 919 derivations, 8,685 boundary edits, 9,604 oracle
+observations, and 192 disagreements. Every disagreement is retained in
+`control-disagreements.jsonl`, with input bytes, derivation, production,
+reader answer, raw oracle observation and normalized dialect answer.
+All disagreements concern accepted derivations: 180 differing values and
+12 reader refusals. No generated accepted control was invalid general YAML.
+The controls produced 5,588 valid and 4,016 invalid general YAML inputs.
+These observations do not qualify the much larger baseline domain.
+
+For example, `a: |\n \n` yields `{"a": "\n"}` in the reader and
+`{"a": ""}` in the oracle. No reader change is made. Reproduce all findings:
+
+```
+python3 proof/VELDO-0118/compare_control.py --output-dir /tmp/grammar-control
+```
+
+The scalar count now uses separate arithmetic rather than scalar enumeration.
+An initial post-wiring gate attempt was cancelled before reaching the new
+suite to make that independence correction; it is excluded from timing
+comparisons. The completed clean-tree gate below is the measured run.

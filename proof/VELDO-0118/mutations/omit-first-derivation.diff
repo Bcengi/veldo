@@ -1,6 +1,6 @@
 --- a/scripts/fixtures/grammar_cases.py
 +++ b/scripts/fixtures/grammar_cases.py
-@@ -280,6 +280,8 @@
+@@ -317,6 +317,8 @@
                            b + text[:b].count('\n') * (len(nl) - 1), m) for a, b, m in spans]
                  text = text.replace('\n', nl) + nl
                  serial += 1

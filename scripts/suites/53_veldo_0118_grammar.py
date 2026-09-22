@@ -22,7 +22,9 @@ _g_control = globals().get('_grammar_teeth_control', False)
 _g_data = _g_cases.control_domain() if _g_control else _g_cases.DATA
 _g_report = _g_cases.inventory(_g_data, seconds=0 if _g_control else 60)
 expect('grammar/all-bounded-derivations-exist: generated inventory equals independent count',
-       _g_report['complete'] and _g_report['generated'] == _g_report['expected']['derivations'])
+       _g_report['complete'] and not _g_report['grammar_inventory_gap']
+       and not _g_report['zero_witness_productions']
+       and _g_report['generated'] == _g_report['expected']['derivations'])
 expect('grammar/all-boundary-edits-exist: every registry edit has all its neighbors',
        _g_report['complete'] and _g_report['rules'] == _g_report['expected']['rules']
        and set(_g_report['rules']) == set(_g_data['exclusions']))

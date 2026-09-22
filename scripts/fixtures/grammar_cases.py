@@ -13,6 +13,14 @@ import time
 HERE = Path(__file__).resolve().parent
 DATA = json.loads((HERE / 'yamlish_grammar.json').read_text())
 SCALAR, QUOTED, BLOCK, FLOW = 1, 2, 4, 8
+# Reconciliation to the written productions; deleting a registry member cannot
+# redefine the documented language into a smaller passing inventory.
+REQUIRED_STYLES = {'empty', 'plain', 'single', 'double', 'literal', 'folded', 'continuation', 'escape'}
+REQUIRED_CONTAINERS = {'block-map', 'block-sequence', 'flow-map', 'flow-sequence',
+                       'flow-map-trailing', 'flow-sequence-trailing'}
+REQUIRED_EXCLUSIONS = {'duplicate-key', 'bad-indentation', 'missing-delimiter', 'invalid-escape',
+                       'unterminated-quote', 'tag', 'anchor', 'alias', 'merge-key', 'directive',
+                       'multiple-documents', 'multiline-quote', 'indentation-indicator'}
 
 
 def encoded(value):
@@ -86,13 +94,42 @@ def key_choices(data, count):
             yield keys
 
 
+def scalar_counts(data, flow):
+    """Arithmetic lexical cardinalities, independent of scalar_options()."""
+    words = [''.join(chars) for size in range(data['bounds']['payload_length'] + 1)
+             for chars in itertools.product(data['alphabet'], repeat=size)]
+    words += list(data['partitions'].values())
+    total = sum(len(data['alphabet']) ** size
+                for size in range(data['bounds']['payload_length'] + 1)) + len(data['partitions'])
+    ordinary = sum(plain(word, flow) for word in words)
+    single = sum(all(ord(c) >= 32 and c not in '\x7f\x85\u2028\u2029' for c in word)
+                 for word in words)
+    blocks = sum(all(ord(c) >= 32 and c != '\x7f' for c in word) for word in words)
+    continuable = sum(plain(word) and not re.fullmatch(r'0|-?[1-9][0-9]*', word)
+                      for word in words)
+    counts = Counter()
+    for style in data['styles']:
+        if style == 'empty' and flow != 'sequence':
+            counts[SCALAR] += 1
+        elif style == 'plain':
+            counts[SCALAR] += ordinary
+        elif style in ('single', 'double', 'escape'):
+            counts[SCALAR | QUOTED] += {'single': single, 'double': total,
+                                        'escape': len(data['escapes'])}[style]
+        elif not flow and style in ('literal', 'folded'):
+            counts[SCALAR | BLOCK] += blocks * len(data['chomping']) * len(data['continuations'])
+        elif not flow and style == 'continuation':
+            counts[SCALAR] += continuable * len(data['continuations'])
+    return counts
+
+
 def expected(data):
     """Count with a feature polynomial; never call the tree/source generator."""
     @lru_cache(None)
     def count(nodes, depth, flow, root=False):
         result = Counter()
         if nodes == 1 and not root:
-            result.update(mask for _, _, mask in scalar_options(data, flow))
+            result.update(scalar_counts(data, flow))
         if depth > data['bounds']['depth']:
             return Counter()
         for kind in data['containers']:
@@ -293,10 +330,19 @@ def inventory(data=DATA, seconds=60, output=None):
               'complete': False, 'extra_generated': 0, 'rules': {}, 'alternatives': {}, 'revision': data['revision']}
     digest = hashlib.sha256()
     rules, alternatives = Counter(), Counter()
+    required = set(data['containers']) | {'scalar/' + style for style in data['styles']}
+    required |= {'key/' + key[0] for key in data['keys']}
+    required |= {'extra/' + witness['id'] for witness in data['witnesses']}
+    gaps = ((REQUIRED_STYLES - set(data['styles'])) |
+            (REQUIRED_CONTAINERS - set(data['containers'])) |
+            (REQUIRED_EXCLUSIONS - set(data['exclusions'])))
+    covered = set()
     for case in cases(data):
         result['generated'] += 1
         result['extra_generated'] += isinstance(case['id'], str)
         alternatives.update(case['production'])
+        covered.update('/'.join(p.split('/')[:2]) if p.startswith('scalar/') else p
+                       for p in case['production'])
         entries = [(None, case['text'])] + [(rule, edit(case, rule)) for rule in applicable(case['mask'], data)]
         for rule, text in entries:
             if rule:
@@ -312,6 +358,7 @@ def inventory(data=DATA, seconds=60, output=None):
         result['complete'] = True
     result.update(seconds=time.monotonic() - started, digest=digest.hexdigest(),
                   rules=dict(sorted(rules.items())), alternatives=dict(sorted(alternatives.items())),
+                  grammar_inventory_gap=sorted(gaps), zero_witness_productions=sorted(required - covered),
                   error=None if result['complete'] else 'generation_incomplete')
     return result
 
