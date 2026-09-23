@@ -470,6 +470,14 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         responses.append(result)
         return result
 
+    def why(operation, *args):
+        # The refusal and its reason, for rows that must tell one guard from another.
+        try:
+            getattr(adapter, operation)(*args)
+            return 'launched'
+        except Exception as error:
+            return getattr(error, 'code', type(error).__name__) + ': ' + getattr(error, 'detail', '')
+
     # The caller's own environment asks for LangSmith tracing; the graph child must not see it.
     # The domain process works inside its checkout and holds an open, inheritable descriptor on
     # the store (besides its own connection) for every exchange.
@@ -529,7 +537,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         # name before anything is written or launched there.
         links = {}
         call('start', 'cycle-poison-w', 'command-poison-w', snapshot, workflow('poison-work'))
-        links['work'] = call('start', 'cycle-after-w', 'command-after-w', snapshot, workflow('cwd-probe'))
+        links['work'] = why('start', 'cycle-after-w', 'command-after-w', snapshot, workflow('cwd-probe'))
         for name in ('work', 'runners'):
             if (stage_root / name).is_symlink():
                 (stage_root / name).unlink()
@@ -541,7 +549,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
             installed_runner.write_text(installed_runner.read_text() + '\n# a new registration\n')
         except OSError as error:  # a node moved the checkout's runner: recorded, never raised
             links['registration'] = type(error).__name__
-        links['runners'] = call('start', 'cycle-after-r', 'command-after-r', snapshot, workflow('cwd-probe'))
+        links['runners'] = why('start', 'cycle-after-r', 'command-after-r', snapshot, workflow('cwd-probe'))
         links['checkout_written'] = sorted(p.name for p in checkout.iterdir()
                                            if p.name.startswith('veldo-graph-') or p.suffix == '.py')
         for name in ('work', 'runners'):
@@ -552,8 +560,8 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         # A repository planted BELOW the stage root: runners/ is judged like work/.
         (stage_root / 'known-repository').write_text(str(authority / '.git'))
         call('start', 'cycle-plant-g', 'command-plant-g', snapshot, workflow('plant-gitfile'))
-        links['runners-gitfile'] = call('start', 'cycle-after-g', 'command-after-g', snapshot,
-                                        workflow('script-dir-probe'))
+        links['runners-gitfile'] = why('start', 'cycle-after-g', 'command-after-g', snapshot,
+                                       workflow('script-dir-probe'))
         if (stage_root / 'runners/.git').exists():
             (stage_root / 'runners/.git').unlink()
         # A runtime whose pyvenv.cfg names a repository (created by a repository's own virtual
@@ -688,9 +696,11 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and not (audit_directory / 'command-pyvenv.json').exists() and cfg_paths
            and not any(graph.inside_repository(token) for token in cfg_paths)
            and cfg_judged == {name: True for name in list(cfg_cases) + ['link-chain']})
-    expect('graph/authority/stage-links', links['work'].get('refused') == 'runtime_unavailable'
-           and links['runners'].get('refused') == 'runtime_unavailable' and links['checkout_written'] == []
-           and links['runners-gitfile'].get('refused') == 'runtime_unavailable'
+    expect('graph/authority/stage-links',
+           links['work'] == 'runtime_unavailable: the stage work is a link the adapter did not make'
+           and links['runners'] == 'runtime_unavailable: the stage runners is a link the adapter did not make'
+           and links['checkout_written'] == []
+           and links['runners-gitfile'] == 'runtime_unavailable: the stage runners lies inside a repository'
            and before == after and account_state() == account_before)
     expect('graph/authority/no-direct-write', before == after and notes.get('found') == []
            and notes.get('wrote') == [] and probe.get('outcome') == 'suspended'
