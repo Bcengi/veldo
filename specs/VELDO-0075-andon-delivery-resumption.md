@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W60
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059, VELDO-0068]
+plan_revision: 3
+depends_on: [VELDO-0046, VELDO-0069, VELDO-0073]
 placement: [tracker, engine, fleet, contracts, distribution]
 protected_paths: []
 footprint:
@@ -44,89 +44,87 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Andon records identify requesting principal, interrupted station, stop reason, outstanding
-    effects, designated resolving authority, and per-channel delivery obligation.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Measure durable stops, pending notification ages, uncertain send outcomes, unauthorized resume
-    attempts, and units still awaiting current reconciliation.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join the original stop command through channel-specific presentation and canonical answer to
-    one accepted ruling, recovery evidence and resumed station contract.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish authenticated stop request, delivery failure, absent resuming authority, stale
-    presentation, unresolved effect, revoked permission, and obsolete resume contract.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Any authenticated agent or service can request AWAITING_AUTHORITY, and Veldo persists
-      the stop even when its requester cannot resolve it. Set: request.validate_record and
-      request_projection.project_requests with the proposed control_andon command path, B
-      authorization and durable stop obligations. Completeness: Enumerate accepted requester kinds
-      and interrupted stations from A; use real authenticated client processes to request stops
-      with outstanding running/unknown effects. Revoke the requester ability to resume, kill after
-      stop commit before notification, and restart. Require durable reason, interrupted station,
-      resolving-authority predicate and queued/running permission closure; notification failure
-      cannot erase the stop or release uncertain reservations. Falsifier: Reject an authenticated
-      agent stop request solely because it lacks the resolving role;
-      andon/request-without-resume-role must detect the missing durable stop.
+      Claim: An authenticated worker or service can request a recorded AWAITING_AUTHORITY stop. Set
+      and completeness: Exercise enabled build, review and coordination stop points through real
+      commands; preserve reason, interrupted station and resolving-authority predicate even when the
+      requester has no right to resume. Falsifier: Require the resolving role merely to raise a
+      stop; the missing-stop observation must fail.
     falsified_by: >
-      Reject an authenticated agent stop request solely because it lacks the resolving role;
-      andon/request-without-resume-role must detect the missing durable stop.
+      Require the resolving role merely to raise a stop; the missing-stop observation must fail.
   - id: AC2
     text: >
-      Claim: Andon delivery reaches enrolled decision surfaces with durable correlation and the
-      current presentation, without requiring a tracker ticket or granting authority from a
-      notice. Set: request_doorbell.notice_key/build_notice/ring/TelegramSink.send and
-      request_projection._project_one for Telegram chat, Jira, signed CLI and email when enrolled.
-      Completeness: Compare delivery registrations to enrolled channels and use qualified real
-      sandbox sends. Change request version while status remains unchanged, lose send
-      acknowledgment, disconnect a channel and restart the notifier. Require new version-bound
-      notice identity, retained pending obligation and lookup of original message correlation or
-      explicit uncertainty; show the originating channel answer path and never tell a chat
-      participant that only Jira can decide. Falsifier: Keep notice_key as request ID plus status
-      when a revised andon retains its status; andon/revised-notice must detect suppression of the
-      current presentation.
+      Claim: The stop reaches Telegram with the current versioned presentation and answer path. Set
+      and completeness: For each enabled stop kind use qualified real Telegram sending; change the
+      request version with unchanged status and compare message identity, shown content and stored
+      correlation. No tracker link is needed. Falsifier: Key the notice only by request ID/status;
+      the changed-presentation notice must be suppressed and fail the check.
     falsified_by: >
-      Keep notice_key as request ID plus status when a revised andon retains its status;
-      andon/revised-notice must detect suppression of the current presentation.
+      Key the notice only by request ID/status; the changed-presentation notice must be suppressed
+      and fail the check.
   - id: AC3
     text: >
-      Claim: Only the designated authority or a signed applicable automatic recovery policy can
-      resume the unit through one current settlement. Set:
-      request_reconcile._reconcile_one/reconcile_requests and
-      authorization.required_roles/is_authorized with control_andon resumption and B
-      effect-recovery commands. Completeness: Enumerate resolving role, named principal, policy
-      scope, expiry, and outstanding-effect predicates; exercise each on every enrolled surface
-      with real signed assertions. Race concurrent resume answers, changed scope, revoked
-      membership/edge and stale presentation against acceptance. Require current complete read
-      sets, reconciled effects or explicit authorized retained-risk disposition, durable
-      replicated ruling and a fresh station contract; neither a notice nor process absence
-      establishes nonexecution. Falsifier: Resume after an arbitrary authenticated notifier
-      acknowledgment without the designated resolving authority; andon/unauthorized-resume must
-      detect renewed execution permission.
+      Claim: Only the current designated authority settlement resumes a clean decision stop. Set and
+      completeness: Answer a clean decision stop with valid owner, wrong actor and stale
+      presentation; compare permission and fresh station contract. Also attempt the same answer on
+      an unknown-effect stop and require it to remain stopped. Falsifier: Resume on a notification
+      acknowledgement without the resolving authority; the unauthorized-resume check must fail.
     falsified_by: >
-      Resume after an arbitrary authenticated notifier acknowledgment without the designated
-      resolving authority; andon/unauthorized-resume must detect renewed execution permission.
+      Resume on a notification acknowledgement without the resolving authority; the unauthorized-
+      resume check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Keep units stopped, preserve pending notices and unresolved effects, and require current
-  designated authority to restore a qualified resumption path.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Make authority-required stops durable, deliverable where decisions occur, and resumable only under the current resolving authority.
+Andon delivery and authorized resumption through enrolled channels. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package E, W60 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R13, R28, R32, R39-R41, R60 and R74 distinguish requesting a stop from authorizing resumption. The current doorbell requires a tracker URL and deduplicates only by request/status, so revised stops can disappear from view. The declared risk floor is critical; required approval must bind the eventual change and proof. This declaration records no approval.
+W60 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 3.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Automatic host failover, new emergency powers, arbitrary compensation, and channel activation policy are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block authoritative stop and published resumption, D3 blocks independent running-work stop supervision, and D4 remains inherited through C. W49 owns the general inbox, W50 presentations, W53 one settlement; this item composes those for andon rather than inventing another approval path. W60 has no plan dependency on W58, so it may implement with real local transport fixtures after its declared prerequisites, but any live channel proof or activation still requires that channel W58 qualification. Missing sandbox access blocks live evidence, never permits credentials to bypass activation. Canonicalize the repository-only doorbell/projection/reconcile modules, map control_andon and inventory it through W30 before ready. Save stopped-state snapshots, send/lookup receipts and every mutation diff with its failed row. A signed risk disposition cannot rewrite an unknown historical effect into nonexecution.
+A clean owner-decision stop may resume after its current authorized settlement. Unknown
+external effects remain stopped with their original dispatch and reservations; this
+specification grants no recovery, automatic retry or risk-disposition substitute for evidence.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC1 crash recovery, AC2 lost-send/reconnect recovery,
+and AC3 uncertain-effect reconciliation/automatic recovery; retain ordinary stop, Telegram
+notification, and authorized resumption after a clean decision stop. Removed recovery,
+durability and failure-matrix obligations belong to Release 2; additional host/channel/version
+and full distribution breadth belongs to Release 4. Normal function and the checks stated
+above remain Release 1.

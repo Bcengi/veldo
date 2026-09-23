@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W50
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059, VELDO-0064]
+plan_revision: 3
+depends_on: [VELDO-0064]
 placement: [contracts, tracker, engine, distribution]
 protected_paths: []
 footprint:
@@ -41,87 +41,90 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Presentation receipts record full request and subject digests, rendered brief digest,
-    channel/object/message identifiers, publication time, and superseded receipt.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count current and superseded presentations, request-content mismatches, absent answer
-    references, and refused stale answers per enrolled channel.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Trace exact rendered bytes through publication acknowledgment to a restricted assertion naming
-    that presentation and the accepted or refused request revision.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish changed brief, changed choices, wrong channel, wrong presentation, unpublished
-    receipt, expired request, and stale subject.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Immutable presentation receipts bind everything R72 says the person saw and preserve
-      distinct request-content and settlement-subject identities. Set:
-      request.request_digest/validate_record, request_projection.build_brief, and proposed
-      presentation receipt encoding for Telegram chat, Jira, signed CLI, and email when enrolled.
-      Completeness: Compare encoded fields to the A/R72 schema in both directions: request
-      ID/version/full digest, subject digests, rendered brief bytes, risk and authority
-      statements, choices, channel, conversation/issue and presentation IDs, and publication time.
-      Render actual bytes, persist and sign receipts in separate processes, mutate each field, and
-      recompute digests. Request versions participate in content identity; historical truncated
-      hashes remain labeled legacy rather than silently reinterpreted. Falsifier: Leave request
-      version out of the enrolled request digest and issue two otherwise equal revisions;
-      presentation/version-digest must detect identical content identities.
+      Claim: Immutable Telegram presentation receipts bind the actual content shown to the owner.
+      Set and completeness: Compare receipt fields with R72: request ID/version/full digest, subject
+      digests, rendered brief bytes, risk/authority statements, choices, channel, chat/message
+      identity and publication time. Send real bytes, retrieve them and mutate each binding
+      separately. Falsifier: Omit request version from its digest; otherwise equal revisions must
+      collide and fail the identity check.
     falsified_by: >
-      Leave request version out of the enrolled request digest and issue two otherwise equal
-      revisions; presentation/version-digest must detect identical content identities.
+      Omit request version from its digest; otherwise equal revisions must collide and fail the
+      identity check.
   - id: AC2
     text: >
-      Claim: Every answer explicitly binds its ruling and rationale to the exact current
-      presentation, including rejection. Set: request_reconcile._reconcile_one/_build_attestation
-      and authorization._attestation_ok/is_authorized on each enrolled channel, consuming
-      protected canonical evidence and B signed assertions. Completeness: Drive valid answers
-      through real authority clients and signature verification, then hold subject digest fixed
-      while altering brief/risk/choices or referencing another channel presentation. Also omit the
-      reference, expire the request, supersede the subject, and submit status/text/timestamp-only
-      answers. No stale, unpublished, or mismatched answer may settle; test acceptance and
-      rejection equally. Falsifier: Restore _reconcile_one checking only bound_artifact.digest
-      while an answer names a replaced brief; presentation/answer-binding must detect the accepted
-      stale answer.
+      Claim: Every answer, including rejection, names the current presentation and records its own
+      ruling and rationale. Set and completeness: Submit signed canonical Telegram answers, then
+      omit the reference, alter brief/risk/choices under the same subject or use a stale/superseded
+      presentation. Only the current shown presentation may settle. Falsifier: Check only subject
+      digest after replacing the brief; the stale-presentation answer must settle and fail the
+      check.
     falsified_by: >
-      Restore _reconcile_one checking only bound_artifact.digest while an answer names a replaced
-      brief; presentation/answer-binding must detect the accepted stale answer.
+      Check only subject digest after replacing the brief; the stale-presentation answer must settle
+      and fail the check.
   - id: AC3
     text: >
-      Claim: Presentation replacement is an explicit versioned operation and interrupted
-      publication cannot fabricate evidence of what was shown. Set:
-      request_projection.build_brief/_project_one and channel presentation publication using B
-      effect and delivery obligations for each enrolled channel. Completeness: Publish two
-      revisions with changed rendered content, retaining the first immutable receipt and a visible
-      supersession link. Kill after send before receipt commit and before send after obligation
-      commit; query real receiver evidence and current authority on restart. Mark uncertain
-      deliveries pending and forbid answers until exact publication is established. Compare every
-      channel adapter registration to receipt/replacement coverage. Falsifier: Create a published
-      presentation receipt before receiver acknowledgment and kill before send;
-      presentation/not-shown must detect acceptance of an answer to unseen content.
+      Claim: A changed presentation creates a new version and visibly supersedes the previous shown
+      content. Set and completeness: Publish two ordinary versions through Telegram, retain both
+      immutable receipts and compare the visible supersession link to current authority; refuse
+      answers to content with no confirmed publication. Falsifier: Mark an unsent presentation as
+      published; the unseen-content refusal check must fail.
     falsified_by: >
-      Create a published presentation receipt before receiver acknowledgment and kill before send;
-      presentation/not-shown must detect acceptance of an answer to unseen content.
+      Mark an unsent presentation as published; the unseen-content refusal check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Stop new presentations and answer acceptance for the affected contract, preserve old rendered
-  bytes and receipts, and publish a clearly superseding qualified version.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Bind every decision answer to the exact version and presentation shown on its originating channel.
+Versioned presentation receipts for every enrolled channel. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package E, W50 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R09, R36, R40, R60, and R72 expose the baseline digest-only binding defect. A correct subject digest cannot prove which risk statement or offered choice a person answered. The declared risk floor is critical; required approval must bind the eventual change and proof. This declaration records no approval.
+W50 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 3.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Canonical platform identity acquisition, quorum accumulation, tracker comment deduplication implementation, and ingress activation are owned by W51, W53, W57, and W58.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block authoritative receipts and their publication; D3/D4 remain inherited C prerequisites without adding a channel-specific host decision. AC2 owns the reproduced answer-not-bound-to-presentation defect. Keep request content, rendered presentation, and polymorphic bound_artifact digests separate; do not break historical approval/two-key readers by substituting one for another. W57 AC1 owns the permanent Jira brief-comment key repair and consumes this receipt contract. This item defines channel-neutral receipt creation; W58 proves actual platform publication before activation. Canonicalize new engine copies for repository-only projection/reconcile modules and inventory the narrow presentation module under W30; map it before ready. Retain field-mutation diffs and their failing rows.
+Request content digest, rendered presentation digest and bound subject digest are distinct.
+Telegram is the initial channel; the later authenticated UI/API must create and answer the
+same receipt contract. No Jira brief-comment repair is required.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 interrupted-publication recovery and other-channel
+coverage; retain actual shown bytes, request/presentation identity, and version-bound answers.
+Jira-specific intake/decision/projection work is dropped under 28857/28859; additional non-
+Jira channel breadth is Release 4. UI/API support is supplied by 0130/0131 against the
+retained settlement contract. Removed recovery, durability and failure-matrix obligations
+belong to Release 2; additional host/channel/version and full distribution breadth belongs to
+Release 4. Normal function and the checks stated above remain Release 1.

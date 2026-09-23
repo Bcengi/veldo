@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W58
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059, VELDO-0067, VELDO-0072]
+plan_revision: 3
+depends_on: [VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0067, VELDO-0068]
 placement: [tracker, engine, contracts, distribution]
 protected_paths: [.veldo/policy.yaml]
 footprint:
@@ -23,9 +23,6 @@ footprint:
   - "engine/.veldo/request_reconcile.py"
   - ".veldo/request_reconcile.py"
   - "packs/*/.veldo/request_reconcile.py"
-  - "engine/.veldo/tracker_mirror_runner.py"
-  - ".veldo/tracker_mirror_runner.py"
-  - "packs/*/.veldo/tracker_mirror_runner.py"
   - "engine/.veldo/control_channel_ingress*.py"
   - ".veldo/control_channel_ingress*.py"
   - "packs/*/.veldo/control_channel_ingress*.py"
@@ -47,108 +44,99 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Activation receipts identify channel, enrollment/key/delegation versions, installed adapter
-    and sandbox-proof digests, permitted transport, activation authority, and rollback profile.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Expose inactive/session-start/live channel modes, last canonical cursor, reconnect backlog,
-    blocked activation reasons, and actual sandbox test coverage.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join a separately authorized activation command to sandbox publication, canonical answer
-    acquisition, restricted signing, one settlement, and recovered delivery observations.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish absent sandbox proof, unsafe signer, unestablished attribution, transport
-    mismatch, stale activation inputs, ingress unavailable, and unauthorized live mutation.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Live ingress and external decision mutations remain disabled per channel until a
-      separate authorized activation binds current enrollment and real sandbox proof. Set:
-      request_doorbell.TelegramSink.send, request_projection.project_from_repo,
-      request_reconcile.reconcile_from_repo, tracker_mirror_runner.build_live_adapter, and
-      proposed channel activation entry points. Completeness: Enumerate every outward mutation and
-      ingress start from the installed inventory across Telegram chat, Jira, signed CLI and email
-      when enrolled. Invoke direct APIs before activation and after source landing alone, remove
-      or stale each proof/enrollment/key binding, and submit altered activation parameters under
-      an old signature. Require refusal before external writes/listeners and no global enable flag
-      that activates other channels. Falsifier: Allow TelegramSink.send to perform a
-      decision-channel write merely because a token resolves; ingress/no-implicit-activation must
-      detect the unauthorized send.
+      Claim: Telegram ingress and decision sends require separately authorized activation bound to
+      enrollment and proof. Set and completeness: Enumerate installed Telegram send and receive
+      entry points; invoke before activation and after source landing alone, then with valid sandbox
+      qualification and current key/enrollment. Only the latter may operate. Falsifier: Allow
+      TelegramSink.send merely because a token resolves; the no-implicit-activation check must fail.
     falsified_by: >
-      Allow TelegramSink.send to perform a decision-channel write merely because a token resolves;
-      ingress/no-implicit-activation must detect the unauthorized send.
+      Allow TelegramSink.send merely because a token resolves; the no-implicit-activation check must
+      fail.
   - id: AC2
     text: >
-      Claim: Every channel claimed live has real sandbox proof of presentation, canonical
-      attribution, restricted signing, and one authoritative settlement with recovery. Set: The
-      actual enrolled Telegram, Jira, signed CLI and email adapters entering request_projection,
-      request_reconcile and B authority, including PLAN-0016 live tracker compatibility.
-      Completeness: Freeze the enrolled channel matrix and map each to real sandbox or isolated
-      signed-CLI processes and genuine platform accounts where applicable. Publish and retrieve
-      presentations, answer as authorized and unauthorized actors, verify message/sender/time from
-      platform or the CLI source signature, attempt edge-key escalation and stale presentation,
-      then interrupt delivery/settlement and reconnect. Require attributable single settlement and
-      exact external correlation. Missing email or chat evidence leaves that channel disabled;
-      FakeTracker/FakeSink and C approval fixtures cannot certify it. Falsifier: Accept a
-      FakeTracker-only report as Jira sandbox qualification; ingress/real-sandbox-required must
-      detect activation without actual canonical platform evidence.
+      Claim: Actual Telegram presentation, canonical answer acquisition and restricted signing reach
+      one authoritative settlement. Set and completeness: In the real sandbox send a decision,
+      answer as enrolled owner and unauthorized actor, retrieve sender/message/time and presentation
+      relation, and inspect the real settlement. Fixtures cannot certify this row. Falsifier: Accept
+      fixture-only sandbox evidence for activation; the real-platform-proof check must fail.
     falsified_by: >
-      Accept a FakeTracker-only report as Jira sandbox qualification;
-      ingress/real-sandbox-required must detect activation without actual canonical platform
-      evidence.
+      Accept fixture-only sandbox evidence for activation; the real-platform-proof check must fail.
   - id: AC3
     text: >
-      Claim: Qualified notification/doorbell transport wakes canonical-history reconciliation with
-      durable cursors, while compatibility pull remains honestly labeled until activated. Set:
-      request_doorbell.notice_key/ring/TelegramSink.send, request_reconcile.reconcile_from_repo,
-      and each control_channel_ingress adapter using B wake-up/cursor APIs. Completeness:
-      Enumerate each installed transport capability and execute real disconnect, duplicate
-      notification, out-of-order delivery, expired platform retention, and reconnect cases.
-      Persist Telegram response identifiers rather than discarding response bytes. Treat a
-      doorbell as a wake-up, never an assertion, and pull canonical evidence before acceptance;
-      unprovable gaps block. Measure replay and finite reconnect bounds, no database polling for
-      rare changes, and session-start-only display when the old tracker trigger is used.
-      Falsifier: Settle directly from a notification payload without canonical acquisition;
-      ingress/doorbell-is-not-answer must detect the unsupported assertion.
+      Claim: Notifications wake acquisition and never substitute for an authenticated answer. Set
+      and completeness: Deliver an ordinary real Telegram event and an invented notification
+      payload; preserve returned message identifiers and acquire canonical platform evidence before
+      assertion. Falsifier: Settle from the notification payload alone; the unsupported-answer check
+      must fail.
     falsified_by: >
-      Settle directly from a notification payload without canonical acquisition;
-      ingress/doorbell-is-not-answer must detect the unsupported assertion.
+      Settle from the notification payload alone; the unsupported-answer check must fail.
   - id: AC4
     text: >
-      Claim: Revocation, configuration drift, or failed qualification stops only affected channel
-      authority and preserves unsettled requests for another independently qualified channel. Set:
-      control_channel_activation and authorization consumed by
-      request_reconcile.reconcile_requests and request_projection.project_requests, across edge
-      revocation, adapter upgrade, operations stop and restart. Completeness: Race each change
-      with answer acceptance, kill ingress after stop commit, and restart against the durable
-      activation record. Verify no implicit reactivation, retained original
-      request/nonces/presentations, current authority rechecks, and explicit rollback to a
-      compatible qualified profile. Record protected policy changes with exact commit/proof
-      approval; no workflow permissions are widened to pass a sandbox test. Falsifier:
-      Automatically reactivate a channel on restart after its explicit operations stop;
-      ingress/stopped-stays-stopped must detect renewed answer acceptance.
+      Claim: Explicit stop and current authorization control the active Telegram edge. Set and
+      completeness: Stop the edge normally and attempt send/answer acceptance, then present stale
+      key/configuration bindings; inspect no fresh authority and retained pending requests.
+      Falsifier: Ignore the explicit stopped activation record; the stopped-edge request must
+      succeed and fail the check.
     falsified_by: >
-      Automatically reactivate a channel on restart after its explicit operations stop;
-      ingress/stopped-stays-stopped must detect renewed answer acceptance.
+      Ignore the explicit stopped activation record; the stopped-edge request must succeed and fail
+      the check.
 required_evidence: [unit, integration]
 rollback: >
-  Record an authorized stop for the affected edge, revoke its fresh assertion permission, retain
-  cursors and unresolved deliveries, and restore only a compatible qualified inactive profile.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Activate each decision channel only after its actual installed edge proves safe in its own real sandbox.
+Per-channel live ingress activation and real sandbox qualification. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package E, W58 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R28, R36-R41, R50 and R60 separate source landing, enrollment and activation. The current live entry points can construct credentialed adapters, and TelegramSink discards the platform response; neither establishes qualified ingress. The declared risk floor is critical; required approval must bind the eventual change and proof. This declaration records no approval.
+W58 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 3.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Unreviewed board redesign, blanket activation of every channel, provider-worker qualification, and automatic membership enrollment are excluded.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block authority and published settlement; D3 blocks activated service/transport supervision and D4 remains inherited through C. Before ready, record each permitted transport, sandbox access, enrolled test principal, finite retention/reconnect bounds, and exact proof commands. Source-only channel names are not enrollment. No missing additional authority is invented, and email remains unavailable until its own attribution and presentation proof exists. This spec includes protected .veldo/policy.yaml only for concrete version-bound activation policy, with corresponding engine/pack policy copies if the shared contract changes; source landing still cannot enable a running edge. Canonicalize repository-only adapters and inventory new ingress/configuration assets through W30. Retain each applied mutation, failed row and real sandbox receipts; redacted evidence must retain verifiable provenance.
+Qualify only the actual Telegram send/receive edge here, using a real sandbox and known
+enrolled identities. Capture redacted platform evidence with verifiable provenance. Arbitrary
+new message intake and ordinary progress reporting are separate new specifications. A bot
+token alone is not activation.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop other-channel qualification, AC2 interrupted
+settlement, AC3 retention/reconnect/reordering matrix, and AC4 restart/rollback qualification;
+retain real Telegram activation, send/receive, and canonical answer acquisition. Jira-specific
+intake/decision/projection work is dropped under 28857/28859; additional non-Jira channel
+breadth is Release 4. UI/API support is supplied by 0130/0131 against the retained settlement
+contract. Removed recovery, durability and failure-matrix obligations belong to Release 2;
+additional host/channel/version and full distribution breadth belongs to Release 4. Normal
+function and the checks stated above remain Release 1.

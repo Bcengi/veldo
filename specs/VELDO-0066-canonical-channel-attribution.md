@@ -9,17 +9,11 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W51
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059, VELDO-0064]
+plan_revision: 3
+depends_on: [VELDO-0020, VELDO-0065]
 placement: [tracker, engine, contracts, distribution]
 protected_paths: []
 footprint:
-  - "engine/.veldo/tracker_adapter.py"
-  - ".veldo/tracker_adapter.py"
-  - "packs/*/.veldo/tracker_adapter.py"
-  - "engine/.veldo/tracker_jira_live.py"
-  - ".veldo/tracker_jira_live.py"
-  - "packs/*/.veldo/tracker_jira_live.py"
   - "engine/.veldo/request_reconcile.py"
   - ".veldo/request_reconcile.py"
   - "packs/*/.veldo/request_reconcile.py"
@@ -41,89 +35,88 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Attribution evidence records platform account/message/history identity, canonical timestamp,
-    actor kind, source API or verified command signature, and mapped membership revision.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count unestablished actors, display-name collisions, missing history pages, edited answers
-    without lineage, and mismatched platform/presentation identities.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join authenticated platform retrieval or CLI signature verification to immutable evidence
-    bytes, principal mapping, presentation reference, and the proposed assertion.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish unknown actor kind, automation actor, unbound sender, history gap, contradictory
-    edit, unverifiable email source, and command digest mismatch.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Platform-derived stable identity and ordering reach reconciliation without
-      display-name or timestamp-field substitution. Set:
-      tracker_adapter.normalize_changelog/normalize_actor_kind, tracker_jira_live.fetch_changelog,
-      request_reconcile._opening_actor/_entry_actors/_reconcile_one, and authorization.actor_kind
-      for Jira and enrolled Telegram chat. Completeness: Enumerate normalized fields and
-      actor-kind vocabularies and run authenticated retrieval in real channel sandboxes. For chat
-      retain platform message ID, sender ID, timestamp and conversation identity pulled from the
-      platform; for Jira retain account ID, history ID, created time and actor kind. Rename
-      display names, collide them, omit actor kind, and inject text-only transcripts. Require
-      stable enrolled principal mapping and reject automation or unknown identity for
-      person-required decisions. Falsifier: Use displayName instead of account_id to map a Jira
-      answer after two accounts share that name; attribution/display-name-collision must detect
-      the false principal.
+      Claim: Telegram acquisition retains canonical sender, message, timestamp and conversation
+      identity. Set and completeness: Use a real Telegram sandbox with enrolled and unknown actors;
+      inspect the actual platform response for every required field, rename display names and try
+      text-only transcripts. Map only stable sender identity to membership. Falsifier: Use display
+      name as principal identity; a duplicate-name answer must be misattributed and fail the check.
     falsified_by: >
-      Use displayName instead of account_id to map a Jira answer after two accounts share that
-      name; attribution/display-name-collision must detect the false principal.
+      Use display name as principal identity; a duplicate-name answer must be misattributed and fail
+      the check.
   - id: AC2
     text: >
-      Claim: Canonical history must prove the answer and its relation to a presentation before an
-      edge may assert it. Set: tracker_jira_live.fetch_changelog,
-      tracker_adapter.TrackerAdapter.read_changelog, request_reconcile._terminal_decision and
-      enrolled chat/email attribution adapters. Completeness: Inventory pagination and edit/delete
-      semantics for each qualified platform. Retrieve real multi-page history, interrupt
-      retrieval, hit the page bound, remove an opening event, introduce contradictory terminal
-      actions and edits with missing provenance. Require complete attributed lineage or named
-      refusal; _opening_actor cannot fall back to the first available actor. Email remains
-      unavailable without authenticated canonical sender/message/time and presentation evidence;
-      claimed From text alone is insufficient. Falsifier: Return a partial history as complete
-      when fetch_changelog exhausts its page cap; attribution/history-gap must reject the
-      otherwise plausible answer.
+      Claim: Canonical evidence binds the actual answer to its presented request version. Set and
+      completeness: Acquire a real reply to a known presentation and compare reply/message/chat
+      references and offered ruling; try another chat, omitted reference and altered source bytes.
+      Unproven attribution or presentation relation refuses. Falsifier: Accept a reply to another
+      presentation; the canonical-binding check must fail.
     falsified_by: >
-      Return a partial history as complete when fetch_changelog exhausts its page cap;
-      attribution/history-gap must reject the otherwise plausible answer.
+      Accept a reply to another presentation; the canonical-binding check must fail.
   - id: AC3
     text: >
-      Claim: Signed CLI decisions retain the verified personal command signature inside their
-      channel assertion and bind the actual executed command. Set:
-      request_reconcile.reconcile_requests and authorization.is_authorized integrated with the
-      enrolled CLI attribution adapter and B command verifier. Completeness: Use real OpenSSH
-      Ed25519 signatures and processes; enumerate A envelope fields and mutate operation, target,
-      every parameter, enrollment public key, request/presentation versions,
-      domain/repository/store, nonce, expiry, and membership/delegation versions independently.
-      Verify the canonical command digest from executed bytes, preserve source signature evidence,
-      and reject unsigned terminal text or transport-only authentication. Falsifier: Skip
-      canonical command-digest recomputation and substitute the ruling under a retained valid CLI
-      signature; attribution/cli-ruling-substitution must detect the accepted altered command.
+      Claim: Person-required decisions accept only the current authorized enrolled person. Set and
+      completeness: Exercise authorized owner, unrecognized sender and automation identity through
+      the real edge and authority; missing canonical fields and caller-supplied actor labels must
+      not grant person authority. Falsifier: Treat an automation sender as the enrolled owner; the
+      person-required refusal check must fail.
     falsified_by: >
-      Skip canonical command-digest recomputation and substitute the ruling under a retained valid
-      CLI signature; attribution/cli-ruling-substitution must detect the accepted altered command.
+      Treat an automation sender as the enrolled owner; the person-required refusal check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Disable assertions from any channel with unprovable attribution, preserve raw evidence and
-  membership history, and requalify acquisition before accepting new answers.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Establish who answered and which platform action they made from canonical evidence on each enrolled channel.
+Canonical channel attribution including platform-derived chat message, sender, and time. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package E, W51 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R36, R38, R60, and R72 require canonical attribution. The current normalizer emits at/account_id/actor_kind, but reconciliation uses actor display strings and settlement reads ts, losing both identity and ordering evidence. The declared risk floor is critical; required approval must bind the eventual change and proof. This declaration records no approval.
+W51 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 3.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Quorum settlement, membership-policy changes, provider account identity, and live ingress activation are outside this attribution concern.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block stored attribution assertions and acknowledgment; D3/D4 are inherited C prerequisites. Real sandbox access and separately enrolled test identities are required to prove each channel; fixtures cannot certify identity retrieval. No additional authority is invented: absent named enrollment blocks that assignment or quorum. W52 supplies restricted edge signing, and W58 gates live activation even when these acquisition tests pass. Repair the existing tracker normalizer and reconcile functions in canonical engine copies with W30 inventory; map control_channel_attribution before ready. Preserve canonical evidence with secret-safe proof references, mutation diffs, and named failures. An edge signature attests acquisition; it never pretends the platform action had a personal local signature.
+Canonical Telegram evidence comes from the authenticated platform exchange, never pasted
+transcript text. The edge attests acquisition rather than inventing a personal local
+signature. Signed CLI, Jira and email decision-channel acquisition are not part of this
+specification revision.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 signed-CLI decision-channel qualification and
+Jira/email history matrices in AC1/AC2; retain Telegram's canonical sender/message/time and
+binding to the presentation. Jira-specific intake/decision/projection work is dropped under
+28857/28859; additional non-Jira channel breadth is Release 4. UI/API support is supplied by
+0130/0131 against the retained settlement contract. Removed recovery, durability and failure-
+matrix obligations belong to Release 2; additional host/channel/version and full distribution
+breadth belongs to Release 4. Normal function and the checks stated above remain Release 1.

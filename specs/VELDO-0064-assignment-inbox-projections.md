@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W49
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059]
+plan_revision: 3
+depends_on: [VELDO-0025, VELDO-0035, VELDO-0046]
 placement: [contracts, tracker, distribution]
 protected_paths: []
 footprint:
@@ -23,9 +23,6 @@ footprint:
   - "engine/.veldo/request_doorbell.py"
   - ".veldo/request_doorbell.py"
   - "packs/*/.veldo/request_doorbell.py"
-  - "engine/.veldo/tracker_adapter.py"
-  - ".veldo/tracker_adapter.py"
-  - "packs/*/.veldo/tracker_adapter.py"
   - "engine/.veldo/control_assignment*.py"
   - ".veldo/control_assignment*.py"
   - "packs/*/.veldo/control_assignment*.py"
@@ -44,86 +41,88 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Inbox records identify assignment/request versions, required actor and scope, destination
-    channel, durable correlation, external object ID, and pending delivery reason.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Expose offered, waiting, expired, and reassigned counts plus projection lag, unresolved
-    creations, and worker/claim resources retained by waiting assignments.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join a committed assignment and delivery obligation to each enrolled channel object and its
-    acknowledgment, keeping the authority watermark visible.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish missing enrollment, unsatisfied actor predicate, stale reassignment, delivery
-    pending, uncertain external creation, and correlation conflict.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: One authoritative assignment inbox exposes work requiring a person on every enrolled
-      decision surface without reserving a worker or claim while awaiting the answer. Set:
-      request_projection.build_request_index/project_requests and request.validate_record
-      integrated with R18 assignment states for Telegram chat, Jira, signed CLI, and email when
-      enrolled. Completeness: Derive all states and actor predicates from A assignment schemas and
-      compare the enrolled channel registry to delivery rows. Drive offered, accepted,
-      in-progress, submitted, satisfied, declined, expired, canceled, and reassigned cases through
-      real authority commands and fresh readers. Require retained deadline/budget/actor
-      predicates, visible pending delivery, and no model process or execution claim solely for
-      waiting. Falsifier: Keep a worker claim for an assignment awaiting a person after inbox
-      publication; inbox/waiting-resources must detect the retained claim.
+      Claim: The inbox exposes person-required assignments without holding a worker while awaiting
+      the answer. Set and completeness: Enumerate enabled pending, answered, declined and canceled
+      states from the assignment schema; drive real commands and Telegram projection and compare
+      owner, scope, deadline and budget to current authority state, with no waiting model process or
+      claim. Falsifier: Retain a worker claim while waiting for the person; the waiting-resource
+      check must fail.
     falsified_by: >
-      Keep a worker claim for an assignment awaiting a person after inbox publication;
-      inbox/waiting-resources must detect the retained claim.
+      Retain a worker claim while waiting for the person; the waiting-resource check must fail.
   - id: AC2
     text: >
-      Claim: Projection creation persists channel-specific external identifiers and correlation so
-      lost acknowledgments trigger lookup rather than blind creation. Set:
-      request_projection._project_one/project_from_repo,
-      tracker_adapter.TrackerAdapter.create_or_update_child/find_child, and corresponding enrolled
-      channel projection adapters backed by B delivery/effect records. Completeness: Enumerate
-      create/send, remote acceptance, local correlation commit, and acknowledgment barriers for
-      each channel; kill the projector at each using real local receiver/storage processes. Reopen
-      authority state and look up the original correlation, requiring one object or explicit
-      uncertainty when the target cannot prove its outcome. Live target qualification is required
-      by W58 before activation. Falsifier: Retry create_or_update_child with a fresh correlation
-      after remote creation but before local acknowledgment; inbox/lost-create-ack must detect
-      duplicate external objects.
+      Claim: Telegram projection retains the actual external message identity and request
+      correlation. Set and completeness: Send each enabled assignment kind through the qualified
+      Telegram edge; persist the returned chat/message identifiers and compare them with retrieved
+      presentation bytes and the inbox request version. Falsifier: Discard the returned message
+      identifier; the projection-correlation check must fail.
     falsified_by: >
-      Retry create_or_update_child with a fresh correlation after remote creation but before local
-      acknowledgment; inbox/lost-create-ack must detect duplicate external objects.
+      Discard the returned message identifier; the projection-correlation check must fail.
   - id: AC3
     text: >
-      Claim: Channel views and reassignment cannot grant authority or change accepted assignment
-      predicates. Set: request_projection.project_requests/build_brief and
-      request_doorbell.build_notice/ring for all enrolled channels and authorized inbox readers.
-      Completeness: Race two reassignment commands against one version in real SQLite, supersede
-      an assignment before delivery, and remove Jira enrollment while another qualified channel
-      remains. Compare published views with current authority and require exact scope and
-      originating-channel links, no tracker-first requirement, no local lifecycle writes, and no
-      admission from assignee or status alone. Falsifier: Require a tracker issue link before
-      projecting an otherwise valid enrolled chat assignment; inbox/chat-without-jira must detect
-      the missing chat projection.
+      Claim: Inbox views describe current assignments but do not grant authority. Set and
+      completeness: Read pending and changed assignment versions through the actual index/brief
+      readers, including an invalid record; require visible invalid state or current accepted
+      content, never authority from assignee or display status. Falsifier: Admit work from a
+      displayed assigned status alone; the unauthorized-admission check must fail.
     falsified_by: >
-      Require a tracker issue link before projecting an otherwise valid enrolled chat assignment;
-      inbox/chat-without-jira must detect the missing chat projection.
+      Admit work from a displayed assigned status alone; the unauthorized-admission check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Pause delivery and retain inbox versions, external correlations, and pending effects; recover
-  existing objects before resuming projections.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Make waiting assignments durable and reachable on the enrolled channel where the assigned person works.
+Assignment inbox and durable projections on enrolled input surfaces. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package E, W49 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R18, R28, R41, and R60 require channel projections of one inbox. Lost creation identity or a misleading assignment can strand decisions or misdirect scoped authority. The declared risk floor is high; required approval must bind the eventual change and proof. This declaration records no approval.
+W49 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 3.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-Presentation digest design, quorum settlement, new project workflow, and live ingress activation are separate concerns.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block durable inbox and published delivery obligations. D3/D4 remain inherited prerequisites through C, with no new host or clone choice here. The baseline build_request_index silently skips unreadable files and _project_one does not persist returned issue correlation; enrolled reads must use B snapshots and surface invalid records. request_projection, request_doorbell, and tracker_adapter currently have repository-only implementations: establish canonical engine copies and explicit W30/scaffolder inventory before installed use. Map proposed assignment/channel modules to contracts/tracker before ready. W50 owns receipt content, W53 settlement, and W58 actual channel activation. Preserve per-channel create/lookup evidence and each applied mutation with its failed row, then revert it.
+Use one authoritative inbox and ordinary Telegram projection; invalid accepted records must be
+visible rather than silently skipped. The waiting owner decision must release model workers
+and execution claims. The same inbox is read by the later authenticated UI/API.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC2 lost-create-ack recovery and AC3 concurrent
+reassignment/channel-removal matrix; narrow all criteria to Telegram, keeping the inbox and
+release of workers while waiting. Jira-specific intake/decision/projection work is dropped
+under 28857/28859; additional non-Jira channel breadth is Release 4. UI/API support is
+supplied by 0130/0131 against the retained settlement contract. Removed recovery, durability
+and failure-matrix obligations belong to Release 2; additional host/channel/version and full
+distribution breadth belongs to Release 4. Normal function and the checks stated above remain
+Release 1.

@@ -9,8 +9,8 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W52
-plan_revision: 1
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0055, VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0059, VELDO-0066]
+plan_revision: 3
+depends_on: [VELDO-0025, VELDO-0027, VELDO-0066]
 placement: [engine, tracker, contracts, distribution]
 protected_paths: []
 footprint:
@@ -41,87 +41,88 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Edge enrollment and signing records name channel/service/key identities, delegated principal,
-    allowed assertion kinds, scope, expiry, and rejected purpose.
+    Record the operation, domain, repository, unit or request identity, accepted input versions,
+    outcome and named refusal without secrets.
   metrics: >
-    Count active, retired and revoked edge keys, denied cross-channel assertions, arbitrary
-    signing requests, and channels blocked from activation.
+    Count accepted and refused operations and expose current pending work for this specification.
   traces: >
-    Join the signed complete enrollment command and proof of key possession to delegation
-    versions, canonical source evidence, presentation receipt, and protected signing decision.
+    Join accepted inputs, actual service observations and resulting authority records by identity.
   error_taxonomy: >
-    Distinguish enrollment-key substitution, missing possession, revoked edge, purpose escalation,
-    cross-channel impersonation, expired delegation, and unsafe signing custody.
+    Distinguish invalid input, missing authority, stale subject, unavailable service,
+    missing evidence and unknown outcome where applicable; never label unknown as success.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Each enrolled decision channel has its own restricted edge key and versioned
-      enrollment bound to explicit authority and possession proof. Set:
-      authorization.is_authorized and B protected key/signer APIs consumed by proposed
-      control_channel_enrollment, for Telegram chat, Jira, signed CLI, and email when enrolled.
-      Completeness: Derive required enrollment fields from A and compare all configured channel
-      records. Execute real signed enrollment/rotation commands using protected Ed25519 keys;
-      mutate the public key under an unchanged command envelope and race duplicate key/channel
-      grants. Verify command-digest recomputation, active membership/delegation versions and
-      possession before persistence, with no agent or service self-grant. Falsifier: Omit
-      enrollment public key from executed-command digest verification;
-      edges/enrollment-key-substitution must detect a substituted active edge key.
+      Claim: One restricted Telegram edge key is explicitly enrolled under current authority. Set
+      and completeness: Compare actual enrollment fields and possession proof with the channel
+      schema; submit real signed enrollment and altered public-key/authority parameters, and reject
+      self-grant or absent current membership. Falsifier: Exclude the public key from the enrollment
+      command digest; substituted-key acceptance must fail the check.
     falsified_by: >
-      Omit enrollment public key from executed-command digest verification;
-      edges/enrollment-key-substitution must detect a substituted active edge key.
+      Exclude the public key from the enrollment command digest; substituted-key acceptance must
+      fail the check.
   - id: AC2
     text: >
-      Claim: The protected signer independently enforces channel, principal, assertion purpose,
-      request and presentation versions, scope and expiry before issuing an assertion. Set: B
-      control_signer interface, authorization._attestation_ok/is_authorized, and
-      request_reconcile._build_attestation through every enrolled edge. Completeness: Enumerate
-      R38/A delegation dimensions and exercise each through a separate real edge process. Attempt
-      arbitrary-byte and membership-command signing, another channel identity, changed principal,
-      altered ruling/evidence, stale presentation, missing canonical attribution and expired
-      scope. Require named refusals and no signature; CLI assertions also retain their verified
-      personal source signature. Falsifier: Allow a Telegram edge key to sign a Jira assertion by
-      changing the channel parameter; edges/cross-channel-purpose must detect the issued forbidden
-      signature.
+      Claim: The protected signer enforces purpose, channel, actor, request, presentation, scope and
+      expiry. Set and completeness: For the Telegram edge mutate each delegation dimension
+      independently through the actual signer and try arbitrary-byte or membership-command signing;
+      require no signature for a forbidden request or missing canonical evidence. Falsifier: Permit
+      the edge to sign a membership command; the purpose-refusal check must fail.
     falsified_by: >
-      Allow a Telegram edge key to sign a Jira assertion by changing the channel parameter;
-      edges/cross-channel-purpose must detect the issued forbidden signature.
+      Permit the edge to sign a membership command; the purpose-refusal check must fail.
   - id: AC3
     text: >
-      Claim: Revoked or unsafe edges cannot accept fresh answers, while historical signatures
-      remain verifiable and another qualified channel can use the same request. Set:
-      request_reconcile.reconcile_requests, authorization.is_authorized and B key lifecycle
-      acceptance guards across channel rotation, retirement, revocation, custody failure and
-      restart. Completeness: Race edge/membership/delegation revocation against signing and
-      settlement, kill after revocation commit before notification, and retry from the old edge.
-      Query durable ordering and verify no fresh acceptance after revocation; retain old public
-      keys for historical evidence. Attempt real sandbox/tool reads of private key material and
-      disable the affected channel on custody failure. Exercise a current presentation on an
-      independently enrolled channel without creating a second request. Falsifier: Reload a
-      retired edge key as active after authority restart; edges/revoked-restart must catch a newly
-      signed or accepted assertion.
+      Claim: Current edge and actor authorization is required at answer acceptance. Set and
+      completeness: Accept one valid current Telegram assertion, then use a retired edge or revoked
+      actor and attempt a real private-key read from a worker tool; observe acceptance refusal and
+      protected key custody. Falsifier: Accept an answer with a retired edge key; the current-
+      authorization check must fail.
     falsified_by: >
-      Reload a retired edge key as active after authority restart; edges/revoked-restart must
-      catch a newly signed or accepted assertion.
+      Accept an answer with a retired edge key; the current-authorization check must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Revoke the affected edge delegation, stop its assertions, preserve historical public keys and
-  receipts, and re-enroll only with current authority and possession proof.
+  Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
+  and require an explicit operations decision before using a prior compatible configuration.
 ---
 
 ## Intent
 
-Constrain every channel edge to attributable decision assertions under its own explicit enrollment.
+Per-channel restricted edge signing and enrollment. Deliver the normal function needed by the running factory journey.
 
 ## Context
 
-Package E, W52 of PLAN-0019 revision 1. The controlling [design](../docs/design/PLAN-0019-dark-factory-design.md) and accepted A/B/C contracts govern implementation. This draft grants no implementation or activation authority.
-
-R36-R39, R60, and R72 make edge signing a delegated authority boundary. A shared or unrestricted key could manufacture assertions or change membership. The declared risk floor is critical; required approval must bind the eventual change and proof. This declaration records no approval.
+W52 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 3.
+The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
+2026-09-22 scope amendments. This revision changes the work contract, not its status,
+implementation or historical evidence. Risk and approval requirements remain unchanged.
 
 ## Out of scope
 
-No actual production channel is enrolled by this draft, and no membership quorum or policy exemption is introduced.
+The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
+No automatic recovery, extra channel activation or broader host qualification is implied.
 
 ## Notes
 
-D1/D2 block durable enrollment and published assertions, with D3/D4 inherited through C. This item consumes B signing custody and command verification rather than reimplementing cryptography. Channel enrollment is distinct from activation: even a valid restricted key cannot enable ingress before W58 sandbox proof and a separately recorded authorized act. Public keys are accepted authority projections, never worker-branch authority; private keys stay outside repositories and proof. Map narrow enrollment modules and establish engine copies for request_reconcile before ready, registering all assets through W30. Effective policy amendments belong to A/W58, not an unrecorded edit here. Preserve signed attack inputs and each negative-control diff and failed row.
+Use protected signing and membership services already present. Enrollment does not activate
+ingress; 0073 requires separate actual Telegram proof and authorized activation. Keep private
+edge keys outside worker access and proof. API sessions later use their own authenticated
+actor path.
+
+Implement canonical engine assets with synchronized installed copies where applicable. Register
+every asset this journey actually installs. Derive executable check registrations from each
+criterion's declared set; retain the actual observations and each driven negative-control diff
+and failing row. Real stores, files, processes, Git and signatures are required where named.
+Live engine/channel qualification cannot be replaced by model-response or authorization fixtures.
+Current authorization, independent engineering review, enforceable pre-call spend caps and exact
+tested-tree landing remain mandatory at the boundaries this concern consumes.
+
+## History
+
+2026-09-22, PLAN-0019 revision 3, Release 1 stage 3: owner Telegram 28848 moves
+recovery/robustness to Release 2. Drop AC3 rotation/restart/cross-channel failover matrix and
+plural-channel AC1/AC2 coverage; retain one enrolled restricted Telegram edge and current
+authorization. Jira-specific intake/decision/projection work is dropped under 28857/28859;
+additional non-Jira channel breadth is Release 4. UI/API support is supplied by 0130/0131
+against the retained settlement contract. Removed recovery, durability and failure-matrix
+obligations belong to Release 2; additional host/channel/version and full distribution breadth
+belongs to Release 4. Normal function and the checks stated above remain Release 1.
