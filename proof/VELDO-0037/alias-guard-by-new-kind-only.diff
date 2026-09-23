@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -717 +717 @@
+-            if _owned(identity, change['kind']) or _owned(identity, before.get(identity, {}).get('kind')):
++            if change['kind'] in OWNED_KINDS:

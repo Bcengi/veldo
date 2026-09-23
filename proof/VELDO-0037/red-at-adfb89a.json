@@ -1,0 +1,212 @@
+{
+  "completed": true,
+  "defect_observations": {
+    "case": {
+      "counter": null,
+      "lower-directory": null,
+      "non-ascii": null,
+      "prefix-case": null,
+      "specification": "invalid_input",
+      "upper-directory": null
+    },
+    "cross-repository": {
+      "files_after": [
+        "README.md",
+        "specs",
+        "specs/VELDO-0001-shared.md"
+      ],
+      "publish_other_here": null,
+      "read_here_from_other": "missing_publication",
+      "read_other_here": null,
+      "stray_publisher": null
+    },
+    "generic": {
+      "next": null,
+      "owned-kind-elsewhere": null,
+      "receipt-over-version": null,
+      "retire-reservation": null,
+      "rewind-counter": null,
+      "unrelated": null
+    },
+    "history": {
+      "allocated": "VELDO-0001",
+      "derived": "invalid_input",
+      "first-1": "stale_version",
+      "first-2-deleted": "stale_version",
+      "unaccepted-revision": null
+    },
+    "overlap": {
+      "directory-of": null,
+      "disjoint": null,
+      "first": null,
+      "kinds": [
+        "decision",
+        "memo",
+        "note",
+        "plan",
+        "specification"
+      ],
+      "same-path": null,
+      "slug-meets-number": null
+    },
+    "record-without-bytes": {
+      "no-file": null,
+      "no-publisher": null,
+      "other-bytes": null,
+      "published-then": false
+    },
+    "reserved": {
+      "git": null,
+      "github-allowed": null,
+      "mixed-case-veldo": null,
+      "nested-upper-git": null,
+      "slug-makes-git": null,
+      "veldo-ledger": null
+    },
+    "symlink": {
+      "outside": [
+        "VELDO-0001-escape.md"
+      ],
+      "publish": null,
+      "reader_file_link": null,
+      "reader_parent_link": null
+    }
+  },
+  "defect_rows_red": {
+    "aliases/case-insensitive-names": true,
+    "aliases/generic-writes-refused": true,
+    "aliases/historical-floor": true,
+    "aliases/one-path-per-kind": true,
+    "aliases/reserved-directories": true,
+    "publication/bound-to-repository": true,
+    "publication/no-symlink-escape": true,
+    "publication/recorded-only-by-publisher": true
+  },
+  "failed_rows": [
+    "publication/no-symlink-escape",
+    "aliases/one-path-per-kind",
+    "aliases/historical-floor",
+    "aliases/generic-writes-refused",
+    "publication/bound-to-repository",
+    "publication/recorded-only-by-publisher",
+    "aliases/case-insensitive-names",
+    "aliases/reserved-directories"
+  ],
+  "module_sha256": {
+    "control_alias.py": "54b5e63d793dbc3c00a761fd981a667cddfedb23b0ac4d711a1eac9c122aa638",
+    "control_document.py": "ebef12c941d2247731cd37a4d1569f66606232469ad5363f03439c99046e907f"
+  },
+  "reviewed_commit": "adfb89a10877e3a0afc65c26928426101aa174ea",
+  "rows": [
+    [
+      "aliases/accepted-floor",
+      true
+    ],
+    [
+      "aliases/invalid-unit-id",
+      true
+    ],
+    [
+      "aliases/stale-checkouts",
+      true
+    ],
+    [
+      "aliases/same-source-reuse",
+      true
+    ],
+    [
+      "aliases/distinct-source",
+      true
+    ],
+    [
+      "aliases/stale-read-refused",
+      true
+    ],
+    [
+      "aliases/no-recycling",
+      true
+    ],
+    [
+      "aliases/per-repository",
+      true
+    ],
+    [
+      "publication/accepted-documents",
+      true
+    ],
+    [
+      "publication/commit-together",
+      true
+    ],
+    [
+      "publication/exclusive-create",
+      true
+    ],
+    [
+      "documents/edit-current",
+      true
+    ],
+    [
+      "documents/identical-reuse",
+      true
+    ],
+    [
+      "documents/changed-content-conflict",
+      true
+    ],
+    [
+      "documents/stale-overwrite",
+      true
+    ],
+    [
+      "publication/replace-declared-version",
+      true
+    ],
+    [
+      "publication/replace-guard",
+      true
+    ],
+    [
+      "publication/tampered-refused",
+      true
+    ],
+    [
+      "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      false
+    ],
+    [
+      "aliases/one-path-per-kind",
+      false
+    ],
+    [
+      "aliases/historical-floor",
+      false
+    ],
+    [
+      "aliases/generic-writes-refused",
+      false
+    ],
+    [
+      "publication/bound-to-repository",
+      false
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      false
+    ],
+    [
+      "aliases/case-insensitive-names",
+      false
+    ],
+    [
+      "aliases/reserved-directories",
+      false
+    ]
+  ],
+  "suite_sha256": "2376bd307d39325cf7971fbff3b1ba599817444074d152a32314bb395d9a8c67",
+  "verification": "Diagnostic record; only bash scripts/verify.sh verifies the change."
+}

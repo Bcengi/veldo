@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -580 +580 @@
+-            if other['prefix'].casefold() == data['prefix'].casefold():
++            if other['prefix'] == data['prefix']:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_document.py
++++ b/.veldo/control_document.py
+@@ -253 +253 @@
+-        body = read_exact(os.path.realpath(root), data['path'])
++        body = (Path(root) / data['path']).read_bytes()

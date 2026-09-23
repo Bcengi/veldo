@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -733 +733 @@
+-        conn.command_registry[operation] = _guard_generic(store, operation, registration)
++        pass

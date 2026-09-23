@@ -12,17 +12,17 @@
       {
         "alias": "VELDO-0004",
         "reused": false,
-        "seq": 4
+        "seq": 6
       },
       {
         "alias": "VELDO-0005",
         "reused": false,
-        "seq": 5
+        "seq": 7
       },
       {
         "alias": "VELDO-0006",
         "reused": false,
-        "seq": 6
+        "seq": 8
       }
     ]
   },
@@ -31,7 +31,72 @@
     "refused": 16,
     "reused": 1
   },
-  "elapsed_seconds": 0.8466904619708657,
+  "defects": {
+    "case": {
+      "counter": 3,
+      "lower-directory": "invalid_registration",
+      "non-ascii": "invalid_input",
+      "prefix-case": "invalid_registration",
+      "specification": null,
+      "upper-directory": null
+    },
+    "cross-repository": {
+      "files_after": [
+        "README.md"
+      ],
+      "publish_other_here": "wrong_repository",
+      "read_here_from_other": "wrong_repository",
+      "read_other_here": "wrong_repository",
+      "stray_publisher": "wrong_repository"
+    },
+    "generic": {
+      "next": "VELDO-0003",
+      "owned-kind-elsewhere": "allocation_owned",
+      "receipt-over-version": "allocation_owned",
+      "retire-reservation": "allocation_owned",
+      "rewind-counter": "allocation_owned",
+      "unrelated": null
+    },
+    "history": {
+      "allocated": "VELDO-0003",
+      "derived": null,
+      "first-1": "below_accepted_history",
+      "first-2-deleted": "below_accepted_history",
+      "unaccepted-revision": "missing_authority"
+    },
+    "overlap": {
+      "directory-of": "invalid_registration",
+      "disjoint": null,
+      "first": null,
+      "kinds": [
+        "memo",
+        "specification"
+      ],
+      "same-path": "invalid_registration",
+      "slug-meets-number": "invalid_registration"
+    },
+    "record-without-bytes": {
+      "no-file": "missing_publication",
+      "no-publisher": "missing_authority",
+      "other-bytes": "publication_mismatch",
+      "published-then": true
+    },
+    "reserved": {
+      "git": "reserved_path",
+      "github-allowed": null,
+      "mixed-case-veldo": "reserved_path",
+      "nested-upper-git": "reserved_path",
+      "slug-makes-git": "reserved_path",
+      "veldo-ledger": "reserved_path"
+    },
+    "symlink": {
+      "outside": [],
+      "publish": "unsafe_path",
+      "reader_file_link": "unsafe_path",
+      "reader_parent_link": "unsafe_path"
+    }
+  },
+  "elapsed_seconds": 2.7622457209508866,
   "pending": [
     [
       "other",
@@ -126,7 +191,7 @@
       },
       "VELDO-DEC-0005": {
         "digest": "sha256:4675eaf10fb47cd21d876f865fbae1f8803cc6059e93c1dde4c76daf68aeb97e",
-        "path": ".veldo/decisions/0005-store-choice.yaml",
+        "path": "decisions/0005-store-choice.yaml",
         "role": "decision",
         "source": {
           "id": "msg-100",
@@ -245,6 +310,38 @@
     ],
     [
       "aliases/observations",
+      true
+    ],
+    [
+      "publication/no-symlink-escape",
+      true
+    ],
+    [
+      "aliases/one-path-per-kind",
+      true
+    ],
+    [
+      "aliases/historical-floor",
+      true
+    ],
+    [
+      "aliases/generic-writes-refused",
+      true
+    ],
+    [
+      "publication/bound-to-repository",
+      true
+    ],
+    [
+      "publication/recorded-only-by-publisher",
+      true
+    ],
+    [
+      "aliases/case-insensitive-names",
+      true
+    ],
+    [
+      "aliases/reserved-directories",
       true
     ]
   ],

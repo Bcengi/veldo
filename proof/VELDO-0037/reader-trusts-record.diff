@@ -1,5 +1,5 @@
 --- a/.veldo/control_document.py
 +++ b/.veldo/control_document.py
-@@ -162 +162 @@
+@@ -258 +258 @@
 -    observed = SN.digest(body)
 +    observed = obligation['observed_digest']

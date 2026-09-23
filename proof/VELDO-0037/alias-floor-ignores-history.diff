@@ -1,0 +1,6 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -209,2 +209 @@
+-    for command in (['ls-tree', '-r', '-z', '--name-only', commit],
+-                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):
++    for command in (['ls-tree', '-r', '-z', '--name-only', commit],):

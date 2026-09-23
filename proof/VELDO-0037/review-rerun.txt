@@ -1,0 +1,44 @@
+== r1_symlink_parent.py
+publish: unsafe_path | file outside root exists: False
+reader: None missing_publication
+exit 0
+== r2_path_collision.py
+enable refusals: None invalid_registration
+allocated VELDO-0001 docs/0001.md | None None
+publish A: ok | publish B: missing_authority | pending: []
+exit 0
+== r3_first_below_history.py
+accepted maximum: 1 | enable refusal: below_accepted_history | allocated: VELDO-0002
+exit 0
+== r4_record_without_bytes.py
+record refusal: missing_publication | obligation state: pending | file exists: False | pending: [('repository', 'VELDO-0001', 1)]
+publisher afterwards: None | file exists: True
+exit 0
+== r5_exact_bytes.py
+0 b'\xef\xbb\xbfbom\r\n' exact 0o600
+1 b'cr only\rline\r' exact 0o600
+2 b'nul\x00inside\n' exact 0o600
+3 b'\xe2\x80\xa8ls\xe2\x80\xa9ps' exact 0o600
+4 b'\xf0\x9f\x98\x80 astral' exact 0o600
+5 b'' exact 0o600
+6 b'\n' exact 0o600
+7 b'e\xcc\x81 decomposed' exact 0o600
+8 b'\t  trailing  \t' exact 0o600
+9 b'\xff\xfe not utf8' allocate refused invalid_input
+10 b'\xed\xa0\x80 surrogat' allocate refused invalid_input
+exit 0
+== r6_generic_upsert.py
+counter before 4 after 4 refusal allocation_owned
+next allocation: None 
+exit 0
+== r7_cross_repository.py
+publish other: wrong_repository | publish repository: ok | file: b'this repository bytes\n'
+exit 0
+== s1_parallel.py
+aliases: 12 errors: []
+after reopen: VELDO-0013 | max before: VELDO-0012
+exit 0
+== s2_case_prefix.py
+None invalid_registration: prefix veldo already allocates kind specification specs/VELDO-0001-x.md None
+template into .git accepted: False
+exit 0
