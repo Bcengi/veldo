@@ -412,7 +412,7 @@ def _anomalies(record, parts):
     return found
 
 
-def _record_transition(params, before):
+def _record_transition(params, before, notice_kind):
     """`intent` creates a receipt, or a new attempt of a refused one, as `pending`. `complete`
     finishes that attempt from the platform's answer; a confirmed publication moves the head in
     the same transaction. A completed receipt is never written again."""
@@ -490,8 +490,11 @@ def _record_transition(params, before):
         if notice:
             # The inbox projection's earlier notice is superseded by this, its first presentation.
             held = before.get(notice) or {}
-            if held.get('kind') != data['supersedes'].get('notice_kind') or not isinstance(held.get('data'), dict):
-                raise ValueError('the notice this presentation supersedes is not the one it named')
+            # Only the inbox projection's own record kind, for this same request, is ever superseded;
+            # the kind named in the intent is the caller's and decides nothing.
+            if (held.get('kind') != notice_kind or not isinstance(held.get('data'), dict)
+                    or held['data'].get('assignment_id') != data['request_id']):
+                raise ValueError('the notice this presentation supersedes is not its own request\'s projection notice')
             changes[notice] = {'kind': held['kind'], 'data': dict(held['data'], superseded_by=pid)}
     changes[pid] = {'kind': RECEIPT_KIND, 'data': data}
     return changes
@@ -537,7 +540,8 @@ class Presenter:
                     raise store.StoreRefused('invalid_input', str(exc))
             return transition
         writes = ('entities', 'journal', 'commands', 'nonces')
-        conn.command_registry[RECORD_OPERATION] = {'transition': guarded(_record_transition), 'writes': writes}
+        conn.command_registry[RECORD_OPERATION] = {
+            'transition': guarded(lambda p, b: _record_transition(p, b, projection.ENTITY_KIND)), 'writes': writes}
         conn.command_registry[FRAME_OPERATION] = {'transition': guarded(self._frame_transition), 'writes': writes}
         conn.command_registry[ANSWER_OPERATION] = {
             'transition': guarded(lambda p, b: _write_new(p, b, (('answer', ANSWER_KIND),))),
@@ -855,7 +859,7 @@ class Presenter:
                     or data.get('chat_id') != chat or type(data.get('message_id')) is not int):
                 continue
             if found is None or data.get('request_version', 0) > found['request_version']:
-                found = {'notice_id': eid, 'notice_kind': self.P.ENTITY_KIND, 'chat_id': chat,
+                found = {'notice_id': eid, 'chat_id': chat,
                          'message_id': data['message_id'], 'request_version': data.get('request_version', 0),
                          'version': version}
         return found

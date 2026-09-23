@@ -1055,6 +1055,12 @@ def cases():
                  "    return ' '.join(str(text).split())\n", 'answer/choice-matching-and-feedback')
     presentation('owner-not-told', "        sent = self._send(ev['chat_id'], text, ev['platform_message_id'])\n",
                  "        sent = {'platform': None, 'refusal': None}\n", 'answer/choice-matching-and-feedback')
+    # VELDO-0065 third review item 6: only the projection's own notice of the same request is superseded.
+    presentation('notice-kind-from-caller', "            if (held.get('kind') != notice_kind or not isinstance(held.get('data'), dict)\n",
+                 "            if (held.get('kind') != data['supersedes'].get('notice_kind', held.get('kind')) or not isinstance(held.get('data'), dict)\n",
+                 'presentation/notice-kind-fixed')
+    presentation('notice-of-any-request', "                    or held['data'].get('assignment_id') != data['request_id']):\n",
+                 "                    or False):\n", 'presentation/notice-kind-fixed')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

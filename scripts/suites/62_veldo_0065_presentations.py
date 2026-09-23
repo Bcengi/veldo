@@ -89,7 +89,8 @@ def _v65_checks(base):
                                   'presentation/reply-link-verified', 'presentation/long-brief-split',
                                   'projection/one-message-per-version', 'framing/key-by-store-order',
                                   'projection/notice-superseded', 'projection/silent-from-store',
-                                  'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback')}
+                                  'presentation/refused-part-sent-again', 'answer/choice-matching-and-feedback',
+                                  'presentation/notice-kind-fixed')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1025,6 +1026,44 @@ def _v65_checks(base):
                       and told[0][2] == message['message_id'] and 'accept | reject' in told[0][1])
             check(match_row, 'control: the refused replies answered nothing, and a matching one then does',
                   answered(wrong, 1) is None and reason(answer(owner_reply(wrong_r, 'Reject: not now'))) == ('accepted', None))
+
+        # Review 3 item 6: a presentation supersedes only its own request's notice, of the projection's own kind
+        kind_row = 'presentation/notice-kind-fixed'
+        with section(kind_row):
+            b1_notice = notice[0] if notice else None
+            decoy = 'decoy:' + I.assignment_id(ids['repository_uuid'], 'FG-0')
+            fixture(decoy, 'decoy_record', {'assignment_id': I.assignment_id(ids['repository_uuid'], 'FG-0'),
+                                            'outcome': 'sent', 'message_id': 424242})
+            for n, (label, target, kind) in enumerate((('a record of another kind for the same request', decoy, 'decoy_record'),
+                                                       ('another request\'s notice', b1_notice, 'channel_projection'))):
+                fg = opened('FG-%d' % n)
+                _, base_record, _ = presenter.compose(fg)
+                held_before = entity(target) if target else None
+                forged = dict(base_record, supersedes={'notice_id': target, 'notice_kind': kind, 'chat_id': owner_chat,
+                                                       'message_id': 424242 + n}, reply_to=None)
+                forged['rendered'] = V.render(forged)
+                forged['brief_digest'] = 'sha256:' + _v65_hashlib.sha256(_v65_json.dumps(
+                    forged['rendered'], sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode('utf-8')).hexdigest()
+                forged['presentation_id'] = V.presentation_id(fg, 1, forged['brief_digest'])  # its own request
+                fpid, fhid = forged['presentation_id'], V.head_id(fg)
+                refused_code = None
+                try:
+                    S.execute(conn, dict(command_id='forge-intent-%d' % n, principal='authority', operation=V.RECORD_OPERATION,
+                                         parameters=dict(phase='intent', presentation_id=fpid, head_id=fhid, record=forged),
+                                         expected_versions={fpid: 0}, artifact_digests=[], nonce='forge-intent-%d' % n),
+                              'authority', journal_sign, 1)
+                    parts = [{'chat_id': owner_chat, 'message_id': 525252 + 10 * n + i, 'date': 1790000000, 'text': t,
+                              'reply_to_message_id': None} for i, t in enumerate(forged['rendered'])]
+                    S.execute(conn, dict(command_id='forge-complete-%d' % n, principal='authority', operation=V.RECORD_OPERATION,
+                                         parameters=dict(phase='complete', presentation_id=fpid, head_id=fhid, attempt=1,
+                                                         parts=parts, refusal=None),
+                                         expected_versions={fpid: 1, fhid: (entity(fhid) or {}).get('version', 0),
+                                                            target: (held_before or {}).get('version', 0)},
+                                         artifact_digests=[], nonce='forge-complete-%d' % n), 'authority', journal_sign, 1)
+                except S.StoreRefused as exc:
+                    refused_code = exc.code
+                check(kind_row, 'a presentation naming %s as the notice it supersedes is refused and leaves it unchanged' % label,
+                      held_before is not None and refused_code is not None and entity(target) == held_before)
     finally:
         server.shutdown()
         server.server_close()
