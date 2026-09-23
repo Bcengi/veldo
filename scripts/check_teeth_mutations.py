@@ -315,7 +315,7 @@ def cases():
     v26_accept = ("            changes = dict(S.COMMAND_REGISTRY['accept_effect']['transition'](\n"
                   "                {'effect_id': rid, 'principal': principal, 'receiver': contract['target'],\n"
                   "                 'kind': contract['kind'], 'at': time.time()}, before))")
-    v26_reconcile = "        if completed:\n            changes.update("
+    v26_reconcile = "        if completed or status == 'refused':\n            changes.update("
     effect('effects-revocation-preflight-only', revocation,
            "    if not consume and revoked(conn, principal, now):\n        raise Refused('revoked')", 'revocation-before-transaction',
            also=[(v26_accept, "            changes = {}"),
@@ -451,6 +451,34 @@ def cases():
                 "    if False:", 'publication-scrub-transport-prefix')
     publication('effects-scrub-keeps-query', "            tail = tail.partition('?')[0]\n", "", 'publication-scrub-query-fragment')
     publication('effects-scrub-keeps-fragment', "            tail = tail.partition('#')[0]\n", "", 'publication-scrub-query-fragment')
+    # R8 B1: nothing is pushed unless every destination was listed first and holds the expected
+    # old state (the old tip, or absent for a creation); the refusal is named, recorded as
+    # conclusive, reconciled as stopped and returned again on a replay.
+    stale_rows = ['effects/publication-refused-when-not-at-old-tip', 'effects/' + routed]
+    precheck = ("        if any(state is None or (ref in state if absent else state.get(ref) != payload['old_tip'])\n"
+                "               for state in before):")
+    publication('effects-push-without-old-tip-check', precheck, "        if False:", 'publication-refused-when-not-at-old-tip')
+    add(28, 'effects-old-tip-checked-at-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        precheck, precheck.replace('for state in before):', 'for state in before[:1]):'), stale_rows)
+    add(28, 'effects-unlisted-destination-pushed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        precheck, precheck.replace('state is None or (', 'state is not None and ('),
+        stale_rows + ['effects/publication-config-selection-parity'])
+    add(28, 'effects-receiver-refusal-as-unknown', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "            observation = dict(accepted, status='refused', refusal=error.code, evidence=None)",
+        "            observation = dict(accepted, status='unknown', evidence=None)",
+        ['effects/publication-refused-when-not-at-old-tip', 'effects/publication-refusal-reaches-caller'])
+    publication('effects-replayed-refusal-reads-accepted', "            if accepted.get('status') == 'refused':",
+                "            if False:", 'publication-refusal-reaches-caller')
+    add(28, 'effects-refusal-owes-a-stop', '58_veldo_0028_effects.py', 'control_effects.py',
+        "                  stop=None if completed or status == 'refused' else",
+        "                  stop=None if completed else", ['effects/publication-refusal-reaches-caller'])
+    add(28, 'effects-refusal-left-in-flight', '58_veldo_0028_effects.py', 'control_effects.py',
+        "        if completed or status == 'refused':", "        if completed:",
+        ['effects/publication-refusal-reaches-caller'])
+    publication('effects-creation-expects-zero-id', "        absent = set(payload['old_tip']) == {'0'}",
+                "        absent = False", 'publication-ref-creation')
+    publication('effects-creation-over-existing-ref', precheck, precheck.replace('(ref in state if absent', '(False if absent'),
+                'publication-ref-creation')
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.

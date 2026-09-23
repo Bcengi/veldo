@@ -324,6 +324,14 @@ print(json.dumps(result))
             pr, _, _, _ = setup('publication', name, target='git-' + name,
                                  payload={'commit': tip, 'tree': tree, 'old_tip': old})
             return call(pr, env=env).get('result', {})
+        def publish_as(name, clone, remote_url, env=None, ref='refs/heads/main', old_tip=None, receiver=None):
+            # The whole answer: a refusal raised by the receiver reaches the caller by name.
+            config['receivers']['git-' + name] = dict({'kind': 'publication', 'repository': str(clone),
+                                                        'remote': remote_url, 'ref': ref}, **(receiver or {}))
+            config_path.write_text(_v28_json.dumps(config))
+            pr, _, _, _ = setup('publication', name, target='git-' + name,
+                                 payload={'commit': tip, 'tree': tree, 'old_tip': old if old_tip is None else old_tip})
+            return pr, call(pr, env=env)
         def remote_main(bare):
             return git('-C', str(bare), 'rev-parse', 'refs/heads/main')
         # P1: the clone's pre-push policy hook refuses; it runs and nothing is published.
@@ -480,9 +488,12 @@ print(json.dumps(result))
         def routed(name, completed, destinations, authorized_moved, decoy_moved):
             # `destinations` lists each repository the push was resolved to, with its outcome, and
             # the two flags say which of the authorized repository and the decoy hold the commit.
+            # `completed` is True, False (unknown) or the name of the refusal made before pushing.
             case = routes[name]
-            return (case['result'].get('completed') is completed
-                    and case['result'].get('status') == ('completed' if completed else 'unknown')
+            status = 'completed' if completed is True else 'unknown' if completed is False else 'refused'
+            return (case['result'].get('completed') is (completed is True)
+                    and case['result'].get('status') == status
+                    and case['result'].get('refusal') == (completed if status == 'refused' else None)
                     and case['authorized_moved'] is authorized_moved and case['decoy_moved'] is decoy_moved
                     and case['destination'] == (None if destinations is None else
                                                 {'authorized_url': case['url'], 'destinations': destinations})
@@ -495,12 +506,10 @@ print(json.dumps(result))
                                  'push-instead-of', 'space-section-pushurl'))
             and routed('fan-out-pushurls', True, reached((url_of('fan-out-pushurls'), 'at-tip'),
                                                          (decoy_of('fan-out-pushurls'), 'at-tip')), True, True)
-            and routed('fan-out-stale', False, reached((url_of('fan-out-stale'), 'at-tip'),
-                                                       (decoy_of('fan-out-stale'), 'not-at-tip')), True, False)
-            and routed('fan-out-unreachable', False, reached((url_of('fan-out-unreachable'), 'at-tip'),
-                                                             (str(root / 'route-no-such.git'), 'unreachable')), True, False)
-            and routed('config-newline', False, None, False, False)
-            and routed('path-newline', False, None, False, False))
+            and routed('fan-out-stale', 'stale-subject', None, False, False)
+            and routed('fan-out-unreachable', 'stale-subject', None, False, False)
+            and routed('config-newline', 'invalid-input', None, False, False)
+            and routed('path-newline', 'invalid-input', None, False, False))
         # R5 3: publication keeps what a plain git push from the same clone and the same operator
         # environment can do: global configuration and transport and credential variables.
         def fake_ssh(name):
@@ -704,6 +713,79 @@ print(json.dumps(result))
              lambda b: ('veldotest://veldo-host' + str(b),) * 2),
             ('helper', 'fragment', lambda b: 'veldotest://veldo-host' + str(b) + '#SECRETTOKEN',
              lambda b: ('veldotest://veldo-host' + str(b),) * 2))))
+        # R8 B1: nothing is pushed unless every resolved destination could be listed first and
+        # holds the authorized ref at the expected old state (the old tip, or absent for a ref
+        # creation). The refusal is made by name before any push and reaches the caller as that
+        # refusal, recorded as conclusive, never as an unknown outcome.
+        def moved_elsewhere(bare):
+            git('-C', str(bare), 'update-ref', 'refs/heads/main',
+                git('-C', str(bare), 'commit-tree', '-p', old, '-m', 'elsewhere', old + '^{tree}'))
+            return remote_main(bare)
+        stale = {}
+        clone, bare = fresh('stale-single')
+        held = moved_elsewhere(bare)
+        stale['single'] = (publish_as('stale-single', clone, str(bare))[1], [(bare, held)])
+        clone, bare = fresh('stale-unlisted')
+        unlisted_url = 'file://' + str(bare)
+        # The URL's own section makes its listing fail while a push would still reach it.
+        git('-C', str(clone), 'config', 'remote.' + unlisted_url + '.uploadpack', 'false')
+        stale['unlisted'] = (publish_as('stale-unlisted', clone, unlisted_url)[1], [(bare, old)])
+        clone, bare = fresh('stale-fan-out')
+        second = elsewhere_for('stale-fan-out')
+        fan_url = 'file://' + str(bare)
+        git('-C', str(clone), 'config', '--add', 'remote.' + fan_url + '.pushurl', fan_url)
+        git('-C', str(clone), 'config', '--add', 'remote.' + fan_url + '.pushurl', str(second))
+        held = moved_elsewhere(second)
+        stale['fan-out'] = (publish_as('stale-fan-out', clone, fan_url)[1], [(bare, old), (second, held)])
+        for key, (answer, _) in stale.items():
+            seen_result('stale-' + key, answer.get('result', {}), refusal=answer.get('refusal'), accepted=answer.get('accepted'))
+        def refused_before_push(key, code='stale-subject'):
+            answer, repositories = stale[key]
+            result = answer.get('result', {})
+            return (answer.get('accepted') is False and answer.get('refusal') == code
+                    and result.get('status') == 'refused' and result.get('refusal') == code
+                    and result.get('completed') is False and result.get('stop') is None
+                    and 'destination' not in result
+                    and all(remote_main(repository) == held for repository, held in repositories))
+        row('publication-refused-when-not-at-old-tip', all(refused_before_push(key) for key in stale))
+        # The named refusal is the effect's recorded, conclusive outcome: the stored record says
+        # refused, and the same request again returns the same refusal without another attempt.
+        clone, bare = fresh('stale-replay')
+        held = moved_elsewhere(bare)
+        stale_request, first = publish_as('stale-replay', clone, str(bare))
+        stale_record = E.S.materialized_state(conn)['entities'].get('effect:dispatch-publication-stale-replay', {}).get('data', {})
+        replay = call(stale_request)
+        seen_result('stale-replay', first.get('result', {}), refusal=first.get('refusal'), replay_refusal=replay.get('refusal'))
+        # VELDO-0026's in-flight effect for it is reconciled as stopped, so a later revocation owes
+        # no stop for an effect that was never performed.
+        linked = E.S.materialized_state(conn)['entities'].get(stale_record.get('revocation_effect') or '', {}).get('data', {})
+        row('publication-refusal-reaches-caller', first.get('accepted') is False and first.get('refusal') == 'stale-subject'
+            and stale_record.get('status') == 'refused' and stale_record.get('refusal') == 'stale-subject'
+            and stale_record.get('stop') is None and linked.get('state') == 'stopped' and replay.get('accepted') is False
+            and replay.get('refusal') == 'stale-subject' and replay.get('result') == first.get('result')
+            and remote_main(bare) == held)
+        # A ref creation: the expected old state is "absent" (the all-zero id), and it completes
+        # when the ref was absent before and holds the tip after, at every destination.
+        zero = '0' * len(old)
+        clone, bare = fresh('create')
+        second = elsewhere_for('create')
+        create_url = 'file://' + str(bare)
+        git('-C', str(clone), 'config', '--add', 'remote.' + create_url + '.pushurl', create_url)
+        git('-C', str(clone), 'config', '--add', 'remote.' + create_url + '.pushurl', str(second))
+        created = publish_as('create', clone, create_url, ref='refs/heads/created', old_tip=zero)[1].get('result', {})
+        def ref_of(bare, name):
+            return G.run(['git', '-C', str(bare), 'rev-parse', '--verify', '-q', name], capture_output=True,
+                         text=True, timeout=20).stdout.strip()
+        clone, existing = fresh('create-existing')
+        git('-C', str(existing), 'update-ref', 'refs/heads/created', old)
+        over = publish_as('create-existing', clone, str(existing), ref='refs/heads/created', old_tip=zero)[1]
+        seen_result('create', created, destination=recorded('create'))
+        seen_result('create-existing', over.get('result', {}), refusal=over.get('refusal'))
+        row('publication-ref-creation', created.get('completed') is True
+            and ref_of(bare, 'refs/heads/created') == tip and ref_of(second, 'refs/heads/created') == tip
+            and recorded('create') == {'authorized_url': create_url,
+                                       'destinations': reached((create_url, 'at-tip'), (str(second), 'at-tip'))}
+            and over.get('refusal') == 'stale-subject' and ref_of(existing, 'refs/heads/created') == old)
         # R6 2 and 3: the variables that select or inject operator configuration are the
         # operator's, not repository coordinates, so publication honors them as a plain git
         # command from the same environment does. Each case names the authorized remote only
@@ -742,12 +824,13 @@ print(json.dumps(result))
                         authorized_moved=selection[name][3], decoy_moved=selection[name][4])
         routes_bare = {name: root / ('selection-' + name + '-remote.git') for name in selection}
         def selected(name, resolves):
-            # An alias left unresolved names no repository: the push is resolved to it, reaches
-            # nothing, and it is recorded unreachable.
+            # An alias left unresolved names no repository that can be listed, so it is refused
+            # before anything is pushed and records no destination.
             plain, result, destination, moved, decoy = selection[name]
             completed = resolves == str(routes_bare[name])
-            return (plain == resolves and destination.get('destinations') == reached((plain, 'at-tip' if completed else 'unreachable'))
-                    and result.get('completed') is completed and moved is completed and decoy is False)
+            return (plain == resolves and result.get('completed') is completed and moved is completed and decoy is False
+                    and (destination.get('destinations') == reached((plain, 'at-tip')) if completed
+                         else destination == {} and result.get('refusal') == 'stale-subject'))
         row('publication-config-selection-parity',
             all(selected(name, str(routes_bare[name])) for name in
                 ('global-file', 'system-file', 'count-injection', 'parameters-injection', 'global-over-home'))
@@ -792,6 +875,7 @@ print(json.dumps(result))
                      'env-ssh-command', 'global-ssh-command', 'destination-despite-hook-text', 'rejected-destination-recorded',
                      'completion-from-destination-state', 'hook-text-without-newline', 'non-utf8-output', 'fan-out-agit-report',
                      'scrub-scp-user-information', 'scrub-transport-prefix', 'scrub-query-fragment',
+                     'refused-when-not-at-old-tip', 'refusal-reaches-caller', 'ref-creation',
                      'config-selection-parity', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)

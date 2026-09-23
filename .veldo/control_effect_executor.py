@@ -121,8 +121,15 @@ def receive(config, contract, accepted):
         if (shown.returncode or not lines or not lines[0].startswith('  Fetch URL: ') or not pushed
                 or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):
             raise E.Refused('invalid-input')
-        # Each destination's state before the push, so its change can be judged after it.
+        # Each destination's state before the push, so its change can be judged after it. Nothing
+        # is pushed unless every destination could be listed and holds the authorized ref at the
+        # expected old state: the old tip, or absent when the all-zero id names a ref creation. A
+        # refusal here is made before anything reaches a destination, and is reported by name.
+        absent = set(payload['old_tip']) == {'0'}
         before = [remote_refs(url) for url in pushed]
+        if any(state is None or (ref in state if absent else state.get(ref) != payload['old_tip'])
+               for state in before):
+            raise E.Refused('stale-subject')
         # An ordinary git push, so the clone's hooks, url.*.insteadOf rewrites, transports
         # (HTTP(S) included) and credential helpers behave exactly as configured. Only what
         # WIDENS a push is neutralized: an explicit URL and single refspec, no tag following
@@ -133,25 +140,25 @@ def receive(config, contract, accepted):
         # can shape its report, so nothing in it is evidence of where it went or whether it worked.
         push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push', '--porcelain',
                          '--no-follow-tags', '--recurse-submodules=no',
-                         '--force-with-lease=' + ref + ':' + payload['old_tip'],
+                         '--force-with-lease=' + ref + ':' + ('' if absent else payload['old_tip']),
                          remote, payload['commit'] + ':' + ref)
         # Completion is read from each destination's actual state after the push. A destination
-        # is `at-tip` when it held the old tip at the authorized ref before, and after the push its
-        # advertised state is exactly the state before with that ref (and any symbolic ref that
-        # targets it, HEAD included) moved to the commit; `unreachable` when either listing
-        # failed; otherwise `not-at-tip` (rejected, reported under another ref, or anything else
+        # is `at-tip` when its advertised state is exactly the state before (checked above to
+        # hold the expected old state) with the authorized ref, and any symbolic ref that targets
+        # it, HEAD included, moved to the commit; `unreachable` when it cannot be listed after;
+        # otherwise `not-at-tip` (rejected, reported under another ref, or anything else
         # changed). The effect is completed only when the push exited cleanly and every resolved
         # destination is at the tip.
         outcomes = []
         for url, state in zip(pushed, before):
             after = remote_refs(url)
-            if state is None or after is None:
+            if after is None:
                 outcomes.append('unreachable')
                 continue
             expected = dict(state, **{ref: payload['commit']})
             expected.update({name[len('symref:'):]: payload['commit'] for name, target in state.items()
                              if name.startswith('symref:') and target == ref})
-            outcomes.append('at-tip' if state.get(ref) == payload['old_tip'] and after == expected else 'not-at-tip')
+            outcomes.append('at-tip' if after == expected else 'not-at-tip')
         destination = {'authorized_url': scrubbed_url(remote),
                        'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}
                                         for url, outcome in zip(pushed, outcomes)]}
@@ -190,13 +197,21 @@ def execute(config, request, principal, challenge, signature):
             raise E.Refused('credential-access-refused')
         accepted, fresh = E.accept(conn, config, principal, request, journal)
         if not fresh:
+            if accepted.get('status') == 'refused':
+                return {'accepted': False, 'refusal': accepted['refusal'], 'result': accepted, 'metrics': E.metrics(conn)}
             return {'accepted': True, 'result': accepted, 'metrics': E.metrics(conn)}
         contract = accepted
         try:
             observation = receive(config, contract, accepted)
-        except (OSError, ValueError, KeyError, E.Refused, subprocess.TimeoutExpired):
+        except E.Refused as error:
+            # A receiver refuses only before anything reaches a destination or an adapter, so the
+            # refusal is conclusive: recorded as refused and reported by name, never as unknown.
+            observation = dict(accepted, status='refused', refusal=error.code, evidence=None)
+        except (OSError, ValueError, KeyError, subprocess.TimeoutExpired):
             observation = dict(accepted, status='unknown', evidence=None)
         result = E.finish(conn, accepted, observation, journal)
+        if result['status'] == 'refused':
+            return {'accepted': False, 'refusal': result['refusal'], 'result': result, 'metrics': E.metrics(conn)}
         return {'accepted': True, 'result': result, 'metrics': E.metrics(conn)}
     except (E.Refused, E.S.StoreRefused) as error:
         return {'accepted': False, 'refusal': error.code, 'metrics': {'refused': 1}}

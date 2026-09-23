@@ -193,14 +193,22 @@ def finish(conn, accepted, observation, journal):
     bound = ('dispatch_id', 'target', 'request_digest')
     matches = isinstance(observation, dict) and all(observation.get(f) == accepted[f] for f in bound)
     status = observation.get('status') if matches else 'unknown'
-    if status not in ('accepted', 'completed', 'unknown'):
+    if status not in ('accepted', 'completed', 'unknown', 'refused'):
         status = 'unknown'
+    # A refusal the receiver made before anything reached a destination: conclusive, nothing was
+    # done, so no stop is owed. It must name its refusal.
+    refusal = observation.get('refusal') if status == 'refused' else None
+    if status == 'refused' and not (isinstance(refusal, str) and refusal):
+        status, refusal = 'unknown', None
     completed = status == 'completed' and bool(observation.get('evidence'))
     if status == 'completed' and not completed:
         status = 'unknown'
     result = dict(accepted, status=status, completed=completed,
-                  stop=None if completed else ('effect-pending' if status == 'accepted' else 'effect-outcome-unknown'),
+                  stop=None if completed or status == 'refused' else
+                  ('effect-pending' if status == 'accepted' else 'effect-outcome-unknown'),
                   evidence=SIG.digest(observation) if matches else None)
+    if status == 'refused':
+        result['refusal'] = refusal
     # A publication records where its push went: the authorized URL and each destination git
     # resolved for the push, with that destination's outcome, all without credentials. Nothing
     # else a receiver returns is copied into the record.
@@ -216,11 +224,12 @@ def finish(conn, accepted, observation, journal):
     state = S.materialized_state(conn)['entities']
     def transition(params, before):
         changes = {}
-        # Only conclusive evidence resolves the VELDO-0026 effect; accepted-only and unknown
-        # outcomes stay in flight, so a revocation still owes a stop for them.
-        if completed:
+        # Only a conclusive outcome resolves the VELDO-0026 effect: completion, or a refusal made
+        # before anything was done (reconciled as stopped). Accepted-only and unknown outcomes
+        # stay in flight, so a revocation still owes a stop for them.
+        if completed or status == 'refused':
             changes.update(S.COMMAND_REGISTRY['reconcile_effect']['transition'](
-                {'effect_id': accepted['revocation_effect'], 'outcome': 'completed',
+                {'effect_id': accepted['revocation_effect'], 'outcome': 'completed' if completed else 'stopped',
                  'evidence_digest': result['evidence'], 'at': time.time()}, before))
         changes[eid] = {'kind': 'protected_effect', 'data': result}
         return changes
@@ -231,4 +240,4 @@ def finish(conn, accepted, observation, journal):
 def metrics(conn):
     entries = S.materialized_state(conn)['entities'].values()
     effects = [e['data'] for e in entries if e['kind'] == 'protected_effect']
-    return {'accepted': len(effects), 'pending': sum(not e['completed'] for e in effects)}
+    return {'accepted': len(effects), 'pending': sum(not e['completed'] and e['status'] != 'refused' for e in effects)}
