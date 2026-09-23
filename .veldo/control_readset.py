@@ -163,7 +163,16 @@ class ReadSets:
             self.observations.append(dict(event, outcome='refused', refusal=error.code, input=error.detail))
             raise
         self.counts['accepted'] += 1
-        self.observations.append(dict(event, outcome='accepted', watermark=result['seq']))
+        snapshot = SN.load(self.store, self.conn, event['snapshot_id'], self.domain_uuid, self.repository_uuid)
+        inputs = snapshot['inputs']
+        event['accepted_inputs'] = {
+            name: {'digest': SN.digest(SN.canonical(value)),
+                   'versions': {item['id']: item['version'] for item in
+                                (value if isinstance(value, list) else [value])
+                                if isinstance(item, dict) and 'version' in item}}
+            for name, value in inputs.items()}
+        self.observations.append(dict(event, outcome='accepted', watermark=result['seq'],
+                                      input_watermark=snapshot['watermark']))
         return result
 
     def pending(self):

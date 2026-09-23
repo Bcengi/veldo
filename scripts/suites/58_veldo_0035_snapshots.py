@@ -109,6 +109,9 @@ def _s35_run():
             'record_effect': {'effect_id': 'effect', 'kind': 'test', 'target': 'target'},
         }
         expect('snapshots/registration-inventory', set(operations) == set(st.COMMAND_REGISTRY))
+        scaffold = _s35_load('s35_scaffold', ROOT / '.veldo/init_scaffold.py')
+        expect('snapshots/installed-assets', all('.veldo/' + name in scaffold._FILES for name in
+               ('control_snapshot.py', 'control_readset.py', 'control_store.py', 'git_process.py')))
         case_number = 0
 
         def fixture(operation):
@@ -163,7 +166,9 @@ def _s35_run():
             store, conn, reader, snapshot, consume, accepted = fixture(operation)
             result = reader.execute(consume, **signing)
             expect('snapshots/control/' + operation, result['committed'] and reader.counts == {'accepted': 2, 'refused': 0}
-                   and reader.pending() == [] and snapshot['watermark'] == accepted['seq'])
+                   and reader.pending() == [] and snapshot['watermark'] == accepted['seq']
+                   and reader.observations[-1]['accepted_inputs']['entity/authority']['versions'] == {'authority:versions': 1}
+                   and set(reader.observations[-1]['accepted_inputs']) == set(snapshot['inputs']))
             conn.close()
         expect('snapshots/stale-input', all(row['passed'] for row in observations['stale']) and len(observations['stale']) == 45)
 
