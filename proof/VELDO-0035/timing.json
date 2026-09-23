@@ -1,0 +1,11 @@
+{
+  "method": "Measured registered suite duration times two (unit and first-use integration both execute it), plus only the added mutation cases through the unchanged gate scheduler, including frozen-copy setup, baseline and no-op controls. Incremental workload estimate from measured components, not a reduced gate verification or whole-gate before/after differential.",
+  "suite_seconds_per_run": 6.899461235851049,
+  "suite_runs_in_green_gate": 2,
+  "added_mutation_wall_seconds": 22.482928097015247,
+  "combined_added_workload_seconds": 36.281850568717346,
+  "limit_seconds": 60,
+  "mutations_registered": 6,
+  "worker_invocations": 10,
+  "parallel_slots": 8
+}

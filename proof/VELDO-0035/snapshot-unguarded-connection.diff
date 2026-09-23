@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -390 +390 @@
+-        if "snapshot_id" in command["parameters"] and "transaction_transition" not in reg:
++        if False:

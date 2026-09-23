@@ -183,6 +183,18 @@ def resolved_target(path):
     return os.path.realpath(os.path.abspath(path))
 
 
+class StoreConnection(sqlite3.Connection):
+    """Service registrations belong to this handle, never to the process-wide catalog."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.command_registry = {}
+        self.command_transaction = False
+
+    def close(self):
+        self.command_registry.clear()
+        super().close()
+
+
 def open_store(path, mode="rw", mounts_text=None, allow_unbackfilled=False):
     """A connection to the store with foreign keys, WAL and FULL synchronous set AND READ BACK; a
     write-mode open refuses an unsupported filesystem by name (judged at the RESOLVED target, so a
@@ -200,11 +212,11 @@ def open_store(path, mode="rw", mounts_text=None, allow_unbackfilled=False):
         if problems:
             raise StoreRefused("unsupported_filesystem", "; ".join(problems))
         os.makedirs(os.path.dirname(target), exist_ok=True)
-        conn = sqlite3.connect(target, isolation_level=None, timeout=30)
+        conn = sqlite3.connect(target, isolation_level=None, timeout=30, factory=StoreConnection)
     else:
         if not os.path.exists(target):
             raise StoreRefused("incomplete_transaction", "no store at %s to read" % path)
-        conn = sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=30)
+        conn = sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=30, factory=StoreConnection)
     conn.execute("PRAGMA foreign_keys=ON")
     if mode == "rw":
         conn.execute("PRAGMA journal_mode=WAL")
@@ -272,7 +284,7 @@ COMMAND_REGISTRY = {
 }
 
 
-def command_problems(command):
+def command_problems(command, registry=None):
     """Why a command is malformed, by name: a missing field, a blank id or principal, an
     operation outside the registry, expected_versions not a mapping of ids to positive integers,
     artifact_digests not a list of strings, a blank nonce."""
@@ -285,8 +297,9 @@ def command_problems(command):
         problems.append("command_id is blank: every command carries a globally unique id")
     if not _is_str(command["principal"]):
         problems.append("principal is blank: every command carries its authenticated principal")
-    if command["operation"] not in COMMAND_REGISTRY:
-        problems.append("operation %r is not a registered command (%s)" % (command["operation"], ", ".join(sorted(COMMAND_REGISTRY))))
+    registry = COMMAND_REGISTRY if registry is None else registry
+    if command["operation"] not in registry:
+        problems.append("operation %r is not a registered command (%s)" % (command["operation"], ", ".join(sorted(registry))))
     if not isinstance(command["parameters"], dict):
         problems.append("parameters is not a mapping")
     ev = command["expected_versions"]
@@ -343,7 +356,8 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
     the caller's signer (OpenSSH in production; the store holds no key). Returns the committed
     result; an identical retry returns the ORIGINAL result with replayed=True and writes nothing;
     every refusal raises StoreRefused with its name and nothing written."""
-    problems = command_problems(command)
+    registry = dict(COMMAND_REGISTRY, **conn.command_registry)
+    problems = command_problems(command, registry)
     if problems:
         raise StoreRefused("malformed_command", "; ".join(problems))
     if not _is_str(signer) or not isinstance(authority_generation, int) or isinstance(authority_generation, bool) or authority_generation < 1:
@@ -356,6 +370,7 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         conn.execute("BEGIN IMMEDIATE")
     except sqlite3.OperationalError as e:
         raise StoreRefused("read_only_handle", "this handle cannot write (%s): open the store with mode='rw' at a qualified location" % e)
+    conn.command_transaction = True
     try:
         prior = conn.execute("SELECT command_digest, result FROM commands WHERE command_id=?", (command["command_id"],)).fetchone()
         if prior:
@@ -371,8 +386,13 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
             actual = before.get(eid, {}).get("version", 0)
             if actual != expected:
                 raise StoreRefused("stale_version", "entity %s is at version %r, the command expected %r" % (eid, actual, expected))
-        reg = COMMAND_REGISTRY[command["operation"]]
-        changes = reg["transition"](command["parameters"], before)
+        reg = registry[command["operation"]]
+        if "snapshot_id" in command["parameters"] and "transaction_transition" not in reg:
+            raise StoreRefused("unregistered_inputs", "snapshot command requires a connection-local guard")
+        if "transaction_transition" in reg:
+            changes = reg["transaction_transition"](conn, command["parameters"], before)
+        else:
+            changes = reg["transition"](command["parameters"], before)
         for eid in changes:
             if eid not in command["expected_versions"]:
                 raise StoreRefused("stale_version", "entity %s is written without an expected version: a command declares every version it depends on" % eid)
@@ -444,6 +464,9 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         if conn.in_transaction:
             conn.execute("ROLLBACK")
         raise
+
+    finally:
+        conn.command_transaction = False
 
 
 # ---------------------------------------------------------------------------------------------

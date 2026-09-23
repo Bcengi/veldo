@@ -1,0 +1,5 @@
+--- a/.veldo/control_snapshot.py
++++ b/.veldo/control_snapshot.py
+@@ -98 +98 @@
+-            'accepted_commit': snapshot['accepted_commit'], 'watermark': snapshot['watermark'],
++            'accepted_commit': snapshot['accepted_commit'], 'watermark': snapshot['watermark'] + 1,

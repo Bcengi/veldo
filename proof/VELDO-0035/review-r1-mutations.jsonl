@@ -1,0 +1,9 @@
+{"finding": 35, "mutation": "snapshot-project-only", "baseline": "green", "assertions": 57, "red_rows": ["snapshots/stale-input", "snapshots/connection-bound-control"]}
+{"finding": 35, "mutation": "snapshot-ignore-collections", "baseline": "green", "assertions": 57, "red_rows": ["snapshots/stale-input", "snapshots/connection-bound-control"]}
+{"finding": 35, "mutation": "snapshot-checkout-bytes", "baseline": "green", "assertions": 57, "red_rows": ["snapshots/accepted-bytes", "snapshots/materialized-revision"]}
+{"finding": 35, "mutation": "snapshot-head-bytes", "baseline": "green", "assertions": 57, "red_rows": ["snapshots/accepted-bytes", "snapshots/materialized-revision"]}
+{"finding": 35, "mutation": "snapshot-working-status", "baseline": "green", "assertions": 57, "red_rows": ["snapshots/materialized-revision"]}
+{"finding": 35, "mutation": "snapshot-wrong-watermark", "baseline": "green", "assertions": 57, "red_rows": ["snapshots/materialized-revision"]}
+{"finding": 35, "mutation": "snapshot-unguarded-connection", "baseline": "green", "assertions": 57, "red_rows": ["snapshots/connection-bound", "snapshots/connection-bound-control"]}
+{"finding": 35, "mutation": "snapshot-deferred-transaction", "baseline": "green", "assertions": 57, "red_rows": ["snapshots/transaction-bound"]}
+{"mutations_rejected": 8, "green_suites": {"58_veldo_0035_snapshots.py": 57}}

@@ -1,0 +1,12 @@
+{
+  "method": "Diagnostic cost measurement only. Original 296be42 suite versus corrected suite; all 12 snapshot mutations through the unchanged scheduler with fresh baseline/no-op controls. Full verification is the separately recorded complete gate.",
+  "baseline_suite_seconds": 8.328951933886856,
+  "current_suite_seconds": 10.077508965972811,
+  "suite_added_seconds_per_run": 1.7485570320859551,
+  "suite_runs_in_green_gate": 2,
+  "all_snapshot_mutations_seconds": 40.08263074187562,
+  "all_snapshot_added_workload_seconds": 60.23764867382124,
+  "limit_seconds": 60,
+  "mutation_count": 12,
+  "worker_invocations": 18
+}
