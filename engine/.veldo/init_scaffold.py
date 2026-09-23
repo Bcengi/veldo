@@ -79,6 +79,11 @@ _FILES = [
     # VELDO-0023 (PLAN-0019 W8): the control store and the journal replay, the durable control
     # foundation's first two organs; loaded by the suite and by the authority process above it.
     ".veldo/control_store.py",
+    # VELDO-0031: authority claim receiver and caller, not loaded by validators.
+    ".veldo/control_claim.py",
+    ".veldo/control_claim_client.py",
+    ".veldo/control_client.py",
+    ".veldo/control_enrollment.py",
     ".veldo/control_replay.py",
     # VELDO-0024 (PLAN-0019 W9): the signed replica publisher, the store's publication cursor's
     # only client; loaded by the suite, the status reader and the authority process above it.
