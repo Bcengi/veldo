@@ -1,0 +1,5 @@
+--- a/.veldo/runstatus.py
++++ b/.veldo/runstatus.py
+@@ -226 +226 @@
+-        return [], stop.reason
++        return [], None  # defect: the stop reads as an empty burn-down

@@ -1,0 +1,5 @@
+--- a/.veldo/work.py
++++ b/.veldo/work.py
+@@ -142 +142 @@
+-                if not after["eligible"]:
++                if False:

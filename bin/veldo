@@ -146,7 +146,8 @@ class GovernorController:
     against fleet.FleetController so it needs no import-time base class."""
 
     def __init__(self, governor, events_path, clock, scope=None, capabilities=None,
-                 repo_root=None, claims_root=None):
+                 repo_root=None, claims_root=None, eligibility=None):
+        self._eligibility = eligibility
         self._gov = governor
         self._events_path = events_path
         self._clock = clock
@@ -172,14 +173,14 @@ class GovernorController:
     def work_remains(self):
         units = _frontier().claimable(
             worker_caps=self._caps, scope=self._scope,
-            repo_root=self._repo_root, claims_root=self._claims_root)
+            repo_root=self._repo_root, claims_root=self._claims_root, eligibility=self._eligibility)
         return bool(units)
 
 
 def _build_governor_controller(account=None, accounts_root=None, windows=None,
                                scope=None, capabilities=None, repo_root=None,
                                claims_root=None, events_path=None, now=None,
-                               pool_max=None):
+                               pool_max=None, eligibility=None):
     """Assemble the W3 AccountGovernor over the accounts this pool paces, wrapped in
     the thin GovernorController adapter. This is wiring, not new logic: the pacing
     is the governor's, the work-remaining test is the frontier's.
@@ -210,11 +211,19 @@ def _build_governor_controller(account=None, accounts_root=None, windows=None,
     clock = now if callable(now) else _time.time
     return GovernorController(governor, ev_path, clock, scope=scope,
                               capabilities=capabilities, repo_root=repo_root,
-                              claims_root=claims_root)
+                              claims_root=claims_root, eligibility=eligibility)
+
+
+def _entry_gate(repo_root=None, eligibility=None, trust=None):
+    """VELDO-0052: the Gate every front-door entry runs under - the wired one, none in an unenrolled
+    tree, or the one control_eligibility.entry_gate builds from an enrolled repository's signed
+    binding under this host's trust. A named stop is raised and route() reports it."""
+    return _work().EL.entry_gate(str(repo_root or ROOT), eligibility, trust)
 
 
 def cmd_work(account=None, accounts_root=None, repo_root=None, claims_root=None,
-             capabilities=None, scope=None, dispatcher=None, max_units=10000):
+             capabilities=None, scope=None, dispatcher=None, max_units=10000,
+             eligibility=None, calls=None, trust=None):
     """Assemble and run the real single-worker loop: work.veldo_work over a W1
     dispatch.Dispatcher. The Dispatcher defaults wire the executor's LiveLoop build
     hooks and the fresh-context LiveReviewer with no lander, so the intelligent
@@ -230,11 +239,12 @@ def cmd_work(account=None, accounts_root=None, repo_root=None, claims_root=None,
     if account is not None:
         acct = _accounts()
         os.environ[acct.CONFIG_DIR_ENV] = acct.resolve(account, root=accounts_root)
+    gate = _entry_gate(repo_root, eligibility, trust)
     if dispatcher is None:
-        dispatcher = _dispatch().Dispatcher(repo_root=repo_root)
+        dispatcher = _dispatch().Dispatcher(repo_root=repo_root, eligibility=gate, calls=calls)
     result = _work().veldo_work(
         dispatcher, capabilities=capabilities, scope=scope,
-        repo_root=repo_root, claims_root=claims_root, max_units=max_units)
+        repo_root=repo_root, claims_root=claims_root, max_units=max_units, eligibility=gate)
     outcomes = result.get("outcomes", [])
     if any(not (o.get("result") or {}).get("ok") for o in outcomes):
         return 1
@@ -276,7 +286,8 @@ def cmd_fleet(n, account=None, accounts_root=None, scope=None, capabilities=None
         controller = _build_governor_controller(
             account=account, accounts_root=accounts_root, windows=windows,
             scope=scope, capabilities=capabilities, repo_root=repo_root,
-            claims_root=claims_root, events_path=events_path, now=now)
+            claims_root=claims_root, events_path=events_path, now=now,
+            eligibility=_entry_gate(repo_root))
     return fleet.veldo_account_fleet(
         controller, waiter, start, account=account, accounts_root=accounts_root,
         capabilities=capabilities, scope=scope, max_workers=n, max_ticks=max_ticks)
@@ -394,6 +405,11 @@ def route(argv):
         return 2
     except _dispatch().EX.ExecutorError as ex:
         sys.stderr.write("build refused: %s\n" % ex)
+        return 2
+    except (_work().EL.Stopped, _work().CL.ClaimStopped) as ex:
+        # VELDO-0052 / VELDO-0031: a named stop (no host trust, an unverified binding, no claim
+        # authority wired) is said by name and is a nonzero exit, never a traceback.
+        sys.stderr.write("veldo %s stopped: %s\n" % (cmd, ex.reason))
         return 2
 
 

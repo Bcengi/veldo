@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -755 +755 @@
+-        self.close_dispatch(dispatch, 'completed')
++        # defect: a launch that returned normally keeps its worker slot

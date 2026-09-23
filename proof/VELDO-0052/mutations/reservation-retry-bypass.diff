@@ -1,0 +1,9 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -809 +809,5 @@
+-                receipt = guard.invoke(command_id or 'call/' + invocation, self.dispatch, invocation, boundary,
++                if boundary == 'retry':
++                    guard.launch(invocation, configuration)  # defect: retries skip the reservation
++                    receipt = {'replayed': False}
++                else:
++                  receipt = guard.invoke(command_id or 'call/' + invocation, self.dispatch, invocation, boundary,

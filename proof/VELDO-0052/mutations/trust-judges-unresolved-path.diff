@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -259 +259 @@
+-        resolved = os.path.realpath(self.enrollment_signers)
++        resolved = os.path.abspath(self.enrollment_signers)  # defect: symlinks not followed

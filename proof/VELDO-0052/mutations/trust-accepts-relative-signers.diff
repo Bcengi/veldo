@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -252,2 +252 @@
+-        if not os.path.isabs(enrollment_signers):
+-            raise Stopped('host_trust_refused:signers_not_absolute')
++        pass  # defect: a relative signers path resolves against the process's directory

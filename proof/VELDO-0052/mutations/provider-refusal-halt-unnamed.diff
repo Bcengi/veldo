@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -556 +556 @@
+-                        else "reservation refused before %s: %s") % (launch, codes)
++                        else "reservation refused before %s: %s") % (launch, "refused")  # defect

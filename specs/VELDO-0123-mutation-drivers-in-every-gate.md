@@ -104,3 +104,30 @@ Release 1 adds cases. The per-worker bound of 120 seconds is unchanged. Row
 gate/mutation-budget-scales-with-inventory drives the real run_stage and checks the recorded cap, the
 enforced worker deadline and the armed alarm; three mutations (fixed cap, deadline ignoring the scaled
 cap, alarm not re-armed) each turn it red.
+2026-09-23, input closure: the snapshot the mutation workers run in held only .veldo, engine/.veldo,
+scripts and proof, so a suite row reading anything else (the front door bin/veldo, a spec, a plan)
+failed in every baseline there and passed in the checkout. VELDO-0052's production-entries row did
+exactly that and made the gate red with invalid_baseline for all of its cases. read_inputs now
+returns the working tree Git does not ignore, tracked and untracked, minus deleted files, bytecode
+caches and the gate outputs. Row gate/input-closure-is-the-working-tree drives it over a real
+repository; mutations (directory list restored, untracked additions dropped, ignored files kept)
+each turn it red.
+Its review found three reading defects, fixed the same day: names are read as raw bytes and decoded
+with the file system encoding, so a name with leading whitespace is no longer trimmed away and a
+name that is not UTF-8 no longer stops the stage; and the closure is stated honestly as the
+repository's own ignore rules with no global configuration, so ignored machine-local files (such as
+.veldo/trackers.json) are not inputs. Rows now also drive modes, bytecode caches and the refusal of
+a symbolic link (gate/input-closure-refuses-symlinks).
+Its second review found, fixed the same day: a symbolic link as a DIRECTORY above a tracked file,
+hidden by an ignore rule, let the snapshot copy a file from outside the checkout (now refused by
+comparing each file's resolved path with its place in the tree); an untracked nested repository's
+files silently dropped out (now refused by name); an unreadable file stopped the stage with a
+generic error (now refused by name); the docstring now names every ignore source Git applies; and
+the closure row no longer leaks its temporary repository. Row gate/snapshot-holds-exactly-the-closure
+drives snapshot() itself: names, modes and contents in the worker tree equal the closure.
+Its third review (no blockers) led to five follow-ups the same day: a directory Git cannot list,
+about which ls-files only warns while listing less, and a directory whose entries cannot be
+examined are refused by name (gate/input-closure-refuses-incomplete-listings); the closure read
+through a symbolic link to the root is driven (a macOS temporary path is one); the identity the
+race check compares is driven for content, mode and name (gate/race-check-sees-content-mode-and-name);
+and the snapshot row cleans up even when a read raises.
