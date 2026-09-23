@@ -769,6 +769,13 @@ def cases():
     presentation('stored-framing-key-at-any-time',
                  "        if key is None or self.AC.active_key([key], principal, at) is None:\n",
                  "        if key is None:\n", 'framing/stored-framing-reverified')
+    # VELDO-0065 review r5: an answer cannot predate the presentation it answers.
+    presentation('answer-time-unchecked',
+                 "        if ev['platform_timestamp'] < receipt['published_at']:\n"
+                 "            raise Refused('answer_before_publication', 'the platform dates the answer before the presentation it answers')\n",
+                 "", 'answer/not-before-publication')
+    presentation('answer-time-same-second-refused', "        if ev['platform_timestamp'] < receipt['published_at']:\n",
+                 "        if ev['platform_timestamp'] <= receipt['published_at']:\n", 'answer/not-before-publication')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

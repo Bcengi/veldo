@@ -89,6 +89,7 @@ REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_inpu
             'missing_authority': 'missing_authority',
             'missing_presentation': 'missing_evidence', 'unknown_presentation': 'missing_evidence',
             'unseen_presentation': 'missing_evidence', 'evidence_mismatch': 'missing_evidence',
+            'answer_before_publication': 'invalid_input',
             'missing_framing': 'missing_evidence', 'no_enrolled_chat': 'missing_evidence',
             'invalid_enrollment': 'missing_evidence',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
@@ -802,6 +803,8 @@ class Presenter:
         if (not all(type(ev.get(f)) is int for f in ATTRIBUTION_FIELDS)
                 or ev['chat_id'] != receipt['chat_id'] or ev['reply_to_message_id'] != receipt['message_id']):
             raise Refused('evidence_mismatch', 'the platform evidence does not reply to the named presentation message')
+        if ev['platform_timestamp'] < receipt['published_at']:
+            raise Refused('answer_before_publication', 'the platform dates the answer before the presentation it answers')
         if ev['sender_id'] != receipt['enrolled_chat'] or a.get('principal') != receipt['owner']:
             raise Refused('not_owner', 'the sender is not the owner the presentation was shown to')
         request = receipt['request_id']

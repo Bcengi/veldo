@@ -74,7 +74,7 @@ def _v65_checks(base):
                                   'presentation/revision-identity', 'answer/current-presentation-only',
                                   'answer/ruling-and-rationale', 'presentation/visible-supersession',
                                   'answer/unseen-refused', 'answer/settle-consumes-answer', 'framing/requester-only',
-                                  'framing/stored-framing-reverified')}
+                                  'framing/stored-framing-reverified', 'answer/not-before-publication')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -215,13 +215,15 @@ def _v65_checks(base):
             assertion.pop(field, None)
         return presenter.answer(edge_signed(assertion, key))
 
-    def hand_assertion(receipt, message_id, ruling='accept', rationale='the plan fits'):
+    def hand_assertion(receipt, message_id, choice='accept', rationale='the plan fits'):
         """The assertion an edge would sign for a presentation it names directly, with platform evidence."""
         return dict(ids, schema=V.ANSWER_SCHEMA, channel='telegram_chat', assertion_kind='decision_answer',
                     edge_principal='telegram-edge', edge_key_id=edge_key, principal='owner',
                     request_id=receipt['request_id'], request_version=receipt['request_version'],
                     presentation_id=receipt['presentation_id'], presentation_digest=receipt['brief_digest'],
-                    presentation_version=receipt['presentation_version'], ruling=ruling, rationale=rationale,
+                    presentation_version=receipt['presentation_version'], choice=choice,
+                    ruling=V.CHOICE_RULINGS.get(choice, choice) if hasattr(V, 'CHOICE_RULINGS') else choice,
+                    authority_scope=list(receipt.get('request', {}).get('scope', [])), rationale=rationale,
                     attribution={'platform_message_id': message_id, 'sender_id': owner_chat,
                                  'platform_timestamp': 1790000000 + message_id, 'chat_id': owner_chat,
                                  'reply_to_message_id': receipt.get('message_id') or 0})
@@ -689,6 +691,25 @@ def _v65_checks(base):
             direct_frame('pm2', 'P2-2', 1, 'None: nothing can go wrong.')
             check(stored, 'a framing the store accepted after the key was revoked is not presented',
                   reason(presenter.present(p22)) == ('refused', 'missing_framing') and len(api['requests']) == asked)
+
+        # Review r5: an answer cannot predate what it answers
+        order = 'answer/not-before-publication'
+        with section(order):
+            o1 = opened('O-1')
+            presenter.present(o1)
+            o1_r = presenter.current(o1) or {}
+            api['next'] += 1
+            early = hand_assertion(o1_r, api['next'])
+            early['attribution']['platform_timestamp'] = (o1_r.get('published_at') or 0) - 3600
+            check(order, 'an answer timestamped before the presentation was published is refused by name',
+                  reason(presenter.answer(edge_signed(early))) == ('refused', 'answer_before_publication')
+                  and answered(o1, 1) is None)
+            api['next'] += 1
+            same = hand_assertion(o1_r, api['next'])
+            same['attribution']['platform_timestamp'] = o1_r.get('published_at')
+            same_result = presenter.answer(edge_signed(same))
+            check(order, 'control: an answer in the same second as the publication settles',
+                  reason(same_result) == ('accepted', None) and answered(o1, 1) is not None)
     finally:
         server.shutdown()
         server.server_close()
