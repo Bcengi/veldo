@@ -59,6 +59,7 @@ ATTEMPTS = 16
 OWNED_KINDS = frozenset(('artifact_kind', 'alias_reservation', 'alias_source', 'accepted_document',
                          'document_version', 'publication_obligation'))
 OWNED_PREFIXES = ('artifact-kind/', 'alias/', 'alias-source/', 'document/', 'publication/')
+RESERVED_DIRECTORIES = ('.git', '.veldo')
 # The error taxonomy every refusal is reported under. A code missing here is unknown_outcome,
 # never success.
 CATEGORIES = {
@@ -66,7 +67,7 @@ CATEGORIES = {
     'malformed_command': 'invalid_input', 'invalid_registration': 'invalid_input',
     'wrong_repository': 'invalid_input', 'transition_refused': 'invalid_input',
     'missing_authority': 'missing_authority', 'allocation_owned': 'missing_authority',
-    'unregistered_inputs': 'invalid_input',
+    'unregistered_inputs': 'invalid_input', 'reserved_path': 'invalid_input',
     'stale_version': 'stale_subject', 'stale_document': 'stale_subject',
     'source_content_conflict': 'stale_subject', 'command_content_conflict': 'stale_subject',
     'publication_conflict': 'stale_subject', 'publication_order': 'stale_subject',
@@ -252,6 +253,17 @@ def _meet(first, second, directories=True):
                 seen.add(move)
                 pending.append(move)
     return False
+
+
+def _reserved_problem(kind):
+    """Why some path the kind can declare lies under .git/ or .veldo/ (Git's own data, the claim
+    ledger and the other control files), in any case, at any depth or through a placeholder."""
+    for component in kind['path_template'].split('/'):
+        items = _items(dict(kind, path_template=component))
+        for name in RESERVED_DIRECTORIES:
+            if _meet(items, _literal(name), directories=False):
+                return 'path_template can reach %s/, which the repository reserves' % name
+    return None
 
 
 def _template_problem(kind):
@@ -542,6 +554,9 @@ class Allocations:
         problem = _template_problem(data)
         if problem is not None:
             self._refuse('invalid_input', problem)
+        problem = _reserved_problem(data)
+        if problem is not None:
+            self._refuse('reserved_path', problem)
         # One repository's kinds share one checkout: no two may declare one path, or a path that
         # is a directory of another kind's path.
         for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='artifact_kind'"):

@@ -113,7 +113,7 @@ def _s37_run():
         g(origin, 'init', '-q')
         existing = {'specs/VELDO-0001-first.md': b'# first\n', 'specs/VELDO-0003-third.md': b'# third\n',
                     'specs/notes.md': b'not an alias\n', 'plans/PLAN-0002-second.md': b'# plan two\n',
-                    '.veldo/decisions/0004-choice.yaml': b'id: four\n'}
+                    'decisions/0004-choice.yaml': b'id: four\n'}
         for path, body in existing.items():
             (origin / path).parent.mkdir(parents=True, exist_ok=True)
             (origin / path).write_bytes(body)
@@ -206,7 +206,7 @@ def _s37_run():
         # --- enabling kinds: first numbers come once from an exact accepted commit (C9) -----
         kinds = {'specification': ('VELDO', 'specs/{alias}-{slug}.md'),
                  'plan': ('PLAN', 'plans/{alias}-{slug}.md'),
-                 'decision': ('VELDO-DEC', '.veldo/decisions/{number}-{slug}.yaml')}
+                 'decision': ('VELDO-DEC', 'decisions/{number}-{slug}.yaml')}
         firsts = {}
         for kind, (prefix, template) in kinds.items():
             config = {'prefix': prefix, 'width': 4, 'path_template': template}
@@ -322,7 +322,7 @@ def _s37_run():
         plan_request, decision_request = variants[4][1], variants[5][1]
         targets = {'VELDO-0004': (request_a, doc_a, 'specs/VELDO-0004-api-contract.md'),
                    'PLAN-0003': (plan_request, plan_doc, 'plans/PLAN-0003-journey-plan.md'),
-                   'VELDO-DEC-0005': (decision_request, decision_doc, '.veldo/decisions/0005-store-choice.yaml')}
+                   'VELDO-DEC-0005': (decision_request, decision_doc, 'decisions/0005-store-choice.yaml')}
         publications = {alias: publish(alias, 1)[0] for alias in targets}
         observed = child_read(sorted(targets))
         expected = {alias: {'version': 1, 'digest': _s37_digest(body), 'source': item['source'], 'role': item['role'],
@@ -743,6 +743,25 @@ def _s37_run():
         expect('aliases/case-insensitive-names', folded == {'specification': None, 'prefix-case': 'invalid_registration',
                'upper-directory': None, 'lower-directory': 'invalid_registration', 'non-ascii': 'invalid_input',
                'counter': 3})
+        env.conn.close()
+
+        # 8. No template may reach .git/ or .veldo/ (the repository's own Git data, the claim
+        # ledger and the other control files), in any case, nested, or through a placeholder.
+        env = fresh('reserved')
+        reserved = {}
+        for label, kind, prefix, template in [
+                ('git', 'gitkind', 'GITA', '.git/{alias}.md'),
+                ('veldo-ledger', 'ledgerkind', 'VLDA', '.veldo/claims/{alias}.json'),
+                ('nested-upper-git', 'nestedkind', 'NEST', 'packs/x/.GIT/{number}.md'),
+                ('slug-makes-git', 'slugkind', 'SLUG', 'docs/.{slug}/{alias}.md'),
+                ('mixed-case-veldo', 'mixedkind', 'MIXV', '.Veldo/{alias}.md'),
+                ('github-allowed', 'githubkind', 'GHUB', '.github/{alias}.md')]:
+            _, error = enable(env, kind, prefix, template)
+            reserved[label] = code(error)
+        defects['reserved'] = reserved
+        expect('aliases/reserved-directories', reserved == {'git': 'reserved_path', 'veldo-ledger': 'reserved_path',
+               'nested-upper-git': 'reserved_path', 'slug-makes-git': 'reserved_path',
+               'mixed-case-veldo': 'reserved_path', 'github-allowed': None})
         env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations

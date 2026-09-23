@@ -480,6 +480,11 @@ def cases():
     aliases('alias-paths-case-sensitive', 'control_alias.py',
             '    return [(frozenset(character), False) for character in text.casefold()]',
             '    return [(frozenset(character), False) for character in text]', 'aliases/case-insensitive-names')
+    aliases('alias-reserved-unchecked', 'control_alias.py',
+            '        problem = _reserved_problem(data)\n', '        problem = None\n', 'aliases/reserved-directories')
+    aliases('alias-reserved-literal-only', 'control_alias.py',
+            '            if _meet(items, _literal(name), directories=False):', '            if component == name:',
+            'aliases/reserved-directories')
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')
