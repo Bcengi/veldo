@@ -1,9 +1,9 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -456 +456 @@
+@@ -453 +453 @@
 -        spec = self._spec('eligibility_validator_snapshot', str(installed / 'validate.py'))
 +        spec = self._spec('eligibility_validator_snapshot', str(installed / 'validate_checks.py'))
-@@ -459 +459,2 @@
+@@ -456 +456,2 @@
 -        self.validate, self.arch = module, module.entry_validator()
 +        module.parse_yamlish = module._Y.parse  # defect: around validate.py
 +        self.validate, self.arch = module, module._arch_module()

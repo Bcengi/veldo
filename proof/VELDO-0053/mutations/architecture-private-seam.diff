@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -480 +480 @@
+@@ -481 +481 @@
 -        return self.validate.entry_contract(workspace, required, arch=self.arch)
 +        return self.validate._VC.entry_contract(workspace, required, arch=self.arch)  # defect: around the public name

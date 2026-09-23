@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -457 +457 @@
+-        self.identity = {role: {'path': str(installed / name), 'digest': 'sha256:' + hashlib.sha256(bodies[name]).hexdigest()}
++        self.identity = {role: {'path': str(installed / name), 'digest': 'sha256:' + hashlib.sha256(bodies[name] if name != 'arch.py' else (installed / name).read_bytes()).hexdigest()}  # defect: arch.py digested from a second read

@@ -29,7 +29,7 @@
       "validator": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20"
      }
     },
-    "decision_id": "a6971e35-1cbc-4fb1-bd3c-f9c5a176ca7a",
+    "decision_id": "b226e6ad-b28e-4e52-af72-540276628b50",
     "domain_uuid": "domain-53",
     "follows": null,
     "operation": "selection",
@@ -71,7 +71,7 @@
       "validator": "sha256:9b0bf251565efa5ba65e8d69f5815a8d8cbfd09884b1c77639248880f6cc6b20"
      }
     },
-    "decision_id": "3c711666-23e7-46b2-85c2-7ada82a2bc19",
+    "decision_id": "9be479e7-31db-44bf-a966-dd57d6b92f26",
     "domain_uuid": "domain-53",
     "follows": null,
     "operation": "claim",
@@ -316,11 +316,29 @@
   "snapshot_in_memory": {
    "engine_loads_from_disk": 0,
    "left_on_disk": [],
+   "link_farm": {
+    "recorded_arch_is_bytes_read": true,
+    "refusals": [
+     "invalid_input:architecture/invalid_structure"
+    ]
+   },
    "recorded_is_installed": true,
    "refusals": [
     "invalid_input:architecture/invalid_structure"
    ],
-   "swapped": 0
+   "rewritten_after_read": {
+    "recorded_is_bytes_read": true,
+    "refusals": [
+     "invalid_input:architecture/invalid_structure"
+    ]
+   },
+   "swapped": 0,
+   "writes_after_the_one_read": 2
+  },
+  "snapshot_source": {
+   "get_source_is_held": true,
+   "getsource_first_line": "def read_contract(path, parse):",
+   "traceback_line_is_the_line_that_ran": true
   },
   "state_kinds": {
    "malformed_not_mapping": "parse_failure",
@@ -555,7 +573,7 @@
    "wrong_type_fifo": 1
   }
  },
- "passed": 25,
+ "passed": 27,
  "rows": [
   [
    "VELDO-0053 architecture/store-only-refuses",
@@ -599,6 +617,10 @@
   ],
   [
    "VELDO-0053 architecture/snapshot-in-memory",
+   true
+  ],
+  [
+   "VELDO-0053 architecture/snapshot-source",
    true
   ],
   [
@@ -646,6 +668,10 @@
    true
   ],
   [
+   "VELDO-0053 ran/architecture/snapshot-source",
+   true
+  ],
+  [
    "VELDO-0053 ran/architecture/not-text-refused",
    true
   ],
@@ -659,5 +685,5 @@
   ]
  ],
  "suite": "60_veldo_0053_architecture.py",
- "suite_seconds": 1.167
+ "suite_seconds": 1.327
 }

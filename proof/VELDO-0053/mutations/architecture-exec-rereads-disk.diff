@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -420 +420 @@
+-        exec(compile(self.body, origin, 'exec', dont_inherit=True), module.__dict__)
++        exec(compile(Path(origin).read_bytes(), origin, 'exec', dont_inherit=True), module.__dict__)  # defect: compiled from a second read of the disk

@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -449 +449 @@
+@@ -446 +446 @@
 -        util.spec_from_file_location = self._spec
 +        pass  # defect: a sibling loaded by path is read from disk

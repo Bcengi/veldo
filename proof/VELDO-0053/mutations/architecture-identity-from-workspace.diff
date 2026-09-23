@@ -1,6 +1,6 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -814 +814,3 @@
+@@ -815 +815,3 @@
 -            found['validator'] = {role: dict(entry) for role, entry in snapshot.identity.items()}
 +            found['validator'] = {role: {'path': os.path.join(self.workspace, '.veldo', os.path.basename(entry['path'])),
 +                                         'digest': entry['digest']}

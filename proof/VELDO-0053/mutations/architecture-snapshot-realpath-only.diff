@@ -1,0 +1,10 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -470,2 +470,2 @@
+-        if location is not None:
+-            found = self._origins.get(os.path.abspath(str(location))) or self._origins.get(os.path.realpath(str(location)))
++        if location is not None and os.path.realpath(str(location)) in {str(self._installed / n) for n in self._bodies}:
++            found = os.path.basename(os.path.realpath(str(location)))
+@@ -473 +473 @@
+-            raise ImportError('the validator snapshot holds no engine file at %r' % (location,))
++            raise ImportError('the validator snapshot holds no engine file at %r' % (location,))  # defect

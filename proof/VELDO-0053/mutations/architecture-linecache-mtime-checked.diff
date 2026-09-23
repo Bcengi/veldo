@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -419 +419 @@
+-        linecache.cache[origin] = (len(self.body), None, importlib.util.decode_source(self.body).splitlines(True), origin)
++        linecache.cache[origin] = (len(self.body), os.stat(origin).st_mtime, importlib.util.decode_source(self.body).splitlines(True), origin)  # defect: checkcache drops it after an edit
