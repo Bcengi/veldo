@@ -99,3 +99,11 @@ checked through both readers and the oracle in 0.737 seconds. The projected
 full-product checking time alone is 151.9 seconds, so construction uses coverage.
 The initial measurement retains the root-scalar classification discrepancy;
 root scalars require syntax refusal under the documented shared dialect.
+
+The final coverage construction has 8,196 inputs: 6,180 witness/site embeddings,
+1,792 direct scalar lexical placements, 133 schema partitions and spellings, and
+91 additional edits directly on policy nodes. Both unchanged shipped readers
+agree with every independent observation. Added gate work measured 22.882 seconds
+(two suite executions plus the isolated required mutation stage), below the
+owner's 60-second ceiling. The owner's policy file and its interpretation are
+unchanged. This remains ready pending independent review and landing.

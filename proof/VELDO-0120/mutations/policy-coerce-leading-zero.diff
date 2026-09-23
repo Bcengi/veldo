@@ -1,0 +1,5 @@
+--- a/.veldo/fix_validation_record.py
++++ b/.veldo/fix_validation_record.py
+@@ -262 +262 @@
+-        block[START_KEY] = str(block[START_KEY])
++        block[START_KEY] = str(int(block[START_KEY])) if str(block[START_KEY]).isdigit() else str(block[START_KEY])

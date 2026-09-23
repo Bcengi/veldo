@@ -271,6 +271,8 @@ else:
     except ImportError:  # noqa: BLE001 - absence is a stand-down, named in the row
         _v106_yaml = None
 
+    # Historical regression examples only. Complete generated qualification, including
+    # leading zeros without exclusions, is enforced by 57_veldo_0120_policygrammar.py.
     def _v106_oracle(text):
         doc = _v106_yaml.safe_load(text) or {}
         block = doc.get("fix_validation") if isinstance(doc, dict) else None

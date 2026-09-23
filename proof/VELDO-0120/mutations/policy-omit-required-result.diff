@@ -1,0 +1,8 @@
+--- a/scripts/fixtures/policy_agreement.py
++++ b/scripts/fixtures/policy_agreement.py
+@@ -198,0 +199,5 @@
++    if omit is not None:
++        cases = cases[1:]
++        expected = expected.copy()
++        del expected[next(iter(expected))]
++        omit = None

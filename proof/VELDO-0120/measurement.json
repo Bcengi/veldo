@@ -1,33 +1,42 @@
 {
   "boundary_yaml": {
-    "invalid_yaml": 903,
-    "valid_yaml": 926
+    "invalid_yaml": 942,
+    "valid_yaml": 978
   },
-  "compared": 8105,
-  "compared_digest": "c4560cc6bfd3c40faa3a47a12bf65d4159bc288293e59d77e134133403e4156a",
+  "compared": 8196,
+  "compared_digest": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
   "comparison_complete": true,
   "construction": "coverage: each witness and boundary at each site, every scalar in both fields, schema partitions",
   "coverage_by_family": {
     "partition": 133,
+    "policy-boundary": 91,
     "scalar": 1792,
     "witness": 6180
   },
   "executed_digests": {
-    "engine": "c4560cc6bfd3c40faa3a47a12bf65d4159bc288293e59d77e134133403e4156a",
-    "repository": "c4560cc6bfd3c40faa3a47a12bf65d4159bc288293e59d77e134133403e4156a"
+    "engine": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+    "repository": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67"
   },
-  "expected_digest": "c4560cc6bfd3c40faa3a47a12bf65d4159bc288293e59d77e134133403e4156a",
+  "expected_digest": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
   "failures": [],
+  "fixture_digest": "ebcbc5610de0c3f96de6328d84497cf03dbbc171e4f9c6816921e4aa3211ef3f",
+  "fixture_version": "veldo.yamlish-grammar/2",
   "full_cross_product": 1668600,
-  "generated": 8105,
-  "generation_seconds": 1.8619249579496682,
+  "generated": 8196,
+  "generation_seconds": 1.8957784140948206,
   "grammar_counts": {
     "boundary": 457,
     "lexical": 934,
     "pair": 132,
     "production": 22
   },
+  "implementation_digests": {
+    "engine": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+    "repository": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1"
+  },
+  "input_digest": "db4989d2ec4dc46c16830e0ee915b075c4332a1316d677ce7598d21b5be7819b",
   "inventory_complete": true,
+  "observations_sha256": "3e710f57caa99d54dd865ac001083707d288d913751bcb2548eea15ec77405af",
   "oracle_errors": 0,
   "oracle_state": "available",
   "oracle_version": "6.0.1",
@@ -35,15 +44,23 @@
     "engine": {
       "policy_shape_refused": 3254,
       "settings": 3022,
-      "syntax_refused": 1829
+      "syntax_refused": 1920
     },
     "repository": {
       "policy_shape_refused": 3254,
       "settings": 3022,
-      "syntax_refused": 1829
+      "syntax_refused": 1920
     }
   },
+  "owner_policy": {
+    "settings": {
+      "from_commit": "5c6473325b19604b9b1d28b8af8eb488a4a64e8c",
+      "required": true,
+      "state": "settings"
+    },
+    "sha256": "e572f1577d818a3976cfea706544ed87c0e979f73416b4994a6962f9e8133306"
+  },
   "qualified": true,
-  "seconds": 0.743028226075694,
+  "seconds": 0.8196392739191651,
   "unobserved": 0
 }

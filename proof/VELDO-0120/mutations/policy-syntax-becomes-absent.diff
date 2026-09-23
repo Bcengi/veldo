@@ -1,0 +1,5 @@
+--- a/.veldo/fix_validation_record.py
++++ b/.veldo/fix_validation_record.py
+@@ -243 +243 @@
+-        raise ValidationError(f"{policy_path}: {exc}") from exc
++        return {}

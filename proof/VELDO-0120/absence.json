@@ -1,0 +1,183 @@
+{
+  "command": "python3 -S scripts/selftest.py --suite 57_veldo_0120_policygrammar",
+  "policyread/agreement": {
+    "boundary_yaml": {
+      "oracle_unavailable": 1920
+    },
+    "compared": 0,
+    "compared_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "comparison_complete": false,
+    "executed_digests": {
+      "engine": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+      "repository": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67"
+    },
+    "expected_digest": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+    "failures": [],
+    "fixture_digest": "ebcbc5610de0c3f96de6328d84497cf03dbbc171e4f9c6816921e4aa3211ef3f",
+    "fixture_version": "veldo.yamlish-grammar/2",
+    "generated": 8196,
+    "implementation_digests": {
+      "engine": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+      "repository": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1"
+    },
+    "inventory_complete": true,
+    "oracle_errors": 0,
+    "oracle_state": "oracle_unavailable",
+    "oracle_version": null,
+    "outcomes": {
+      "engine": {
+        "policy_shape_refused": 3254,
+        "settings": 3022,
+        "syntax_refused": 1920
+      },
+      "repository": {
+        "policy_shape_refused": 3254,
+        "settings": 3022,
+        "syntax_refused": 1920
+      }
+    },
+    "qualified": false,
+    "seconds": 0.636521615087986,
+    "suite_seconds": 5.128462285967544,
+    "unobserved": 8196
+  },
+  "policyread/oracle-controls": {
+    "absent": {
+      "boundary_yaml": {
+        "oracle_unavailable": 1920
+      },
+      "compared": 0,
+      "compared_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "comparison_complete": false,
+      "executed_digests": {
+        "engine": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+        "repository": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67"
+      },
+      "expected_digest": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+      "failures": [],
+      "generated": 8196,
+      "inventory_complete": true,
+      "oracle_errors": 0,
+      "oracle_state": "oracle_unavailable",
+      "oracle_version": null,
+      "outcomes": {
+        "engine": {
+          "policy_shape_refused": 3254,
+          "settings": 3022,
+          "syntax_refused": 1920
+        },
+        "repository": {
+          "policy_shape_refused": 3254,
+          "settings": 3022,
+          "syntax_refused": 1920
+        }
+      },
+      "qualified": false,
+      "seconds": 0.650617809034884,
+      "unobserved": 8196
+    },
+    "broken-import": {
+      "boundary_yaml": {
+        "oracle_error": 1920
+      },
+      "compared": 0,
+      "compared_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "comparison_complete": false,
+      "executed_digests": {
+        "engine": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+        "repository": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67"
+      },
+      "expected_digest": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+      "failures": [],
+      "generated": 8196,
+      "inventory_complete": true,
+      "oracle_errors": 8196,
+      "oracle_state": "oracle_error",
+      "oracle_version": null,
+      "outcomes": {
+        "engine": {
+          "policy_shape_refused": 3254,
+          "settings": 3022,
+          "syntax_refused": 1920
+        },
+        "repository": {
+          "policy_shape_refused": 3254,
+          "settings": 3022,
+          "syntax_refused": 1920
+        }
+      },
+      "qualified": false,
+      "seconds": 0.636162871029228,
+      "unobserved": 8196
+    },
+    "broken-runtime": {
+      "boundary_yaml": {
+        "oracle_error": 1920
+      },
+      "compared": 0,
+      "compared_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "comparison_complete": false,
+      "executed_digests": {
+        "engine": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+        "repository": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67"
+      },
+      "expected_digest": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+      "failures": [],
+      "generated": 8196,
+      "inventory_complete": true,
+      "oracle_errors": 8196,
+      "oracle_state": "available",
+      "oracle_version": "broken",
+      "outcomes": {
+        "engine": {
+          "policy_shape_refused": 3254,
+          "settings": 3022,
+          "syntax_refused": 1920
+        },
+        "repository": {
+          "policy_shape_refused": 3254,
+          "settings": 3022,
+          "syntax_refused": 1920
+        }
+      },
+      "qualified": false,
+      "seconds": 0.666911972919479,
+      "unobserved": 8196
+    },
+    "omitted": {
+      "boundary_yaml": {
+        "oracle_unavailable": 1920
+      },
+      "compared": 0,
+      "compared_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "comparison_complete": false,
+      "executed_digests": {
+        "engine": "34fd589085dcfbc58dc9f7dad0ebf5901b8d3e192e17fc71d22ad688f1b37345",
+        "repository": "34fd589085dcfbc58dc9f7dad0ebf5901b8d3e192e17fc71d22ad688f1b37345"
+      },
+      "expected_digest": "cbe4e96abf77235cd700f1c15f44be0a6808fcb70cd2bd4b4c7682f5fab7fd67",
+      "failures": [],
+      "generated": 8196,
+      "inventory_complete": false,
+      "oracle_errors": 0,
+      "oracle_state": "oracle_unavailable",
+      "oracle_version": null,
+      "outcomes": {
+        "engine": {
+          "policy_shape_refused": 3254,
+          "settings": 3021,
+          "syntax_refused": 1920
+        },
+        "repository": {
+          "policy_shape_refused": 3254,
+          "settings": 3021,
+          "syntax_refused": 1920
+        }
+      },
+      "qualified": false,
+      "seconds": 0.6474364639725536,
+      "unobserved": 8196
+    }
+  },
+  "scope": "Development control only; partial suite output is not gate evidence."
+}

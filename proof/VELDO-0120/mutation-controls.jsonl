@@ -1,0 +1,7 @@
+{"finding": 120, "mutation": "policy-strip-quoted-hash", "baseline": "green", "assertions": 29, "red_rows": ["policyread/generated-settings-agree", "policyread/generated-oracle-coverage-is-honest"]}
+{"finding": 120, "mutation": "policy-coerce-leading-zero", "baseline": "green", "assertions": 29, "red_rows": ["policyread/generated-settings-agree", "policyread/generated-oracle-coverage-is-honest"]}
+{"finding": 120, "mutation": "policy-syntax-becomes-absent", "baseline": "green", "assertions": 29, "red_rows": ["policyread/generated-invalid-is-not-absent", "policyread/generated-oracle-coverage-is-honest"]}
+{"finding": 120, "mutation": "policy-shape-becomes-absent", "baseline": "green", "assertions": 29, "red_rows": ["policyread/generated-invalid-is-not-absent", "policyread/generated-oracle-coverage-is-honest"]}
+{"finding": 120, "mutation": "policy-absent-oracle-qualifies", "baseline": "green", "assertions": 29, "red_rows": ["policyread/generated-oracle-coverage-is-honest"]}
+{"finding": 120, "mutation": "policy-omit-required-result", "baseline": "green", "assertions": 29, "red_rows": ["policyread/generated-oracle-coverage-is-honest"]}
+{"mutations_rejected": 6, "green_suites": {"57_veldo_0120_policygrammar.py": 29}}

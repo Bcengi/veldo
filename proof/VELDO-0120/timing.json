@@ -1,0 +1,3022 @@
+{
+  "added_mutation_stage": {
+    "drivers": {
+      "check_review_mutations.py": {
+        "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "registered": 0,
+        "wall_seconds": 0,
+        "worker_seconds": 0.0
+      },
+      "check_teeth_mutations.py": {
+        "inventory_digest": "e941200b530af5f7957252cd50838ca1db705306a85b6c86597c7df3243d590c",
+        "registered": 6,
+        "wall_seconds": 11.738526568049565,
+        "worker_seconds": 35.80799565091729
+      }
+    },
+    "elapsed": 12.293548439163715,
+    "executed": 6,
+    "implementation_digest": "61306cddfb4cca299469f11a2ed969b256600db12e56d77fe96d88cc6417bf54",
+    "input_digest": "312b50431b78775518b57962fcd8f863232886b6bc6006890070c732eeac27fa",
+    "invalid_results": [],
+    "registered": 6,
+    "rejected": 6,
+    "results": [
+      {
+        "baseline": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              true
+            ]
+          }
+        },
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 120,
+          "identity": "check_teeth_mutations.py:policy-strip-quoted-hash",
+          "module": "fix_validation_record.py",
+          "name": "policy-strip-quoted-hash",
+          "new": "        block[START_KEY] = str(block[START_KEY]).split('#', 1)[0]",
+          "old": "        block[START_KEY] = str(block[START_KEY])",
+          "rows": [
+            "policyread/generated-settings-agree"
+          ],
+          "suite": "57_veldo_0120_policygrammar.py"
+        },
+        "elapsed": 5.982453394914046,
+        "fixture_version": 1,
+        "mutant": {
+          "count": 29,
+          "failed_rows": [
+            "policyread/generated-settings-agree",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              false
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              false
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              false
+            ]
+          }
+        },
+        "new_digest": "1cfe12299d24e69b47ec5588eb9ed38d4b40ff5d74c4cc34e6a9ca1a98a5878f",
+        "noop": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              true
+            ]
+          }
+        },
+        "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+        "replacement_count": 1,
+        "schema": "veldo.mutation-result/v1"
+      },
+      {
+        "baseline": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              true
+            ]
+          }
+        },
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 120,
+          "identity": "check_teeth_mutations.py:policy-coerce-leading-zero",
+          "module": "fix_validation_record.py",
+          "name": "policy-coerce-leading-zero",
+          "new": "        block[START_KEY] = str(int(block[START_KEY])) if str(block[START_KEY]).isdigit() else str(block[START_KEY])",
+          "old": "        block[START_KEY] = str(block[START_KEY])",
+          "rows": [
+            "policyread/generated-settings-agree"
+          ],
+          "suite": "57_veldo_0120_policygrammar.py"
+        },
+        "elapsed": 6.022051970008761,
+        "fixture_version": 1,
+        "mutant": {
+          "count": 29,
+          "failed_rows": [
+            "policyread/generated-settings-agree",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              false
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              false
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              false
+            ]
+          }
+        },
+        "new_digest": "35d05a572550524e79a586f00e80979aa01b6147746e23e9658c30793efd9761",
+        "noop": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              true
+            ]
+          }
+        },
+        "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+        "replacement_count": 1,
+        "schema": "veldo.mutation-result/v1"
+      },
+      {
+        "baseline": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              true
+            ]
+          }
+        },
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 120,
+          "identity": "check_teeth_mutations.py:policy-syntax-becomes-absent",
+          "module": "fix_validation_record.py",
+          "name": "policy-syntax-becomes-absent",
+          "new": "        return {}",
+          "old": "        raise ValidationError(f\"{policy_path}: {exc}\") from exc",
+          "rows": [
+            "policyread/generated-invalid-is-not-absent"
+          ],
+          "suite": "57_veldo_0120_policygrammar.py"
+        },
+        "elapsed": 5.981542365159839,
+        "fixture_version": 1,
+        "mutant": {
+          "count": 29,
+          "failed_rows": [
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              false
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              false
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-invalid-is-not-absent": [
+              false
+            ]
+          }
+        },
+        "new_digest": "bea19ec71662d94205770d3ea510404454fc2533516c41d341b3d62306494e38",
+        "noop": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              true
+            ]
+          }
+        },
+        "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+        "replacement_count": 1,
+        "schema": "veldo.mutation-result/v1"
+      },
+      {
+        "baseline": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              true
+            ]
+          }
+        },
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 120,
+          "identity": "check_teeth_mutations.py:policy-shape-becomes-absent",
+          "module": "fix_validation_record.py",
+          "name": "policy-shape-becomes-absent",
+          "new": "        return {}",
+          "old": "        raise ValidationError(f\"{policy_path}: {FLAG_KEY} must be a nonempty mapping\")",
+          "rows": [
+            "policyread/generated-invalid-is-not-absent"
+          ],
+          "suite": "57_veldo_0120_policygrammar.py"
+        },
+        "elapsed": 5.920807271962985,
+        "fixture_version": 1,
+        "mutant": {
+          "count": 29,
+          "failed_rows": [
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              false
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              false
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-invalid-is-not-absent": [
+              false
+            ]
+          }
+        },
+        "new_digest": "283443fce6208b56a34a36e588312cfe54d84002e266810177014064ca98aa9e",
+        "noop": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-settings-agree": [
+              true
+            ]
+          }
+        },
+        "old_digest": "0a0cfe6899ab59f748e4191d313a9a4a7287299e7673ccbac5b4a23ba72da0f1",
+        "replacement_count": 1,
+        "schema": "veldo.mutation-result/v1"
+      },
+      {
+        "baseline": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-oracle-coverage-is-honest": [
+              true
+            ]
+          }
+        },
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 120,
+          "fixture": true,
+          "identity": "check_teeth_mutations.py:policy-absent-oracle-qualifies",
+          "module": "policy_agreement.py",
+          "name": "policy-absent-oracle-qualifies",
+          "new": "    return (report['oracle_state'] == 'oracle_unavailable' or report['oracle_state'] == 'available' and report['inventory_complete']",
+          "old": "    return (report['oracle_state'] == 'available' and report['inventory_complete']",
+          "rows": [
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "suite": "57_veldo_0120_policygrammar.py"
+        },
+        "elapsed": 5.9607891358900815,
+        "fixture_version": 1,
+        "mutant": {
+          "count": 29,
+          "failed_rows": [
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              false
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-oracle-coverage-is-honest": [
+              false
+            ]
+          }
+        },
+        "new_digest": "ab79cdf509af8ebc4127db5e1d5f314e99760a4f8c5d983f0775dbbfb030d58f",
+        "noop": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-oracle-coverage-is-honest": [
+              true
+            ]
+          }
+        },
+        "old_digest": "f7bb83785a63df1b3c12879dbb4bd38db3d6120b52d483e377ac971b989dbba9",
+        "replacement_count": 1,
+        "schema": "veldo.mutation-result/v1"
+      },
+      {
+        "baseline": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-oracle-coverage-is-honest": [
+              true
+            ]
+          }
+        },
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 120,
+          "fixture": true,
+          "identity": "check_teeth_mutations.py:policy-omit-required-result",
+          "module": "policy_agreement.py",
+          "name": "policy-omit-required-result",
+          "new": "    if omit is not None:\n        cases = cases[1:]\n        expected = expected.copy()\n        del expected[next(iter(expected))]\n        omit = None\n    executed = {name: Counter() for name in readers}",
+          "old": "    executed = {name: Counter() for name in readers}",
+          "rows": [
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "suite": "57_veldo_0120_policygrammar.py"
+        },
+        "elapsed": 5.940351512981579,
+        "fixture_version": 1,
+        "mutant": {
+          "count": 29,
+          "failed_rows": [
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              false
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-oracle-coverage-is-honest": [
+              false
+            ]
+          }
+        },
+        "new_digest": "407f870945274849b80c876b0d1b3ffb00de897f2298b0c0e9ef984069cfc6b6",
+        "noop": {
+          "count": 29,
+          "failed_rows": [],
+          "observations": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "policyread/generated-settings-agree",
+              true
+            ],
+            [
+              "policyread/generated-invalid-is-not-absent",
+              true
+            ],
+            [
+              "policyread/generated-oracle-coverage-is-honest",
+              true
+            ]
+          ],
+          "row_names": [
+            "good spec accepted",
+            "spec without criteria rejected",
+            "unknown evidence kind rejected",
+            "bad status rejected",
+            "invented proof criterion rejected",
+            "missing proof criterion rejected",
+            "absent required evidence rejected",
+            "passed-without-evidence rejected",
+            "bad verdict value rejected",
+            "good plan accepted",
+            "plan dependency cycle rejected",
+            "dangling dependency rejected",
+            "unknown outcome ref rejected",
+            "unknown feature ref rejected",
+            "undeclared depends_on rejected",
+            "ready without approval rejected",
+            "decision without blocks rejected",
+            "decision blocking unknown spec rejected",
+            "duplicate work spec rejected",
+            "bad release mode rejected",
+            "mirror mismatch rejected",
+            "correct mirror accepted",
+            "spec binding to wrong plan rejected",
+            "spec claiming missing work item rejected",
+            "spec plan without work rejected",
+            "correct spec binding accepted",
+            "policyread/generated-settings-agree",
+            "policyread/generated-invalid-is-not-absent",
+            "policyread/generated-oracle-coverage-is-honest"
+          ],
+          "targets": {
+            "policyread/generated-oracle-coverage-is-honest": [
+              true
+            ]
+          }
+        },
+        "old_digest": "f7bb83785a63df1b3c12879dbb4bd38db3d6120b52d483e377ac971b989dbba9",
+        "replacement_count": 1,
+        "schema": "veldo.mutation-result/v1"
+      }
+    ],
+    "schema": "veldo.mutation-stage/v1",
+    "status": "passed",
+    "surviving_workers": 0,
+    "worker_invocations": 10
+  },
+  "conservative_added_gate_seconds": 22.881681656930596,
+  "method": "two unit executions (unit and first-use integration), plus isolated added mutations including setup",
+  "unit_seconds": 5.2940666088834405
+}

@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/policy_agreement.py
++++ b/scripts/fixtures/policy_agreement.py
+@@ -192 +192 @@
+-    return (report['oracle_state'] == 'available' and report['inventory_complete']
++    return (report['oracle_state'] == 'oracle_unavailable' or report['oracle_state'] == 'available' and report['inventory_complete']

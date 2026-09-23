@@ -171,6 +171,35 @@ def cases():
               "    if omit is not None:\n        cases = cases[1:]\n        omit = None\n"
               "    required = Counter(identity(case) for case in cases)",
               'agreement-requires-full-oracle-domain', fixture=True)
+    def policy(name, module, old, new, row, fixture=False):
+        add(120, name, '57_veldo_0120_policygrammar.py', module, old, new, ['policyread/' + row])
+        if fixture:
+            result[-1]['fixture'] = True
+
+    policy('policy-strip-quoted-hash', 'fix_validation_record.py',
+           '        block[START_KEY] = str(block[START_KEY])',
+           "        block[START_KEY] = str(block[START_KEY]).split('#', 1)[0]",
+           'generated-settings-agree')
+    policy('policy-coerce-leading-zero', 'fix_validation_record.py',
+           '        block[START_KEY] = str(block[START_KEY])',
+           '        block[START_KEY] = str(int(block[START_KEY])) if str(block[START_KEY]).isdigit() else str(block[START_KEY])',
+           'generated-settings-agree')
+    policy('policy-syntax-becomes-absent', 'fix_validation_record.py',
+           '        raise ValidationError(f"{policy_path}: {exc}") from exc',
+           '        return {}', 'generated-invalid-is-not-absent')
+    policy('policy-shape-becomes-absent', 'fix_validation_record.py',
+           '        raise ValidationError(f"{policy_path}: {FLAG_KEY} must be a nonempty mapping")',
+           '        return {}', 'generated-invalid-is-not-absent')
+    policy('policy-absent-oracle-qualifies', 'policy_agreement.py',
+           "    return (report['oracle_state'] == 'available' and report['inventory_complete']",
+           "    return (report['oracle_state'] == 'oracle_unavailable' or report['oracle_state'] == 'available' and report['inventory_complete']",
+           'generated-oracle-coverage-is-honest', fixture=True)
+    policy('policy-omit-required-result', 'policy_agreement.py',
+           '    executed = {name: Counter() for name in readers}',
+           "    if omit is not None:\n        cases = cases[1:]\n        expected = expected.copy()\n        del expected[next(iter(expected))]\n        omit = None\n"
+           '    executed = {name: Counter() for name in readers}',
+           'generated-oracle-coverage-is-honest', fixture=True)
+
     def signing(name, module, old, new, row):
         add(27, name, '56_veldo_0027_signing.py', module, old, new, ['signing/' + row])
 
@@ -319,7 +348,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 118, 119))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

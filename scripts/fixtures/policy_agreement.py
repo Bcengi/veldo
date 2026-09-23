@@ -108,6 +108,48 @@ def partitions():
             yield ('shape', site, name), 'fix_validation: {' + site + ': ' + value + '}\n'
 
 
+def policy_sites(grammar):
+    """Boundary targets on the policy nodes themselves, using shared predicates."""
+    graph = grammar.DATA['coverage']['productions']
+    for site in SITES:
+        productions = (('block-map',) if site == 'root' else
+                       ('block-map', 'flow-map', 'flow-map-trailing', 'wrapped-map')
+                       if site == 'fix_validation' else tuple(grammar.DATA['styles']))
+        for production in productions:
+            for rule, predicate in grammar.DATA['coverage']['exclusion_predicates'].items():
+                if set(graph[production]['features']).intersection(predicate):
+                    yield site, production, rule
+
+
+def policy_boundary(grammar, site, production, rule):
+    def atom(word):
+        return {'production': 'plain', 'atom': ('policy', word, grammar.SCALAR), 'children': []}
+
+    def mapping(production, members):
+        children = []
+        for name, value in members:
+            key = {'production': 'key-plain', 'atom': ('policy', name, 0), 'children': []}
+            children.extend([('key', key), ('value', value)])
+        return {'production': production, 'arity': len(members), 'children': children}
+
+    target = grammar.coverage_node(production)
+    fields = [('required', target if site == 'required' else atom('true')),
+              ('from_commit', target if site == 'from_commit' else atom('baseline'))]
+    block = mapping(production if site == 'fix_validation' else 'block-map', fields)
+    root = mapping('block-map', [('fix_validation', block)])
+    path = () if site == 'root' else (1,) if site == 'fix_validation' else (1, 1 if site == 'required' else 3)
+    source, spans = grammar.coverage_render(root, unit=2)
+    span = next(span for span in spans if span['path'] == path)
+    # Shared duplicate-key edit inserts a: b. A policy node needs its own
+    # existing key duplicated; change only that inserted key, not the edit rule.
+    edited = grammar.coverage_edit(source, span, rule)
+    if rule == 'duplicate-key':
+        key = 'fix_validation' if site == 'root' else 'required'
+        position = edited.rfind('a: b')
+        edited = edited[:position] + key + ': b' + edited[position + 4:]
+    return edited + '\n'
+
+
 def expected_ids(grammar):
     targets = grammar.coverage_targets()
     witnesses = [('production', p) for p in sorted(targets['production'])]
@@ -117,6 +159,7 @@ def expected_ids(grammar):
     ids = [('witness', site) + w for w in witnesses for site in SITES]
     ids += [('scalar', site, label) for label, _, _ in grammar.scalar_options(grammar.DATA)
             for site in ('required', 'from_commit')]
+    ids += [('policy-boundary',) + target for target in policy_sites(grammar)]
     ids += [('partition',) + key for key, _ in partitions()]
     return Counter(ids)
 
@@ -138,6 +181,9 @@ def cases(grammar):
             other = 'from_commit: baseline' if site == 'required' else 'required: true'
             yield dict(id=('scalar', site, label), site=site, edit=None,
                        text='fix_validation:\n  ' + other + '\n  ' + site + ': ' + source + '\n')
+    for site, production, rule in policy_sites(grammar):
+        yield dict(id=('policy-boundary', site, production, rule), site=site, edit=rule,
+                   text=policy_boundary(grammar, site, production, rule))
     for key, text in partitions():
         yield dict(id=('partition',) + key, site='schema', text=text, edit='root-scalar' if key == ('shape', 'root-scalar') else None)
 
