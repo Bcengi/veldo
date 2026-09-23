@@ -684,6 +684,86 @@ def cases():
            '            if current["eligible"]:\n                boundary = self._decide_calls(',
            '            if current["eligible"] and cycle == 1:  # defect\n                boundary = self._decide_calls(',
            'eligibility/launch-decides-its-calls')
+    # VELDO-0053: architecture at every eligibility entry. Each declared falsifier, a second and
+    # different defect of its row, and a driven defect for every other row the suite asserts.
+    def architecture(name, module, old, new, rows):
+        add(53, name, '60_veldo_0053_architecture.py', module, old, new, ['architecture/' + r for r in rows])
+
+    architecture('architecture-malformed-as-optional-absence', 'control_eligibility.py',
+                 "        found.update(kind=load.kind, state=load.state, required=load.required,\n",
+                 "        if load.kind == 'parse_failure':  # defect: a present malformed contract read as optional absence\n"
+                 "            load = load._replace(state='absent', kind='optional_absence', problems=(), required=False)\n"
+                 "        found.update(kind=load.kind, state=load.state, required=load.required,\n",
+                 ['ready-refusal'])
+    loader_parse = ('        kind = "unreadable" if getattr(e, "kind", None) == "unreadable" else "parse_failure"\n'
+                    '        return ContractLoad(CONTRACT_INVALID, kind, arch, None, (str(e),), str(p), req)\n')
+    architecture('architecture-loader-malformed-as-absence', 'contract_loader.py', loader_parse,
+                 loader_parse.replace('        return ContractLoad(CONTRACT_INVALID',
+                                      '        if kind == "parse_failure":  # defect: the shared loader reads malformed as absence\n'
+                                      '            return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)\n'
+                                      '        return ContractLoad(CONTRACT_INVALID'),
+                 ['ready-refusal', 'state-kinds'])
+    architecture('architecture-loader-wrong-type-as-absence', 'contract_loader.py',
+                 '    if not p.is_file():\n        # PRESENT AND NEVER OPENED',
+                 '    if not p.is_file():\n'
+                 '        return ContractLoad(CONTRACT_ABSENT, "optional_absence", None, None, (), str(p), False)  # defect\n'
+                 '        # PRESENT AND NEVER OPENED',
+                 ['ready-refusal', 'state-kinds'])
+    architecture('architecture-review-skipped', 'control_eligibility.py',
+                 "                      for s in FLOOR_STATIONS}\n# The refusal each refused architecture kind",
+                 "                      for s in FLOOR_STATIONS}\n"
+                 "STATION_PREDICATES['review'] = tuple(p for p in STATION_PREDICATES['review'] if p != ARCHITECTURE_PREDICATE)"
+                 "  # defect: direct review skips the architecture\n# The refusal each refused architecture kind",
+                 ['forbidden-review-launch'])
+    architecture('architecture-review-decision-skips', 'control_eligibility.py',
+                 "                    if name == ARCHITECTURE_PREDICATE:\n",
+                 "                    if name == ARCHITECTURE_PREDICATE and station == 'review':\n"
+                 "                        continue  # defect: the review decision never asks the architecture\n"
+                 "                    if name == ARCHITECTURE_PREDICATE:\n",
+                 ['forbidden-review-launch'])
+    architecture('architecture-invalid-structure-passes', 'control_eligibility.py',
+                 "        if load.refused:\n            found['refusals']",
+                 "        if load.refused and load.kind != 'invalid_structure':  # defect: only unreadable input refuses\n"
+                 "            found['refusals']",
+                 ['entries-blocked'])
+    architecture('architecture-record-not-required', 'control_eligibility.py',
+                 "entry_contract(self.workspace, True if accepted else None)",
+                 "entry_contract(self.workspace, None)  # defect: acceptance no longer makes the contract required",
+                 ['entries-blocked', 'substitution'])
+    architecture('architecture-provider-request-unasked', 'control_eligibility.py',
+                 "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', ARCHITECTURE_PREDICATE) + tuple(CC.ENTRY_PREDICATES[s])))",
+                 "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + ((ARCHITECTURE_PREDICATE,) if s != 'provider_request'"
+                 " else ()) + tuple(CC.ENTRY_PREDICATES[s])))",
+                 ['registrations', 'entries-blocked'])
+    architecture('architecture-clone-validator', 'control_eligibility.py',
+                 "            self._validator = _organ('validate')._VC\n",
+                 "            clone = importlib.util.spec_from_file_location(\n"
+                 "                'clone_validate', os.path.join(self.workspace, '.veldo', 'validate.py'))\n"
+                 "            module = importlib.util.module_from_spec(clone)\n"
+                 "            clone.loader.exec_module(module)\n"
+                 "            self._validator = module._VC  # defect: the workspace's own validator judges the workspace\n",
+                 ['substitution'])
+    architecture('architecture-accepted-digest-ignored', 'control_eligibility.py',
+                 "        elif accepted and found['artifact']['digest'] != accepted['digest']:",
+                 "        elif False:  # defect: whatever bytes are at the path are the accepted architecture",
+                 ['substitution'])
+    architecture('architecture-identity-from-workspace', 'control_eligibility.py',
+                 "            found['validator'] = {role: _file_identity(path) for role, path in sorted(ran.items())}",
+                 "            found['validator'] = {role: _file_identity(os.path.join(self.workspace, '.veldo', os.path.basename(path)))\n"
+                 "                                  for role, path in sorted(ran.items())}  # defect: names what the workspace carries",
+                 ['substitution'])
+    architecture('architecture-identity-not-recorded', 'control_eligibility.py',
+                 "        if decision.get('architecture'):\n",
+                 "        if False:  # defect: the decision's architecture is not in its observation\n",
+                 ['observations'])
+    architecture('architecture-unaccepted-record-accepted', 'control_eligibility.py',
+                 "        if accepted and (not isinstance(record, dict) or record.get('state') != 'accepted'",
+                 "        if accepted and (not isinstance(record, dict)",
+                 ['record-states'])
+    architecture('architecture-store-only-passes', 'control_eligibility.py',
+                 "            if accepted:\n                found['refusals'] = ['missing_evidence:architecture/workspace']\n",
+                 "            pass  # defect: a store-only Gate passes an accepted architecture it cannot see\n",
+                 ['record-states'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
@@ -1007,7 +1087,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 46, 52, 64, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 46, 52, 53, 64, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
