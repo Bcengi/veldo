@@ -1,0 +1,91 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0046",
+  "commit": "f66710cd1124e356731e359b5cb81a883f9cff0d",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-09-23T05:01:12Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0046/mutations.json",
+          "detail": "VELDO-0046 notify/committed-event: green baseline/noop, two registered temporary production mutations fail the named assertion; actual observations retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0046/gate-summary.json",
+          "detail": "Clean-tree canonical gate; installed notification/store assets, real signed SQLite journal, joined signal loop and independent committed-event reads. Scope and consumer seams described in README.md."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0046/mutations.json",
+          "detail": "VELDO-0046 notify/event-in-the-gap: green baseline/noop, two registered temporary production mutations fail the named assertion; actual observations retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0046/gate-summary.json",
+          "detail": "Clean-tree canonical gate; installed notification/store assets, real signed SQLite journal, joined signal loop and independent committed-event reads. Scope and consumer seams described in README.md."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0046/mutations.json",
+          "detail": "VELDO-0046 notify/fabricated-event: green baseline/noop, two registered temporary production mutations fail the named assertion; actual observations retained."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0046/gate-summary.json",
+          "detail": "Clean-tree canonical gate; installed notification/store assets, real signed SQLite journal, joined signal loop and independent committed-event reads. Scope and consumer seams described in README.md."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "f66710cd1124e356731e359b5cb81a883f9cff0d",
+      "ref": "proof/VELDO-0046/gate-summary.json"
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "commit": "f66710cd1124e356731e359b5cb81a883f9cff0d",
+      "ref": "proof/VELDO-0046/gate-summary.json"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0046/README.md",
+    "proof/VELDO-0046/gate-summary.json",
+    "proof/VELDO-0046/measure_gate_cost.py",
+    "proof/VELDO-0046/measurements.json",
+    "proof/VELDO-0046/mutations.json",
+    "proof/VELDO-0046/notify-before-commit.diff",
+    "proof/VELDO-0046/notify-check-outside-idle-lock.diff",
+    "proof/VELDO-0046/notify-omit-committed-wakeup.diff",
+    "proof/VELDO-0046/notify-trust-invented-event-digest.diff",
+    "proof/VELDO-0046/notify-trust-invented-event-identity.diff",
+    "proof/VELDO-0046/notify-wait-without-queue-predicate.diff"
+  ],
+  "rollback": "Stop new notification operations and preserve journal evidence; use an explicit operations decision before restoring prior compatible configuration.",
+  "review": "Prepared for independent review; no self-approval or specification status change."
+}

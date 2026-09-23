@@ -456,6 +456,312 @@ def cases():
           'env=dict(ENVIRONMENT),', 'env=None,', 'runtime/tracing-off')
     graph('graph-tracing-switch-on', 'control_graph.py',
           "'LANGSMITH_TRACING_V2': 'false'", "'LANGSMITH_TRACING_V2': 'true'", 'runtime/tracing-off')
+    # VELDO-0031: each declared falsifier and an independent defect per criterion.
+    def claims(name, module, old, new, row):
+        add(31, name, '58_veldo_0031_claims.py', module, old, new, ['claims/' + row])
+
+    claims('claims-ownership-without-unit', 'control_claim.py',
+           "'data': dict(u, state='CLAIMED')",
+           "'data': dict(u, state=u['state'] if unit == 'unit' else 'CLAIMED')", 'atomic-activation')
+    claims('claims-ownership-without-backlog', 'control_claim.py',
+           "'data': dict(b, state='ACTIVE')",
+           "'data': dict(b, state=b['state'] if unit == 'unit' else 'ACTIVE')", 'atomic-activation')
+    claims('claims-ignore-use-generation', 'control_claim.py',
+           "    if current.get('generation') != params['generation']:",
+           "    if op != 'use' and current.get('generation') != params['generation']:", 'current-generation')
+    claims('claims-ignore-use-holder', 'control_claim.py',
+           "    if current.get('holder') != holder:",
+           "    if op != 'use' and current.get('holder') != holder:", 'current-generation')
+    claims('claims-uncertainty-as-contention', 'control_claim_client.py',
+           "        if result.get('reason') in ('unanswerable', 'ownership_uncertain', 'missing_authority'):\n            raise CL.ClaimStopped(result['reason'])\n        return result",
+           "        if result.get('reason') in ('unanswerable', 'ownership_uncertain', 'missing_authority'):\n            return {'ok': False, 'reason': 'claimed'}\n        return result", 'uncertainty-stop')
+    claims('claims-detector-as-owned', 'control_claim.py',
+           "        return 'unanswerable'",
+           "        return 'owned'", 'uncertainty-stop')
+    add(31, 'review-r1-command-crash', '59_veldo_0031_review.py', 'control_claim.py',
+        '        if not isinstance(command, dict):\n            command = {}',
+        '', ['claims/review-r1'])
+    add(31, 'review-r1-signature-crash', '59_veldo_0031_review.py', 'control_claim.py',
+        "                or not isinstance(packet.get('signature'), str)",
+        '                or False', ['claims/review-r1'])
+    add(31, 'review-r2-inspect-skips-consistency', '59_veldo_0031_review.py', 'control_claim.py',
+        "            status = ownership(current, u['data'], b['data'])",
+        "            status = 'owned' if current.get('holder') else 'unowned'", ['claims/review-r2'])
+    add(31, 'review-r2-activation-without-owner', '59_veldo_0031_review.py', 'control_claim.py',
+        "        return 'ownership_uncertain' if unit.get('state') in ACTIVE_UNIT_STATES else 'unowned'",
+        "        return 'unowned'", ['claims/review-r2'])
+    add(31, 'review-r6-private-stop-class', '59_veldo_0031_review.py', 'claim.py',
+        'ClaimStopped = _claim_errors.ClaimStopped\n',
+        '', ['claims/review-r6'])
+    add(31, 'review-r6-routing-wrong-exception', '59_veldo_0031_review.py', 'control_claim_client.py',
+        '            raise CL.ClaimStopped(exc.reason) from exc',
+        '            raise RuntimeError(exc.reason) from exc', ['claims/review-r6'])
+    add(31, 'review-r3-publish-without-use', '59_veldo_0031_review.py', 'lander.py',
+        '                    self._check_ownership()',
+        '                    pass  # omitted publication ownership check', ['claims/review-r3'])
+    add(31, 'review-r3-swallow-heartbeat-stop', '59_veldo_0031_review.py', 'lander.py',
+        '                self._hb_error = exc',
+        '                self._hb_error = None', ['claims/review-r3'])
+    add(31, 'review-r4-cwd-selects-enrollment', '59_veldo_0031_review.py', 'claim.py',
+        '        ledger_root = os.path.dirname(claims_root(root))',
+        "        common = _git_process.check_output(['git', 'rev-parse', '--git-common-dir'], text=True, stderr=subprocess.DEVNULL).strip()\n        ledger_root = os.path.join(common, 'veldo')", ['claims/review-r4'])
+    add(31, 'review-r4-refuse-unrelated-root', '59_veldo_0031_review.py', 'claim.py',
+        "    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):",
+        "    if root is not None or os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):", ['claims/review-r4'])
+    add(31, 'review-r5-expiry-revokes-owner', '59_veldo_0031_review.py', 'control_claim.py',
+        "    if live == 'stale' and action in ('renew', 'release'):",
+        '    if False:', ['claims/review-r5'])
+    add(31, 'review-r5-release-ignores-holder', '59_veldo_0031_review.py', 'control_claim.py',
+        "    if current.get('holder') != holder:",
+        "    if op != 'release' and current.get('holder') != holder:", ['claims/review-r5'])
+    # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
+    def notification(name, old, new, row):
+        add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',
+            old, new, ['notify/' + row])
+
+    notification('notify-stop-after-handler-failure',
+                 "                self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
+                 "                return self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)",
+                 'subscriber-isolation')
+    notification('notify-retry-successful-subscribers',
+                 "        return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',",
+                 "        if failed:\n            entry.owed = None  # defective: forget who accepted\n"
+                 "        return self._observe('consume', event, 'unknown_outcome' if failed else 'delivered',", 'subscriber-isolation')
+    notification('notify-drop-unavailable-first-attempt',
+                 "if entry.owed is None and exc.reason != 'service_unavailable':",
+                 "if entry.owed is None:", 'first-attempt-retained')
+    # At-most-once: the subscriber is marked accepted before its callback returns.
+    _dispatch = (
+                 '        for consumer in ready:\n'
+                 '            try:\n'
+                 '                # A handler may mutate its argument; the next handler still sees the journal.\n'
+                 '                self.handlers[consumer](json.loads(json.dumps(event)))\n'
+                 '            except BaseException as exc:\n'
+                 '                # The event stays owed to this subscriber, and to any not yet called, even\n'
+                 '                # when an interrupt propagates. Only this subscriber waits out a delay.\n'
+                 "                self._observe('handler', event, 'unknown_outcome', stopped_consumer=consumer)\n"
+                 '                failed.append(consumer)\n'
+                 '                self._defer(consumer)\n'
+                 '                if not isinstance(exc, Exception):\n'
+                 '                    raise\n'
+                 '                continue\n'
+                 '            self._accept(entry, consumer)\n'
+                 '            delivered.append(consumer)\n')
+    notification('notify-accept-before-callback', _dispatch,
+                 _dispatch.replace('        for consumer in ready:\n',
+                                   '        for consumer in ready:\n            self._accept(entry, consumer)\n')
+                 .replace('            self._accept(entry, consumer)\n            delivered.append(consumer)\n',
+                          '            delivered.append(consumer)\n'),
+                 'first-attempt-retained')
+    notification('notify-requeue-failed-at-tail',
+                 "                self._defer(consumer)\n",
+                 "                self._defer(consumer)\n"
+                 "                with self._condition:\n"
+                 "                    self._queue.remove(entry)\n"
+                 "                    self._queue.append(entry)\n", 'subscriber-order')
+    notification('notify-skip-head-of-line',
+                 "            blocked |= owed\n", "", 'subscriber-order')
+    notification('notify-retry-without-backoff',
+                 "return min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
+                 "return 0.0", 'retry-backoff')
+    notification('notify-uncapped-backoff',
+                 "return min(self.retry_cap, self.retry_initial * 2.0 ** min(failures - 1, 64))",
+                 "return self.retry_initial * 2.0 ** min(failures - 1, 64)", 'retry-backoff')
+    notification('notify-retry-not-woken-when-due',
+                 "bounds = self._retry_waits(now) + ",
+                 "bounds = [] + ", 'retry-backoff')
+    notification('notify-unbounded-observations',
+                 "            while len(self._observations) > self.observation_limit:\n"
+                 "                self._observations.popleft()\n",
+                 "", 'retry-backoff')
+    notification('notify-unbounded-watermark',
+                 "or not 1 <= hint['watermark'] <= 2**63 - 1",
+                 "or hint['watermark'] < 1", 'watermark-range')
+    notification('notify-reject-valid-max-watermark',
+                 "or not 1 <= hint['watermark'] <= 2**63 - 1",
+                 "or not 1 <= hint['watermark'] < 2**63 - 1", 'watermark-range')
+    notification('notify-before-commit',
+                 "        # Only identity crosses the queue. Extra transport payload is not domain data.",
+                 "        if 'event' in hint and 'transition' in hint['event']:\n"
+                 "            for handler in self.handlers.values():\n"
+                 "                handler(hint['event'])\n"
+                 "        # Only identity crosses the queue. Extra transport payload is not domain data.",
+                 'committed-event')
+    notification('notify-omit-committed-wakeup',
+                 "                self.notify(self.hint(result))",
+                 "                pass  # defective: committed event never signals",
+                 'committed-event')
+    notification('notify-check-outside-idle-lock',
+                 "        with self._condition:\n            while True:\n"
+                 "                now = self.clock()\n                work = self._ready(now)\n",
+                 "        ready = bool(self._queue)\n"
+                 "        with self._condition:\n            while True:\n"
+                 "                now = self.clock()\n                work = self._ready(now) if ready else None\n",
+                 'event-in-the-gap')
+    notification('notify-wait-without-queue-predicate',
+                 "                now = self.clock()\n                work = self._ready(now)\n",
+                 "                self._condition.wait(None if deadline is None else max(0.0, deadline - self.clock()))\n"
+                 "                now = self.clock()\n                work = self._ready(now)\n",
+                 'event-in-the-gap')
+    notification('notify-trust-invented-event-identity',
+                 "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
+                 "        if row[1] != hint['record_digest']:", 'fabricated-event')
+    notification('notify-trust-invented-event-digest',
+                 "        if row[0] != hint['command_id'] or row[1] != hint['record_digest']:",
+                 "        if row[0] != hint['command_id']:", 'fabricated-event')
+    # VELDO-0064: the declared falsifiers plus a second, different defect per named row.
+    def inbox(name, module, old, new, row):
+        add(64, name, '60_veldo_0064_inbox.py', module, old, new, [row])
+
+    inbox('inbox-retain-claim-while-waiting', 'control_assignment.py',
+          "            if 'release' in params:\n                changes.update(self.claims.transition(params['release'], before))\n",
+          "            if 'release' in params:\n                pass  # defective: the claim stays owned while the person is asked\n",
+          'inbox/waiting-resources')
+    inbox('inbox-requester-keeps-waiting', 'control_assignment.py',
+          "'released_claim': released, 'stop_requester': op == 'open'}",
+          "'released_claim': released, 'stop_requester': False}",
+          'inbox/waiting-resources')
+    inbox('projection-discard-message-id', 'control_channel_projection.py',
+          "message_id=platform['message_id'],", "message_id=None,",
+          'projection/correlation')
+    inbox('inbox-admit-displayed-assigned-status', 'control_assignment.py',
+          "        if item['problems']:\n            return 'invalid_record', inputs\n",
+          "        if item['raw'].get('display_status') == 'assigned':\n            return 'admitted', inputs\n"
+          "        if item['problems']:\n            return 'invalid_record', inputs\n",
+          'inbox/unauthorized-admission')
+    inbox('inbox-admit-without-journal-authority', 'control_assignment.py',
+          "        if row is None or row[0] != data['owner'] or written.get('version') != item['version'] \\\n"
+          "                or written.get('digest') != item['digest']:\n            return 'missing_authority', inputs\n",
+          "", 'inbox/unauthorized-admission')
+    inbox('inbox-admit-ignores-owner-membership', 'control_assignment.py',
+          "        if not active or owner['principal_type'] != 'person' \\",
+          "        if False and owner['principal_type'] != 'person' \\", 'inbox/unauthorized-admission')
+    inbox('inbox-index-skips-invalid', 'control_assignment.py',
+          "            if item['problems']:\n                entry['category'] = 'invalid'\n",
+          "            if item['problems']:\n                continue\n", 'inbox/visible-invalid')
+    inbox('inbox-trust-tampered-content', 'control_assignment.py',
+          "        if raw is not None and self.store.digest_of({'kind': kind, 'data': raw, 'version': version}) != digest:\n"
+          "            problems.append('stored data does not match its committed digest')\n",
+          "", 'inbox/visible-invalid')
+    # VELDO-0064 review r1: a unit parked on a pending person assignment is not claimable.
+    inbox('inbox-park-as-plain-release', 'control_assignment.py',
+          "params['release'] = dict(action='park',", "params['release'] = dict(action='release',",
+          'inbox/parked-unit-unclaimable')
+    inbox('claims-claim-ignores-park', 'control_claim.py',
+          "        if op == 'claim' and parked:", "        if False and parked:", 'inbox/parked-unit-unclaimable')
+    inbox('inbox-resume-without-admission', 'control_assignment.py',
+          "        if reason != 'admitted':\n            raise Refused(reason, 'the assignment does not admit the blocked work')\n",
+          "", 'inbox/parked-unit-unclaimable')
+    # VELDO-0064 review r2: the parked unit is derived from the requester's own claim.
+    inbox('inbox-release-only-named-unit', 'control_assignment.py',
+          "            held = self._held_claims(entities, principal)\n",
+          "            held = [c for c in self._held_claims(entities, principal)"
+          " if c[1].get('unit_id') == content.get('unit_id')]\n", 'inbox/release-derived-from-claim')
+    inbox('inbox-open-without-generation-keeps-claim', 'control_assignment.py',
+          "        if type(generation) is not int:\n            raise Refused('invalid_input', 'releasing a claim names its generation')\n",
+          "        if type(generation) is not int:\n            return None\n", 'inbox/release-derived-from-claim')
+    inbox('inbox-open-skips-claim-recheck', 'control_assignment.py',
+          "        if params['action'] == 'open':\n            rows = conn.execute(",
+          "        if False:\n            rows = conn.execute(", 'inbox/release-derived-from-claim')
+    # VELDO-0064 review r5: admission verifies the owner's signature over the exact answer.
+    inbox('inbox-admit-skips-answer-signature', 'control_assignment.py',
+          "        if not verified:\n            return 'missing_authority', inputs\n", "",
+          'inbox/admit-verifies-owner-signature')
+    inbox('inbox-admit-unbound-answer-signature', 'control_assignment.py',
+          "        if not binds:\n            return 'missing_authority', inputs\n", "",
+          'inbox/admit-verifies-owner-signature')
+    # VELDO-0064 review r3: the intent is committed before the send; an unknown send never repeats.
+    inbox('projection-retry-pending-intent', 'control_channel_projection.py',
+          "RETRYABLE = ('refused',)", "RETRYABLE = ('refused', 'pending')", 'projection/intent-before-send')
+    inbox('projection-send-before-intent', 'control_channel_projection.py',
+          "            intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)\n"
+          "            completion = self._send(enrollment['chat'], text)\n",
+          "            completion = self._send(enrollment['chat'], text)\n"
+          "            intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)\n",
+          'projection/intent-before-send')
+    # VELDO-0064 review r4: a differing echoed text keeps the returned identity as an anomaly.
+    inbox('projection-mismatch-as-refusal', 'control_channel_projection.py',
+          "        found = anomalies(data, platform)\n",
+          "        if 'presentation_mismatch' in anomalies(data, platform):\n"
+          "            return {pid: {'kind': ENTITY_KIND, 'data': dict(data, outcome='refused', refusal='presentation_mismatch')}}\n"
+          "        found = anomalies(data, platform)\n", 'projection/echo-mismatch-kept')
+    inbox('projection-ignore-echoed-text', 'control_channel_projection.py',
+          "    if platform['text'].encode('utf-8') != record['presentation'].encode('utf-8'):\n        found.append('presentation_mismatch')\n",
+          "", 'projection/echo-mismatch-kept')
+    # VELDO-0064 review r7: each assignment goes to the chat enrolled for its own owner.
+    inbox('projection-one-chat-for-every-owner', 'control_channel_projection.py',
+          "        refusal, enrollment = self._enrollment(brief['content']['owner'])\n",
+          "        refusal, enrollment = self._enrollment('owner')\n", 'projection/owner-enrolled-chat')
+    inbox('projection-enrollment-ignores-principal', 'control_channel_projection.py',
+          "    if data.get('principal') != principal:\n        problems.append('the enrollment names another principal')\n",
+          "", 'projection/owner-enrolled-chat')
+    # VELDO-0064 review r8: a message placed in another chat is a named anomaly, not a projection.
+    inbox('projection-ignore-returned-chat', 'control_channel_projection.py',
+          "    if platform['chat_id'] != record['enrolled_chat']:\n        found.append('chat_mismatch')\n",
+          "", 'projection/returned-chat-checked')
+    inbox('projection-record-enrolled-chat', 'control_channel_projection.py',
+          "chat_id=platform['chat_id'],", "chat_id=data['enrolled_chat'],", 'projection/returned-chat-checked')
+    # VELDO-0064 review r2-s4: only Telegram's own 4xx error answer is a definite refusal.
+    range_guard = ("            if not 400 <= exc.code < 500:\n"
+                   "                raise EdgeRefused('unknown_outcome', 'HTTP %d is not a definite refusal' % exc.code) from None\n")
+    body_guard = ("            if not telegram_refusal(exc, exc.code):\n"
+                  "                raise EdgeRefused('unknown_outcome', 'HTTP %d without the Bot API error answer' % exc.code) from None\n")
+    inbox('projection-any-http-error-refused', 'control_channel_projection.py', range_guard + body_guard, '',
+          'projection/only-telegram-refusal-retried')
+    inbox('projection-any-4xx-refused', 'control_channel_projection.py', body_guard, '',
+          'projection/only-telegram-refusal-retried')
+    inbox('projection-telegram-5xx-refused', 'control_channel_projection.py', range_guard, '',
+          'projection/only-telegram-refusal-retried')
+    # VELDO-0064 review r2-s5: a malformed reply is an unknown outcome; nothing the edge raises stops the loop.
+    inbox('projection-edge-protocol-error-escapes', 'control_channel_projection.py',
+          "        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as exc:\n",
+          "        except (urllib.error.URLError, OSError, ValueError) as exc:\n", 'projection/protocol-error-unknown')
+    inbox('projection-edge-error-stops-loop', 'control_channel_projection.py',
+          "        except Exception as exc:\n"
+          "            return {'platform': None, 'refusal': None, 'detail': 'the edge raised %s' % type(exc).__name__}\n",
+          "", 'projection/protocol-error-unknown')
+    inbox('projection-protocol-error-as-refusal', 'control_channel_projection.py',
+          "            raise EdgeRefused('unknown_outcome', 'no readable platform answer (%s)' % type(exc).__name__) from None\n",
+          "            raise EdgeRefused('channel_refused', 'no readable platform answer (%s)' % type(exc).__name__) from None\n",
+          'projection/protocol-error-unknown')
+    # VELDO-0064 review r2-s7: an answer verifies against the key active when it was accepted.
+    inbox('inbox-admit-current-active-key', 'control_assignment.py',
+          "        key = self._answer_key(state, data, row, inputs)\n",
+          "        key = self.AC.active_key(state['keyring'], data['owner'], now)\n", 'inbox/answer-survives-key-rotation')
+    inbox('inbox-answer-key-from-current-entity', 'control_assignment.py',
+          "        key = dict(stored['data'], key_id=kid)\n",
+          "        key = dict(state['entities'].get(kid, {}).get('data') or {}, key_id=kid)\n",
+          'inbox/answer-survives-key-rotation')
+    inbox('inbox-answer-key-ignores-revocation', 'control_assignment.py',
+          "            if current.get('revoked_at') is not None and current['revoked_at'] <= at:\n                return None\n",
+          "", 'inbox/answer-survives-key-rotation')
+    # VELDO-0064 review r2-s6: every parked unit is visible with its assignment and why it is parked.
+    inbox('inbox-parked-only-awaiting', 'control_assignment.py',
+          "            parked.append({'unit_id'",
+          "            if reason != 'awaiting_answer':\n                continue\n            parked.append({'unit_id'",
+          'inbox/parked-units-visible')
+    inbox('inbox-parked-metric-omitted', 'control_assignment.py',
+          "pending=pending, parked=len(parked),",
+          "pending=pending, parked=sum(1 for u in parked if u['reason'] == 'awaiting_answer'),",
+          'inbox/parked-units-visible')
+    inbox('inbox-parked-refusal-shown-ready', 'control_assignment.py',
+          "reason = 'ready_to_resume' if admission == 'admitted' else 'answer_not_admitted'",
+          "reason = 'ready_to_resume'", 'inbox/parked-units-visible')
+    # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
+    # such as a repository id was read as the empty set, so every named scope covered it.
+    def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
+        add(25, name, '61_scope_covers.py', 'control_membership.py', old, new, list(rows))
+        result[-1]['siblings'] = True
+
+    scope('scope-string-inner-as-empty',
+          '    if isinstance(scope, str):\n        return {scope}\n',
+          '    if isinstance(scope, str):\n        return set()\n')
+    scope('scope-malformed-as-empty',
+          '    if o is _MALFORMED or i is _MALFORMED:\n        return False\n',
+          '    if o is _MALFORMED or i is _MALFORMED:\n        o = set() if o is _MALFORMED else o\n        i = set() if i is _MALFORMED else i\n')
+    scope('scope-star-list-not-universal',
+          '        return None if "*" in scope else set(scope)\n',
+          '        return set(scope)\n', ('membership/scope-forms-agree',))
     return result
 
 
@@ -483,6 +789,11 @@ def materialize(case, mode, directory, root=ROOT):
         mutant = destination / ('fixtures' if fixture else case['module'])
         if fixture:
             shutil.copytree(base, mutant, ignore=shutil.ignore_patterns('__pycache__'))
+        elif case.get('siblings') is True:
+            # A module that loads its siblings by its own path (control_membership loads
+            # authority_contract and control_store next to itself) gets a whole .veldo copy.
+            shutil.copytree(base, destination / 'veldo', ignore=shutil.ignore_patterns('__pycache__'))
+            mutant = destination / 'veldo' / case['module']
         target = mutant / case['module'] if fixture else mutant
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(before if mode == 'noop' else before.replace(old, new))
@@ -526,7 +837,7 @@ def worker(case, mutant=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 27, 35, 36, 43, 118, 119, 120))
+    parser.add_argument('--finding', type=int, choices=(1, 2, 3, 5, 6, 12, 25, 27, 31, 35, 36, 43, 46, 64, 118, 119, 120))
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')

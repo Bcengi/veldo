@@ -1,0 +1,7 @@
+--- a/.veldo/control_notify.py
++++ b/.veldo/control_notify.py
+@@ -160,0 +161 @@
++        ready = bool(self._queue)
+@@ -164 +165 @@
+-                work = self._ready(now)
++                work = self._ready(now) if ready else None

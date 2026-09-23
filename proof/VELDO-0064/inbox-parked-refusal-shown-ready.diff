@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -694 +694 @@
+-                    reason = 'ready_to_resume' if admission == 'admitted' else 'answer_not_admitted'
++                    reason = 'ready_to_resume'

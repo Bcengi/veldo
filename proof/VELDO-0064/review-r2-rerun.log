@@ -1,0 +1,80 @@
+# The second reviewer's scripts (/tmp/v64r2/s, harness /tmp/v64r2/h.py), run unchanged with
+# V64_TREE=<build-veldo-0064 worktree> at 117c104. Script sha256 below.
+# 7b2451a9a4442c3297a6c00361ad642133c52cde4e3fb5e265ee266148cc455c  s1_parked_paths.py
+# 37f2281e35b3f3c084cc8f82202605e73317d8592d1908c206f01b27bf0d2d54  s2_resume_binding.py
+# de92adf428be9d07bff28ed4b1f37a7b8217ec198aaee3a96406485daa48ab40  s3_answer_replay.py
+# dcab466b90f4802f48260a9edbb313e2164440984be76cdcc5b2e8e3625afe17  s4_resend_after_5xx.py
+# 933266a2d7164ec7cbecf34aec6c9363f375e288ca908992db99bef9c992aae7  s5_bad_status_line.py
+# d81cd71fb95ebf865fe183edc1afcba6d2bf34fa68fe5d712f5c5025922b05f8  s6_stranded_units.py
+# 876028aa4d989c101dd0e0032af42043266a2c8f8abf52308c1484f5b69f7f50  s7_rotated_key_reanswer.py
+# d8369fc0b24d7296fa26cae11a3b74fd7a9ab533fdf2502bcb2702a3aa18eb3d  ../h.py
+=== s/s1_parked_paths.py
+parked claim: {'state': 'released', 'holder': None, 'parked_on': 'assignment:repo:W-1', 'generation': 1}
+claim    gen=0 ok=False reason=parked
+claim    gen=1 ok=False reason=parked
+claim    gen=2 ok=False reason=parked
+renew    gen=0 ok=False reason=unowned
+renew    gen=1 ok=False reason=unowned
+renew    gen=2 ok=False reason=unowned
+release  gen=0 ok=False reason=unowned
+release  gen=1 ok=False reason=unowned
+release  gen=2 ok=False reason=unowned
+use      gen=0 ok=False reason=unowned
+use      gen=1 ok=False reason=unowned
+use      gen=2 ok=False reason=unowned
+inspect  gen=0 ok=False reason=parked
+inspect  gen=1 ok=False reason=parked
+inspect  gen=2 ok=False reason=parked
+receiver park ok=False reason=invalid_input
+receiver resume ok=False reason=invalid_input
+resume unanswered rv=1 ok=False reason=not_answered
+resume unanswered rv=2 ok=False reason=stale_subject
+claim after clock skew ok=False reason=parked
+state after all attempts: released assignment:repo:W-1
+bugs: 0
+=== s/s2_resume_binding.py
+W-2 open (no claim): True None
+resume W-2 (admitted, blocks nothing): False invalid_input
+resume W-1 (pending): False not_answered
+resume W-3 wrong request version: False stale_subject
+resume W-3 by stranger (person, not eligible): False not_authorized
+resume W-3 by worker-b (scope other-repo): False not_authorized
+resume W-3 by worker-a: True resume
+resume W-3 again: False claimed
+W-1 unit still parked: assignment:repo:W-1
+receiver claim by worker-b on a fresh unit? (unit-1 parked): False not_authorized
+bugs: 0
+=== s/s3_answer_replay.py
+answer W-1: True admit W-1: admitted
+exact replay: False None
+W-1 signature on W-2 command: False not_authorized
+W-2 carrying W-1 answer, admit: missing_authority
+resume W-2: False missing_authority
+W-1 at rv2 with rv1 signed answer, admit: missing_authority
+bugs: 0
+=== s/s4_resend_after_5xx.py
+run 1: [{'assignment_id': 'assignment:repo:W-1', 'outcome': 'unknown_outcome', 'projection_id': 'projection:telegram_chat:assignment:repo:W-1:1', 'detail': 'HTTP 502 is not a definite refusal', 'reason': 'unknown_outcome'}]
+run (504): [{'assignment_id': 'assignment:repo:W-1', 'outcome': 'unknown_outcome', 'projection_id': 'projection:telegram_chat:assignment:repo:W-1:1', 'reason': 'unknown_outcome'}]
+run (200): [{'assignment_id': 'assignment:repo:W-1', 'outcome': 'unknown_outcome', 'projection_id': 'projection:telegram_chat:assignment:repo:W-1:1', 'reason': 'unknown_outcome'}]
+messages published to chat 111: 1 record attempt: 1 outcome: unknown_outcome
+=== s/s5_bad_status_line.py
+run 1: [{'assignment_id': 'assignment:repo:W-1', 'outcome': 'unknown_outcome', 'projection_id': 'projection:telegram_chat:assignment:repo:W-1:1', 'detail': 'no readable platform answer (BadStatusLine)', 'reason': 'unknown_outcome'}, {'assignment_id': 'assignment:repo:W-2', 'outcome': 'unknown_outcome', 'projection_id': 'projection:telegram_chat:assignment:repo:W-2:1', 'detail': 'no readable platform answer (BadStatusLine)', 'reason': 'unknown_outcome'}]
+observations: 2 requests reaching the edge: 2
+run 2: [('W-1', 'unknown_outcome', 'unknown_outcome'), ('W-2', 'unknown_outcome', 'unknown_outcome')]
+run 3: [('W-1', 'unknown_outcome', 'unknown_outcome'), ('W-2', 'unknown_outcome', 'unknown_outcome')] edge hits: 2
+=== s/s6_stranded_units.py
+decline W-1: True
+cancel  W-2: True
+answer  W-3: True
+unit-1 after decline: {'claim': 'parked', 'resume': 'not_answered', 'inspect': 'parked'}
+BUG: unit-1 is unclaimable forever after decline; no command in the claim organ or inbox unparks it
+unit-2 after cancel: {'claim': 'parked', 'resume': 'not_answered', 'inspect': 'parked'}
+BUG: unit-2 is unclaimable forever after cancel; no command in the claim organ or inbox unparks it
+unit-3 after answer: {'claim': 'parked', 'resume': 'resume', 'inspect': 'owned'}
+waiting_resources: [] inbox metrics: {'accepted': 7, 'refused': 2, 'pending': 0, 'parked': 2, 'parked_by_reason': {'declined': 1, 'canceled': 1}} receiver.pending: {'claim:repo:unit-3': {'backlog_item_uuid': 'backlog', 'generation': 2, 'heartbeat_at': '2026-09-23T07:52:34Z', 'holder': 'worker-a', 'repository_uuid': 'repo', 'resumed_from': 'assignment:repo:W-3', 'state': 'owned', 'unit_id': 'unit-3'}}
+=== s/s7_rotated_key_reanswer.py
+answer (old key): True
+admit after rotation: admitted
+re-answer with new key rv=1: ok=False reason=stale_subject
+re-answer with new key rv=2: ok=False reason=stale_subject
+requester revise/cancel: ['stale_subject', 'stale_subject']

@@ -104,12 +104,17 @@ class Lander:
         self.hb_interval = hb_interval if hb_interval is not None else CL.STALE_AFTER_SECONDS / 3.0
         self._hb_stop = None
         self._hb_thread = None
+        self._hb_error = None
 
     def _heartbeat_loop(self):
         # wait() returns True when signalled to stop, False on timeout (time to heartbeat)
         while not self._hb_stop.wait(self.hb_interval):
             try:
-                CL.heartbeat(LAND_LOCK_UNIT, self.worker_id, root=self.claims_root)
+                if not CL.heartbeat(LAND_LOCK_UNIT, self.worker_id, root=self.claims_root):
+                    raise CL.ClaimStopped('ownership_uncertain')
+            except CL.ClaimStopped as exc:
+                self._hb_error = exc
+                return
             except Exception:
                 # a transient error (a brief filesystem hiccup) must not kill the keep-alive,
                 # or the lock could silently go stale mid-land; just retry on the next tick.
@@ -121,6 +126,7 @@ class Lander:
         while True:
             ok, _reason = CL.claim(LAND_LOCK_UNIT, self.worker_id, [], [], root=self.claims_root)
             if ok:
+                self._hb_error = None
                 self._hb_stop = threading.Event()
                 self._hb_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
                 self._hb_thread.start()
@@ -138,6 +144,15 @@ class Lander:
         self._hb_thread = None
         CL.release(LAND_LOCK_UNIT, self.worker_id, root=self.claims_root)
 
+    def _check_ownership(self):
+        if self._hb_error is not None:
+            raise self._hb_error
+        client = CL._authority(self.claims_root)
+        owned = (client.use(LAND_LOCK_UNIT) if client else
+                 CL.holder(LAND_LOCK_UNIT, root=self.claims_root) == self.worker_id)
+        if not owned:
+            raise CL.ClaimStopped('ownership_uncertain')
+
     def land(self, unit=None):
         """Land the built unit to the trunk under the land lock. Returns {ok, stage, detail}.
         A failing stage aborts the land (later stages do not run) and the lock is always
@@ -152,12 +167,23 @@ class Lander:
                 ("finalize", lambda: self.ops.finalize(unit)),
             )
             for name, fn in stages:
+                if name == 'finalize':
+                    # Join the heartbeat before the final use so a named stop cannot
+                    # race the publication check or be overwritten by cleanup.
+                    self._hb_stop.set()
+                    self._hb_thread.join()
+                    self._check_ownership()
                 r = fn() or {}
                 if not r.get("ok"):
                     return {"ok": False, "stage": name, "detail": r}
             return {"ok": True, "stage": "landed"}
         finally:
-            self._release()
+            stopping = sys.exc_info()[0] is not None
+            try:
+                self._release()
+            except CL.ClaimStopped:
+                if not stopping:
+                    raise
 
 
 def _conflicted_paths(repo_root):

@@ -1,0 +1,4 @@
+--- a/.veldo/claim.py
++++ b/.veldo/claim.py
+@@ -141 +140,0 @@
+-ClaimStopped = _claim_errors.ClaimStopped

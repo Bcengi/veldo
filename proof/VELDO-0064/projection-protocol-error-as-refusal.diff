@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -168 +168 @@
+-            raise EdgeRefused('unknown_outcome', 'no readable platform answer (%s)' % type(exc).__name__) from None
++            raise EdgeRefused('channel_refused', 'no readable platform answer (%s)' % type(exc).__name__) from None

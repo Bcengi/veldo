@@ -1,0 +1,6 @@
+--- a/.veldo/claim.py
++++ b/.veldo/claim.py
+@@ -148 +148,2 @@
+-        ledger_root = os.path.dirname(claims_root(root))
++        common = _git_process.check_output(['git', 'rev-parse', '--git-common-dir'], text=True, stderr=subprocess.DEVNULL).strip()
++        ledger_root = os.path.join(common, 'veldo')

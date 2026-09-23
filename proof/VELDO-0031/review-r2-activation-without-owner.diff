@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -50 +50 @@
+-        return 'ownership_uncertain' if unit.get('state') in ACTIVE_UNIT_STATES else 'unowned'
++        return 'unowned'

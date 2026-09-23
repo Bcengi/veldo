@@ -1,0 +1,11 @@
+{
+  "command": "bash scripts/verify.sh",
+  "commit": "74b8b6c4d3c45287abadaa3bf5a3bec20659c927",
+  "clean_at_start": true,
+  "exit_code": 0,
+  "gate": "GATE: GREEN (74b8b6c4d3c45287abadaa3bf5a3bec20659c927)",
+  "unit": "selftest: 5681 passed, 0 failed",
+  "mutation_stage": "mutations: passed registered=90 executed=90 rejected=90 workers=122 elapsed=62.083s",
+  "full_log_sha256": "b2cfd35d2e4ddc8aae149c56fd3c13d90c0087332eb84c0a83bde729887b8017",
+  "note": "Only summary lines and a digest are retained. Gate byproducts are restored, never committed."
+}

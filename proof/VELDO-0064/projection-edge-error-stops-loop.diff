@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -309,2 +308,0 @@
+-        except Exception as exc:
+-            return {'platform': None, 'refusal': None, 'detail': 'the edge raised %s' % type(exc).__name__}

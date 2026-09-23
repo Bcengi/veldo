@@ -1,0 +1,5 @@
+--- a/.veldo/claim.py
++++ b/.veldo/claim.py
+@@ -151 +151 @@
+-    if os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):
++    if root is not None or os.path.lexists(os.path.join(ledger_root, 'control', 'enrollment.json')):

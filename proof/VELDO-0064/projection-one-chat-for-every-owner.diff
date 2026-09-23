@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -326 +326 @@
+-        refusal, enrollment = self._enrollment(brief['content']['owner'])
++        refusal, enrollment = self._enrollment('owner')

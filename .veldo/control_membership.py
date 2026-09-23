@@ -49,16 +49,28 @@ REFUSALS = ("envelope_refused", "signature_invalid", "policy_refused", "bootstra
 
 
 def _scope_set(scope):
-    """None for the universal scope "*", else the set of named scopes; a malformed scope is empty."""
+    """None for the universal scope ("*", or a list naming "*"); a set of named scopes for a string
+    (one named scope) or a list of strings; the string "malformed" sentinel for anything else, so a
+    malformed scope is never read as the empty set, which every set contains."""
     if scope == "*":
         return None
-    return set(scope) if isinstance(scope, (list, tuple)) else set()
+    if isinstance(scope, str):
+        return {scope}
+    if isinstance(scope, (list, tuple)) and all(isinstance(x, str) for x in scope):
+        return None if "*" in scope else set(scope)
+    return _MALFORMED
+
+
+_MALFORMED = "malformed"
 
 
 def scope_covers(outer, inner):
-    """Whether authority scoped `outer` may act on `inner`: "*" covers everything, only "*" covers
-    "*", and a named scope covers a subset of itself."""
+    """Whether authority scoped `outer` may act on `inner`: the universal scope covers everything,
+    only the universal scope covers the universal scope, a named scope covers a subset of itself,
+    and a malformed scope on either side covers and is covered by nothing."""
     o, i = _scope_set(outer), _scope_set(inner)
+    if o is _MALFORMED or i is _MALFORMED:
+        return False
     if o is None:
         return True
     if i is None:

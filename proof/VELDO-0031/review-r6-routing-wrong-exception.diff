@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim_client.py
++++ b/.veldo/control_claim_client.py
+@@ -50 +50 @@
+-            raise CL.ClaimStopped(exc.reason) from exc
++            raise RuntimeError(exc.reason) from exc
