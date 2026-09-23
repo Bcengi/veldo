@@ -1569,6 +1569,18 @@ def _v65_checks(base):
                 state_word = 'closed' if closed_first else 'pending'
                 check(scoped, 'an edge whose scope does not cover a %s request is refused and nothing is sent' % state_word,
                       reason(result) == ('refused', 'not_authorized') and len(api['requests']) == asked)
+            sr = opened('SR-1')
+            presenter.present(sr)
+            recorded_msg = owner_reply(presenter.current(sr) or {}, 'accept: fine')
+            answer(recorded_msg)
+            fixture('telegram-edge', 'membership', dict(edge_member.get('data') or {}, scope=['project-b']))
+            asked = len(api['requests'])
+            try:
+                again = answer(recorded_msg)
+            finally:
+                fixture('telegram-edge', 'membership', dict(edge_member.get('data') or {}, scope=['project-a']))
+            check(scoped, 'an out-of-scope edge redelivering the recorded answer learns only not_authorized',
+                  reason(again) == ('refused', 'not_authorized') and len(api['requests']) == asked)
             asked = len(api['requests'])
             check(scoped, 'control: with the edge scope restored, the closed request\'s reply is told once',
                   reason(answer(owner_reply(presenter.current(I.assignment_id(ids['repository_uuid'], 'SC-1')) or {}, 'nonsense')))

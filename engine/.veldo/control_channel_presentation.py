@@ -1164,15 +1164,16 @@ class Presenter:
         head = self.head(request)
         if head is None or head['current'] != pid:
             raise Refused('superseded_presentation', 'the named presentation is not the current one')
+        # Authority first: an edge that may not act here learns nothing more, not even which message
+        # is the recorded answer, and nothing is sent.
+        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):
+            raise Refused('not_authorized', 'the edge scope does not cover the request')
         aid = answer_id(request, receipt['request_version'], receipt['owner'])
         recorded = self._entity(aid)
         if self._is_recorded_answer(recorded, ev):
             # The recorded answer itself delivered again: it needs no reply, whatever has happened to
             # the request since, so this comes before every message back.
             raise Refused('already_answered', 'this is the recorded answer, delivered again')
-        # Authority first: nothing, not even a message back, for an edge that may not act here.
-        if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):
-            raise Refused('not_authorized', 'the edge scope does not cover the request')
         # Nothing at all goes to an owner who is no longer a current member or whose chat enrollment
         # no longer holds, whatever the reply says.
         if not self._owner_current(receipt):

@@ -1216,6 +1216,13 @@ def cases():
     presentation('answered-told-only-while-pending', "        if recorded is not None:\n",
                  "        if recorded is not None and self.inbox.brief(request).get('category') == 'pending':\n",
                  'answer/redelivered-after-closed')
+    # VELDO-0065 sixth review item 2: the edge scope check comes before the redelivery check.
+    presentation('redelivery-before-edge-scope',
+                 "        # Authority first: an edge that may not act here learns nothing more, not even which message\n",
+                 "        if self._is_recorded_answer(self._entity(answer_id(request, receipt['request_version'], receipt['owner'])), ev):\n"
+                 "            raise Refused('already_answered', 'this is the recorded answer, delivered again')\n"
+                 "        # Authority first: an edge that may not act here learns nothing more, not even which message\n",
+                 'answer/closed-tell-after-edge-scope')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):
