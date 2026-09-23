@@ -526,6 +526,39 @@ def cases():
           '    except (OSError, ValueError) as error:\n        reason = ', 'authority/stage-shapes')
     graph('graph-nul-path-judged', 'control_graph.py',
           "    if '\\x00' in os.fspath(path):\n", '    if False:\n', 'authority/stage-shapes')
+    # Round 5 review: undriven behaviors, the reviewer's mutants (renamed graph-*), and new code.
+    graph('graph-command-runs-removed', 'control_graph.py',
+          "        pieces = value.split(' ')\n",
+          '        pieces = []\n', 'runtime/pyvenv-clean')
+    graph('graph-command-shlex-removed', 'control_graph.py',
+          '            words = shlex.split(value)\n',
+          '            words = []\n', 'runtime/pyvenv-clean')
+    graph('graph-quote-strip-removed', 'control_graph.py',
+          '    elif len(value) >= 2 and value[0] == value[-1] and value[0] in \'"\\\'\':\n',
+          '    elif False:\n', 'runtime/pyvenv-clean')
+    graph('graph-stage-written-place-dropped', 'control_graph.py',
+          "    for place in (Path(os.path.abspath(runtime['stage'])), root):\n",
+          '    for place in (root,):\n', 'authority/stage-shapes')
+    graph('graph-stage-resolved-place-dropped', 'control_graph.py',
+          "    for place in (Path(os.path.abspath(runtime['stage'])), root):\n",
+          "    for place in (Path(os.path.abspath(runtime['stage'])),):\n", 'authority/stage-shapes')
+    graph('graph-prefix-resolve-dropped', 'control_graph.py',
+          'for base in (prefix, prefix.resolve())',
+          'for base in (prefix,)', 'authority/stage-shapes')
+    graph('graph-refused-workdir-kept', 'control_graph.py',
+          "        _remove(path)\n        raise Refused('runtime_unavailable', 'the child working directory",
+          "        raise Refused('runtime_unavailable', 'the child working directory", 'authority/stage-links')
+    graph('graph-rebuild-message-dropped', 'control_graph.py',
+          "'; '.join(problems) + '; rebuild it with: ' + REBUILD_COMMAND)",
+          "'; '.join(problems))", 'runtime/pyvenv-clean')
+    graph('graph-root-file-check-dropped', 'control_graph.py',
+          "    if root.exists() and not root.is_dir():\n        raise Refused('runtime_unavailable', 'the stage root is not a directory')\n",
+          '', 'authority/stage-shapes')
+    graph('graph-option-values-unjudged', 'control_graph.py',
+          "        words += [word.partition('=')[2] for word in words if word.startswith('-') and '=' in word]\n",
+          '', 'runtime/pyvenv-clean')
+    graph('graph-problems-repeated', 'control_graph.py',
+          '    return list(dict.fromkeys(problems))\n', '    return problems\n', 'runtime/pyvenv-clean')
     graph('graph-shape-opinion-dropped', 'control_graph.py',
           '        if _shaped_like_repository(place) or any(git_finds_repository(start) for start in _discovery_starts(place)):\n',
           '        if any(git_finds_repository(start) for start in _discovery_starts(place)):\n', 'authority/stage-links')

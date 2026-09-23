@@ -525,7 +525,7 @@ def runtime_problems(runtime):
             for path in config_paths(key.strip(), value):
                 if inside_repository(path):
                     problems.append('pyvenv.cfg ' + key.strip() + ' names a repository path')
-    return problems
+    return list(dict.fromkeys(problems))
 
 
 def visited_paths(path, limit=40):
@@ -574,6 +574,8 @@ def config_paths(key, value):
             words = shlex.split(value)
         except ValueError:
             words = []
+        # An option's value (venv writes --prompt="<path>") is judged as a word of its own.
+        words += [word.partition('=')[2] for word in words if word.startswith('-') and '=' in word]
         pieces = value.split(' ')
         words += [' '.join(pieces[start:end]) for start in range(len(pieces)) if pieces[start].startswith('/')
                   for end in range(start + 1, len(pieces) + 1)]

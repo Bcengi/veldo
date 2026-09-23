@@ -1053,9 +1053,16 @@ def _s43_run():
         (root / 'shape-runtime/bin').mkdir(parents=True)
         (root / 'shape-runtime/bin/python').symlink_to(_s43_sys.executable)
         (root / 'into-runtime').symlink_to(root / 'shape-runtime/stage')
+        (root / 'outside-stage-2').mkdir()
+        (root / 'shape-runtime/out').symlink_to(root / 'outside-stage-2')
+        (root / 'runtime-link').symlink_to(root / 'shape-runtime')
         for shape, python, place in (
                 ('root-written-in-repository', _s43_sys.executable, root / 'shape-repository/.git/out'),
-                ('root-in-runtime', str(root / 'shape-runtime/bin/python'), root / 'into-runtime')):
+                ('root-in-runtime', str(root / 'shape-runtime/bin/python'), root / 'into-runtime'),
+                # Written inside the runtime, resolving outside it: judged as written.
+                ('root-written-in-runtime', str(root / 'shape-runtime/bin/python'), root / 'shape-runtime/out'),
+                # The runtime named through a link: the prefix is judged as resolved.
+                ('runtime-prefix-via-link', str(root / 'runtime-link/bin/python'), root / 'shape-runtime/stage-direct')):
             placed = graph.Adapter({'python': python, 'runner': str(stub), 'stage': str(place)}, 'domain', 'repository')
             try:
                 placed.start('cycle-place', 'command-place', snapshot, version)
@@ -1088,6 +1095,8 @@ def _s43_run():
                    'runners-unwritable': 'the stage cannot be used',
                    'root-written-in-repository': 'the runtime stage lies inside a repository',
                    'root-in-runtime': 'the runtime stage lies inside the runtime',
+                   'root-written-in-runtime': 'the runtime stage lies inside the runtime',
+                   'runtime-prefix-via-link': 'the runtime stage lies inside the runtime',
                    'root-loop': 'the stage cannot be used', 'pyvenv-loop': 'the runtime cannot be judged',
                    'pyvenv-nul': 'the runtime cannot be judged'}
         expect('graph/authority/stage-shapes', all(
