@@ -423,8 +423,12 @@ def stage(runtime):
     """The runner, copied content-addressed into the stage, outside every repository. The stage is a
     per-account directory separate from the runtime; the adapter follows no link it did not make."""
     root = Path(runtime['stage']).resolve()
-    if inside_repository(root):
+    if inside_repository(runtime['stage']):
         raise Refused('runtime_unavailable', 'the runtime stage lies inside a repository')
+    prefix = Path(os.path.abspath(runtime['python'])).parent.parent
+    for place in (Path(os.path.abspath(runtime['stage'])), root):
+        if any(place == base or base in place.parents for base in (prefix, prefix.resolve())):
+            raise Refused('runtime_unavailable', 'the runtime stage lies inside the runtime')
     if root.exists() and not root.is_dir():
         raise Refused('runtime_unavailable', 'the stage root is not a directory')
     root.mkdir(mode=0o700, parents=True, exist_ok=True)

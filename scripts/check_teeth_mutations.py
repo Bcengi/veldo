@@ -518,6 +518,11 @@ def cases():
           'authority/stage-shapes')
     graph('graph-staged-runner-shape-unchecked', 'control_graph.py',
           "    if target.exists() and not target.is_file():\n", "    if False:\n", 'authority/stage-shapes')
+    graph('graph-stage-root-judged-resolved-only', 'control_graph.py',
+          "    if inside_repository(runtime['stage']):\n", "    if inside_repository(root):\n", 'authority/stage-shapes')
+    graph('graph-stage-inside-runtime-allowed', 'control_graph.py',
+          "        if any(place == base or base in place.parents for base in (prefix, prefix.resolve())):\n",
+          "        if False:\n", 'authority/stage-shapes')
     graph('graph-descriptors-in-parent-tmpdir', 'control_graph.py',
           'tempfile.TemporaryFile(dir=work) as given, tempfile.TemporaryFile(dir=work) as answer:',
           'tempfile.TemporaryFile() as given, tempfile.TemporaryFile() as answer:', 'authority/no-direct-write')
