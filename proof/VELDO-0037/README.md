@@ -11,14 +11,16 @@ Targeted verification actually run on this branch:
 
 ```text
 python3 -B scripts/selftest.py --suite 59_veldo_0037_aliases
-  59_veldo_0037_aliases   32 passed   3.47s
-  selftest (PARTIAL, 1 of 67 suites): 58 passed, 0 failed
+  59_veldo_0037_aliases   34 passed   3.88s
+  selftest (PARTIAL, 1 of 67 suites): 60 passed, 0 failed
 python3 -B scripts/check_teeth_mutations.py --finding 37
-  {"mutations_rejected": 34, "green_suites": {"59_veldo_0037_aliases.py": 58}}
+  {"mutations_rejected": 42, "green_suites": {"59_veldo_0037_aliases.py": 60}}
 python3 .veldo/validate.py all        exit 0
 bash scripts/check_generated.sh       generated: pass
-python3 -B proof/VELDO-0037/red_at_9421af6.py
-  the five second-review rows (and the renamed-code row) fail against 9421af6's modules
+python3 -B proof/VELDO-0037/red_at_9930b32.py
+  the two third-check rows, and only they, fail against 9930b32's modules
+python3 -B proof/VELDO-0037/red_at_9421af6.py   (recorded before the third check; see below)
+  the five second-review rows (and the renamed-code row) failed against 9421af6's modules
 python3 -B proof/VELDO-0037/red_at_adfb89a.py   (recorded before the second review; see below)
   the eight review-defect rows, and only they, failed against adfb89a's modules
 ```
@@ -62,7 +64,7 @@ revisions gained their own command in `control_readset.py`, both added to the fo
 
 ## Criteria and observed rows
 
-Suite `scripts/suites/59_veldo_0037_aliases.py`, 27 rows (19 below, 8 in the review section). It uses a real SQLite store, a real Git
+Suite `scripts/suites/59_veldo_0037_aliases.py`, 34 rows (19 below, 15 in the three review sections). It uses a real SQLite store, a real Git
 origin and three clones (two requester workspaces and the authority's publication checkout), real
 Ed25519 journal signatures through `ssh-keygen`, separate allocation processes and separate
 read-only reader processes. `observations.json` retains every row and the suite's observations.
@@ -257,7 +259,8 @@ carries no declarations; the owners' next `attach` then finds their namespaces o
 `ownership_conflict`, which fails closed but means that recovery work has to restore the
 declarations with the entities. Ownership is by command name: two services registering commands of
 the same name are trusted code, and `attach` refuses a second allocation authority on one
-connection. The carrier pattern over-counts on purpose (`specs/VELDO-0010.txt` holds 10), since a
+connection (superseded by the third check: ownership is now bound to the owning module's file and
+digest, see the last section). The carrier pattern over-counts on purpose (`specs/VELDO-0010.txt` holds 10), since a
 skipped number costs nothing and a reissued one is a second document under one identity.
 `red_at_adfb89a.py` was recorded against the suite as it stood at 9421af6; the final suite calls the
 new entry points, so that record stands as history and is not re-runnable unchanged.
@@ -297,3 +300,125 @@ no-op and mutant runs; `check_teeth_mutations.py --finding 37` took 3 min 57 s s
 `check_gate_mutations.py` shares baselines and runs 8 workers, so its added wall time is roughly a
 third of the serial figure. **Note for the lead, repeated:** finding 37 is now 34 of the registered
 cases in `check_gate_mutations.py`'s combined 120 s stage budget, up from 24.
+
+## Third independent check fixes (2026-09-23)
+
+A third independent check reproduced two defects in 9930b32 with standalone scripts (`p1`-`p6`,
+`p3b`). Each was fixed test first, one commit per defect: a new suite row (rows 14 and 15 of the
+defect section), recorded RED against 9930b32 by failing its assertion, then the fix, then
+registered finding-37 mutations that turn that row red again. A third commit closes a hole the
+second fix opened (below).
+
+**RED record.** `red-at-9930b32.json` (from `red_at_9930b32.py`) runs the final suite with the three
+modules the fixes changed (`control_alias.py`, `control_store.py`, `control_readset.py`) taken from
+9930b32 and every other module from this tree. The suite completes and exactly the two new rows
+fail. No shims were needed: both rows call only entry points 9930b32 has, and the one new keyword
+(`declare_owners(module=...)`) is caught as `TypeError` inside the row and recorded as its value.
+Re-run on f84f2d2, it writes a byte-identical record. `red_at_9421af6.py` no longer runs against the
+final suite (row 14 registers `Revisions.transition` directly, which its shim does not have), so its
+record stands as history, like `red_at_adfb89a.py`'s.
+
+| # | Defect | Row | At 9930b32 (recorded RED) | Fix | Mutations (each reds the row) |
+|---|---|---|---|---|---|
+| 1 | `accept_revision` accepted a commit the allocation authority's repository does not contain, and every later `enable_artifact_kind` then refused `invalid_input` with nothing able to clear it | `aliases/revision-in-enrolled-repository` | a revision service attached to an unrelated repository, and one attached to a clone holding an unpushed commit, both accepted; the same through `Revisions` registered without attach; every later enabling refused `invalid_input`, so no alias was allocated; the kind enabled beside a raw-SQL revision, and a directly registered `Allocations` reading another path, refused `invalid_input` too (the floor was already poisoned), and the allocation authority's own attach to the clone was accepted | the first attach (`attach_revisions` or `control_alias.attach`) binds each repository UUID of the domain to its accepted repository in the store (`control_store.bind_repositories`, all or none, the `repository_bindings` table); another path refuses `repository_binding_conflict`. `accept_revision`'s transition reads the binding inside its transaction and refuses `unenrolled_commit` when the bound repository does not hold the commit at acceptance time, whatever path its object was built with. The enabling transition refuses `wrong_repository` when its object reads another path than the bound one, reads the bound repository, and takes its floor only over accepted commits that repository holds, so a revision no command could have accepted (the row writes one by raw SQL) cannot poison it. After the clone's commit reaches the bound repository it is accepted and its number (VELDO-0007) raises the floor: the next alias is VELDO-0008 | `revision-any-repository` (reintroduces it), `floor-counts-unheld-revisions`, `enable-reads-unbound-repository`, `repository-binding-unchecked` |
+| 2 | Ownership was keyed on the operation NAME a connection registers, so a connection registering its own transition as `enable_artifact_kind` or `accept_revision` passed it | `aliases/owned-by-code-not-name` | transitions this suite registered as `enable_artifact_kind`, `accept_revision` and `accept_snapshot` all committed (the counter rewound to 1, a revision with commit `fff...f` and a snapshot forged), and so did the genuine `Allocations._transition` wrapped around a body from the suite; the declaration held no module; an edited copy of the alias module kept writing | each declaration records the owning module's resolved file and the sha256 of its bytes, which the store reads itself (`declare_owners(..., module=__file__)`). Before an owned command's transition runs, `execute` requires that the registered callable, followed through bound methods and every closure cell, was compiled from exactly that file, and that the file still has that digest; otherwise it refuses `foreign_transition` and runs nothing. A command already bound to other code refuses `ownership_conflict` at declaration. The genuine module attached on another connection still allocates (VELDO-0003); the edited copy is refused until its bytes are restored | `store-owner-by-name` (reintroduces it), `store-owner-ignores-digest`, `store-owner-outer-code-only` |
+
+**The hole the second fix opened, closed in its own commit.** Re-running `p4` showed that a
+declaration naming one of the store's own generic commands (`upsert_entity` as the "owner" of a
+squatted prefix) would bind that command to a foreign module, so every `upsert_entity` on the
+store, for any entity, would refuse `foreign_transition`. A declaration may no longer name any
+`COMMAND_REGISTRY` command (`malformed_command`); they are what ownership keeps out. Row 15 asserts
+it and the generic write beside it, and `owners-may-name-generic-commands` reds the row.
+
+**What clears a revision recorded before this fix: none needed, because none exists.**
+`accept_revision` was introduced on this branch (e3f3f45) and main has none, so a revision it
+recorded without the repository check exists only in this branch's test stores. A store holding
+accepted revisions written by generic commands before any declaration already refuses both
+attaches `ownership_conflict`, and after a declaration such a write is refused `entity_owned`. And
+if one exists anyway, it no longer poisons anything: the floor skips a commit the bound repository
+does not hold.
+
+**Open finding for the lead (found while checking this proof, not fixed here).** That skip does not
+tell a revision nobody could have accepted from one `accept_revision` rightly accepted whose commit
+the bound repository later lost (a deleted branch and `gc`, or a force push). Builder probe
+`q7_lost_commit` accepts a revision on a side commit holding `specs/VELDO-0009-side.md`, deletes the
+branch and prunes it, then enables the kind: on this tree enabling commits with `next = 1` and
+`floor_commits` naming only the main commit, so VELDO-0009 can be issued a second time and nothing
+fails. At 9930b32 the same probe refused `invalid_input` (`accepted commit must identify an
+existing commit`), which failed closed. The brief asked that a revision the floor could not have
+accepted never poison it; the fix also drops revisions it did accept. Closing this needs a design
+choice (for example refuse by name when an accepted commit is gone, and skip only revisions no
+command wrote, or pin every accepted commit with a ref in the bound repository), so it is left to
+the lead rather than decided in a proof pass.
+
+**Stated limits, not claims** (also in the specification's Notes and the store's docstring).
+Enforcement lives in `control_store.execute` under a same-account threat model, so raw SQL on the
+store file, a store module copy from before the rule (`p6` still prints its `BUG(limit)` line), and
+deleting the `entity_owners` table (`p4a`'s last case) all write owned entities; so does code that
+deliberately compiles a function under the declared file name, or patches the owning module's
+globals in its own process. Declarations and repository bindings are not in the journal (Release 2
+recovery). **For the lead's decision:** a declaration names one file and its bytes, so an owning
+service attaches only from that copy as it was when it first declared. An upgraded module, or the
+same module run from another checkout's installed `.veldo/` copy against a shared store, is refused
+`ownership_conflict` at attach (the suite observes this as `owned-code-copy-attach`), and Release 1
+has no re-declaration path. That is the brief's design taken literally; if the authority must
+survive an upgrade, the binding needs an operator re-declaration step. The repository binding has
+the same shape: moving the accepted repository on disk refuses every service until it is rebound,
+and no rebinding path exists.
+
+**Consequences for callers.** `declare_owners` requires `module=` (the owning module's own
+`__file__`); `entity_owners` rows carry `module` and `module_digest`. New refusals:
+`repository_binding_conflict` (`invalid_input`), `foreign_transition` (`missing_authority`), and
+`unenrolled_commit` from `accept_revision`. A kind's `floor_commits` now lists only the accepted
+commits the bound repository holds. `control_store.py` imports nothing new, since VELDO-0023's AC3
+row pins its imports. Every control-store suite is green after the change (`36`, `37`, `38`, `39`,
+`46`, `56`, `58_veldo_0035`, `58_veldo_0036`, `59`, each re-run on f84f2d2 with `--suite`), and
+`check_teeth_mutations.py --finding 35` still rejects all 12 of VELDO-0035's mutants. `56_veldo_0027_signing`'s
+`signing/process-count-and-listeners` row failed twice inside this worktree mid-change (once with
+the second fix stashed), passed in a copy of the same tracked tree at 9930b32, 3fb2115 and the
+working state, and passed in this worktree on the final code and again on its re-run; its cause was not determined, and the
+row reads only VELDO-0027's own signer processes.
+
+### Re-running the third check's scripts
+
+`review3-rerun.txt` is the output of every script against the final modules (f84f2d2), with each
+script's exit status, and `review3-rerun.diff` every change made to them, generated against the
+reviewer's originals: (a) every path to the reviewer's scratch directory, including the one the `p5`
+child process imports its harness from, now names one scratch directory (`<probe>`) whose harness
+loads this worktree's `.veldo/`; `p6`'s old store copy there is byte-identical to
+`git show 9421af6:.veldo/control_store.py`; (b) `p4` and `p5` call `declare_owners` without `module=`
+and insert four-column owner rows, so they stop at that call as written (exit 1); `p4a` and `p5a` add
+`module=` and the two digest columns and change nothing else; (c) `p3` and `p3b` stop at
+`attach_revisions`, which now refuses the other repository (exit 1), so `p3a` and `p3ba` catch that
+refusal and then register `accept_revision`'s own code without attach, which is what the transition
+check answers. `p3a` keeps the reviewer's BUG condition (enabling afterwards refuses) with a shorter
+message and drops the reviewer's two recovery attempts (retire, move back), since nothing is left to
+recover. `q7_lost_commit` is the builder's probe for the open finding above, not the reviewer's.
+An earlier record of this re-run (replaced) ran `p5`'s child process against the reviewer's old
+modules, because only the parent's import path had been changed.
+
+| Script | Result on the final code |
+|---|---|
+| `p1_generic` | every write the reviewer's BUG conditions name refused (`entity_owned`, `unregistered_inputs`, `invalid_input`); the case-variant and unowned writes, which own nothing, commit; counter unchanged at 1; no BUG line |
+| `p2_names` | self-registered `enable_artifact_kind` and `accept_revision` refused `foreign_transition`, counter unchanged; no BUG line |
+| `p3`, `p3a` | `p3` stops at its attach to the unrelated repository, refused `repository_binding_conflict`; `p3a` catches that refusal, then direct `accept_revision` of its commit refused `unenrolled_commit`; enabling afterwards commits; no BUG line |
+| `p3b`, `p3ba` | `p3b` stops at its attach to the clone, refused `repository_binding_conflict`; in `p3ba` its unpushed commit refused `unenrolled_commit`; once fetched into the bound repository it is accepted and enabling commits; no BUG line |
+| `p4` | stops at its first `declare_owners` call, refused `malformed_command` for the missing `module=` |
+| `p4a` | every squatting or malformed declaration refused `malformed_command` (each names `upsert_entity` or is empty), so generic writes stay refused `entity_owned`; the rightful attach succeeds; redeclaring the same is a no-op; a read-set attach over pre-written snapshots refuses `ownership_conflict`; after deleting the table by raw SQL a generic write commits and the owner's reattach refuses `ownership_conflict` (stated limit); no BUG line |
+| `p5` | its first case prints the child's declaration refused `malformed_command` (no `module=`), then it stops at the four-column insert |
+| `p5a` | a declaration during an in-flight write of the kind refuses `ownership_conflict`; a write while a declaration is in flight is refused `entity_owned` after it commits; no BUG line |
+| `p6_rawsql_oldcopy` | the 9421af6 store copy and raw SQL both rewind the counter: the one `BUG(limit)` line left, a stated limit; `entity_owners` is not a replay state part |
+| `q7_lost_commit` | enabling after the bound repository lost an accepted commit commits with `next = 1`: the open finding above |
+
+### Gate cost after the third check
+
+`timing.json` (rewritten by `drive.py`): the suite runs in 3.8 s in process under the proof driver
+and 3.9 s under `selftest.py --suite` (34 rows, 60 assertions with the shared preamble); the gate
+runs it twice. By comparison with the second review's 3.4 to 3.6 s, the two new rows cost roughly
+0.3 to 0.5 s. The 42 finding-37 cases take 652.9 s serial for baseline, no-op and mutant runs; `check_teeth_mutations.py --finding 37` took 6 min 20 s serial
+here, up from 3 min 57 s for 34 cases. **Note for the lead:** `check_gate_mutations.py` was run once
+on this tree at 1d80e77 as a measurement, not as verification, while other builders were running
+(load average 11.6 on 20 cores). It stopped at its combined 120 s deadline
+(`mutation_budget_exceeded`) with 158 registered cases, 42 of them finding 37. The contention means
+this measurement does not say how much of that is this branch, but a serial run may exceed the
+budget too, and the stage's budget, or finding 37's share of it, is the lead's decision.
