@@ -211,6 +211,7 @@ def _v54_suite():
                            ('VELDO-9443', ('unbound_decision:decision:D-9443/scope',)),
                            ('VELDO-9444', ('unbound_decision:decision:D-9444/scope',)),
                            ('VELDO-9445', ('unbound_decision:decision:D-9445/scope',)),
+                           ('VELDO-9448', ('unbound_decision:decision:D-9448/scope',)),
                            ('VELDO-9447', ())):
             scenario(sid, codes)
         scenario('VELDO-9446', ('unbound_decision:decision:P-9446/subject', 'unbound_decision:decision:P-9446/scope'),
@@ -279,6 +280,10 @@ def _v54_suite():
         for sid in ('VELDO-9443', 'VELDO-9444', 'VELDO-9445', 'VELDO-9447'):
             decision('decision:D-' + sid[-4:], 'spec', sid, [sid])
             settle('decision:D-' + sid[-4:])
+        # D-9448 is ruled, consistently signed, on VELDO-9448 with a scope whose target is another spec.
+        decision('decision:D-9448', 'spec', 'VELDO-9448', ['VELDO-9448'],
+                 scope=dict(operation='proceed', target='VELDO-9447', parameters={'approach': 'A'}))
+        settle('decision:D-9448')
         decision('decision:P-9446', 'plan', 'PLAN-9404', ['plan:PLAN-9405'], framing=fx_digest({'framing': 'generic'}))
         settle('decision:P-9446')
 
@@ -473,7 +478,8 @@ def _v54_suite():
             check('decisions/unsigned-resolution',
                    group('VELDO-9431', 'VELDO-9432', 'VELDO-9433', 'VELDO-9434', 'VELDO-9435', 'VELDO-9436'))
             check('decisions/scope-binding',
-                   group('VELDO-9441', 'VELDO-9442', 'VELDO-9443', 'VELDO-9444', 'VELDO-9445', 'VELDO-9446', 'VELDO-9447')
+                   group('VELDO-9441', 'VELDO-9442', 'VELDO-9443', 'VELDO-9444', 'VELDO-9445', 'VELDO-9446',
+                         'VELDO-9447', 'VELDO-9448')
                    and all(verdict(before[s], set()) for s in ('VELDO-9441', 'VELDO-9443', 'VELDO-9444', 'VELDO-9445', 'VELDO-9446'))
                    and preserved)
 
