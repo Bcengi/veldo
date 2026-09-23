@@ -115,6 +115,16 @@ Live engine/channel qualification cannot be replaced by model-response or author
 Current authorization, independent engineering review, enforceable pre-call spend caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
+Stated limits of store-enforced ownership, not claims. Enforcement lives in
+`control_store.execute` under a same-account threat model, so raw SQL on the store file, a copy of
+the store module from before the rule, and deleting the `entity_owners` table all write owned
+entities; so does code that deliberately compiles a function under the declared module's file name
+or patches the owning module's globals in its own process. The declarations and the repository
+bindings are not in the journal, so a store rebuilt from its journal carries neither (Release 2
+recovery). A declaration names one module file and its bytes, so an owning service attaches only
+from that copy as it was when it first declared: an upgraded module, or the same module from
+another checkout's copy, is refused `ownership_conflict`, and Release 1 has no re-declaration path.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
@@ -141,3 +151,17 @@ commands write the entity kinds and id prefixes it owns; the declaration is pers
 and `control_store.execute` enforces it on every connection whatever was registered where or in what
 order. Accepted revisions and snapshots (VELDO-0035) are declared owned the same way. The store's
 existing behavior for undeclared entities, its domain tables and its command registry are unchanged.
+
+2026-09-23 third independent check: ownership named only a command, so a connection registering
+its own transition as `enable_artifact_kind` or `accept_revision` passed it; each declaration now
+records the owning module's file and digest, and `execute` runs an owned command only when its
+registered transition, and every function its closure holds, is that file's code with those bytes
+(`foreign_transition` otherwise), and no declaration may name one of the store's generic commands.
+An accepted revision could name a commit the allocation authority's repository lacks, after which
+every enabling refused; the first service to attach now binds each repository UUID to its accepted
+repository in the store (`repository_binding_conflict` for another), `accept_revision` refuses
+`unenrolled_commit` for a commit the bound repository does not hold at acceptance time, and the
+floor counts only accepted commits the bound repository holds. No revision recorded before this
+fix exists outside test stores: `accept_revision` was introduced on this branch, and a store
+holding accepted revisions written by generic commands already refuses both attaches
+`ownership_conflict`, so no operator clearing path is needed.
