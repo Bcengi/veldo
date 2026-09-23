@@ -736,8 +736,8 @@ def cases():
                  "                     presentation_version=now_shown.get('presentation_version'))\n",
                  'answer/current-presentation-only')
     presentation('answer-drops-rationale',
-                 "                  'ruling': a['ruling'], 'rationale': a['rationale'], 'attribution': dict(ev),\n",
-                 "                  'ruling': a['ruling'], 'rationale': None, 'attribution': dict(ev),\n",
+                 "                  'rationale': a['rationale'], 'attribution': dict(ev),\n",
+                 "                  'rationale': None, 'attribution': dict(ev),\n",
                  'answer/ruling-and-rationale')
     presentation('answer-skips-edge-signature',
                  "        if not verified:\n            raise Refused('not_authorized', 'the answer signature does not verify')\n",
@@ -748,6 +748,11 @@ def cases():
                  "        if receipt['outcome'] != 'published':\n            raise Refused('unseen_presentation'",
                  "        if receipt['outcome'] == 'refused':\n            raise Refused('unseen_presentation'",
                  'answer/unseen-refused')
+    # VELDO-0065 review r7: the answer record is what authority_contract.settle consumes.
+    presentation('answer-records-typed-choice-as-ruling', "'choice': a['choice'], 'ruling': a['ruling'],\n",
+                 "'choice': a['choice'], 'ruling': a['choice'],\n", 'answer/settle-consumes-answer')
+    presentation('unmapped-choice-presented', "            return 'unmapped_choice', None, versions\n",
+                 "            pass\n", 'answer/settle-consumes-answer')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

@@ -35,7 +35,7 @@ def _driver():
     return module
 
 
-def one(path):
+def one(paths):
     shared = ROOT / 'scripts/suites/shared.py'
     rows = []
     ns = {'__file__': str(shared),
@@ -48,10 +48,10 @@ def one(path):
     with contextlib.redirect_stdout(out):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         source = (ROOT / 'scripts/suites' / SUITE).read_text()
-        if path:
-            anchor = 'ROOT / ".veldo" / "' + MODULE + '"'
+        for module, path in paths.items():
+            anchor = 'ROOT / ".veldo" / "' + module + '"'
             if source.count(anchor) != 1:
-                raise RuntimeError('suite production-copy anchor moved')
+                raise RuntimeError('suite production-copy anchor moved: ' + module)
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(path) + ')')
         exec(compile(source, SUITE, 'exec'), ns)
     mine = [r for r in rows if r[0].startswith('VELDO-0065 ')]
@@ -60,9 +60,10 @@ def one(path):
             'preamble_rows': len(rows) - len(mine)}
 
 
-def run(path=None):
+def run(path=None, paths=None):
     started = time.monotonic()
-    command = [sys.executable, '-B', __file__, '--one', json.dumps(str(path) if path else '')]
+    paths = paths if paths is not None else ({MODULE: str(path)} if path else {})
+    command = [sys.executable, '-B', __file__, '--one', json.dumps(paths)]
     proc = subprocess.run(command, capture_output=True, text=True, timeout=180)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
@@ -71,7 +72,7 @@ def run(path=None):
 
 def main():
     if len(sys.argv) >= 3 and sys.argv[1] == '--one':
-        print(json.dumps(one(json.loads(sys.argv[2]) or None)))
+        print(json.dumps(one(json.loads(sys.argv[2]))))
         return
     ctm = _driver()
     cases = [c for c in ctm.cases() if c['finding'] == 65]

@@ -35,11 +35,14 @@ edge with the channel's restricted key: the presentation it addresses (id, diges
 ruling and its rationale, and the platform's own message id, sender id, timestamp, chat and the
 message it replies to. It settles only when the named receipt is confirmed published, is the
 head's current presentation, and still binds the current request, framing, authority statement,
-choices and enrolled chat. Everything else refuses by name. The first accepted answer settles the
-request version once; the answer record keeps the ruling, the rationale and the signed assertion.
+choices and enrolled chat. Everything else refuses by name. The owner answers a request version
+once. The answer record is the assertion `authority_contract.settle` consumes (VELDO-0068 performs
+the one settlement): its ruling is in the contract's RULINGS vocabulary, mapped from the offered
+choice in CHOICE_RULINGS and nowhere else, beside the choice the owner typed, the rationale and
+the edge's signature. No second settlement record is written here.
 
 WHAT IT IS NOT. Not canonical acquisition of updates from the platform (VELDO-0066), edge
-enrollment and delegation (VELDO-0067), quorum settlement and decision effects (VELDO-0068), or
+enrollment and delegation (VELDO-0067), settlement, quorum and decision effects (VELDO-0068), or
 interrupted publication and lost-acknowledgement recovery (Release 2). The bot token is supplied
 by the caller's custody and never logged or stored. Standard library only.
 """
@@ -59,7 +62,6 @@ RECEIPT_KIND = 'channel_presentation'
 HEAD_KIND = 'channel_presentation_head'
 FRAMING_KIND = 'presentation_framing'
 ANSWER_KIND = 'presentation_answer'
-SETTLEMENT_KIND = 'presentation_settlement'
 RECORD_OPERATION = 'channel_presentation_record'
 FRAME_OPERATION = 'presentation_frame'
 ANSWER_OPERATION = 'presentation_answer'
@@ -74,7 +76,7 @@ REQUEST_FIELDS = ('kind', 'owner', 'scope', 'deadline', 'budget', 'brief', 'choi
 BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',
                 'authority_statement', 'choices', 'owner', 'enrolled_chat')
 INTENT_FIELDS = ('schema', 'channel', 'request_id', 'request_version', 'request_digest', 'request',
-                 'assignment_version', 'subject_digests', 'presentation_version', 'risk_statement', 'framing_id',
+                 'assignment_version', 'subject_digests', 'presentation_version', 'risk_statement', 'framing_id', 'rulings',
                  'framing_version', 'authority_statement', 'choices', 'owner', 'enrollment_id', 'enrollment_version',
                  'enrolled_chat', 'supersedes', 'reply_to', 'rendered', 'brief_digest', 'presentation_id')
 PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text', 'reply_to_message_id')
@@ -89,12 +91,16 @@ REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_inpu
             'missing_framing': 'missing_evidence', 'no_enrolled_chat': 'missing_evidence',
             'invalid_enrollment': 'missing_evidence',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
-            'stale_subject': 'stale_subject', 'already_settled': 'stale_subject',
+            'stale_subject': 'stale_subject', 'already_answered': 'stale_subject', 'unmapped_choice': 'invalid_input',
             'stale_version': 'stale_subject',
             'presentation_mismatch': 'missing_evidence', 'chat_mismatch': 'missing_evidence',
             'supersession_mismatch': 'missing_evidence',
             'channel_refused': 'unavailable_service', 'incomplete_transaction': 'unavailable_service',
             'unavailable_service': 'unavailable_service', 'unknown_outcome': 'unknown_outcome'}
+# The one place an offered choice becomes a ruling of authority_contract.RULINGS (and the one
+# acknowledgement word); a decision whose choices do not all map here is not presented.
+CHOICE_RULINGS = {'accept': 'approve', 'approve': 'approve', 'reject': 'reject',
+                  'return_for_elaboration': 'return_for_elaboration', 'acknowledged': 'acknowledged'}
 SETTLED_OUTCOMES = {'pending': 'unknown_outcome', 'unknown_outcome': 'unknown_outcome', 'anomaly': 'anomaly'}
 
 
@@ -145,12 +151,17 @@ def framing_id(request_id):
     return 'presentation-framing:%s' % request_id
 
 
-def answer_id(chat, message):
+def answer_id(request_id, request_version, principal):
+    """One answer per principal per request version: what settlement counts, by distinct principal."""
+    return 'presentation-answer:%s:%d:%s' % (request_id, request_version, principal)
+
+
+def answer_command_id(chat, message):
     return 'presentation-answer:%s:%d:%d' % (CHANNEL, chat, message)
 
 
-def settlement_id(request_id, request_version):
-    return 'presentation-settlement:%s:%d' % (request_id, request_version)
+def ruling_of(choice):
+    return CHOICE_RULINGS.get(choice)
 
 
 def _words(text):
@@ -214,6 +225,8 @@ def receipt_problems(receipt, platform=None, retrieved=True):
             problems.append('subject digests are not the request subject')
         if receipt['choices'] != receipt['request'].get('choices'):
             problems.append('choices are not the request choices')
+        if receipt['rulings'] != [ruling_of(c) for c in receipt['choices']]:
+            problems.append('rulings are not the contract rulings of the choices')
         if receipt['rendered'] != render(receipt):
             problems.append('rendered bytes are not the rendering of the bound fields')
         if receipt['brief_digest'] != bytes_digest(receipt['rendered'].encode('utf-8')):
@@ -372,14 +385,16 @@ def _write_new(params, before, kinds):
 class Presenter:
     """Presents one inbox on Telegram, keeps the receipts and decides presentation-bound answers.
 
-    `store`, `membership` and `projection` are the control_store, control_membership and
-    control_channel_projection modules; `inbox` is the VELDO-0064 Inbox on the same connection.
+    `store`, `membership`, `projection` and `assignment` are the control_store, control_membership,
+    control_channel_projection and control_assignment modules; `inbox` is the VELDO-0064 Inbox on the
+    same connection, whose KINDS give each assignment kind the assertion kind an answer carries.
     `sign(bytes) -> text` signs journal records as `journal_signer`. Observations record identity,
     accepted versions and outcome, never rendered text, rationale, signatures or the token."""
 
     def __init__(self, store, membership, projection, inbox, edge, conn, journal_signer, sign,
-                 authority_generation=1, clock=time.time):
+                 authority_generation=1, clock=time.time, *, assignment):
         self.store, self.membership, self.P, self.inbox, self.edge = store, membership, projection, inbox, edge
+        self.assignment = assignment
         self.AC = membership.AC
         self.conn, self.ids = conn, dict(inbox.ids)
         self.journal_signer, self.sign = journal_signer, sign
@@ -399,7 +414,7 @@ class Presenter:
         conn.command_registry[RECORD_OPERATION] = {'transition': guarded(_record_transition), 'writes': writes}
         conn.command_registry[FRAME_OPERATION] = {'transition': guarded(self._frame_transition), 'writes': writes}
         conn.command_registry[ANSWER_OPERATION] = {
-            'transition': guarded(lambda p, b: _write_new(p, b, (('answer', ANSWER_KIND), ('settlement', SETTLEMENT_KIND)))),
+            'transition': guarded(lambda p, b: _write_new(p, b, (('answer', ANSWER_KIND),))),
             'writes': writes}
 
     # reading
@@ -434,11 +449,11 @@ class Presenter:
                 return data
         return None
 
-    def settlement(self, request, version):
-        return self._data(settlement_id(request, version), SETTLEMENT_KIND)
+    def answer_record(self, request, version, principal):
+        return self._data(answer_id(request, version, principal), ANSWER_KIND)
 
     def _observe(self, operation, request, versions, outcome, reason, **extra):
-        accepted = outcome in ('accepted', 'published', 'already_presented', 'settled')
+        accepted = outcome in ('accepted', 'published', 'already_presented', 'answered')
         self.counts['accepted' if accepted else 'refused'] += 1
         self.observations.append(dict(self.ids, operation=operation, channel=CHANNEL, request_id=request,
                                       accepted_versions=versions, outcome=outcome, reason=reason,
@@ -479,13 +494,17 @@ class Presenter:
             return 'invalid_enrollment', None, versions
         versions[eid] = enrollment['version']
         content = {k: c.get(k) for k in REQUEST_FIELDS}
+        rulings = [ruling_of(choice) for choice in c['choices']]
+        acknowledgement = self.assignment.KINDS.get(c['kind']) == 'acknowledgement'
+        if not all(r == 'acknowledged' if acknowledgement else r in self.AC.RULINGS for r in rulings):
+            return 'unmapped_choice', None, versions
         return None, {
             'request_id': request, 'request_version': c['request_version'], 'assignment_version': brief['version'],
             'request': content, 'request_digest': request_digest(request, c['request_version'], content),
             'subject_digests': subject_digests(content), 'risk_statement': fdata['risk_statement'],
             'framing_id': framing_id(request), 'framing_version': framing['version'],
             'authority_statement': authority_statement(request, c['request_version'], c['owner'], entry),
-            'choices': list(c['choices']), 'owner': c['owner'], 'enrollment_id': eid,
+            'choices': list(c['choices']), 'rulings': rulings, 'owner': c['owner'], 'enrollment_id': eid,
             'enrollment_version': enrollment['version'], 'enrolled_chat': enrollment['data']['chat_id']}, versions
 
     # framing: the requester's signed risk statement
@@ -634,8 +653,8 @@ class Presenter:
             return self._observe('publish', request, versions, 'already_presented', None,
                                  presentation_id=self.head(request)['current'])
         pid, hid = record['presentation_id'], head_id(request)
-        if self.settlement(request, record['request_version']):
-            return self._observe('publish', request, versions, 'settled', None, presentation_id=pid)
+        if self.answer_record(request, record['request_version'], record['owner']):
+            return self._observe('publish', request, versions, 'answered', None, presentation_id=pid)
         existing = self.receipt(pid)
         if existing is not None and existing['outcome'] not in RETRYABLE:
             outcome = SETTLED_OUTCOMES.get(existing['outcome'], 'anomaly')
@@ -677,13 +696,16 @@ class Presenter:
         receipt = self.receipt_for_message(chat.get('id'), reply.get('message_id'))
         if receipt is None:
             raise Refused('unknown_presentation', 'the reply addresses no published presentation')
-        ruling, _, rationale = (message.get('text') or '').partition(':')
-        return dict(self.ids, schema=ANSWER_SCHEMA, channel=CHANNEL, assertion_kind='decision_answer',
+        choice, _, rationale = (message.get('text') or '').partition(':')
+        choice = choice.strip()
+        return dict(self.ids, schema=ANSWER_SCHEMA, channel=CHANNEL,
+                    assertion_kind=self.assignment.KINDS.get(receipt['request']['kind']),
+                    authority_scope=list(receipt['request']['scope']),
                     edge_principal=edge_principal, edge_key_id=self.AC.CHANNELS[CHANNEL]['edge_key_id'],
                     principal=receipt['owner'], request_id=receipt['request_id'],
                     request_version=receipt['request_version'], presentation_id=receipt['presentation_id'],
                     presentation_digest=receipt['brief_digest'], presentation_version=receipt['presentation_version'],
-                    ruling=ruling.strip(), rationale=_words(rationale),
+                    choice=choice, ruling=ruling_of(choice), rationale=_words(rationale),
                     attribution={'platform_message_id': message.get('message_id'), 'sender_id': sender.get('id'),
                                  'platform_timestamp': message.get('date'), 'chat_id': chat.get('id'),
                                  'reply_to_message_id': reply.get('message_id')})
@@ -703,9 +725,9 @@ class Presenter:
             return self._observe('answer', a.get('request_id'), {}, 'refused', exc.code,
                                  presentation_id=a.get('presentation_id'))
         except self.store.StoreRefused as exc:
-            # An input read for the decision changed before the commit, or the answer or settlement
-            # was written first by another command: nothing was written by this one.
-            reason = {'stale_version': 'stale_subject', 'invalid_input': 'already_settled'}.get(exc.code, exc.code)
+            # An input read for the decision changed before the commit, or the answer was written
+            # first by another command: nothing was written by this one.
+            reason = {'stale_version': 'stale_subject', 'invalid_input': 'already_answered'}.get(exc.code, exc.code)
             return self._observe('answer', a.get('request_id'), {}, 'refused', reason,
                                  presentation_id=a.get('presentation_id'))
         except sqlite3.Error:
@@ -715,7 +737,7 @@ class Presenter:
     def _answer(self, packet, a):
         if not isinstance(packet, dict) or not isinstance(packet.get('signature'), str) or not packet['signature'].isascii():
             raise Refused('invalid_input', 'an answer is a signed canonical assertion')
-        if (a.get('schema') != ANSWER_SCHEMA or a.get('channel') != CHANNEL or a.get('assertion_kind') != 'decision_answer'
+        if (a.get('schema') != ANSWER_SCHEMA or a.get('channel') != CHANNEL
                 or not _is_str(a.get('edge_principal')) or any(a.get(k) != v for k, v in self.ids.items())):
             raise Refused('invalid_input', 'not a canonical Telegram answer for this authority')
         edge, now = a['edge_principal'], self.clock()
@@ -757,28 +779,29 @@ class Presenter:
             raise Refused('stale_presentation', 'the named presentation no longer binds the current request')
         if not self.membership.scope_covers(edge_entry.get('scope'), receipt['request']['scope']):
             raise Refused('not_authorized', 'the edge scope does not cover the request')
-        if a.get('ruling') not in receipt['choices']:
-            raise Refused('invalid_input', 'the ruling is not an offered choice')
+        # The assertion is what authority_contract.settle reads: its kind, ruling and scope must be
+        # the ones this request and its offered choice give, spelled in the contract vocabulary.
+        if (a.get('choice') not in receipt['choices'] or a.get('ruling') != ruling_of(a.get('choice'))
+                or a.get('assertion_kind') != self.assignment.KINDS.get(receipt['request']['kind'])
+                or a.get('authority_scope') != list(receipt['request']['scope'])):
+            raise Refused('invalid_input', 'the choice is not offered, or its ruling, kind or scope is not the contract\'s')
         if not _is_str(a.get('rationale')):
             raise Refused('missing_rationale', 'an answer records its rationale')
-        sid = settlement_id(request, receipt['request_version'])
-        if self._entity(sid) is not None:
-            raise Refused('already_settled', 'this request version is settled')
-        aid = answer_id(ev['chat_id'], ev['platform_message_id'])
-        versions.update({pid: receipt['entity_version'], head_id(request): head['entity_version'], sid: 0, aid: 0,
+        aid = answer_id(request, receipt['request_version'], receipt['owner'])
+        if self._entity(aid) is not None:
+            raise Refused('already_answered', 'the owner has answered this request version')
+        versions.update({pid: receipt['entity_version'], head_id(request): head['entity_version'], aid: 0,
                          edge: edge_entry['entity_version'], key['key_id']: (self._entity(key['key_id']) or {}).get('version', 0)})
         answer = {'schema': ANSWER_SCHEMA, 'channel': CHANNEL, 'request_id': request,
                   'request_version': receipt['request_version'], 'request_digest': receipt['request_digest'],
                   'presentation_id': pid, 'presentation_digest': receipt['brief_digest'],
                   'presentation_version': receipt['presentation_version'], 'principal': receipt['owner'],
-                  'ruling': a['ruling'], 'rationale': a['rationale'], 'attribution': dict(ev),
+                  'assertion_kind': a['assertion_kind'], 'choice': a['choice'], 'ruling': a['ruling'],
+                  'rationale': a['rationale'], 'attribution': dict(ev),
                   'edge_principal': edge, 'edge_key_id': key['key_id'],
                   'assertion': a, 'signature': packet['signature'], 'accepted_at': now}
-        settlement = {'schema': ANSWER_SCHEMA, 'request_id': request, 'request_version': receipt['request_version'],
-                      'ruling': a['ruling'], 'answer_id': aid, 'presentation_id': pid, 'originating_channel': CHANNEL,
-                      'principal': receipt['owner'], 'settled_at': now}
-        self._commit(ANSWER_OPERATION, dict(answer_id=aid, answer=answer, settlement_id=sid, settlement=settlement),
-                     versions, principal=edge, command_id=aid)
+        self._commit(ANSWER_OPERATION, dict(answer_id=aid, answer=answer), versions, principal=edge,
+                     command_id=answer_command_id(ev['chat_id'], ev['platform_message_id']))
         return self._observe('answer', request, versions, 'accepted', None, presentation_id=pid, answer_id=aid,
                              ruling=a['ruling'])
 
@@ -787,7 +810,7 @@ class Presenter:
         requires, and receipts whose outcome is unknown or anomalous."""
         pending = 0
         for entry in self.inbox.index()['entries']:
-            if entry['category'] != 'pending' or self.settlement(entry['id'], entry['request_version']):
+            if entry['category'] != 'pending' or self.answer_record(entry['id'], entry['request_version'], entry['owner']):
                 continue
             refusal, record, _ = self.compose(entry['id'])
             if refusal or record is not None:

@@ -73,7 +73,7 @@ def _v65_checks(base):
     rows = {name: [] for name in ('install/assets', 'presentation/receipt-binds-shown-content',
                                   'presentation/revision-identity', 'answer/current-presentation-only',
                                   'answer/ruling-and-rationale', 'presentation/visible-supersession',
-                                  'answer/unseen-refused')}
+                                  'answer/unseen-refused', 'answer/settle-consumes-answer')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -158,7 +158,7 @@ def _v65_checks(base):
     thread = _v65_threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     edge = V.TelegramPresentationEdge(P, 'http://127.0.0.1:%d' % server.server_address[1], api['token'])
-    presenter = V.Presenter(S, CM, P, inbox, edge, conn, 'authority', journal_sign)
+    presenter = V.Presenter(S, CM, P, inbox, edge, conn, 'authority', journal_sign, assignment=I)
     counter = [0]
 
     def signed(who, body):
@@ -228,6 +228,14 @@ def _v65_checks(base):
     def entity(eid):
         row = conn.execute('SELECT version, digest, data FROM entities WHERE id=?', (eid,)).fetchone()
         return None if row is None else {'version': row[0], 'digest': row[1], 'data': _v65_json.loads(row[2])}
+
+    def answered(rid, version):
+        """The answer record of one request version, read from the store itself."""
+        for (text,) in conn.execute("SELECT data FROM entities WHERE kind='presentation_answer'"):
+            data = _v65_json.loads(text)
+            if data.get('request_id') == rid and data.get('request_version') == version:
+                return data
+        return None
 
     def independent_request_digest(rid):
         # Spelled here: identity, version and every accepted field of the stored assignment.
@@ -371,7 +379,7 @@ def _v65_checks(base):
             stale = answer(owner_reply(r1, 'accept: same content as before'))
             check(ident, 'an answer to the first presentation is refused as stale after the equal revision',
                   reason(stale) == ('refused', 'stale_presentation'))
-            check(ident, 'the first presentation settles nothing after the equal revision', presenter.settlement(d1, 1) is None)
+            check(ident, 'the first presentation settles nothing after the equal revision', answered(d1, 1) is None)
             second = presenter.present(d1)
             r2 = presenter.current(d1) or {}
             check(ident, 'the revision is a new presentation with its own identity',
@@ -445,7 +453,7 @@ def _v65_checks(base):
                 result = presenter.answer(edge_signed(hand_assertion(receipts[u], api['next'])))
                 check(unseen, 'an answer to %s presentation is refused as unseen' % label,
                       reason(result) == ('refused', 'unseen_presentation'))
-                check(unseen, '%s presentation settles nothing' % label, presenter.settlement(u, 1) is None)
+                check(unseen, '%s presentation settles nothing' % label, answered(u, 1) is None)
             check(unseen, 'unknown outcomes are visible in metrics', presenter.metrics()['unknown'] >= 2)
             asked = len(api['requests'])
             again = {u: presenter.present(u) for u in (u1, u2, u3)}
@@ -475,16 +483,16 @@ def _v65_checks(base):
             replaced = answer(owner_reply(c1_r1, 'accept: approving the brief I saw'))
             check(cur, 'an answer to the presentation of the replaced brief is refused as stale',
                   reason(replaced) == ('refused', 'stale_presentation'))
-            check(cur, 'the presentation of the replaced brief settles nothing', presenter.settlement(c1, 1) is None)
+            check(cur, 'the presentation of the replaced brief settles nothing', answered(c1, 1) is None)
             frame('pm', 'C-2', 1, 'High: the risk is now a production migration.')
             rerisked = answer(owner_reply(c2_r1, 'accept: approving the risk I saw'))
             check(cur, 'an answer to a presentation whose risk changed is refused',
-                  reason(rerisked) == ('refused', 'stale_presentation') and presenter.settlement(c2, 1) is None)
-            command('pm', 'revise', 'C-3', request_version=1, changes={'choices': ['accept', 'reject', 'defer']})
+                  reason(rerisked) == ('refused', 'stale_presentation') and answered(c2, 1) is None)
+            command('pm', 'revise', 'C-3', request_version=1, changes={'choices': ['accept', 'reject', 'return_for_elaboration']})
             frame('pm', 'C-3', 2, 'Low: a wrong choice costs one review cycle.')
             rechosen = answer(owner_reply(c3_r1, 'accept: approving the choices I saw'))
             check(cur, 'an answer to a presentation whose choices changed is refused',
-                  reason(rechosen) == ('refused', 'stale_presentation') and presenter.settlement(c3, 1) is None)
+                  reason(rechosen) == ('refused', 'stale_presentation') and answered(c3, 1) is None)
             for c in (c1, c2, c3):
                 presenter.present(c)
             c1_r2, c2_r2, c3_r2 = (presenter.current(c) or {} for c in (c1, c2, c3))
@@ -493,40 +501,38 @@ def _v65_checks(base):
                   reason(superseded) == ('refused', 'superseded_presentation'))
             unreferenced = answer(owner_reply(c1_r2, 'accept: no reference'), drop=V.REFERENCE_FIELDS)
             check(cur, 'an answer that names no presentation is refused',
-                  reason(unreferenced) == ('refused', 'missing_presentation') and presenter.settlement(c1, 2) is None)
+                  reason(unreferenced) == ('refused', 'missing_presentation') and answered(c1, 2) is None)
             crossed = answer(owner_reply(c3_r2, 'accept: crossed'), change={
                 'request_id': c2, 'request_version': c2_r2.get('request_version'), 'presentation_id': c2_r2.get('presentation_id'),
                 'presentation_digest': c2_r2.get('brief_digest'), 'presentation_version': c2_r2.get('presentation_version')})
             check(cur, 'an answer naming one presentation while replying to another is refused',
-                  reason(crossed) == ('refused', 'evidence_mismatch') and presenter.settlement(c2, 1) is None)
+                  reason(crossed) == ('refused', 'evidence_mismatch') and answered(c2, 1) is None)
             accepted = answer(owner_reply(c1_r2, 'accept: the parser-only brief is right'))
             check(cur, 'control: an answer to the current presentation settles',
-                  reason(accepted) == ('accepted', None) and (presenter.settlement(c1, 2) or {}).get('presentation_id')
+                  reason(accepted) == ('accepted', None) and (answered(c1, 2) or {}).get('presentation_id')
                   == c1_r2.get('presentation_id'))
             twice = answer(owner_reply(c1_r2, 'reject: changed my mind'))
-            check(cur, 'a settled request version refuses a second answer', reason(twice) == ('refused', 'already_settled')
-                  and (presenter.settlement(c1, 2) or {}).get('ruling') == 'accept')
+            check(cur, 'an answered request version refuses a second answer', reason(twice) == ('refused', 'already_answered')
+                  and (answered(c1, 2) or {}).get('choice') == 'accept')
             check(cur, 'control: the other current presentations still settle',
                   reason(answer(owner_reply(c2_r2, 'reject: too risky'))) == ('accepted', None)
-                  and reason(answer(owner_reply(c3_r2, 'defer: after the release'))) == ('accepted', None))
+                  and reason(answer(owner_reply(c3_r2, 'return_for_elaboration: after the release'))) == ('accepted', None))
 
         # AC2: every answer records its own ruling and rationale
         rul = 'answer/ruling-and-rationale'
         with section(rul):
-            settled = presenter.settlement(c1, 2) or {}
-            record = (entity(settled.get('answer_id', '')) or {}).get('data', {})
+            record = answered(c1, 2) or {}
             reply_msg = api['messages'].get((owner_chat, record.get('attribution', {}).get('platform_message_id'))) or {}
             check(rul, 'the answer records its ruling, rationale and the presentation it names',
-                  record.get('ruling') == 'accept' and record.get('rationale') == 'the parser-only brief is right'
+                  record.get('choice') == 'accept' and record.get('ruling') == 'approve'
+                  and record.get('rationale') == 'the parser-only brief is right'
                   and record.get('presentation_id') == c1_r2.get('presentation_id')
                   and record.get('presentation_digest') == c1_r2.get('brief_digest')
                   and record.get('presentation_version') == c1_r2.get('presentation_version') and record.get('principal') == 'owner')
             check(rul, 'the answer keeps the platform\'s message, sender, time and reply identity',
                   reply_msg.get('reply_to') == c1_r2.get('message_id') == record.get('attribution', {}).get('reply_to_message_id')
                   and record.get('attribution', {}).get('sender_id') == owner_chat
-                  and record.get('attribution', {}).get('platform_timestamp') == reply_msg.get('date')
-                  and settled.get('answer_id') == 'presentation-answer:telegram_chat:%d:%s' % (
-                      owner_chat, record.get('attribution', {}).get('platform_message_id')))
+                  and record.get('attribution', {}).get('platform_timestamp') == reply_msg.get('date'))
             edge_signers = base / 'edge_signers'
             edge_signers.write_text('telegram-edge namespaces="%s" %s\n' % (AUTHC.SIGNATURE_NAMESPACE, public['telegram-edge']))
             signature = base / 'answer.sig'
@@ -537,10 +543,9 @@ def _v65_checks(base):
             check(rul, 'the recorded assertion verifies with the edge\'s restricted key and ssh-keygen alone',
                   verified.returncode == 0 and record.get('edge_key_id') == edge_key
                   and (record.get('assertion') or {}).get('rationale') == record.get('rationale'))
-            c2_answer = (entity((presenter.settlement(c2, 1) or {}).get('answer_id', '')) or {}).get('data', {})
+            c2_answer = answered(c2, 1) or {}
             check(rul, 'a rejection is an answer with its own ruling and rationale',
-                  (presenter.settlement(c2, 1) or {}).get('ruling') == 'reject'
-                  and c2_answer.get('ruling') == 'reject' and c2_answer.get('rationale') == 'too risky')
+                  c2_answer.get('choice') == c2_answer.get('ruling') == 'reject' and c2_answer.get('rationale') == 'too risky')
             k1 = opened('K-1')
             presenter.present(k1)
             k1_r = presenter.current(k1) or {}
@@ -550,7 +555,7 @@ def _v65_checks(base):
                 check(rul, '%s is refused' % label, reason(answer(owner_reply(k1_r, text))) == ('refused', why))
             message = owner_reply(k1_r, 'reject: tampered later')
             tampered = edge_signed(presenter.canonical_answer(message, 'telegram-edge'))
-            tampered['assertion'] = dict(tampered['assertion'], ruling='accept')
+            tampered['assertion'] = dict(tampered['assertion'], choice='accept', ruling='approve')
             check(rul, 'an assertion changed after the edge signed it is refused',
                   reason(presenter.answer(tampered)) == ('refused', 'not_authorized'))
             check(rul, 'an assertion signed with the edge\'s ordinary key is refused',
@@ -564,10 +569,10 @@ def _v65_checks(base):
                 check(rul, 'automation is never turned into an answer', False)
             except V.Refused as exc:
                 check(rul, 'automation is never turned into an answer', exc.code == 'not_owner')
-            check(rul, 'no refused answer settled the request', presenter.settlement(k1, 1) is None)
+            check(rul, 'no refused answer settled the request', answered(k1, 1) is None)
             check(rul, 'control: the owner\'s answer then settles',
                   reason(answer(owner_reply(k1_r, 'accept: fine as shown'))) == ('accepted', None)
-                  and (presenter.settlement(k1, 1) or {}).get('ruling') == 'accept')
+                  and (answered(k1, 1) or {}).get('ruling') == 'approve')
             observed = presenter.observations
             check(rul, 'refusals are named with their error class, never labeled success',
                   all(o['reason'] in V.REFUSALS and o['error_class'] == V.REFUSALS[o['reason']] for o in observed if o['outcome'] == 'refused')
@@ -576,6 +581,36 @@ def _v65_checks(base):
                   all('rationale' not in o and 'signature' not in o and 'fine as shown' not in _v65_json.dumps(o) for o in observed))
             m = presenter.metrics()
             check(rul, 'metrics count accepted and refused operations', m['accepted'] >= 8 and m['refused'] >= 15)
+
+        # Review r7: the answer record is what the one settlement contract consumes
+        consume = 'answer/settle-consumes-answer'
+        with section(consume):
+            state = CM.authority_state(S, conn)
+            for rid, version, receipt, ruling in ((c1, 2, c1_r2, 'approve'), (c2, 1, c2_r2, 'reject')):
+                record = answered(rid, version) or {}
+                assertion = record.get('assertion') or {}
+                delegation = dict(principal='owner', channel='telegram_chat', assertion_kinds=['decision_answer'],
+                                  authority_scope=['project-a'], request_version=version,
+                                  presentation_version=receipt.get('presentation_version'), expires_at=9e12,
+                                  edge_key_id=edge_key)
+                request = {'id': rid, 'version': version, 'scope': 'project-a', 'framing_digest': receipt.get('request_digest'),
+                           'subject_digests': receipt.get('subject_digests'), 'roles': [], 'quorum': 1}
+                settled = AUTHC.settle(request, [assertion], [delegation], [presenter.receipt(receipt.get('presentation_id', ''))],
+                                       state['membership'], state['keyring'], _v65_time.time())
+                check(consume, 'authority_contract.settle settles the recorded %s answer as it was recorded' % ruling,
+                      settled['settled'] is True and (settled['settlement'] or {}).get('ruling') == ruling == record.get('ruling')
+                      and (settled['settlement'] or {}).get('presentation_id') == receipt.get('presentation_id'))
+            check(consume, 'recorded rulings are in the contract vocabulary',
+                  all(d.get('ruling') in AUTHC.RULINGS for (t,) in conn.execute("SELECT data FROM entities WHERE kind='presentation_answer'")
+                      for d in [_v65_json.loads(t)]))
+            check(consume, 'no second settlement record exists',
+                  conn.execute("SELECT COUNT(*) FROM entities WHERE kind='presentation_settlement'").fetchone()[0] == 0)
+            command('pm', 'open', 'M-1', assignment=content(choices=('accept', 'maybe later')))
+            frame('pm', 'M-1', 1, 'Low: a wrong choice costs one review cycle.')
+            m1 = I.assignment_id(ids['repository_uuid'], 'M-1')
+            asked = len(api['requests'])
+            check(consume, 'a decision whose choices have no contract ruling is not presented',
+                  reason(presenter.present(m1)) == ('refused', 'unmapped_choice') and len(api['requests']) == asked)
     finally:
         server.shutdown()
         server.server_close()
