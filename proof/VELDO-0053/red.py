@@ -6,6 +6,7 @@
     python3 -B proof/VELDO-0053/red.py e299772     (the third review's rows)
     python3 -B proof/VELDO-0053/red.py 4c29526     (the fourth review's rows)
     python3 -B proof/VELDO-0053/red.py e12aab1     (the fifth review's rows)
+    python3 -B proof/VELDO-0053/red.py 8a3c709     (the sixth review's rows)
 
 This is how the rows added for the 2026-09-23 review were recorded red before their fixes. The suite's
 ROOT is pointed at an export of that commit's .veldo directory, so every module the suite installs
@@ -69,7 +70,8 @@ def main(commit):
                       'observed': {k: observed.get(k) for k in ('store_only', 'public_seam', 'identity_is_what_ran',
                                                                 'validated_is_digested', 'snapshot_in_memory', 'not_text', 'snapshot_source', 'snapshot_by_name',
                                                                 'identity_covers_what_ran', 'snapshot_held_names',
-                                                                'snapshot_module_files',
+                                                                'snapshot_module_files', 'identity_keyed_by_module',
+                                                                'snapshot_file_bounded',
                                                                 'raised')}},
                      indent=1, default=str))
 

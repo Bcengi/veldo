@@ -65,7 +65,8 @@ contract that is unreadable, malformed, of the wrong type or structurally invali
 (missing_evidence:architecture/required_absence), and bytes the authority did not accept refuse
 (missing_authority:architecture/unaccepted_artifact), compared by the digest of the very bytes the
 loader parsed. Each decision records the artifact it judged and the snapshot of the code that judged it
-(installed path and the digest of the bytes loaded).
+(every module it executed, keyed by module name, with its role label, installed path and the digest of
+the bytes loaded).
 """
 import builtins
 import collections
@@ -396,8 +397,9 @@ def _definition(label, data):
 # The installed files whose code judges an architecture, by the role each plays.
 VALIDATOR_ROLES = (('entry_point', 'validate.py'), ('entry', 'validate_checks.py'), ('loader', 'contract_loader.py'),
                    ('validator', 'arch.py'), ('parser', 'yamlish.py'))
-# Labels only: the recorded identity is whatever the snapshot executes, each module under its role label
-# when it has one and under its module name otherwise.
+# Labels only: the recorded identity is whatever the snapshot executes, each module keyed by its module name
+# (unique among held files) with its role label as a field. A role label is never a key: an engine file named
+# after a role (parser.py) would take the key of that role's module and drop it from the identity.
 ROLE_LABELS = {name[:-3]: role for role, name in VALIDATOR_ROLES}
 
 
@@ -485,9 +487,10 @@ class ValidatorSnapshot:
 
     @property
     def identity(self):
-        """Every held module this snapshot has executed, in the order it ran: under its role label when it has
-        one, else its module name, with its installed path and the digest of the bytes it ran from."""
-        return {ROLE_LABELS.get(held, held): {'module': held, 'path': str(self._installed / (held + '.py')), 'digest': digest}
+        """Every held module this snapshot has executed, in the order it ran, keyed by its module name: its role
+        label (None when it has none), its installed path and the digest of the bytes it ran from."""
+        return {held: {'module': held, 'role': ROLE_LABELS.get(held), 'path': str(self._installed / (held + '.py')),
+                       'digest': digest}
                 for held, digest in self._executed.items()}
 
     def source_key(self, held):
@@ -813,7 +816,7 @@ class Gate:
             found = decision['architecture']
             event['architecture'] = {'basis': found['basis'], 'kind': found['kind'],
                                      'artifact_digest': (found['artifact'] or {}).get('digest'),
-                                     'validator': {role: f['digest'] for role, f in found['validator'].items()}}
+                                     'validator': {module: f['digest'] for module, f in found['validator'].items()}}
             if found.get('error'):
                 # The durable stop event names the error that stopped the validator (ImportError for a miss).
                 event['architecture']['error'] = found['error']
@@ -852,7 +855,7 @@ class Gate:
         try:
             snapshot = self._architecture_validator()
             load, parsed = snapshot.contract(self.workspace, True if accepted else None)
-            found['validator'] = {role: dict(entry) for role, entry in snapshot.identity.items()}
+            found['validator'] = {module: dict(entry) for module, entry in snapshot.identity.items()}
         except Exception as error:  # noqa: BLE001 - a validator that cannot answer refuses, never passes
             found['refusals'] = ['unavailable_service:architecture_validator']
             found['error'] = type(error).__name__

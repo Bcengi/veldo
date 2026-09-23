@@ -691,7 +691,7 @@ def cases():
     def architecture(name, module, old, new, rows):
         add(53, name, '60_veldo_0053_architecture.py', module, old, new, ['architecture/' + r for r in rows])
 
-    IDENTITY = "            found['validator'] = {role: dict(entry) for role, entry in snapshot.identity.items()}"
+    IDENTITY = "            found['validator'] = {module: dict(entry) for module, entry in snapshot.identity.items()}"
     SEAM = "        return self.validate.entry_contract(workspace, required, arch=self.arch)"
 
     architecture('architecture-malformed-as-optional-absence', 'control_eligibility.py',
@@ -751,9 +751,9 @@ def cases():
                  ['substitution'])
     architecture('architecture-identity-from-workspace', 'control_eligibility.py',
                  IDENTITY,
-                 "            found['validator'] = {role: {'path': os.path.join(self.workspace, '.veldo', os.path.basename(entry['path'])),\n"
-                 "                                         'digest': entry['digest']}\n"
-                 "                                  for role, entry in snapshot.identity.items()}  # defect: names what the workspace carries",
+                 "            found['validator'] = {module: {'path': os.path.join(self.workspace, '.veldo', os.path.basename(entry['path'])),\n"
+                 "                                           'digest': entry['digest']}\n"
+                 "                                  for module, entry in snapshot.identity.items()}  # defect: names what the workspace carries",
                  ['substitution'])
     architecture('architecture-identity-not-recorded', 'control_eligibility.py',
                  "        if decision.get('architecture'):\n",
@@ -807,8 +807,8 @@ def cases():
                  ['snapshot-in-memory'])
     # Review fix: the identity is taken once, from the bytes loaded, and every decision records that.
     architecture('architecture-identity-read-at-decision', 'control_eligibility.py', IDENTITY,
-                 "            found['validator'] = {role: {'path': entry['path'], 'digest': 'sha256:' + hashlib.sha256(\n"
-                 "                Path(entry['path']).read_bytes()).hexdigest()} for role, entry in snapshot.identity.items()}"
+                 "            found['validator'] = {module: {'path': entry['path'], 'digest': 'sha256:' + hashlib.sha256(\n"
+                 "                Path(entry['path']).read_bytes()).hexdigest()} for module, entry in snapshot.identity.items()}"
                  "  # defect: the files on disk now, not the bytes that ran",
                  ['identity-is-what-ran'])
     architecture('architecture-validator-reexecuted-per-call', 'control_eligibility.py', SEAM,
@@ -898,17 +898,28 @@ def cases():
                  "        return '<veldo validator snapshot: %s>' % (self._installed / (held + '.py'))  # defect: one key for every snapshot\n",
                  ['snapshot-source'])
     # Round 5: the recorded identity is every held module the snapshot executes, not a fixed list.
-    executed = ("        return {ROLE_LABELS.get(held, held): {'module': held, 'path': str(self._installed / (held + '.py')), 'digest': digest}\n"
+    executed = ("        return {held: {'module': held, 'role': ROLE_LABELS.get(held), 'path': str(self._installed / (held + '.py')),\n"
+                "                       'digest': digest}\n"
                 "                for held, digest in self._executed.items()}\n")
     architecture('architecture-identity-static-five', 'control_eligibility.py', executed,
-                 "        return {role: {'module': name[:-3], 'path': str(self._installed / name),\n"
-                 "                       'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}\n"
+                 "        return {name[:-3]: {'module': name[:-3], 'role': role, 'path': str(self._installed / name),\n"
+                 "                            'digest': 'sha256:' + hashlib.sha256(self._bodies[name[:-3]]).hexdigest()}\n"
                  "                for role, name in VALIDATOR_ROLES}  # defect: the hand-written list of five\n",
                  ['identity-covers-what-ran'])
     architecture('architecture-identity-roles-only', 'control_eligibility.py', executed,
                  executed.replace("for held, digest in self._executed.items()}",
                                   "for held, digest in self._executed.items() if held in ROLE_LABELS}  # defect: labelled modules only"),
                  ['identity-covers-what-ran'])
+    # Round 6: the identity is keyed by module name; a file named after a role label takes no other module's place.
+    architecture('architecture-identity-keyed-by-role', 'control_eligibility.py', executed,
+                 executed.replace("        return {held: {'module': held,", "        return {ROLE_LABELS.get(held, held): {'module': held,")
+                 .rstrip("\n") + "  # defect: keyed by role label\n",
+                 ['identity-keyed-by-module'])
+    architecture('architecture-identity-role-named-dropped', 'control_eligibility.py', executed,
+                 executed.replace("for held, digest in self._executed.items()}",
+                                  "for held, digest in self._executed.items()\n"
+                                  "                if held not in ROLE_LABELS.values()}  # defect: a module named after a role is left out"),
+                 ['identity-keyed-by-module'])
     # Round 5: only a non-empty module name is held and only a regular file is read.
     architecture('architecture-snapshot-holds-empty-name', 'control_eligibility.py',
                  " for path in sorted(installed.glob('*.py')) if path.name[:-3]}",

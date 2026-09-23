@@ -221,18 +221,23 @@ def _v53_suite():
                         check(label, False)
 
         gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
-        # The code every judgement must come from: the installed engine's files, by resolved path and digest,
-        # each under its role label when it has one and under its module name otherwise. The five validator
-        # roles are always among what a snapshot runs; whatever else it runs is recorded too.
+        # The code every judgement must come from: the installed engine's files, by module name, resolved path
+        # and digest. The five validator roles are always among what a snapshot runs; whatever else it runs is
+        # recorded too.
         LABELS = {'validate': 'entry_point', 'validate_checks': 'entry', 'contract_loader': 'loader',
                   'arch': 'validator', 'yamlish': 'parser'}
-        installed = {LABELS.get(p_.name[:-3], p_.name[:-3]): os.path.realpath(str(p_)) for p_ in mods.glob('*.py')}
-        installed_digests = {label: sha(Path(path).read_bytes()) for label, path in installed.items()}
+        installed = {p_.name[:-3]: os.path.realpath(str(p_)) for p_ in mods.glob('*.py')}
+        installed_digests = {module: sha(Path(path).read_bytes()) for module, path in installed.items()}
 
         def pristine(recorded, table=None):
-            # Every validator role is recorded and every recorded digest is the one in `table`.
+            # Every validator role's module is recorded and every recorded digest is the one in `table`.
             table = installed_digests if table is None else table
-            return set(LABELS.values()) <= set(recorded) and all(table.get(k) == d for k, d in recorded.items())
+            return set(LABELS) <= set(recorded) and all(table.get(k) == d for k, d in recorded.items())
+
+        def by_module(validator):
+            # A decision's recorded identity as {module: digest}, read from each entry's own module field (its
+            # key when it names none), so what is compared is which module ran, whatever the record is keyed by.
+            return {(v.get('module') or k): v.get('digest') for k, v in (validator or {}).items()}
 
         # Separately installed engines for the snapshot rows: a copy of the installed engine (or a per-file link
         # farm into `links_into`), and a Gate of it judging every station.
@@ -279,8 +284,7 @@ def _v53_suite():
                 arch_file = judging._architecture_validator().arch.__file__
             except Exception:  # noqa: BLE001 - a snapshot that could not load has no module to name
                 pass
-            recorded = [((d.get('architecture') or {}).get('validator', {}).get('validator') or {}).get('digest')
-                        for d in decided.values()]
+            recorded = [by_module((d.get('architecture') or {}).get('validator')).get('arch') for d in decided.values()]
             return decided, recorded, arch_file
 
         with region('architecture/store-only-refuses'):
@@ -660,15 +664,15 @@ def _v53_suite():
                 present = text.encode() if text is not None else None
                 substitution_ok &= outcome(decisions, code)
                 substitution_ok &= reviewer.reviews == ([] if code else [SID]) and got[0] == 'ok'
-                substitution_ok &= all(v.get('path') == installed.get(r) for r, v in validator.items())
-                substitution_ok &= pristine({r: v.get('digest') for r, v in validator.items()})
+                substitution_ok &= all(v.get('path') == installed.get(v.get('module') or r) for r, v in validator.items())
+                substitution_ok &= pristine(by_module(validator))
                 substitution_ok &= artifact.get('path') == str(clone / '.veldo' / 'architecture.yaml')
                 substitution_ok &= artifact.get('digest') == (sha(present) if present is not None else None)
                 substitution_ok &= found.get('basis') == 'accepted' and (found.get('accepted') or {}).get('digest') == digest
                 identities[name] = {'refusals': decisions['review']['refusals'], 'reviews': list(reviewer.reviews),
                                     'artifact': dict(artifact, path='clone:.veldo/architecture.yaml'),
-                                    'validator': {r: {'path': 'installed:.veldo/' + Path(v['path']).name,
-                                                      'digest': v['digest']} for r, v in validator.items()}}
+                                    'validator': {m: {'path': 'installed:.veldo/' + Path(v['path']).name,
+                                                      'digest': v['digest']} for m, v in validator.items()}}
             substitution_ok &= not marker.exists()
             observed['substitution'] = identities
             observed['clone_validator_ran'] = marker.exists()
@@ -728,16 +732,15 @@ def _v53_suite():
                 (mods / 'contract_loader.py').write_bytes(originals_code['contract_loader.py'] + b'\n# replaced on disk\n')
                 (mods / 'arch.py').write_bytes(originals_code['arch.py']
                                                + b'\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n')
-                changed = {role: sha((mods / Path(path).name).read_bytes()) for role, path in installed.items()}
+                changed = {module: sha((mods / Path(path).name).read_bytes()) for module, path in installed.items()}
                 second = stations(loaded)
                 fresh = stations(EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base)))
             finally:
                 for name, body in originals_code.items():
                     (mods / name).write_bytes(body)
-            recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
+            recorded = [by_module((d.get('architecture') or {}).get('validator'))
                         for d in list(first.values()) + list(second.values())]
-            fresh_recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
-                              for d in fresh.values()]
+            fresh_recorded = [by_module((d.get('architecture') or {}).get('validator')) for d in fresh.values()]
             observed['identity_is_what_ran'] = {
                 'before_change': sorted({c for d in first.values() for c in d['refusals']}),
                 'same_gate_after_change': sorted({c for d in second.values() for c in d['refusals']}),
@@ -825,13 +828,10 @@ def _v53_suite():
                 importlib.util.spec_from_file_location = real_spec
                 (keep / 'arch.py').write_bytes(farm_arch)
                 (mods / 'arch.py').write_bytes(installed_arch)
-            read_recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
-                             for d in read_raced.values()]
-            farm_digests = [((d.get('architecture') or {}).get('validator', {}).get('validator') or {}).get('digest')
-                            for d in farm_raced.values()]
+            read_recorded = [by_module((d.get('architecture') or {}).get('validator')) for d in read_raced.values()]
+            farm_digests = [by_module((d.get('architecture') or {}).get('validator')).get('arch') for d in farm_raced.values()]
             reset('valid')
-            recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
-                        for d in raced.values()]
+            recorded = [by_module((d.get('architecture') or {}).get('validator')) for d in raced.values()]
             observed['snapshot_in_memory'] = {
                 'refusals': sorted({r for d in raced.values() for r in d['refusals']}),
                 'engine_loads_from_disk': len(loads), 'swapped': len(swaps), 'left_on_disk': left_on_disk,
@@ -930,8 +930,7 @@ def _v53_suite():
             put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
 
             def recorded_of(decided):
-                return [{k: v.get('digest') for k, v in ((d.get('architecture') or {}).get('validator') or {}).items()}
-                        for d in decided.values()]
+                return [by_module((d.get('architecture') or {}).get('validator')) for d in decided.values()]
 
             covers = {}
             for module in ('tracker', 'verdict_corpus'):
@@ -954,6 +953,36 @@ def _v53_suite():
             reset('valid')
             observed['identity_covers_what_ran'] = covers
             check('architecture/identity-covers-what-ran', all(covers.values()) and len(covers) == 3)
+
+        with region('architecture/identity-keyed-by-module'):
+            # The identity is keyed by module name, never by role: an engine file NAMED after a role label takes no
+            # other module's place. The installed yamlish.py (role parser) gains two lines that load parser.py, a
+            # byte copy of the original yamlish.py; both run, so the decision and its durable event record both,
+            # the changed yamlish under its own name with its role, and parser.py under its own name with none.
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
+            keyed = engine_copy(top / 'keyed' / '.veldo')
+            shutil.copyfile(str(keyed / 'yamlish.py'), str(keyed / 'parser.py'))
+            with open(str(keyed / 'yamlish.py'), 'a') as handle:
+                handle.write('\n\nimport importlib.util as _fixture_util\n'
+                             '_fixture_spec = _fixture_util.spec_from_file_location("fixture_parser_copy", "parser.py")\n'
+                             '_fixture_spec.loader.exec_module(_fixture_util.module_from_spec(_fixture_spec))\n')
+            changed_yamlish, copy_digest = sha((keyed / 'yamlish.py').read_bytes()), sha((keyed / 'parser.py').read_bytes())
+            keyed_events = []
+            decided, _, _ = judge(keyed, 'keyed', events=keyed_events)
+            wanted = {'yamlish': changed_yamlish, 'parser': copy_digest}
+            records = [(d.get('architecture') or {}).get('validator') or {} for d in decided.values()]
+            keyed_ok = {
+                'both_recorded': all({m: by_module(r).get(m) for m in wanted} == wanted for r in records),
+                'keyed_by_module': all(k == v.get('module') for r in records for k, v in r.items()),
+                'roles_kept': all((r.get('yamlish') or {}).get('role') == 'parser' and 'role' in (r.get('parser') or {})
+                                  and r['parser']['role'] is None for r in records),
+                'events_record_both': len(keyed_events) == len(decided) and all(
+                    {m: ((e.get('architecture') or {}).get('validator') or {}).get(m) for m in wanted} == wanted
+                    for e in keyed_events)}
+            keyed_ok['decisions'] = bool(records) and outcome(decided, CODES['invalid_structure'])
+            reset('valid')
+            observed['identity_keyed_by_module'] = dict(keyed_ok, recorded=[sorted(by_module(r)) for r in records[:1]])
+            check('architecture/identity-keyed-by-module', all(keyed_ok.values()) and len(keyed_ok) == 5)
 
         with region('architecture/snapshot-held-names'):
             # Only a non-empty module name is ever held, and only a regular file is ever read. An engine with a
