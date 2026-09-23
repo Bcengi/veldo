@@ -125,6 +125,18 @@ recovery). A declaration names one module file and its bytes, so an owning servi
 from that copy as it was when it first declared: an upgraded module, or the same module from
 another checkout's copy, is refused `ownership_conflict`, and Release 1 has no re-declaration path.
 
+The first-number floor does not depend on Git keeping a commit. `accept_revision` records, in the
+same transaction and keyed by the repository and commit id, every path of the accepted commit's tree
+and history that holds a digit (an `accepted_carriers` entity, immutable and owned by
+`accept_revision`), and enabling applies the kind's carrier pattern to that record, so a branch
+deleted, pruned or force-pushed after acceptance lowers nothing. A revision accepted before this
+record existed is read from the bound repository while it holds the commit and refused
+`accepted_revision_unavailable` at enabling once it does not, never skipped. What clears one: none
+is needed, because none exists outside test stores (`accept_revision` and its record were both
+introduced on this branch, and every revision `accept_revision` writes now carries its record);
+one written around the commands, by raw SQL, is the stated same-account limit above, and Release 1
+has no operator path to retire an accepted revision.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
@@ -165,3 +177,9 @@ floor counts only accepted commits the bound repository holds. No revision recor
 fix exists outside test stores: `accept_revision` was introduced on this branch, and a store
 holding accepted revisions written by generic commands already refuses both attaches
 `ownership_conflict`, so no operator clearing path is needed.
+
+2026-09-23 recorded numbers: the floor skipped an accepted commit the bound repository no longer
+held, so a branch deleted and pruned after acceptance lowered the next first number and could issue
+a held number again. `accept_revision` now records each accepted commit's carrier paths in the
+store and the floor reads that record; an unrecorded revision whose commit is gone refuses
+`accepted_revision_unavailable` instead of being skipped.
