@@ -57,6 +57,24 @@ Relevant background: product, technical, operational.
 
 What this change must not touch.
 
+## What the reviewer judges
+
+The scope an independent review holds this change to (owner ruling, Telegram 28961, 2026-09-23).
+Three parts, each stated for THIS change:
+
+- Normal use: who calls it, with what inputs, in what state of the repository and host.
+- Threat model: who this change defends against, and who it does not. The default is the same
+  account: code or files already running or planted as the owner are not an attacker this change
+  defends against unless the change says otherwise.
+- Out of review scope: the classes of finding that are filed as a later-release ticket instead of
+  blocking landing: edge cases that are unlikely in normal use (owner, Telegram 28962: "We don't
+  won't to overbuild now for edge cases that are highly unlikely or even just unlikely"), planted
+  files in the installed directory, deliberately forged records in our own store, and resource
+  exhaustion by our own account.
+
+A finding inside this section is fixed before landing. A finding outside it is filed as a ticket
+and does not block landing. A real defect under normal use is always inside it.
+
 ## Notes
 
 Anything the implementing or reviewing agent needs.
