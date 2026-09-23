@@ -342,6 +342,16 @@ def cases():
     add(28, 'effects-reviewer-membership-only', '58_veldo_0028_effects.py', 'control_effects.py', reviewer,
         "        if state.get(data['reviewer'], {}).get('data', {}).get('revoked_at') is not None:",
         ['effects/publication-revoked-reviewer'])
+    receiver_refused = ("            if isinstance(observation, dict) and observation.get('status') == 'refused':\n"
+                        "                # A receiver that ran may already have acted, so its own \"refused\" is not\n"
+                        "                # conclusive and its text is not repeated: recorded as unknown, a stop owed.\n"
+                        "                observation = dict(accepted, status='unknown', evidence=None)\n")
+    for name, new, kinds in (('effects-receiver-refused-conclusive', '', ('provider', 'publication')),
+                             ('effects-receiver-refused-provider-only',
+                              receiver_refused.replace("== 'refused':", "== 'refused' and contract.get('kind') == 'provider':"),
+                              ('publication',))):
+        add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', receiver_refused, new,
+            ['effects/receiver-refused-is-unknown/' + kind for kind in kinds])
     def publication(name, old, new, criterion):
         add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
             ['effects/' + criterion])

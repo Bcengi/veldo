@@ -258,3 +258,11 @@ step and the push per destination, and the supervisor's limit follows the window
 announces. Recorded URLs that do not parse into a well-formed host are over-scrubbed. Rows now pin
 a clean push exit, both line-break guards, the report's shape and exit statuses, and the C locale.
 No status or Release 2 obligation changes.
+
+2026-09-23, review R9 (scoped by the owner's review rule, Telegram 28957-28962): nothing blocking under
+normal use. One fix: a receiver that ran and then reports refused is recorded unknown with a stop owed,
+and its text is not repeated; only the executor's own refusal, before any receiver runs, is conclusive
+(row effects/receiver-refused-is-unknown, red at 258c331, two mutations). Filed for a later release:
+push past its time limit records no destinations; first push to an empty repository records unknown;
+a token before ? or # in a malformed remote URL; over-scrubbed audit URLs; suite cost (handle issuance
+over IPC, the slow fan-out row).

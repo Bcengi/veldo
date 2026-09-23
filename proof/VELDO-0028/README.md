@@ -809,3 +809,11 @@ Making them complete would mean guessing which remote changes are the push's own
 **Commits.** `884c160` (merge), `75d7c97` (B1), `2d01465` (B2), `84e04f8` (time limits), `6fa0e89`
 (scrub), `4b29b11` (pinned rules), `d7af896` (spec limits and History), `a98df35` (merge of the
 parallel driver), then this proof.
+
+## Review R9 (2026-09-23)
+
+Scoped review of de4c1c7: nothing blocking under normal use. Fixed: a receiver's own `refused` is recorded
+`unknown` with `effect-outcome-unknown` owed (c2b8f5f); row `effects/receiver-refused-is-unknown/<kind>` red
+at 258c331 by assertion for both kinds, green after. Mutations `effects-receiver-refused-conclusive` and
+`effects-receiver-refused-provider-only` red their named rows; `--finding 28 --jobs 6` rejects 80 of 80
+with the suite green at 77 assertions. Other R9 items are filed for a later release (spec History).
