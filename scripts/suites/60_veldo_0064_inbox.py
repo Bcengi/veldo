@@ -66,7 +66,8 @@ class _V64BotApi(_v64_http.BaseHTTPRequestHandler):
             return self._answer(404, {'ok': False, 'error_code': 404, 'description': 'Not Found'})
         if st['mode'] == 'refuse':
             return self._answer(400, {'ok': False, 'error_code': 400, 'description': 'Bad Request: chat not found'})
-        chat = st['chats'].get(body.get('chat_id'))
+        st['requests'].append((body.get('chat_id'), body.get('text')))
+        chat = st['chats'].get(body.get('chat_id'), body.get('chat_id'))
         st['next'] += 1
         # 'normalize': the platform stores and echoes a normalized text (a collapsed blank line).
         text = body['text'].replace('\n\n', '\n') if st['mode'] == 'normalize' else body['text']
@@ -92,7 +93,8 @@ def _v64_checks(base):
                                   'projection/correlation', 'projection/send-outcomes', 'inbox/visible-invalid',
                                   'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable',
                                   'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature',
-                                  'projection/intent-before-send', 'projection/echo-mismatch-kept')}
+                                  'projection/intent-before-send', 'projection/echo-mismatch-kept',
+                                  'projection/owner-enrolled-chat')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -119,7 +121,7 @@ def _v64_checks(base):
     keys = base / 'keys'
     keys.mkdir()
     public = {}
-    for who in ('authority', 'owner', 'worker-a', 'worker-b', 'stranger', 'pm'):
+    for who in ('authority', 'owner', 'worker-a', 'worker-b', 'stranger', 'pm', 'pm-b', 'reviewer', 'auditor'):
         _v64_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v64-' + who, '-f', str(keys / who)],
                     check=True, capture_output=True, timeout=10)
         public[who] = (keys / (who + '.pub')).read_text().strip()
@@ -155,7 +157,10 @@ def _v64_checks(base):
                'worker-a': dict(principal_type='agent_run', roles=[], scope='*'),
                'worker-b': dict(principal_type='agent_run', roles=[], scope='*'),
                'stranger': dict(principal_type='person', roles=[], scope=['project-b']),
-               'pm': dict(principal_type='service', roles=[], scope=['project-a'])}
+               'pm': dict(principal_type='service', roles=[], scope=['project-a']),
+               'pm-b': dict(principal_type='service', roles=[], scope=['project-b']),
+               'reviewer': dict(principal_type='person', roles=[], scope=['project-a']),
+               'auditor': dict(principal_type='person', roles=[], scope=['project-a'])}
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
         fixture('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
@@ -183,8 +188,9 @@ def _v64_checks(base):
                     nonce='n-%d' % counter[0], **fields)
         return inbox.apply({'command': body, 'signature': sign_as(who, S.canonical_bytes(body))})
 
-    def content(kind, owner='owner', unit=None, deadline='2026-10-01T17:00:00Z', budget=None, brief=None):
-        return dict(kind=kind, owner=owner, scope=['project-a'], deadline=deadline,
+    def content(kind, owner='owner', unit=None, deadline='2026-10-01T17:00:00Z', budget=None, brief=None,
+                scope=None):
+        return dict(kind=kind, owner=owner, scope=scope or ['project-a'], deadline=deadline,
                     budget=budget or {'owner_minutes': 15}, brief=brief or 'Choose how %s proceeds.' % kind,
                     choices=['accept', 'reject'] if kind != 'acknowledgement' else ['acknowledged'],
                     subject={'kind': 'specification', 'ref': 'specs/EXAMPLE.md', 'digest': 'sha256:' + '1' * 64},
@@ -398,13 +404,20 @@ def _v64_checks(base):
     check('inbox/states-and-authority', 'nothing waits while answers are outstanding', inbox.waiting_resources() == [])
 
     # --- AC2: Telegram projection keeps the platform's chat and message identity --------------------
-    api = {'token': 'sandbox-bot', 'mode': 'ok', 'next': 7000, 'messages': {}, 'chats': {'@veldo_owner': 5550001}}
+    api = {'token': 'sandbox-bot', 'mode': 'ok', 'next': 7000, 'messages': {}, 'chats': {}, 'requests': []}
+
+    def enroll(principal, chat, filed_as=None):
+        # The enrollment id is spelled here, not taken from the module under test.
+        return fixture('channel-enrollment:telegram_chat:' + (filed_as or principal), 'channel_enrollment',
+                       dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=principal,
+                            chat_id=chat, revoked_at=None))
+    enroll('owner', 5550001)
     handler = type('V64Handler', (_V64BotApi,), {'state': api})
     server = _v64_http.ThreadingHTTPServer(('127.0.0.1', 0), handler)
     thread = _v64_threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
-        edge = P.TelegramEdge('http://127.0.0.1:%d' % server.server_address[1], api['token'], '@veldo_owner')
+        edge = P.TelegramEdge('http://127.0.0.1:%d' % server.server_address[1], api['token'])
         projection = P.Projection(S, inbox, edge, conn, 'authority', journal_sign)
         first = projection.project()
         pending = [e for e in inbox.index()['entries'] if e['category'] == 'pending']
@@ -529,13 +542,48 @@ def _v64_checks(base):
               len(api['messages']) == published + 1
               and [(r['outcome'], r.get('reason')) for r in later] == [('anomaly', 'presentation_mismatch')] * 2)
         check(echo_row, 'metrics count the anomaly, not pending work', projection.metrics().get('anomalies', 0) >= 1)
+
         check('projection/send-outcomes', 'the token is never recorded',
               all(api['token'] not in _v64_json.dumps(o) for o in projection.observations)
               and api['token'] not in _v64_json.dumps(S.materialized_state(conn)['entities']))
         check('projection/send-outcomes', 'projection metrics count refusals and unprojected work',
               projection.metrics()['refused'] >= 2 and projection.metrics()['pending'] == 0)
+        # --- each assignment goes to the chat enrolled for ITS owner ------------------------------
+        routed = 'projection/owner-enrolled-chat'
+        enroll('stranger', 5550002)
+        enroll('owner', 5550001, filed_as='auditor')  # filed under the auditor, naming the owner
+        command('pm-b', 'open', 'O-stranger', assignment=content('decision', owner='stranger', scope=['project-b']))
+        command('pm', 'open', 'O-reviewer', assignment=content('decision', owner='reviewer'))
+        command('pm', 'open', 'O-auditor', assignment=content('decision', owner='auditor'))
+        o_stranger, o_reviewer, o_auditor = (I.assignment_id(ids['repository_uuid'], a)
+                                             for a in ('O-stranger', 'O-reviewer', 'O-auditor'))
+        asked = len(api['requests'])
+        routing = {r['assignment_id']: r for r in projection.project()}
+        new_requests = api['requests'][asked:]
+        stranger_record = projection.record(P.projection_id(o_stranger, 1)) or {}
+        check(routed, 'the stranger\'s assignment reaches the stranger\'s own chat only',
+              [(chat, 'Owner: stranger' in text.split('\n')) for chat, text in new_requests] == [(5550002, True)]
+              and routing[o_stranger]['outcome'] == 'sent' and stranger_record.get('chat_id') == 5550002)
+        check(routed, 'the record binds the owner and the enrollment it routed by',
+              stranger_record.get('owner') == 'stranger' and stranger_record.get('enrolled_chat') == 5550002
+              and stranger_record.get('enrollment_id') == 'channel-enrollment:telegram_chat:stranger'
+              and stranger_record.get('enrollment_version') == 1)
+        check(routed, 'an owner with no enrolled chat gets a named refusal and no message',
+              (routing[o_reviewer]['outcome'], routing[o_reviewer].get('reason')) == ('refused', 'no_enrolled_chat')
+              and projection.record(P.projection_id(o_reviewer, 1)) is None)
+        check(routed, 'an enrollment filed for one owner that names another is refused',
+              (routing[o_auditor]['outcome'], routing[o_auditor].get('reason')) == ('refused', 'invalid_enrollment')
+              and projection.record(P.projection_id(o_auditor, 1)) is None)
+        enrolled = {5550001: 'owner', 5550002: 'stranger'}
+        check(routed, 'no chat ever received another owner\'s assignment',
+              api['requests'] and all('Owner: %s' % enrolled.get(chat) in text.split('\n') for chat, text in api['requests']))
+        asked = len(api['requests'])
+        again = {r['assignment_id']: r for r in projection.project()}
+        check(routed, 'the refused owners stay refused and nothing is sent', len(api['requests']) == asked
+              and again[o_reviewer].get('reason') == 'no_enrolled_chat' and again[o_auditor].get('reason') == 'invalid_enrollment')
+        check(routed, 'the refused owners stay visible as unprojected work', projection.metrics()['pending'] == 2)
         try:
-            P.TelegramEdge('http://example.invalid', api['token'], '@veldo_owner')
+            P.TelegramEdge('http://example.invalid', api['token'])
             check('projection/send-outcomes', 'a plain-HTTP remote origin is refused', False)
         except P.EdgeRefused as exc:
             check('projection/send-outcomes', 'a plain-HTTP remote origin is refused', exc.code == 'invalid_input')

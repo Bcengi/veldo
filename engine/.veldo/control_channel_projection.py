@@ -16,9 +16,16 @@ by this run or any later one, whatever projector finds it. Only a definite platf
 (`refused`: the platform answered and published nothing) is attempted again, as a new attempt
 of the same record.
 
-WHAT THE PLATFORM SAID IS WHAT IS KEPT. The chat identity recorded is the one the platform
-returned, not the configured address (Telegram accepts `@name` and answers with the numeric
-chat id). A platform answer is classified by the store transition that records it, never by
+EACH OWNER'S OWN CHAT. An assignment is sent to the chat enrolled for ITS owner: a
+`channel_enrollment` entity in the control store (`veldo.channel_enrollment/v1`, id
+`channel-enrollment:telegram_chat:<principal>`) naming the principal and the numeric Telegram
+chat id. The edge holds no chat of its own. An owner with no enrollment is refused as
+`no_enrolled_chat`, and an enrollment that is revoked, malformed or names another principal as
+`invalid_enrollment`; neither is ever sent to someone else's chat. The intent binds the
+enrollment's entity version.
+
+WHAT THE PLATFORM SAID IS WHAT IS KEPT. The chat and message identity recorded are the ones the
+platform returned. A platform answer is classified by the store transition that records it, never by
 the caller: when the text the platform stored differs from the bytes sent, the message still
 exists, so its returned identity and stored text are kept and the record is the named anomaly
 `presentation_mismatch` (outcome `anomaly`), not a valid projection and never sent again. A transport
@@ -49,7 +56,10 @@ ANOMALIES = ('presentation_mismatch',)
 # Only a definite refusal, where the platform answered and published nothing, is attempted again.
 RETRYABLE = ('refused',)
 INTENT_FIELDS = ('schema', 'channel', 'assignment_id', 'assignment_version', 'request_version',
-                 'presentation_digest', 'presentation', 'configured_chat')
+                 'presentation_digest', 'presentation', 'owner', 'enrollment_id', 'enrollment_version',
+                 'enrolled_chat')
+ENROLLMENT_KIND = 'channel_enrollment'
+ENROLLMENT_SCHEMA = 'veldo.channel_enrollment/v1'
 PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text')
 # What a record that is not attempted again reports on a later run.
 SETTLED = {'sent': ('already_projected', None), 'pending': ('unknown_outcome', 'incomplete_projection'),
@@ -68,6 +78,26 @@ def presentation_digest(body):
 
 def projection_id(assignment, request_version):
     return 'projection:%s:%s:%d' % (CHANNEL, assignment, request_version)
+
+
+def enrollment_id(principal):
+    return 'channel-enrollment:%s:%s' % (CHANNEL, principal)
+
+
+def enrollment_problems(kind, data, principal):
+    """Why a stored enrollment does not route `principal`'s assignments, by name."""
+    if kind != ENROLLMENT_KIND or not isinstance(data, dict):
+        return ['the entity is not a channel enrollment']
+    problems = []
+    if data.get('schema') != ENROLLMENT_SCHEMA or data.get('channel') != CHANNEL:
+        problems.append('the enrollment is not a %s %s enrollment' % (ENROLLMENT_SCHEMA, CHANNEL))
+    if data.get('principal') != principal:
+        problems.append('the enrollment names another principal')
+    if type(data.get('chat_id')) is not int:
+        problems.append('the enrolled chat is a numeric Telegram chat id')
+    if data.get('revoked_at') is not None:
+        problems.append('the enrollment is revoked')
+    return problems
 
 
 def render(brief):
@@ -92,18 +122,21 @@ def render(brief):
 
 
 class TelegramEdge:
-    """The Bot API sendMessage call. `base_url` is the Bot API origin; `chat` is the configured
-    owner chat address; `token` comes from the caller's secret custody."""
+    """The Bot API sendMessage call. `base_url` is the Bot API origin; `token` comes from the
+    caller's secret custody. The edge has no chat of its own: each send names the chat enrolled
+    for the owner of what it sends."""
 
-    def __init__(self, base_url, token, chat, timeout=10):
+    def __init__(self, base_url, token, timeout=10):
         if not isinstance(base_url, str) or not base_url.startswith(('https://', 'http://127.0.0.1:')):
             raise EdgeRefused('invalid_input', 'the Bot API origin is https, or a loopback test endpoint')
-        if not isinstance(token, str) or not token or not chat:
-            raise EdgeRefused('invalid_input', 'a token and a chat are required')
-        self.base_url, self._token, self.chat, self.timeout = base_url.rstrip('/'), token, chat, timeout
+        if not isinstance(token, str) or not token:
+            raise EdgeRefused('invalid_input', 'a token is required')
+        self.base_url, self._token, self.timeout = base_url.rstrip('/'), token, timeout
 
-    def send(self, text):
-        body = json.dumps({'chat_id': self.chat, 'text': text, 'disable_web_page_preview': True}).encode()
+    def send(self, chat, text):
+        if type(chat) is not int:
+            raise EdgeRefused('invalid_input', 'a send names a numeric enrolled chat')
+        body = json.dumps({'chat_id': chat, 'text': text, 'disable_web_page_preview': True}).encode()
         request = urllib.request.Request('%s/bot%s/sendMessage' % (self.base_url, self._token), data=body,
                                          method='POST', headers={'Content-Type': 'application/json'})
         try:
@@ -222,10 +255,20 @@ class Projection:
         self.store.execute(self.conn, command, self.journal_signer, self.sign, self.authority_generation)
         return self.record(pid)
 
-    def _send(self, text):
+    def _enrollment(self, owner):
+        """(refusal, enrollment): the owner's own enrolled chat, or the named reason there is none."""
+        row = self.conn.execute('SELECT kind, version, data FROM entities WHERE id=?', (enrollment_id(owner),)).fetchone()
+        if row is None:
+            return 'no_enrolled_chat', None
+        data = json.loads(row[2])
+        if enrollment_problems(row[0], data, owner):
+            return 'invalid_enrollment', None
+        return None, {'id': enrollment_id(owner), 'version': row[1], 'chat': data['chat_id']}
+
+    def _send(self, chat, text):
         """What the platform said, as the completion parameters of the pending attempt."""
         try:
-            sent = self.edge.send(text)
+            sent = self.edge.send(chat, text)
         except EdgeRefused as exc:
             return {'platform': None, 'refusal': None if exc.code == 'unknown_outcome' else exc.code}
         return {'platform': sent, 'refusal': None}
@@ -243,14 +286,19 @@ class Projection:
         brief = self.inbox.brief(aid)
         if not brief['valid'] or brief['version'] != entry['version']:
             return self._result(aid, versions, 'refused', 'stale_subject')
+        refusal, enrollment = self._enrollment(brief['content']['owner'])
+        if refusal:
+            return self._result(aid, versions, 'refused', refusal)
+        versions[enrollment['id']] = enrollment['version']
         text = render(brief)
         record = dict(schema=SCHEMA, channel=CHANNEL, assignment_id=aid, assignment_version=entry['version'],
                       request_version=entry['request_version'], presentation_digest=presentation_digest(text.encode('utf-8')),
-                      presentation=text, configured_chat=self.edge.chat)
+                      presentation=text, owner=brief['content']['owner'], enrollment_id=enrollment['id'],
+                      enrollment_version=enrollment['version'], enrolled_chat=enrollment['chat'])
         expected = dict(versions, **{pid: existing['entity_version'] if existing else 0})
         try:
             intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)
-            completion = self._send(text)
+            completion = self._send(enrollment['chat'], text)
         except self.store.StoreRefused as exc:
             return self._result(aid, versions, 'refused', exc.code)  # no intent, so nothing was sent
         try:

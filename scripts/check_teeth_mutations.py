@@ -576,8 +576,6 @@ def cases():
     inbox('projection-discard-message-id', 'control_channel_projection.py',
           "message_id=platform['message_id'],", "message_id=None,",
           'projection/correlation')
-    inbox('projection-configured-chat', 'control_channel_projection.py',
-          "chat_id=platform['chat_id']", "chat_id=data['configured_chat']", 'projection/correlation')
     inbox('inbox-admit-displayed-assigned-status', 'control_assignment.py',
           "        if item['problems']:\n            return 'invalid_record', inputs\n",
           "        if item['raw'].get('display_status') == 'assigned':\n            return 'admitted', inputs\n"
@@ -642,6 +640,13 @@ def cases():
     inbox('projection-ignore-echoed-text', 'control_channel_projection.py',
           "    if platform['text'].encode('utf-8') != record['presentation'].encode('utf-8'):\n        found.append('presentation_mismatch')\n",
           "", 'projection/echo-mismatch-kept')
+    # VELDO-0064 review r7: each assignment goes to the chat enrolled for its own owner.
+    inbox('projection-one-chat-for-every-owner', 'control_channel_projection.py',
+          "        refusal, enrollment = self._enrollment(brief['content']['owner'])\n",
+          "        refusal, enrollment = self._enrollment('owner')\n", 'projection/owner-enrolled-chat')
+    inbox('projection-enrollment-ignores-principal', 'control_channel_projection.py',
+          "    if data.get('principal') != principal:\n        problems.append('the enrollment names another principal')\n",
+          "", 'projection/owner-enrolled-chat')
     return result
 
 
