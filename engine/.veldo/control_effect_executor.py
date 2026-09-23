@@ -58,8 +58,11 @@ def receive(config, contract, accepted):
         # An ordinary git push, so the clone's hooks, url.*.insteadOf rewrites, transports
         # (HTTP(S) included) and credential helpers behave exactly as configured. Only what
         # WIDENS a push is neutralized: an explicit URL and single refspec, no tag following
-        # from the command line or config, no submodule recursion, and a lease on the old tip.
-        push = git('-c', 'push.followTags=false', 'push', '--no-follow-tags', '--recurse-submodules=no',
+        # from the command line or config, no push options from any configuration scope (an
+        # empty push.pushOption resets the list; on GitLab-style servers an option can open a
+        # merge request or skip CI), no submodule recursion, and a lease on the old tip.
+        push = git('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',
+                   '--no-follow-tags', '--recurse-submodules=no',
                    '--force-with-lease=' + ref + ':' + payload['old_tip'],
                    remote, payload['commit'] + ':' + ref)
         # Completion is exactly one remote change: the authorized ref (and any symbolic ref

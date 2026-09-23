@@ -343,9 +343,10 @@ def cases():
     def publication(name, old, new, criterion):
         add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
             ['effects/' + criterion])
-    push = "        push = git('-c', 'push.followTags=false', 'push', '--no-follow-tags', '--recurse-submodules=no',"
+    push = ("        push = git('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push',\n"
+            "                   '--no-follow-tags', '--recurse-submodules=no',")
     publication('effects-push-widened-by-clone-config', push,
-                "        push = git('push', '--recurse-submodules=no',", 'publication-exact-ref')
+                "        push = git('push',\n                   '--recurse-submodules=no',", 'publication-exact-ref')
     publication('effects-push-follows-tags', push,
                 push.replace("'--no-follow-tags'", "'--follow-tags'"), 'publication-exact-ref')
     confirm = "after is not None and after == expected"
@@ -373,6 +374,13 @@ def cases():
                 "            listed = git('ls-remote', '--refs', remote)", 'publication-head-change')
     publication('effects-confirm-without-symref-targets', listing,
                 "            listed = git('ls-remote', remote)", 'publication-head-change')
+    # R5 1: push options from any configuration scope never reach the receiver. `--no-push-option`
+    # looks like the fix and clears only options given on the command line.
+    publication('effects-push-options-from-config', push, push.replace("'-c', 'push.pushOption=', ", ''),
+                'publication-push-options')
+    publication('effects-push-options-flag-only', push,
+                push.replace("'-c', 'push.pushOption=', 'push',", "'push', '--no-push-option',"),
+                'publication-push-options')
     return result
 
 

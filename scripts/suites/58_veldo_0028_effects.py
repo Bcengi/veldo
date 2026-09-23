@@ -69,6 +69,20 @@ class _V28Backend(_v28_http.BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
 
+class _V28AuthBackend(_V28Backend):
+    """The same remote behind HTTP Basic authentication, as a hosted Git server requires."""
+    credential = 'Basic ' + __import__('base64').b64encode(b'deploy:fixture-secret').decode()
+
+    def backend(self):
+        if self.headers.get('Authorization') != self.credential:
+            self.send_response(401)
+            self.send_header('WWW-Authenticate', 'Basic realm="git"')
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
+        _V28Backend.backend(self)
+
+
 def _v28_run():
     started = _v28_time.monotonic()
     with _v28_temp.TemporaryDirectory(prefix='v28-') as directory:
@@ -151,8 +165,21 @@ print(json.dumps(result))
         config_path = private / 'config.json'
         config_path.write_text(_v28_json.dumps(config))
         observations = []
-        def call(request, key='worker'):
-            answer = _v28_executor.call(config_path, request, 'worker', private / key if key else None)
+        # The executor is a child process and inherits this environment. Every call runs with no
+        # ambient GIT_* variable and an empty operator home, so global Git configuration and
+        # transport variables reach it only where a row supplies them for that one call.
+        empty_home = root / 'operator-home'
+        empty_home.mkdir()
+        def call(request, key='worker', env=None):
+            saved = dict(_v28_os.environ)
+            try:
+                for name in [k for k in _v28_os.environ if k.startswith('GIT_')]:
+                    del _v28_os.environ[name]
+                _v28_os.environ.update({'HOME': str(empty_home), 'XDG_CONFIG_HOME': str(empty_home), **(env or {})})
+                answer = _v28_executor.call(config_path, request, 'worker', private / key if key else None)
+            finally:
+                _v28_os.environ.clear()
+                _v28_os.environ.update(saved)
             observations.append(answer)
             return answer
         def setup(kind, name, outcome='completed', target=None, payload=None):
@@ -289,13 +316,13 @@ print(json.dumps(result))
             git('init', '-q', '--bare', str(bare))
             git('-C', str(clone), 'push', '-q', str(bare), old + ':refs/heads/main')
             return clone, bare
-        def publish(name, clone, remote_url):
+        def publish(name, clone, remote_url, env=None):
             config['receivers']['git-' + name] = {'kind': 'publication', 'repository': str(clone),
                                                    'remote': remote_url, 'ref': 'refs/heads/main'}
             config_path.write_text(_v28_json.dumps(config))
             pr, _, _, _ = setup('publication', name, target='git-' + name,
                                  payload={'commit': tip, 'tree': tree, 'old_tip': old})
-            return call(pr).get('result', {})
+            return call(pr, env=env).get('result', {})
         def remote_main(bare):
             return git('-C', str(bare), 'rev-parse', 'refs/heads/main')
         # P1: the clone's pre-push policy hook refuses; it runs and nothing is published.
@@ -345,6 +372,38 @@ print(json.dumps(result))
             and result.get('stop') == 'effect-outcome-unknown' and remote_main(bare) == tip
             and git('-C', str(bare), 'symbolic-ref', 'HEAD') == 'refs/heads/other')
         for name in ('pre-push-hook', 'url-rewrite', 'smart-http', 'head-change'):
+            expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
+        # R5: an independent check of c5dc41a reproduced publication defects. `r5` keeps
+        # what each case actually observed for the printed observation line.
+        r5 = {}
+        def seen_result(name, result, **extra):
+            r5[name] = dict(status=result.get('status'), completed=result.get('completed'), **extra)
+        def operator_home(name, gitconfig=None):
+            home = root / ('home-' + name)
+            home.mkdir()
+            if gitconfig is not None:
+                (home / '.gitconfig').write_text(gitconfig)
+            return {'HOME': str(home), 'XDG_CONFIG_HOME': str(home)}
+        # R5 1: push options configured in the clone or globally never reach the receiver. The
+        # control push is a plain git push of another ref from the same clone: the receiver's
+        # hook sees both options, so the fixture can see them when they are sent.
+        clone, bare = fresh('push-options')
+        git('-C', str(bare), 'config', 'receive.advertisePushOptions', 'true')
+        seen = root / 'push-options.log'
+        hook = bare / 'hooks' / 'post-receive'
+        hook.write_text('#!/bin/sh\necho "count=${GIT_PUSH_OPTION_COUNT:-0} ${GIT_PUSH_OPTION_0:-}'
+                        ' ${GIT_PUSH_OPTION_1:-} ${GIT_PUSH_OPTION_2:-}" >> ' + str(seen) + '\n')
+        hook.chmod(0o755)
+        git('-C', str(clone), 'config', '--add', 'push.pushOption', 'merge_request.create')
+        git('-C', str(clone), 'config', '--add', 'push.pushOption', 'ci.skip')
+        git('-C', str(clone), 'push', '-q', str(bare), old + ':refs/heads/control')
+        result = publish('push-options', clone, str(bare),
+                         env=operator_home('push-options', '[push]\n\tpushOption = global.option\n'))
+        lines = [line.split() for line in seen.read_text().splitlines()] if seen.exists() else []
+        seen_result('push-options', result, receiver_saw=lines)
+        row('publication-push-options', result.get('completed') is True and remote_main(bare) == tip
+            and lines == [['count=2', 'merge_request.create', 'ci.skip'], ['count=0']])
+        for name in ('push-options',):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
         row('worker-credential-read', call({'operation': 'read_credential', 'path': str(credential)}).get('refusal') == 'credential-access-refused'
@@ -504,7 +563,7 @@ else:
         print('VELDO-0028 observations: ' + _v28_json.dumps({'checks': checks,
             'provider_calls': len(calls('provider-good')), 'publication_calls': len(calls('publication-good')),
             'out_of_scope_calls': len(calls('provider-outside')) + len(calls('publication-outside')),
-            'remote_commit_confirmed': actual == tip, 'metrics': E.metrics(conn)}, sort_keys=True))
+            'remote_commit_confirmed': actual == tip, 'r5': r5, 'metrics': E.metrics(conn)}, sort_keys=True))
         conn.close()
     print('VELDO-0028 suite seconds: %.3f' % (_v28_time.monotonic() - started))
 
