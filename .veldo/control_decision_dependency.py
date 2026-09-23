@@ -61,7 +61,7 @@ SUPPORTED_OBLIGATIONS = ()
 APPROVING_RULING = 'approve'
 
 # EVERY ENABLED CONSUMER of this answer, as (module, qualified function). The suite derives the same
-# set from the actual call sites (a call to decision_blockers, _decision_blocks or blockers).
+# set from the actual call sites (a call to one of CONSUMER_CALLS).
 CONSUMERS = (
     ('plan.py', 'cmd_status'),
     ('plan.py', 'cmd_run_check'),
@@ -69,8 +69,9 @@ CONSUMERS = (
     ('frontier.py', '_plan_build_candidates'),
     ('control_eligibility.py', 'Gate._predicate'),
     ('control_eligibility.py', 'Gate.decision_blockers'),
+    ('control_eligibility.py', 'Gate._decision_codes'),
 )
-CONSUMER_CALLS = ('decision_blockers', '_decision_blocks', 'blockers')
+CONSUMER_CALLS = ('decision_blockers', '_decision_blocks', '_decision_codes', 'blockers')
 
 VERIFY_CACHE_LIMIT = 4096
 
