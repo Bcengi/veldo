@@ -689,6 +689,9 @@ def cases():
     def architecture(name, module, old, new, rows):
         add(53, name, '60_veldo_0053_architecture.py', module, old, new, ['architecture/' + r for r in rows])
 
+    IDENTITY = "            found['validator'] = {role: dict(entry) for role, entry in snapshot.identity.items()}"
+    SEAM = "        return self.validate.entry_contract(workspace, required, arch=self.arch)"
+
     architecture('architecture-malformed-as-optional-absence', 'control_eligibility.py',
                  "        found.update(kind=load.kind, state=load.state, required=load.required,\n",
                  "        if load.kind == 'parse_failure':  # defect: a present malformed contract read as optional absence\n"
@@ -727,8 +730,8 @@ def cases():
                  "            found['refusals']",
                  ['entries-blocked'])
     architecture('architecture-record-not-required', 'control_eligibility.py',
-                 "entry_contract(self.workspace, True if accepted else None)",
-                 "entry_contract(self.workspace, None)  # defect: acceptance no longer makes the contract required",
+                 "snapshot.contract(self.workspace, True if accepted else None)",
+                 "snapshot.contract(self.workspace, None)  # defect: acceptance no longer makes the contract required",
                  ['entries-blocked', 'substitution'])
     architecture('architecture-provider-request-unasked', 'control_eligibility.py',
                  "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', ARCHITECTURE_PREDICATE) + tuple(CC.ENTRY_PREDICATES[s])))",
@@ -736,21 +739,19 @@ def cases():
                  " else ()) + tuple(CC.ENTRY_PREDICATES[s])))",
                  ['registrations', 'entries-blocked'])
     architecture('architecture-clone-validator', 'control_eligibility.py',
-                 "            self._validator = _organ('validate')\n",
-                 "            clone = importlib.util.spec_from_file_location(\n"
-                 "                'clone_validate', os.path.join(self.workspace, '.veldo', 'validate.py'))\n"
-                 "            module = importlib.util.module_from_spec(clone)\n"
-                 "            clone.loader.exec_module(module)\n"
-                 "            self._validator = module  # defect: the workspace's own validator judges the workspace\n",
+                 "            self._validator = ValidatorSnapshot()\n",
+                 "            self._validator = ValidatorSnapshot(os.path.join(self.workspace, '.veldo'))"
+                 "  # defect: the workspace's own validator judges the workspace\n",
                  ['substitution'])
     architecture('architecture-accepted-digest-ignored', 'control_eligibility.py',
                  "        elif accepted and found['artifact']['digest'] != accepted['digest']:",
                  "        elif False:  # defect: whatever bytes are at the path are the accepted architecture",
                  ['substitution'])
     architecture('architecture-identity-from-workspace', 'control_eligibility.py',
-                 "            found['validator'] = {role: _file_identity(path) for role, path in sorted(ran.items())}",
-                 "            found['validator'] = {role: _file_identity(os.path.join(self.workspace, '.veldo', os.path.basename(path)))\n"
-                 "                                  for role, path in sorted(ran.items())}  # defect: names what the workspace carries",
+                 IDENTITY,
+                 "            found['validator'] = {role: {'path': os.path.join(self.workspace, '.veldo', os.path.basename(entry['path'])),\n"
+                 "                                         'digest': entry['digest']}\n"
+                 "                                  for role, entry in snapshot.identity.items()}  # defect: names what the workspace carries",
                  ['substitution'])
     architecture('architecture-identity-not-recorded', 'control_eligibility.py',
                  "        if decision.get('architecture'):\n",
@@ -772,15 +773,33 @@ def cases():
                  "        self.workspace = str(workspace) if workspace is not None else os.getcwd()  # defect: the process directory\n",
                  ['store-only-refuses'])
     # Review fix: the Gate judges only through validate.py's public entry_contract.
-    architecture('architecture-private-seam', 'control_eligibility.py',
-                 "            self._validator = _organ('validate')\n",
-                 "            self._validator = _organ('validate')._VC  # defect: around the public name\n",
+    architecture('architecture-private-seam', 'control_eligibility.py', SEAM,
+                 "        return self.validate._VC.entry_contract(workspace, required, arch=self.arch)  # defect: around the public name",
                  ['public-seam'])
-    architecture('architecture-validate-checks-direct', 'control_eligibility.py',
-                 "            self._validator = _organ('validate')\n",
-                 "            self._validator = _organ('validate_checks')  # defect: around validate.py\n"
-                 "            self._validator.parse_yamlish = _organ('yamlish').parse\n",
+    snapshot_load = ("            spec = importlib.util.spec_from_file_location('eligibility_validator_snapshot', str(engine / 'validate.py'))\n"
+                     "            module = importlib.util.module_from_spec(spec)\n"
+                     "            spec.loader.exec_module(module)\n"
+                     "            self.validate, self.arch = module, module.entry_validator()\n")
+    architecture('architecture-validate-checks-direct', 'control_eligibility.py', snapshot_load,
+                 snapshot_load.replace("str(engine / 'validate.py')", "str(engine / 'validate_checks.py')")
+                 .replace("            self.validate, self.arch = module, module.entry_validator()\n",
+                          "            module.parse_yamlish = module._Y.parse  # defect: around validate.py\n"
+                          "            self.validate, self.arch = module, module._arch_module()\n"),
                  ['public-seam'])
+    # Review fix: the identity is taken once, from the bytes loaded, and every decision records that.
+    architecture('architecture-identity-read-at-decision', 'control_eligibility.py', IDENTITY,
+                 "            found['validator'] = {role: {'path': entry['path'], 'digest': 'sha256:' + hashlib.sha256(\n"
+                 "                Path(entry['path']).read_bytes()).hexdigest()} for role, entry in snapshot.identity.items()}"
+                 "  # defect: the files on disk now, not the bytes that ran",
+                 ['identity-is-what-ran'])
+    architecture('architecture-validator-reexecuted-per-call', 'control_eligibility.py', SEAM,
+                 "        return self.validate.entry_contract(workspace, required, arch=_organ('arch'))"
+                 "  # defect: the structural validator re-executed from disk at every call",
+                 ['identity-is-what-ran'])
+    architecture('architecture-snapshot-per-decision', 'control_eligibility.py',
+                 "        if self._validator is None:\n            self._validator = ValidatorSnapshot()\n",
+                 "        if True:  # defect: a new snapshot for every decision\n            self._validator = ValidatorSnapshot()\n",
+                 ['identity-is-what-ran'])
     # VELDO-0046: retained Release 1 criteria, two independent defects per named row.
     def notification(name, old, new, row):
         add(46, name, '58_veldo_0046_notifications.py', 'control_notify.py',

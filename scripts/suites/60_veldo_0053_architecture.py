@@ -222,7 +222,7 @@ def _v53_suite():
         gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         # The code every judgement must come from: the installed files, by resolved path and digest.
         installed = {role: os.path.realpath(str(mods / name)) for role, name in (
-            ('entry', 'validate_checks.py'), ('loader', 'contract_loader.py'), ('validator', 'arch.py'),
+            ('entry_point', 'validate.py'), ('entry', 'validate_checks.py'), ('loader', 'contract_loader.py'), ('validator', 'arch.py'),
             ('parser', 'yamlish.py'))}
         installed_digests = {role: sha(Path(path).read_bytes()) for role, path in installed.items()}
 
@@ -575,7 +575,7 @@ def _v53_suite():
             # The clone's structural validator is a success stub that says so when it is loaded.
             (clone / '.veldo' / 'arch.py').write_text(
                 'from pathlib import Path as _StubPath\n'
-                "_StubPath(__file__).with_name('STUB_RAN').write_text('the clone validator ran\\n')\n"
+                "_StubPath(%r).write_text('the clone validator ran\\n')\n" % str(marker)
                 + (mods / 'arch.py').read_text()
                 + '\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n')
             gate_c = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(clone))
@@ -655,6 +655,43 @@ def _v53_suite():
             observed['public_seam'] = {'judgements': len(through), 'through_public_entry': calls_seen,
                                        'refusals': sorted({r for d in through.values() for r in d['refusals']})}
             check('architecture/public-seam', outcome(through, None) and calls_seen == len(through) == len(EL.FLOOR_STATIONS))
+
+        with region('architecture/identity-is-what-ran'):
+            # R50 identity: the validator is loaded ONCE, from one read of its bytes, and every decision
+            # records THAT snapshot. The installed loader and structural validator are then replaced on
+            # disk (the loader by other bytes, the validator by one that passes everything): the same Gate keeps judging with the code it loaded
+            # (arch.py included, never re-executed per call) and keeps recording the digests of the bytes
+            # that ran; a Gate built after the change runs the new code and records the new digests.
+            put('architecture:' + REPOSITORY, 'architecture_contract', dict(state='accepted', digest=reset('invalid')))
+            loaded = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
+            first = stations(loaded)
+            originals_code = {name: (mods / name).read_bytes() for name in ('contract_loader.py', 'arch.py')}
+            try:
+                # A loader that behaves the same with different bytes, and a validator that passes all.
+                (mods / 'contract_loader.py').write_bytes(originals_code['contract_loader.py'] + b'\n# replaced on disk\n')
+                (mods / 'arch.py').write_bytes(originals_code['arch.py']
+                                               + b'\n\ndef validate_contract(data, root, contract_path, fail):\n    return 0\n')
+                changed = {role: sha((mods / Path(path).name).read_bytes()) for role, path in installed.items()}
+                second = stations(loaded)
+                fresh = stations(EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base)))
+            finally:
+                for name, body in originals_code.items():
+                    (mods / name).write_bytes(body)
+            recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
+                        for d in list(first.values()) + list(second.values())]
+            fresh_recorded = [{r: v.get('digest') for r, v in (d.get('architecture') or {}).get('validator', {}).items()}
+                              for d in fresh.values()]
+            observed['identity_is_what_ran'] = {
+                'before_change': sorted({c for d in first.values() for c in d['refusals']}),
+                'same_gate_after_change': sorted({c for d in second.values() for c in d['refusals']}),
+                'fresh_gate_after_change': sorted({c for d in fresh.values() for c in d['refusals']}),
+                'recorded_is_loaded': all(r == installed_digests for r in recorded),
+                'fresh_records_new': all(r == changed for r in fresh_recorded)}
+            check('architecture/identity-is-what-ran',
+                   outcome(first, CODES['invalid_structure']) and outcome(second, CODES['invalid_structure'])
+                   and all(r == installed_digests for r in recorded)
+                   and changed != installed_digests and outcome(fresh, None) and all(r == changed for r in fresh_recorded))
+            reset('valid')
 
         with region('architecture/observations'):
             # Every decision records the architecture it judged, and its refusals keep their taxonomy.

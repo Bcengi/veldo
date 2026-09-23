@@ -73,6 +73,7 @@ import os
 from pathlib import Path
 import sqlite3
 import subprocess
+import tempfile
 import time
 import uuid
 
@@ -405,18 +406,42 @@ def _definition(label, data):
     return SN.digest(SN.canonical(body))
 
 
+# The installed files whose code judges an architecture, by the role each plays.
+VALIDATOR_ROLES = (('entry_point', 'validate.py'), ('entry', 'validate_checks.py'), ('loader', 'contract_loader.py'),
+                   ('validator', 'arch.py'), ('parser', 'yamlish.py'))
+
+
+class ValidatorSnapshot:
+    """The installed structural validator, loaded ONCE from ONE read of the installed engine's bytes
+    (VELDO-0053, R50). The engine's modules are read once, written to a private directory only this
+    process can reach, and executed from there, so the digests recorded are of the bytes that run: a
+    later change on disk is neither run nor recorded by a decision of this snapshot. The structural
+    validator (arch.py) is loaded once here and reused for every contract; the private copy is removed
+    as soon as it is loaded."""
+
+    def __init__(self, installed=None):
+        installed = Path(installed or Path(__file__).resolve().parent)
+        bodies = {path.name: path.read_bytes() for path in sorted(installed.glob('*.py'))}
+        with tempfile.TemporaryDirectory(prefix='veldo-validator-') as private:
+            engine = Path(private) / '.veldo'
+            engine.mkdir()
+            for name, body in bodies.items():
+                (engine / name).write_bytes(body)
+            spec = importlib.util.spec_from_file_location('eligibility_validator_snapshot', str(engine / 'validate.py'))
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            self.validate, self.arch = module, module.entry_validator()
+        self.identity = {role: {'path': str(installed / name), 'digest': 'sha256:' + hashlib.sha256(bodies[name]).hexdigest()}
+                         for role, name in VALIDATOR_ROLES}
+
+    def contract(self, workspace, required):
+        """The ContractLoad of the workspace's contract, through validate.py's public entry_contract."""
+        return self.validate.entry_contract(workspace, required, arch=self.arch)
+
+
 def _digest_file(path):
     with open(path, 'rb') as handle:
         return 'sha256:' + hashlib.sha256(handle.read()).hexdigest()
-
-
-def _file_identity(path):
-    """{path, digest} of a file of code that ran (its resolved path and the digest of its bytes)."""
-    resolved = os.path.realpath(path)
-    try:
-        return {'path': resolved, 'digest': _digest_file(resolved)}
-    except OSError:
-        return {'path': resolved, 'digest': None}
 
 
 def _artifact_identity(path):
@@ -728,10 +753,9 @@ class Gate:
     # -- architecture (VELDO-0053) -----------------------------------------------------------------
 
     def _architecture_validator(self):
-        """The installed validator: validate.py beside this module, loaded once, judged through its
-        public entry_contract only."""
+        """The installed validator beside this module, loaded once per Gate (ValidatorSnapshot)."""
         if self._validator is None:
-            self._validator = _organ('validate')
+            self._validator = ValidatorSnapshot()
         return self._validator
 
     def architecture(self, item):
@@ -755,8 +779,9 @@ class Gate:
             found['refusals'] = ['missing_evidence:architecture/workspace']
             return found
         try:
-            load, ran = self._architecture_validator().entry_contract(self.workspace, True if accepted else None)
-            found['validator'] = {role: _file_identity(path) for role, path in sorted(ran.items())}
+            snapshot = self._architecture_validator()
+            load = snapshot.contract(self.workspace, True if accepted else None)
+            found['validator'] = {role: dict(entry) for role, entry in snapshot.identity.items()}
         except Exception as error:  # noqa: BLE001 - a validator that cannot answer refuses, never passes
             found['refusals'] = ['unavailable_service:architecture_validator']
             found['error'] = type(error).__name__

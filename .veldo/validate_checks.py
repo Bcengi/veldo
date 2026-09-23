@@ -319,15 +319,11 @@ def load_contract_state(repo_root=None, required=None, contract_path=None):
     return _CL.load_contract_state(Path(repo_root) if repo_root else ROOT, _arch_module(), parse_yamlish, required=required, contract_path=contract_path)
 
 
-def entry_contract(workspace, required=None):
-    """VELDO-0053: the ContractLoad an eligibility entry consumes, from THIS installed validator (never a copy
-    the workspace carries), with the source file of each function that judged it. `required` True is the
+def entry_contract(workspace, required=None, arch=None):
+    """VELDO-0053: the ContractLoad an eligibility entry consumes, judged by `arch`, the one structural validator
+    instance the caller loaded (validate.entry_validator) and reuses for every call. `required` True is the
     authority's accepted architecture; None reads the policy flag."""
-    arch = _arch_module()
-    load = _CL.load_contract_state(Path(workspace), arch, parse_yamlish, required=required)
-    ran = {"entry": entry_contract, "loader": _CL.load_contract_state, "validator": arch.validate_contract,
-           "parser": parse_yamlish}
-    return load, {role: fn.__code__.co_filename for role, fn in ran.items()}
+    return _CL.load_contract_state(Path(workspace), arch or _arch_module(), parse_yamlish, required=required)
 
 
 def load_repo_contract(repo_root=None, required=None):
