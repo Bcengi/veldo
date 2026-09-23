@@ -40,7 +40,7 @@ def digest(body):
 def safe_path(value):
     if (not isinstance(value, str) or not value or '\\' in value
             or str(PurePosixPath(value)) != value or PurePosixPath(value).is_absolute()
-            or '..' in PurePosixPath(value).parts or value == 'manifest.json'):
+            or '..' in PurePosixPath(value).parts or value in ('.', 'manifest.json')):
         raise Refused('invalid_input', 'invalid projection path')
     return value
 
@@ -82,6 +82,11 @@ def load(store, conn, identity, domain_uuid, repository_uuid):
 
 def members(snapshot, repo):
     """Read every accepted document and captured status; return exact bytes by output path."""
+    paths = [safe_path(path) for path in (*snapshot['documents'], *snapshot['statuses'])]
+    inventory = set(paths) | {'manifest.json'}
+    if len(paths) != len(set(paths)) or any(
+            str(parent) in inventory for path in paths for parent in PurePosixPath(path).parents):
+        raise Refused('invalid_input', 'overlapping projection paths')
     result = {}
     for path, expected in snapshot['documents'].items():
         result[safe_path(path)] = artifact(repo, snapshot['accepted_commit'], path, expected)

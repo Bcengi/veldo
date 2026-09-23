@@ -343,6 +343,33 @@ c.close()
                and store.COMMAND_REGISTRY == registry and duplicate == 'invalid_registration')
         for connection in connections:
             connection.close()
+        # R2 capsule and prefix variants: acceptance must roll back the whole command.
+        prefix_outcomes = []
+        inventories = [
+            ({'policy.md': sn.digest(documents['policy.md'])}, {'policy.md/status.json': 'unit'}),
+            ({'policy.md': sn.digest(documents['policy.md'])}, {'policy.md/deep/status.json': 'unit'}),
+            ({}, {'status.json': 'unit', 'status.json/child': 'unit'}),
+            ({}, {'manifest.json/child': 'unit'}),
+        ]
+        for index, (docs, statuses) in enumerate(inventories):
+            store = _s35_load('s35_paths_' + str(index), modules / 'control_store.py')
+            connection = store.open_store(root / ('paths-' + str(index) + '.sqlite3'))
+            seed.backup(connection)
+            put(store, connection, 'revision', 'accepted_revision', dict(
+                domain_uuid='domain', repository_uuid='repository', commit=commit,
+                documents=docs, statuses=statuses))
+            reader = rs.attach(store, connection, repo, 'domain', 'repository')
+            reader.enable('reserve', dict(revision='revision', entities={}, collections={}))
+            before = store.table_snapshot(connection)
+            refusal = None
+            try:
+                reader.execute(command('accept_snapshot', dict(snapshot_id='invalid-paths',
+                    operation='reserve', arguments={}), {'invalid-paths': 0}), **signing)
+            except store.StoreRefused as error:
+                refusal = error.code
+            prefix_outcomes.append(refusal == 'invalid_input' and store.table_snapshot(connection) == before)
+            connection.close()
+        expect('snapshots/path-prefix-inventory', all(prefix_outcomes) and len(prefix_outcomes) == 4)
         seed.close()
     observations['elapsed_seconds'] = _s35_time.monotonic() - started
     return observations

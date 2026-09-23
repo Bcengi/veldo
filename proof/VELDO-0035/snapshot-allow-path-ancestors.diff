@@ -1,0 +1,5 @@
+--- a/.veldo/control_snapshot.py
++++ b/.veldo/control_snapshot.py
+@@ -88 +88 @@
+-            str(parent) in inventory for path in paths for parent in PurePosixPath(path).parents):
++            False for path in paths for parent in PurePosixPath(path).parents):

@@ -1,0 +1,3 @@
+{"finding": 35, "mutation": "snapshot-allow-path-ancestors", "baseline": "green", "assertions": 58, "red_rows": ["snapshots/path-prefix-inventory"]}
+{"finding": 35, "mutation": "snapshot-check-only-direct-parent", "baseline": "green", "assertions": 58, "red_rows": ["snapshots/path-prefix-inventory"]}
+{"mutations_rejected": 2, "green_suites": {"58_veldo_0035_snapshots.py": 58}}

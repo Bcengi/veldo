@@ -123,3 +123,10 @@ refuse. Closing a store connection clears its registrations. The added control-s
 is the minimal dispatch seam required for this correction, mirrored from the canonical engine.
 The registered mutations remove the unguarded-connection refusal and separately allow a deferred
 read transaction; the named rows must fail assertions, rather than terminate with exceptions.
+
+R2: `review-r2-red.json` records the path-prefix inventory assertion failing against `296be42`;
+`review-r2-green.json` records acceptance refusing `invalid_input` with every domain table
+unchanged. Validation covers document/status and status/status ancestry, deep descendants, and
+the reserved `manifest.json` completion path before acceptance writes anything. The materializer
+uses the same inventory validation before creating a destination. The two mutations respectively
+remove ancestor checking and check only the immediate parent; both fail the inventory row.

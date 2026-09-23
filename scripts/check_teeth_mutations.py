@@ -309,6 +309,13 @@ def cases():
     snapshots('snapshot-deferred-transaction', 'control_readset.py',
               '        if not conn.in_transaction or not conn.command_transaction:',
               '        if not conn.in_transaction:', 'transaction-bound')
+    snapshots('snapshot-allow-path-ancestors', 'control_snapshot.py',
+              '            str(parent) in inventory for path in paths for parent in PurePosixPath(path).parents):',
+              '            False for path in paths for parent in PurePosixPath(path).parents):',
+              'path-prefix-inventory')
+    snapshots('snapshot-check-only-direct-parent', 'control_snapshot.py',
+              'for parent in PurePosixPath(path).parents):',
+              'for parent in [PurePosixPath(path).parent]):', 'path-prefix-inventory')
     return result
 
 
