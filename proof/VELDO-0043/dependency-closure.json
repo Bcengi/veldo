@@ -1,106 +1,140 @@
 {
+ "schema": "veldo.dependency-probe/v2",
+ "how": "pip install --dry-run --report for langgraph==1.2.12 (latest stable on PyPI, read 2026-09-23) in a throwaway venv under the session scratchpad, Python 3.12.3, pip 24.0. Nothing was installed. Licenses from PyPI project metadata, origin from the GitHub owner profiles (gh api users/<login>) read 2026-09-23.",
  "closure": [
   {
-   "license": "MIT",
    "name": "annotated-types",
+   "version": "0.8.0",
+   "license": "MIT",
+   "origin": "github.com/annotated-types (org, no location); author Adrian Garcia Badaracco, Chicago, IL, US",
    "requires": [],
-   "version": "0.8.0"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "anyio",
+   "version": "4.15.1",
+   "license": "MIT",
+   "origin": "github.com/agronholm, Alex Gronholm, Nurmijarvi, Finland",
    "requires": [
     "exceptiongroup",
     "idna",
     "typing_extensions"
    ],
-   "version": "4.15.1"
+   "status": "no conflict found"
   },
   {
-   "license": "MPL-2.0",
    "name": "certifi",
+   "version": "2026.7.22",
+   "license": "MPL-2.0",
+   "origin": "github.com/certifi (org, no location); PyPI author Kenneth Reitz",
    "requires": [],
-   "version": "2026.7.22"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "charset-normalizer",
-   "requires": [],
-   "version": "3.5.1"
-  },
-  {
-   "license": "Apache License, Version 2.0",
-   "name": "distro",
-   "requires": [],
-   "version": "1.9.0"
-  },
-  {
+   "version": "3.5.1",
    "license": "MIT",
-   "name": "h11",
+   "origin": "github.com/jawah (org, France); Ahmed R. Tahri (Ousret), France",
    "requires": [],
-   "version": "0.16.0"
+   "status": "no conflict found"
   },
   {
-   "license": "BSD-3-Clause",
+   "name": "distro",
+   "version": "1.9.0",
+   "license": "Apache-2.0",
+   "origin": "github.com/python-distro (org, no location); author Nir Cohen (nir0s, no location)",
+   "requires": [],
+   "status": "no conflict found"
+  },
+  {
+   "name": "h11",
+   "version": "0.16.0",
+   "license": "MIT",
+   "origin": "github.com/python-hyper (org, no location); author Nathaniel J. Smith (no location)",
+   "requires": [],
+   "status": "no conflict found"
+  },
+  {
    "name": "httpcore",
+   "version": "1.0.9",
+   "license": "BSD-3-Clause",
+   "origin": "github.com/encode (org, no location); author Tom Christie (no location)",
    "requires": [
     "certifi",
     "h11"
    ],
-   "version": "1.0.9"
+   "status": "no conflict found"
   },
   {
-   "license": "BSD-3-Clause",
    "name": "httpcore2",
+   "version": "2.13.1",
+   "license": "BSD-3-Clause",
+   "origin": "github.com/pydantic/httpx2; maintainer Pydantic Services Inc.; Samuel Colvin, London, UK",
    "requires": [
     "h11",
     "truststore"
    ],
-   "version": "2.13.0"
+   "status": "no conflict found"
   },
   {
-   "license": "BSD-3-Clause",
    "name": "httpx",
+   "version": "0.28.1",
+   "license": "BSD-3-Clause",
+   "origin": "github.com/encode (org, no location); author Tom Christie (no location)",
    "requires": [
     "anyio",
     "certifi",
     "httpcore",
     "idna"
    ],
-   "version": "0.28.1"
+   "status": "no conflict found"
   },
   {
-   "license": "BSD-3-Clause",
    "name": "httpx2",
+   "version": "2.13.1",
+   "license": "BSD-3-Clause",
+   "origin": "github.com/pydantic/httpx2; maintainer Pydantic Services Inc.; Samuel Colvin, London, UK",
    "requires": [
+    "anyio",
+    "httpcore2",
+    "httpx2-jsfetch",
     "idna",
+    "truststore",
     "typing-extensions"
    ],
-   "version": "2.13.0"
+   "status": "no conflict found"
   },
   {
-   "license": "BSD-3-Clause",
    "name": "idna",
+   "version": "3.20",
+   "license": "BSD-3-Clause",
+   "origin": "github.com/kjd, Kim Davies (ICANN/IANA, no location)",
    "requires": [],
-   "version": "3.20"
+   "status": "no conflict found"
   },
   {
-   "license": "Modified BSD License",
    "name": "jsonpatch",
+   "version": "1.33",
+   "license": "BSD (Modified BSD License)",
+   "origin": "github.com/stefankoegl, Stefan Koegl, Austria",
    "requires": [
-    "jsonpointer ("
+    "jsonpointer("
    ],
-   "version": "1.33"
+   "status": "no conflict found"
   },
   {
-   "license": "Modified BSD License",
    "name": "jsonpointer",
+   "version": "3.1.1",
+   "license": "BSD (Modified BSD License)",
+   "origin": "github.com/stefankoegl, Stefan Koegl, Austria",
    "requires": [],
-   "version": "3.1.1"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "langchain-core",
+   "version": "1.6.4",
+   "license": "MIT",
+   "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "httpx",
     "jsonpatch",
@@ -113,19 +147,23 @@
     "typing-extensions",
     "uuid-utils"
    ],
-   "version": "1.6.4"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "langchain-protocol",
+   "version": "0.0.19",
+   "license": "MIT",
+   "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "typing-extensions"
    ],
-   "version": "0.0.19"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "langgraph",
+   "version": "1.2.12",
+   "license": "MIT",
+   "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "langchain-core",
     "langgraph-checkpoint",
@@ -134,29 +172,35 @@
     "pydantic",
     "xxhash"
    ],
-   "version": "1.2.12"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "langgraph-checkpoint",
+   "version": "4.2.0",
+   "license": "MIT",
+   "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "langchain-core",
     "ormsgpack"
    ],
-   "version": "4.2.0"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "langgraph-prebuilt",
+   "version": "1.1.0",
+   "license": "MIT",
+   "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "langchain-core",
     "langgraph-checkpoint"
    ],
-   "version": "1.1.0"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "langgraph-sdk",
+   "version": "0.4.5",
+   "license": "MIT",
+   "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "httpx",
     "langchain-core",
@@ -164,11 +208,13 @@
     "orjson",
     "websockets"
    ],
-   "version": "0.4.5"
+   "status": "CONFLICT: client of the LangSmith Deployment / LangGraph Agent Server service, sold in free and paid tiers; not approved"
   },
   {
-   "license": "MIT",
    "name": "langsmith",
+   "version": "0.14.0",
+   "license": "MIT",
+   "origin": "github.com/langchain-ai, LangChain, United States",
    "requires": [
     "anyio",
     "distro",
@@ -185,154 +231,167 @@
     "xxhash",
     "zstandard"
    ],
-   "version": "0.14.0"
+   "status": "owner-approved exception (client of a free and paid tier service)"
   },
   {
-   "license": "MPL-2.0 AND (Apache-2.0 OR MIT)",
    "name": "orjson",
+   "version": "3.12.0",
+   "license": "MPL-2.0 AND (Apache-2.0 OR MIT)",
+   "origin": "github.com/ijl, no public name or location (commit mail at mailbox.org); origin NOT verified",
    "requires": [],
-   "version": "3.12.0"
+   "status": "origin not verified"
   },
   {
-   "license": "Apache-2.0 OR MIT",
    "name": "ormsgpack",
+   "version": "1.12.2",
+   "license": "Apache-2.0 OR MIT",
+   "origin": "github.com/ormsgpack (org); Aviram Hassan, Tel Aviv, Israel; Emanuele Giaquinta (exg, no location)",
    "requires": [],
-   "version": "1.12.2"
+   "status": "no conflict found"
   },
   {
-   "license": "Apache-2.0 OR BSD-2-Clause",
    "name": "packaging",
+   "version": "26.3",
+   "license": "Apache-2.0 OR BSD-2-Clause",
+   "origin": "github.com/pypa, Python Packaging Authority, United States",
    "requires": [],
-   "version": "26.3"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "pydantic",
+   "version": "2.13.5",
+   "license": "MIT",
+   "origin": "github.com/pydantic (org, no location); Samuel Colvin, London, UK",
    "requires": [
     "annotated-types",
     "pydantic-core",
     "typing-extensions",
     "typing-inspection"
    ],
-   "version": "2.13.5"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "pydantic_core",
+   "version": "2.46.5",
+   "license": "MIT",
+   "origin": "github.com/pydantic (org, no location); Samuel Colvin, London, UK",
    "requires": [
     "typing-extensions"
    ],
-   "version": "2.46.5"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "PyYAML",
+   "version": "6.0.3",
+   "license": "MIT",
+   "origin": "github.com/yaml, The YAML Project (org, no location)",
    "requires": [],
-   "version": "6.0.3"
+   "status": "no conflict found"
   },
   {
-   "license": "Apache-2.0",
    "name": "requests",
+   "version": "2.34.2",
+   "license": "Apache-2.0",
+   "origin": "github.com/psf, Python Software Foundation; maintainer Ian Stapleton Cordasco, Madison, WI, US",
    "requires": [
     "certifi",
     "charset_normalizer",
     "idna",
     "urllib3"
    ],
-   "version": "2.34.2"
+   "status": "no conflict found"
   },
   {
-   "license": "Apache 2.0",
    "name": "requests-toolbelt",
+   "version": "1.0.0",
+   "license": "Apache-2.0",
+   "origin": "github.com/requests (org); Ian Stapleton Cordasco, Madison, WI, US",
    "requires": [
-    "requests ("
+    "requests("
    ],
-   "version": "1.0.0"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT OR Apache-2.0",
    "name": "sniffio",
+   "version": "1.3.1",
+   "license": "MIT OR Apache-2.0",
+   "origin": "github.com/python-trio (org, no location); author Nathaniel J. Smith",
    "requires": [],
-   "version": "1.3.1"
+   "status": "no conflict found"
   },
   {
-   "license": "Apache 2.0",
    "name": "tenacity",
+   "version": "9.1.4",
+   "license": "Apache-2.0",
+   "origin": "github.com/jd, Julien Danjou, Toulouse, France",
    "requires": [],
-   "version": "9.1.4"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "truststore",
+   "version": "0.10.4",
+   "license": "MIT",
+   "origin": "github.com/sethmlarson, Seth Larson, Minneapolis, MN, US",
    "requires": [],
-   "version": "0.10.4"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "typing-inspection",
+   "version": "0.4.4",
+   "license": "MIT",
+   "origin": "github.com/pydantic; Victorien Plot (Viicos), Amsterdam, Netherlands",
    "requires": [
     "typing-extensions"
    ],
-   "version": "0.4.4"
+   "status": "no conflict found"
   },
   {
-   "license": "PSF-2.0",
    "name": "typing_extensions",
+   "version": "4.16.0",
+   "license": "PSF-2.0",
+   "origin": "github.com/python, Python (org)",
    "requires": [],
-   "version": "4.16.0"
+   "status": "no conflict found"
   },
   {
-   "license": "MIT",
    "name": "urllib3",
+   "version": "2.8.0",
+   "license": "MIT",
+   "origin": "github.com/urllib3 (org); Andrey Petrov, Toronto, Canada; Seth Larson, Minneapolis, MN, US",
    "requires": [],
-   "version": "2.8.0"
+   "status": "no conflict found"
   },
   {
-   "license": "BSD-3-Clause",
    "name": "uuid_utils",
+   "version": "0.17.1",
+   "license": "BSD-3-Clause",
+   "origin": "github.com/aminalaee, Amin Alaee, Netherlands",
    "requires": [],
-   "version": "0.17.1"
+   "status": "no conflict found"
   },
   {
-   "license": "BSD-3-Clause",
    "name": "websockets",
-   "requires": [],
-   "version": "16.1.1"
-  },
-  {
-   "license": "BSD-2-Clause",
-   "name": "xxhash",
-   "requires": [],
-   "version": "4.0.1"
-  },
-  {
+   "version": "16.1.1",
    "license": "BSD-3-Clause",
-   "name": "zstandard",
+   "origin": "github.com/python-websockets (org); Aymeric Augustin, Paris, France",
    "requires": [],
-   "version": "0.25.0"
-  }
- ],
- "conflicts": [
-  {
-   "evidence": "PyPI metadata Author \"Yue Du\", home page github.com/ifduyue/python-xxhash; GitHub API users/ifduyue reports location \"China\". langgraph/types.py and langgraph/pregel/_algo.py import xxhash unconditionally.",
-   "package": "xxhash",
-   "required_by": [
-    "langgraph",
-    "langsmith"
-   ],
-   "rule": "C16: No Chinese-origin dependency anywhere",
-   "version": "4.0.1"
+   "status": "no conflict found"
   },
   {
-   "evidence": "Client SDK of the LangSmith hosted service (home page smith.langchain.com); langchain-core requires it unconditionally. www.langchain.com/pricing, read 2026-09-23: LangSmith Developer is free, Plus is $39 per seat per month, Enterprise is custom priced. LangGraph itself is MIT; its hosted deployment is LangSmith Deployment, included only in the paid Plus and Enterprise plans.",
-   "package": "langsmith",
-   "required_by": [
-    "langchain-core"
-   ],
-   "rule": "C16: no library with free and paid tiers",
-   "version": "0.14.0"
+   "name": "xxhash",
+   "version": "4.0.1",
+   "license": "BSD-2-Clause",
+   "origin": "github.com/ifduyue, Yue Du, location China",
+   "requires": [],
+   "status": "owner-approved exception (Chinese origin)"
+  },
+  {
+   "name": "zstandard",
+   "version": "0.25.0",
+   "license": "BSD-3-Clause",
+   "origin": "github.com/indygreg, Gregory Szorc, San Francisco, CA, US",
+   "requires": [],
+   "status": "no conflict found"
   }
- ],
- "how": "pip install langgraph into a throwaway venv outside the repository (Python 3.12.3, pip 24.0), 2026-09-23; resolved closure read from installed metadata. Not installed for the repository or the gate.",
- "schema": "veldo.dependency-probe/v1"
+ ]
 }
