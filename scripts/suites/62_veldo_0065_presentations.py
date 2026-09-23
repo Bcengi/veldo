@@ -111,7 +111,7 @@ def _v65_checks(base):
                                   'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement',
                                   'answer/redelivered-after-closed', 'answer/closed-tell-after-edge-scope',
                                   'answer/rationale-original-text', 'answer/stale-current-told',
-                                  'answer/owner-not-current-silent')}
+                                  'answer/owner-not-current-silent', 'answer/owner-ledger-revoked-silent')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1699,6 +1699,47 @@ def _v65_checks(base):
             answer(owner_reply(presenter.current(control_id) or {}, 'nonsense', sender=chat2))
             check(silent_owner, 'control: with the membership and enrollment current, the owner is told the valid choices',
                   len(api['requests']) == asked + 1 and api['requests'][-1][0] == chat2)
+
+        # Review 7: an owner the revocation ledger revokes is no longer current either, with the
+        # membership and the chat enrollment untouched: nothing is sent and no answer is accepted.
+        ledger_owner = 'answer/owner-ledger-revoked-silent'
+        with section(ledger_owner):
+            chat2, enroll2 = 5550003, 'channel-enrollment:telegram_chat:owner2'
+            fixture(enroll2, 'channel_enrollment', dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat',
+                                                        principal='owner2', chat_id=chat2, revoked_at=None))
+            held = (entity('authority:revocations') or {}).get('data') or {'revocation_version': 0, 'revoked': {}}
+            revoking = dict(held, revoked=dict(held.get('revoked') or {},
+                                               owner2={'at': _v65_time.time() - 1, 'reason': 'test', 'by': 'authority'}))
+            lr0, lr1 = opened('LR-0', owner='owner2'), opened('LR-1', owner='owner2')
+            presenter.present(lr0)
+            presenter.present(lr1)
+            lr0_r, lr1_r = presenter.current(lr0) or {}, presenter.current(lr1) or {}
+            command('pm', 'cancel', 'LR-1', request_version=1)
+            lr2 = opened('LR-2', owner='owner2')
+            fixture('authority:revocations', 'revocation_ledger', revoking)
+            try:
+                got = {}
+                for label, receipt, text in (('pending nonsense', lr0_r, 'nonsense'), ('pending valid answer', lr0_r, 'accept: fine'),
+                                             ('closed request', lr1_r, 'nonsense')):
+                    asked = len(api['requests'])
+                    got[label] = (reason(answer(owner_reply(receipt, text, sender=chat2))), len(api['requests']) - asked)
+                asked = len(api['requests'])
+                shown = (reason(presenter.present(lr2)), len(api['requests']) - asked)
+            finally:
+                fixture('authority:revocations', 'revocation_ledger', dict(held))
+            for label in ('pending nonsense', 'pending valid answer', 'closed request'):
+                check(ledger_owner, 'a %s reply after the ledger revoked the owner is refused owner_not_current and nothing is sent'
+                      % label, got[label] == (('refused', 'owner_not_current'), 0))
+            check(ledger_owner, 'the valid answer is not recorded', presenter.answer_record(lr0, 1, 'owner2') is None)
+            check(ledger_owner, 'a request of the ledger-revoked owner is not presented, and nothing is sent',
+                  shown == (('refused', 'missing_authority'), 0))
+            lr3 = opened('LR-3', owner='owner2')
+            asked = len(api['requests'])
+            control = [reason(presenter.present(lr3))]
+            control.append(reason(answer(owner_reply(presenter.current(lr3) or {}, 'nonsense', sender=chat2))))
+            check(ledger_owner, 'control: with the ledger restored, a request of the same owner is presented and the owner told the valid choices',
+                  control == [('published', None), ('refused', 'unmatched_choice')] and len(api['requests']) == asked + 2
+                  and [c for c, _, _ in api['requests'][asked:]] == [chat2, chat2])
     finally:
         server.shutdown()
         server.server_close()

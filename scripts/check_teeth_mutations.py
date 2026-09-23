@@ -1193,6 +1193,13 @@ def cases():
     # VELDO-0065 sixth review item 3: a ledger whose revoked has the wrong shape is a named refusal.
     presentation('frame-ledger-any-shape', "            if not isinstance(revoked, dict):\n",
                  "            if not isinstance(revoked, (dict, list, int)):\n", 'framing/ledger-read-fails-closed')
+    # VELDO-0065 seventh review: an owner the revocation ledger revokes is not current.
+    presentation('owner-ledger-unread', "        if self._ledger_revokes(state, owner):\n            return False\n", "",
+                 'answer/owner-ledger-revoked-silent')
+    presentation('ledger-owner-not-looked-up', "        return not isinstance(revoked, dict) or principal in revoked\n",
+                 "        return not isinstance(revoked, dict)\n", 'answer/owner-ledger-revoked-silent')
+    presentation('bindings-ledger-unread', "\n                or self._ledger_revokes(state, c['owner'])):\n", "):\n",
+                 'answer/owner-ledger-revoked-silent')
     # Scope coverage (landed VELDO-0025, found through VELDO-0064's review): a plain-string inner scope
     # such as a repository id was read as the empty set, so every named scope covered it.
     def scope(name, old, new, rows=('membership/scope-covers-named-string',)):

@@ -685,9 +685,11 @@ class Presenter:
             return 'missing_framing', None, versions
         entry = self.AC.membership_entry(state['membership'], c['owner'])
         active, _ = self.AC.active_member(entry, self.clock())
-        if not active or entry['principal_type'] != 'person' or not self.membership.scope_covers(entry.get('scope'), c['scope']):
+        if (not active or entry['principal_type'] != 'person' or not self.membership.scope_covers(entry.get('scope'), c['scope'])
+                or self._ledger_revokes(state, c['owner'])):
             return 'missing_authority', None, versions
         versions[c['owner']] = entry['entity_version']
+        versions[REVOCATION_LEDGER] = state['entities'].get(REVOCATION_LEDGER, {}).get('version', 0)
         eid = self.P.enrollment_id(c['owner'])
         enrollment = self._entity(eid)
         if enrollment is None:
@@ -1084,14 +1086,33 @@ class Presenter:
                                       accepted_versions={}, outcome='sent' if sent['platform'] else 'not_sent',
                                       reason=sent['refusal'], error_class=None))
 
+    def _ledger_revokes(self, state, principal):
+        """Whether the revocation ledger in this authority state ends `principal`'s authority: the
+        ledger is_revoked in the revocation organ reads. It is read as the stored-framing check and
+        frame() read it: any entry naming the principal counts, whatever its date, and a ledger of
+        another kind, one that does not match its digest or whose revoked is not a mapping cannot be
+        read and fails closed (it revokes everyone). No ledger at all revokes no one."""
+        ledger = state['entities'].get(REVOCATION_LEDGER)
+        if ledger is None:
+            return False
+        if (ledger.get('kind') != 'revocation_ledger' or not isinstance(ledger.get('data'), dict)
+                or ledger.get('digest') != self.store.digest_of(
+                    {'kind': ledger['kind'], 'data': ledger['data'], 'version': ledger.get('version')})):
+            return True
+        revoked = ledger['data'].get('revoked', {})
+        return not isinstance(revoked, dict) or principal in revoked
+
     def _owner_current(self, receipt):
         """Whether the owner the receipt was shown to is still an active person member covering the
-        request's scope, enrolled in the very chat the receipt went to."""
+        request's scope, not revoked by the revocation ledger, enrolled in the very chat the receipt
+        went to."""
         state = self.membership.authority_state(self.store, self.conn)
         owner = receipt['owner']
         entry = self.AC.membership_entry(state['membership'], owner)
         if (not self.AC.active_member(entry, self.clock())[0] or entry['principal_type'] != 'person'
                 or not self.membership.scope_covers(entry.get('scope'), receipt['request']['scope'])):
+            return False
+        if self._ledger_revokes(state, owner):
             return False
         enrollment = self._entity(self.P.enrollment_id(owner))
         return (enrollment is not None
