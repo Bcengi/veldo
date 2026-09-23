@@ -79,7 +79,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-i8_cukd7/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-l3xfsvwj/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -135,9 +135,9 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-i8_cukd7/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-l3xfsvwj/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-i8_cukd7/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-l3xfsvwj/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -149,8 +149,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -253,7 +260,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-f2at8p8y/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-uln1nmyk/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -292,9 +299,9 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-f2at8p8y/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-uln1nmyk/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-f2at8p8y/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-uln1nmyk/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -306,8 +313,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -410,7 +424,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-ze4mz4j3/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-bojitwo5/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -464,9 +478,9 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-ze4mz4j3/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-bojitwo5/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-ze4mz4j3/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-bojitwo5/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -478,8 +492,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -583,7 +604,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-zin19yc4/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-vogl_ww_/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -620,9 +641,9 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-zin19yc4/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-vogl_ww_/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-zin19yc4/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-vogl_ww_/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -634,8 +655,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -739,7 +767,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-n8dle5o_/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-o17bqn_w/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -776,9 +804,9 @@
     }
    ],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-n8dle5o_/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-o17bqn_w/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-n8dle5o_/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-o17bqn_w/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -790,8 +818,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -899,7 +934,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-7t4npsgb/stage-runtime/runners/d843857ea55ca21421f1a097d62f5413a99a3ad0b7c7bc98c6befec0cf4363b8.py",
+    "argv0": "/tmp/graph-43-8kovliz4/stage-runtime/runners/ecb5fcb8a7d2cae39b64e77431e8019143afd5bce989e234ac3168bc67932e57.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -934,8 +969,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -1034,7 +1076,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-9gho5rd_/stage-runtime/runners/a98faca1f3c4d643f2cd128eeb4f0957df9a293b5f49f3de2f4600740211b304.py",
+    "argv0": "/tmp/graph-43-wob5ep8f/stage-runtime/runners/2059874c21e72b3b935fd910524d6c5a7f478c6c8013c640112e392b1b66f2cd.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1062,9 +1104,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-9gho5rd_/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-wob5ep8f/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-9gho5rd_/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-wob5ep8f/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -1076,8 +1118,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -1185,7 +1234,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-n8y1fzf8/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-yqbyud54/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1214,9 +1263,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-n8y1fzf8/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-yqbyud54/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-n8y1fzf8/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-yqbyud54/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -1228,15 +1277,22 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-n8y1fzf8/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-n8y1fzf8/authority-repository/.git/veldo/control/control.sqlite3\"]}",
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-yqbyud54/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-yqbyud54/authority-repository/.git/veldo/control/control.sqlite3\"]}",
    "store_unchanged_by_graph": false,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
@@ -1337,7 +1393,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-c7j1b3or/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-_7ninf90/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1366,9 +1422,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-c7j1b3or/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-_7ninf90/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-c7j1b3or/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-_7ninf90/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -1380,15 +1436,22 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-c7j1b3or/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-c7j1b3or/authority-repository/.git/veldo/control/control.sqlite3\"]}",
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-_7ninf90/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-_7ninf90/authority-repository/.git/veldo/control/control.sqlite3\"]}",
    "store_unchanged_by_graph": false,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
@@ -1484,7 +1547,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-knwvja5o/stage-runtime/runners/f6b2b44522fcb70cb3e7d03578c8cace940bcae9f9547f4d883833b927a1472b.py",
+    "argv0": "/tmp/graph-43-xifr97th/stage-runtime/runners/a6c3b8544f0919ed299bb70fe546748987b5f3671a96c0694403e5f88c2601df.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1513,9 +1576,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-knwvja5o/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-xifr97th/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-knwvja5o/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-xifr97th/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -1527,8 +1590,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -1633,7 +1703,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-sdxf_lxj/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-9ldrgddq/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1662,9 +1732,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-sdxf_lxj/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-9ldrgddq/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-sdxf_lxj/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-9ldrgddq/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -1676,8 +1746,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -1698,7 +1775,7 @@
    "untyped_proposal_answer": {
     "command_id": "command-u",
     "cycle_id": "cycle-u",
-    "domain_uuid": "domain-b36116c2a4c8",
+    "domain_uuid": "domain-d9b0b3a7e594",
     "operation": "start",
     "outcome": "proposal",
     "proposals": [
@@ -1798,7 +1875,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-7rwbprsu/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-0tlh7gip/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1829,9 +1906,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-7rwbprsu/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-0tlh7gip/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-7rwbprsu/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-0tlh7gip/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -1843,8 +1920,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -1947,7 +2031,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-1j3mgrk1/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-u8ql_5pn/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -1978,9 +2062,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-1j3mgrk1/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-u8ql_5pn/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-1j3mgrk1/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-u8ql_5pn/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -1992,8 +2076,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -2096,7 +2187,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-io3kjc3v/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-k4ddj3zy/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2125,9 +2216,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-io3kjc3v/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-k4ddj3zy/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-io3kjc3v/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-k4ddj3zy/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -2139,8 +2230,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -2243,7 +2341,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-h6ty2lf0/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-3gxspb7o/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2272,9 +2370,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-h6ty2lf0/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-3gxspb7o/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-h6ty2lf0/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-3gxspb7o/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -2286,8 +2384,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -2390,7 +2495,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-s2cnosif/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-xsraxiay/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2419,9 +2524,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-s2cnosif/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-xsraxiay/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-s2cnosif/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-xsraxiay/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -2433,8 +2538,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -2537,7 +2649,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-3rmpburj/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-rjjwkscn/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2566,9 +2678,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-3rmpburj/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-rjjwkscn/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-3rmpburj/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-rjjwkscn/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -2580,8 +2692,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -2684,7 +2803,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-4nr1t7_2/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-opedera2/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2713,9 +2832,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-4nr1t7_2/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-opedera2/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-4nr1t7_2/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-opedera2/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -2727,8 +2846,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -2832,7 +2958,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-s0vyg9lw/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-196i2tox/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -2861,9 +2987,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-s0vyg9lw/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-196i2tox/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-s0vyg9lw/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-196i2tox/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -2875,8 +3001,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -2979,7 +3112,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-30bk8o0o/stage-runtime/runners/79d90a2764aec9a280f69aaf16b0968b2e0fc3348374a13f51ede924ea24880b.py",
+    "argv0": "/tmp/graph-43-mos5m3qc/stage-runtime/runners/76ec0fbbfb49d263af1c9da86945baced485a7488c2b2692fe1be8fdb9e94cb0.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -3008,9 +3141,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-30bk8o0o/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-mos5m3qc/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-30bk8o0o/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-mos5m3qc/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -3022,8 +3155,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -3124,7 +3264,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-l7x1s02_/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-tisccxiw/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -3153,9 +3293,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-l7x1s02_/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-tisccxiw/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-l7x1s02_/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-tisccxiw/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -3167,8 +3307,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -3276,7 +3423,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-c9187i5k/domain-checkout/.veldo/control_graph_langgraph.py",
+    "argv0": "/tmp/graph-43-jr6v6qg7/domain-checkout/.veldo/control_graph_langgraph.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -3305,9 +3452,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-c9187i5k/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-jr6v6qg7/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-c9187i5k/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-jr6v6qg7/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -3319,16 +3466,23 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: no graph runtime is installed for this operation; install it with: python3 .veldo/control_graph_install.py",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: no graph runtime is installed for this operation; install it with: python3 .veldo/control_graph_install.py",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: no graph runtime is installed for this operation; install it with: python3 .veldo/control_graph_install.py",
+    "commondir-work-leftover": [],
     "registration": "FileNotFoundError",
     "runners": "runtime_unavailable: no graph runtime is installed for this operation; install it with: python3 .veldo/control_graph_install.py",
     "runners-gitfile": "runtime_unavailable: no graph runtime is installed for this operation; install it with: python3 .veldo/control_graph_install.py",
+    "runners-unreadable-gitfile": "runtime_unavailable: no graph runtime is installed for this operation; install it with: python3 .veldo/control_graph_install.py",
     "work": "launched"
    },
    "start_without_runtime": [
     "runtime_unavailable",
     "runtime_unavailable"
    ],
-   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-c9187i5k/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-c9187i5k/authority-repository/.git/veldo/control/control.sqlite3\"]}",
+   "store_probe_notes": "{\"found\":[\"/tmp/graph-43-jr6v6qg7/authority-repository/.git/veldo/control/control.sqlite3\"],\"wrote\":[\"/tmp/graph-43-jr6v6qg7/authority-repository/.git/veldo/control/control.sqlite3\"]}",
    "store_unchanged_by_graph": false,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
@@ -3424,7 +3578,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-cpxr5kew/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-th9c7t17/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -3467,8 +3621,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -3572,7 +3733,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-fknafflq/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-zh9iiw6g/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -3601,9 +3762,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-fknafflq/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-zh9iiw6g/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-fknafflq/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-zh9iiw6g/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -3615,9 +3776,16 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners lies inside a repository",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
-    "work": "runtime_unavailable: the stage work lies inside a repository"
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the child working directory does not resolve outside every repository"
    },
    "start_without_runtime": [
     "runtime_unavailable",
@@ -3719,7 +3887,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-lbxrp6c7/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-em3sjx09/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -3748,9 +3916,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-lbxrp6c7/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-em3sjx09/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-lbxrp6c7/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-em3sjx09/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -3762,9 +3930,16 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners lies inside a repository",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
-    "work": "runtime_unavailable: the stage work lies inside a repository"
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the child working directory does not resolve outside every repository"
    },
    "start_without_runtime": [
     "runtime_unavailable",
@@ -3868,7 +4043,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-kry2z8c8/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-0hvo8a7d/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -3897,9 +4072,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-kry2z8c8/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-0hvo8a7d/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-kry2z8c8/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-0hvo8a7d/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -3911,8 +4086,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "launched",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "launched",
+    "runners-unreadable-gitfile": "launched",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -3921,6 +4103,2784 @@
    ],
    "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
    "store_unchanged_by_graph": false,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-git-not-asked",
+  "red_rows": [
+   "graph/runtime/tracing-off",
+   "graph/authority/stage-links",
+   "graph/authority/no-direct-write"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-links"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-nm42fey1/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-nm42fey1/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-nm42fey1/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "launched",
+    "commondir-root-leftover": [],
+    "commondir-runners": "launched",
+    "commondir-runners-leftover": [],
+    "commondir-work": "launched",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": false,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-runtime-loop-escapes",
+  "red_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-kkbqm6hw/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-kkbqm6hw/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-kkbqm6hw/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-stage-loop-escapes",
+  "red_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-j0cien0f/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-j0cien0f/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-j0cien0f/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-nul-path-judged",
+  "red_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-dwjelpg9/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-dwjelpg9/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-dwjelpg9/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-command-runs-removed",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-rf6a31g8/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-rf6a31g8/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-rf6a31g8/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-command-shlex-removed",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-n2_h_urx/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-n2_h_urx/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-n2_h_urx/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-quote-strip-removed",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-0fo9qcqe/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-0fo9qcqe/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-0fo9qcqe/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-stage-written-place-dropped",
+  "red_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-yru55sh0/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-yru55sh0/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-yru55sh0/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-stage-resolved-place-dropped",
+  "red_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-y1uegt0c/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-y1uegt0c/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-y1uegt0c/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-prefix-resolve-dropped",
+  "red_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-6htado4k/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-6htado4k/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-6htado4k/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-refused-workdir-kept",
+  "red_rows": [
+   "graph/authority/stage-links"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-links"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-b8du1gx8/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-b8du1gx8/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-b8du1gx8/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [
+     "veldo-graph-k8amtiq1"
+    ],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-rebuild-message-dropped",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-o6032uy3/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-o6032uy3/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-o6032uy3/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable (no recovery command)",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-root-file-check-dropped",
+  "red_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-shapes"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-9rscqmys/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-9rscqmys/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-9rscqmys/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-option-values-unjudged",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-prkwi_ye/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-prkwi_ye/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-prkwi_ye/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph_install.py",
+  "mutation": "graph-rebuild-no-restore",
+  "red_rows": [
+   "graph/runtime/rebuild-swap"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/rebuild-swap"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-fud1bszi/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-fud1bszi/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-fud1bszi/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph_install.py",
+  "mutation": "graph-rebuild-old-left",
+  "red_rows": [
+   "graph/runtime/rebuild-swap"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/rebuild-swap"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-_ck3fvf8/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-_ck3fvf8/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-_ck3fvf8/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-problems-repeated",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-5lbjco48/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-5lbjco48/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-5lbjco48/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-shape-opinion-dropped",
+  "red_rows": [
+   "graph/authority/stage-shapes",
+   "graph/runtime/tracing-off",
+   "graph/authority/stage-links"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/authority/stage-links"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-v51o5axv/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-v51o5axv/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-v51o5axv/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "launched",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
    "stub_label_as_evidence": "missing_evidence",
    "suspend_and_cancel_graphs_invoked": [
     [
@@ -4015,7 +6975,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-l0kfw5w0/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-ke8hf9e6/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -4044,9 +7004,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-l0kfw5w0/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-ke8hf9e6/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-l0kfw5w0/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-ke8hf9e6/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -4058,8 +7018,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -4162,7 +7129,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-0fygdnrq/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-kzyaw1p8/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -4191,9 +7158,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-0fygdnrq/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-kzyaw1p8/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-0fygdnrq/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-kzyaw1p8/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -4205,8 +7172,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -4309,7 +7283,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-71jb6auk/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-ia6huqt_/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -4338,9 +7312,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-71jb6auk/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-ia6huqt_/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-71jb6auk/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-ia6huqt_/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -4352,8 +7326,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -4456,7 +7437,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-0x4rlk4h/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-4peicgy_/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -4485,9 +7466,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-0x4rlk4h/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-4peicgy_/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-0x4rlk4h/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-4peicgy_/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -4499,8 +7480,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -4603,7 +7591,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-xliqwhp_/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-spgrths7/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -4632,9 +7620,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-xliqwhp_/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-spgrths7/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-xliqwhp_/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-spgrths7/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -4646,8 +7634,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -4750,7 +7745,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-k12iqee9/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-zbv03ny2/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -4779,9 +7774,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-k12iqee9/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-zbv03ny2/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-k12iqee9/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-zbv03ny2/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -4793,8 +7788,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -4897,7 +7899,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-tirhe05g/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-by2vzcmf/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -4926,9 +7928,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-tirhe05g/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-by2vzcmf/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-tirhe05g/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-by2vzcmf/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -4940,8 +7942,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -4968,6 +7977,7 @@
   "module": "control_graph.py",
   "mutation": "graph-pyvenv-command-ignored",
   "red_rows": [
+   "graph/authority/stage-shapes",
    "graph/runtime/pyvenv-clean"
   ],
   "target_red": true,
@@ -5044,7 +8054,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-c1kiq37h/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-elnf5jb8/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -5073,9 +8083,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-c1kiq37h/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-elnf5jb8/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-c1kiq37h/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-elnf5jb8/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -5087,8 +8097,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -5191,7 +8208,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-v1tja_tq/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-qiuyhr05/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -5220,9 +8237,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-v1tja_tq/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-qiuyhr05/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-v1tja_tq/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-qiuyhr05/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -5234,8 +8251,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -5338,7 +8362,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-eqxiho2f/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-u9ryel0u/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -5367,9 +8391,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-eqxiho2f/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-u9ryel0u/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-eqxiho2f/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-u9ryel0u/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -5381,8 +8405,169 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "work": "runtime_unavailable: the stage work is a link the adapter did not make"
+   },
+   "start_without_runtime": [
+    "runtime_unavailable",
+    "runtime_unavailable"
+   ],
+   "store_probe_notes": "{\"found\":[],\"wrote\":[]}",
+   "store_unchanged_by_graph": true,
+   "stub_label_as_evidence": "missing_evidence",
+   "suspend_and_cancel_graphs_invoked": [
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    [
+     "langgraph.graph.state.CompiledStateGraph"
+    ]
+   ],
+   "untyped_proposal_answer": {
+    "refused": "invalid_response"
+   }
+  }
+ },
+ {
+  "module": "control_graph.py",
+  "mutation": "graph-relative-link-misjoined",
+  "red_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "target_red": true,
+  "target_rows": [
+   "graph/runtime/pyvenv-clean"
+  ],
+  "why": {
+   "assertion_answers": {
+    "assert-admission": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: admitted"
+    },
+    "assert-completion": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: shipped"
+    },
+    "assert-priority": {
+     "code": "node_failed",
+     "detail": "only returned an untyped assertion: priority"
+    }
+   },
+   "closed_request": {
+    "accepted": "accepted",
+    "author-named-url-field": "path_in_request",
+    "digest-short": "invalid_input",
+    "digest-uppercase": "invalid_input",
+    "division-slash": "path_in_request",
+    "evidence-malformed": "invalid_response",
+    "evidence-ok": "accepted",
+    "evidence-path": "invalid_response",
+    "file-url": "path_in_request",
+    "fullwidth-solidus": "path_in_request",
+    "home-path-in-result": "path_in_request",
+    "http-path-in-notes": "path_in_request",
+    "http-then-path": "path_in_request",
+    "https-host-then-path": "path_in_request",
+    "huge-integer": "invalid_input",
+    "huge-version": "invalid_input",
+    "identifier-control": "invalid_input",
+    "identifier-dots": "invalid_input",
+    "nested-url-field": "path_in_request",
+    "path-in-key": "path_in_request",
+    "path-in-notes": "path_in_request",
+    "path-in-result": "path_in_request",
+    "percent-encoded": "path_in_request",
+    "relative-path-in-result": "path_in_request",
+    "result-bad-digest": "invalid_input",
+    "result-unversioned": "invalid_input",
+    "resume-notes-object": "invalid_input",
+    "resume-open": "invalid_input",
+    "self-referential": "invalid_input",
+    "snapshot-digest-path": "invalid_input",
+    "two-megabytes": "invalid_input",
+    "unbounded-scheme": "path_in_request",
+    "url-field-file": "path_in_request",
+    "url-field-no-host": "path_in_request",
+    "workflow-digest-relative": "invalid_input"
+   },
+   "closed_response": {
+    "lifecycle": "accepted",
+    "notes-object": "invalid_response",
+    "resume-bad-position": "invalid_response",
+    "resume-no-notes": "invalid_response",
+    "resume-open": "invalid_response"
+   },
+   "deep_answer": [
+    [
+     "invalid_response",
+     "invalid_response"
+    ],
+    [
+     "answer nests deeper than 32",
+     "not one JSON document"
+    ]
+   ],
+   "first_runner_audit": {
+    "argv0": "/tmp/graph-43-30qi7tcg/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
+    "invoked": [
+     "langgraph.graph.state.CompiledStateGraph"
+    ],
+    "sockets": [],
+    "switches": {
+     "LANGCHAIN_TRACING": "false",
+     "LANGCHAIN_TRACING_V2": "false",
+     "LANGSMITH_TRACING": "false",
+     "LANGSMITH_TRACING_V2": "false"
+    },
+    "tracing": false
+   },
+   "foreign_object_answers": [
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].priority: langgraph.types.Command is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.proposals[].evidence: langgraph.types.StateSnapshot is not plain data"
+    },
+    {
+     "code": "node_failed",
+     "detail": "value.resume.notes.handoff: langgraph.types.Command is not plain data"
+    }
+   ],
+   "isolation_failed_entries": [],
+   "proc_limit": {
+    "parent_cwd": "/tmp/graph-43-30qi7tcg/domain-checkout",
+    "parent_store_descriptors": [
+     "/tmp/graph-43-30qi7tcg/authority-repository/.git/veldo/control/control.sqlite3"
+    ]
+   },
+   "process_group": {
+    "orphan-exit": "suspended",
+    "orphan-timeout": "unknown_outcome",
+    "outlived": []
+   },
+   "pyvenv": "runtime_unavailable",
+   "stage_in_repository": "runtime_unavailable",
+   "stage_links": {
+    "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
+    "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
+    "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -5486,7 +8671,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-vtnr6bej/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-zmel45yo/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -5515,9 +8700,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-vtnr6bej/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-zmel45yo/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-vtnr6bej/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-zmel45yo/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -5529,8 +8714,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -5633,7 +8825,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-5gg8azuq/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-bmduv31j/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -5662,9 +8854,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-5gg8azuq/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-bmduv31j/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-5gg8azuq/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-bmduv31j/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -5676,8 +8868,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -5780,7 +8979,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-tf1q9e6j/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-43dz0a9e/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -5809,9 +9008,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-tf1q9e6j/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-43dz0a9e/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-tf1q9e6j/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-43dz0a9e/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -5823,8 +9022,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -5927,7 +9133,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-golmp8me/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-cbxszz54/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -5956,9 +9162,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-golmp8me/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-cbxszz54/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-golmp8me/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-cbxszz54/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -5970,8 +9176,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -6074,7 +9287,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-5ozfayu1/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-wtp65dgk/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -6103,9 +9316,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-5ozfayu1/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-wtp65dgk/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-5ozfayu1/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-wtp65dgk/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -6120,8 +9333,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
@@ -6224,7 +9444,7 @@
     ]
    ],
    "first_runner_audit": {
-    "argv0": "/tmp/graph-43-msmt28r2/stage-runtime/runners/5b55fe38081cfb6c974034b5874a2e844515c727bfb673d7b35f363d61dc1343.py",
+    "argv0": "/tmp/graph-43-sze1qpn6/stage-runtime/runners/8b9cef7f9eb825748aef545244aaad7d2a277b0e82e6280a2a027a0badee7d81.py",
     "invoked": [
      "langgraph.graph.state.CompiledStateGraph"
     ],
@@ -6253,9 +9473,9 @@
    ],
    "isolation_failed_entries": [],
    "proc_limit": {
-    "parent_cwd": "/tmp/graph-43-msmt28r2/domain-checkout",
+    "parent_cwd": "/tmp/graph-43-sze1qpn6/domain-checkout",
     "parent_store_descriptors": [
-     "/tmp/graph-43-msmt28r2/authority-repository/.git/veldo/control/control.sqlite3"
+     "/tmp/graph-43-sze1qpn6/authority-repository/.git/veldo/control/control.sqlite3"
     ]
    },
    "process_group": {
@@ -6269,8 +9489,15 @@
    "stage_in_repository": "runtime_unavailable",
    "stage_links": {
     "checkout_written": [],
+    "commondir-root": "runtime_unavailable: the runtime stage lies inside a repository",
+    "commondir-root-leftover": [],
+    "commondir-runners": "runtime_unavailable: the stage runners lies inside a repository",
+    "commondir-runners-leftover": [],
+    "commondir-work": "runtime_unavailable: the child working directory does not resolve outside every repository",
+    "commondir-work-leftover": [],
     "runners": "runtime_unavailable: the stage runners is a link the adapter did not make",
     "runners-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
+    "runners-unreadable-gitfile": "runtime_unavailable: the stage runners lies inside a repository",
     "work": "runtime_unavailable: the stage work is a link the adapter did not make"
    },
    "start_without_runtime": [
