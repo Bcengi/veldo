@@ -169,3 +169,16 @@ Final replay of the three original, unchanged capsules: **none reproduces**.
 outputs: R1 retains five seconds and refuses the retry; R2 reports
 `missing_authority` after stopping and reaping the child; R3 requests and performs
 stop in all three scopes.
+
+Clean-tree canonical verification of `54b237407c9f0f91a7e8ac24d38e94d40b80e36c`:
+
+```text
+selftest: 5688 passed, 0 failed
+mutations: passed registered=104 executed=104 rejected=104 workers=136 elapsed=66.305s
+GATE: GREEN (54b237407c9f0f91a7e8ac24d38e94d40b80e36c)
+```
+
+`review-20260923/gate-summary.json` binds the result to the implementation commit,
+tested file digests and full external log digest. Gate byproducts were restored
+and excluded from the evidence commit. This records verification, not an
+independent review verdict.
