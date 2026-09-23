@@ -1074,10 +1074,15 @@ def cases():
     presentation('framing-ledger-unchecked', "        if principal in ((ledger or {}).get('revoked') or {}):\n",
                  "        if False:\n", 'framing/key-by-store-order')
     # VELDO-0065 third review item 5: retry_after counts only as a bounded non-negative integer.
-    presentation('retry-after-any-number', "wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None",
-                 "wait if type(wait) in (int, float) and 0 <= wait <= MAX_RETRY_AFTER else None", 'presentation/retry-after-bounded')
-    presentation('retry-after-unbounded', "wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None",
-                 "wait if type(wait) is int and 0 <= wait else None", 'presentation/retry-after-bounded')
+    presentation('retry-after-any-number', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
+                 "min(wait, MAX_RETRY_AFTER) if type(wait) in (int, float) and wait >= 0 else None", 'presentation/retry-after-bounded')
+    presentation('retry-after-boolean-accepted', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
+                 "min(wait, MAX_RETRY_AFTER) if isinstance(wait, int) and wait >= 0 else None", 'presentation/retry-after-bounded')
+    # VELDO-0065 fourth review item 5: a retry_after above the bound is capped, not ignored.
+    presentation('retry-after-unbounded', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
+                 "wait if type(wait) is int and wait >= 0 else None", 'presentation/retry-after-capped')
+    presentation('retry-after-above-bound-ignored', "min(wait, MAX_RETRY_AFTER) if type(wait) is int and wait >= 0 else None",
+                 "wait if type(wait) is int and 0 <= wait <= MAX_RETRY_AFTER else None", 'presentation/retry-after-capped')
     # VELDO-0065 third review item 8: choices under NFKC, case folding and separator equivalence.
     presentation('choice-without-nfkc', "    text = unicodedata.normalize('NFKC', str(text)).casefold()\n",
                  "    text = str(text).casefold()\n", 'answer/choice-normalization')

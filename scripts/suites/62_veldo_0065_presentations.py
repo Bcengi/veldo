@@ -105,7 +105,8 @@ def _v65_checks(base):
                                   'presentation/notice-kind-fixed', 'framing/frame-and-presenter-agree',
                                   'presentation/retry-after-bounded', 'answer/choice-normalization',
                                   'answer/after-answered-reply', 'answer/tell-once-per-message',
-                                  'projection/in-flight-notice-superseded', 'framing/ledger-read-fails-closed')}
+                                  'projection/in-flight-notice-superseded', 'framing/ledger-read-fails-closed',
+                                  'presentation/retry-after-capped')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1140,7 +1141,7 @@ def _v65_checks(base):
         bounded = 'presentation/retry-after-bounded'
         with section(bounded):
             for n, (label, params) in enumerate((('a string', {'retry_after': '3'}), ('a fraction', {'retry_after': 1.5}),
-                                                 ('a negative number', {'retry_after': -1}), ('a huge number', {'retry_after': 10 ** 12}),
+                                                 ('a negative number', {'retry_after': -1}),
                                                  ('a boolean', {'retry_after': True}), ('an omitted value', None),
                                                  ('infinity', 'INF'))):
                 rb = opened('RB-%d' % n, brief=' '.join(['The rollout needs a decision on the parser (%d).' % k for k in range(90)]))
@@ -1303,6 +1304,32 @@ def _v65_checks(base):
             direct_frame('pm7', 'LC-3', 1, 'Low: a wrong choice costs one review cycle.')
             check(closed, 'control: with the ledger readable again the framing counts',
                   reason(presenter.present(lc3)) == ('published', None))
+
+        # Review 4 item 5: a retry_after above the bound is capped at the bound, not ignored
+        capped = 'presentation/retry-after-capped'
+        with section(capped):
+            for n, wait in enumerate((7200, 10 ** 12)):
+                rc = opened('RC-%d' % n, brief=' '.join(['The rollout needs a decision on the parser (%d).' % k for k in range(90)]))
+                real_clock = presenter.clock
+                now = [real_clock()]
+                presenter.clock = lambda: now[0]
+                try:
+                    api['flood_after'], api['flood_params'] = 1, {'retry_after': wait}
+                    first_run = presenter.present(rc)
+                    api['flood_params'] = {'retry_after': 3}
+                    held = (presenter.receipts(rc) or [{}])[0]
+                    now[0] += 1
+                    inside = presenter.present(rc)
+                    now[0] += getattr(V, 'MAX_RETRY_AFTER', 3600)
+                    after = presenter.present(rc)
+                finally:
+                    presenter.clock = real_clock
+                check(capped, 'retry_after %d waits exactly the bound, then the rest is sent' % wait,
+                      reason(first_run) == ('partial', 'channel_refused') and reason(inside) == ('refused', 'retry_after')
+                      and reason(after) == ('published', None)
+                      and held.get('retry_not_before') is not None
+                      and abs(held['retry_not_before'] - (now[0] - getattr(V, 'MAX_RETRY_AFTER', 3600) - 1)
+                              - getattr(V, 'MAX_RETRY_AFTER', 3600)) < 1e-6)
     finally:
         server.shutdown()
         server.server_close()
