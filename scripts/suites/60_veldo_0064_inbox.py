@@ -89,7 +89,8 @@ def _v64_checks(base):
     rows = {name: [] for name in ('install/assets', 'inbox/states-and-authority', 'inbox/waiting-resources',
                                   'projection/correlation', 'projection/send-outcomes', 'inbox/visible-invalid',
                                   'inbox/unauthorized-admission', 'inbox/parked-unit-unclaimable',
-                                  'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature')}
+                                  'inbox/release-derived-from-claim', 'inbox/admit-verifies-owner-signature',
+                                  'projection/intent-before-send')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -121,6 +122,7 @@ def _v64_checks(base):
                     check=True, capture_output=True, timeout=10)
         public[who] = (keys / (who + '.pub')).read_text().strip()
     journal_signed = []
+    sign_plan = []  # pending journal signatures: False makes that one store write fail unsigned
 
     def sign_as(who, message, namespace=AC.SIGNATURE_NAMESPACE):
         signature = _v64_sp.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys / who), '-n', namespace], input=message,
@@ -128,6 +130,8 @@ def _v64_checks(base):
         return signature
 
     def journal_sign(message):
+        if sign_plan and not sign_plan.pop(0):
+            return None
         signature = sign_as('authority', message, 'veldo-journal')
         journal_signed.append((message, signature))
         return signature
@@ -446,10 +450,13 @@ def _v64_checks(base):
         # Refusal and unknown outcome at the platform boundary.
         api['mode'] = 'refuse'
         command('owner', 'open', 'P-refused', assignment=content('acknowledgement'))
+        published = len(api['messages'])
         refused = [r for r in projection.project() if r['outcome'] != 'already_projected']
         p_refused = I.assignment_id(ids['repository_uuid'], 'P-refused')
-        check('projection/send-outcomes', 'a platform refusal publishes and records nothing',
-              [r['outcome'] for r in refused] == ['refused'] and projection.record(P.projection_id(p_refused, 1)) is None)
+        refusal = projection.record(P.projection_id(p_refused, 1)) or {}
+        check('projection/send-outcomes', 'a platform refusal publishes nothing and records the refusal',
+              [r['outcome'] for r in refused] == ['refused'] and len(api['messages']) == published
+              and refusal.get('outcome') == 'refused' and refusal.get('message_id') is None)
         api['mode'] = 'drop'
         before = len(api['messages'])
         lost = [r for r in projection.project() if r['outcome'] != 'already_projected']
@@ -460,6 +467,42 @@ def _v64_checks(base):
         api['mode'] = 'ok'
         projection.project()
         check('projection/send-outcomes', 'an unknown outcome is not blindly sent again', len(api['messages']) == before + 1)
+
+        # --- the intent is committed before the send; an unknown send is never repeated -----------
+        intent_row = 'projection/intent-before-send'
+        command('pm', 'open', 'P-intent', assignment=content('decision'))
+        p_intent = I.assignment_id(ids['repository_uuid'], 'P-intent')
+        published = len(api['messages'])
+        sign_plan[:] = [False]  # the intent write is refused
+        no_intent = [r for r in projection.project() if r['assignment_id'] == p_intent]
+        sign_plan[:] = []  # an unconsumed plan never reaches a later write
+        check(intent_row, 'an intent that cannot be written sends nothing and records nothing',
+              [(r['outcome'], r.get('reason')) for r in no_intent] == [('refused', 'incomplete_transaction')]
+              and len(api['messages']) == published and projection.record(P.projection_id(p_intent, 1)) is None)
+        retried = [r for r in projection.project() if r['assignment_id'] == p_intent]
+        record_intent = projection.record(P.projection_id(p_intent, 1)) or {}
+        check(intent_row, 'the next run writes the intent, sends once and completes it',
+              [r['outcome'] for r in retried] == ['sent'] and len(api['messages']) == published + 1
+              and record_intent.get('outcome') == 'sent' and record_intent.get('attempt') == 1
+              and type(record_intent.get('message_id')) is int)
+        command('pm', 'open', 'P-complete', assignment=content('decision'))
+        p_complete = I.assignment_id(ids['repository_uuid'], 'P-complete')
+        published = len(api['messages'])
+        sign_plan[:] = [True, False]  # the intent commits; the completion write is refused
+        lost = [r for r in projection.project() if r['assignment_id'] == p_complete]
+        sign_plan[:] = []  # an unconsumed plan never reaches a later write
+        pending_intent = projection.record(P.projection_id(p_complete, 1)) or {}
+        check(intent_row, 'a completion that cannot be written leaves the committed intent, reported unknown',
+              [(r['outcome'], r.get('reason')) for r in lost] == [('unknown_outcome', 'incomplete_transaction')]
+              and len(api['messages']) == published + 1 and pending_intent.get('outcome') == 'pending'
+              and pending_intent.get('attempt') == 1 and pending_intent.get('message_id') is None)
+        check(intent_row, 'the platform identity of the unrecorded send is reported, not dropped',
+              lost and (lost[0].get('platform') or {}).get('message_id') == api['next'])
+        later = [r for _ in range(2) for r in projection.project() if r['assignment_id'] == p_complete]
+        check(intent_row, 'a send whose outcome is unknown is never repeated',
+              len(api['messages']) == published + 1
+              and [(r['outcome'], r.get('reason')) for r in later] == [('unknown_outcome', 'incomplete_projection')] * 2)
+        check(intent_row, 'metrics expose the unknown outcome', projection.metrics().get('unknown', 0) >= 1)
         check('projection/send-outcomes', 'the token is never recorded',
               all(api['token'] not in _v64_json.dumps(o) for o in projection.observations)
               and api['token'] not in _v64_json.dumps(S.materialized_state(conn)['entities']))

@@ -574,11 +574,10 @@ def cases():
           "'released_claim': released, 'stop_requester': False}",
           'inbox/waiting-resources')
     inbox('projection-discard-message-id', 'control_channel_projection.py',
-          "record.update(outcome='sent', chat_id=sent['chat_id'], message_id=sent['message_id'],",
-          "record.update(outcome='sent', chat_id=sent['chat_id'], message_id=None,",
+          "message_id=platform['message_id'],", "message_id=None,",
           'projection/correlation')
     inbox('projection-configured-chat', 'control_channel_projection.py',
-          "chat_id=sent['chat_id']", "chat_id=self.edge.chat", 'projection/correlation')
+          "chat_id=platform['chat_id']", "chat_id=data['configured_chat']", 'projection/correlation')
     inbox('inbox-admit-displayed-assigned-status', 'control_assignment.py',
           "        if item['problems']:\n            return 'invalid_record', inputs\n",
           "        if item['raw'].get('display_status') == 'assigned':\n            return 'admitted', inputs\n"
@@ -625,6 +624,15 @@ def cases():
     inbox('inbox-admit-unbound-answer-signature', 'control_assignment.py',
           "        if not binds:\n            return 'missing_authority', inputs\n", "",
           'inbox/admit-verifies-owner-signature')
+    # VELDO-0064 review r3: the intent is committed before the send; an unknown send never repeats.
+    inbox('projection-retry-pending-intent', 'control_channel_projection.py',
+          "RETRYABLE = ('refused',)", "RETRYABLE = ('refused', 'pending')", 'projection/intent-before-send')
+    inbox('projection-send-before-intent', 'control_channel_projection.py',
+          "            intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)\n"
+          "            completion = self._send(text)\n",
+          "            completion = self._send(text)\n"
+          "            intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)\n",
+          'projection/intent-before-send')
     return result
 
 

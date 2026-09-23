@@ -2,19 +2,26 @@
 
 WHAT THIS MODULE IS. The ordinary outbound Telegram projection of pending person assignments.
 For every valid pending inbox entry that has no projection at its current request version, it
-renders the presentation bytes from the inbox brief, sends them through the Telegram Bot API
-`sendMessage` method, and commits one `channel_projection` entity carrying what the platform
-returned: its chat identity, its message identity, its date and the text it stored. The record
-binds the assignment id, the entity version and the request version that were presented, and the
-digest of the exact bytes sent. One record per (assignment, request version), so a re-run sends
-nothing twice. A changed request version is a new presentation and a new message.
+renders the presentation bytes from the inbox brief and keeps one `channel_projection` entity
+per (assignment, request version). The record binds the assignment id, the entity version and the
+request version presented, and the digest of the exact bytes. A changed request version is a new
+presentation and a new message.
+
+INTENT BEFORE SEND. The record is committed as a `pending` intent BEFORE the message is sent
+through the Telegram Bot API `sendMessage` method, and a second store command completes it with
+what the platform returned: its chat identity, its message identity, its date and the text it
+stored. If the intent cannot be written, nothing is sent. If the completion cannot be written,
+the intent stays `pending`: its outcome is unknown and it is never sent again automatically,
+by this run or any later one, whatever projector finds it. Only a definite platform refusal
+(`refused`: the platform answered and published nothing) is attempted again, as a new attempt
+of the same record.
 
 WHAT THE PLATFORM SAID IS WHAT IS KEPT. The chat identity recorded is the one the platform
 returned, not the configured address (Telegram accepts `@name` and answers with the numeric
 chat id). A response whose echoed text differs from the bytes sent is refused. A transport
 failure after the request may have reached the platform is recorded as `unknown_outcome` with
-no message identity, so nothing is blindly sent again; looking the message up and recovering is
-Release 2 work.
+no message identity, so nothing is blindly sent again; looking the message up and recovering an
+unknown or pending record is Release 2 work.
 
 NOT AUTHORITY. A projection is a proxy of the inbox. Nothing here reads an answer, settles a
 request or changes an assignment. Presentation receipts and supersession are VELDO-0065, answer
@@ -32,7 +39,16 @@ SCHEMA = 'veldo.channel_projection/v1'
 ENTITY_KIND = 'channel_projection'
 OPERATION = 'channel_projection_record'
 CHANNEL = 'telegram_chat'
-OUTCOMES = ('sent', 'unknown_outcome')
+# The outcomes of one record. `pending` is the committed intent before the send completes.
+OUTCOMES = ('pending', 'sent', 'refused', 'unknown_outcome')
+# Only a definite refusal, where the platform answered and published nothing, is attempted again.
+RETRYABLE = ('refused',)
+INTENT_FIELDS = ('schema', 'channel', 'assignment_id', 'assignment_version', 'request_version',
+                 'presentation_digest', 'presentation', 'configured_chat')
+PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text')
+# What a record that is not attempted again reports on a later run.
+SETTLED = {'sent': ('already_projected', None), 'pending': ('unknown_outcome', 'incomplete_projection'),
+           'unknown_outcome': ('unknown_outcome', 'unknown_outcome')}
 
 
 class EdgeRefused(Exception):
@@ -104,12 +120,40 @@ class TelegramEdge:
 
 
 def _record_transition(params, before):
-    pid = params.get('projection_id')
-    record = params.get('record')
-    if not isinstance(pid, str) or pid in before or not isinstance(record, dict) \
-            or record.get('outcome') not in OUTCOMES:
-        raise ValueError('a projection record is new and names its outcome')
-    return {pid: {'kind': ENTITY_KIND, 'data': record}}
+    """The two registered phases of one record. `intent` creates the record, or starts a new
+    attempt of a refused one, as `pending`. `complete` finishes that pending attempt from the
+    platform's answer: a definite refusal, no answer at all (unknown), or the returned identity."""
+    pid, phase = params.get('projection_id'), params.get('phase')
+    if not isinstance(pid, str) or phase not in ('intent', 'complete'):
+        raise ValueError('a projection record names its id and phase')
+    current = before.get(pid, {}).get('data')
+    if phase == 'intent':
+        record = params.get('record')
+        if not isinstance(record, dict) or set(record) != set(INTENT_FIELDS):
+            raise ValueError('an intent carries exactly the presentation it binds')
+        if current is not None and current.get('outcome') not in RETRYABLE:
+            raise ValueError('only a definite refusal is attempted again')
+        data = dict(record, attempt=current['attempt'] + 1 if current else 1, outcome='pending', chat_id=None,
+                    message_id=None, platform_date=None, platform_text=None, refusal=None)
+        return {pid: {'kind': ENTITY_KIND, 'data': data}}
+    if current is None or current.get('outcome') != 'pending' or current.get('attempt') != params.get('attempt'):
+        raise ValueError('a completion finishes the pending attempt it names')
+    platform, refusal = params.get('platform'), params.get('refusal')
+    data = dict(current)
+    if refusal is not None:
+        if not isinstance(refusal, str) or platform is not None:
+            raise ValueError('a refusal names its code and carries no platform answer')
+        data.update(outcome='refused', refusal=refusal)
+    elif platform is None:
+        data.update(outcome='unknown_outcome')
+    else:
+        if (not isinstance(platform, dict) or set(platform) != set(PLATFORM_FIELDS)
+                or not all(type(platform[k]) is int for k in ('chat_id', 'message_id', 'date'))
+                or not isinstance(platform['text'], str)):
+            raise ValueError('a platform answer carries its chat, message, date and text')
+        data.update(outcome='sent', chat_id=platform['chat_id'], message_id=platform['message_id'],
+                    platform_date=platform['date'], platform_text=platform['text'])
+    return {pid: {'kind': ENTITY_KIND, 'data': data}}
 
 
 class Projection:
@@ -131,12 +175,16 @@ class Projection:
         conn.command_registry[OPERATION] = {'transition': transition,
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
 
-    def _observe(self, assignment, versions, outcome, reason):
+    def _result(self, assignment, versions, outcome, reason, **extra):
         accepted = outcome in ('sent', 'already_projected')
         self.counts['accepted' if accepted else 'refused'] += 1
         self.observations.append(dict(self.inbox.ids, operation='project', channel=CHANNEL,
                                       assignment_id=assignment, accepted_versions=versions,
-                                      outcome=outcome, reason=reason))
+                                      outcome=outcome, reason=reason, **extra))
+        result = dict({'assignment_id': assignment, 'outcome': outcome}, **extra)
+        if reason is not None:
+            result['reason'] = reason
+        return result
 
     def record(self, pid):
         row = self.conn.execute('SELECT version, data FROM entities WHERE id=? AND kind=?',
@@ -149,59 +197,66 @@ class Projection:
         records = [json.loads(r[0]) for r in rows]
         return {r['request_version']: r for r in records if r.get('assignment_id') == assignment}
 
+    def _commit(self, params, expected):
+        """One store command of one phase; returns the record it committed."""
+        self._serial += 1
+        pid = params['projection_id']
+        command_id = '%s:%s:%s:%.6f:%d' % (OPERATION, params['phase'], pid, self.clock(), self._serial)
+        command = dict(command_id=command_id, principal=self.journal_signer, operation=OPERATION,
+                       parameters=params, expected_versions=expected, artifact_digests=[], nonce=command_id)
+        self.store.execute(self.conn, command, self.journal_signer, self.sign, self.authority_generation)
+        return self.record(pid)
+
+    def _send(self, text):
+        """What the platform said, as the completion parameters of the pending attempt."""
+        try:
+            sent = self.edge.send(text)
+        except EdgeRefused as exc:
+            return {'platform': None, 'refusal': None if exc.code == 'unknown_outcome' else exc.code}
+        if sent['text'].encode('utf-8') != text.encode('utf-8'):
+            return {'platform': None, 'refusal': 'presentation_mismatch'}
+        return {'platform': sent, 'refusal': None}
+
+    def _project(self, entry):
+        aid = entry['id']
+        pid = projection_id(aid, entry['request_version'])
+        versions = {aid: entry['version']}
+        existing = self.record(pid)
+        if existing is not None and existing['outcome'] not in RETRYABLE:
+            outcome, reason = SETTLED[existing['outcome']]
+            return self._result(aid, versions, outcome, reason, projection_id=pid)
+        brief = self.inbox.brief(aid)
+        if not brief['valid'] or brief['version'] != entry['version']:
+            return self._result(aid, versions, 'refused', 'stale_subject')
+        text = render(brief)
+        record = dict(schema=SCHEMA, channel=CHANNEL, assignment_id=aid, assignment_version=entry['version'],
+                      request_version=entry['request_version'], presentation_digest=presentation_digest(text.encode('utf-8')),
+                      presentation=text, configured_chat=self.edge.chat)
+        expected = dict(versions, **{pid: existing['entity_version'] if existing else 0})
+        try:
+            intent = self._commit(dict(phase='intent', projection_id=pid, record=record), expected)
+            completion = self._send(text)
+        except self.store.StoreRefused as exc:
+            return self._result(aid, versions, 'refused', exc.code)  # no intent, so nothing was sent
+        try:
+            done = self._commit(dict(phase='complete', projection_id=pid, attempt=intent['attempt'], **completion),
+                                {pid: intent['entity_version']})
+        except self.store.StoreRefused as exc:
+            # The intent stays pending: the outcome is unknown and is never sent again. What the
+            # platform answered is reported here so it is not silently lost.
+            platform = completion['platform'] or {}
+            return self._result(aid, versions, 'unknown_outcome', exc.code, projection_id=pid,
+                                platform={k: platform.get(k) for k in ('chat_id', 'message_id', 'date')})
+        return self._result(aid, versions, done['outcome'], done['refusal'], projection_id=pid)
+
     def project(self):
-        """Send each unprojected pending version once; return one result per pending entry."""
-        results = []
-        for entry in self.inbox.index()['entries']:
-            if entry['category'] != 'pending':
-                continue
-            pid = projection_id(entry['id'], entry['request_version'])
-            versions = {entry['id']: entry['version']}
-            if self.record(pid) is not None:
-                self._observe(entry['id'], versions, 'already_projected', None)
-                results.append({'assignment_id': entry['id'], 'outcome': 'already_projected', 'projection_id': pid})
-                continue
-            brief = self.inbox.brief(entry['id'])
-            if not brief['valid'] or brief['version'] != entry['version']:
-                self._observe(entry['id'], versions, 'refused', 'stale_subject')
-                results.append({'assignment_id': entry['id'], 'outcome': 'refused', 'reason': 'stale_subject'})
-                continue
-            text = render(brief)
-            body = text.encode('utf-8')
-            record = dict(schema=SCHEMA, channel=CHANNEL, assignment_id=entry['id'], assignment_version=entry['version'],
-                          request_version=entry['request_version'], presentation_digest=presentation_digest(body),
-                          presentation=text, configured_chat=self.edge.chat)
-            try:
-                sent = self.edge.send(text)
-            except EdgeRefused as exc:
-                if exc.code != 'unknown_outcome':
-                    self._observe(entry['id'], versions, 'refused', exc.code)
-                    results.append({'assignment_id': entry['id'], 'outcome': 'refused', 'reason': exc.code})
-                    continue
-                record.update(outcome='unknown_outcome', chat_id=None, message_id=None, platform_date=None)
-            else:
-                if sent['text'].encode('utf-8') != body:
-                    self._observe(entry['id'], versions, 'refused', 'presentation_mismatch')
-                    results.append({'assignment_id': entry['id'], 'outcome': 'refused', 'reason': 'presentation_mismatch'})
-                    continue
-                record.update(outcome='sent', chat_id=sent['chat_id'], message_id=sent['message_id'],
-                              platform_date=sent['date'])
-            self._serial += 1
-            command_id = '%s:%s:%.6f:%d' % (OPERATION, pid, self.clock(), self._serial)
-            command = dict(command_id=command_id, principal=self.journal_signer, operation=OPERATION,
-                           parameters=dict(projection_id=pid, record=record), expected_versions={pid: 0},
-                           artifact_digests=[record['presentation_digest']], nonce=command_id)
-            try:
-                self.store.execute(self.conn, command, self.journal_signer, self.sign, self.authority_generation)
-            except self.store.StoreRefused as exc:
-                self._observe(entry['id'], versions, 'unknown_outcome', exc.code)
-                results.append({'assignment_id': entry['id'], 'outcome': 'unknown_outcome', 'reason': exc.code})
-                continue
-            self._observe(entry['id'], versions, record['outcome'], None)
-            results.append({'assignment_id': entry['id'], 'outcome': record['outcome'], 'projection_id': pid})
-        return results
+        """Attempt each pending entry that has no settled record at its request version; return
+        one result per pending entry."""
+        return [self._project(entry) for entry in self.inbox.index()['entries'] if entry['category'] == 'pending']
 
     def metrics(self):
-        unprojected = sum(1 for e in self.inbox.index()['entries'] if e['category'] == 'pending'
-                          and self.record(projection_id(e['id'], e['request_version'])) is None)
-        return dict(self.counts, pending=unprojected)
+        records = {e['id']: self.record(projection_id(e['id'], e['request_version']))
+                   for e in self.inbox.index()['entries'] if e['category'] == 'pending'}
+        return dict(self.counts,
+                    pending=sum(1 for r in records.values() if r is None or r['outcome'] in RETRYABLE),
+                    unknown=sum(1 for r in records.values() if r is not None and r['outcome'] in ('pending', 'unknown_outcome')))
