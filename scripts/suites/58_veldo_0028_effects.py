@@ -340,6 +340,20 @@ print(json.dumps(result))
                 and E.S.materialized_state(store)['entities'][contract['permission_id']]['data'] == permit)
             expect('VELDO-0028 effects/revocation-future-dated/' + kind, checks['revocation-future-dated/' + kind])
             store.close()
+        # E: a review by a principal the ledger revoked satisfies nothing; a fresh permission
+        # naming a current reviewer is the fresh authorization and publishes.
+        req, _, contract, permit = setup('publication', 'revoked-reviewer')
+        store, isolated_path = isolate('revoked-reviewer')
+        before_calls = len(calls('publication-good'))
+        revoke_on(store, permit['reviewer'], _v28_time.time(), 'revoke-reviewer')
+        refused = _v28_executor.call(isolated_path, req, 'worker', private / 'worker')
+        refused_clean = len(calls('publication-good')) == before_calls and unused(store, req)
+        put(contract['permission_id'], 'effect_permission', dict(permit, reviewer='current-reviewer'), store)
+        fresh = _v28_executor.call(isolated_path, req, 'worker', private / 'worker')
+        row('publication-revoked-reviewer', refused.get('refusal') == 'revoked-reviewer' and refused_clean
+            and fresh.get('result', {}).get('completed') is True and len(calls('publication-good')) == before_calls + 1)
+        expect('VELDO-0028 effects/publication-revoked-reviewer', checks['publication-revoked-reviewer'])
+        store.close()
         # Linux custody witness: this isolated probe can execute but cannot read private
         # service files. Provisioning this boundary for real workers belongs to W26.
         probe = '''import ctypes,sys

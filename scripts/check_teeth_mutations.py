@@ -333,6 +333,13 @@ def cases():
     effect('effects-revocation-skew-allowance', ledger_read,
            "    return R.ledger(S, conn)[0]['revoked'].get(principal, {}).get('at', now + 2) <= now + 1 or R.is_revoked(S, conn, principal, now)",
            'revocation-future-dated')
+    # R3 E: a review by a revoked principal satisfies nothing.
+    reviewer = "        if revoked(conn, data['reviewer'], now):"
+    add(28, 'effects-revoked-reviewer-accepted', '58_veldo_0028_effects.py', 'control_effects.py', reviewer,
+        "        if False:", ['effects/publication-revoked-reviewer'])
+    add(28, 'effects-reviewer-membership-only', '58_veldo_0028_effects.py', 'control_effects.py', reviewer,
+        "        if state.get(data['reviewer'], {}).get('data', {}).get('revoked_at') is not None:",
+        ['effects/publication-revoked-reviewer'])
     def publication(name, old, new, criterion):
         add(28, name, '58_veldo_0028_effects.py', 'control_effect_executor.py', old, new,
             ['effects/' + criterion])

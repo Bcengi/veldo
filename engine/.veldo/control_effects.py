@@ -106,6 +106,10 @@ def authorize(conn, state, config, principal, request, consume=True):
                 or not data.get('reviewer_group') or data.get('reviewer_group') == data.get('worker_group')
                 or data.get('approval_current') is not True):
             raise Refused('missing-evidence')
+        # A review by a revoked principal is evidence only (VELDO-0026); a fresh permission
+        # naming a current reviewer is the fresh authorization.
+        if revoked(conn, data['reviewer'], now):
+            raise Refused('revoked-reviewer')
     return entry, permission
 
 
