@@ -457,6 +457,12 @@ def cases():
             "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],\n"
             "                    ['log', '-m', '-z', '--no-renames', '--format=', '--name-only', commit]):",
             "    for command in (['ls-tree', '-r', '-z', '--name-only', commit],):", 'aliases/historical-floor')
+    aliases('alias-generic-commands-unguarded', 'control_alias.py',
+            '        conn.command_registry[operation] = _guard_generic(store, operation, registration)',
+            '        pass', 'aliases/generic-writes-refused')
+    aliases('alias-guard-by-new-kind-only', 'control_alias.py',
+            "            if _owned(identity, change['kind']) or _owned(identity, before.get(identity, {}).get('kind')):",
+            "            if change['kind'] in OWNED_KINDS:", 'aliases/generic-writes-refused')
     aliases('alias-skip-unit-id', 'control_alias.py',
             "        problem = CLAIM.unit_id_problem(alias_for(data, data['next']))\n", '        problem = None\n',
             'aliases/invalid-unit-id')

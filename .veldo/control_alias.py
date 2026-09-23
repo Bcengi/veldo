@@ -54,13 +54,18 @@ _git_process = SN._git_process
 SCHEMA = 'veldo.control_alias/v1'
 OPERATIONS = ('enable_artifact_kind', 'allocate_document', 'edit_document', 'record_publication')
 ATTEMPTS = 16
+# Everything these commands write; no other command on the allocation connection may write it.
+OWNED_KINDS = frozenset(('artifact_kind', 'alias_reservation', 'alias_source', 'accepted_document',
+                         'document_version', 'publication_obligation'))
+OWNED_PREFIXES = ('artifact-kind/', 'alias/', 'alias-source/', 'document/', 'publication/')
 # The error taxonomy every refusal is reported under. A code missing here is unknown_outcome,
 # never success.
 CATEGORIES = {
     'invalid_input': 'invalid_input', 'invalid_unit_id': 'invalid_input',
     'malformed_command': 'invalid_input', 'invalid_registration': 'invalid_input',
     'wrong_repository': 'invalid_input', 'transition_refused': 'invalid_input',
-    'missing_authority': 'missing_authority',
+    'missing_authority': 'missing_authority', 'allocation_owned': 'missing_authority',
+    'unregistered_inputs': 'invalid_input',
     'stale_version': 'stale_subject', 'stale_document': 'stale_subject',
     'source_content_conflict': 'stale_subject', 'command_content_conflict': 'stale_subject',
     'publication_conflict': 'stale_subject', 'publication_order': 'stale_subject',
@@ -610,11 +615,38 @@ class Allocations:
                              'data': dict(data, state='published', observed_digest=p['observed_digest'])}}
 
 
+def _owned(identity, kind):
+    return (isinstance(identity, str) and identity.startswith(OWNED_PREFIXES)) or kind in OWNED_KINDS
+
+
+def _guard_generic(store, operation, registration):
+    """The registration with one more rule: whatever this command would write, no alias or
+    document entity, recognized by its id or by its kind before or after. The original transition
+    still decides everything else, and a snapshot command it could not guard stays refused."""
+    inner, plain = registration.get('transaction_transition'), registration.get('transition')
+
+    def transition(conn, parameters, before):
+        if inner is None and 'snapshot_id' in parameters:
+            raise store.StoreRefused('unregistered_inputs', 'snapshot command requires a connection-local guard')
+        changes = inner(conn, parameters, before) if inner is not None else plain(parameters, before)
+        for identity, change in changes.items():
+            if _owned(identity, change['kind']) or _owned(identity, before.get(identity, {}).get('kind')):
+                raise store.StoreRefused('allocation_owned', '%s cannot write %s: only the allocation commands do'
+                                         % (operation, identity))
+        return changes
+    return dict(registration, transaction_transition=transition)
+
+
 def attach(store, conn, domain_uuid, repositories):
-    """Register the allocation commands on one store connection; returns the service."""
+    """Register the allocation commands on one store connection; returns the service. Every other
+    command registered on the connection at this moment, the store's generic ones included, is
+    guarded so that it cannot write the entities these commands own (a counter moved backwards or
+    a version rewritten by upsert_entity would bypass every rule below)."""
     if any(operation in conn.command_registry for operation in OPERATIONS):
         raise SN.Refused('invalid_registration', 'connection already has an allocation authority')
     service = Allocations(store, conn, domain_uuid, repositories)
+    for operation, registration in dict(store.COMMAND_REGISTRY, **conn.command_registry).items():
+        conn.command_registry[operation] = _guard_generic(store, operation, registration)
     for operation, body in zip(OPERATIONS, (service._t_enable, service._t_allocate, service._t_edit, service._t_publish)):
         conn.command_registry[operation] = {'transaction_transition': service._transition(body),
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}

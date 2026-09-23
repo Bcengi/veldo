@@ -622,6 +622,45 @@ def _s37_run():
                'first-1': 'below_accepted_history', 'first-2-deleted': 'below_accepted_history', 'derived': None,
                'allocated': 'VELDO-0003'})
         env.conn.close()
+
+        # 5. On the allocation connection the store's generic commands cannot write any alias or
+        # document entity, by id or by kind; they still write everything else.
+        env = fresh('generic')
+        enable(env, 'specification', 'VELDO', 'specs/{alias}-{slug}.md')
+        for index in (1, 2):
+            allocate(env, 'generic-%d' % index, 'specification', 'generic-%d' % index, b'generic %d\n' % index)
+        counter_id = al.kind_id('repository', 'specification')
+        version_of = lambda identity: env.service.current(identity)[0]
+        _, kind_before = env.service.current(counter_id)
+        snapshot = st.table_snapshot(env.conn)
+        generic = {}
+        for label, operation, parameters, identity in [
+                ('rewind-counter', 'upsert_entity', {'entity_id': counter_id, 'kind': 'artifact_kind',
+                                                     'data': dict(kind_before or {}, next=1)}, counter_id),
+                ('retire-reservation', 'retire_entity', {'entity_id': al.alias_id('repository', 'VELDO-0001')},
+                 al.alias_id('repository', 'VELDO-0001')),
+                ('receipt-over-version', 'record_receipt', {'receipt_id': al.version_id('repository', 'VELDO-0002', 1),
+                                                            'subject': 'x', 'digest': 'sha256:' + '0' * 64},
+                 al.version_id('repository', 'VELDO-0002', 1)),
+                ('owned-kind-elsewhere', 'upsert_entity', {'entity_id': 'elsewhere/1', 'kind': 'document_version',
+                                                           'data': {'content': 'forged'}}, 'elsewhere/1')]:
+            _, error = attempt(lambda: st.execute(env.conn, {'command_id': 'generic-' + label, 'principal': 'anyone',
+                'operation': operation, 'parameters': parameters, 'nonce': 'generic-%s/nonce' % label,
+                'expected_versions': {identity: version_of(identity)}, 'artifact_digests': []}, **signing))
+            generic[label] = code(error)
+        unchanged = st.table_snapshot(env.conn) == snapshot
+        _, unrelated = attempt(lambda: st.execute(env.conn, {'command_id': 'generic-unrelated', 'principal': 'anyone',
+            'operation': 'upsert_entity', 'parameters': {'entity_id': 'note/1', 'kind': 'note', 'data': {'text': 'ok'}},
+            'nonce': 'generic-unrelated/nonce', 'expected_versions': {'note/1': 0}, 'artifact_digests': []}, **signing))
+        generic['unrelated'] = code(unrelated)
+        next_alias, _ = allocate(env, 'generic-3', 'specification', 'generic-3', b'generic 3\n')
+        generic['next'] = (next_alias or {}).get('alias')
+        defects['generic'] = generic
+        expect('aliases/generic-writes-refused', unchanged and generic == {
+               'rewind-counter': 'allocation_owned', 'retire-reservation': 'allocation_owned',
+               'receipt-over-version': 'allocation_owned', 'owned-kind-elsewhere': 'allocation_owned',
+               'unrelated': None, 'next': 'VELDO-0003'})
+        env.conn.close()
     observations['elapsed_seconds'] = _s37_time.monotonic() - started
     return observations
 
