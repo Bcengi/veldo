@@ -26,10 +26,10 @@ walrus, del, parameters and PEP 695 type parameters, imports, def and class name
 match captures, global and nonlocal writes). Which module an alias holds is taken from the source
 only where the source decides it: from a spec variable bound once, or one whose every binding is a
 spec call or a `del` standing as a plain statement of a fragment's module body (those run in line
-order). A spec variable rebound anywhere else (in a function, under an if or a loop, by plain
-assignment, through global or nonlocal), or read from another scope while bound more than once,
-depends on control flow or call order and maps no alias. The resolver is judged against CPython's
-symtable over the real corpus by a suite row, not only against a fixture. Narrowing the SCOPE to
+order). A spec variable rebound anywhere else (in a function, under an if or a loop, through
+global or nonlocal), rebound by a plain assignment (which this reader does not follow), or read
+from another scope while bound more than once maps no alias. The resolver is judged against
+CPython's symtable over the real corpus by a suite row, not only against a fixture. Narrowing the SCOPE to
 keep the signal clean is right; lowering the BAR by allowlisting the noisy names would not be.
 
 NOT MODELED, stated as limits (the corpus has none of them): a star import, a write through
@@ -37,7 +37,7 @@ globals(), locals() or vars(), and exec() without its own namespace rebind names
 see; private-name mangling (`__M` inside a class compiles to `_K__M`) is not applied; a metaclass
 `__prepare__` namespace and a class-body binding whose own right-hand side reads the same name
 (which then falls back to the global) are not modeled. A spec path maps only when every `/` segment
-is a string constant on the fragments' shared ROOT.
+is a string constant on the fragments' shared ROOT, bound once and never rebound.
 
 A module that cannot be imported standalone (one that needs helpers injected by its caller) is
 UNVERIFIABLE, not passed, and is reported as such.
@@ -356,8 +356,10 @@ def references(order, trees, counts):
         for line, _col, kind, scope, a, b in sorted(walks[fname].events, key=lambda e: e[:2]):
             if kind == "spec":
                 key = (resolve(scope, a), a)
-                # ROOT must be the fragments' shared module ROOT, not a local or a parameter.
-                if decidable(key) and resolve(scope, "ROOT") == MODULE:
+                # ROOT must be the fragments' shared module ROOT (bound once, by shared.py), not a
+                # local, a parameter, or a module ROOT some fragment or function rebinds.
+                if (decidable(key) and resolve(scope, "ROOT") == MODULE
+                        and counts[(MODULE, "ROOT")] <= 1):
                     spec_paths[key] = b
             elif kind == "mod":
                 src = (resolve(scope, b), b)

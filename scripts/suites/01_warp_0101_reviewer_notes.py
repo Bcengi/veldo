@@ -2886,6 +2886,11 @@ class Holder:
     except Exception:
         EXCEPTBODY = importlib.util.module_from_spec(_spc)
     EXCEPTBODY.class_body_falls_back_when_nothing_raises()
+    try:
+        pass
+    except* Exception:
+        EXCEPTSTAR = importlib.util.module_from_spec(_spc)
+    EXCEPTSTAR.class_body_falls_back_when_no_group_raises()
     def method_with_a_generic_helper(self):
         def helper[T](x) -> CLASSLEVEL.not_the_class_alias_here:
             pass
@@ -2895,7 +2900,7 @@ _sub = ".veldo"
 _spx = importlib.util.spec_from_file_location("x", ROOT / _sub / "naming.py")
 COMPUTED = importlib.util.module_from_spec(_spx)
 COMPUTED.path_has_a_computed_segment()
-_spf = importlib.util.spec_from_file_location("f", ROOT / f"{_sub}/naming.py")
+_spf = importlib.util.spec_from_file_location("f", ROOT / f"{_sub}" / "naming.py")
 FSTRINGED = importlib.util.module_from_spec(_spf)
 FSTRINGED.path_has_an_fstring_segment()
 def local_root():
@@ -2907,6 +2912,10 @@ def param_root(ROOT):
     _spp = importlib.util.spec_from_file_location("p", ROOT / ".veldo/naming.py")
     PARAMROOT = importlib.util.module_from_spec(_spp)
     PARAMROOT.root_is_a_parameter()
+    def nested_reads_the_parameter():
+        _spn2 = importlib.util.spec_from_file_location("n2", ROOT / ".veldo/naming.py")
+        NESTEDROOT = importlib.util.module_from_spec(_spn2)
+        NESTEDROOT.root_is_an_enclosing_parameter()
 _spd = importlib.util.spec_from_file_location("d", ROOT / ".veldo/naming.py")
 DELLED = importlib.util.module_from_spec(_spd)
 DELLED.contract(1, 2)
@@ -2930,13 +2939,13 @@ expect("suite attr check TEETH: the forms the first scope-aware cut missed are r
        not any(a in ("DELETED", "RESTED", "NONLOCALED") for _f, _l, a, _at, _r in _sac_refs))
 expect("suite attr check TEETH: an alias whose module depends on WHEN a function runs is not checked. Source line order is execution order only at module level: a function loading from a module spec variable bound more than once, and a spec variable some function rebinds through `global`, each hold whatever the call order made them, so a reader that replays function bodies at their definition line maps the alias to the wrong module",
        not any(a in ("LATE", "GLATE", "ENCLOSED") for _f, _l, a, _at, _r in _sac_refs))
-expect("suite attr check TEETH: at module level too, a spec variable rebound by plain assignment or under an if/else is not decided by the source, so the alias loaded from it is not checked; and a spec path with a computed segment (a variable, an f-string) or on a ROOT that is a local or a parameter is not mapped at all",
-       not any(a in ("PLAINED", "IFFED", "COMPUTED", "FSTRINGED", "LOCALROOT", "PARAMROOT")
+expect("suite attr check TEETH: at module level too, a spec variable rebound under an if/else, or by a plain assignment (which this reader does not follow), maps no alias; and a spec path with a computed segment (a variable, an f-string) or on a ROOT that is a local, a parameter or an enclosing function's parameter is not mapped at all",
+       not any(a in ("PLAINED", "IFFED", "COMPUTED", "FSTRINGED", "LOCALROOT", "PARAMROOT", "NESTEDROOT")
                for _f, _l, a, _at, _r in _sac_refs))
-expect("suite attr check TEETH: a class body that binds an alias only under an if or its else, a try or its except, a for or while loop, a with body or a match case reads the GLOBAL when that path is not taken, so such a binding is never the only one and the alias is not checked",
+expect("suite attr check TEETH: a class body that binds an alias only under an if or its else, a try or its except, a for or while loop, a with body or a match case (including except*) reads the GLOBAL when that path is not taken, so such a binding is never the only one and the alias is not checked",
        not any(a in ("CONDITIONAL", "TRIED", "LOOPED", "WHILED", "WITHBODY", "MATCHBODY", "ELSED",
-                     "EXCEPTBODY") for _f, _l, a, _at, _r in _sac_refs))
-expect("suite attr check TEETH: a spec variable bound by a straight-line spec call and later deleted by a straight-line del still maps its alias to that module: a del at module level runs in line order and never re-points the variable (real fragments end that way)",
+                     "EXCEPTBODY", "EXCEPTSTAR") for _f, _l, a, _at, _r in _sac_refs))
+expect("suite attr check TEETH: a spec variable bound by a straight-line spec call and later deleted by a straight-line del still maps its alias to that module: a del at module level runs in line order and never re-points the variable (real fragments do this)",
        [(a, at, rel) for _f, _l, a, at, rel in _sac_refs if a == "DELLED"]
        == [("DELLED", "contract", ".veldo/naming.py")])
 expect("suite attr check TEETH: a class-level alias is seen where Python lets it be seen: in the class body, in the FIRST iterator of a comprehension in that body (evaluated in the class scope), and in the annotation scope of a generic method DIRECTLY in the class (PEP 695), and nowhere else: not in that method's body, and not in the annotation of a generic helper nested inside a method",
@@ -2973,6 +2982,10 @@ for _sac_dir in ("scripts", ".veldo"):
     for _sac_p in sorted((ROOT / _sac_dir).glob("*.py")):
         _sac_corpus[_sac_dir + "/" + _sac_p.name] = _sac_p.read_text()
 _sac_disagree, _sac_compared = SAC.symtable_disagreements(_sac_corpus)
+_sac_rebound_root = {"a.py": 'ROOT = Path(".")\n', "b.py": 'ROOT = ROOT / "engine"\n_spq = importlib.util.spec_from_file_location("q", ROOT / ".veldo/naming.py")\nREROOTED = importlib.util.module_from_spec(_spq)\nREROOTED.contract(1, 2)\n'}
+_sac_rr_trees = {f: _sac_ast.parse(t) for f, t in _sac_rebound_root.items()}
+expect("suite attr check TEETH: a spec path on a module ROOT that a later fragment REBINDS is not mapped: the runtime ROOT then points elsewhere (here engine/), so checking against the repository's .veldo/naming.py would check the wrong module",
+       [r for r in SAC.references(["a.py", "b.py"], _sac_rr_trees, SAC.binding_counts(_sac_rr_trees)) if r[2] == "REROOTED"] == [])
 _sac_generic = SAC.symtable_disagreements({"generic.py": "class G[T]:\n    def m(self):\n        return T\n"})
 expect("suite attr check: the symtable comparison judges a generic class without inventing a disagreement from the compiler's internal .type_params symbol",
        _sac_generic[0] == [] and _sac_generic[1] >= 2)
